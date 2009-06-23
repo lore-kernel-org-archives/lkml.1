@@ -1,195 +1,468 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756707AbZFWCCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZFWCGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756707AbZFWCCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbZFWCC1
+	id S1756533AbZFWCGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWCGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:02:27 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:60055 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751707AbZFWCC1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:02:27 -0400
+	Mon, 22 Jun 2009 22:06:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39932 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751707AbZFWCGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:06:05 -0400
+Date: Mon, 22 Jun 2009 22:05:15 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
+	elevaotor layer
+Message-ID: <20090623020515.GA3620@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19008.14107.115568.19439@stoffel.org>
-Date: Mon, 22 Jun 2009 21:59:55 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: John Stoffel <john@stoffel.org>, Bernd Schmidt <bernds_cb1@t-online.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Blackfin Architecture Team 
-	<uclinux-dist-devel@blackfin.uclinux.org>,
-       David Howells <dhowells@redhat.com>, stable@kernel.org
-Subject: Re: Fix for shared flat binary format in 2.6.30
-In-Reply-To: <alpine.LFD.2.01.0906221349220.3240@localhost.localdomain>
-References: <4A3F5EAE.7020402@t-online.de>
-	<alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
-	<19007.60396.259650.682653@stoffel.org>
-	<alpine.LFD.2.01.0906221349220.3240@localhost.localdomain>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090622084612.GD3728@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 22, 2009 at 02:16:12PM +0530, Balbir Singh wrote:
+> * Vivek Goyal <vgoyal@redhat.com> [2009-06-19 16:37:20]:
+> 
+> > This is common fair queuing code in elevator layer. This is controlled by
+> > config option CONFIG_ELV_FAIR_QUEUING. This patch initially only introduces
+> > flat fair queuing support where there is only one group, "root group" and all
+> > the tasks belong to root group.
+> > 
+> > This elevator layer changes are backward compatible. That means any ioscheduler
+> > using old interfaces will continue to work.
+> > 
+> > This code is essentially the CFQ code for fair queuing. The primary difference
+> > is that flat rounding robin algorithm of CFQ has been replaced with BFQ (WF2Q+).
+> >
+> 
+> The patch is quite long and to be honest requires a long time to
+> review, which I don't mind. I suspect my frequently diverted mind is
+> likely to miss a lot in a big patch like this. Could you consider
+> splitting this further if possible. I think you'll notice the number
+> of reviews will also increase.
+>  
 
-Linus> On Mon, 22 Jun 2009, John Stoffel wrote:
->> 
->> I just recently submitted a patch, and it took me a while to figure
->> out a git flow for stupid, simple patches so that I, a moron, could
->> understand it.
+Hi Balbir,
 
-Linus> Well, your documented flow is pretty advanced, actually. In
-Linus> fact, much more advanced than what _I_ often do when I send out
-Linus> patches.
+Thanks for the review. Yes, this is a big patch. I will try to break it
+down further.
 
-Heh, but I can't write patches in my sleep like you can I bet.  And I
-was looking for an easy to use method that would let me keep a small
-subset of patches I write or test easily accesible.  And since I'm NOT
-a C coder by day, but a SysAdmin who hacks Perl mostly... this seems
-to fit into the spirit of Git usage in the kernel.
+Fabio has already responded to most of the questions. I will try to cover
+rest.
 
-Linus> So I'm not saying that your flow is wrong at all, but for "casual" 
-Linus> patches, there are simplifications..
+[..]
+> > +static inline struct io_queue *elv_close_cooperator(struct request_queue *q,
+> > +					struct io_queue *ioq, int probe);
+> > +struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
+> > +						 int extract);
+> > +
+> > +static inline int elv_prio_slice(struct elv_fq_data *efqd, int sync,
+> > +					unsigned short prio)
+> 
+> Why is the return type int and not unsigned int or unsigned long? Can
+> the return value ever be negative?
 
-Excellent!  I figured I was missing stuff, but like I said... 
+Actually this function was a replacement for cfq_prio_slice() hence return
+type int. But as slice value can never be negative, I can make it unsigned
+int.
 
->> # One time commands
->> > apt-get install git-email
->> > git config --global user.name "John Stoffel"
->> > git config --global user.email "john@stoffel.org"
+[..]
+> > + * bfq_gt - compare two timestamps.
+> > + * @a: first ts.
+> > + * @b: second ts.
+> > + *
+> > + * Return @a > @b, dealing with wrapping correctly.
+> > + */
+> > +static inline int bfq_gt(bfq_timestamp_t a, bfq_timestamp_t b)
+> > +{
+> > +	return (s64)(a - b) > 0;
+> > +}
+> > +
+> 
+> a and b are of type u64, but cast to s64 to deal with wrapping?
+> Correct?
 
-Linus> git-email can be useful, but it's really only useful if you
-Linus> plan on sending lots of patches. A lot of casual users may fin
-Linus> it too much overhead).
+Yes.
 
-Linus> The user name/email is always good to set up with git, though.
+> 
+> > +/**
+> > + * bfq_delta - map service into the virtual time domain.
+> > + * @service: amount of service.
+> > + * @weight: scale factor.
+> > + */
+> > +static inline bfq_timestamp_t bfq_delta(bfq_service_t service,
+> > +					bfq_weight_t weight)
+> > +{
+> > +	bfq_timestamp_t d = (bfq_timestamp_t)service << WFQ_SERVICE_SHIFT;
+> > +
+> 
+> Why is the case required? Does the compiler complain? service is
+> already of the correct type.
+> 
+> > +	do_div(d, weight);
+> 
+> On a 64 system both d and weight are 64 bit, but on a 32 bit system
+> weight is 32 bits. do_div expects a 64 bit dividend and 32 bit divisor
+> - no?
+> 
 
-Linus> Of course, the really casual use won't ever even care, because
-Linus> it won't necessarily even commit things! But setting it up
-Linus> (once) certainly won't hurt.
+d is of type "bfq_timestamp_t" which is u64 irrespective of 64 or 32 bit
+system. I think it might make sense to change type of "weight" from
+unsigned long to unsigned int so that it is 32bit on both 64 and 32bit
+systems. Will do...
 
-I think git-email is actually really useful, even for occasional
-users, since it makes sure you do it right and send a good patch,
-without whitespace damage, proper signed-off-by lines, etc.  Much
-easier than crafting an email by hand.  
 
-Esp when I wanted to make it as easy as possible on you and James to
-actually accept and push my patch upsteam.  Keeping it easy on the
-sub-system maintainers is a key thing in my mind.  
+> > +	return d;
+> > +}
+> > +
+> > +/**
+> > + * bfq_calc_finish - assign the finish time to an entity.
+> > + * @entity: the entity to act upon.
+> > + * @service: the service to be charged to the entity.
+> > + */
+> > +static inline void bfq_calc_finish(struct io_entity *entity,
+> > +				   bfq_service_t service)
+> > +{
+> > +	BUG_ON(entity->weight == 0);
+> > +
+> > +	entity->finish = entity->start + bfq_delta(service, entity->weight);
+> > +}
+> 
+> Should we BUG_ON (entity->finish == entity->start)? Or is that
+> expected when the entity has no service time left.
+> 
 
->> # Only to be done infrequently
->> > mkdir /var/tmp/git-tree
->> > cd /var/tmp/git-tree
->> > git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
+As Fabio said, that with preemption logic, I guess theoritically, it is
+possible that a io queue is preempted without any service received and
+requeued back. Hence it might not be a very good idea to
+BUG_ON(entity->finish == entity->start); 
 
-Linus> Yes. Something like this, although "/var/tmp" is an odd place
-Linus> to put it unless it's really a one-off thing.
+[..]
+> > +/**
+> > + * bfq_extract - remove an entity from a tree.
+> > + * @root: the tree root.
+> > + * @entity: the entity to remove.
+> > + */
+> > +static inline void bfq_extract(struct rb_root *root, struct io_entity *entity)
+> > +{
+> 
+> Extract is not common terminology, why not use bfq_remove()?
+> 
 
-Me being lazy and knowing that /var/tmp doesn't get nuked on reboots.
-For real documentation, I'd clean it up into another path.
+*_remove() also sounds good. Will replace *_extract() with *_remove().
 
->> # Make a new branch <branch> for the patch you're doing.  In this
->> case, we'll do 'sym_hipd-ratelimit'
+> > +	BUG_ON(entity->tree != root);
+> > +
+> > +	entity->tree = NULL;
+> > +	rb_erase(&entity->rb_node, root);
+> 
+> Don't you want to make entity->tree = NULL after rb_erase?
 
-Linus> Ok, this is where your casual use gets to be already pretty
-Linus> advanced.
+As Fabio said that it happens under queue spinlock held. But from
+readability point of view, it probably looks better to first remove it
+from rb tree then reset entity fields. Will change the order...
 
-I figured that if I put my patch into a branch, I could then keep
-pulling your tree into mine, and then merging my patch upsteam as
-needed if it doesn't make it in this time.  
+> 
+> > +}
+> > +
+> > +/**
+> > + * bfq_idle_extract - extract an entity from the idle tree.
+> > + * @st: the service tree of the owning @entity.
+> > + * @entity: the entity being removed.
+> > + */
+> > +static void bfq_idle_extract(struct io_service_tree *st,
+> > +				struct io_entity *entity)
+> > +{
+> > +	struct rb_node *next;
+> > +
+> > +	BUG_ON(entity->tree != &st->idle);
+> > +
+> > +	if (entity == st->first_idle) {
+> > +		next = rb_next(&entity->rb_node);
+> 
+> What happens if next is NULL?
+> 
+> > +		st->first_idle = bfq_entity_of(next);
+> > +	}
+> > +
+> > +	if (entity == st->last_idle) {
+> > +		next = rb_prev(&entity->rb_node);
+> 
+> What happens if next is NULL?
+> 
+> > +		st->last_idle = bfq_entity_of(next);
 
-Linus> I would suggest starting out using the kernel git repository as
-Linus> more of a "anonymous cvs" replacement, ie to just track
-Linus> upstream. So just keep doing
+bfq_entity_of() is capable of handling next == NULL.
 
-I've *never* done any development using CVS, etc.  Just some basic
-version control scripted to manage files for sysadmin type work.   So
-version control is just a pain for me to do, since I do it so
-infrequently. 
+I can change it to following if you think it is more readable.
 
-Linus> 	git pull origin
+	if (entity == st->first_idle) {
+		next = rb_next(&entity->rb_node);
+		if (next)
+			st->first_idle = bfq_entity_of(next);
+		else
+			st->first_idle = NULL;
+	}
 
-Linus> every once in a while, which is a really convenient way to just
-Linus> say "get the latest version and update the working tree"
+[..]
 
-  git pull
+> > +static void elv_ioq_update_io_thinktime(struct io_queue *ioq)
+> > +{
+> > +	struct elv_fq_data *efqd = ioq->efqd;
+> > +	unsigned long elapsed = jiffies - ioq->last_end_request;
+> > +	unsigned long ttime = min(elapsed, 2UL * efqd->elv_slice_idle);
+> > +
+> > +	ioq->ttime_samples = (7*ioq->ttime_samples + 256) / 8;
+> > +	ioq->ttime_total = (7*ioq->ttime_total + 256*ttime) / 8;
+> > +	ioq->ttime_mean = (ioq->ttime_total + 128) / ioq->ttime_samples;
+> > +}
+> 
+> Not sure I understand the magical 7, 8, 2, 128 and 256. Please help me
+> understand the algorithm.
 
-will work too, assuming I'm on the master branch, right?
+Taken from CFQ. 
 
-Linus> NOTE! It's really convenient _only_ if you don't actually do
-Linus> commits. If you do your own work, it's going to do a merge etc,
-Linus> and that's part of the "advanced" feature. The above is all
-Linus> assuming that you do NOT commit, and you really consider it a
-Linus> read-only tree with perhaps some random small local changes on
-Linus> top for testing.
+> > +int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
+> > +			void *sched_queue, int ioprio_class, int ioprio,
+> > +			int is_sync)
+> > +{
+> > +	struct elv_fq_data *efqd = &eq->efqd;
+> > +	struct io_group *iog = io_lookup_io_group_current(efqd->queue);
+> > +
+> > +	RB_CLEAR_NODE(&ioq->entity.rb_node);
+> > +	atomic_set(&ioq->ref, 0);
+> > +	ioq->efqd = efqd;
+> > +	elv_ioq_set_ioprio_class(ioq, ioprio_class);
+> > +	elv_ioq_set_ioprio(ioq, ioprio);
+> > +	ioq->pid = current->pid;
+> 
+> Is pid used for cgroup association later? I don't see why we save the
+> pid otherwise? If yes, why not store the cgroup of the current->pid?
+> 
 
-Should I still do branches, even if I *don't* do a commit on those
-various branches?  
+This is just for logging purposes (blktrace), useful for CFQ where every task
+context sets up one queue and this number becomes the identifier for the queue.
+Look at elv_log_ioq(), which uses ioq->pid.
 
-Linus> If you are going to do anything fancier, then your "create a
-Linus> branch for testing" is good. But for somebody who doesn't
-Linus> expect to really be a kernel developer, starting out with a
-Linus> usage model based on anoncvs is probably a more natural one.
+[..]
+> > + * coop tells that io scheduler selected a queue for us and we did not
+> 
+> coop?
 
-Heh, just having some notes which let's me hack in a patch and keep
-track of where I am and juggle branches a bit is a *huge* help.  
+coop refers to "cooperating". I guess "coop" is not descriptive. I will
+change the name to "cooperating" and also put more description for
+clarity.
 
-Linus> Then, just edit the files, and use "git diff". That, along with
-Linus> "git pull" would be the _only_ command you'd ever use - and you
-Linus> now have a nice anoncvs-like environment to get used to git
-Linus> with, without having to actually know a whole lot.
+[..]
+> > diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> > new file mode 100644
+> > index 0000000..5b6c1cc
+> > --- /dev/null
+> > +++ b/block/elevator-fq.h
+> > @@ -0,0 +1,473 @@
+> > +/*
+> > + * BFQ: data structures and common functions prototypes.
+> > + *
+> > + * Based on ideas and code from CFQ:
+> > + * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
+> > + *
+> > + * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
+> > + *		      Paolo Valente <paolo.valente@unimore.it>
+> > + * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
+> > + * 	              Nauman Rafique <nauman@google.com>
+> > + */
+> > +
+> > +#include <linux/blkdev.h>
+> > +
+> > +#ifndef _BFQ_SCHED_H
+> > +#define _BFQ_SCHED_H
+> > +
+> > +#define IO_IOPRIO_CLASSES	3
+> > +
+> > +typedef u64 bfq_timestamp_t;
+> > +typedef unsigned long bfq_weight_t;
+> > +typedef unsigned long bfq_service_t;
+> 
+> Does this abstraction really provide any benefit? Why not directly use
+> the standard C types, make the code easier to read.
 
-So say I want to manage multiple branches, since I want to test some
-patches out, or various kernel revisions, or even git bisection?  
+I think using standard C type is better now. Will get rid of these
+abstractions. Fabio also seems to be ok with this change.
 
-Or should I just use a completely seperate tree for a bisection run? 
+> 
+> > +struct io_entity;
+> > +struct io_queue;
+> > +
+> > +#ifdef CONFIG_ELV_FAIR_QUEUING
+> > +
+> > +#define ELV_ATTR(name) \
+> > +	__ATTR(name, S_IRUGO|S_IWUSR, elv_##name##_show, elv_##name##_store)
+> > +
+> > +/**
+> > + * struct bfq_service_tree - per ioprio_class service tree.
+> 
+> Comment is old, does not reflect the newer name
 
-Linus> Now, what happens if your modifications touch a file that "git
-Linus> pull" will update? In that case, "git pull" will will just
-Linus> refuse to update the file, and do nothing. You can decide at
-Linus> that point to do one of several things:
+Yes, this is all over the code. I have not taken care of updating the
+comments from original bfq code. Will do it.
 
-Linus>  - maybe you just want to just stay at that base (not pull
-Linus>    updates for a while, until you're all done with your
-Linus>    changes)
+> 
+> > + * @active: tree for active entities (i.e., those backlogged).
+> > + * @idle: tree for idle entities (i.e., those not backlogged, with V <= F_i).
+> > + * @first_idle: idle entity with minimum F_i.
+> > + * @last_idle: idle entity with maximum F_i.
+> > + * @vtime: scheduler virtual time.
+> > + * @wsum: scheduler weight sum; active and idle entities contribute to it.
+> > + *
+> > + * Each service tree represents a B-WF2Q+ scheduler on its own.  Each
+> > + * ioprio_class has its own independent scheduler, and so its own
+> > + * bfq_service_tree.  All the fields are protected by the queue lock
+> > + * of the containing efqd.
+> > + */
+> > +struct io_service_tree {
+> > +	struct rb_root active;
+> > +	struct rb_root idle;
+> > +
+> > +	struct io_entity *first_idle;
+> > +	struct io_entity *last_idle;
+> > +
+> > +	bfq_timestamp_t vtime;
+> > +	bfq_weight_t wsum;
+> > +};
+> > +
+> > +/**
+> > + * struct bfq_sched_data - multi-class scheduler.
+> 
+> Again the naming convention is broken, you need to change several
+> bfq's to io's :)
 
-Linus>  - decide to continue with the "anoncvs" workflow, but try to
-Linus>    just forward-port the patches: learn the "git stash"
-Linus>    command, and do
+Yes. Will do. :-)
 
-Linus> 	git stash		# save your changes
-Linus> 	git pull		# do the update
-Linus> 	git stash apply		# re-apply your changes
+> > +/*
+> > + * A common structure embedded by every io scheduler into their respective
+> > + * queue structure.
+> > + */
+> > +struct io_queue {
+> > +	struct io_entity entity;
+> 
+> So the io_queue has an abstract entity called io_entity that contains
+> it QoS parameters? Correct?
+> 
+> > +	atomic_t ref;
+> > +	unsigned int flags;
+> > +
+> > +	/* Pointer to generic elevator data structure */
+> > +	struct elv_fq_data *efqd;
+> > +	pid_t pid;
+> 
+> Why do we store the pid?
 
-Ohh!  This is a new one to me.  Gotta remember this one, that's huge!
-Maybe what I've written should be updated to use this method instead?  
+pid of the process which caused io queue creation.
 
-Linus>    which obviously can be complicated if you have real
-Linus>    conflicts, but no worse than the alternatives. If you change
-Linus>    code that changed upstream, you'll have to resolve the thing
-Linus>    _somehow_, and the above won't be that different from what
-Linus>    you're used to with "cvs update" or whatever.
+> 
+> > +
+> > +	/* Number of requests queued on this io queue */
+> > +	unsigned long nr_queued;
+> > +
+> > +	/* Requests dispatched from this queue */
+> > +	int dispatched;
+> > +
+> > +	/* Keep a track of think time of processes in this queue */
+> > +	unsigned long last_end_request;
+> > +	unsigned long ttime_total;
+> > +	unsigned long ttime_samples;
+> > +	unsigned long ttime_mean;
+> > +
+> > +	unsigned long slice_end;
+> > +
+> > +	/* Pointer to io scheduler's queue */
+> > +	void *sched_queue;
+> > +};
+> > +
+> > +struct io_group {
+> > +	struct io_sched_data sched_data;
+> > +
+> > +	/* async_queue and idle_queue are used only for cfq */
+> > +	struct io_queue *async_queue[2][IOPRIO_BE_NR];
+> 
+> Again the 2 is confusing
+> 
 
-Linus>  - decide that you are actually going to learn to use git
-Linus>    branches etc, and stop using git as just a smarter 'anoncvs'
-Linus>    thing. This is when you want to learn about commit,
-Linus>    branches, and perhaps "git pull --rebase" and friends.
+Taken from CFQ. CFQ supports 8 prio levels for RT and BE class. We
+maintain one async queue pointer per prio level for both RT and BE class.
+Above number 2 is for RT and BE class.
 
-Heh, from all I've seen with your rants, git pull --rebase isn't what
-I want to do if I can help it.  :]  Even though I'll probably never
-publish a branch, just small patches occasionally at times. 
+> > +	struct io_queue *async_idle_queue;
+> > +
+> > +	/*
+> > +	 * Used to track any pending rt requests so we can pre-empt current
+> > +	 * non-RT cfqq in service when this value is non-zero.
+> > +	 */
+> > +	unsigned int busy_rt_queues;
+> > +};
+> > +
+> > +struct elv_fq_data {
+> 
+> What does fq stand for?
 
-Linus> In other words, you really don't have to jump in with both
-Linus> feet. You could just dip your toe in the git waters before you
-Linus> do anything fancier.
+Fair queuing. Any suggestions to make it better?
 
-I prefer to think that I've just waded into the kiddy pool with
-hipboots on, before I try to do any *real* fly (bug) fishing.  
+> 
+> > +	struct io_group *root_group;
+> > +
+> > +	struct request_queue *queue;
+> > +	unsigned int busy_queues;
+> > +
+> > +	/* Number of requests queued */
+> > +	int rq_queued;
+> > +
+> > +	/* Pointer to the ioscheduler queue being served */
+> > +	void *active_queue;
+> > +
+> > +	int rq_in_driver;
+> > +	int hw_tag;
+> > +	int hw_tag_samples;
+> > +	int rq_in_driver_peak;
+> 
+> Some comments of _in_driver and _in_driver_peak would be nice.
 
-Thanks for the reply, as usual, I've learned something new.  Now to
-put it into practice.
+Taken from CFQ. So somebody familiar with CFQ code can quickly relate. 
+But anyway, I will put two lines of comments.
 
-John
+> 
+> > +
+> > +	/*
+> > +	 * elevator fair queuing layer has the capability to provide idling
+> > +	 * for ensuring fairness for processes doing dependent reads.
+> > +	 * This might be needed to ensure fairness among two processes doing
+> > +	 * synchronous reads in two different cgroups. noop and deadline don't
+> > +	 * have any notion of anticipation/idling. As of now, these are the
+> > +	 * users of this functionality.
+> > +	 */
+> > +	unsigned int elv_slice_idle;
+> > +	struct timer_list idle_slice_timer;
+> > +	struct work_struct unplug_work;
+> > +
+> > +	unsigned int elv_slice[2];
+> 
+> Why [2] makes the code hearder to read
 
+Taken from CFQ. it represents base slice length for sync and async queues.
+With put a line of comment.
+
+Thanks
+Vivek
