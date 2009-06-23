@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZFWTMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZFWTNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbZFWTMW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZFWTMI
+	id S1755175AbZFWTNR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZFWTNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:12:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54792 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752326AbZFWTMG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:12:06 -0400
-Date: Tue, 23 Jun 2009 12:11:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jake Edge <jake@lwn.net>
-cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       "corbet@lwn.net" <corbet@lwn.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
-Subject: Re: [PATCH v3.1415] Documentation: add documentation summary for
- rc-series and merge window
-In-Reply-To: <20090623130602.6cd6b713@chukar>
-Message-ID: <alpine.LFD.2.01.0906231210040.3240@localhost.localdomain>
-References: <20090622222217.GH23972@bombadil.infradead.org> <m3fxdqj2bz.fsf@lwn.net> <m3bpoen5pp.fsf@intrepid.localdomain> <20090623130602.6cd6b713@chukar>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 23 Jun 2009 15:13:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:39845 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752431AbZFWTNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 15:13:07 -0400
+Date: Tue, 23 Jun 2009 21:11:12 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
+cc: linux-kernel@vger.kernel.org, Alexander Kaliadin <akaliadin@mvista.com>
+Subject: Re: [rt-preempt / powerpc] Looks like tick_sched_timer() is a major
+ latency source
+In-Reply-To: <200906232055.12412@zigzag.lvk.cs.msu.su>
+Message-ID: <alpine.LFD.2.00.0906231953480.2767@localhost.localdomain>
+References: <200906232055.12412@zigzag.lvk.cs.msu.su>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 23 Jun 2009, Jake Edge wrote:
-
-> On Tue, 23 Jun 2009 20:52:02 +0200 Krzysztof Halasa wrote:
+On Tue, 23 Jun 2009, Nikita V. Youshchenko wrote:
+> I tried hard to identify the latency source, and at some moment discovered 
+> tick_sched_timer() from kernel/time/tick-sched.c. This routine is called 
+> from timer interrupt with hardware interrupts disabled, and may execute 
+> for 50 us and more.
 > 
-> > Perhaps it's just me :-) but I think we're trying to codify the rules
-> > way too much. The general rules (merge window = new features etc) are
-> > obviously ok but why do we need strict details like intrusive vs
-> > non-intrusive etc? People should just use a common sense and good
-> > judgement and, if in doubt in some particular case, ask. We are unable
-> > to describe all situations in a single text file.
-> 
-> Me2 :)
+> Could someone please comment on this?
 
-Well, I do agree that documenting the rules and making them inflexible 
-shouldn't be the primary goal.
+Did you have CONFIG_NOHZ enabled ? If yes, please disable.
 
-But the fact is, "common sense" hasn't worked very well. I consistently 
-get pull requests from maintainers that have well-meaning "fix bugs" in 
-them, and that cause a lot of totally pointless churn.
+> Is it possible to move (part of) tick_sched_timer() call tree out of 
+> hardware-interrupts-disabled context without breaking things?
 
-In fact, this whole discussion has shown one thing: people still think 
-that "bug fix" somehow automatically means that it's appropriate after the 
-merge window. That's simply not so. 
+Yes, we can move things out and split the irq disabled regions. One
+particular thing which can be split out is the time update, which we
+already had in the timer softirq at some point, but we moved it back
+as it showed problems with NTP stability. It's one of the things which
+can be revisited. The whole call chain needs some investigation, but
+that's not in my main focus now.
 
-			Linus
+Thanks,
+
+	tglx
+
+
