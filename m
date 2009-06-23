@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZFWTNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbZFWTPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZFWTNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZFWTNH
+	id S1755093AbZFWTPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZFWTPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:13:07 -0400
-Received: from www.tglx.de ([62.245.132.106]:39845 "EHLO www.tglx.de"
+	Tue, 23 Jun 2009 15:15:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47573 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752431AbZFWTNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:13:07 -0400
-Date: Tue, 23 Jun 2009 21:11:12 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Nikita V. Youshchenko" <yoush@cs.msu.su>
-cc: linux-kernel@vger.kernel.org, Alexander Kaliadin <akaliadin@mvista.com>
-Subject: Re: [rt-preempt / powerpc] Looks like tick_sched_timer() is a major
- latency source
-In-Reply-To: <200906232055.12412@zigzag.lvk.cs.msu.su>
-Message-ID: <alpine.LFD.2.00.0906231953480.2767@localhost.localdomain>
-References: <200906232055.12412@zigzag.lvk.cs.msu.su>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1750845AbZFWTPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 15:15:04 -0400
+Date: Tue, 23 Jun 2009 21:14:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "mark.langsdorf@amd.com" <mark.langsdorf@amd.com>
+Subject: Re: [PATCH] cpufreq: remove dbs_mutex
+Message-ID: <20090623191418.GA14455@elte.hu>
+References: <4A2835D8.6040903@kernel.org> <20090611105211.GA6760@elte.hu> <20090620124817.GA22831@elte.hu> <200906212155.49849.trenn@suse.de> <20090623181748.GA31148@elte.hu> <20090623184040.GA6908@elte.hu> <1245783116.4534.17466.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245783116.4534.17466.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Nikita V. Youshchenko wrote:
-> I tried hard to identify the latency source, and at some moment discovered 
-> tick_sched_timer() from kernel/time/tick-sched.c. This routine is called 
-> from timer interrupt with hardware interrupts disabled, and may execute 
-> for 50 us and more.
+
+* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
+
+> Mathieu Desnoyers sent a patch earlier that should address this problem.
 > 
-> Could someone please comment on this?
+> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/00331.html
 
-Did you have CONFIG_NOHZ enabled ? If yes, please disable.
+No, that patch has _not_ fixed the regression:
 
-> Is it possible to move (part of) tick_sched_timer() call tree out of 
-> hardware-interrupts-disabled context without breaking things?
+  http://lkml.org/lkml/2009/6/8/563
 
-Yes, we can move things out and split the irq disabled regions. One
-particular thing which can be split out is the time update, which we
-already had in the timer softirq at some point, but we moved it back
-as it showed problems with NTP stability. It's one of the things which
-can be revisited. The whole call chain needs some investigation, but
-that's not in my main focus now.
-
-Thanks,
-
-	tglx
-
-
+	Ingo
