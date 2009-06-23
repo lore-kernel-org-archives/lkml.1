@@ -1,109 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZFWVaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbZFWVan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756710AbZFWVaZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZFWVaL
+	id S1757354AbZFWVan (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbZFWVaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 23 Jun 2009 17:30:15 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:18830 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754022AbZFWVaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Jun 2009 17:30:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47938 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750931AbZFWVaK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:30:10 -0400
-Date: Tue, 23 Jun 2009 14:29:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
-       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-Message-Id: <20090623142909.42776e75.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-	<20090623131848.b876d42e.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-IronPort-AV: E=Sophos;i="4.42,277,1243839600"; 
+   d="scan'208";a="195108999"
+Subject: Re: [PATCH 2/5] VFS: Add VFS helper functions for setting up
+ private namespaces
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090623201307.GA25760@us.ibm.com>
+References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
+	 <20090622190913.27923.61549.stgit@heimdal.trondhjem.org>
+	 <20090623201307.GA25760@us.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 23 Jun 2009 17:29:49 -0400
+Message-Id: <1245792589.5133.24.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 23 Jun 2009 21:30:12.0992 (UTC) FILETIME=[CADB2800:01C9F449]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 14:03:22 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> On Tue, 23 Jun 2009, Andrew Morton wrote:
+On Tue, 2009-06-23 at 15:13 -0500, Serge E. Hallyn wrote:
+> Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
+> > The purpose of this patch is to improve the remote mount path lookup
+> > support for distributed filesystems such as the NFSv4 client.
+> > 
+> > When given a mount command of the form "mount server:/foo/bar /mnt", the
+> > NFSv4 client is required to look up the filehandle for "server:/", and
+> > then look up each component of the remote mount path "foo/bar" in order
+> > to find the directory that is actually going to be mounted on /mnt.
+> > Following that remote mount path may involve following symlinks,
+> > crossing server-side mount points and even following referrals to
+> > filesystem volumes on other servers.
+> > 
+> > Since the standard VFS path lookup code already supports walking paths
+> > that contain all these features (using in-kernel automounts for
+> > following referrals) we would like to be able to reuse that rather than
+> > duplicate the full path traversal functionality in the NFSv4 client code.
+> > 
+> > This patch therefore defines a VFS helper function create_mnt_ns(), that
+> > sets up a temporary filesystem namespace and attaches a root filesystem to
+> > it. It exports the create_mnt_ns() and put_mnt_ns() function for use by
+> > filesystem modules.
+> > 
+> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 > 
-> > On Tue, 23 Jun 2009 12:25:36 -0700 (PDT)
-> > Davide Libenzi <davidel@xmailserver.org> wrote:
-> > 
-> > > The following patch changes the eventfd interface to de-couple the eventfd 
-> > > memory context, from the file pointer instance.
-> > > Without such change, there is no clean way to racely free handle the 
-> > > POLLHUP event sent when the last instance of the file* goes away.
-> > > Also, now the internal eventfd APIs are using the eventfd context instead 
-> > > of the file*.
-> > > Another cleanup this patch does, is making AIO select EVENTFD, instead of 
-> > > adding a bunch of empty function stubs inside eventfd.h in order to 
-> > > handle the (AIO && !EVENTFD) case.
-> > > 
-> > > ...
-> > >
-> > > +/**
-> > > + * eventfd_ctx_get - Acquires a reference to the internal eventfd context.
-> > > + * @ctx: [in] Pointer to the eventfd context.
-> > > + *
-> > > + * Returns: In case of success, returns a pointer to the eventfd context,
-> > > + *          otherwise a proper error code.
-> > 
-> > The description of the return value
+> This looks good, thanks.  Though I see no reason not to also switch over
+> init_mount_tree() to the new helper.
 > 
-> Should functions be describing all the returned error codes, ala man pages?
+> (Seems plausible that c/r code would use this as well)
 > 
-
-I think so.
-
+> Reviewed-by: Serge Hallyn <serue@us.ibm.com>
 > 
-> > > + */
-> > > +struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx)
-> > > +{
-> > > +	kref_get(&ctx->kref);
-> > > +	return ctx;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(eventfd_ctx_get);
-> > 
-> > doesn't match the code.
+> thanks,
+> -serge
 
-You appear to have not seen the above sentence.
+Thanks for the review! I missed the code duplication in
+init_mount_tree(). Something like the following?
 
-> > Also...
-> > 
-> > > + * Returns: A pointer to the eventfd file structure in case of success, or a
-> > > + *          proper error pointer in case of failure.
-> > 
-> > 
-> > > + * Returns: In case of success, it returns a pointer to the internal eventfd
-> > > + *          context, otherwise a proper error code.
-> > > + */
-> > 
-> > I'm unsure what the word "proper" means in this context.
-> > 
-> > The term "proper error pointer" is understandable enough - something
-> > you run IS_ERR() against.  "error pointer" would suffice.
-> > 
-> > But the term "proper error code" is getting a bit remote from reality.
-> > 
-> > Unfortunately the kernel doesn't have a simple and agreed-to term for
-> > an ERR_PTR() thingy.  Perhaps we should invent one.  "err_ptr"?
-> 
-> OK, but you tricked me once again :)
-> You posted your comments/changes while you merged the old version in -mm 
-> already.
+Cheers
+  Trond
+--------------------------------------------------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+VFS: Switch init_mount_tree() to use the new create_mnt_ns() helper
 
-yeah, I never trust people.  You might lose the email or jump on a
-plane and disappear for three weeks, then it all gets forgotten about
-and lost.
+Eliminates some duplicated code...
 
-If the code doesn't have any apparent showstoppers I'll often merge it
-with a note that it isn't finalised.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/namespace.c |   11 ++---------
+ 1 files changed, 2 insertions(+), 9 deletions(-)
+
+
+diff --git a/fs/namespace.c b/fs/namespace.c
+index a7bea8c..4a86b85 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -2222,16 +2222,9 @@ static void __init init_mount_tree(void)
+ 	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
+ 	if (IS_ERR(mnt))
+ 		panic("Can't create rootfs");
+-	ns = kmalloc(sizeof(*ns), GFP_KERNEL);
+-	if (!ns)
++	ns = create_mnt_ns(mnt);
++	if (IS_ERR(ns))
+ 		panic("Can't allocate initial namespace");
+-	atomic_set(&ns->count, 1);
+-	INIT_LIST_HEAD(&ns->list);
+-	init_waitqueue_head(&ns->poll);
+-	ns->event = 0;
+-	list_add(&mnt->mnt_list, &ns->list);
+-	ns->root = mnt;
+-	mnt->mnt_ns = ns;
+ 
+ 	init_task.nsproxy->mnt_ns = ns;
+ 	get_mnt_ns(ns);
+
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
