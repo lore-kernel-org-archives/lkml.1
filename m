@@ -1,96 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZFWNjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbZFWNkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZFWNjF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbZFWNi4
+	id S1759092AbZFWNkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZFWNkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:38:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49695 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756218AbZFWNiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:38:55 -0400
-Date: Tue, 23 Jun 2009 15:38:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Brice Goglin <Brice.Goglin@inria.fr>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-Message-ID: <20090623133851.GB3026@elte.hu>
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <1245763351.19816.1779.camel@twins>
+	Tue, 23 Jun 2009 09:40:22 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:55432 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754657AbZFWNkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:40:21 -0400
+Date: Tue, 23 Jun 2009 14:39:54 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: gregkh@suse.de, bigeasy@linuxtronix.de, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] USB: isp1760: allow platform devices to customize
+	devflags
+Message-ID: <20090623133954.GA11764@fluff.org.uk>
+References: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245763351.19816.1779.camel@twins>
+In-Reply-To: <1245763114-7753-1-git-send-email-vapier@gentoo.org>
+X-Disclaimer: These are my own opinions, so there!
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Tue, 2009-06-23 at 15:14 +0200, Ingo Molnar wrote:
-> > * Brice Goglin <Brice.Goglin@inria.fr> wrote:
-> > 
-> > > Hello,
-> > >
-> > > I am trying to play with perfcounters in current git (actually in
-> > > latest mmotm). I'd like to reproduce what I previously did with
-> > > pfmon, but I couldn't so far.
-> > >
-> > > Something like
-> > >     pfmon --follow-exec 'foobar' -e
-> > > CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_0,CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_1
-> > > -- <shell script>
-> > > gives the number of memory accesses to dram node #0 and #1 for all
-> > > processes whose name matches 'foobar'.
-> > >
-> > > So there are several questions here:
-> > > 1) is it possible to specify counter names like the above or do we have
-> > > to use raw counter numbers? I tried raw numbers from [1] without
-> > > success. How am I supposed to find and specify these raw numbers?
-> > > 2) how do we specify "subevents"?
-> > > 3) is there anything similar to --follow-exec, or --follow-pthreads for
-> > > getting separated outputs for each thread?
-> > >
-> > > I guess there are still a lot of things on the TODOlist but I'd 
-> > > like to understand a bit more where things are going. Sorry I 
-> > > didn't read all the archives about this, there are way too many of 
-> > > them recently :)
-> > 
-> > Yeah, there's indeed still a lot on the TODO list :-)
-> > 
-> > CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE is a Barcelona hardware event, 
-> > so if you know that it maps to raw ID 0x100000e0 then you can always 
-> > extend the events that 'perf' knows about via raw events:
-> > 
-> >  $ perf stat -e cycles -e instructions -e r1000ffe0 ./hackbench 10
-> >  Time: 0.186
-> > 
-> >  Performance counter stats for './hackbench 10':
-> > 
-> >      4381248335  cycles
-> >      1964394846  instructions         #      0.448 IPC
-> >             838  raw 0x1000ffe0
-> > 
-> >     0.215382037  seconds time elapsed.
+On Tue, Jun 23, 2009 at 09:18:34AM -0400, Mike Frysinger wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
 > 
-> Just to clarify, The event code is 1E0h, and Ingo used a FFh unit mask.
-> These are combined using the arch masks below:
+> Platform device support was merged earlier, but support for boards to
+> customize the devflags aspect of the controller was not.  We want this on
+> Blackfin systems to control the bus width, but might as well expose all of
+> the fields while we're at it.
 > 
-> #define K7_EVNTSEL_EVENT_MASK   0x7000000FFULL
-> #define K7_EVNTSEL_UNIT_MASK    0x00000FF00ULL
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  drivers/usb/host/isp1760-hcd.c |    4 ++++
+>  drivers/usb/host/isp1760-hcd.h |    2 ++
+>  drivers/usb/host/isp1760-if.c  |   21 ++++++++++++++++++++-
+>  include/linux/usb/isp1760.h    |   18 ++++++++++++++++++
+>  4 files changed, 44 insertions(+), 1 deletions(-)
+>  create mode 100644 include/linux/usb/isp1760.h
 > 
-> to form the raw event code used: 0x1000ffe0
+> diff --git a/drivers/usb/host/isp1760-hcd.c b/drivers/usb/host/isp1760-hcd.c
+> index 1543846..9600a58 100644
+> --- a/drivers/usb/host/isp1760-hcd.c
+> +++ b/drivers/usb/host/isp1760-hcd.c
+> @@ -386,6 +386,10 @@ static int isp1760_hc_setup(struct usb_hcd *hcd)
+>  		hwmode |= HW_DACK_POL_HIGH;
+>  	if (priv->devflags & ISP1760_FLAG_DREQ_POL_HIGH)
+>  		hwmode |= HW_DREQ_POL_HIGH;
+> +	if (priv->devflags & ISP1760_FLAG_INTR_POL_HIGH)
+> +		hwmode |= HW_INTR_HIGH_ACT;
+> +	if (priv->devflags & ISP1760_FLAG_INTR_EDGE_TRIG)
+> +		hwmode |= HW_INTR_EDGE_TRIG;
 
-Yes. The individual node mappings are 01, 02 .. 80 - ff is 'all 8 
-nodes'.
+better move these to the irq resource flags from the resource array
+in the platfrom device.
+  
+>  	/*
+>  	 * We have to set this first in case we're in 16-bit mode.
+> diff --git a/drivers/usb/host/isp1760-hcd.h b/drivers/usb/host/isp1760-hcd.h
+> index 462f494..6931ef5 100644
+> --- a/drivers/usb/host/isp1760-hcd.h
+> +++ b/drivers/usb/host/isp1760-hcd.h
+> @@ -142,6 +142,8 @@ typedef void (packet_enqueue)(struct usb_hcd *hcd, struct isp1760_qh *qh,
+>  #define ISP1760_FLAG_DACK_POL_HIGH	0x00000010 /* DACK active high */
+>  #define ISP1760_FLAG_DREQ_POL_HIGH	0x00000020 /* DREQ active high */
+>  #define ISP1760_FLAG_ISP1761		0x00000040 /* Chip is ISP1761 */
+> +#define ISP1760_FLAG_INTR_POL_HIGH	0x00000080 /* Interrupt polarity active high */
+> +#define ISP1760_FLAG_INTR_EDGE_TRIG	0x00000100 /* Interrupt edge triggered */
+>  
+>  /* chip memory management */
+>  struct memory_chunk {
+> diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+> index d4feebf..1c9f977 100644
+> --- a/drivers/usb/host/isp1760-if.c
+> +++ b/drivers/usb/host/isp1760-if.c
+> @@ -3,6 +3,7 @@
+>   * Currently there is support for
+>   * - OpenFirmware
+>   * - PCI
+> + * - PDEV (generic platform device centralized driver model)
+>   *
+>   * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
+>   *
+> @@ -11,6 +12,7 @@
+>  #include <linux/usb.h>
+>  #include <linux/io.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/usb/isp1760.h>
+>  
+>  #include "../core/hcd.h"
+>  #include "isp1760-hcd.h"
+> @@ -308,6 +310,8 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+>  	struct resource *mem_res;
+>  	struct resource *irq_res;
+>  	resource_size_t mem_size;
+> +	struct isp1760_platform_data *priv = pdev->dev.platform_data;
+> +	unsigned int devflags = 0;
+>  	unsigned long irqflags = IRQF_SHARED | IRQF_DISABLED;
+>  
+>  	mem_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> @@ -330,8 +334,23 @@ static int __devinit isp1760_plat_probe(struct platform_device *pdev)
+>  	}
+>  	irqflags |= irq_res->flags & IRQF_TRIGGER_MASK;
+>  
+> +	if (priv) {
+> +		if (priv->is_isp1761)
+> +			devflags |= ISP1760_FLAG_ISP1761;
+> +		if (priv->bus_width_16)
+> +			devflags |= ISP1760_FLAG_BUS_WIDTH_16;
+> +		if (priv->port1_otg)
+> +			devflags |= ISP1760_FLAG_OTG_EN;
+> +		if (priv->analog_oc)
+> +			devflags |= ISP1760_FLAG_ANALOG_OC;
+> +		if (priv->dack_polarity_high)
+> +			devflags |= ISP1760_FLAG_DACK_POL_HIGH;
+> +		if (priv->dreq_polarity_high)
+> +			devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
+> +	}
+> +
+>  	hcd = isp1760_register(mem_res->start, mem_size, irq_res->start,
+> -			       irqflags, &pdev->dev, dev_name(&pdev->dev), 0);
+> +			       irqflags, &pdev->dev, dev_name(&pdev->dev), devflags);
+>  	if (IS_ERR(hcd)) {
+>  		pr_warning("isp1760: Failed to register the HCD device\n");
+>  		ret = -ENODEV;
+> diff --git a/include/linux/usb/isp1760.h b/include/linux/usb/isp1760.h
+> new file mode 100644
+> index 0000000..de7de53
+> --- /dev/null
+> +++ b/include/linux/usb/isp1760.h
+> @@ -0,0 +1,18 @@
+> +/*
+> + * board initialization should put one of these into dev->platform_data
+> + * and place the isp1760 onto platform_bus named "isp1760-hcd".
+> + */
+> +
+> +#ifndef __LINUX_USB_ISP1760_H
+> +#define __LINUX_USB_ISP1760_H
+> +
+> +struct isp1760_platform_data {
+> +	unsigned is_isp1761:1;			/* Chip is ISP1761 */
+> +	unsigned bus_width_16:1;		/* 16/32-bit data bus width */
+> +	unsigned port1_otg:1;			/* Port 1 supports OTG */
+> +	unsigned analog_oc:1;			/* Analog overcurrent */
+> +	unsigned dack_polarity_high:1;		/* DACK active high */
+> +	unsigned dreq_polarity_high:1;		/* DREQ active high */
+> +};
+> +
+> +#endif /* __LINUX_USB_ISP1760_H */
+> -- 
+> 1.6.3.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-	Ingo
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
