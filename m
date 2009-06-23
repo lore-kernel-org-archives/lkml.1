@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZFWKOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZFWKPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129AbZFWKOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 06:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZFWKN4
+	id S1758202AbZFWKPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 06:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZFWKPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 06:13:56 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:38776 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbZFWKNz (ORCPT
+	Tue, 23 Jun 2009 06:15:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60381
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752048AbZFWKPB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 06:13:55 -0400
-Date: Tue, 23 Jun 2009 11:13:45 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Russell King <rmk@arm.linux.org.uk>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andy Green <andy@warmcat.com>,
-       Ben Dooks <ben-linux@fluff.org>, Michel Pollet <buserror@gmail.com>
-Message-ID: <20090623101344.GF5422@sirena.org.uk>
-References: <20090623162223.55b9880c.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623162223.55b9880c.sfr@canb.auug.org.au>
-X-Cookie: Your step will soil many countries.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: linux-next: origin tree build failure
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Tue, 23 Jun 2009 06:15:01 -0400
+Date: Tue, 23 Jun 2009 03:15:06 -0700 (PDT)
+Message-Id: <20090623.031506.214747802.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: elendil@planet.nl, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: cmd64x: irq 14: nobody cared - system is dreadfully slow
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906222335.06700.bzolnier@gmail.com>
+References: <200906221938.27574.bzolnier@gmail.com>
+	<200906222101.38586.elendil@planet.nl>
+	<200906222335.06700.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should fix it, I'll submit to the patch system immediately.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Mon, 22 Jun 2009 23:35:06 +0200
 
->From 196ab1662fc5561ca304bb4d08160f085a8f171d Mon Sep 17 00:00:00 2001
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Date: Tue, 23 Jun 2009 11:08:08 +0100
-Subject: [PATCH] [ARM] S3C24XX: Declare device for IIS ports
+> On Monday 22 June 2009 21:01:37 Frans Pop wrote:
+>> yet have the DMA problem. The commit above is from the 2.6.30 development 
+>> cycle, so that fits. I expect you can verify it from the identify data.
+> 
+> I had the same idea initially, unfortunately bit 1 is set for word 53 so this
+> must be something else...
 
-Though the device is not actually used by the drivers on S3C24xx CPUs
-some platforms register it causing build failures.
+So this change should have had zero effect for Frans's case.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- arch/arm/plat-s3c/include/plat/devs.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I double checked everything with test programs going over his
+ID dump and it all checks out.
 
-diff --git a/arch/arm/plat-s3c/include/plat/devs.h b/arch/arm/plat-s3c/include/plat/devs.h
-index b5b9c4d..71a6b0e 100644
---- a/arch/arm/plat-s3c/include/plat/devs.h
-+++ b/arch/arm/plat-s3c/include/plat/devs.h
-@@ -34,6 +34,7 @@ extern struct platform_device s3c_device_lcd;
- extern struct platform_device s3c_device_wdt;
- extern struct platform_device s3c_device_i2c0;
- extern struct platform_device s3c_device_i2c1;
-+extern struct platform_device s3c_device_iis;
- extern struct platform_device s3c_device_rtc;
- extern struct platform_device s3c_device_adc;
- extern struct platform_device s3c_device_sdi;
--- 
-1.6.3.1
+We might need to bisect this one.  But Frans, just for the record
+could you simply test reverting just that hunk?  Thanks!
 
+>> @@ -396,15 +393,14 @@ int ide_id_dma_bug(ide_drive_t *drive)
+>>  
+>>  	if (id[ATA_ID_FIELD_VALID] & 4) {
+>>  		if ((id[ATA_ID_UDMA_MODES] >> 8) &&
+>>  		    (id[ATA_ID_MWDMA_MODES] >> 8))
+>>  			goto err_out;
+>> -	} else if (id[ATA_ID_FIELD_VALID] & 2) {
+>> -		if ((id[ATA_ID_MWDMA_MODES] >> 8) &&
+>> -		    (id[ATA_ID_SWDMA_MODES] >> 8))
+>> -			goto err_out;
+>> -	}
+>> +	} else if ((id[ATA_ID_MWDMA_MODES] >> 8) &&
+>> +		   (id[ATA_ID_SWDMA_MODES] >> 8))
+>> +		goto err_out;
