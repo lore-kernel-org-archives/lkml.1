@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZFWHuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZFWHvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZFWHuN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbZFWHuB
+	id S1756730AbZFWHvW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZFWHvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:50:01 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:55542 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbZFWHuB (ORCPT
+	Tue, 23 Jun 2009 03:51:14 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:63977 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZFWHvO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:50:01 -0400
-Date: Tue, 23 Jun 2009 00:49:39 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: David Howells <dhowells@redhat.com>
-cc: Linux filesystem caching discussion list 
-	<linux-cachefs@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-cachefs] CacheFiles: Readpage failed on backing file
-In-Reply-To: <alpine.DEB.2.01.0906221732120.6439@bogon>
-Message-ID: <alpine.DEB.2.01.0906230041490.6439@bogon>
-References: <alpine.DEB.2.01.0906211926080.6439@bogon> <6950.1245661098@redhat.com> <alpine.DEB.2.01.0906221732120.6439@bogon>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Tue, 23 Jun 2009 03:51:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=aO0Ww8WICtaXV9n8c4utJfeHzqzblffEn1frG6Vscd1kmKHDSTkZ2C1FjBSil+k+37
+         JnFHMkm6wpfr/gLjqUQSrF6Y4iwB/W9Rl3IhrtqsQwggT/eJDJSuRJiVPPJl4DA3+cqn
+         3JxziJAGYyoW5dl3xPzsBpG0L63L3fwTDwyrc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+W4RwpRjaImIPDBPDaIWkeEZ4dr3w66AT5H8l
- mKt15A7/F4CnQVcfNfBp8HAyfybVCKAskuGe9iGG5QrGhPbEXk
- YM6xyey0MgybOkj4pFTew==
+Reply-To: eranian@gmail.com
+In-Reply-To: <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
+References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
+	 <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
+Date: Tue, 23 Jun 2009 09:45:03 +0200
+Message-ID: <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com>
+Subject: Re: perf_counter Atom patch
+From: stephane eranian <eranian@googlemail.com>
+To: "Wang, Yong Y" <yong.y.wang@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Christian Kujau wrote:
-> On Mon, 22 Jun 2009, David Howells wrote:
-> >> [  399.332346]  [<ffffffff810da03a>] ? ext3_truncate+0x26a/0x9e0
-> > 
-> > Can you try the attached patch, please?
-> 
-> The patch helps, I think. Without this patch I was able to reproduce 
-> this very quickly, just running "grep -lr foo /share/nfs" was enough to
-> trigger the backtrace. With this patch, grep is still running (and 
-> utilizing cachefiles) but no warnings so far.
+Hi,
 
-Unfortunately, now the system just freezes when doing *a lot* of read
-operations on the NFS share (grep -r foo again). I don't know if it's 
-related to your patch or something else, debugging is kinda hard at the 
-moment, as it's a Xen DomU (no netconsole; serial redirection magic still 
-not working), it'll take me a while to figure out what's going on here.
+On Tue, Jun 23, 2009 at 5:38 AM, Wang, Yong Y<yong.y.wang@intel.com> wrote:
+>> From: stephane eranian [mailto:eranian@googlemail.com]
+>>
+>> I would like to better understand what makes you think
+>> this is the case.
+>>
+>
+> Because I observed that the output of 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>'
+> is always like below without the quirk.
+>
+>  Performance counter stats for '<cmd>':
+>
+>              0  cycles
+>              0  instructions
+>              0  bus-cycles
+>
+>> Perfmon is working on Atom and there, fixed counters work perfectly:
+>> $ head -6 /proc/cpuinfo
+>> processor     : 0
+>> vendor_id     : GenuineIntel
+>> cpu family    : 6
+>> model         : 28
+>> model name    : Intel(R) Atom(TM) CPU  230   @ 1.60GHz
+>> stepping      : 2
+>> ...
+>
+> My cpuinfo is below and the only difference I can see is 270 vs 230.
+>
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 28
+> model name      : Intel(R) Atom(TM) CPU N270   @ 1.60GHz
+> stepping        : 2
+>
+Unfortunately, I don't have a N270 to compare with your results.
+We need to verify whether or not N270 implements the fixed counters.
+Does it report architected perfmon v3 or v1?
 
-FWIW, I'm able to compile kernels over this very same (readonly) NFS 
-share, only "grep -r" was able to trigger the freeze.
+> The return value of CPUID(0xa) is indeed bogus, too and there is another quirk for that in
+> intel_pmu_init() in arch/x86/kernel/cpu/perf_counter.c
+>
+> x86_pmu.num_counters_fixed      = max((int)edx.split.num_counters_fixed, 3);
+>
+> Is this what you were talking about?
 
-Thanks,
-Christian.
--- 
-BOFH excuse #323:
-
-Your processor has processed too many instructions.  Turn it off immediately, do not type any commands!!
+Not quite, because with the max() you'd have a problem on Intel Core
+Duo/Solo processors
+as they do implement the first generation of architected perfmon and
+that one did not have
+fixed counters. So you'd have to special case family=6 model=14.
