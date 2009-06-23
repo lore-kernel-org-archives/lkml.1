@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZFWRGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288AbZFWRK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbZFWRGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZFWRGG
+	id S1752288AbZFWRK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750979AbZFWRKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:06:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33347 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbZFWRGF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:06:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <E1MJ8u3-00083c-TD@pomaz-ex.szeredi.hu>
-References: <E1MJ8u3-00083c-TD@pomaz-ex.szeredi.hu> <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com> 
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: dhowells@redhat.com, alan@lxorguk.ukuu.org.uk, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk, adilger@sun.com,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] O_NOACC: open without any access
-Date: Tue, 23 Jun 2009 18:05:20 +0100
-Message-ID: <17310.1245776720@redhat.com>
+	Tue, 23 Jun 2009 13:10:14 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:48409 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZFWRKN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:10:13 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 23 Jun 2009 10:04:00 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Avi Kivity <avi@redhat.com>
+cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, kvm@vger.kernel.org,
+       Gregory Haskins <ghaskins@novell.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [patch] eventfd - revised interface and cleanups
+In-Reply-To: <4A410AD1.8080304@redhat.com>
+Message-ID: <alpine.DEB.1.10.0906231000540.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com> <4A410AD1.8080304@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tue, 23 Jun 2009, Avi Kivity wrote:
 
-> So how about the following: provide a new open flag O_FILESYSTEM,
-> meaning it opens the file on the underlying filesystem instead of the
-> device/socket/symlink/etc...
+> On 06/23/2009 07:47 PM, Davide Libenzi wrote:
+> > The following patch changes the eventfd interface to de-couple the eventfd
+> > memory context, from the file pointer instance.
+> > Without such change, there is no clean way to racely free handle the
+> > POLLHUP event sent when the last instance of the file* goes away.
+> > Also, now the internal eventfd APIs are using the eventfd context instead
+> > of the file*.
+> > Another cleanup this patch does, is making AIO select EVENTFD, instead of
+> > adding a bunch of empty function stubs inside eventfd.h.
+> > 
+> > Andrew, this better go via Avi and the KVM tree, since they have patches
+> > that will be based on the new interface.
+> >    
+> 
+> The kvm patches will only be ready for 2.6.32.  Can this go in 2.6.31 now, and
+> we'll meet in 10 weeks?
 
-Yes.  That's what I need.  That's what pioctl() is for: it operates on the
-underlying fs, not any special aspects of the various types of file, and since
-it doesn't do traditional I/O on those files, it doesn't need to, and
-shouldn't, open them (thus avoiding side effects from ->open()), and doesn't
-need R/W access to them.
+Either ways works for me.
+Meanwhile, I'll repost with the revised documentation format.
 
-> Add a new inode->i_filesystem_fop pointer
 
-I'd rather not put it there.  That means the inode struct grows.  Perhaps
-attach it to the inode_operations table or stick an open_noaccess() op in the
-iops table.
+- Davide
 
-> Define O_NOACC as 3.  On open(..., O_FILESYSTEM | O_NOACC) require no
-> privileges on the file.
 
-It must also work with O_NOFOLLOW, which I think your suggestion will.
-
-> AFS would set up i_filesystem_fop with its ->ioctl() function. No
-> special handling needed for revoke()...
-
-Sounds reasonable.
-
-> That would work, no?
-
-I think so.
-
-David
