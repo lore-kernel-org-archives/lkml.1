@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZFWFQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZFWFT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752590AbZFWFQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZFWFQi
+	id S1755568AbZFWFT1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZFWFTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:16:38 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:34612 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751080AbZFWFQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:16:38 -0400
+	Tue, 23 Jun 2009 01:19:20 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:58692 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbZFWFTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 01:19:19 -0400
+X-IronPort-AV: E=Sophos;i="4.42,273,1243814400"; 
+   d="scan'208";a="179305183"
+From: Roland Dreier <rdreier@cisco.com>
+To: Alexander Schmidt <alexs@linux.vnet.ibm.com>
+Cc: Hannes Hering <hannes.hering@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       raisch@de.ibm.com, ewg@lists.openfabrics.org,
+       Hoang-Nam Nguyen <HNGUYEN@linux.vnet.ibm.com>
+Subject: Re: [ewg] Re: [PATCH 2.6.31 try 2] ehca: Tolerate dynamic memory operations and huge pages
+References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+	<20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 22 Jun 2009 22:19:21 -0700
+In-Reply-To: <20090616091021.2acf7302@BL3D1974.boeblingen.de.ibm.com>
+	(Alexander Schmidt's message of "Tue, 16 Jun 2009 09:10:21 +0200")
+Message-ID: <adabpofr0h2.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19008.25905.550815.222975@drongo.ozlabs.ibm.com>
-Date: Tue, 23 Jun 2009 15:16:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: eranian@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Subject: Re: I.2 - Grouping
-In-Reply-To: <20090622115017.GC24366@elte.hu>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	<20090622115017.GC24366@elte.hu>
-X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
+X-OriginalArrivalTime: 23 Jun 2009 05:19:21.0828 (UTC) FILETIME=[2A74EA40:01C9F3C2]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+thanks, applied.
 
-> > 2/ Grouping
-> >
-> > By design, an event can only be part of one group at a time.
+ > -#define HCAD_VERSION "0026"
+ > +#define HCAD_VERSION "0027"
 
-To clarify this statement of Stephane's, a _counter_ can only be in
-one group.  You can have multiple counters counting the same _event_
-and those counters can (obviously) be in different groups.
-
-> > Events in a group are guaranteed to be active on the PMU at the
-> > same time. That means a group cannot have more events than there
-> > are available counters on the PMU. Tools may want to know the
-> > number of counters available in order to group their events
-> > accordingly, such that reliable ratios could be computed. It seems
-> > the only way to know this is by trial and error. This is not
-> > practical.
-> 
-> Groups are there to support heavily constrained PMUs, and for them
-> this is the only way, as there is no simple linear expression for
-> how many counters one can load on the PMU.
-
-That's not the only reason for having groups, or even the main reason
-IMO.  The main reason for having groups is to provide a way to ask the
-scheduler to ensure that two or more counters are always scheduled
-together, so that you can meaningfully do arithmetic operations on the
-counter values that would be sensitive to the statistical noise
-introduced by the scheduling, such as ratios and differences.
-
-In other words, grouping is there because we don't guarantee to have
-all counters scheduled onto the PMU whenever possible.  Heavily
-constrained PMUs increase the need for scheduling, but even if
-counters are completely orthogonal there are only a fixed number of
-them so we still need to schedule counters at some point.
-
-Paul.
+the driver version was already 0027 (since bde2cfaf), so I dropped this chunk.
