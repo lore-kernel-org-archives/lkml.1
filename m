@@ -1,70 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZFWU5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZFWVBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbZFWU5H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZFWU4y
+	id S1755389AbZFWVBb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZFWVBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:56:54 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:53761 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751198AbZFWU4x (ORCPT
+	Tue, 23 Jun 2009 17:01:23 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:36263 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbZFWVBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:56:53 -0400
-Date: Tue, 23 Jun 2009 14:56:53 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-       linux-arch@vger.kernel.org, Kyle McMartin <kyle@mcmartin.ca>,
-       Tony Luck <tony.luck@intel.com>, Russell King <linux@arm.linux.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       Avi Kivity <avi@redhat.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-Message-ID: <20090623205653.GM19977@parisc-linux.org>
-References: <20090622140807.25509.54448.stgit@bob.kio> <20090622143431.GT19977@parisc-linux.org> <4A3FCB68.3030004@goop.org> <20090622183056.GY19977@parisc-linux.org> <1245714008.4017.7.camel@pasglop> <20090623190826.GJ19977@parisc-linux.org> <4A413C66.5010306@goop.org>
+	Tue, 23 Jun 2009 17:01:21 -0400
+Date: Tue, 23 Jun 2009 14:01:10 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Scott James Remnant <scott@ubuntu.com>, linux-kernel@vger.kernel.org,
+       Matt Helsley <matthltc@us.ibm.com>, Sukadev <sukadev@us.ibm.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>, linux-man@vger.kernel.org
+Subject: Re: [PATCH] proc connector: add event for process becoming session
+	leader
+Message-ID: <20090623210110.GB7931@count0.beaverton.ibm.com>
+References: <E1MGUmL-00036A-EE@zelda.netsplit.com> <20090622161909.e5706885.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A413C66.5010306@goop.org>
+In-Reply-To: <20090622161909.e5706885.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 01:34:46PM -0700, Jeremy Fitzhardinge wrote:
-> On 06/23/09 12:08, Matthew Wilcox wrote:
-> > I think simply materialising them, either the way the OF code does,
-> > or the way the IOV code does is the best route forwards.
-> >   
+On Mon, Jun 22, 2009 at 04:19:09PM -0700, Andrew Morton wrote:
+> Let's cc the Process Events developer..
 > 
-> On reflection, I think this will work.  We have a Xen pci passthrough
-> driver which gets told about the passed-through devices via xenbus, and
-> does the appropriate setup.  At first glance, there doesn't seem to be
-> any problem with that code just explicitly instantiate the devices at
-> the PCI level in the same way pci_scan_device does (ie,
-> alloc_pci_device, initalize the dev struct, pci_setup_device).
-
-Even easier actually, pci_scan_single_device() should do everything you want.
-
-> Is that what you mean?
+> On Mon, 15 Jun 2009 13:03:08 +0100
+> Scott James Remnant <scott@ubuntu.com> wrote:
 > 
-> IanC has looked at that code more closely, so perhaps he can confirm
-> that this will work on our side.
+> > The act of a process becoming a session leader is a useful signal to a
+> > supervising init daemon such as Upstart.
+> > 
+> > While a daemon will normally do this as part of the process of becoming
+> > a daemon, it is rare for its children to do so.  When the children do,
+> > it is nearly always a sign that the child should be considered detached
+> > from the parent and not supervised along with it.
+> > 
+> > The poster-child example is OpenSSH; the per-login children call setsid()
+> > so that they may control the pty connected to them.  If the primary daemon
+> > dies or is restarted, we do not want to consider the per-login children
+> > and want to respawn the primary daemon without killing the children.
+> > 
+> > This patch adds a new PROC_SID_EVENT and associated structure to the
+> > proc_event event_data union, it arranges for this to be emitted when
+> > the special PIDTYPE_SID pid is set.
+> > 
 > 
->     J
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> hm, well, I don't have much useful to say about the overall idea, but
+> it seems to slot into the existing code simply enough.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+No comment on the usefulness of the event here. The code is consistent
+with the process events interface though and I see no problems with
+the code.
+
+Acked-by: Matt Helsley <matthltc@us.ibm.com>
+
+> 
+> > ---
+> >  drivers/connector/cn_proc.c |   25 +++++++++++++++++++++++++
+> >  include/linux/cn_proc.h     |   10 ++++++++++
+> >  kernel/exit.c               |    4 +++-
+> >  3 files changed, 38 insertions(+), 1 deletions(-)
+> 
+> We seem to have forgotten to document this entire interface, so I can't
+> ding you for forgetting to update the forgotten documentation.
+
+I've written down the essentials for Documentation/. I've included it as
+a patch including the SID info and following my reply to the container issue
+below.
+
+Cc'ing manpages folks in case they'd like to review comment on missing
+information in the patch.
+
+> > diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
+> > index c5afc98..7d48cd9 100644
+> > --- a/drivers/connector/cn_proc.c
+> > +++ b/drivers/connector/cn_proc.c
+> > @@ -139,6 +139,31 @@ void proc_id_connector(struct task_struct *task, int which_id)
+> >  	cn_netlink_send(msg, CN_IDX_PROC, GFP_KERNEL);
+> >  }
+> >  
+> > +void proc_sid_connector(struct task_struct *task)
+> 
+> It would be nice to have a nice comment explaining what this function
+> does.  Ditto all the others in there, really.
+> 
+> > +{
+> > +	struct cn_msg *msg;
+> > +	struct proc_event *ev;
+> > +	struct timespec ts;
+> > +	__u8 buffer[CN_PROC_MSG_SIZE];
+> > +
+> > +	if (atomic_read(&proc_event_num_listeners) < 1)
+> > +		return;
+> > +
+> > +	msg = (struct cn_msg*)buffer;
+> > +	ev = (struct proc_event*)msg->data;
+> 
+> Please pass all patches through scripts/checkpatch.pl.
+> 
+> > +	get_seq(&msg->seq, &ev->cpu);
+> > +	ktime_get_ts(&ts); /* get high res monotonic timestamp */
+> > +	put_unaligned(timespec_to_ns(&ts), (__u64 *)&ev->timestamp_ns);
+> > +	ev->what = PROC_EVENT_SID;
+> > +	ev->event_data.sid.process_pid = task->pid;
+> 
+> This is a bit of a worry.  In a containerised environment, pids are not
+> unique.  Now what do we do?
+
+An excellent point. It's broadcast via a netlink multicast address. That
+means we'd have pids and listeners from arbitrary combinations of pid
+namespaces.
+
+One obvious but poor solution is to only send the pid of the initial
+pid namespace. Then it's not ambiguous what an event refers to. However
+it also means that the events would only be useful to tasks running
+in the initial pid namespace -- not a good solution given Scott's example
+and our desire to run things like sshd in separate pid namespaces.
+
+Alternatively, we may be able to split up the connector such that the
+listeners only see events from their own pid namespace. I'm not
+sure that netlink and connectors can enable this change though.
+
+Cc'ing pidns and containers folks
+--
+
+From: Matt Helsley <matthltc@us.ibm.com>
+Subject: [PATCH] Add documentation for the process events connector
+
+    Document the process events connector user/kernel interface.
+    
+    Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+    Cc: Andrew Morton <akpm@linux-foundation.org>
+    Cc: linux-kernel@vger.kernel.org
+    Cc: Scott James Remnant <scott@ubuntu.com>a
+    Cc: Michael Kerrisk <mtk.manpages@gmail.com>
+    Cc: linux-man@vger.kernel.org
+
+diff --git a/Documentation/connector/process-events.txt b/Documentation/connector/process-events.txt
+new file mode 100644
+index 0000000..3760b8c
+--- /dev/null
++++ b/Documentation/connector/process-events.txt
+@@ -0,0 +1,173 @@
++OVERVIEW
++
++The process events connector is a kernel-userspace multicast socket
++ that reports process events like fork, exec, id change (real and effective
++user and group ids), and exit events to userspace. Applications that may 
++find these events useful include auditing, system activity monitoring 
++(e.g. top), security, and likely many more.
++
++	The low-level details describing the permissions needed and how to
++read messages from the connector are best described in
++Documentation/connector/connector.txt and netlink(3). This document describes
++messages sent back and forth between the kernel and userspace listeners using
++the connector message format.
++
++GETTING STARTED
++
++	The necessary definitions of the connector address and userspace/kernel
++data can be found by including:
++
++	#include <linux/connector.h>
++	#include <linux/cn_proc.h>
++
++	To listen for process events a task must open a netlink socket and
++bind to a special address:
++
++struct sockaddr_nl cn_addr = {
++	.nl_family = AF_NETLINK,
++	.nl_groups = CN_IDX_PROC,
++	.nl_pid = getpid()
++};
++
++Once bound the listener must inform the kernel that at least one task is
++interested in receiving multicast process events on this socket. This requires
++sending a message with PROC_CN_MCAST_LISTEN in it's payload:
++
++union {
++	struct cn_msg listen_msg = {
++		.id = {
++			.idx = CN_IDX_PROC,
++			.val = CN_VAL_PROC,
++		},
++		.seq = X,
++		.ack = Y,
++		.len = sizeof(enum proc_cn_mcast_op)
++	};
++	char bytes[sizeof(struct cn_msg) + sizeof(enum proc_cn_mcast_op)];
++} buf;
++...
++*((enum proc_cn_mcast_op*)buf.listen_msg.data) = PROC_CN_MCAST_LISTEN;
++
++After sending this message to the kernel the application should expect
++an acknowledgement message (more on ack messages below). Similar to the
++PROC_CN_MCAST_LISTEN message, userspace may send a message with
++PROC_CN_MCAST_IGNORE as its sole payload. Because it is bound to a multicast
++address the IGNORE "control" operation does not necessarily prevent process
++events from becoming available on the socket. Only the last application to
++issue IGNORE ensures that no more process events will be delivered.
++
++Packets received from the kernel are either an acknowledgement of a control
++message or a proper event. Both are described by struct proc_event:
++
++struct proc_event {
++        enum what {
++                PROC_EVENT_NONE = 0x00000000,
++                PROC_EVENT_FORK = 0x00000001,
++                PROC_EVENT_EXEC = 0x00000002,
++                PROC_EVENT_UID  = 0x00000004,
++                PROC_EVENT_GID  = 0x00000040,
++                /* "next" should be 0x00000400 */
++                /* "last" is the last process event: exit */
++                PROC_EVENT_EXIT = 0x80000000
++        } what;
++        __u32 cpu;
++        __u64 __attribute__((aligned(8))) timestamp_ns;
++                /* Number of nano seconds since system boot */
++        union { /* must be last field of proc_event struct */
++                struct {
++                        __u32 err;
++                } ack;
++
++                struct fork_proc_event {
++                        pid_t parent_pid;
++                        pid_t parent_tgid;
++                        pid_t child_pid;
++                        pid_t child_tgid;
++                } fork;
++
++                struct exec_proc_event {
++                        pid_t process_pid;
++                        pid_t process_tgid;
++                } exec;
++
++                struct id_proc_event {
++                        pid_t process_pid;
++                        pid_t process_tgid;
++                        union {
++                                __u32 ruid; /* task uid */
++                                __u32 rgid; /* task gid */
++                        } r;
++                        union {
++                                __u32 euid;
++                                __u32 egid;
++                        } e;
++                } id;
++		struct sid_proc_event {
++			pid_t process_pid;
++			pid_t process_tgid;
++		} sid;
++                struct exit_proc_event {
++                        pid_t process_pid;
++                        pid_t process_tgid;
++                        __u32 exit_code, exit_signal;
++                } exit;
++        } event_data;
++};
++
++All events have valid what, cpu, and timestamp_ns fields. These record what
++the event is, which cpu reported it, and a monotonically-increasing timestamp
++in nanosecond units. Note that while the timestamp is reported in nanoseconds
++the actual time resolution may vary depending on the kernel's clock source(s).
++The cpu, timestamp, and sequence number from the netlink message wrapper
++provide a best-effort means of reassembling events from multiple CPUs
++"in order". It is best-effort because strictly speaking the parallel nature of 
++execution between CPUs precludes offering the strongest ordering guarantees.
++
++Another wrinkle to consider: pids, tgids, session ids, exist in pid namespaces
++while the netlink sockets are part of a network namespace. If these namespaces
++do not coincide then the pids, tgids, and session ids may not exist or may
++refer to the wrong tasks.
++
++TYPES OF PACKETS
++
++There are several types of messages, each with a corresponding .what value:
++	Acknowledgement		PROC_EVENT_NONE
++	Fork			PROC_EVENT_FORK
++	Exec			PROC_EVENT_EXEC
++	UID Change		PROC_EVENT_UID
++	GID Change		PROC_EVENT_GID
++	Session ID Change	PROC_EVENT_SID
++	Exit			PROC_EVENT_EXIT
++
++(Note that while these values are encoded as bits (1 << n) the
++kernel does not report multiple events in the same message.) Each event also
++has a corresponding struct in the event_data union which describes the data
++that is valid for the event.
++
++ACKNOWLEDGEMENT
++
++Acknowledgement messages contain an err field in their
++event_data. When non-zero the err field indicates that the control operation 
++did not succeed. The value is suitable for, but not stored in, errno. For
++example an illegal or unrecognized control operation returns an acknowledgement
++message with event_data.ack.err == EINVAL.
++
++All other messages include at least one pid and a corresponding tgid describing
++which task(s) the event relates to. As with normal Linux convention, pid == tid.
++Each task described in the event has a pid and tgid pair.
++
++FORK
++
++Fork messages are emitted when a task calls the fork() or clone() system calls. 
++They contain the pid and tgid of the parent and child tasks.
++
++EXEC messages indicate via pid and tgid which task exec'd.
++
++UID messages indicate that the task's real and/or effective user id has changed.
++
++GID messages indicate that the task's real and/or effective group id has changed.
++
++SID messages indicate that the task has started a new session.
++
++EXIT messages indicate that the task has exitted and provide the exit code and
++exit signal.
