@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZFWLd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZFWLf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbZFWLd3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZFWLdU
+	id S1757270AbZFWLf3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZFWLfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:33:20 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33894 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZFWLdT (ORCPT
+	Tue, 23 Jun 2009 07:35:21 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:61820 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbZFWLfU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:33:19 -0400
-Message-ID: <4A40BD73.8050902@novell.com>
-Date: Tue, 23 Jun 2009 07:33:07 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 23 Jun 2009 07:35:20 -0400
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [KVM PATCH v8 3/3] KVM: add iosignalfd support
-References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090623085633.GA16294@redhat.com>
-In-Reply-To: <20090623085633.GA16294@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3B31A81BB5CE4856BB7BF978"
+In-Reply-To: <4A3F7440.3030603@ahsoftware.de>
+References: <4A38F229.70504@ahsoftware.de> <4A3AE162.7040407@gmail.com> 
+	<ac3eb2510906201220v7fc1d51ve4a9937a3d73d3d4@mail.gmail.com> 
+	<4A3F7440.3030603@ahsoftware.de>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 23 Jun 2009 13:35:07 +0200
+Message-ID: <ac3eb2510906230435r6489ddafqb15214f190d4eae8@mail.gmail.com>
+Subject: Re: asynchronous calls an the lack of --wait-for-completion options 
+	(e.g. modprobe, losetup, cryptsetup)
+To: Alexander Holler <holler@ahsoftware.de>
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       Greg Kroah-Hartmann <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3B31A81BB5CE4856BB7BF978
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 22, 2009 at 14:08, Alexander Holler<holler@ahsoftware.de> wrote:
+> On 20.06.2009 21:20, Kay Sievers wrote:
 
-Michael S. Tsirkin wrote:
-> On Thu, Jun 18, 2009 at 08:30:46PM -0400, Gregory Haskins wrote:
->  =20
->> +static int
->> +iosignalfd_group_in_range(struct kvm_io_device *this, gpa_t addr, int=
- len,
->> +			  int is_write)
->> +{
->> +	struct _iosignalfd_group *p =3D to_group(this);
->> +
->> +	return ((addr >=3D p->addr && (addr < p->addr + p->length)));
->> +}
->>    =20
->
-> I think I see a problem here. For virtio, we do not necessarily want al=
-l
-> virtqueues for a device to live in kernel: there might be control
-> virtqueues that we want to leave in userspace. Since this claims all
-> writes to a specific address, the signal never makes it to userspace.
->
->  =20
-You can use a wildcard.  Would that work?
+> Anyway, I still think, that the creation of the device-node is (seen from a
+> user-point) part of the module-initialization or part of the operation of
+> the userland-tool (like modprobe, losetup or cryptsetup). So in my point of
+> view, they should at least offer an option to wait until udev finished that
+> operation and should not rely on the user to call udevadm.
 
+That would be all solved properly by "devtmpfs":
+   http://lkml.org/lkml/2009/4/30/182
 
---------------enig3B31A81BB5CE4856BB7BF978
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+You might want to talk to the people who are delaying its adoption.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpAvXMACgkQlOSOBdgZUxkCegCcCwx6ZrwhlhktUjqHwdniWlq/
-3MsAn0sg5TvJ5/yMZqzwtiGJAGqnDzTm
-=aGJe
------END PGP SIGNATURE-----
-
---------------enig3B31A81BB5CE4856BB7BF978--
+Thanks,
+Kay
