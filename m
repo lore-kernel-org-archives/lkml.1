@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbZFWOwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759712AbZFWOzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759825AbZFWOwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 10:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757183AbZFWOwK
+	id S1759712AbZFWOzf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 10:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbZFWOz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 10:52:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34048 "EHLO mx3.mail.elte.hu"
+	Tue, 23 Jun 2009 10:55:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34802 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754296AbZFWOwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 10:52:10 -0400
-Date: Tue, 23 Jun 2009 16:51:27 +0200
+	id S1754225AbZFWOz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 10:55:28 -0400
+Date: Tue, 23 Jun 2009 16:55:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Brice Goglin <Brice.Goglin@inria.fr>, Mike Galbraith <efault@gmx.de>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-Message-ID: <20090623145127.GB13415@elte.hu>
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <4A40E4E2.3090002@inria.fr>
+To: eranian@gmail.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Rob Fowler <rjf@renci.org>,
+       Philip Mucci <mucci@eecs.utk.edu>, LKML <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Paul Mackerras <paulus@samba.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: [perfmon2] IV.3 - AMD IBS
+Message-ID: <20090623145508.GC13415@elte.hu>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622120018.GR24366@elte.hu> <4A3F9062.6000303@renci.org> <1245737987.19816.1477.camel@twins> <7c86c4470906230119g6df76304xbec11dc682176b09@mail.gmail.com> <20090623140538.GA10451@elte.hu> <7c86c4470906230725t2d86cd2eybabeba454f3aff81@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A40E4E2.3090002@inria.fr>
+In-Reply-To: <7c86c4470906230725t2d86cd2eybabeba454f3aff81@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,62 +39,48 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Brice Goglin <Brice.Goglin@inria.fr> wrote:
+* stephane eranian <eranian@googlemail.com> wrote:
 
-> Ingo Molnar wrote:
-> > You can also do a profile with such events:
+> On Tue, Jun 23, 2009 at 4:05 PM, Ingo Molnar<mingo@elte.hu> wrote:
 > >
-> >   perf record -f -e r1000ffe0 ./hackbench 10
+> > * stephane eranian <eranian@googlemail.com> wrote:
 > >
-> > and look at it via 'perf report'.
-> >   
+> >> > The most natural way to support IBS would be to have a special
+> >> > sampling cycle counter and use that as group lead and add non
+> >> > sampling siblings to that group to get individual elements.
+> >> >
+> >> As discussed in my message, I think the way to support IBS is to
+> >> create two pseudo-events (like your perf_hw_event_ids), one for
+> >> fetch and one for op (because they could be measured
+> >> simultaneously). The sample_period field would be used to express
+> >> the IBS*CTL maxcnt, subject to the verification that the bottom 4
+> >> bits must be 0. And then, you add two new sampling formats
+> >> PERF_SAMPLE_IBSFETCH, PERF_SAMPLE_IBSOP. Those would only work
+> >> with IBS pseudo events. Once you have the randomize option in
+> >> perf_counter_attr, you could even enable IBSFETCH randomization.
+> >
+> > I'd suggest to start smaller, and first express the 'precise' 
+> > nature of IBS transparently, by simply mapping it to one of the 
+> > generic events. (cycles and instructions both appears to be 
+> > possible)
+>
+> IBS is precise by nature.
+
+(yes. Did you understand my comments above as saying the opposite?)
+
+> [...] It does not work like PEBS. It tags an instruction and then 
+> collects info about it. When it retires, IBS freezes and triggers 
+> an interrupt like a regular counter interrupt. Except this time, 
+> you don't care about the interrupted IP, you use the instruction 
+> address in the IBS data register, it is guaranteed to correspond 
+> to the tagged instruction.
 > 
-> I am not sure what the perf.data profile file contains but 'perf 
-> report' only shows percentages. Is there a way to get a 'perf 
-> stat'-like output from 'perf report'? Or maybe just have a -f 
-> option in 'perf stat' to send the output into a file (with the PID 
-> in the name).
+> The sampling period expresses the delay before picking the 
+> instruction to tag. And as I said before, it is only 20 bits and 
+> the bottom 4 bits must be zero (as they cannot be encoded).
 
-It's not yet possible but it's a very good feature request.
-
-> By the way, there's a typo in the description in 
-> tools/perf/Documentation/perf-report.txt, you want s/via perf 
-> report/via perf record/
-
-thanks, fixed and pushed out. You can generally find the latest 
-'perf' stuff at:
-
-  http://people.redhat.com/mingo/tip.git/README
-
-> > [ Note, there's no need to specify any --follow-* flags as that is
-> >   implicit in 'perf'. (and you'll probably also notice that perf
-> >   stat is a lot faster at following fast-forking or
-> >   context-switching workloads than is pfmon, because it's not ptrace
-> >   based.) ]
-> 
-> What about threads? I didn't find any way to get per-thread 
-> counters.
-> 
-> Ideally, I'd like to be able to see no perf-related output on 
-> stdout/stderr at runtime, and later have a look at per-thread 
-> counters like 'perf stat' does at runtime.
-
-That's not possible yet either, but makes a lot of sense.
-
-How many threads does your workload typically run, and how do you 
-get their stats displayed?
-
-Per thread info is currently available in the profile output:
-
-   perf report --sort comm,pid,symbol
-
-But it would be nice to either extend perf report with a --stat 
-option:
-
-   perf report --stat
-
-or to extend perf stat to take an input file via -i:
-
-   perf stat -i perf.data
+The 20 bits delay is in cycles, right? So this in itself still lends 
+itself to be transparently provided as a PERF_COUNT_HW_CPU_CYCLES 
+counter.
 
 	Ingo
