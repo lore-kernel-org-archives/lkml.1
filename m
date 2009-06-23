@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZFWTsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756629AbZFWTtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbZFWTsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZFWTsa
+	id S1756629AbZFWTtj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZFWTtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:48:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50197 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754099AbZFWTs3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:48:29 -0400
-Date: Tue, 23 Jun 2009 12:48:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
-       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-Message-Id: <20090623124807.eb9042a5.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 15:49:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49427 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752126AbZFWTtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 15:49:32 -0400
+Date: Tue, 23 Jun 2009 21:49:16 +0200
+From: Miroslav Lichvar <mlichvar@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] ntp updates for 2.6.31
+Message-ID: <20090623194916.GA18657@localhost>
+References: <20090616125248.GA23541@localhost> <1245253102.6067.94.camel@jstultz-laptop> <20090617172325.GA32332@localhost> <20090617172601.GA3493@elte.hu> <20090618121320.GA13025@localhost> <20090623095745.GC30634@elte.hu> <20090623131628.GA11827@localhost> <20090623133625.GA3026@elte.hu> <20090623143323.GA13932@localhost> <20090623191838.GB14852@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623191838.GB14852@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 12:25:36 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> The following patch changes the eventfd interface to de-couple the eventfd 
-> memory context, from the file pointer instance.
-> Without such change, there is no clean way to racely free handle the 
-> POLLHUP event sent when the last instance of the file* goes away.
-> Also, now the internal eventfd APIs are using the eventfd context instead 
-> of the file*.
-> Another cleanup this patch does, is making AIO select EVENTFD, instead of 
-> adding a bunch of empty function stubs inside eventfd.h in order to 
-> handle the (AIO && !EVENTFD) case.
+On Tue, Jun 23, 2009 at 09:18:38PM +0200, Ingo Molnar wrote:
 > 
+> * Miroslav Lichvar <mlichvar@redhat.com> wrote:
+> 
+> > > > I'm not very familiar with the PPS API, is there something 
+> > > > wrong with it?
+> > > 
+> > > The PPS patches i've seen just export IRQ timestamps to 
+> > > user-space.
+> > > 
+> > > That is not very robust in my opinion when it comes to do time 
+> > > approximations - to get quick, low-latency action and precise 
+> > > measurements it's best to keep the critical path as short as 
+> > > possible, and within a single source code repository: i.e. 
+> > > within the kernel.
+> > 
+> > That's what kernel PPS discipline does, it will be probably 
+> > included later. Its performance is an order or two better than the 
+> > PLL/FLL discipline.
+> 
+> Is there some kernel patch i can look at?
 
-If we really want to squeeze this into 2.6.31 then it would be helpful
-to have justification in the changelog, please.  I see that some KVM
-feature needs it, but what and why and why now, etc?
+It's in the old PPSkit patches for 2.4 kernels, function hardpps().
 
-The patch conflicts with similar changes int he KVM tree, but that'll
-just ruin sfr's life for a day.
-
-
-Your patch has:
-
-
-> ...
->  static int eventfd_release(struct inode *inode, struct file *file)
->  {
-> -	kfree(file->private_data);
-> +	struct eventfd_ctx *ctx = file->private_data;
-> +
-> +	wake_up_poll(&ctx->wqh, POLLHUP);
-> +	eventfd_ctx_put(ctx);
->  	return 0;
->  }
-
-but the patch in linux-next has
-
-static int eventfd_release(struct inode *inode, struct file *file)
-{
-	struct eventfd_ctx *ctx = file->private_data;
-
-	/*
-	 * No need to hold the lock here, since we are on the file cleanup
-	 * path and the ones still attached to the wait queue will be
-	 * serialized by wake_up_locked_poll().
-	 */
-	wake_up_locked_poll(&ctx->wqh, POLLHUP);
-	kfree(ctx);
-	return 0;
-}
-
-which looks quite different (and has a nice comment!)
-
-What's going on here?
+-- 
+Miroslav Lichvar
