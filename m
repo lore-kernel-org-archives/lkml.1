@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbZFWJQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZFWJUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbZFWJQX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 05:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZFWJQQ
+	id S1753104AbZFWJUK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 05:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbZFWJT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 05:16:16 -0400
-Received: from mga01.intel.com ([192.55.52.88]:28253 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbZFWJQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 05:16:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
-   d="scan'208";a="701709111"
-Date: Tue, 23 Jun 2009 17:15:25 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Len Brown <lenb@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/8] SFI: core support
-Message-ID: <20090623171525.79be96c5@feng-desktop>
-In-Reply-To: <20090623090347.GA21616@elte.hu>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com>
-	<8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com>
-	<20090623075643.GC6397@elte.hu>
-	<20090623163246.1cdf755e@feng-desktop>
-	<20090623090347.GA21616@elte.hu>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 05:19:59 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:40994 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbZFWJT6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 05:19:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=FnM0Vd+EoNCoWjQBhaw6s+fMTkfdyOdjYHyRbcdIQS7EQirDstiUMHUOohp0jNOvN0
+         yoLcvUOJuPNRSKd2axPSNSbFigZXzQJlTbGBlDMgEsevp1Y96Fp3hSA+WA/8lgHJOtVb
+         Xzw8SFhKPjnDSs3tKZHzHnBh+EqziZXUhk2XE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090623085321.GC23534@ywang-moblin2.bj.intel.com>
+References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
+	 <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
+	 <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com>
+	 <20090623075959.GA23534@ywang-moblin2.bj.intel.com>
+	 <7c86c4470906230127g4f574b61p24f109c7a94c6e39@mail.gmail.com>
+	 <7c86c4470906230140p35ce043fw24e0c20651568f31@mail.gmail.com>
+	 <20090623085321.GC23534@ywang-moblin2.bj.intel.com>
+Date: Tue, 23 Jun 2009 11:19:59 +0200
+Message-ID: <7c86c4470906230219o23e1b85u7111cc0f527ab906@mail.gmail.com>
+Subject: Re: perf_counter Atom patch
+From: stephane eranian <eranian@googlemail.com>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: "Wang, Yong Y" <yong.y.wang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 17:03:47 +0800
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Feng Tang <feng.tang@intel.com> wrote:
-> 
-> > On Tue, 23 Jun 2009 15:56:43 +0800
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > 
-> > > >
-> > > > +#ifdef CONFIG_X86_LOCAL_APIC
-> > > > +static u64 sfi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
-> > > > +#endif
-> > > 
-> > > if SFI adds a 'depends on X86_LOCAL_APIC' the ugly #ifdef can be
-> > > dropped.
-> > 
-> > When Len designed the SFI spec, he considered the possibility of 
-> > being used by multiple archs, so we chose not to add a x86 
-> > dependency, though adding these
-> > #ifdef does make code ugly :P
-> 
-> But the file i commented on is arch/x86/kernel/sfi.c, not 
-> drivers/sfi/.
-
-Now got your point, then we can think about adding a SFI_X86 Kconfig 
-option specifically for x86 platform, which has dependency over the
-LAPIC/IO_APIC
-
-Thanks,
-Feng
-
-> 
-> Those #ifdefs arent _that_ bad (and are used elsewhere in x86 code 
-> too) - but generally some effort should be spent in new code on 
-> trying to eliminate them.
-> 
-> > > In general, nice stuff - basically SFI is cleanly implemented 
-> > > ACPI tables without any of the run-code-in-acpi-tables 
-> > > complications, right?
-> > 
-> > Thanks for the comments, I really got inspired :). The expectation 
-> > for SFI is to be able to run cleanly with CONFIG_ACPI=n, and it 
-> > works fine on some intel platform.
-> 
-> Ok, cool!
-> 
-> 	Ingo
+On Tue, Jun 23, 2009 at 10:53 AM, Yong Wang<yong.y.wang@linux.intel.com> wrote:
+> On Tue, Jun 23, 2009 at 10:40:45AM +0200, stephane eranian wrote:
+>> Yong,
+>>
+>> On Tue, Jun 23, 2009 at 10:27 AM, stephane
+>> eranian<eranian@googlemail.com> wrote:
+>> > Hi,
+>> >
+>> > On Tue, Jun 23, 2009 at 9:59 AM, Yong Wang<yong.y.wang@linux.intel.com> wrote:
+>> >> On Tue, Jun 23, 2009 at 09:45:03AM +0200, stephane eranian wrote:
+>> >>>
+>> >>> Unfortunately, I don't have a N270 to compare with your results.
+>> >>> We need to verify whether or not N270 implements the fixed counters.
+>> >>> Does it report architected perfmon v3 or v1?
+>> >>>
+>> >>
+>> >> All Atom processors report perfmon v3 as specified in SDM. N270 is no
+>> >> exception.
+>> >>
+>> > V3 does not set a minimal number of fixed counters, could be zero. But
+>> > that seems
+>> > odd. Let me ask around.
+>> >
+>> Second thought on this:
+>>        x86_pmu.num_counters_fixed      =
+>> max((int)edx.split.num_counters_fixed, 3);
+>>
+>>         rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
+>>
+>>
+>> Forcing num_counter_fixed is not enough, you need to make sure they are actually
+>> activated in GLOBAL_CTRL, i.e., make sure bits 32-34 are set in intel_ctrl.
+>> Depending on which machine you're on, the power on value for GLOBAL_CTRL
+>> changes. The correct value for it should be that ONLY generic counters are on
+>> by default.
+>>
+>
+> Oh, this might be why fixed counter do not work on my Atom box. I will
+> look into it. BTW, why should ONLY generic counters be on by default?
+>
+Glad you asked.
+I think, it's for backward compatibility with processors such as Core Duo with
+architected perfmon v1 which did not have the GLOBAL_* controls.
