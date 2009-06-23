@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760292AbZFWXN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbZFWXQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760292AbZFWXN3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbZFWXNR
+	id S1760255AbZFWXQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZFWXQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:13:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:46488 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760015AbZFWXNP (ORCPT
+	Tue, 23 Jun 2009 19:16:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52278
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751664AbZFWXQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:13:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:organization:user-agent
-         :mime-version:to:cc:subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=e54WnZoydYkug8S2rY1NNbKUZzdcv4ILUCUI0U/cMpaK+5vQPmOe83Q+zue15uE3e1
-         WFszUsrss25JzOdzWL1VffFqyREdJe2guVrTqo/40L27BtLa7olpzXgiJ5jZ/vEF5IsG
-         DV3WU/6GgEh+Q7+l/eQvrIUG6KPIWx3EcbkJE=
-Message-ID: <4A41618D.4020900@laptop.org>
-Date: Tue, 23 Jun 2009 19:13:17 -0400
-From: "Richard A. Smith" <richard@laptop.org>
-Reply-To: richard@laptop.org
-Organization: One Laptop per Child
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
-       dsaxena@laptop.org
-Subject: Re: [PATCH 3/5] power_supply: add a TRICKLE_CHARGING status, and
- add it to the olpc driver
-References: <20090622234607.11f61bec@mycelium.queued.net> <20090623103717.GH5422@sirena.org.uk> <4A412CC0.6050500@laptop.org> <20090623224434.GB16188@opensource.wolfsonmicro.com>
-In-Reply-To: <20090623224434.GB16188@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 23 Jun 2009 19:16:07 -0400
+Date: Tue, 23 Jun 2009 16:16:11 -0700 (PDT)
+Message-Id: <20090623.161611.139291300.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       petkovbb@gmail.com, htejun@gmail.com
+Subject: Re: [patch 2/6] ide: fix ide_kill_rq() for special
+ ide-{floppy,tape} driver requests
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906232326.06830.bzolnier@gmail.com>
+References: <200906232326.06830.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Tue, 23 Jun 2009 23:26:06 +0200
 
-> The problem here is that anything which is already looking at these
-> statuses is going to have to be able to cope with the information too.
-> In the OLPC case it probably doesn't matter so much if they get
-> confused since this is an unusual case but in the embedded case it's
-> much more normal (and more likely to happen while a user interacts with
-> the device since that tends to burn power which is a problem if you're
-> charging off USB).
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: fix ide_kill_rq() for special ide-{floppy,tape} driver requests
+> 
+> Such requests should be failed with -EIO (like all other requests
+> in this function) instead of being completed successfully.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> Untested, you may try pinging Borislav and/or Tejun about possible
+> testing if you would like to verify the patch before applying.
 
-> A separate file with the detailed information would sidestep this since
-> it's a new interface.  I'm not strongly opposed to adding the new states
-> but I do think it's worth considering other ways of doing this.
+This must be tested in some way.  I can see this potentially
+breaking something.
 
-I've got no problems with a new interface.  But, i'm also not the person 
-writing the driver. :)
+Especially this is true because ide_complete_rq() does it's
+"complete whole request right now" logic for error <= 0.
 
-I can change my script to test for the presence of this new interface 
-and use that if it exists rather easily.  I already have to handle a few 
-cases like that where Andres changed things when I wasn't watching.
+Borislov/Tejun, can either of you test this code path with this
+change applied?  I'd very much appreciate it.
 
-Suggestions on what it would look like?
+Thanks!
 
--- 
-Richard Smith  <richard@laptop.org>
-One Laptop Per Child
+>  drivers/ide/ide-io.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: b/drivers/ide/ide-io.c
+> ===================================================================
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -152,7 +152,7 @@ void ide_kill_rq(ide_drive_t *drive, str
+>  
+>  	if ((media == ide_floppy || media == ide_tape) && drv_req) {
+>  		rq->errors = 0;
+> -		ide_complete_rq(drive, 0, blk_rq_bytes(rq));
+> +		ide_complete_rq(drive, -EIO, blk_rq_bytes(rq));
+>  	} else {
+>  		if (media == ide_tape)
+>  			rq->errors = IDE_DRV_ERROR_GENERAL;
