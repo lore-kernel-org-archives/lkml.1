@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbZFWXEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760105AbZFWXLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759927AbZFWXEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZFWXEh
+	id S1760105AbZFWXLx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZFWXLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:04:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57856
+	Tue, 23 Jun 2009 19:11:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42460
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755247AbZFWXEf (ORCPT
+	by vger.kernel.org with ESMTP id S1752277AbZFWXLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:04:35 -0400
-Date: Tue, 23 Jun 2009 16:04:40 -0700 (PDT)
-Message-Id: <20090623.160440.243068553.davem@davemloft.net>
+	Tue, 23 Jun 2009 19:11:42 -0400
+Date: Tue, 23 Jun 2009 16:11:47 -0700 (PDT)
+Message-Id: <20090623.161147.239832722.davem@davemloft.net>
 To: bzolnier@gmail.com
-Cc: elendil@planet.nl, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: cmd64x: irq 14: nobody cared - system is dreadfully slow
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/6] ide: add QUANTUM FIREBALLct20 30 with firmware
+ APL.090 to ivb_list[]
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906231813.09570.bzolnier@gmail.com>
-References: <20090623.031506.214747802.davem@davemloft.net>
-	<200906231658.56489.elendil@planet.nl>
-	<200906231813.09570.bzolnier@gmail.com>
+In-Reply-To: <200906232324.37615.bzolnier@gmail.com>
+References: <200906232324.37615.bzolnier@gmail.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,25 +28,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Tue, 23 Jun 2009 18:13:08 +0200
+Date: Tue, 23 Jun 2009 23:24:37 +0200
 
-> On Tuesday 23 June 2009 16:58:54 Frans Pop wrote:
->> So it seems to me that in 2.6.26 something was broken in the way these ID 
->> fields were handled, at least in this check. This is now fixed (possibly 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: add QUANTUM FIREBALLct20 30 with firmware APL.090 to ivb_list[]
 > 
-> Great debugging work, thanks!
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> This disk supports UDMA modes > 2.  According to the old bugreport it needs
+> forced cable detection when using 80-wire cable and id dump suggested that
+> ivb quirk should be used to fix the problem.  Unfortunately I never received
+> any feedback about the patch from the bugreporter.
 
-Indeed, thanks for all of that work Frans!
+This one seems pretty safe, applied, thanks!
 
->> by the changes around 5b90e990..48fb2688) and *that* causes the 
->> regression. Note that the hard disks are also affected.
-> 
-> I see it now -- in commit c419993 ("ide-iops: only clear DMA words
-> on setting DMA mode") we fixed a bug in ide_config_drive_speed()..
-> 
-> [ It was a real bug resulting in incorrect data being passed to
->   the user-space through HDIO_GET_IDENTITY ioctl ('hdparm -i'). ]
-
-Given all of this I also agree that we should apply Bart's patch to
-remove the debugging check altogether, and I will thus do that right
-now.
+We'll be on the lookout for bug reports that mention this drive
+and revert as needed.
