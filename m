@@ -1,133 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZFWDlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbZFWDqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbZFWDlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 23:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZFWDlC
+	id S1753535AbZFWDqH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 23:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZFWDp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 23:41:02 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34134 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbZFWDlA (ORCPT
+	Mon, 22 Jun 2009 23:45:57 -0400
+Received: from bhuna.collabora.co.uk ([93.93.131.97]:53156 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbZFWDp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 23:41:00 -0400
-Message-ID: <4A404EC6.8080902@jp.fujitsu.com>
-Date: Tue, 23 Jun 2009 12:40:54 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Andi Kleen <ak@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
- to 	disk, mce related?
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com>	 <8db1092f0906220019x1560c26dsd5a6daa3ea612ec@mail.gmail.com>	 <4A3F55C7.4030909@linux.intel.com>	 <8db1092f0906220453k5595998er1400567cbcdf3e12@mail.gmail.com>	 <4A3F7A93.5080004@linux.intel.com>	 <8db1092f0906220627w61d9f97g88c91f770f732f03@mail.gmail.com>	 <4A3F8BF7.6010406@linux.intel.com> <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
-In-Reply-To: <8db1092f0906220755v55699d5cj697b9bdf48978bd9@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 22 Jun 2009 23:45:56 -0400
+Date: Mon, 22 Jun 2009 23:45:45 -0400
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: cbou@mail.ru
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org, richard@laptop.org,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
+       dsaxena@laptop.org
+Subject: [PATCH 1/5] power_supply: fix up olpc_battery's eeprom read
+ function
+Message-ID: <20090622234545.48afccf3@mycelium.queued.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej Rutecki wrote:
-> 2009/6/22 Andi Kleen <ak@linux.intel.com>:
-> 
->> Here's a debug patch for the poller: http://firstfloor.org/ak/mcp-debug
->> Can you apply that and try again and send me the output?
->>
-> 
-> Dmesg after resume:
-> http://unixy.pl/maciek/download/kernel/2.6.30-git17/pc/dmesg-2.6.30-git17-patch.txt
-> 
-> System hangs when uptime is roughly 5-6 minutes (when I don't change
-> check_interval). netconsole doesn't show anything.
-> 
 
-I found in the dmesg that mce_init() and mce_cpu_features() are called
-on cpu0 twice in short time:
+The eeprom read function was placing values into the wrong place in
+'buf'; we were starting from buf[off], rather than buf[0].
 
-[   82.989005] mcp on cpu 0 flags 2 banks ecc39e70
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:502
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:506
-[   82.989005] bank 0
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 1
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 2
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 3
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 4
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 5
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] mcp on cpu 0 finished
-[   82.989005] CPU0: Thermal LVT vector (0xfa) already installed
-[   82.989005] PM: Restoring platform NVS memory
-[   82.989005] mcp on cpu 0 flags 2 banks ecc39e70
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:502
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:506
-[   82.989005] bank 0
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 1
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 2
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 3
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 4
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] bank 5
-[   82.989005] [0] arch/x86/kernel/cpu/mcheck/mce.c:518
-[   82.989005] mcp on cpu 0 finished
-[   82.989005] CPU0: Thermal LVT vector (0xfa) already installed
+Also, the for loop that we were using was much uglier than it needed to
+be.  This cleans it up a bit.
 
-mce_cpu_features() (which prints "Thermal ...") is always paired with
-mce_init(), and is called only from mcheck_init() and mce_resume().
-
-One of the above would be from mce_resume(), and if another was from
-mcheck_init(), then setup_timer() in mce_init_timer() will break the
-pending timer...
-
-[arch/x86/power/cpu.c]
-> static void __restore_processor_state(struct saved_context *ctxt)
-> {
->  :
-> #ifdef CONFIG_X86_32
->         mcheck_init(&boot_cpu_data);
-> #endif
-> }
-
-Hum?
-
-Maciej, could you try this patch? 
-
-Thanks,
-H.Seto
-
-===
-[PATCH] x86: Fix mce resume on 32bit
-
-Calling mcheck_init() on resume is required only with CONFIG_X86_OLD_MCE=y.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 ---
- arch/x86/power/cpu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/power/olpc_battery.c |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-index d277ef1..b3d20b9 100644
---- a/arch/x86/power/cpu.c
-+++ b/arch/x86/power/cpu.c
-@@ -244,7 +244,7 @@ static void __restore_processor_state(struct saved_context *ctxt)
- 	do_fpu_end();
- 	mtrr_ap_init();
+diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+index 5fbca26..8f41733 100644
+--- a/drivers/power/olpc_battery.c
++++ b/drivers/power/olpc_battery.c
+@@ -334,21 +334,19 @@ static ssize_t olpc_bat_eeprom_read(struct kobject *kobj,
+ 		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
+ {
+ 	uint8_t ec_byte;
+-	int ret, end;
++	int ret, i;
  
--#ifdef CONFIG_X86_32
-+#ifdef CONFIG_X86_OLD_MCE
- 	mcheck_init(&boot_cpu_data);
- #endif
- }
+ 	if (off >= EEPROM_SIZE)
+ 		return 0;
+ 	if (off + count > EEPROM_SIZE)
+ 		count = EEPROM_SIZE - off;
+ 
+-	end = EEPROM_START + off + count;
+-	for (ec_byte = EEPROM_START + off; ec_byte < end; ec_byte++) {
+-		ret = olpc_ec_cmd(EC_BAT_EEPROM, &ec_byte, 1,
+-				&buf[ec_byte - EEPROM_START], 1);
++	for (i = 0; i < count; i++) {
++		ec_byte = EEPROM_START + off + i;
++		ret = olpc_ec_cmd(EC_BAT_EEPROM, &ec_byte, 1, &buf[i], 1);
+ 		if (ret) {
+-			printk(KERN_ERR "olpc-battery:  EC command "
+-					"EC_BAT_EEPROM @ 0x%x failed -"
+-					" %d!\n", ec_byte, ret);
++			printk(KERN_ERR "olpc-battery:  EC_BAT_EEPROM cmd @ 0x%x failed - %d!\n",
++					ec_byte, ret);
+ 			return -EIO;
+ 		}
+ 	}
 -- 
-1.6.3
+1.5.6.5
 
