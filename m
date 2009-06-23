@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759574AbZFWN4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZFWN5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759574AbZFWN4j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZFWN4a
+	id S1760024AbZFWN5g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbZFWN53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:56:30 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:57219 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbZFWN4a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:56:30 -0400
-From: Arnd Bergmann <arnd@arndb.de>
+	Tue, 23 Jun 2009 09:57:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32852 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753762AbZFWN52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:57:28 -0400
+Date: Tue, 23 Jun 2009 15:57:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: S+core architecture (arch/score/) support files
-Date: Tue, 23 Jun 2009 15:55:54 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: liqin.chen@sunplusct.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <OF318304AE.9C3DA8BC-ON482575DE.002B7553-482575DE.002FC96B@sunplusct.com> <200906231143.22985.arnd@arndb.de> <87zlbz17fb.fsf@basil.nowhere.org>
-In-Reply-To: <87zlbz17fb.fsf@basil.nowhere.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: Brice Goglin <Brice.Goglin@inria.fr>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [perf] howto switch from pfmon
+Message-ID: <20090623135722.GA8808@elte.hu>
+References: <4A3FEF75.2020804@inria.fr> <87r5xb174u.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906231555.54887.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+57d/NEsK+gypJjWnDrzhE1DJg/DSJuu9gE+k
- sqveMGf4LLD13ETsGPN/Z3eELt9c25EYyNCJMRqjSrNBhjvcG4
- PrFEc08xQHXbF+h/ljxVA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87r5xb174u.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, Andi Kleen wrote:
-> IMHO a full successfull LTP run should be minimal criterium for
-> merging an architecture. That should catch most of the possible
-> "simple" mistakes in the syscall ABI. I would suggest to wait to after
-> this has been done.
 
-I agree in general, but in this case the ABI is essentially defined
-through the asm-generic headers, with the exception of the functions
-that actually were tested before the change (sys_clone, sys_execve,
-sys_rt_sigreturn and sys_sig).
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-We should certainly fix the asm-generic versions if there are some
-unexpected problems found by LTP, but delaying the score merge
-won't help that, because the interesting code is already there.
+> Brice Goglin <Brice.Goglin@inria.fr> writes:
+> 
+> > Hello,
+> >
+> > I am trying to play with perfcounters in current git (actually in latest
+> > mmotm). I'd like to reproduce what I previously did with pfmon, but I
+> > couldn't so far.
+> >
+> > Something like
+> >     pfmon --follow-exec 'foobar' -e
+> > CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_0,CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_1
+> > -- <shell script>
+> > gives the number of memory accesses to dram node #0 and #1 for all
+> > processes whose name matches 'foobar'.
+> 
+> My understanding based on recent emails on the topic is that the 
+> perfctr gods decreed you are not to do any of this because they 
+> cannot think of a use case for it, therefore none exist.
 
-While I understand the argument against merging untested code
-(that's why I mentioned it in the first place), I think in
-this case it's not about the ABI and the code is obviously
-self-contained enough to cause no harm to others.
+You are working for Intel, right?
 
-	Arnd <><
+Is the trolling of AMD related threads now an officially sanctioned 
+activity by Intel, or do you do it out of personal motivation, in 
+your free time? I'd really like to know, because what you do here is 
+quite unprofessional and quite a distraction.
+
+[ Btw., 'perfctr' is the name of another project, the one you wanted
+  to attack here is called 'perfcounters'. ]
+
+	Ingo
