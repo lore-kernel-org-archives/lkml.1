@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbZFWPxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbZFWPyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758785AbZFWPxs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZFWPxl
+	id S1759824AbZFWPyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZFWPym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:53:41 -0400
-Received: from mga11.intel.com ([192.55.52.93]:3627 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbZFWPxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:53:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,276,1243839600"; 
-   d="scan'208";a="468852099"
-Date: Tue, 23 Jun 2009 23:52:17 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Len Brown <lenb@kernel.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
-Message-ID: <20090623235217.17fe844c@feng-desktop>
-In-Reply-To: <20090623090654.GC19062@uranus.ravnborg.org>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com>
-	<b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com>
-	<20090623090654.GC19062@uranus.ravnborg.org>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 11:54:42 -0400
+Received: from web65313.mail.ac2.yahoo.com ([68.180.158.239]:30985 "HELO
+	web65313.mail.ac2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753278AbZFWPyl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 11:54:41 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 11:54:41 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=l3L7vBmGSeh29jpHVLAJvJbQGgXNJiyGk31EPMAvrScGCPUGTV0JuQwvTqswkvzWuufr8dW1FIgx6VYBUajfO1vrUNyaQKiBAmNtO39nXPeDBKN8p1rinqy/Hg+uAxovg87h0y0AWRfcxxD9ZXjMZgehiQGoDw4uOV8Xg9/nBJk=;
+Message-ID: <309427.75128.qm@web65313.mail.ac2.yahoo.com>
+X-YMail-OSG: nSQRBCsVM1n97Vg5Ybfx2dv9WRbKMJ7dMtl93bwznWhLo3OvrfCEsn64htHsjgT_3l4lYW5xmMHHYpMgthIKMWLkJ2nYrQhxOhbyCA2EfH3z4Ic02SpoTve_SW1cSPwCu4BCdnuGwF0qIrZ5_tV7muljNlexZki00IKwHuCwLqp02xujvEjB4BoD5p6wuPo6zTTQaWmpmVXXQYeWnoMjkyT5cVrSueSa6fDsJvc4PBwer7IPivmOhvzyk7sXd4AipXFTBdzYnuTR_VPQIrcC4at87iM7x.kjPQ--
+X-Mailer: YahooMailClassic/5.4.17 YahooMailWebService/0.7.289.15
+Date: Tue, 23 Jun 2009 08:48:04 -0700 (PDT)
+From: Andrew Randrianasulu <randrik_a@yahoo.com>
+Subject: list_add corruption in current Linus's tree?
+To: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 17:06:54 +0800
-Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> > +/*
-> > + * Table structures must be byte-packed to match the SFI
-> > specification,
-> > + * as they are provided by the BIOS.
-> > + */
-> > +#pragma pack(1)
-> > +struct sfi_table_header {
-> > +	char signature[SFI_SIGNATURE_SIZE];
-> > +	u32 length;
-> > +	u8 revision;
-> > +	u8 checksum;
-> > +	char oem_id[SFI_OEM_ID_SIZE];
-> > +	char oem_table_id[SFI_OEM_TABLE_ID_SIZE];
-> > +};
-> Are they endian specific?
-> In that case use the correct endian specific types.
+Hello!
 
-I can try to answer this question, Len, correct me if I'm wrong.
+I'm currently using vanilla kernel form kernel.org, up to commit d888a4c76c51092993643f8992bf55b3c28da483. Since yesterday i saw many warnings like this in dmesg:
 
-These SFI tables are just byte strings, and created by FW, FW can chose
-to use big-endian or little-endian in these tables based on what platform
-they are used. So it's transparent for SFI driver code.
+------------[ cut here ]------------
+WARNING: at lib/list_debug.c:26 __list_add+0x27/0x5c()
+Hardware name: MS-6380E
+list_add corruption. next->prev should be prev (cf801454), but was c22302fc. (next=c2282c28).
+Modules linked in: radeon ttm drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect sg snd_seq_dummy snd_seq_oss sd_mod snd_seq_midi_event snd_seq snd_pcm_oss snd_mixer_oss ipv6 nfsd lockd nfs_acl auth_rpcgss sunrpc usb_storage scsi_mod usb_libusual tuner_simple tuner_types ppdev tda9887 tda8290 snd_cs4236 snd_mpu401 snd_emu10k1 snd_via82xx snd_wavefront snd_ac97_codec snd_wss_lib ac97_bus snd_opl3_lib uhci_hcd saa7134 snd_mpu401_uart snd_pcm ir_common snd_rawmidi snd_timer snd_page_alloc ehci_hcd snd_util_mem videobuf_dma_sg snd_seq_device snd_hwdep videobuf_core snd parport_pc tveeprom usbcore rtc_cmos rtc_core emu10k1_gp ns558 soundcore parport floppy gameport rtc_lib shpchp 8139too pci_hotplug via_agp xfs exportfs ufs agpgart tuner v4l2_common videodev v4l1_compat w83627hf hwmon_vid hwmon i2c_viapro i2c_dev fbcon tileblit font bitblit softcursor fb
+Pid: 4000, comm: X Tainted: G        W  2.6.30-i486 #17
+Call Trace:
+ [<c1033bd6>] warn_slowpath_common+0x65/0x95
+ [<c1033c44>] warn_slowpath_fmt+0x29/0x2c
+ [<c1156ebf>] __list_add+0x27/0x5c
+ [<c10b9381>] mem_cgroup_add_lru_list+0x43/0x55
+ [<c10975b4>] add_page_to_lru_list+0x3d/0x42
+ [<c10978a1>] ____pagevec_lru_add+0xea/0x12c
+ [<c1097be4>] lru_add_drain+0x3c/0x86
+ [<c10a68a3>] unmap_region+0x34/0x10d
+ [<c10a7629>] do_munmap+0x1df/0x235
+ [<c10a76b4>] sys_munmap+0x35/0x44
+ [<c1002bc5>] syscall_call+0x7/0xb
+---[ end trace fda7f44fa2651cfc ]---
 
-Thanks,
-Feng
+but many, many more. Should i create bug in kernel bugzilla, or it is known  issue?
 
-> 
-> Same for the other types later in this file.
-> 
-> 	Sam
+
+      
