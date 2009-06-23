@@ -1,272 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZFWBWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZFWBYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbZFWBWx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 21:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZFWBWp
+	id S1757254AbZFWBYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 21:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZFWBYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 21:22:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60290 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZFWBWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 21:22:44 -0400
-Date: Tue, 23 Jun 2009 11:22:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Corentin Chary <corentincj@iksaif.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: linux-next: manual merge of the net/wireless tree with the acpi
- tree
-Message-Id: <20090623112238.409d4627.sfr@canb.auug.org.au>
-In-Reply-To: <20090622132906.6dc5b08c.sfr@canb.auug.org.au>
-References: <20090622132906.6dc5b08c.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb"
+	Mon, 22 Jun 2009 21:24:06 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:58158 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbZFWBYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 21:24:05 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 22 Jun 2009 18:17:56 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <gregory.haskins@gmail.com>
+cc: Gregory Haskins <ghaskins@novell.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
+ notifier race conditions
+In-Reply-To: <4A4029F7.6070502@gmail.com>
+Message-ID: <alpine.DEB.1.10.0906221808010.10952@makko.or.mcafeemobile.com>
+References: <4A3D895C.7020605@novell.com> <alpine.DEB.1.10.0906210946560.18205@makko.or.mcafeemobile.com> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <4A3FABD9.7080108@novell.com>
+ <alpine.DEB.1.10.0906220952090.10952@makko.or.mcafeemobile.com> <4A3FC2B1.4050107@novell.com> <alpine.DEB.1.10.0906221055480.10952@makko.or.mcafeemobile.com> <20090622184139.GG15228@redhat.com> <alpine.DEB.1.10.0906221146210.10952@makko.or.mcafeemobile.com>
+ <20090622190537.GI15228@redhat.com> <4A3FDAF1.6010700@novell.com> <alpine.DEB.1.10.0906221223240.10952@makko.or.mcafeemobile.com> <4A3FE445.4090204@gmail.com> <alpine.DEB.1.10.0906221418510.10952@makko.or.mcafeemobile.com> <4A4029F7.6070502@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 22 Jun 2009, Gregory Haskins wrote:
 
-Hi Len,
+> Davide Libenzi wrote:
+> > On Mon, 22 Jun 2009, Gregory Haskins wrote:
+> >
+> >   
+> >> So up in userspace, the vbus pci-device would have an open reference to
+> >> the kvm guest (derived from /dev/kvm) and an open reference to a vbus
+> >> (derived from /dev/vbus).  Lets call these kvmfd, and vbusfd,
+> >> respectively.  For something like an interrupt, we would hook the point
+> >> where the PCI-MSI interrupt is assigned, and would do the following:
+> >>
+> >> gsi = kvm_irq_route_gsi();
+> >> fd = eventfd(0, 0);
+> >> ioctl(kvmfd, KVM_IRQFD_ASSIGN, {fd, gsi});
+> >> ioctl(vbusfd, VBUS_SHMSIGNAL_ASSIGN, {sigid, fd});
+> >>
+> >> So userspace orchestrated the assignment of this one eventfd to a KVM
+> >> consumer, and a VBUS producer.  The two subsystems do not care about the
+> >> details of the other side of the link, per se.  VBUS just knows that it
+> >> can eventfd_signal() its memory region to tell whomever is listening
+> >> that it changed.  Likewise, KVM just knows to inject "gsi" when it gets
+> >> signalled.  You could equally have given "fd" to a userspace thread for
+> >> either producer or consumer roles, or any other combination.
+> >>
+> >> If we were doing PCI-passthough, substitute the last SHMSIGNAL_ASSIGN
+> >> ioctl call with some PCI_PASSTHROUGH_ASSIGN verb and you get the idea.
+> >>
+> >> The important thing is that once this is established, userspace doesn't
+> >> necessarily care about the fd anymore.  So now the question is: do we
+> >> keep it around for other things?  Do we keep it around because we don't
+> >> want KVM to see the POLLHUP, or do we address the "release" code so that
+> >> it works even if userspace issued close(fd) at this point.  I am not
+> >> sure what the answer is, but this is the scenario we are concerned with
+> >> in this thread.  In the example above, vbus is free to produce events on
+> >> its eventfd until it gets a SHMSIGNAL_DEASSIGN request.
+> >>     
+> >
+> > I see.
+> > The thing remains, that in order to reliably handle generic 
+> > producer/consumer scenarios you'd need a reference counting similar to 
+> > pipes, where the notion of producer and consumer is very well defined.
+> >   
+> 
+> I see your point.
+> 
+> Well, I think the more important thing here is that we address the
+> races, and add support for DEASSIGN.  We can do both of those things
+> with any of the patches that you and I have been kicking around.  So
+> what I propose is that we move forward with whatever patch you bless as
+> proper for now.  This producer-release issue is pretty minor in the
+> grand scheme of things.  We can always just have userspace hold the fd.
 
-This conflict is now between Linus' tree and the acpi tree as Dave's net
-tree has been merged upstream.
-
-On Mon, 22 Jun 2009 13:29:06 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> Today's linux-next merge of the wireless tree got a conflict in
-> drivers/platform/x86/eeepc-laptop.c between commit
-> bd134968b9c14d3631e9e33599b27cef0e4d884e ("eeepc-laptop: rfkill
-> refactoring") from the acpi tree and commit
-> 96e9cfeb9692b0bc6e03f9b6f9cb3c67a40b76d1 ("eeepc-laptop: read rfkill
-> soft-blocked state on resume") from the wireless tree.
->=20
-> The former changed the names of some structure entries that the latter
-> used.  I fixed it up (see below) and can carry the fix for a while.
->=20
-> --=20
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
->=20
-> diff --cc drivers/platform/x86/eeepc-laptop.c
-> index 67ad360,8153b3e..0000000
-> --- a/drivers/platform/x86/eeepc-laptop.c
-> +++ b/drivers/platform/x86/eeepc-laptop.c
-> @@@ -191,7 -180,7 +191,8 @@@ static struct key_entry eeepc_keymap[]=20
->    */
->   static int eeepc_hotk_add(struct acpi_device *device);
->   static int eeepc_hotk_remove(struct acpi_device *device, int type);
->  +static void eeepc_hotk_notify(struct acpi_device *device, u32 event);
-> + static int eeepc_hotk_resume(struct acpi_device *device);
->  =20
->   static const struct acpi_device_id eeepc_device_ids[] =3D {
->   	{EEEPC_HOTK_HID, 0},
-> @@@ -207,7 -195,7 +208,8 @@@ static struct acpi_driver eeepc_hotk_dr
->   	.ops =3D {
->   		.add =3D eeepc_hotk_add,
->   		.remove =3D eeepc_hotk_remove,
->  +		.notify =3D eeepc_hotk_notify,
-> + 		.resume =3D eeepc_hotk_resume,
->   	},
->   };
->  =20
-> @@@ -645,30 -514,14 +647,27 @@@ static int notify_brn(void
->   	return -1;
->   }
->  =20
->  +static int eeepc_get_adapter_status(struct hotplug_slot *hotplug_slot,
->  +				    u8 *value)
->  +{
->  +	int val =3D get_acpi(CM_ASL_WLAN);
->  +
->  +	if (val =3D=3D 1 || val =3D=3D 0)
->  +		*value =3D val;
->  +	else
->  +		return -EINVAL;
->  +
->  +	return 0;
->  +}
->  +
-> - static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *da=
-ta)
-> + static void eeepc_rfkill_hotplug(void)
->   {
->   	struct pci_dev *dev;
->   	struct pci_bus *bus =3D pci_find_bus(0, 1);
->   	bool blocked;
->  =20
-> - 	if (event !=3D ACPI_NOTIFY_BUS_CHECK)
-> - 		return;
-> -=20
->   	if (!bus) {
->  -		printk(EEEPC_WARNING "Unable to find PCI bus 1?\n");
->  +		pr_warning("Unable to find PCI bus 1?\n");
->   		return;
->   	}
->  =20
-> @@@ -694,10 -547,18 +693,18 @@@
->   		}
->   	}
->  =20
->  -	rfkill_set_sw_state(ehotk->eeepc_wlan_rfkill, blocked);
->  +	rfkill_set_sw_state(ehotk->wlan_rfkill, blocked);
->   }
->  =20
-> + static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *da=
-ta)
-> + {
-> + 	if (event !=3D ACPI_NOTIFY_BUS_CHECK)
-> + 		return;
-> +=20
-> + 	eeepc_rfkill_hotplug();
-> + }
-> +=20
->  -static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
->  +static void eeepc_hotk_notify(struct acpi_device *device, u32 event)
->   {
->   	static struct key_entry *key;
->   	u16 count;
-> @@@ -869,6 -741,33 +876,33 @@@ static int eeepc_hotk_remove(struct acp
->   	return 0;
->   }
->  =20
-> + static int eeepc_hotk_resume(struct acpi_device *device)
-> + {
->  -	if (ehotk->eeepc_wlan_rfkill) {
-> ++	if (ehotk->wlan_rfkill) {
-> + 		bool wlan;
-> +=20
-> + 		/* Workaround - it seems that _PTS disables the wireless
-> + 		   without notification or changing the value read by WLAN.
-> + 		   Normally this is fine because the correct value is restored
-> + 		   from the non-volatile storage on resume, but we need to do
-> + 		   it ourself if case suspend is aborted, or we lose wireless.
-> + 		 */
-> + 		wlan =3D get_acpi(CM_ASL_WLAN);
-> + 		set_acpi(CM_ASL_WLAN, wlan);
-> +=20
->  -		rfkill_set_sw_state(ehotk->eeepc_wlan_rfkill,
-> ++		rfkill_set_sw_state(ehotk->wlan_rfkill,
-> + 				    wlan !=3D 1);
-> +=20
-> + 		eeepc_rfkill_hotplug();
-> + 	}
-> +=20
->  -	if (ehotk->eeepc_bluetooth_rfkill)
->  -		rfkill_set_sw_state(ehotk->eeepc_bluetooth_rfkill,
-> ++	if (ehotk->bluetooth_rfkill)
-> ++		rfkill_set_sw_state(ehotk->bluetooth_rfkill,
-> + 				    get_acpi(CM_ASL_BLUETOOTH) !=3D 1);
-> +=20
-> + 	return 0;
-> + }
-> +=20
->   /*
->    * Hwmon
->    */
-> @@@ -1029,75 -922,6 +1063,75 @@@ static void __exit eeepc_laptop_exit(vo
->   	platform_driver_unregister(&platform_driver);
->   }
->  =20
->  +static int eeepc_new_rfkill(struct rfkill **rfkill,
->  +			    const char *name, struct device *dev,
->  +			    enum rfkill_type type, int cm)
->  +{
->  +	int result;
->  +
->  +	result =3D get_acpi(cm);
->  +	if (result < 0)
->  +		return result;
->  +
->  +	*rfkill =3D rfkill_alloc(name, dev, type,
->  +			       &eeepc_rfkill_ops, (void *)(unsigned long)cm);
->  +
->  +	if (!*rfkill)
->  +		return -EINVAL;
->  +
-> - 	rfkill_set_sw_state(*rfkill, get_acpi(cm) !=3D 1);
-> ++	rfkill_init_sw_state(*rfkill, get_acpi(cm) !=3D 1);
->  +	result =3D rfkill_register(*rfkill);
->  +	if (result) {
->  +		rfkill_destroy(*rfkill);
->  +		*rfkill =3D NULL;
->  +		return result;
->  +	}
->  +	return 0;
->  +}
->  +
->  +
->  +static int eeepc_rfkill_init(struct device *dev)
->  +{
->  +	int result =3D 0;
->  +
->  +	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
->  +	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
->  +
->  +	result =3D eeepc_new_rfkill(&ehotk->wlan_rfkill,
->  +				  "eeepc-wlan", dev,
->  +				  RFKILL_TYPE_WLAN, CM_ASL_WLAN);
->  +
->  +	if (result && result !=3D -ENODEV)
->  +		goto exit;
->  +
->  +	result =3D eeepc_new_rfkill(&ehotk->bluetooth_rfkill,
->  +				  "eeepc-bluetooth", dev,
->  +				  RFKILL_TYPE_BLUETOOTH, CM_ASL_BLUETOOTH);
->  +
->  +	if (result && result !=3D -ENODEV)
->  +		goto exit;
->  +
->  +	result =3D eeepc_new_rfkill(&ehotk->wwan3g_rfkill,
->  +				  "eeepc-wwan3g", dev,
->  +				  RFKILL_TYPE_WWAN, CM_ASL_3G);
->  +
->  +	if (result && result !=3D -ENODEV)
->  +		goto exit;
->  +
->  +	result =3D eeepc_setup_pci_hotplug();
->  +	/*
->  +	 * If we get -EBUSY then something else is handling the PCI hotplug -
->  +	 * don't fail in this case
->  +	 */
->  +	if (result =3D=3D -EBUSY)
->  +		result =3D 0;
->  +
->  +exit:
->  +	if (result && result !=3D -ENODEV)
->  +		eeepc_rfkill_exit();
->  +	return result;
->  +}
->  +
->   static int eeepc_backlight_init(struct device *dev)
->   {
->   	struct backlight_device *bd;
+Is it a real problem? Can it be decently handled on the KVM side?
+Reason I'm asking, is that I wouldn't want to change the interface, only 
+to find it unsuitable a few weeks later.
 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> I can either take in the last one you sent, or it sounds like you wanted
+> to possibly do another round of cleanup?  Whatever the case may be, let
+> me know and we can coordinate with Andrew/Avi on what tree to pull it
+> into.  It sounds like riding in kvm.git is the perhaps the most logical.
 
-iEYEARECAAYFAkpALl4ACgkQjjKRsyhoI8wu2wCgl0n9Eu9KEAp1WreQSrU1vUzk
-348An18MV6j5kAkEZqrsay2d2avhJ7Fk
-=GbTK
------END PGP SIGNATURE-----
+Yes, I'd like to drop the pollcb bits (that you can implement KVM-side), 
+at least.
+And yes, going kvm.git is probably the best path.
 
---Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb--
+
+
+- Davide
+
+
