@@ -1,57 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZFWF7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbZFWGAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbZFWF7k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFWF7d
+	id S1756164AbZFWGAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 02:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZFWGAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:59:33 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45282 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbZFWF7c (ORCPT
+	Tue, 23 Jun 2009 02:00:37 -0400
+Received: from mga02.intel.com ([134.134.136.20]:44014 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751076AbZFWGAg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:59:32 -0400
-Subject: Re: [PATCH] mm/init: cpu_hotplug_init() must be initialized before
- SLAB
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Sachin Sant <sachinp@in.ibm.com>
-In-Reply-To: <alpine.LFD.2.01.0906221927280.3240@localhost.localdomain>
-References: <1245717089.4017.18.camel@pasglop>
-	 <alpine.LFD.2.01.0906221927280.3240@localhost.localdomain>
-Date: Tue, 23 Jun 2009 08:59:33 +0300
-Message-Id: <1245736773.2880.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Tue, 23 Jun 2009 02:00:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
+   d="scan'208";a="424483108"
+From: "Wang, Yong Y" <yong.y.wang@intel.com>
+To: "eranian@gmail.com" <eranian@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
+Date: Tue, 23 Jun 2009 13:59:37 +0800
+Subject: RE: perf_counter Atom patch
+Thread-Topic: perf_counter Atom patch
+Thread-Index: Acnzd7W+LJf0q1C+SPuJ7hbMoHeBlgANx2pQAAYF8EA=
+Message-ID: <9F0C1DB20AFA954FA1DA05309350433D7B2585F4@pdsmsx503.ccr.corp.intel.com>
+References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com> 
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Benjamin Herrenschmidt wrote:
-> > +	/*
-> > +	 * This initializes the mutex used by get/put_online_cpus()
-> > +	 * which is used by SLAB
-> > +	 */
-> > +	cpu_hotplug_init();
-
-On Mon, 2009-06-22 at 19:29 -0700, Linus Torvalds wrote:
-> Oh fudge it.
+> From: Wang, Yong Y 
 > 
-> Why not get rid of that stupid thing, rather than have that subtle 
-> dependency and a comment for it.
+> > From: stephane eranian [mailto:eranian@googlemail.com] 
+> > 
+> > I would like to better understand what makes you think
+> > this is the case.
+> > 
 > 
-> IOW, does this simpler alternative also work?
+> Because I observed that the output of 'perf stat -e 0:0 -e 
+> 0:1 -e 0:6 <cmd>'
+> is always like below without the quirk.
 > 
-> When given the choice of simplifying and removing code, always do so. 
+>  Performance counter stats for '<cmd>':
 > 
-> Static initializers are much nicer than having to worry about when 
-> something gets initialized, no?
+>               0  cycles
+>               0  instructions
+>               0  bus-cycles
+> 
+> > Perfmon is working on Atom and there, fixed counters work perfectly:
+> > $ head -6 /proc/cpuinfo
+> > processor	: 0
+> > vendor_id	: GenuineIntel
+> > cpu family	: 6
+> > model		: 28
+> > model name	: Intel(R) Atom(TM) CPU  230   @ 1.60GHz
+> > stepping	: 2
+> > ...
+> 
+> My cpuinfo is below and the only difference I can see is 270 vs 230.
+> 
+> processor       : 0
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 28
+> model name      : Intel(R) Atom(TM) CPU N270   @ 1.60GHz
+> stepping        : 2
+> 
+> > $ pfmon -v --us-c -e
+> > unhalted_core_cycles,unhalted_reference_cycles,instructions_retired
+> > noploop 10
+> > [FIXED_CTRL(pmc16)=0xaaa pmi0=1 en0=0x2 any0=0 pmi1=1 en1=0x2 any1=0
+> > pmi2=1 en2=0x2 any2=0] INSTRUCTIONS_RETIRED UNHALTED_CORE_CYCLES
+> > UNHALTED_REFERENCE_CYCLES
+> > [FIXED_CTR0(pmd16)]
+> > [FIXED_CTR1(pmd17)]
+> > [FIXED_CTR2(pmd18)]
+> > noploop for 10 seconds
+> > 15,902,604,169 UNHALTED_CORE_CYCLES
+> > 15,902,586,180 UNHALTED_REFERENCE_CYCLES
+> > 7,941,842,505 INSTRUCTIONS_RETIRED
+> > 
+> 
+> Could you pls try to revert my patch, run 'perf stat -e 0:0 
+> -e 0:1 -e 0:6 <cmd>' and see
+> whether the counters count or not? I tried pfmon on my atom 
+> box but it always runs into
+> segfault. If the fixed counters work for you, I will ask Atom 
+> hw foks here in Intel why this
+> is the case and revise the code accordingly.
+> 
 
-Looks good to me. Thanks for fixing it up, Linus!
+I just found an Atom 230 based nettop in our lab and looks like the fixed counters
+do not work. Below is the output on a kernel without my patch.
 
-			Pekka
+atom@atom-desktop:~$ head -n 6 /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 28
+model name      : Intel(R) Atom(TM) CPU  230   @ 1.60GHz
+stepping        : 2
+atom@atom-desktop:~$ ./perf stat -e 0:0 -e 0:1 -e 0:6 true
 
+ Performance counter stats for 'true':
+
+              0  cycles
+              0  instructions
+              0  bus-cycles
+
+    0.004089458  seconds time elapsed.
+
+Are you aware of any microcode update for the Atom processor you are using?
