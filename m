@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbZFWLzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbZFWLzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbZFWLzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755145AbZFWLyt
+	id S1759243AbZFWLzT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759156AbZFWLyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:54:49 -0400
-Received: from av9-2-sn2.hy.skanova.net ([81.228.8.180]:43473 "EHLO
-	av9-2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756969AbZFWLyr (ORCPT
+	Tue, 23 Jun 2009 07:54:54 -0400
+Received: from av12-2-sn2.hy.skanova.net ([81.228.8.186]:44856 "EHLO
+	av12-2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759070AbZFWLyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:54:47 -0400
-Message-ID: <4A40C288.2060702@mocean-labs.com>
-Date: Tue, 23 Jun 2009 13:54:48 +0200
+	Tue, 23 Jun 2009 07:54:53 -0400
+Message-ID: <4A40C28E.1070109@mocean-labs.com>
+Date: Tue, 23 Jun 2009 13:54:54 +0200
 From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
 	<richard.rojfors.ext@mocean-labs.com>
 User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
@@ -22,175 +22,117 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Thierry Reding <thierry.reding@avionic-design.de>,
        Trilok Soni <soni.trilok@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] tsc2007: remove HR timer
+Subject: [PATCH 2/2] tsc2007: make platform callbacks optional
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the HR timer, since it's bad to do synchronous I2C
-in the HR timer callback context. The new implementation makes use
-of the global workqueue. The work is scheduled every 5ms when polling
-rather than 5 us.
+The platform callbacks are only called if supplied. Makes the driver
+to fallback on only pressure calculation to decide when the pen is up.
 
 Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
 ---
 Index: linux-2.6.30/drivers/input/touchscreen/tsc2007.c
 ===================================================================
---- linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 932)
-+++ linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 943)
-@@ -21,15 +21,13 @@
-  */
+--- linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 943)
++++ linux-2.6.30/drivers/input/touchscreen/tsc2007.c	(revision 945)
+@@ -59,6 +59,10 @@
+ #define READ_X		(ADC_ON_12BIT | TSC2007_MEASURE_X)
+ #define PWRDOWN		(TSC2007_12BIT | TSC2007_POWER_OFF_IRQ_EN)
 
- #include <linux/module.h>
--#include <linux/hrtimer.h>
- #include <linux/slab.h>
- #include <linux/input.h>
- #include <linux/interrupt.h>
- #include <linux/i2c.h>
- #include <linux/i2c/tsc2007.h>
-
--#define TS_POLL_DELAY	(10 * 1000)	/* ns delay before the first sample */
--#define TS_POLL_PERIOD	(5 * 1000)	/* ns delay between samples */
-+#define TS_POLL_PERIOD	msecs_to_jiffies(5) /* ms delay between samples */
-
- #define TSC2007_MEASURE_TEMP0		(0x0 << 4)
- #define TSC2007_MEASURE_AUX		(0x2 << 4)
-@@ -70,13 +68,11 @@
- struct tsc2007 {
- 	struct input_dev	*input;
- 	char			phys[32];
--	struct hrtimer		timer;
-+	struct delayed_work	work;
- 	struct ts_event		tc;
-
- 	struct i2c_client	*client;
-
--	spinlock_t		lock;
--
++#define PEN_STATE_UP	0x00
++#define PEN_STATE_DOWN	0x01
++#define PEN_STATE_IRQ	0x01
++
+ struct ts_event {
+ 	u16	x;
+ 	u16	y;
+@@ -76,7 +80,7 @@
  	u16			model;
  	u16			x_plate_ohms;
 
-@@ -142,8 +138,7 @@
- 	if (rt > MAX_12BIT) {
- 		dev_dbg(&ts->client->dev, "ignored pressure %d\n", rt);
+-	unsigned		pendown;
++	unsigned		penstate;
+ 	int			irq;
 
--		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
--			      HRTIMER_MODE_REL);
-+		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
- 		return;
- 	}
-
-@@ -153,7 +148,7 @@
- 	 * in some cases may not even settle at the expected value.
+ 	int			(*get_pendown_state)(void);
+@@ -149,15 +153,18 @@
  	 *
  	 * The only safe way to check for the pen up condition is in the
--	 * timer by reading the pen signal state (it's a GPIO _and_ IRQ).
-+	 * work function by reading the pen signal state (it's a GPIO and IRQ).
+ 	 * work function by reading the pen signal state (it's a GPIO and IRQ).
++	 *
++	 * But sadly we don't always have the possibility to use such callback
++	 * in that case rely on the pressure anyway
  	 */
  	if (rt) {
  		struct input_dev *input = ts->input;
-@@ -175,8 +170,7 @@
+
+-		if (!ts->pendown) {
++		if (ts->penstate != PEN_STATE_DOWN) {
+ 			dev_dbg(&ts->client->dev, "DOWN\n");
+
+ 			input_report_key(input, BTN_TOUCH, 1);
+-			ts->pendown = 1;
++			ts->penstate = PEN_STATE_DOWN;
+ 		}
+
+ 		input_report_abs(input, ABS_X, x);
+@@ -168,7 +175,9 @@
+
+ 		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
  			x, y, rt);
- 	}
+-	}
++	} else if (!ts->get_pendown_state)
++		/* no callback to check pendown state, use pressure */
++		ts->penstate = PEN_STATE_UP;
 
--	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
--			HRTIMER_MODE_REL);
-+	schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
+ 	schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
  }
-
- static int tsc2007_read_values(struct tsc2007 *tsc)
-@@ -197,13 +191,10 @@
- 	return 0;
- }
-
--static enum hrtimer_restart tsc2007_timer(struct hrtimer *handle)
-+static void tsc2007_work(struct work_struct *work)
+@@ -195,7 +204,14 @@
  {
--	struct tsc2007 *ts = container_of(handle, struct tsc2007, timer);
--	unsigned long flags;
--
--	spin_lock_irqsave(&ts->lock, flags);
--
-+	struct tsc2007 *ts =
-+		container_of(to_delayed_work(work), struct tsc2007, work);
- 	if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
+ 	struct tsc2007 *ts =
+ 		container_of(to_delayed_work(work), struct tsc2007, work);
+-	if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
++
++	/* either we have the pendown callback, and use it, otherwise
++	 * we look at the pendown variable
++	 */
++	if ((ts->get_pendown_state && unlikely(!ts->get_pendown_state()) &&
++		ts->penstate != PEN_STATE_UP) ||
++		(!ts->get_pendown_state &&
++		unlikely(ts->penstate == PEN_STATE_UP))) {
  		struct input_dev *input = ts->input;
 
-@@ -222,30 +213,20 @@
- 		tsc2007_read_values(ts);
- 		tsc2007_send_event(ts);
- 	}
--
--	spin_unlock_irqrestore(&ts->lock, flags);
--
--	return HRTIMER_NORESTART;
- }
+ 		dev_dbg(&ts->client->dev, "UP\n");
+@@ -204,7 +220,7 @@
+ 		input_report_abs(input, ABS_PRESSURE, 0);
+ 		input_sync(input);
 
- static irqreturn_t tsc2007_irq(int irq, void *handle)
+-		ts->pendown = 0;
++		ts->penstate = PEN_STATE_UP;
+ 		enable_irq(ts->irq);
+ 	} else {
+ 		/* pen is still down, continue with the measurement */
+@@ -219,8 +235,9 @@
  {
  	struct tsc2007 *ts = handle;
--	unsigned long flags;
 
--	spin_lock_irqsave(&ts->lock, flags);
--
- 	if (likely(ts->get_pendown_state())) {
+-	if (likely(ts->get_pendown_state())) {
++	if (!ts->get_pendown_state || likely(ts->get_pendown_state())) {
  		disable_irq_nosync(ts->irq);
--		hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
--					HRTIMER_MODE_REL);
-+		schedule_delayed_work(&ts->work, 0);
++		ts->penstate = PEN_STATE_IRQ;
+ 		schedule_delayed_work(&ts->work, 0);
  	}
 
- 	if (ts->clear_penirq)
- 		ts->clear_penirq();
-
--	spin_unlock_irqrestore(&ts->lock, flags);
--
- 	return IRQ_HANDLED;
- }
-
-@@ -278,11 +259,6 @@
-
- 	ts->input = input_dev;
-
--	hrtimer_init(&ts->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
--	ts->timer.function = tsc2007_timer;
--
--	spin_lock_init(&ts->lock);
--
- 	ts->model             = pdata->model;
- 	ts->x_plate_ohms      = pdata->x_plate_ohms;
+@@ -264,7 +281,8 @@
  	ts->get_pendown_state = pdata->get_pendown_state;
-@@ -308,6 +284,8 @@
+ 	ts->clear_penirq      = pdata->clear_penirq;
 
- 	ts->irq = client->irq;
+-	pdata->init_platform_hw();
++	if (pdata->init_platform_hw)
++		pdata->init_platform_hw();
 
-+	INIT_DELAYED_WORK(&ts->work, tsc2007_work);
-+
- 	err = request_irq(ts->irq, tsc2007_irq, 0,
- 			client->dev.driver->name, ts);
- 	if (err < 0) {
-@@ -325,7 +303,6 @@
-
-  err_free_irq:
- 	free_irq(ts->irq, ts);
--	hrtimer_cancel(&ts->timer);
-  err_free_mem:
- 	input_free_device(input_dev);
- 	kfree(ts);
-@@ -337,11 +314,13 @@
- 	struct tsc2007	*ts = i2c_get_clientdata(client);
- 	struct tsc2007_platform_data *pdata;
-
-+	/* cancel any work */
-+	cancel_delayed_work(&ts->work);
-+
- 	pdata = client->dev.platform_data;
- 	pdata->exit_platform_hw();
-
- 	free_irq(ts->irq, ts);
--	hrtimer_cancel(&ts->timer);
- 	input_unregister_device(ts->input);
- 	kfree(ts);
-
+ 	snprintf(ts->phys, sizeof(ts->phys),
+ 		 "%s/input0", dev_name(&client->dev));
