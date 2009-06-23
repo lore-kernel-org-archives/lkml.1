@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760792AbZFWPcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbZFWPdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760792AbZFWPcG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758610AbZFWP3z
+	id S1759515AbZFWPdR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760530AbZFWPbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:29:55 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:49574 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756737AbZFWP3u (ORCPT
+	Tue, 23 Jun 2009 11:31:34 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53781 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760484AbZFWPbd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:29:50 -0400
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-Subject: [PATCH 09/10] cfq-iosched: Uses its own open-coded rcu_barrier.
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       "Patrick McHardy" <kaber@trash.net>, christine.caulfield@googlemail.com,
-       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net, yoshfuji@linux-ipv6.org,
-       shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
-       tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
-Date: Tue, 23 Jun 2009 17:04:39 +0200
-Message-ID: <20090623150439.22490.14657.stgit@localhost>
-In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
-References: <20090623150330.22490.87327.stgit@localhost>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 23 Jun 2009 11:31:33 -0400
+Subject: Re: [PATCH 1/1] Reduce AACRAID hardware queue size
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       Mathias Urlichs <matthias@urlichs.de>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1245756306-29023-2-git-send-email-apw@canonical.com>
+References: <1245756306-29023-1-git-send-email-apw@canonical.com>
+	 <1245756306-29023-2-git-send-email-apw@canonical.com>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 10:31:29 -0500
+Message-Id: <1245771089.4149.88.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This module cfq-iosched, has discovered the value of waiting for
-call_rcu() completion, but its has its own open-coded implementation
-of rcu_barrier(), which I don't think is 'strong' enough.
+On Tue, 2009-06-23 at 12:25 +0100, Andy Whitcroft wrote:
+> From: Mathias Urlichs <matthias@urlichs.de>
+> 
+> BugLink: http://bugzilla.kernel.org/show_bug.cgi?id=11120
+> BugLink: http://bugs.launchpad.net/bugs/249964
+> 
+> Reduce the hardware queue size for the AACRAID controller.  This controloler
+> suffers adapter aborts and scsi resets under high load otherwise:
+> 
+>     aacraid: Host adapter abort request (0,0,2,0)
+>     aacraid: Host adapter abort request (0,0,3,0)
+>     aacraid: Host adapter reset request. SCSI hang ?
+>     aacraid: Host adapter abort request (0,0,0,0)
+> 
+> Signed-Off-By: Mathias Urlichs <matthias@urlichs.de>
+> Signed-off-by: Andy Whitcroft <apw@canonical.com>
+> ---
+>  drivers/scsi/aacraid/aacraid.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/aacraid/aacraid.h b/drivers/scsi/aacraid/aacraid.h
+> index cdbdec9..0d5d036 100644
+> --- a/drivers/scsi/aacraid/aacraid.h
+> +++ b/drivers/scsi/aacraid/aacraid.h
+> @@ -24,7 +24,7 @@
+>  #define AAC_MAX_LUN		(8)
+>  
+>  #define AAC_MAX_HOSTPHYSMEMPAGES (0xfffff)
+> -#define AAC_MAX_32BIT_SGBCOUNT	((unsigned short)256)
+> +#define AAC_MAX_32BIT_SGBCOUNT	((unsigned short)127)
 
-This patch only leaves a comment for the maintainers to consider.
+So I'm afraid this isn't a proper fix.  It was a diagnostic test to see
+if SGBCOUNT was the root cause for this card.
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
----
+Incidentally, SGBCOUNT isn't queue depth, its maximum number of sectors
+in an individual transfer.  What we'd need to show for this to be the
+fix is that every 32 bit aacraid card is affected, which, given the
+paucity of bug reports, I don't think so.
 
- block/cfq-iosched.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+Firstly, Matthias, can you see if on an unmodified aacraid, this fixes
+the problem for you:
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 833ec18..c15555b 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -2657,6 +2657,12 @@ static void __exit cfq_exit(void)
- 	/*
- 	 * this also protects us from entering cfq_slab_kill() with
- 	 * pending RCU callbacks
-+	 *
-+	 * hawk@comx.dk 2009-06-18: Maintainer please consider using
-+	 *  rcu_barrier() instead of this open-coded wait for
-+	 *  completion implementation.  I think it provides a better
-+	 *  guarantee that all CPUs are finished, although
-+	 *  elv_ioc_count_read() do consider all CPUs.
- 	 */
- 	if (elv_ioc_count_read(ioc_count))
- 		wait_for_completion(&all_gone);
+echo 63 > /sys/block/<disk>/queue/max_sectors_kb
+
+63 is because the parameter is in kb for sysfs, but in number of 512
+byte blocks for the driver.  If it does, we can likely just add it to
+the udev unusual devices and not bother with a kernel fix.
+
+To fix the kernel properly, we'd need to add an AAC_QUIRK for this
+adapter, which is a bit more work, so lets see if udev can fix it for us
+first ...
+
+James
+
 
