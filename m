@@ -1,90 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbZFWBTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbZFWBWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbZFWBTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 21:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZFWBTG
+	id S1753345AbZFWBWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 21:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZFWBWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 21:19:06 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:50468 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751313AbZFWBTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 21:19:06 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Pccj+9bIZQyuprJ3Cq6J/uU5u3+S3W+Fm3+0kV2ulWsExoz+j6AzTB+OwqBFGGy63eqyx9nSfWQNZ+T4PeLJ9wqzgTnBEU5F2ahzLdx0Op9T15pBeEwYBjslvvYPlBtA;
-Date: Mon, 22 Jun 2009 18:18:31 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas =?UTF-8?B?SGVs?= =?UTF-8?B?bHN0csO2bQ==?= 
-	<thomas@shipmail.org>,
-       Dave Airlie <airlied@linux.ie>, Alex Deucher <alexdeucher@gmail.com>,
-       Andrew Lutomirski <luto@mit.edu>, dri-devel@lists.sf.net,
-       Jerome Glisse <jglisse@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] drm: previous pull req + 1.
-Message-ID: <20090622181832.771dac03@jbarnes-g45>
-In-Reply-To: <1245719079.4017.25.camel@pasglop>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	<4A3DABE1.50309@mit.edu>
-	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
-	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
-	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-	<alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-	<4A3F3E3A.2030202@shipmail.org>
-	<1245715213.4017.13.camel@pasglop>
-	<alpine.LFD.2.01.0906221721450.3240@localhost.localdomain>
-	<1245719079.4017.25.camel@pasglop>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Mon, 22 Jun 2009 21:22:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60290 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbZFWBWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 21:22:44 -0400
+Date: Tue, 23 Jun 2009 11:22:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Corentin Chary <corentincj@iksaif.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: linux-next: manual merge of the net/wireless tree with the acpi
+ tree
+Message-Id: <20090623112238.409d4627.sfr@canb.auug.org.au>
+In-Reply-To: <20090622132906.6dc5b08c.sfr@canb.auug.org.au>
+References: <20090622132906.6dc5b08c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 11:04:39 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+--Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2009-06-22 at 17:24 -0700, Linus Torvalds wrote:
-> > 
-> > On Tue, 23 Jun 2009, Benjamin Herrenschmidt wrote:
-> > > 
-> > > As far as I can remember, all fbdev operations are done under the
-> > > console semaphore.
-> > 
-> > Yeah, and some of them are horribly broken (ie copying data from
-> > user space while doing it - causing horrible things like VC
-> > switching latencies and invisible printk's if an oops happens
-> > during the op).
-> > 
-> > Or maybe that got fixed. 
-> 
-> Well, it does rely on userspace behaving.. ie, no accel ops are done
-> by the kernel in KD_GRAPHICS and userspace is -supposed- to switch to
-> KD_GRAPHICS before touching the fb.
-> 
-> In fact, nowdays, we do have the infrastructure to be smart and
-> enforce that. IE. Instead of using a boring remap_page_ranges() in
-> fb_mmap() we could use a fault handler. When in KD_TEXT, we fail
-> them, when in KD_GRAPHICS, we service them, and we
-> unmap_mapping_range() when switching. Something like that...
-> 
-> Dunno how that interacts with the new DRM thingy though.
+Hi Len,
 
-I think it could work, but ideally we'd keep the kernel fbcon object
-pinned, and keep printing into it even while some other gfx app is
-running.  That way we don't have to dump the whole queue into it when a
-panic occurs, we can just switch buffers (something like this would
-also be handy for dual head debugging; one head running your desktop
-and the other a debug console printing all the messages).  That's
-slightly more invasive surgery though...  I should have a chance to do
-something like that as part of the kdb/kms work I'll be doing with
-Jason.
+This conflict is now between Linus' tree and the acpi tree as Dave's net
+tree has been merged upstream.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+On Mon, 22 Jun 2009 13:29:06 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Today's linux-next merge of the wireless tree got a conflict in
+> drivers/platform/x86/eeepc-laptop.c between commit
+> bd134968b9c14d3631e9e33599b27cef0e4d884e ("eeepc-laptop: rfkill
+> refactoring") from the acpi tree and commit
+> 96e9cfeb9692b0bc6e03f9b6f9cb3c67a40b76d1 ("eeepc-laptop: read rfkill
+> soft-blocked state on resume") from the wireless tree.
+>=20
+> The former changed the names of some structure entries that the latter
+> used.  I fixed it up (see below) and can carry the fix for a while.
+>=20
+> --=20
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+>=20
+> diff --cc drivers/platform/x86/eeepc-laptop.c
+> index 67ad360,8153b3e..0000000
+> --- a/drivers/platform/x86/eeepc-laptop.c
+> +++ b/drivers/platform/x86/eeepc-laptop.c
+> @@@ -191,7 -180,7 +191,8 @@@ static struct key_entry eeepc_keymap[]=20
+>    */
+>   static int eeepc_hotk_add(struct acpi_device *device);
+>   static int eeepc_hotk_remove(struct acpi_device *device, int type);
+>  +static void eeepc_hotk_notify(struct acpi_device *device, u32 event);
+> + static int eeepc_hotk_resume(struct acpi_device *device);
+>  =20
+>   static const struct acpi_device_id eeepc_device_ids[] =3D {
+>   	{EEEPC_HOTK_HID, 0},
+> @@@ -207,7 -195,7 +208,8 @@@ static struct acpi_driver eeepc_hotk_dr
+>   	.ops =3D {
+>   		.add =3D eeepc_hotk_add,
+>   		.remove =3D eeepc_hotk_remove,
+>  +		.notify =3D eeepc_hotk_notify,
+> + 		.resume =3D eeepc_hotk_resume,
+>   	},
+>   };
+>  =20
+> @@@ -645,30 -514,14 +647,27 @@@ static int notify_brn(void
+>   	return -1;
+>   }
+>  =20
+>  +static int eeepc_get_adapter_status(struct hotplug_slot *hotplug_slot,
+>  +				    u8 *value)
+>  +{
+>  +	int val =3D get_acpi(CM_ASL_WLAN);
+>  +
+>  +	if (val =3D=3D 1 || val =3D=3D 0)
+>  +		*value =3D val;
+>  +	else
+>  +		return -EINVAL;
+>  +
+>  +	return 0;
+>  +}
+>  +
+> - static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *da=
+ta)
+> + static void eeepc_rfkill_hotplug(void)
+>   {
+>   	struct pci_dev *dev;
+>   	struct pci_bus *bus =3D pci_find_bus(0, 1);
+>   	bool blocked;
+>  =20
+> - 	if (event !=3D ACPI_NOTIFY_BUS_CHECK)
+> - 		return;
+> -=20
+>   	if (!bus) {
+>  -		printk(EEEPC_WARNING "Unable to find PCI bus 1?\n");
+>  +		pr_warning("Unable to find PCI bus 1?\n");
+>   		return;
+>   	}
+>  =20
+> @@@ -694,10 -547,18 +693,18 @@@
+>   		}
+>   	}
+>  =20
+>  -	rfkill_set_sw_state(ehotk->eeepc_wlan_rfkill, blocked);
+>  +	rfkill_set_sw_state(ehotk->wlan_rfkill, blocked);
+>   }
+>  =20
+> + static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *da=
+ta)
+> + {
+> + 	if (event !=3D ACPI_NOTIFY_BUS_CHECK)
+> + 		return;
+> +=20
+> + 	eeepc_rfkill_hotplug();
+> + }
+> +=20
+>  -static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+>  +static void eeepc_hotk_notify(struct acpi_device *device, u32 event)
+>   {
+>   	static struct key_entry *key;
+>   	u16 count;
+> @@@ -869,6 -741,33 +876,33 @@@ static int eeepc_hotk_remove(struct acp
+>   	return 0;
+>   }
+>  =20
+> + static int eeepc_hotk_resume(struct acpi_device *device)
+> + {
+>  -	if (ehotk->eeepc_wlan_rfkill) {
+> ++	if (ehotk->wlan_rfkill) {
+> + 		bool wlan;
+> +=20
+> + 		/* Workaround - it seems that _PTS disables the wireless
+> + 		   without notification or changing the value read by WLAN.
+> + 		   Normally this is fine because the correct value is restored
+> + 		   from the non-volatile storage on resume, but we need to do
+> + 		   it ourself if case suspend is aborted, or we lose wireless.
+> + 		 */
+> + 		wlan =3D get_acpi(CM_ASL_WLAN);
+> + 		set_acpi(CM_ASL_WLAN, wlan);
+> +=20
+>  -		rfkill_set_sw_state(ehotk->eeepc_wlan_rfkill,
+> ++		rfkill_set_sw_state(ehotk->wlan_rfkill,
+> + 				    wlan !=3D 1);
+> +=20
+> + 		eeepc_rfkill_hotplug();
+> + 	}
+> +=20
+>  -	if (ehotk->eeepc_bluetooth_rfkill)
+>  -		rfkill_set_sw_state(ehotk->eeepc_bluetooth_rfkill,
+> ++	if (ehotk->bluetooth_rfkill)
+> ++		rfkill_set_sw_state(ehotk->bluetooth_rfkill,
+> + 				    get_acpi(CM_ASL_BLUETOOTH) !=3D 1);
+> +=20
+> + 	return 0;
+> + }
+> +=20
+>   /*
+>    * Hwmon
+>    */
+> @@@ -1029,75 -922,6 +1063,75 @@@ static void __exit eeepc_laptop_exit(vo
+>   	platform_driver_unregister(&platform_driver);
+>   }
+>  =20
+>  +static int eeepc_new_rfkill(struct rfkill **rfkill,
+>  +			    const char *name, struct device *dev,
+>  +			    enum rfkill_type type, int cm)
+>  +{
+>  +	int result;
+>  +
+>  +	result =3D get_acpi(cm);
+>  +	if (result < 0)
+>  +		return result;
+>  +
+>  +	*rfkill =3D rfkill_alloc(name, dev, type,
+>  +			       &eeepc_rfkill_ops, (void *)(unsigned long)cm);
+>  +
+>  +	if (!*rfkill)
+>  +		return -EINVAL;
+>  +
+> - 	rfkill_set_sw_state(*rfkill, get_acpi(cm) !=3D 1);
+> ++	rfkill_init_sw_state(*rfkill, get_acpi(cm) !=3D 1);
+>  +	result =3D rfkill_register(*rfkill);
+>  +	if (result) {
+>  +		rfkill_destroy(*rfkill);
+>  +		*rfkill =3D NULL;
+>  +		return result;
+>  +	}
+>  +	return 0;
+>  +}
+>  +
+>  +
+>  +static int eeepc_rfkill_init(struct device *dev)
+>  +{
+>  +	int result =3D 0;
+>  +
+>  +	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
+>  +	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
+>  +
+>  +	result =3D eeepc_new_rfkill(&ehotk->wlan_rfkill,
+>  +				  "eeepc-wlan", dev,
+>  +				  RFKILL_TYPE_WLAN, CM_ASL_WLAN);
+>  +
+>  +	if (result && result !=3D -ENODEV)
+>  +		goto exit;
+>  +
+>  +	result =3D eeepc_new_rfkill(&ehotk->bluetooth_rfkill,
+>  +				  "eeepc-bluetooth", dev,
+>  +				  RFKILL_TYPE_BLUETOOTH, CM_ASL_BLUETOOTH);
+>  +
+>  +	if (result && result !=3D -ENODEV)
+>  +		goto exit;
+>  +
+>  +	result =3D eeepc_new_rfkill(&ehotk->wwan3g_rfkill,
+>  +				  "eeepc-wwan3g", dev,
+>  +				  RFKILL_TYPE_WWAN, CM_ASL_3G);
+>  +
+>  +	if (result && result !=3D -ENODEV)
+>  +		goto exit;
+>  +
+>  +	result =3D eeepc_setup_pci_hotplug();
+>  +	/*
+>  +	 * If we get -EBUSY then something else is handling the PCI hotplug -
+>  +	 * don't fail in this case
+>  +	 */
+>  +	if (result =3D=3D -EBUSY)
+>  +		result =3D 0;
+>  +
+>  +exit:
+>  +	if (result && result !=3D -ENODEV)
+>  +		eeepc_rfkill_exit();
+>  +	return result;
+>  +}
+>  +
+>   static int eeepc_backlight_init(struct device *dev)
+>   {
+>   	struct backlight_device *bd;
+
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpALl4ACgkQjjKRsyhoI8wu2wCgl0n9Eu9KEAp1WreQSrU1vUzk
+348An18MV6j5kAkEZqrsay2d2avhJ7Fk
+=GbTK
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__23_Jun_2009_11_22_38_+1000_y2l1M+JDKPISFsdb--
