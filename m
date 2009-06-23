@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZFWPl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760525AbZFWPmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760882AbZFWPl0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760740AbZFWPlO
+	id S1760525AbZFWPmQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759194AbZFWPl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:41:14 -0400
-Received: from kroah.org ([198.145.64.141]:42553 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760837AbZFWPlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:41:13 -0400
-Date: Tue, 23 Jun 2009 08:29:16 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: driver-core tree build failure
-Message-ID: <20090623152916.GA27467@kroah.com>
-References: <20090623160100.ab086e63.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623160100.ab086e63.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 23 Jun 2009 11:41:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37613 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753793AbZFWPl6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 11:41:58 -0400
+Date: Tue, 23 Jun 2009 16:43:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andy Whitcroft <apw@canonical.com>,
+       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       Mathias Urlichs <matthias@urlichs.de>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Reduce AACRAID hardware queue size
+Message-ID: <20090623164303.3f85a799@lxorguk.ukuu.org.uk>
+In-Reply-To: <1245771089.4149.88.camel@mulgrave.site>
+References: <1245756306-29023-1-git-send-email-apw@canonical.com>
+	<1245756306-29023-2-git-send-email-apw@canonical.com>
+	<1245771089.4149.88.camel@mulgrave.site>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 04:01:00PM +1000, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> Today's linux-next build (arm omap_osk_5912_defconfig) failed like this:
-> 
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_num':
-> drivers/video/omap/omapfb_main.c:1253: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_text':
-> drivers/video/omap/omapfb_main.c:1273: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_panel_name':
-> drivers/video/omap/omapfb_main.c:1320: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_level':
-> drivers/video/omap/omapfb_main.c:1329: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_store_bklight_level':
-> drivers/video/omap/omapfb_main.c:1344: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_max':
-> drivers/video/omap/omapfb_main.c:1363: error: 'struct device' has no member named 'driver_data'
-> drivers/video/omap/omapfb_main.c: In function 'omapfb_show_ctrl_name':
-> drivers/video/omap/omapfb_main.c:1396: error: 'struct device' has no member named 'driver_data'
-> 
-> Caused by commit 53d8ba57f16029a47ed5df9840ab6c3f9abd3727 ("Driver core:
-> move dev_get/set_drvdata to drivers/base/dd.c") from the driver-core tree.
-> 
-> I see more grepping in your future :-)
+> Incidentally, SGBCOUNT isn't queue depth, its maximum number of sectors
+> in an individual transfer.  What we'd need to show for this to be the
+> fix is that every 32 bit aacraid card is affected, which, given the
+> paucity of bug reports, I don't think so.
 
-Heh, thanks, I got i386, x86-64, and ppc64 working properly this time
-around, but new things keep slipping in :)
+Its usually a specific firmware revision that weird problems with aacraid
+hardware are linked to so it is worth trying different firmwares.
 
-I'll go resolve these as well.
-
-thanks,
-
-greg k-h
+Alan
