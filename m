@@ -1,88 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750845AbZFWEKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZFWEKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750845AbZFWEKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 00:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763AbZFWEJv
+	id S1752279AbZFWEKT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 00:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZFWEKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 00:09:51 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:45329 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750706AbZFWEJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 00:09:50 -0400
-Date: Tue, 23 Jun 2009 06:10:52 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in elevaotor layer
-Message-ID: <20090623041052.GS28770@gandalf.sssup.it>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com> <20090622124313.GF28770@gandalf.sssup.it> <20090623024337.GC3620@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623024337.GC3620@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+	Tue, 23 Jun 2009 00:10:03 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:56309 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752888AbZFWEKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 00:10:00 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Pull request blackfin.git
+Date: Tue, 23 Jun 2009 00:09:29 -0400
+Message-Id: <1245730169-14593-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Vivek Goyal <vgoyal@redhat.com>
-> Date: Mon, Jun 22, 2009 10:43:37PM -0400
->
-> On Mon, Jun 22, 2009 at 02:43:13PM +0200, Fabio Checconi wrote:
-> 
-...
-> > > Please help me understand this, we sort the tree by finish time, but
-> > > search by vtime, start_time. The worst case could easily be O(N),
-> > > right?
-> > > 
-> > 
-> > no, (again, the full answer is in the paper); the nice property of
-> > min_start is that it partitions the tree in two regions, one with
-> > eligible entities and one without any of them.  once we know that
-> > there is one eligible entity (checking the min_start at the root)
-> > we can find the node i with min(F_i) subject to S_i < V walking down
-> > a single path from the root to the leftmost eligible entity.  (we
-> > need to go to the right only if the subtree on the left contains 
-> > no eligible entities at all.)  since the RB tree is balanced this
-> > can be done in O(log N).
-> > 
-> 
-> Hi Fabio,
-> 
-> When I go thorough the paper you mentioned above, they seem to have
-> sorted the tree based on eligible time (looks like equivalent of start
-> time) and then keep track of minimum deadline on each node (equivalnet of
-> finish time).
-> 
-> We seem to be doing reverse in BFQ where we sort tree on finish time
-> and keep track of minimum start time on each node. Is there any specific
-> reason behind that?
-> 
+The following changes since commit ac1b7c378ef26fba6694d5f118fe7fc16fee2fe2:
+  Linus Torvalds (1):
+        Merge git://git.infradead.org/mtd-2.6
 
-Well... no specific reasons...  I think that our implementation is easier
-to understand than the one of the paper, because it actually uses finish
-times as the ordering key, and min_start to quickly locate eligible
-subtrees, following the definition of the algorithm.
+are available in the git repository at:
 
-Moreover, if you look at the get_req() code in the paper, it needs a
-couple of loops to get to the result, while with our implementation
-we save the second loop.
+  git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin.git for-linus
 
-Our version is still correct, because it always moves to the left
-(towards smaller finish times), except when moving to the left would
-mean entering a non feasible subtree, in which case it moves to the
-right.
+FUJITA Tomonori (1):
+      Blackfin: fix dma-mapping build errors
 
-Unfortunately I'm not aware of any paper describing a version of the
-algorithm more similar to the one we've implemented.  Sorry for not
-having mentioned that difference in the comments nor anywhere else,
-it has been a long long time since I read the paper, and I must have
-forgotten about that.
+Graf Yang (3):
+      Blackfin: bf526-ezbrd: set SPI flash resources to SST device
+      Blackfin: fix typo in TRAS define in mem_init.h header
+      Blackfin: bf526-ezbrd: handle different SDRAM chips
+
+Jie Zhang (1):
+      Blackfin: decouple unrelated cache settings to get exact behavior
+
+Mike Frysinger (14):
+      Blackfin: unify memory region checks between kgdb and traps
+      Blackfin: bf518f-ezbrd: update DSA resources
+      Blackfin: bf533-ezkit: add resources for FISP devices
+      Blackfin: update anomaly lists
+      Blackfin: redo handling of bad irqs
+      Blackfin: only build show_interrupts() when procfs is enabled
+      Blackfin: simplify irq stack overflow checking
+      Blackfin: abstract irq14 lowering in do_irq
+      Blackfin: allow people to select BF51x-0.1 silicon rev
+      Blackfin: update defconfigs
+      Blackfin: unify memory map headers
+      Blackfin: drop unused ISP1760 port1_disable from board resources
+      Blackfin: fix GPTMR0_CLOCKSOURCE dependency on BFIN_GPTIMERS
+      Blackfin: hook up new perf_counter_open syscall
+
+Philippe Gerum (4):
+      Blackfin: convert interrupt pipeline to irqflags
+      Blackfin: allow CONFIG_TICKSOURCE_GPTMR0 with interrupt pipeline
+      Blackfin: remove obsolete mcount support from I-pipe code
+      Blackfin: update I-pipe patch level
+
+Robin Getz (2):
+      Blackfin: stick the CPU name into boot image name
+      Blackfin: fix early crash when booting on wrong cpu
+
+Sonic Zhang (1):
+      Blackfin: fix accidental reset in some boot modes
+
+Yi Li (1):
+      Blackfin: drop BF535-specific text for exception 0x2A (unaligned instruction)
+
+ arch/blackfin/Kconfig                            |   68 ++++--
+ arch/blackfin/boot/Makefile                      |    2 +-
+ arch/blackfin/configs/BF518F-EZBRD_defconfig     |   24 +-
+ arch/blackfin/configs/BF526-EZBRD_defconfig      |   22 +-
+ arch/blackfin/configs/BF527-EZKIT_defconfig      |   22 +-
+ arch/blackfin/configs/BF533-EZKIT_defconfig      |   25 ++-
+ arch/blackfin/configs/BF533-STAMP_defconfig      |   22 +-
+ arch/blackfin/configs/BF537-STAMP_defconfig      |   22 +-
+ arch/blackfin/configs/BF538-EZKIT_defconfig      |   22 +-
+ arch/blackfin/configs/BF548-EZKIT_defconfig      |   27 ++-
+ arch/blackfin/configs/BF561-EZKIT_defconfig      |   27 ++-
+ arch/blackfin/configs/BlackStamp_defconfig       |   12 +-
+ arch/blackfin/configs/CM-BF527_defconfig         |   22 +-
+ arch/blackfin/configs/CM-BF533_defconfig         |   23 +-
+ arch/blackfin/configs/CM-BF537E_defconfig        |   22 +-
+ arch/blackfin/configs/CM-BF537U_defconfig        |   23 +-
+ arch/blackfin/configs/CM-BF548_defconfig         |   25 ++-
+ arch/blackfin/configs/CM-BF561_defconfig         |   25 ++-
+ arch/blackfin/configs/H8606_defconfig            |   14 +-
+ arch/blackfin/configs/PNAV-10_defconfig          |   20 +-
+ arch/blackfin/configs/SRV1_defconfig             |   14 +-
+ arch/blackfin/configs/TCM-BF537_defconfig        |   14 +-
+ arch/blackfin/include/asm/blackfin.h             |    1 +
+ arch/blackfin/include/asm/cache.h                |    4 +-
+ arch/blackfin/include/asm/cacheflush.h           |   10 +-
+ arch/blackfin/include/asm/cplb.h                 |   30 ++-
+ arch/blackfin/include/asm/dma-mapping.h          |   13 +
+ arch/blackfin/include/asm/ipipe.h                |   11 +-
+ arch/blackfin/include/asm/ipipe_base.h           |   30 +-
+ arch/blackfin/include/asm/irq.h                  |    7 -
+ arch/blackfin/include/asm/irqflags.h             |  164 ++++++++++++-
+ arch/blackfin/include/asm/mem_init.h             |   88 +++++++-
+ arch/blackfin/include/asm/mem_map.h              |   97 ++++----
+ arch/blackfin/include/asm/system.h               |    4 +-
+ arch/blackfin/include/asm/traps.h                |    4 +-
+ arch/blackfin/include/asm/uaccess.h              |   22 ++
+ arch/blackfin/include/asm/unistd.h               |    3 +-
+ arch/blackfin/kernel/Makefile                    |    1 -
+ arch/blackfin/kernel/cplb-mpu/cplbinit.c         |   10 +-
+ arch/blackfin/kernel/cplb-mpu/cplbmgr.c          |   36 ++-
+ arch/blackfin/kernel/ipipe.c                     |    7 +-
+ arch/blackfin/kernel/irqchip.c                   |  114 ++++-----
+ arch/blackfin/kernel/kgdb.c                      |  297 +++++++---------------
+ arch/blackfin/kernel/mcount.S                    |   70 -----
+ arch/blackfin/kernel/process.c                   |  151 +++++++++---
+ arch/blackfin/kernel/setup.c                     |  122 +++++++--
+ arch/blackfin/kernel/traps.c                     |   60 ++---
+ arch/blackfin/mach-bf518/boards/ezbrd.c          |   16 +-
+ arch/blackfin/mach-bf518/include/mach/anomaly.h  |   37 ++-
+ arch/blackfin/mach-bf518/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf518/include/mach/mem_map.h  |   56 +----
+ arch/blackfin/mach-bf527/boards/cm_bf527.c       |    1 -
+ arch/blackfin/mach-bf527/boards/ezbrd.c          |    4 +-
+ arch/blackfin/mach-bf527/boards/ezkit.c          |    1 -
+ arch/blackfin/mach-bf527/include/mach/anomaly.h  |   15 +-
+ arch/blackfin/mach-bf527/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf527/include/mach/mem_map.h  |   56 +----
+ arch/blackfin/mach-bf533/boards/ezkit.c          |  106 ++++++++
+ arch/blackfin/mach-bf533/include/mach/anomaly.h  |   77 +++---
+ arch/blackfin/mach-bf533/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf533/include/mach/mem_map.h  |   56 +----
+ arch/blackfin/mach-bf537/boards/stamp.c          |    1 -
+ arch/blackfin/mach-bf537/include/mach/anomaly.h  |   41 ++--
+ arch/blackfin/mach-bf537/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf537/include/mach/mem_map.h  |   56 +----
+ arch/blackfin/mach-bf538/include/mach/anomaly.h  |   24 ++-
+ arch/blackfin/mach-bf538/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf538/include/mach/mem_map.h  |   57 +----
+ arch/blackfin/mach-bf548/boards/ezkit.c          |    1 -
+ arch/blackfin/mach-bf548/include/mach/anomaly.h  |   20 +-
+ arch/blackfin/mach-bf548/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf548/include/mach/mem_map.h  |   51 +---
+ arch/blackfin/mach-bf561/boards/ezkit.c          |    1 -
+ arch/blackfin/mach-bf561/include/mach/anomaly.h  |   89 ++++---
+ arch/blackfin/mach-bf561/include/mach/blackfin.h |    1 -
+ arch/blackfin/mach-bf561/include/mach/mem_map.h  |   58 +++-
+ arch/blackfin/mach-common/arch_checks.c          |    4 +-
+ arch/blackfin/mach-common/cpufreq.c              |    2 +-
+ arch/blackfin/mach-common/entry.S                |    1 +
+ arch/blackfin/mach-common/ints-priority.c        |   47 ++--
+ arch/blackfin/mach-common/pm.c                   |    4 +-
+ arch/blackfin/mm/init.c                          |    2 +-
+ 82 files changed, 1529 insertions(+), 1215 deletions(-)
+ delete mode 100644 arch/blackfin/kernel/mcount.S
