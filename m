@@ -1,128 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760596AbZFWPeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZFWPiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760596AbZFWPeG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbZFWPdL
+	id S1757768AbZFWPiZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZFWPiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:33:11 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:43852 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761024AbZFWPdK (ORCPT
+	Tue, 23 Jun 2009 11:38:15 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:37392 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754067AbZFWPiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:33:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer;
-        b=ezAIXiGvR540yFDYOsZ+f7jnrVIeFscxhYdWjrpFQAE/z1QTtW71Wi9ZSbijpnrfxv
-         2tGzy9Y9S2LoJmfXL+geehDaO/f/prg1groGwjBcd2tZEQfkDBQmKIZKtDxZyWe9OUHU
-         P6y1CJkPhV8Mi510tFn3ZS+EtqMJW709IufCM=
-Subject: [PATCH 3/4] MFD/PCAP: set_ts_bits()
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/IiiR6IhySq5pgfitKnj"
-Date: Tue, 23 Jun 2009 12:33:10 -0300
-Message-Id: <1245771190.7750.42.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 23 Jun 2009 11:38:14 -0400
+Date: Tue, 23 Jun 2009 17:38:15 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Mustafa Mesanovic <mustafa.mesanovic@de.ibm.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/Resend] timer stats: add quick check to avoid function
+	calls
+Message-ID: <20090623153811.GA4641@osiris.boeblingen.de.ibm.com>
+References: <20090623161212.5af942c0@osiris.boeblingen.de.ibm.com> <20090623150803.GD13415@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623150803.GD13415@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 23, 2009 at 05:08:03PM +0200, Ingo Molnar wrote:
+> 
+> * Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> 
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > 
+> > When the kernel is configured with CONFIG_TIMER_STATS but timer stats
+> > are runtime disabled we still get calls to __timer_stats_timer_set_start_info
+> > which initializes some fields in the corresponding struct timer_list.
+> > 
+> > So add some quick checks in the the timer stats setup functions to avoid
+> > function calls to __timer_stats_timer_set_start_info when timer stats are
+> > disabled.
+> > 
+> > In an artificial workload that does nothing but playing ping pong with a
+> > single tcp packet via loopback this decreases cpu consumption by 1 - 1.5%.
+> > 
+> > This is part of a modified function trace output on SLES11:
+> > 
+> > perl-2497  [00] 28630647177732388 [+  125]: sk_reset_timer <-tcp_v4_rcv
+> > perl-2497  [00] 28630647177732513 [+  125]: mod_timer <-sk_reset_timer
+> > perl-2497  [00] 28630647177732638 [+  125]: __timer_stats_timer_set_start_info <-mod_timer
+> > perl-2497  [00] 28630647177732763 [+  125]: __mod_timer <-mod_timer
+> > perl-2497  [00] 28630647177732888 [+  125]: __timer_stats_timer_set_start_info <-__mod_timer
+> > perl-2497  [00] 28630647177733013 [+   93]: lock_timer_base <-__mod_timer
+> 
+> makes sense.
+> 
+> Only one very small detail:
 
---=-/IiiR6IhySq5pgfitKnj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+[..]
 
-Some TS controller bits are on the same register as the ADC control, save=20
-TS specific bits and export a set_ts_bits function so the TS driver can set
-it with the adc_mutex lock held.
+> > Index: linux-2.6/include/linux/timer.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/timer.h
+> > +++ linux-2.6/include/linux/timer.h
+> > @@ -187,6 +187,8 @@ extern unsigned long get_next_timer_inte
+> >   */
+> >  #ifdef CONFIG_TIMER_STATS
+> >  
+> > +extern int timer_stats_active;
+> 
+> Why is this declared twice, once in hrtimer.h and once in timer.h? 
+> One should suffice, right?
 
-Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+Actually I only followed the example of timer_stats_update_stats()
+which is declared also in both files.
+But including timer.h from hrtimer.h doesn't bring up any compile
+breakages on the few configs I tested.
+Updated patch which avoids the double declaration but adds an
+include of timer.h to hrtimer.h
 
+Subject: [PATCH] timer stats: add quick check to avoid function calls
+
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+When the kernel is configured with CONFIG_TIMER_STATS but timer stats
+are runtime disabled we still get calls to __timer_stats_timer_set_start_info
+which initializes some fields in the corresponding struct timer_list.
+
+So add some quick checks in the the timer stats setup functions to avoid
+function calls to __timer_stats_timer_set_start_info when timer stats are
+disabled.
+
+In an artificial workload that does nothing but playing ping pong with a
+single tcp packet via loopback this decreases cpu consumption by 1 - 1.5%.
+
+This is part of a modified function trace output on SLES11:
+
+perl-2497  [00] 28630647177732388 [+  125]: sk_reset_timer <-tcp_v4_rcv
+perl-2497  [00] 28630647177732513 [+  125]: mod_timer <-sk_reset_timer
+perl-2497  [00] 28630647177732638 [+  125]: __timer_stats_timer_set_start_info <-mod_timer
+perl-2497  [00] 28630647177732763 [+  125]: __mod_timer <-mod_timer
+perl-2497  [00] 28630647177732888 [+  125]: __timer_stats_timer_set_start_info <-__mod_timer
+perl-2497  [00] 28630647177733013 [+   93]: lock_timer_base <-__mod_timer
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- drivers/mfd/ezx-pcap.c       |   22 ++++++++++++++++++----
- include/linux/mfd/ezx-pcap.h |    1 +
- 2 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mfd/ezx-pcap.c b/drivers/mfd/ezx-pcap.c
-index de7e637..c512202 100644
---- a/drivers/mfd/ezx-pcap.c
-+++ b/drivers/mfd/ezx-pcap.c
-@@ -195,6 +195,19 @@ static void pcap_irq_handler(unsigned int irq, struct =
-irq_desc *desc)
- }
-=20
- /* ADC */
-+void pcap_set_ts_bits(struct pcap_chip *pcap, u32 bits)
-+{
-+	u32 tmp;
-+
-+	mutex_lock(&pcap->adc_mutex);
-+	ezx_pcap_read(pcap, PCAP_REG_ADC, &tmp);
-+	tmp &=3D ~(PCAP_ADC_TS_M_MASK | PCAP_ADC_TS_REF_LOWPWR);
-+	tmp |=3D bits & (PCAP_ADC_TS_M_MASK | PCAP_ADC_TS_REF_LOWPWR);
-+	ezx_pcap_write(pcap, PCAP_REG_ADC, tmp);
-+	mutex_unlock(&pcap->adc_mutex);
-+}
-+EXPORT_SYMBOL_GPL(pcap_set_ts_bits);
-+
- static void pcap_disable_adc(struct pcap_chip *pcap)
+ include/linux/hrtimer.h   |    5 +++++
+ include/linux/timer.h     |    4 ++++
+ kernel/time/timer_stats.c |   16 ++++++++--------
+ kernel/timer.c            |    2 ++
+ 4 files changed, 19 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.orig/include/linux/hrtimer.h
++++ linux-2.6/include/linux/hrtimer.h
+@@ -21,6 +21,7 @@
+ #include <linux/list.h>
+ #include <linux/wait.h>
+ #include <linux/percpu.h>
++#include <linux/timer.h>
+ 
+ 
+ struct hrtimer_clock_base;
+@@ -447,6 +448,8 @@ extern void timer_stats_update_stats(voi
+ 
+ static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
  {
- 	u32 tmp;
-@@ -217,15 +230,16 @@ static void pcap_adc_trigger(struct pcap_chip *pcap)
- 		mutex_unlock(&pcap->adc_mutex);
- 		return;
- 	}
--	mutex_unlock(&pcap->adc_mutex);
--
--	/* start conversion on requested bank */
--	tmp =3D pcap->adc_queue[head]->flags | PCAP_ADC_ADEN;
-+	/* start conversion on requested bank, save TS_M bits */
-+	ezx_pcap_read(pcap, PCAP_REG_ADC, &tmp);
-+	tmp &=3D (PCAP_ADC_TS_M_MASK | PCAP_ADC_TS_REF_LOWPWR);
-+	tmp |=3D pcap->adc_queue[head]->flags | PCAP_ADC_ADEN;
-=20
- 	if (pcap->adc_queue[head]->bank =3D=3D PCAP_ADC_BANK_1)
- 		tmp |=3D PCAP_ADC_AD_SEL1;
-=20
- 	ezx_pcap_write(pcap, PCAP_REG_ADC, tmp);
-+	mutex_unlock(&pcap->adc_mutex);
- 	ezx_pcap_write(pcap, PCAP_REG_ADR, PCAP_ADR_ASC);
++	if (likely(!timer->start_pid))
++		return;
+ 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
+ 				 timer->function, timer->start_comm, 0);
  }
-=20
-diff --git a/include/linux/mfd/ezx-pcap.h b/include/linux/mfd/ezx-pcap.h
-index 6296b49..b15caac 100644
---- a/include/linux/mfd/ezx-pcap.h
-+++ b/include/linux/mfd/ezx-pcap.h
-@@ -29,6 +29,7 @@ int pcap_to_irq(struct pcap_chip *, int);
- int irq_to_pcap(struct pcap_chip *, int);
- int pcap_adc_async(struct pcap_chip *, u8, u32, u8[], void *, void *);
- int pcap_adc_sync(struct pcap_chip *, u8, u32, u8[], u16[]);
-+void pcap_set_ts_bits(struct pcap_chip *, u32);
-=20
- #define PCAP_SECOND_PORT	1
- #define PCAP_CS_AH		2
---=20
-tg: (bd75754..) pcap/set_ts_bits (depends on: pcap/irq_to_pcap)
-
---=20
-Daniel Ribeiro
-
---=-/IiiR6IhySq5pgfitKnj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
- assinada digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpA9bYACgkQw3OYl0G0liSwjwCdHS3kI/bFPhkxmYTLsPs7HCHL
-9HAAn0Mrheh09KCmgD5ww8IKoXi8KB09
-=bVZw
------END PGP SIGNATURE-----
-
---=-/IiiR6IhySq5pgfitKnj--
-
+@@ -456,6 +459,8 @@ extern void __timer_stats_hrtimer_set_st
+ 
+ static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+ {
++	if (likely(!timer_stats_active))
++		return;
+ 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
+ }
+ 
+Index: linux-2.6/include/linux/timer.h
+===================================================================
+--- linux-2.6.orig/include/linux/timer.h
++++ linux-2.6/include/linux/timer.h
+@@ -190,6 +190,8 @@ extern unsigned long get_next_timer_inte
+  */
+ #ifdef CONFIG_TIMER_STATS
+ 
++extern int timer_stats_active;
++
+ #define TIMER_STATS_FLAG_DEFERRABLE	0x1
+ 
+ extern void init_timer_stats(void);
+@@ -203,6 +205,8 @@ extern void __timer_stats_timer_set_star
+ 
+ static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
+ {
++	if (likely(!timer_stats_active))
++		return;
+ 	__timer_stats_timer_set_start_info(timer, __builtin_return_address(0));
+ }
+ 
+Index: linux-2.6/kernel/timer.c
+===================================================================
+--- linux-2.6.orig/kernel/timer.c
++++ linux-2.6/kernel/timer.c
+@@ -380,6 +380,8 @@ static void timer_stats_account_timer(st
+ {
+ 	unsigned int flag = 0;
+ 
++	if (likely(!timer->start_site))
++		return;
+ 	if (unlikely(tbase_get_deferrable(timer->base)))
+ 		flag |= TIMER_STATS_FLAG_DEFERRABLE;
+ 
+Index: linux-2.6/kernel/time/timer_stats.c
+===================================================================
+--- linux-2.6.orig/kernel/time/timer_stats.c
++++ linux-2.6/kernel/time/timer_stats.c
+@@ -96,7 +96,7 @@ static DEFINE_MUTEX(show_mutex);
+ /*
+  * Collection status, active/inactive:
+  */
+-static int __read_mostly active;
++int __read_mostly timer_stats_active;
+ 
+ /*
+  * Beginning/end timestamps of measurement:
+@@ -242,7 +242,7 @@ void timer_stats_update_stats(void *time
+ 	struct entry *entry, input;
+ 	unsigned long flags;
+ 
+-	if (likely(!active))
++	if (likely(!timer_stats_active))
+ 		return;
+ 
+ 	lock = &per_cpu(lookup_lock, raw_smp_processor_id());
+@@ -254,7 +254,7 @@ void timer_stats_update_stats(void *time
+ 	input.timer_flag = timer_flag;
+ 
+ 	spin_lock_irqsave(lock, flags);
+-	if (!active)
++	if (!timer_stats_active)
+ 		goto out_unlock;
+ 
+ 	entry = tstat_lookup(&input, comm);
+@@ -290,7 +290,7 @@ static int tstats_show(struct seq_file *
+ 	/*
+ 	 * If still active then calculate up to now:
+ 	 */
+-	if (active)
++	if (timer_stats_active)
+ 		time_stop = ktime_get();
+ 
+ 	time = ktime_sub(time_stop, time_start);
+@@ -368,18 +368,18 @@ static ssize_t tstats_write(struct file 
+ 	mutex_lock(&show_mutex);
+ 	switch (ctl[0]) {
+ 	case '0':
+-		if (active) {
+-			active = 0;
++		if (timer_stats_active) {
++			timer_stats_active = 0;
+ 			time_stop = ktime_get();
+ 			sync_access();
+ 		}
+ 		break;
+ 	case '1':
+-		if (!active) {
++		if (!timer_stats_active) {
+ 			reset_entries();
+ 			time_start = ktime_get();
+ 			smp_mb();
+-			active = 1;
++			timer_stats_active = 1;
+ 		}
+ 		break;
+ 	default:
