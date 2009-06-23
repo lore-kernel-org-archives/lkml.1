@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbZFWLzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbZFWLzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbZFWLzm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZFWLz2
+	id S1758970AbZFWLzz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbZFWLzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:55:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49796 "EHLO mx2.mail.elte.hu"
+	Tue, 23 Jun 2009 07:55:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44162 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756330AbZFWLz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:55:27 -0400
-Date: Tue, 23 Jun 2009 13:55:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: kerneloops.org report for the week of June 14 2009
-Message-ID: <20090623115510.GC9497@elte.hu>
-References: <20090614173331.18f01123@infradead.org> <alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
+	id S1757628AbZFWLz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 07:55:29 -0400
+Message-ID: <4A40C2E7.9000705@redhat.com>
+Date: Tue, 23 Jun 2009 14:56:23 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906231201430.2767@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <gregory.haskins@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH RFC] pass write value to in_range pointers
+References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090622151631.GA14780@redhat.com> <4A3FA6FC.9030301@novell.com> <20090622160833.GA15228@redhat.com> <4A3FB156.3030301@novell.com> <20090622172720.GC15228@redhat.com> <4A405436.1080100@gmail.com> <20090623114438.GD17635@redhat.com>
+In-Reply-To: <20090623114438.GD17635@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/23/2009 02:44 PM, Michael S. Tsirkin wrote:
+> On Tue, Jun 23, 2009 at 12:04:06AM -0400, Gregory Haskins wrote:
+>    
+>>>>   It will also need to support
+>>>> multiple matches.
+>>>>
+>>>>          
+>>> What, signal many fds on the same address/value pair?
+>>> I see this as a bug. Why is this a good thing to support?
+>>> Just increases the chance of leaking this fd.
+>>>
+>>>        
+>> I believe Avi asked for this feature specifically, so I will defer to him.
+>>      
+>
+> Hmm. That's hard to implement in my model. Avi, can we give up
+> this feature? I don't think anyone needs this specifically ...
+>    
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+I think we can make do with passing that single eventfd to multiple 
+consumers.  It means their event count reads may return zero, but I 
+guess we can live with that.
 
-> On Sun, 14 Jun 2009, Arjan van de Ven wrote:
-> > Rank 3: getnstimeofday (warning)
-> > 	Reported 309 times (2446 total reports)
-> > 	[suspend resume] getnstimeofday() is called before timekeeping is
->         resumed
-> 
-> > Rank 6: hres_timers_resume (warning)
-> > 	Reported 188 times (1024 total reports)
-> > 	[suspend resume] hres_timers_resume() is incorrectly called with
-> >       interrupts on
-> 
-> Both have the same root cause. Something enables interrupts in the 
-> early resume path. IIRC, there was a culprit identified recently. 
-> Rafael ?
+I do want to retain flexibility in how we route events.
 
-This can be debugged automatically today, using lockdep, by using a 
-'helper lock':
+-- 
+error compiling committee.c: too many arguments to function
 
-  static DEFINE_PER_CPU(struct lockdep_map, helper_lock);
-
-Then mark the lock irq-safe by doing something like:
-
-static void mark_lock_irqsafe(void)
-{
-	unsigned long flags;
-	int cpu;
-
-	local_irq_save(flags);
-	irq_enter(0);
-
-	for_each_online_cpu(cpu) {
-		lock_acquire(&per_cpu(helper_lock, cpu), 0, 0, 0, 0, NULL, 0);
-		lock_release(&per_cpu(helper_lock, cpu), 0, 0, 0, 0, NULL, 0);
-	}
-
-	irq_exit(0);
-	local_irq_restore(flags);
-}
-
-Then, the resume path, when it disables irqs, you can disallow 
-irq-enable via:
-
-	local_irq_disable();
-	lock_acquire(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL, 0);
-	...
-	<extensive suspend or resume codepaths, callbacks> 
-	...
-	lock_release(&__get_cpu_var(helper_lock), 0, 0, 0, 0, NULL, 0);
-	local_irq_enable();
-
-And lockdep will warn if any function inbetween enables IRQs, by 
-emitting a splat about incorrectly enabled hardirqs. It will warn 
-about the specific place and will emit a relevant backtrace, - not 
-just the handler in general.
-
-This should work just fine with current lockdep facilities.
-
-Rafael?
-
-	Ingo
