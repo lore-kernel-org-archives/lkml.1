@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZFWQVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbZFWQXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757768AbZFWQVD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZFWQUy
+	id S1759400AbZFWQXt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbZFWQXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:20:54 -0400
-Received: from comar.uludag.org.tr ([193.140.100.220]:57149 "EHLO
-	pardus.org.tr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756353AbZFWQUy (ORCPT
+	Tue, 23 Jun 2009 12:23:36 -0400
+Received: from stinky.trash.net ([213.144.137.162]:48003 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756958AbZFWQXd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:20:54 -0400
-Message-ID: <4A4100E6.9080401@pardus.org.tr>
-Date: Tue, 23 Jun 2009 19:20:54 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 23 Jun 2009 12:23:33 -0400
+Message-ID: <4A410185.3090706@trash.net>
+Date: Tue, 23 Jun 2009 18:23:33 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [git pull] drm v2.6.31 merge (part 1)
-References: <alpine.DEB.2.00.0906120720410.11737@skynet.skynet.ie> <4A3FF03A.4050401@pardus.org.tr> <alpine.DEB.2.00.0906222350570.20307@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.2.00.0906222350570.20307@skynet.skynet.ie>
-Content-Type: text/plain; charset=UTF-8
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+CC: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
+       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 10/10] nf_conntrack: Use rcu_barrier().
+References: <20090623150330.22490.87327.stgit@localhost> <20090623150444.22490.27931.stgit@localhost>
+In-Reply-To: <20090623150444.22490.27931.stgit@localhost>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
-> You don't have an r600, an rs690 isn't an r600 at all.
->
-> Can you bisect to where the lockups start or have you always had lockups?
->
-> Dave.
->   
+Jesper Dangaard Brouer wrote:
+> I'm not sure which is are most optimal place to call rcu_barrier().
+> The patch probably calls rcu_barrier() too much, but its a better
+> safe than sorry approach.
+> 
+> There is embedded some comments that I would like Patrick McHardy
+> to look at.
+> 
+> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+> index 5f72b94..cea4537 100644
+> --- a/net/netfilter/nf_conntrack_core.c
+> +++ b/net/netfilter/nf_conntrack_core.c
+> @@ -1084,6 +1084,8 @@ static void nf_conntrack_cleanup_init_net(void)
+>  {
+>  	nf_conntrack_helper_fini();
+>  	nf_conntrack_proto_fini();
+> +	rcu_barrier();
+> +	/* Need to wait for call_rcu() before dealloc the kmem_cache */
+>  	kmem_cache_destroy(nf_conntrack_cachep);
 
-Yes I noticed that r600 is a different one, sorry.
+Which call_rcu() is this referring to? If its the conntrack destruction,
+that one is gone in the current kernel and I think destruction is
+handled properly by the sl*b-allocators (SLAB_DESTROY_BY_RCU).
 
-First of all I'm maintaining the kernel package for a linux distro[0]
-which is currently at 2.6.30. It was plain vanilla in terms of drm/
-until I noticed a strange problem on X. X was rendering some pixmaps (In
-firefox or other apps) completely black. They were rendered correctly
-just after zooming to them 4-6 times.
+> @@ -1118,6 +1120,9 @@ void nf_conntrack_cleanup(struct net *net)
+>  	/* This makes sure all current packets have passed through
+>  	   netfilter framework.  Roll on, two-stage module
+>  	   delete... */
+> +	/* hawk@comx.dk 2009-06-20: Think this should be replaced by a
+> +          rcu_barrier() ???
+> +	*/
+>  	synchronize_net();
 
-Then we decided to grab F11 drm patches (for nouveau support and also
-radeon patches). The bad rendering problem is disappeared but I started
-to have random lockups causing X server to hog the cpu.
+AFAICT this one is used to make sure the old value of the ip_ct_attach
+hook is not visible anymore before beginning cleanup and is not needed
+for anything else.
 
-Today I reverted the fedora patches and started using vanilla drm/
-again, I didn't have a lockup during the day but the rendering problem
-is back.
+>  	nf_conntrack_cleanup_net(net);
+> diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
+> index 1935153..29c6cd0 100644
+> --- a/net/netfilter/nf_conntrack_standalone.c
+> +++ b/net/netfilter/nf_conntrack_standalone.c
+> @@ -500,6 +500,8 @@ static void nf_conntrack_net_exit(struct net *net)
+>  	nf_conntrack_standalone_fini_sysctl(net);
+>  	nf_conntrack_standalone_fini_proc(net);
+>  	nf_conntrack_cleanup(net);
+> +	/* hawk@comx.dk: Think rcu_barrier() should to be called earlier? */
+> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>  }
 
-Then I googled a little bit and enabled the debug parameter of the drm
-module after the lockup which logs the following 6 lines infinitely:
-
-[ 4653.077514] [drm:radeon_do_wait_for_fifo] wait for fifo failed status
-: 0x9003C100 0x00080100
-[ 4653.077516] [drm:drm_ioctl] ret = fffffff0
-[ 4653.077557] [drm:drm_ioctl] pid=1066, cmd=0x6444, nr=0x44, dev
-0xe200, auth=1
-[ 4653.077561] [drm:radeon_cp_idle]
-[ 4653.077563] [drm:radeon_do_cp_idle]
-
-straceing the X server says infinitely that the ioctl (0x6444) on
-/dev/dri/card0 returns -EBUSY.
-
-
-
-Thanks,
-Ozan Caglayan
-
-[0]: http://www.pardus.org.tr/eng
-
-
+Which call_rcu() is this referring to? We should place them in
+the cleanup sub-functions to make this clearly visible.
