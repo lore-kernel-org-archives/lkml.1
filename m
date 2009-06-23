@@ -1,131 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbZFWWcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbZFWWfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758570AbZFWWcg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbZFWWc0
+	id S1756789AbZFWWfA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZFWWex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:32:26 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57390 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZFWWcZ (ORCPT
+	Tue, 23 Jun 2009 18:34:53 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:51942 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbZFWWew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:32:25 -0400
-Date: Tue, 23 Jun 2009 17:32:30 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] VFS: Add VFS helper functions for setting up
-	private namespaces
-Message-ID: <20090623223230.GA30173@us.ibm.com>
-References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org> <20090622190913.27923.61549.stgit@heimdal.trondhjem.org> <20090623201307.GA25760@us.ibm.com> <1245792589.5133.24.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245792589.5133.24.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 23 Jun 2009 18:34:52 -0400
+Date: Tue, 23 Jun 2009 18:34:37 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, sfi-devel@simplefirmware.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial support
+In-reply-to: <20090623222319.5f44332a@lxorguk.ukuu.org.uk>
+Message-id: <alpine.LFD.2.00.0906231820380.32098@localhost.localdomain>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
+ <20090623183153.GB12814@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
+ <20090623185120.GA13824@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231541400.23079@localhost.localdomain>
+ <20090623202302.GA15265@srcf.ucam.org> <20090623204524.GA15891@srcf.ucam.org>
+ <20090623222319.5f44332a@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
-> On Tue, 2009-06-23 at 15:13 -0500, Serge E. Hallyn wrote:
-> > Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
-> > > The purpose of this patch is to improve the remote mount path lookup
-> > > support for distributed filesystems such as the NFSv4 client.
-> > > 
-> > > When given a mount command of the form "mount server:/foo/bar /mnt", the
-> > > NFSv4 client is required to look up the filehandle for "server:/", and
-> > > then look up each component of the remote mount path "foo/bar" in order
-> > > to find the directory that is actually going to be mounted on /mnt.
-> > > Following that remote mount path may involve following symlinks,
-> > > crossing server-side mount points and even following referrals to
-> > > filesystem volumes on other servers.
-> > > 
-> > > Since the standard VFS path lookup code already supports walking paths
-> > > that contain all these features (using in-kernel automounts for
-> > > following referrals) we would like to be able to reuse that rather than
-> > > duplicate the full path traversal functionality in the NFSv4 client code.
-> > > 
-> > > This patch therefore defines a VFS helper function create_mnt_ns(), that
-> > > sets up a temporary filesystem namespace and attaches a root filesystem to
-> > > it. It exports the create_mnt_ns() and put_mnt_ns() function for use by
-> > > filesystem modules.
-> > > 
-> > > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> > 
-> > This looks good, thanks.  Though I see no reason not to also switch over
-> > init_mount_tree() to the new helper.
-> > 
-> > (Seems plausible that c/r code would use this as well)
-> > 
-> > Reviewed-by: Serge Hallyn <serue@us.ibm.com>
-> > 
-> > thanks,
-> > -serge
-> 
-> Thanks for the review! I missed the code duplication in
-> init_mount_tree(). Something like the following?
 
-Yup.
 
-(it keeps bugging me that the order of args to list_add() gets reversed
-as a result, but clearly with both starting out empty it doesn't
-matter..)
+> > not enthusiastic about seeing this presented as a fait accompli in 
+> > generic driver code, rather than under arch/x86/moorestown.
+> 
+> Certainly wouldn't be a real problem if it started there and migrated
+> if/when it proves to be more generic.
 
-thanks,
--serge
+There are no drivers in drivers/sfi/, nor will there ever be.
 
-> Cheers
->   Trond
-> --------------------------------------------------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> VFS: Switch init_mount_tree() to use the new create_mnt_ns() helper
-> 
-> Eliminates some duplicated code...
-> 
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
-> 
->  fs/namespace.c |   11 ++---------
->  1 files changed, 2 insertions(+), 9 deletions(-)
-> 
-> 
-> diff --git a/fs/namespace.c b/fs/namespace.c
-> index a7bea8c..4a86b85 100644
-> --- a/fs/namespace.c
-> +++ b/fs/namespace.c
-> @@ -2222,16 +2222,9 @@ static void __init init_mount_tree(void)
->  	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
->  	if (IS_ERR(mnt))
->  		panic("Can't create rootfs");
-> -	ns = kmalloc(sizeof(*ns), GFP_KERNEL);
-> -	if (!ns)
-> +	ns = create_mnt_ns(mnt);
-> +	if (IS_ERR(ns))
->  		panic("Can't allocate initial namespace");
-> -	atomic_set(&ns->count, 1);
-> -	INIT_LIST_HEAD(&ns->list);
-> -	init_waitqueue_head(&ns->poll);
-> -	ns->event = 0;
-> -	list_add(&mnt->mnt_list, &ns->list);
-> -	ns->root = mnt;
-> -	mnt->mnt_ns = ns;
-> 
->  	init_task.nsproxy->mnt_ns = ns;
->  	get_mnt_ns(ns);
-> 
-> 
-> -- 
-> Trond Myklebust
-> Linux NFS client maintainer
-> 
-> NetApp
-> Trond.Myklebust@netapp.com
-> www.netapp.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I followed the broken topology used by ACPI, which has both drivers
+and non-driver-platform-dependent-code in drivers/acpi/.
+
+I did propose fixing ACPI at one point, but there was no consensus
+on where platform dependent non-driver code that runs on multiple
+architectures should live.  (eg, where to put drivers/acpi/acpica/*)
+
+SFI is largely in the same boat.  Though one could argue
+that all of SFI could live under arch/x86 someplace,
+though it will be accessed by more than moorestown specific code.
+
+cheers,
+-Len Brown, Intel Open Source Technology Center
+
