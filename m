@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZFWWCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZFWWEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZFWWCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZFWWB6
+	id S1756152AbZFWWEv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZFWWEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:01:58 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46121 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751888AbZFWWB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:01:57 -0400
-Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
-       jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
-       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
-       Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       Yoshinori Sato <ysato@users.sourceforge.jp>,
-       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
-       Avi Kivity <avi@redhat.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>
-In-Reply-To: <4A413C66.5010306@goop.org>
-References: <20090622140807.25509.54448.stgit@bob.kio>
-	 <20090622143431.GT19977@parisc-linux.org> <4A3FCB68.3030004@goop.org>
-	 <20090622183056.GY19977@parisc-linux.org> <1245714008.4017.7.camel@pasglop>
-	 <20090623190826.GJ19977@parisc-linux.org>  <4A413C66.5010306@goop.org>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 07:49:18 +1000
-Message-Id: <1245793758.10356.27.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 18:04:42 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:51208 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbZFWWEl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 18:04:41 -0400
+Date: Tue, 23 Jun 2009 16:04:43 -0600 (MDT)
+From: Paul Walmsley <paul@pwsan.com>
+To: Jean Pihet <jpihet@mvista.com>
+cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 00/10] OMAP clock/powerdomain/SDRC patches for
+ post-2.6.30
+In-Reply-To: <200906191836.07462.jpihet@mvista.com>
+Message-ID: <alpine.DEB.2.00.0906231603470.6545@utopia.booyaka.com>
+References: <20090526220517.25381.75976.stgit@localhost.localdomain> <20090618054845.GC8482@atomide.com> <20090619162342.GP24573@n2100.arm.linux.org.uk> <200906191836.07462.jpihet@mvista.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 13:34 -0700, Jeremy Fitzhardinge wrote:
-> On reflection, I think this will work.  We have a Xen pci passthrough
-> driver which gets told about the passed-through devices via xenbus,
-> and
-> does the appropriate setup.  At first glance, there doesn't seem to be
-> any problem with that code just explicitly instantiate the devices at
-> the PCI level in the same way pci_scan_device does (ie,
-> alloc_pci_device, initalize the dev struct, pci_setup_device).
-> 
-> Is that what you mean?
-> 
-> IanC has looked at that code more closely, so perhaps he can confirm
-> that this will work on our side.
-> 
-Yes, we do that in arch/powerpc/kernel/pci_64.c (and somewhere in
-arch/sparc too). I'll merge those 2 implementations one of these days
-and move them to drivers/of.
+Hello Jean,
 
-I think Willy was actually suggesting that you start using our
-OF/device-tree stuff though which is a slightly more invasive deal but
-might end up useful for other things in the long run :-)
+On Fri, 19 Jun 2009, Jean Pihet wrote:
 
-Cheers,
-Ben.
+> On Friday 19 June 2009 18:23:42 Russell King - ARM Linux wrote:
+> > On Thu, Jun 18, 2009 at 08:48:47AM +0300, Tony Lindgren wrote:
+> > > Paul, can you please post a git pull request for Russell on these?
+> > > I think these should still go in if possible.
+> > >
+> > > Russell, if you think it's too late, I'll pile them up into omap
+> > > for-next branch.
+> >
+> > Let's merge them.
+> Also, can you look at '[PATCH 0/2] Allows the SDRAM self refresh to work with 
+> 2 chip selects' which apply on top of Paul's SDRC patches?
 
+I'll merge these patches into the next SDRC series for Russell and Tony.
 
+thanks,
+
+- Paul
