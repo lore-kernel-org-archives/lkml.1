@@ -1,55 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZFWUht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZFWUmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbZFWUht (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755106AbZFWUhj
+	id S1755656AbZFWUmG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZFWUl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:37:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50613 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZFWUhi (ORCPT
+	Tue, 23 Jun 2009 16:41:58 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57043 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbZFWUl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:37:38 -0400
-Date: Tue, 23 Jun 2009 22:37:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [RFC][ PATCH -tip v2 0/7] kprobes: Kprobes jump optimization support
-Message-ID: <20090623203738.GG6760@one.firstfloor.org>
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <87vdmn179n.fsf@basil.nowhere.org> <4A40DDAD.6020202@redhat.com> <87bpoe29jo.fsf@basil.nowhere.org> <4A4110A3.2060808@redhat.com>
-Mime-Version: 1.0
+	Tue, 23 Jun 2009 16:41:57 -0400
+Date: Tue, 23 Jun 2009 15:42:02 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] NFS: Correct the NFS mount path when following a
+	referral
+Message-ID: <20090623204202.GA25969@us.ibm.com>
+References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org> <20090622190914.27923.84173.stgit@heimdal.trondhjem.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4110A3.2060808@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090622190914.27923.84173.stgit@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 01:28:03PM -0400, Masami Hiramatsu wrote:
-> Hmm, would you know what is the actual name of that section and option?
+Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
+> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> ---
+> 
+>  fs/nfs/super.c |   24 ++++++++++++++++++++++++
+>  1 files changed, 24 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+> index 8da7e59..daecbad 100644
+> --- a/fs/nfs/super.c
+> +++ b/fs/nfs/super.c
+> @@ -2548,6 +2548,27 @@ static struct vfsmount *nfs_do_root_mount(struct file_system_type *fs_type,
+>  	return root_mnt;
+>  }
+> 
+> +static void nfs_fix_devname(const struct path *path, struct vfsmount *mnt)
+> +{
+> +	char *page = (char *) __get_free_page(GFP_KERNEL);
+> +	char *devname, *tmp;
+> +
+> +	if (page == NULL)
+> +		return;
+> +	devname = nfs_path(path->mnt->mnt_devname,
+> +			path->mnt->mnt_root, path->dentry,
+> +			page, PAGE_SIZE);
+> +	if (devname == NULL)
+> +		goto out_freepage;
+> +	tmp = kstrdup(devname, GFP_KERNEL);
+> +	if (tmp == NULL)
+> +		goto out_freepage;
+> +	kfree(mnt->mnt_devname);
+> +	mnt->mnt_devname = tmp;
 
--freorder-blocks-and-partition
+(looking through patch 3 a bit) is this expected to be safe because all
+callers will send in a mnt which was privately mounted as nfs root_mnt through
+vfs_kern_mount?  So that at this point noone else can have a ref to
+mnt?
 
-.text.unlikely
+If that isn't the intent, then this seems problematic...  (If it is, it
+seems worth commenting both so that every reader doesn't feel compelled
+to verify, and so that no new callers will naively violate that
+expectation)
 
-> I think another possible solution is decoding those sections and
-> black-listing the target functions when making vmlinux or loading
-> modules.
+thanks,
+-serge
 
-Note that this can be pretty much all functions if you're unlucky.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> +out_freepage:
+> +	free_page((unsigned long)page);
+> +}
+> +
+>  static int nfs_follow_remote_path(struct vfsmount *root_mnt,
+>  		const char *export_path, struct vfsmount *mnt_target)
+>  {
+> @@ -2574,6 +2595,9 @@ static int nfs_follow_remote_path(struct vfsmount *root_mnt,
+>  	mnt_target->mnt_sb = s;
+>  	mnt_target->mnt_root = dget(nd.path.dentry);
+> 
+> +	/* Correct the device pathname */
+> +	nfs_fix_devname(&nd.path, mnt_target);
+> +
+>  	path_put(&nd.path);
+>  	down_write(&s->s_umount);
+>  	return 0;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
