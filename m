@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbZFWVmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZFWVm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbZFWVmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZFWVl7
+	id S1758267AbZFWVm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbZFWVmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:41:59 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48331 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbZFWVl6 (ORCPT
+	Tue, 23 Jun 2009 17:42:11 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:39531 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758247AbZFWVmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:41:58 -0400
-Subject: Re: [GIT pull] ntp updates for 2.6.31
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Miroslav Lichvar <mlichvar@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 23 Jun 2009 17:42:10 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Rik van Riel <riel@redhat.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <20090623133625.GA3026@elte.hu>
-References: <1f1b08da0906151316s7d25f8ceraa1bc967a8abe172@mail.gmail.com>
-	 <1f1b08da0906151641u4cd964e6vf1a61afe50cc1d90@mail.gmail.com>
-	 <20090616090647.GD13771@elte.hu> <20090616125248.GA23541@localhost>
-	 <1245253102.6067.94.camel@jstultz-laptop>
-	 <20090617172325.GA32332@localhost> <20090617172601.GA3493@elte.hu>
-	 <20090618121320.GA13025@localhost> <20090623095745.GC30634@elte.hu>
-	 <20090623131628.GA11827@localhost>  <20090623133625.GA3026@elte.hu>
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <4A41481D.1060607@redhat.com>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com>
 Content-Type: text/plain
-Date: Tue, 23 Jun 2009 14:41:56 -0700
-Message-Id: <1245793316.3305.5.camel@localhost>
+Organization: VMware INC.
+Date: Tue, 23 Jun 2009 14:42:11 -0700
+Message-Id: <1245793331.24110.33.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 15:36 +0200, Ingo Molnar wrote:
-> The PPS patches i've seen just export IRQ timestamps to user-space.
+
+On Tue, 2009-06-23 at 14:24 -0700, Rik van Riel wrote:
+> Alok Kataria wrote:
 > 
-> That is not very robust in my opinion when it comes to do time 
-> approximations - to get quick, low-latency action and precise 
-> measurements it's best to keep the critical path as short as 
-> possible, and within a single source code repository: i.e. within 
-> the kernel.
+> > Both, while working on an module I noticed that there is no way direct
+> > way to get any information regarding the total number of unrecliamable
+> > (unevictable) pages in the system. While reading through the kernel
+> > sources i came across this unevictalbe LRU framework and thought that
+> > this should actually work towards providing  total unevictalbe pages in
+> > the system irrespective of where they reside.
 > 
-> There's little policy really, other than setting some general 
-> parameters. NTPd can still provide the raw _network time_ 
-> timestamps, as that is probably best fetched by user-space and fed 
-> to the kernel.
+> The unevictable count tells you how many _userspace_
+> pages are not evictable.
+> 
+> There are countless accounted and unaccounted kernel
+> allocations that show up (or not) in other fields in
+> /proc/meminfo.
+> 
 
-At some point that stops being NTP. NTP has quite a bit of userland
-policy for filtering and managing a number of different network clocks
-(other ntp servers, PPS sources, etc).
+> I can see something reasonable on both sides of this
+> particular debate.  However, even with this patch the
+> "unevictable" statistic does not reclaim the total
+> number of pages that are unevictable pages from a
+> zone, so I am not sure how it helps you achieve your
+> goal.
+> 
 
->From what you're describing (direct offset from a hardware time device
-used to steer the clock directly in kernel), you might want to look at
-the STP code in s390 (stp_sync_clock).
+Yes but most of the other memory (page table and others) which is
+unevictable is actually static in nature.  IOW, the amount of this other
+kind of kernel unevictable pages can be actually interpolated from the
+amount of physical memory on the system. 
 
-thanks
--john
+One thing that i forgot to mention earlier is that, I just need a way to
+provide a hint about the total locked memory  on the system and it
+doesn't need to be the exact number at that point in time.
+
+Lee, due to this reason lazy culling of unevictable pages is fine too. 
+
+Hugepages, similar to mlocked pages, are special because the user could
+specify how much memory it wants to reserve for this purpose. So that
+needs to be taken into consideration i.e it cannot be calculated in some
+way. 
+
+Thanks,
+Alok
+
 
