@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbZFWMMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZFWMMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757659AbZFWMMU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 08:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbZFWMMF
+	id S1758392AbZFWMMb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 08:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757686AbZFWMMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 08:12:05 -0400
-Received: from smurf.noris.de ([192.109.102.42]:39960 "EHLO
-	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751591AbZFWMME (ORCPT
+	Tue, 23 Jun 2009 08:12:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39120 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757685AbZFWMMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 08:12:04 -0400
-X-Greylist: delayed 1239 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 08:12:03 EDT
-Date: Tue, 23 Jun 2009 13:50:20 +0200
-From: Matthias Urlichs <smurf@smurf.noris.de>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Reduce AACRAID hardware queue size
-Message-ID: <20090623115020.GA28963@kiste.smurf.noris.de>
-References: <1245756306-29023-1-git-send-email-apw@canonical.com> <1245756306-29023-2-git-send-email-apw@canonical.com>
+	Tue, 23 Jun 2009 08:12:15 -0400
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org, mingo@elte.hu,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [perf] howto switch from pfmon
+From: Andi Kleen <andi@firstfloor.org>
+References: <4A3FEF75.2020804@inria.fr>
+Date: Tue, 23 Jun 2009 14:12:17 +0200
+In-Reply-To: <4A3FEF75.2020804@inria.fr> (Brice Goglin's message of "Mon, 22 Jun 2009 22:54:13 +0200")
+Message-ID: <87r5xb174u.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Y/WcH0a6A93yCHGr"
-Content-Disposition: inline
-In-Reply-To: <1245756306-29023-2-git-send-email-apw@canonical.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Smurf-Spam-Score: -2.6 (--)
-X-Smurf-Whitelist: +relay_from_hosts
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Brice Goglin <Brice.Goglin@inria.fr> writes:
 
---Y/WcH0a6A93yCHGr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Hello,
+>
+> I am trying to play with perfcounters in current git (actually in latest
+> mmotm). I'd like to reproduce what I previously did with pfmon, but I
+> couldn't so far.
+>
+> Something like
+>     pfmon --follow-exec 'foobar' -e
+> CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_0,CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE:LOCAL_TO_1
+> -- <shell script>
+> gives the number of memory accesses to dram node #0 and #1 for all
+> processes whose name matches 'foobar'.
 
-Hi,
+My understanding based on recent emails on the topic is that the
+perfctr gods decreed you are not to do any of this because they cannot
+think of a use case for it, therefore none exist.
 
-Andy Whitcroft:
-> From: Mathias Urlichs <matthias@urlichs.de>
->=20
-Well ... "Matthias", if you please.
+-Andi
 
---=20
-Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
-Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
-v4sw7$Yhw6+8ln7ma7u7L!wl7DUi2e6t3TMWb8HAGen6g3a4s6Mr1p-3/-6 hackerkey.com
- - -
-At no time is freedom of speech more precious than when a man hits his
-thumb with a hammer.
 
---Y/WcH0a6A93yCHGr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpAwXgACgkQ8+hUANcKr/kK3QCeKUTsIa1z1CGnRiGgKSPoL13D
-O9IAoI4cU7Mg4tNn+kPNNt9uJrV7nv2L
-=+JEQ
------END PGP SIGNATURE-----
-
---Y/WcH0a6A93yCHGr--
+-- 
+ak@linux.intel.com -- Speaking for myself only.
