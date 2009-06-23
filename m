@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZFWHcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbZFWHcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbZFWHcB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 03:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZFWHbt
+	id S1758216AbZFWHcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 03:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753894AbZFWHcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 03:31:49 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:53974 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbZFWHbs (ORCPT
+	Tue, 23 Jun 2009 03:32:20 -0400
+Received: from mtagate1.uk.ibm.com ([194.196.100.161]:39401 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752399AbZFWHcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 03:31:48 -0400
-Date: Tue, 23 Jun 2009 09:31:20 +0200
+	Tue, 23 Jun 2009 03:32:19 -0400
+Date: Tue, 23 Jun 2009 09:32:18 +0200
 From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: David Miller <davem@davemloft.net>
-Cc: Wolfgang Grandegger <wg@grandegger.com>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>,
+Cc: Richard Rojfors <richard.rojfors.ext@mocean-labs.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
-Message-ID: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>
+Subject: [PATCH] net: let KS8842 driver depend on HAS_IOMEM
+Message-ID: <20090623073206.GB5955@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -31,30 +30,27 @@ From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
 Fixes this compile error on s390:
 
-drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_read_reg':
-drivers/net/can/sja1000/sja1000_platform.c:42: error: implicit declaration of function 'ioread8'
-drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_write_reg':
-drivers/net/can/sja1000/sja1000_platform.c:47: error: implicit declaration of function 'iowrite8'
-drivers/net/can/sja1000/sja1000_platform.c: In function 'sp_probe':
-drivers/net/can/sja1000/sja1000_platform.c:79: error: implicit declaration of function 'ioremap_nocache'
+  CC      drivers/net/ks8842.o
+drivers/net/ks8842.c: In function 'ks8842_select_bank':
+drivers/net/ks8842.c:124: error: implicit declaration of function 'iowrite16'
+drivers/net/ks8842.c: In function 'ks8842_write8':
+drivers/net/ks8842.c:131: error: implicit declaration of function 'iowrite8'
 
-Cc: Wolfgang Grandegger <wg@grandegger.com>
-Cc: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Cc: Richard Rojfors <richard.rojfors.ext@mocean-labs.com>
 Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- drivers/net/can/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-2.6/drivers/net/can/Kconfig
+Index: linux-2.6/drivers/net/Kconfig
 ===================================================================
---- linux-2.6.orig/drivers/net/can/Kconfig
-+++ linux-2.6/drivers/net/can/Kconfig
-@@ -36,7 +36,7 @@ config CAN_CALC_BITTIMING
- 	  If unsure, say Y.
+--- linux-2.6.orig/drivers/net/Kconfig
++++ linux-2.6/drivers/net/Kconfig
+@@ -1725,6 +1725,7 @@ config TLAN
  
- config CAN_SJA1000
--	depends on CAN_DEV
-+	depends on CAN_DEV && HAS_IOMEM
- 	tristate "Philips SJA1000"
- 	---help---
- 	  Driver for the SJA1000 CAN controllers from Philips or NXP
+ config KS8842
+ 	tristate "Micrel KSZ8842"
++	depends on HAS_IOMEM
+ 	help
+ 	  This platform driver is for Micrel KSZ8842 chip.
+ 
