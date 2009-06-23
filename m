@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbZFWVFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZFWVGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757080AbZFWVFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZFWVFL
+	id S1757175AbZFWVGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZFWVFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:05:11 -0400
-Received: from mga01.intel.com ([192.55.52.88]:32251 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754913AbZFWVFK convert rfc822-to-8bit (ORCPT
+	Tue, 23 Jun 2009 17:05:13 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:54178 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755526AbZFWVFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:05:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,277,1243839600"; 
-   d="scan'208";a="468944844"
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
-Date: Tue, 23 Jun 2009 14:04:55 -0700
-Subject: RE: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
- Technology support for Linux - Details
-Thread-Topic: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
- Technology support for Linux - Details
-Thread-Index: Acnz4mHaH7gvEwSpSbGyRv9a+dSHjwAYmcxA
-Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9A2A3C1AE@orsmsx506.amr.corp.intel.com>
-References: <4A4024B6.2060600@intel.com>
- <20090623101110.60c0974d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090623101110.60c0974d@lxorguk.ukuu.org.uk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 23 Jun 2009 17:05:11 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 23 Jun 2009 13:59:07 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, avi@redhat.com,
+       kvm@vger.kernel.org, ghaskins@novell.com,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+In-Reply-To: <20090623131239.711d9f83.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com> <20090623131239.711d9f83.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
-> Sent: Tuesday, June 23, 2009 2:11 AM
->
-> Is there a summary of what has changes from RFC v4 ?
+On Tue, 23 Jun 2009, Andrew Morton wrote:
 
--  The monolithic patch was broken into four patches that represent discrete functionality (boot and build, reboot/halt shutdown, Sx shutdown, forcing DMAR on).  An appropriate (and more descriptive) patch description was added to each patch.
+> On Tue, 23 Jun 2009 12:25:36 -0700 (PDT)
+> Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > Another cleanup this patch does, is making AIO select EVENTFD, instead of 
+> > adding a bunch of empty function stubs inside eventfd.h in order to 
+> > handle the (AIO && !EVENTFD) case.
+> 
+> Given that we're trying to squeak this patch into 2.6.31, it's quite
+> unfortunate to include unrelated changes.  Especially ones which
+> involve the always-problematic "select".  Although this one looks less
+> than usually deadly due to the simple dependencies of AIO and eventfd.
+> 
+> However...
+> 
+> Is this a good way of fixing the (AIO && !EVENTFD) case?  Surely if the
+> developer selected this combination, he doesn't want to carry the
+> overhead of including eventfd.  IOW, if AIO can work acceptably without
+> eventfd being compiled into the kernel then adding the stubs is a
+> superior solution.
 
--  Small stylistic cleanups (capitalization, comment wording, whitespace, etc.).
+IMO when someone says "AIO included in the kernel", should get the whole 
+AIO functionality and not part of it.
+People already started using KAIO+eventfd, and a (AIO && !EVENTFD) config 
+will make their code fail.
 
--  The code in hwsleep.c that populated the tboot ACPI structures was moved into its own function in tboot.c.
 
--  Use pr_warning(), pr_info(), pr_debug().
+- Davide
 
--  Moved some #include's from the middle of tboot.c to the top.
 
--  Changed the memory type of the tboot shared page from E820_UNUSABLE to E820_RESERVED (really a change to tboot, but requires a change here in the checking code).
-
-And the new patches that I'm about to send have notes in the top indicating their changes from the previous versions.
-
-Joe
