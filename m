@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZFWReg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZFWRgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbZFWReg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZFWRe3
+	id S1754254AbZFWRgG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZFWRfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:34:29 -0400
-Received: from mta.netezza.com ([12.148.248.132]:59711 "EHLO netezza.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750979AbZFWRe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:34:28 -0400
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-From: Paul Smith <paul@mad-scientist.net>
-Reply-To: paul@mad-scientist.net
-To: Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20090604171458.F0DC7FC3C3@magilla.sf.frob.com>
-References: <20090601161234.GA10486@redhat.com>
-	 <20090601174159.48acf3f5@lxorguk.ukuu.org.uk>
-	 <20090601171119.GA13970@redhat.com>
-	 <20090601184608.6379440c@lxorguk.ukuu.org.uk>
-	 <20090601182305.GA16372@redhat.com>
-	 <20090601203845.B010DFC3C7@magilla.sf.frob.com>
-	 <20090601223241.GA26788@redhat.com>
-	 <20090601230210.C0B15FC3C7@magilla.sf.frob.com>
-	 <20090602000850.GA31064@redhat.com>
-	 <20090603070939.4E31CFC333@magilla.sf.frob.com>
-	 <20090604031544.GA23930@redhat.com>
-	 <20090604171458.F0DC7FC3C3@magilla.sf.frob.com>
-Content-Type: text/plain
-Organization: GNU's Not Unix!
-Date: Tue, 23 Jun 2009 13:31:18 -0400
-Message-Id: <1245778278.9022.21.camel@psmith-ubeta.netezza.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jun 2009 17:31:19.0467 (UTC) FILETIME=[6B68CFB0:01C9F428]
+	Tue, 23 Jun 2009 13:35:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38072 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751905AbZFWRfx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:35:53 -0400
+Date: Tue, 23 Jun 2009 10:34:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Howells <dhowells@redhat.com>
+cc: Miklos Szeredi <miklos@szeredi.hu>, alan@lxorguk.ukuu.org.uk,
+       hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, adilger@sun.com,
+       akpm@linux-foundation.org
+Subject: Re: [RFC] O_NOACC: open without any access
+In-Reply-To: <17310.1245776720@redhat.com>
+Message-ID: <alpine.LFD.2.01.0906231019250.3240@localhost.localdomain>
+References: <E1MJ8u3-00083c-TD@pomaz-ex.szeredi.hu> <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu>
+ <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com>  <17310.1245776720@redhat.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-04 at 10:14 -0700, Roland McGrath wrote:
-> > Fortunately, this doesn't look hard. Whatever we do, we should modify
-> > dump_write/seek to check fatal_signal_pending() anyway. Because we can't
-> > know if f_ops->write() pays attention to signals. 
-> 
-> Yes, that sounds fine.
-> 
-> > This means we can just add try_to_freeze().
-> 
-> Right.
-> 
-> > As for exit_mm(), we can use freezer_do_not_count() + freezer_count()
-> > around the "for (;;)" loop.
-> 
-> Ah yes, sure.
 
-Hi Oleg;
 
-Did you have any more time to look into this?  I'm currently using my
-patch and it's OK for my purposes but I'll be happy to test any proposal
-you come up with, if you like, so I can drop my patch in the future.
+On Tue, 23 Jun 2009, David Howells wrote:
 
-Let me know, thanks!
+> Miklos Szeredi <miklos@szeredi.hu> wrote:
+> 
+> > Define O_NOACC as 3.  On open(..., O_FILESYSTEM | O_NOACC) require no
+> > privileges on the file.
+> 
+> It must also work with O_NOFOLLOW, which I think your suggestion will.
 
+This does sound like a fairly natural extension of what we already do.
+
+We essentially already have O_NOACCESS (3), and use it exactly because we 
+need to do operations on a file descriptor without "real" accesses 
+(notably things like accessing /dev/cdrom without waiting/checking for the 
+disk being present etc).
+
+O_FILESYSTEM I don't like as a name (to me, it doesn't say _what_ it is 
+doing - of course an open works on a filesystem!), but the concept of 
+saying "don't follow device nodes - just open the node itself" makes 
+perfect sense. Together with O_NOFOLLOW it also fairly naturally means 
+"give me the actual symlink _node_, don't return error or follow it".
+
+And we can trivially test at a higher level that O_FILESYSTEM (with a 
+better name, please), is always paired with O_NOACCESS (not O_NOACC: we do 
+not try to save three letters, there is no shortage). Because the raw node 
+obviously must never really be "accessed" (ie you can't do read/write etc 
+on it).
+
+That said, I do _not_ like the notion of
+
+	> Add a new inode->i_filesystem_fop pointer
+
+regardless of whether it's in inode->i_op or wherever. I think we should 
+just handle this in the regular "inode->f_op->open" routine, the same way 
+we handle FMODE_EXCLUSIVE (O_EXCL), FMODE_NDELAY (O_NONBLOCK) and lack of 
+access rights (O_NOACCESS) in the driver open routines that currently 
+handle those specially (O_NDELAY is spe
+
+Al?
+
+			Linus
