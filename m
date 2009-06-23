@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759574AbZFWQ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZFWQ2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759574AbZFWQ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756963AbZFWQ2Q
+	id S1760217AbZFWQ2e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbZFWQ2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:28:16 -0400
-Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:47857 "HELO
-	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753990AbZFWQ2P convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:28:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=IPvEq4xRbpSoLvkxm+zzyFX80tApncuAtWOfhk5AidZCjfKLRr+wct2cOnWaWPqAu5KLHkQ3o8t9MD2cHxd732poNFzMv5fW9tjjjVumLSa2rYZe2oHy1+R6QB7h/Yjw;
-Date: Tue, 23 Jun 2009 09:28:12 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Michel =?UTF-8?B?RMOkbnplcg==?= <michel@daenzer.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas@netline-mail2.netline.ch, Dave Airlie <airlied@linux.ie>,
-       Andrew Lutomirski <luto@mit.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jerome Glisse <jglisse@redhat.com>, dri-devel@lists.sf.net,
-       Alex Deucher <alexdeucher@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git pull] drm: previous pull req + 1.
-Message-ID: <20090623092812.16dffa97@jbarnes-g45>
-In-Reply-To: <20090623083944.3e86ed2e@jbarnes-g45>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	<4A3DABE1.50309@mit.edu>
-	<alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
-	<alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
-	<alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
-	<cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
-	<alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
-	<alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
-	<4A3F3E3A.2030202@shipmail.org>
-	<1245715213.4017.13.camel@pasglop>
-	<alpine.LFD.2.01.0906221721450.3240@localhost.localdomain>
-	<1245719079.4017.25.camel@pasglop>
-	<20090622181832.771dac03@jbarnes-g45>
-	<1245743280.5580.2203.camel@thor.local>
-	<20090623083944.3e86ed2e@jbarnes-g45>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Tue, 23 Jun 2009 12:28:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49453 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759410AbZFWQ2W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:28:22 -0400
+Date: Tue, 23 Jun 2009 09:27:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt fix transmit race and timeout
+Message-Id: <20090623092739.5a8e9dd5.akpm@linux-foundation.org>
+In-Reply-To: <1245770161.3701.42.camel@x2.microgate.com>
+References: <1245181451.3727.5.camel@x2.microgate.com>
+	<20090622231937.2d32898e.akpm@linux-foundation.org>
+	<1245770161.3701.42.camel@x2.microgate.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 08:39:44 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+On Tue, 23 Jun 2009 10:16:01 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
 
-> On Tue, 23 Jun 2009 09:48:00 +0200
-> Michel Dänzer <michel@daenzer.net> wrote:
-> > On a side note, I did precisely that about ten years ago on my
-> > Amiga. :) Granted, that was using two separate framebuffer devices
-> > (X glint driver on top of pm2fb, debug messages on amifb), but I
-> > think even that case isn't possible ATM. I agree it would be nice,
-> > though realistically there's hardly a way around a second machine
-> > for graphics driver development anyway.
+> On Mon, 2009-06-22 at 23:19 -0700, Andrew Morton wrote:
+> > On Tue, 16 Jun 2009 14:44:11 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
+> > 
+> > > Fix race condition when adding transmit data to active DMA buffer ring
+> > > that can cause transmit stall.
 > 
-> Oh I know, most operating systems have reasonable debugging
-> facilities, and have had for a long time.  Linux is the one lagging
-> here.
+> > It's not a terribly good changelog, sorry.
+> > It fails to describe the race condition?
 > 
-Heh, I saw "amiga" and stopped reading.  So it seems Linux on x86 is
-the main laggard here...  I know PPC has had interesting debug features
-for awhile now, and most arches have had kgdb for a long time.  Anyway,
-there's plenty of work to do in this area to give Linux a decent system
-level debugger...
+> I attempted to say what was done in the change log and
+> let the patch describe the details of how it was done.
+> But I can see that might not be enough.
+> 
+> How's this? :
+> 
+> If after adding transmit data to the transmit DMA ring the
+> transmit DMA controller has become inactive before reading
+> the new data and the serial transmitter is still active sending
+> data already in the transmit FIFO and/or shift register,
+> then wait for the serial transmitter to become idle before
+> reactivating the transmit DMA controller.
+> 
+> Otherwise the transmit DMA controller may present the
+> new data to the serial transmitter in a small timing window
+> just as the serial transmitter transitions to the idle state.
+> Hitting this window results in the serial transmitter entering
+> an inconsistent state where it does not process the new data
+> and does not signal the transition to the idle state.
+> 
+> >From the driver perspective, this condition appears as an
+> active transmit DMA controller (correct) with unsent DMA buffers 
+> (correct) and an active serial transmitter (wrong), even though
+> no data is actually being sent. When all the DMA buffers are full,
+> no further data is accepted from a user application calling
+> write() until a timeout occurs and the transmitter and
+> DMA controller are reset.
+> 
 
---
-Jesse Barnes, Intel Open Source Technology Center
+That covers it ;) But I stil lcan't work out whether we shoul backport
+this into -stable.
+
+> 
+> If this is good enough, I will resubmit the patch with
+> the updated change log.
+
+I updated the patch.
+
+I did have a couple of other comments on the patch which seem to have
+been missed?
+
