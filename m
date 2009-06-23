@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZFWVrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263AbZFWVt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbZFWVrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbZFWVrH
+	id S1756263AbZFWVt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752744AbZFWVtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:47:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51207 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751175AbZFWVrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:47:05 -0400
-Date: Tue, 23 Jun 2009 14:46:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
-       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-Message-Id: <20090623144638.22ca61ea.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0906231428460.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-	<20090623131848.b876d42e.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
-	<20090623142909.42776e75.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231428460.17001@makko.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 23 Jun 2009 17:49:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:39436 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535AbZFWVtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 17:49:17 -0400
+Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Alex Chiang <achiang@hp.com>,
+       jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
+       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
+       Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+       Avi Kivity <avi@redhat.com>
+In-Reply-To: <20090623190826.GJ19977@parisc-linux.org>
+References: <20090622140807.25509.54448.stgit@bob.kio>
+	 <20090622143431.GT19977@parisc-linux.org> <4A3FCB68.3030004@goop.org>
+	 <20090622183056.GY19977@parisc-linux.org> <1245714008.4017.7.camel@pasglop>
+	 <20090623190826.GJ19977@parisc-linux.org>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 07:47:44 +1000
+Message-Id: <1245793664.10356.25.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 14:34:50 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> On Tue, 23 Jun 2009, Andrew Morton wrote:
+On Tue, 2009-06-23 at 13:08 -0600, Matthew Wilcox wrote:
 > 
-> > > Should functions be describing all the returned error codes, ala man pages?
-> > > 
-> > 
-> > I think so.
-> 
-> This becomes pretty painful when the function calls other functions, for 
-> which just relays the error code.
-> Should we be just documenting the error codes introduced by the function 
-> code, and say that the function returns errors A, B, C plus all the ones 
-> returned by the called functions X, Y, Z?
-> If not, it becomes hell in maintaining the comments...
+> I think simply materialising them, either the way the OF code does,
+> or the way the IOV code does is the best route forwards.
 
-Well.  Don't worry about making rules.  Taste and common sense apply.  "Will
-it be useful to readers if I explicitly document the return value".  If
-"yes" then document away.  If "no" then don't.
+Agreed. I'm fine with removing pcibios_scan_all_fns() for now anyway,
+and leave whatever arch do care with the responsibility of finding a
+solution though :-)
+
+Regarding the OF stuff, I'll see what I can do vs. moving it to
+drivers/pci some time next week after I'm done fixing the regressions
+from this merge window :-)
+
+Cheers,
+Ben.
 
 
