@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbZFWLZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbZFWL2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbZFWLZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZFWLZs
+	id S1755492AbZFWL2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZFWL2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:25:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:36256 "EHLO www.tglx.de"
+	Tue, 23 Jun 2009 07:28:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42451 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756036AbZFWLZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:25:47 -0400
-Date: Tue, 23 Jun 2009 13:24:19 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Greg KH <greg@kroah.com>
-cc: =?ISO-8859-15?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
-       Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>
-Subject: Re: [PATCH -rt] disable building all staging drivers
-In-Reply-To: <20090622171948.GA15145@kroah.com>
-Message-ID: <alpine.LFD.2.00.0906231216220.2767@localhost.localdomain>
-References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090614112802.GA4502@kroah.com> <20090614230044.GA21624@pengutronix.de> <20090622151515.GA16627@pengutronix.de> <20090622171948.GA15145@kroah.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752771AbZFWL2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 07:28:47 -0400
+Date: Tue, 23 Jun 2009 13:28:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
+Subject: Re: merging the per-bdi writeback patchset
+Message-ID: <20090623112849.GA31415@kernel.dk>
+References: <20090623191803.2230.A69D9226@jp.fujitsu.com> <20090623105645.GX31415@kernel.dk> <20090623201225.223F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623201225.223F.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Greg KH wrote:
-> > 17:02:43 E: ERROR: "there_is_no_init_MUTEX_LOCKED_for_RT_semaphores" [drivers/staging/rt2870/rt2870sta.ko] undefined!
+On Tue, Jun 23 2009, KOSAKI Motohiro wrote:
+> > On Tue, Jun 23 2009, KOSAKI Motohiro wrote:
+> > > Hi
+> > > 
+> > > > On Tue, Jun 23 2009, Andrew Morton wrote:
+> > > > > On Tue, 23 Jun 2009 10:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > > > 
+> > > > > > Things are looking good for this patchset and it's been in -next for
+> > > > > > almost a week without any reports of problems. So I'd like to merge it
+> > > > > > for 2.6.31 if at all possible. Any objections?
+> > > > > 
+> > > > > erk.  I was rather expecting I'd have time to have a look at it all.
+> > > > 
+> > > > OK, we can wait if we have to, just trying to avoid having to keep this
+> > > > fresh for one full cycle. I have posted this patchset 11 times though
+> > > > over months, so it's not like it's a new piece of work :-)
+> > > > 
+> > > > > It's unclear to me actually _why_ the performance changes which were
+> > > > > observed have actually occurred.  In fact it's a bit unclear (to me)
+> > > > > why the patchset was written and what it sets out to achieve :(
+> > > > 
+> > > > It started out trying to get rid of the pdflush uneven writeout. If you
+> > > > look at various pdflush intensive workloads, even on a single disk you
+> > > > often have 5 or more pdflush threads working the same device. It's just
+> > > > not optimal. Another issue was starvation with request allocation. Given
+> > > > that pdflush does non-blocking writes (it has to, by design), pdflush
+> > > > can potentially be starved if someone else is working the device.
+> > > 
+> > > Can you please make reproduce program and post mesurement result?
+> > > I hope to mesure the same program on my box.
+> > 
+> > For which issue? Lumpy writeout can often be observed just by doing
+> > buffered writes to a bunch of files.
 > 
-> What needs to be done in the rt2870 driver to resolve this issue?
+> Yes, I know current behavior is not perfectly optimal.
+> but I haven't seen it cause serious issue.
+> 
+> Then, I guess you have big degression workload, yes? if so, I hope to
+> see it.
 
-It looks like the semaphores are used to wait for an event. There are
-actually 3 of those:
+Not really, I was just interested in making it more optimal. I work from
+various fio job files, one case that is sped up greatly is doing random
+writes with mmap to an otherwise buffered file. pdflush is both lumpy
+and a lot slower there, even with many pdflush threads active. Looking
+at disk utilization, pdflush doesn't manage more than ~80% for that. The
+per-bdi writeback is completely smooth and gets about as close to 100%
+utilization as possible (around ~98% there). And this is just one 1
+disk, the per-bdi writeback scales nicely upwards. pdflush falls flat.
 
-	 init_MUTEX_LOCKED(&(pAd->mlme_semaphore));
-	 init_MUTEX_LOCKED(&(pAd->RTUSBCmd_semaphore));
-	 init_MUTEX_LOCKED(&(pAd->RTUSBTimer_semaphore));
+And then there are lots of cases where the performance is the same. For
+many workloads, pdflush isn't really very active.
 
-All are used in kernel threads which wait with down_interruptible() on
-them. The up() calls are in some completely non obvious places.
+> > > Plus, Can you please write more vervose patch description? your patch is a
+> > > bit harder review.
+> > 
+> > OK, I can probably improve on that. Do you mean the general description
+> > of the patchset, or some of the individual patches?
+> 
+> Hopefully both. honestly I haven't understand your main worryed issue.
 
-I had a look into the timer one. The semaphore is the least thing you
-need to worry about there. The open coded timer list management and
-the thread which does timer polling for some obscure reason are the
-things which need to be fixed in the first place. Once this is cleaned
-up the semaphore will be gone anyway.
+Does the above help? It's all about making the writeback more
+consistent. So getting rid of the lumpy writeback and eliminating the
+pdflush starvation were the prime motivators.
 
-But, after looking into that code I really have to ask you whether you
-are serious about fixing it instead of rewriting it from scratch and
-just keep the code as is for reference to the hardware details.
+-- 
+Jens Axboe
 
-Thanks,
-
-	tglx
