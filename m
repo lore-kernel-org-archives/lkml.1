@@ -1,76 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760419AbZFWPSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbZFWPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760419AbZFWPSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZFWPSm
+	id S1759677AbZFWPVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZFWPVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:18:42 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:54467
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbZFWPSm (ORCPT
+	Tue, 23 Jun 2009 11:21:32 -0400
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:38620 "EHLO
+	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754742AbZFWPVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:18:42 -0400
-Subject: Re: [PATCH] synclink_gt fix transmit race and timeout
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090622231937.2d32898e.akpm@linux-foundation.org>
-References: <1245181451.3727.5.camel@x2.microgate.com>
-	 <20090622231937.2d32898e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 10:16:01 -0500
-Message-Id: <1245770161.3701.42.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 23 Jun 2009 11:21:31 -0400
+X-IronPort-AV: E=Sophos;i="4.42,276,1243807200"; 
+   d="scan'208";a="28605845"
+Message-ID: <4A40F31F.4030609@inria.fr>
+Date: Tue, 23 Jun 2009 17:22:07 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [perf] howto switch from pfmon
+References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr> <20090623143601.GA13415@elte.hu>
+In-Reply-To: <20090623143601.GA13415@elte.hu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-22 at 23:19 -0700, Andrew Morton wrote:
-> On Tue, 16 Jun 2009 14:44:11 -0500 Paul Fulghum <paulkf@microgate.com> wrote:
-> 
-> > Fix race condition when adding transmit data to active DMA buffer ring
-> > that can cause transmit stall.
+Ingo Molnar wrote:
+> btw., it might make sense to expose NUMA inbalance via generic 
+> enumeration. Right now we have:
+>
+>         PERF_COUNT_HW_CPU_CYCLES                = 0,
+>         PERF_COUNT_HW_INSTRUCTIONS              = 1,
+>         PERF_COUNT_HW_CACHE_REFERENCES          = 2,
+>         PERF_COUNT_HW_CACHE_MISSES              = 3,
+>         PERF_COUNT_HW_BRANCH_INSTRUCTIONS       = 4,
+>         PERF_COUNT_HW_BRANCH_MISSES             = 5,
+>         PERF_COUNT_HW_BUS_CYCLES                = 6,
+>
+> plus we have cache stats:
+>
+>  * Generalized hardware cache counters:
+>  *
+>  *       { L1-D, L1-I, LLC, ITLB, DTLB, BPU } x
+>  *       { read, write, prefetch } x
+>  *       { accesses, misses }
+>   
 
-> It's not a terribly good changelog, sorry.
-> It fails to describe the race condition?
+By the way, is there a way to know which cache was actually used when we
+request cache references/misses? Always the largest/top one by default?
 
-I attempted to say what was done in the change log and
-let the patch describe the details of how it was done.
-But I can see that might not be enough.
+> NUMA is here to stay, and expressing local versus remote access 
+> stats seems useful. We could add two generic counters:
+>
+>         PERF_COUNT_HW_RAM_LOCAL                 = 7,
+>         PERF_COUNT_HW_RAM_REMOTE                = 8,
+>
+> And map them properly on all CPUs that support such stats. They'd be 
+> accessible via '-e ram-local-refs' and '-e ram-remote-refs' type of 
+> event symbols.
+>
+> What is your typical usage pattern of this counter? What (general) 
+> kind of app do you profile with it and how do you make use of the 
+> specific node masks?
+>
+> Would a local/all-remote distinction be enough, or do you need to 
+> make a distinction between the individual nodes to get the best 
+> insight into the workload?
+>   
 
-How's this? :
+People here work on OpenMP runtime systems where you try to keep threads
+and data together. So in the end, what's important is to maximize the
+overall local/remote access ratio. But during development, it may useful
+to have a distinction between individual nodes so as to understand
+what's going on. That said, we still have raw numbers when we really
+need that many details, and I don't know if it'd be easy for you to add
+a generic counter with a sort of node-number attribute.
 
-If after adding transmit data to the transmit DMA ring the
-transmit DMA controller has become inactive before reading
-the new data and the serial transmitter is still active sending
-data already in the transmit FIFO and/or shift register,
-then wait for the serial transmitter to become idle before
-reactivating the transmit DMA controller.
 
-Otherwise the transmit DMA controller may present the
-new data to the serial transmitter in a small timing window
-just as the serial transmitter transitions to the idle state.
-Hitting this window results in the serial transmitter entering
-an inconsistent state where it does not process the new data
-and does not signal the transition to the idle state.
+(including part of your other email here since it's relevant)
 
->From the driver perspective, this condition appears as an
-active transmit DMA controller (correct) with unsent DMA buffers 
-(correct) and an active serial transmitter (wrong), even though
-no data is actually being sent. When all the DMA buffers are full,
-no further data is accepted from a user application calling
-write() until a timeout occurs and the transmitter and
-DMA controller are reset.
+> How many threads does your workload typically run, and how do you 
+> get their stats displayed?
+>   
 
---
+In the aforementioned OpenMP stuff, we use pfmon to get the local/remote
+numa memory access ratio of each thread. In this specific case, we bind
+one thread per core (even with a O(1) scheduler, people tend to avoid
+launching hundreds of threads on current machines). pfmon gives us
+something similar to the output of 'perf stat' in a file whose filename
+contains process and thread IDs. We apply our own custom script to
+convert these many pfmon output files into a single summary saying for
+each thread, its thread ID, its core binding, its individual numa node
+access numbers and percentages, and if they were local or remote (with
+the Barcelona counters we were talking about, you need to check where
+you were running before you know if accesses to node X are actually
+local or remote accesses).
 
-If this is good enough, I will resubmit the patch with
-the updated change log.
-
---
-Paul Fulghum
-Microgate Systems, Ltd
+thanks,
+Brice
 
