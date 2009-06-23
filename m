@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbZFWRCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761257AbZFWRC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbZFWRCM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 13:02:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbZFWRB5
+	id S1761257AbZFWRC2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 13:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761220AbZFWRCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 13:01:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34742 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753701AbZFWRB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 13:01:56 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu>
-References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: dhowells@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, adilger@sun.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org
-Subject: Re: [RFC] O_NOACC: open without any access
-Date: Tue, 23 Jun 2009 17:59:16 +0100
-Message-ID: <17246.1245776356@redhat.com>
+	Tue, 23 Jun 2009 13:02:15 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55946 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761131AbZFWRCN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 13:02:13 -0400
+Date: Tue, 23 Jun 2009 13:02:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+       <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM
+ of I/O devices
+In-Reply-To: <200906221749.50784.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906231043290.3209-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Mon, 22 Jun 2009, Rafael J. Wysocki wrote:
 
-> Not sure if it's a good base for what AFS/pioctl is trying to do, but
-> it's something that I personally would very much like to see.
+> > And of course, synchronous pm_runtime_resume should always increment the 
+> > counter.
+> 
+> Sure.
 
-It could be useful.  The problem is that I then need to do an ioctl() on it.
+Now that I've thought about it some more, I decided that we might want
+to be more flexible.  Without subjecting you to the entire line of
+reasoning, let's just say that I'm starting to wonder whether it's such
+a good idea to tie the counter increments to the PM core runtime resume
+calls at all.
 
-To emulate a pioctl with this, I'd need something like the following in a
-library:
+Maybe it would be better (easier to use, less constraining) to require
+the runtime_resume callback to do its own pm_runtime_get.  That way the
+driver would be entirely responsible for managing the usage counter;
+the PM core wouldn't be involved.  pm_runtime_get would simply
+increment the counter, so it could be used even in interrupt context.  
+At the moment, I don't see any need for it to queue an autoresume
+request if the device happens to be suspended.
 
-	long pioctl(char *path, int cmd, struct ViceIoctl *arg, int nofollow)
-	{
-		struct ioctl_pioctl {
-			int cmd;
-			struct ViceIoctl *arg;
-		} ip;
-		long ret;
-		int fd;
+Something like this was probably your intention all along.  :-)
 
-		switch (cmd) {
-		case VIOC_CMD1:
-		case VIOC_CMD2:
-		case VIOC_CMD3:
-			fd = open(path, O_NOACC | (nofollow ? O_NOFOLLOW : 0));
-			ip.cmd = cmd;
-			ip.arg = arg;
-			ret = ioctl(fd, DO_PIOCTL, &ip);
-			close(fd);
-			break;
-		}
+Alan Stern
 
-		return ret;
-	}
-
-Now, the DO_PIOCTL constant could be dispensed with, and each VIOC_CMDx be
-mapped to a different ioctl command number.  Note that you may not assume that
-the set of pioctl numbers shares with the set of ioctl numbers, so you can't
-just hand the cmd number through as-is.
-
-Not all pioctl commands need to be emulated this way.  Some could call getxattr
-instead, for instance, and some could muck around with /proc and /sys files.
-
->   2) open with "3" calls driver's ->open() with any side effect that
->      may have.  Open with O_NOACC doesn't do that, and hence if we
->      want to allow ioctls they need a new interface which gets a
->      "struct path" instead of a "struct file".
-
-You don't actually need that.  struct file contains a struct path.  You just
-need a way to come up with an alternative set of file ops for an O_NOACC open
-- perhaps through struct inode_operations.
-
-Alternatively, you could install a special set of generic file ops that only
-has an ioctl op.  This could then redirect through another ioctl op in the
-inode_operations struct.
-
-As I mentioned in another email, for emulation of pioctl(), I need O_NOACC to
-_not_ call device_driver->open() on device files, and to not install the
-device driver file ops table.  pioctl() operates on the underlying file in the
-underlying fs.
-
-David
