@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZFWSm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZFWSmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755770AbZFWSm3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 14:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZFWSly
+	id S1756124AbZFWSmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 14:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZFWSmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 14:41:54 -0400
-Received: from vms173011pub.verizon.net ([206.46.173.11]:46008 "EHLO
-	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754258AbZFWSlx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 14:41:53 -0400
-Date: Tue, 23 Jun 2009 14:41:28 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial support
-In-reply-to: <20090623183153.GB12814@srcf.ucam.org>
-Message-id: <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
-References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
- <20090623183153.GB12814@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Jun 2009 14:42:12 -0400
+Received: from kroah.org ([198.145.64.141]:50425 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754641AbZFWSmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 14:42:10 -0400
+Date: Tue, 23 Jun 2009 11:37:36 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Cc: Jake Edge <jake@lwn.net>, Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>, "corbet@lwn.net" <corbet@lwn.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "tshibata@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
+Subject: Re: [PATCH v3.1415] Documentation: add documentation summary for
+	rc-series and merge window
+Message-ID: <20090623183736.GA4928@kroah.com>
+References: <20090622222217.GH23972@bombadil.infradead.org> <m3fxdqj2bz.fsf@lwn.net> <20090623175533.GK5305@mosca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623175533.GK5305@mosca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Matthew Garrett wrote:
+On Tue, Jun 23, 2009 at 10:55:33AM -0700, Luis R. Rodriguez wrote:
+> > > +After a driver has been present for one kernel release the relaxed rules for
+> > > +it during the rc-series are no longer applicable.
+> > 
+> > except staging drivers?
+> 
+> Hm, I consider staging a different chapter.
 
-> There seems to be a huge amount of overlap between SFI and ACPI.
-> Couldn't this have simply taken the form of some additional ACPI tables 
-> and a decoupling of ACPI enumeration from runtime AML interpretation? 
-> How final is this spec?
-
-> I realise that we're pretty much constrained to implementing this if 
-> hardware actually ships with it, but it seems to be an additional 
-> firmware interface with no real benefit - as far as I can tell it's not 
-> possible for a platform to meaningfully implement both ACPI and SFI 
-> without duplicating information?
-
-Please let me know if your questions are not thoroughly answered here:
-http://simplefirmware.org/faq
+Actually, no, I've been treating drivers/staging/ under the same merge
+rules at the moment as the rest of the kernel.
 
 thanks,
--Len Brown, Intel Open Source Technology Center
 
+greg k-h
