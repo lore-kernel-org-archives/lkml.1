@@ -1,41 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbZFWCmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZFWCoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757431AbZFWCmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZFWCmb
+	id S1754776AbZFWCoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZFWCoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:42:31 -0400
-Received: from 219-87-157-155.static.tfn.net.tw ([219.87.157.155]:46788 "EHLO
-	ironport.rdc.com.tw" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751811AbZFWCmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:42:31 -0400
-Content-class: urn:content-classes:message
+	Mon, 22 Jun 2009 22:44:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42838 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752398AbZFWCoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:44:12 -0400
+Date: Mon, 22 Jun 2009 22:43:37 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
+	elevaotor layer
+Message-ID: <20090623024337.GC3620@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com> <20090622084612.GD3728@balbir.in.ibm.com> <20090622124313.GF28770@gandalf.sssup.it>
 MIME-Version: 1.0
-Subject: RE: Staging: add pata_rdc driver
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Date: Tue, 23 Jun 2009 10:44:03 +0800
-Message-ID: <07905E0D268758488D76D7D747F21BB602B1FDA8@rdc8.rdc>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Staging: add pata_rdc driver
-Thread-Index: AcnzNYoeAiPEgTO0Tta3LeCIMwvhLQAbaFjgAAIjZyA=
-References: <200906200109.n5K19iaC012636@hera.kernel.org> <20090622133222.3a689f22@lxorguk.ukuu.org.uk> 
-From: =?big5?B?S2V2aW4gSHVhbmcgKLbAs82k5Sk=?= <Kevin.Huang@rdc.com.tw>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Cc: <greg@kroah.com>, <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset="big5"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622124313.GF28770@gandalf.sssup.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5N2hG54008431
 
-I just know all pata follow the ATA ATAPI Host Adapters Standard.pdf.This standard describes all hardware interfaces for pata. (like sata and AHCI standard spec.)
-The original draft does not have any Configuration Registers for Host Adapters. Then Intel proposes ATA Controller PCI Configuration Registers for this lack of the original draft, and T13 accept this proposal.
-But this spec. releases at 2003. So before its release, all vendor had own Configuration Registers.
-[Kevin Huang] -> According to this spec. OS can provide a standard driver for different vendor's pata controller.
-Our new controller have crypto function and crypto configuration registers.So it don¡¦t like Intel controller.Some Intel controller have RAID function, but we have not.
----------------------------------------------------------------------------------- [E-mail Confidentiality Notice]The information in this e-mail is confidential and may be legally privileged otherwise  protected from disclosure. It is intended solely for the addressee.  Access to this e-mail by anyone else is unauthorized .If youare not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is prohibited and maybe unlawful.  Please delete the message and any attachments from your computer system; and destroy all hard copies. 
-ALL Intellectual Property Rights of RDC Reserved.---------------------------------------------------------------------------------- ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Mon, Jun 22, 2009 at 02:43:13PM +0200, Fabio Checconi wrote:
+
+[..]
+> > > +/**
+> > > + * bfq_first_active - find the eligible entity with the smallest finish time
+> > > + * @st: the service tree to select from.
+> > > + *
+> > > + * This function searches the first schedulable entity, starting from the
+> > > + * root of the tree and going on the left every time on this side there is
+> > > + * a subtree with at least one eligible (start <= vtime) entity.  The path
+> > > + * on the right is followed only if a) the left subtree contains no eligible
+> > > + * entities and b) no eligible entity has been found yet.
+> > > + */
+> > > +static struct io_entity *bfq_first_active_entity(struct io_service_tree *st)
+> > > +{
+> > > +	struct io_entity *entry, *first = NULL;
+> > > +	struct rb_node *node = st->active.rb_node;
+> > > +
+> > > +	while (node != NULL) {
+> > > +		entry = rb_entry(node, struct io_entity, rb_node);
+> > > +left:
+> > > +		if (!bfq_gt(entry->start, st->vtime))
+> > > +			first = entry;
+> > > +
+> > > +		BUG_ON(bfq_gt(entry->min_start, st->vtime));
+> > > +
+> > > +		if (node->rb_left != NULL) {
+> > > +			entry = rb_entry(node->rb_left,
+> > > +					 struct io_entity, rb_node);
+> > > +			if (!bfq_gt(entry->min_start, st->vtime)) {
+> > > +				node = node->rb_left;
+> > > +				goto left;
+> > > +			}
+> > > +		}
+> > > +		if (first != NULL)
+> > > +			break;
+> > > +		node = node->rb_right;
+> > 
+> > Please help me understand this, we sort the tree by finish time, but
+> > search by vtime, start_time. The worst case could easily be O(N),
+> > right?
+> > 
+> 
+> no, (again, the full answer is in the paper); the nice property of
+> min_start is that it partitions the tree in two regions, one with
+> eligible entities and one without any of them.  once we know that
+> there is one eligible entity (checking the min_start at the root)
+> we can find the node i with min(F_i) subject to S_i < V walking down
+> a single path from the root to the leftmost eligible entity.  (we
+> need to go to the right only if the subtree on the left contains 
+> no eligible entities at all.)  since the RB tree is balanced this
+> can be done in O(log N).
+> 
+
+Hi Fabio,
+
+When I go thorough the paper you mentioned above, they seem to have
+sorted the tree based on eligible time (looks like equivalent of start
+time) and then keep track of minimum deadline on each node (equivalnet of
+finish time).
+
+We seem to be doing reverse in BFQ where we sort tree on finish time
+and keep track of minimum start time on each node. Is there any specific
+reason behind that?
+
+Thanks
+Vivek
