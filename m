@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbZFWQXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbZFWQZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759400AbZFWQXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbZFWQXg
+	id S1758728AbZFWQZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbZFWQZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:23:36 -0400
-Received: from stinky.trash.net ([213.144.137.162]:48003 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756958AbZFWQXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:23:33 -0400
-Message-ID: <4A410185.3090706@trash.net>
-Date: Tue, 23 Jun 2009 18:23:33 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 23 Jun 2009 12:25:06 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:38078 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754361AbZFWQZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:25:04 -0400
+Message-ID: <4A4101D9.9010701@linux.vnet.ibm.com>
+Date: Tue, 23 Jun 2009 09:24:57 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Jesper Dangaard Brouer <hawk@comx.dk>
-CC: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
-       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 10/10] nf_conntrack: Use rcu_barrier().
-References: <20090623150330.22490.87327.stgit@localhost> <20090623150444.22490.27931.stgit@localhost>
-In-Reply-To: <20090623150444.22490.27931.stgit@localhost>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: eranian@gmail.com
+CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+Subject: Re: I.2 - Grouping
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <20090622115017.GC24366@elte.hu> <19008.25905.550815.222975@drongo.ozlabs.ibm.com> <7c86c4470906230036o677e6c48j923a7431b9912372@mail.gmail.com> <19008.37301.779108.964118@cargo.ozlabs.ibm.com> <7c86c4470906230130t69345d91w524d6d13216dc8db@mail.gmail.com>
+In-Reply-To: <7c86c4470906230130t69345d91w524d6d13216dc8db@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Dangaard Brouer wrote:
-> I'm not sure which is are most optimal place to call rcu_barrier().
-> The patch probably calls rcu_barrier() too much, but its a better
-> safe than sorry approach.
+stephane eranian wrote:
+> On Tue, Jun 23, 2009 at 10:26 AM, Paul Mackerras<paulus@samba.org> wrote:
+>> stephane eranian writes:
+>>
+>>> What happens if I do:
+>>>    fd0 = perf_counter_open(&hwc1, getpid(), -1, -1, 0);
+>>>    fd1 = perf_counter_open(&hwc2, getpid(), -1, fd0, 0);
+>>>
+>>> And then:
+>>>    fd2 = perf_counter_open(&hwc2, getpid(), -1, fd1, 0);
+>> That perf_counter_open call will fail with an EINVAL error because fd1
+>> is not a group leader.
+>>
+> Okay. Thanks.
 > 
-> There is embedded some comments that I would like Patrick McHardy
-> to look at.
+> But that leads me to another question related to grouping
+> which was hinted for by Peter's comment about IBS.
 > 
-> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-> index 5f72b94..cea4537 100644
-> --- a/net/netfilter/nf_conntrack_core.c
-> +++ b/net/netfilter/nf_conntrack_core.c
-> @@ -1084,6 +1084,8 @@ static void nf_conntrack_cleanup_init_net(void)
->  {
->  	nf_conntrack_helper_fini();
->  	nf_conntrack_proto_fini();
-> +	rcu_barrier();
-> +	/* Need to wait for call_rcu() before dealloc the kmem_cache */
->  	kmem_cache_destroy(nf_conntrack_cachep);
+> Can you have multiple sampling events in a group?
 
-Which call_rcu() is this referring to? If its the conntrack destruction,
-that one is gone in the current kernel and I think destruction is
-handled properly by the sl*b-allocators (SLAB_DESTROY_BY_RCU).
+There's a PAPI ctest which exercises this - profile_two_events - and it 
+does work with the PCL substrate.
 
-> @@ -1118,6 +1120,9 @@ void nf_conntrack_cleanup(struct net *net)
->  	/* This makes sure all current packets have passed through
->  	   netfilter framework.  Roll on, two-stage module
->  	   delete... */
-> +	/* hawk@comx.dk 2009-06-20: Think this should be replaced by a
-> +          rcu_barrier() ???
-> +	*/
->  	synchronize_net();
+- Corey
 
-AFAICT this one is used to make sure the old value of the ip_ct_attach
-hook is not visible anymore before beginning cleanup and is not needed
-for anything else.
 
->  	nf_conntrack_cleanup_net(net);
-> diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
-> index 1935153..29c6cd0 100644
-> --- a/net/netfilter/nf_conntrack_standalone.c
-> +++ b/net/netfilter/nf_conntrack_standalone.c
-> @@ -500,6 +500,8 @@ static void nf_conntrack_net_exit(struct net *net)
->  	nf_conntrack_standalone_fini_sysctl(net);
->  	nf_conntrack_standalone_fini_proc(net);
->  	nf_conntrack_cleanup(net);
-> +	/* hawk@comx.dk: Think rcu_barrier() should to be called earlier? */
-> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
->  }
-
-Which call_rcu() is this referring to? We should place them in
-the cleanup sub-functions to make this clearly visible.
