@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZFWFMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbZFWFNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbZFWFMB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 01:12:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZFWFLu
+	id S1756203AbZFWFNb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 01:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZFWFNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 01:11:50 -0400
-Received: from mail-yx0-f196.google.com ([209.85.210.196]:44708 "EHLO
-	mail-yx0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZFWFLt (ORCPT
+	Tue, 23 Jun 2009 01:13:24 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52549 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZFWFNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 01:11:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=RpJd97FWbAUGgv6sOerobJZSpudsNlRkr51ZlHfrJPv5z0C5dadUqxTtLvCynoaE4m
-         1CWwl2woAmwleXcl18iwVWR5Pzzs7CrLZLRe3KZ9fMCt2U+8byS2bf0KGNQpjTe/spGL
-         hYKsuExagfXWkg74GYoNsstfqkWALJBhxQgrs=
-MIME-Version: 1.0
-Date: Tue, 23 Jun 2009 13:11:51 +0800
-Message-ID: <b6a2187b0906222211i4509bc4cu39e9123cba61039a@mail.gmail.com>
-Subject: can we move USB_DEVICEFS to non-embedded?
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Scott James Remnant <scott@canonical.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Content-Type: multipart/mixed; boundary=001636163d194e7069046cfd072e
+	Tue, 23 Jun 2009 01:13:23 -0400
+Date: Tue, 23 Jun 2009 14:11:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: akataria@vmware.com, LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+Message-Id: <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090623135017.220D.A69D9226@jp.fujitsu.com>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	<1245732411.18339.6.camel@alok-dev1>
+	<20090623135017.220D.A69D9226@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636163d194e7069046cfd072e
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-commit cc71329b3b89b4a5be849b617f2c4f151f0b9213 moved USB_DEVICEFS to
-be embedded and marked it as depreciated. Can this be reverted? This
-breaks vmware and those systems not using udev.
-
-Here's a small patch to move it as non-embedded.
+On Tue, 23 Jun 2009 14:05:47 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> I'm not sure this unevictable definition is good idea or not. currently
+> hugepage isn't only non-account memory, but also various kernel memory doesn't
+> account.
+> 
+> one of drawback is that zone_page_state(UNEVICTABLE) lost to mean #-of-unevictable-pages.
+> e.g.  following patch is wrong?
+> 
+> fs/proc/meminfo.c meminfo_proc_show()
+> ----------------------------
+> -                K(pages[LRU_UNEVICTABLE]),
+> +                K(pages[LRU_UNEVICTABLE]) + hstate->nr_huge_pages,
+> 
+> 
+> Plus, I didn't find any practical benefit in this patch. do you have it?
+> or You only want to natural definition?
+> 
+> I don't have any strong oppose reason, but I also don't have any strong
+> agree reason.
+> 
+I think "don't include Hugepage" is sane. Hugepage is something _special_, now.
 
 Thanks,
-Jeff.
+-Kame
 
---001636163d194e7069046cfd072e
-Content-Type: application/octet-stream; name=patch-usbfs
-Content-Disposition: attachment; filename=patch-usbfs
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fwa5sj2m0
-
-LS0tIGEvZHJpdmVycy91c2IvY29yZS9LY29uZmlnLm9yZwkyMDA5LTA2LTIzIDEyOjIyOjUxICsw
-ODAwCisrKyBhL2RyaXZlcnMvdXNiL2NvcmUvS2NvbmZpZwkyMDA5LTA2LTIzIDEyOjIzOjAwICsw
-ODAwCkBAIC0yOCw3ICsyOCw3IEBACiAJZGVwZW5kcyBvbiBVU0IKIAogY29uZmlnIFVTQl9ERVZJ
-Q0VGUwotCWJvb2wgIlVTQiBkZXZpY2UgZmlsZXN5c3RlbSAoREVQUkVDQVRFRCkiIGlmIEVNQkVE
-REVECisJYm9vbCAiVVNCIGRldmljZSBmaWxlc3lzdGVtIChERVBSRUNBVEVEKSIKIAlkZXBlbmRz
-IG9uIFVTQgogCS0tLWhlbHAtLS0KIAkgIElmIHlvdSBzYXkgWSBoZXJlIChhbmQgdG8gIi9wcm9j
-IGZpbGUgc3lzdGVtIHN1cHBvcnQiIGluIHRoZSAiRmlsZQo=
---001636163d194e7069046cfd072e--
