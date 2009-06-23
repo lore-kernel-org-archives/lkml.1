@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbZFWICj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbZFWIFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbZFWICj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZFWIC2
+	id S1756436AbZFWIFe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZFWIFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:02:28 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:52927 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbZFWICZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:02:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=sLkQEUVXGqkY0C94sJRH2JdwFGarB1CltNpEymUmLTxnfrYQkbOmj7sENx+dkRFJdY
-         028ZvgwvyRqZGOw8TTJ3NoRMHB09PJSF4ia06tLX/Fc8wBJy5NnWLpltBuA42UYOtTVg
-         6+8XzmzNdv1HEJNQ/NNnvH/CASZuqH1757qEQ=
-Date: Tue, 23 Jun 2009 10:02:23 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide-cd: Improve "weird block size" error message
-Message-ID: <20090623080223.GA19253@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Frans Pop <elendil@planet.nl>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200906211446.38598.elendil@planet.nl> <200906222101.38586.elendil@planet.nl> <200906222335.06700.bzolnier@gmail.com> <200906230951.24615.elendil@planet.nl> <20090623075733.GA14790@liondog.tnic>
+	Tue, 23 Jun 2009 04:05:19 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49477 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751451AbZFWIFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:05:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
+   d="scan'208";a="701691924"
+Date: Tue, 23 Jun 2009 16:02:25 +0800
+From: Feng Tang <feng.tang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Len Brown <lenb@kernel.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
+Message-ID: <20090623160225.1ebb5540@feng-desktop>
+In-Reply-To: <20090623080047.GE6397@elte.hu>
+References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com>
+	<b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com>
+	<20090623072811.GB6397@elte.hu>
+	<20090623154724.08a51ea3@feng-desktop>
+	<20090623080047.GE6397@elte.hu>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090623075733.GA14790@liondog.tnic>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 09:57:33AM +0200, Borislav Petkov wrote:
-> On Tue, Jun 23, 2009 at 09:51:23AM +0200, Frans Pop wrote:
+On Tue, 23 Jun 2009 16:00:47 +0800
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> [..]
+> * Feng Tang <feng.tang@intel.com> wrote:
 > 
-> > ---
-> > From: Frans Pop <elendil@planet.nl>
-> > Subject: ide-cd: Improve "weird block size" error message
-> > 
-> > Currently the error gets repeated too frequently, for example
-> > each time HAL polls the device when a disc is present. Avoid that
-> > by using printk_once instead of printk.
-> > Also join the error and corrective action messages into a single line.
-> > 
-> > Signed-off-by: Frans Pop <elendil@planet.nl>
-> > Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > 
-> > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > index 4a19686..7ec6996 100644
-> > --- a/drivers/ide/ide-cd.c
-> > +++ b/drivers/ide/ide-cd.c
-> > @@ -886,10 +886,9 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
-> >  	case 4096:
-> >  		break;
-> >  	default:
-> > -		printk(KERN_ERR PFX "%s: weird block size %u\n",
-> > +		printk_once(KERN_ERR PFX "%s: weird block size %u; "
-> > +				"setting default block size to 2048\n",
-> >  				drive->name, blocklen);
-> > -		printk(KERN_ERR PFX "%s: default to 2kb block size\n",
-> > -				drive->name);
->
+> > For these arch_early_ioremap/arch_early_iounmap API, do you mean 
+> > we should put it in a sfi.h under "asm" folder? The reason we put 
+> > it here is to give a arch independent API declaration here and let 
+> > each arch implement its own func.
+> 
+> Yeah, i'd suggest to create a new early-remap.h and early-remap.c 
+> kind of file to collect the existing bits for that. It's a bit ugly 
+> (not really the fault of SFI - these are pre-existing facilities) 
+> and might need some love - we better move it apart so that the light 
+> of attention shines on it.
+> 
+> What's the target merge of the SFI stuff, 2.6.31?
 
-Ah, nevermind! Hadn't had a coffee yet, sorry :).
+AFAIK, Len's target is for 2.6.32
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+Thanks,
+Feng
 
--- 
-Regards/Gruss,
-    Boris.
+> 
+> 	Ingo
