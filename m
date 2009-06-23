@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756279AbZFWCjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbZFWCja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756279AbZFWCjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZFWCjI
+	id S1753814AbZFWCja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZFWCjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:39:08 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46146 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbZFWCjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:39:07 -0400
-Date: Tue, 23 Jun 2009 11:37:48 +0900
-To: vapier.adi@gmail.com
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [PATCH 2/2] Blackfin: fix dma-mapping build errors
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <8bd0f97a0906221929y51af5000w63e2edb7e54abe74@mail.gmail.com>
-References: <1245722086-13340-2-git-send-email-vapier@gentoo.org>
-	<20090623111430D.fujita.tomonori@lab.ntt.co.jp>
-	<8bd0f97a0906221929y51af5000w63e2edb7e54abe74@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 22 Jun 2009 22:39:17 -0400
+Received: from 207-172-69-77.c3-0.smr-ubr3.sbo-smr.ma.static.cable.rcn.com ([207.172.69.77]:51400
+	"EHLO thaum.luto.us" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754798AbZFWCjQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:39:16 -0400
+Message-ID: <4A404049.1080707@mit.edu>
+Date: Mon, 22 Jun 2009 22:39:05 -0400
+From: Andy Lutomirski <luto@mit.edu>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Jerome Glisse <jglisse@redhat.com>
+CC: airlied@gmail.com, dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] radeon: fix radeon kms framebuffer device
+References: <1245687358-10481-1-git-send-email-jglisse@redhat.com>
+In-Reply-To: <1245687358-10481-1-git-send-email-jglisse@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090623113616B.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 23 Jun 2009 11:37:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009 22:29:29 -0400
-Mike Frysinger <vapier.adi@gmail.com> wrote:
+Jerome Glisse wrote:
+> smem.start is a physical address which kernel can remap to access
+> video memory of the fb buffer. We now pin the fb buffer into vram
+> by doing so we are loosing vram but fbdev need to be reworked to
+> allow change in framebuffer address.
 
-> On Mon, Jun 22, 2009 at 22:14, FUJITA Tomonori wrote:
-> > On Mon, 22 Jun 2009 21:54:46 -0400 Mike Frysinger wrote:
-> >> The recent deprecation of dma_sync_{sg,single} ironically broke Blackfin
-> >> systems.
-> >
-> > Oops, sorry about that.
-> >
-> >> This is because we don't define dma_sync_sg_for_cpu at all, so
-> >> until the DMA asm-generic conversion/cleanup is done after the next
-> >> release, simply redirect the dma_sync_sg_for_cpu to the debug version.
-> >
-> > This doesn't look correct (though it works). dma-debug.h is supposed
-> > to be used by architectures that support DMA_API_DEBUG feature
-> > (blackfin doesn't support it). dma_sync_sg_for_cpu is not the
-> > debug version of dma_sync_sg_for_cpu.
-> 
-> guessing you meant "debug_dma_sync_sg_for_cpu is not the debug version
-> of dma_sync_sg_for_cpu"
+I tested this (and the corresponding 2/2 initialization order, but with 
+radeon as a module), and plymouth seems to be fully functional 
+(graphical boot, password prompt, etc).
 
-Sorry, yeah, your guess is correct.
+(The driver set the wrong mode, but that's a different issue.)
+
+Thanks!
+
+Tested-by: Andy Lutomirski <luto@mit.edu>
