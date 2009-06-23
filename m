@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbZFWQb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759574AbZFWQcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760184AbZFWQb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZFWQbr
+	id S1759574AbZFWQcO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758707AbZFWQbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:31:47 -0400
-Received: from www.tglx.de ([62.245.132.106]:47267 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751796AbZFWQbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:31:47 -0400
-Date: Tue, 23 Jun 2009 18:31:41 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Pawel MOLL <pawel.moll@st.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: genirq default_disable()
-In-Reply-To: <1245774218.14443.120.camel@bri1004.bri.st.com>
-Message-ID: <alpine.LFD.2.00.0906231826100.2767@localhost.localdomain>
-References: <1245774218.14443.120.camel@bri1004.bri.st.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 23 Jun 2009 12:31:50 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42324 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758788AbZFWQbt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:31:49 -0400
+To: dhowells@redhat.com
+CC: alan@lxorguk.ukuu.org.uk, dhowells@redhat.com, miklos@szeredi.hu,
+       hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@ZenIV.linux.org.uk, adilger@sun.com, akpm@linux-foundation.org
+In-reply-to: <16755.1245773452@redhat.com> (message from David Howells on Tue,
+	23 Jun 2009 17:10:52 +0100)
+Subject: Re: [RFC] O_NOACC: open without any access
+References: <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com>
+Message-Id: <E1MJ8u3-00083c-TD@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 23 Jun 2009 18:31:23 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Pawel MOLL wrote:
-> Folks,
-> 
-> A quick question about the interrupt management... (the story takes
-> place in kernel/irq/chip.c ;-)
-> 
-> Here we have the default_enable():
-> 
-> static void default_enable(unsigned int irq)
-> {
->         struct irq_desc *desc = irq_to_desc(irq);
-> 
->         desc->chip->unmask(irq);
->         desc->status &= ~IRQ_MASKED;
-> }
-> 
-> It calls chip->unmask(), which absolutely makes sense...
-> 
-> The default_disable(), however, is not symmetric:
-> 
-> static void default_disable(unsigned int irq)
-> {
-> }
-> 
-> Is there any reason why it shouldn't call chip->mask()?
-> 
-> I'll be more then happy to prepare a patch doing so, but maybe it's a
-> feature not a bug and I'm just missing something?
+On Tue, 23 Jun 2009, David Howells wrote:
+> Reference count on which module?  This would not take a reference on
+> the device driver as it would not refer to it, but would still have
+> a file struct, an inode struct and a dentry struct on the underlying
+> fs.
 
-Yup, it's a feature: delayed irq disable.
+So how about the following: provide a new open flag O_FILESYSTEM,
+meaning it opens the file on the underlying filesystem instead of the
+device/socket/symlink/etc...
 
-Disabling irqs on the hardware level can be expensive. So we keep them
-enabled and mark the irq as disabled. When an interrupt comes in
-during that time then we disable the irq on the hardware level for
-real and note internaly that it happened. On enable we replay the
-interrupt so nothing is lost. That replay can be in hardware or in
-software.
+Add a new inode->i_filesystem_fop pointer which is used instead of
+inode->i_fop in case if O_FILESYSTEM.  If ->i_filesystem_fop isn't set
+by the filesystem, fall back to a default which returns -EBADF for all
+operations (except open).
+
+Define O_NOACC as 3.  On open(..., O_FILESYSTEM | O_NOACC) require no
+privileges on the file.
+
+AFS would set up i_filesystem_fop with its ->ioctl() function. No
+special handling needed for revoke()...
+
+That would work, no?
 
 Thanks,
+Miklos
 
-	tglx
