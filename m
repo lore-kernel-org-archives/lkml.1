@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759567AbZFWVez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbZFWVf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759567AbZFWVez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbZFWVeV
+	id S1759470AbZFWVf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbZFWVfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:34:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:55840 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759273AbZFWVeT (ORCPT
+	Tue, 23 Jun 2009 17:35:48 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:33595 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751392AbZFWVfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:34:19 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 23 Jun 2009 14:28:17 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org,
-       avi@redhat.com, kvm@vger.kernel.org, ghaskins@novell.com,
-       rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-In-Reply-To: <20090623142909.42776e75.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0906231426020.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com> <alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com> <20090623131848.b876d42e.akpm@linux-foundation.org> <alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
- <20090623142909.42776e75.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 23 Jun 2009 17:35:48 -0400
+Date: Tue, 23 Jun 2009 23:29:37 +0200
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-usb@vger.kernel.org, avictor.za@gmail.com,
+       linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/3 v3] at91/USB: Add USB gadget driver selection for
+ at91sam9g45 series
+Message-ID: <20090623212937.GO23512@game.jcrosoft.org>
+References: <200906190045.16496.david-b@pacbell.net>
+ <6af1745bf0de30efbd68addd05c2670311c7743a.1245775871.git.nicolas.ferre@atmel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6af1745bf0de30efbd68addd05c2670311c7743a.1245775871.git.nicolas.ferre@atmel.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Ovh-Tracer-Id: 5381801556061563756
+X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Andrew Morton wrote:
-
-> > > > +struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx)
-> > > > +{
-> > > > +	kref_get(&ctx->kref);
-> > > > +	return ctx;
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(eventfd_ctx_get);
-> > > 
-> > > doesn't match the code.
+On 18:58 Tue 23 Jun     , Nicolas Ferre wrote:
+> Add gadget USB drivers for at91sam9g45 series. Those SOC include
+> high speed USB interfaces.
+> The gadget driver is the already available atmel_usba_udc.
 > 
-> You appear to have not seen the above sentence.
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+> v2 -> v3: split patch to:
+> - gadget
+> - ohci
+> - ehci
+> 
+>  drivers/usb/gadget/Kconfig |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+> index 080bb1e..9beea52 100644
+> --- a/drivers/usb/gadget/Kconfig
+> +++ b/drivers/usb/gadget/Kconfig
+> @@ -124,7 +124,7 @@ choice
+>  
+>  config USB_GADGET_AT91
+>  	boolean "Atmel AT91 USB Device Port"
+> -	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9
+> +	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9 && !ARCH_AT91SAM9G45
+same as ATMEL_FB
+it will be really better to define it at the soc level
 
-I saw that and have already fixed it. Sorry I missed the ACK.
-
-
-
-> yeah, I never trust people.  You might lose the email or jump on a
-> plane and disappear for three weeks, then it all gets forgotten about
-> and lost.
-
-Jumping on a plane. Check. Disappearing for 6 weeks. Check. ;)
-
-
-- Davide
-
-
+Best Regards,
+J.
