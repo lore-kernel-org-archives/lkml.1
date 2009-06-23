@@ -1,112 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbZFWWNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZFWWQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757836AbZFWWNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZFWWNa
+	id S1757734AbZFWWQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZFWWPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:13:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40440 "EHLO hera.kernel.org"
+	Tue, 23 Jun 2009 18:15:53 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:51513 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752805AbZFWWN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:13:29 -0400
-Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090623195656.GC8777@elte.hu>
-References: <1245760130.3776.6.camel@localhost.localdomain>
-	 <20090623195656.GC8777@elte.hu>
+	id S1752175AbZFWWPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 18:15:53 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: akataria@vmware.com
+Cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <1245793331.24110.33.camel@alok-dev1>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com>
+	 <1245793331.24110.33.camel@alok-dev1>
 Content-Type: text/plain
-Date: Wed, 24 Jun 2009 03:42:53 +0530
-Message-Id: <1245795173.26280.17.camel@localhost.localdomain>
+Date: Tue, 23 Jun 2009 15:15:52 -0700
+Message-Id: <1245795352.17685.31312.camel@nimitz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 21:56 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Tue, 2009-06-23 at 14:42 -0700, Alok Kataria wrote:
+> One thing that i forgot to mention earlier is that, I just need a way to
+> provide a hint about the total locked memory  on the system and it
+> doesn't need to be the exact number at that point in time.
 > 
-> > After :
-> > 
-> >  Performance counter stats for 'ls -lR /usr/include/':
-> > 
-> >       259250339  L1-d-load-refs        (scaled from 22.73%)
-> >         1187200  L1-d-load-miss        (scaled from 23.01%)
-> >          150454  L1-d-store-refs       (scaled from 23.01%)
-> >          494252  L1-d-prefetch-refs    (scaled from 23.29%)
-> >          362661  L1-d-prefetch-miss    (scaled from 23.73%)
-> >       247343449  L1-i-load-refs        (scaled from 23.71%)
-> >         4804990  L1-i-load-miss        (scaled from 23.85%)
-> >          108711  L1-i-prefetch-refs    (scaled from 23.83%)
-> >         6260313  L2-load-refs          (scaled from 23.82%)
-> >          605425  L2-load-miss          (scaled from 23.82%)
-> >         6898075  L2-store-refs         (scaled from 23.96%)
-> >       248334160  d-TLB-load-refs       (scaled from 23.95%)
-> >         3812835  d-TLB-load-miss       (scaled from 23.87%)
-> >       253208496  i-TLB-load-refs       (scaled from 23.73%)
-> >            5873  i-TLB-load-miss       (scaled from 23.46%)
-> >       110891027  Branch-load-refs      (scaled from 23.21%)
-> >         5529622  Branch-load-miss      (scaled from 23.02%)
+> Lee, due to this reason lazy culling of unevictable pages is fine too. 
 > 
-> here's an edited version of my suggestions:
-> 
-> >       259250339  dL1-loads              (scaled from 22.73%)
-> >         1187200  dL1-load-misses        (scaled from 23.01%)
-> >          150454  dL1-stores             (scaled from 23.01%)
-> >          494252  dL1-prefetches         (scaled from 23.29%)
-> >          362661  dL1-prefetch-misses    (scaled from 23.73%)
-> >       247343449  iL1-loads              (scaled from 23.71%)
-> >         4804990  iL1-load-misses        (scaled from 23.85%)
-> >          108711  iL1-prefetches         (scaled from 23.83%)
-> >         6260313  LLC-loads              (scaled from 23.82%)
-> >          605425  LLC-load-misses        (scaled from 23.82%)
-> >         6898075  LLC-stores             (scaled from 23.96%)
-> >       248334160  dTLB-loads             (scaled from 23.95%)
-> >         3812835  dTLB-load-misses       (scaled from 23.87%)
-> >       253208496  iTLB-loads             (scaled from 23.73%)
-> >            5873  iTLB-load-misses       (scaled from 23.46%)
-> >       110891027  branches               (scaled from 23.21%)
-> >         5529622  branch-misses          (scaled from 23.02%)
-> 
-> We can leave out 'refs' i think - without any qualification 
-> statements like '247343449 iL1-loads' are still unambigious i think.
-> 
+> Hugepages, similar to mlocked pages, are special because the user could
+> specify how much memory it wants to reserve for this purpose. So that
+> needs to be taken into consideration i.e it cannot be calculated in some
+> way. 
 
-Looks good.
+Could you just teach the thing to which you are hinting that it also
+needs to go look in sysfs for huge page counts?  Or, is there a
+requirement that it come out of a single meminfo field?
 
-> Plus we can abbreviate dL1/iL1/dTLB/iTLB. The capitalization 
-> matters. Also, note that it's LLC (Last Level Cache), not L2.
-> 
-> ( Sidenote: L2 can still be an alias for LLC, even though some CPUs 
->   have a L3 too. )
-> 
-
-Ok, I will fix it and also set the alias.
-
-> Note, branches are special - we dont really have 'branch loads', 
-> branches are executions. 'Branches' and 'Branch-misses' are the 
-> right term.
-> 
-> Do you agree?
-> 
-
-Event we used for (BPU, READ, ACCESS) is 'branch instructions retired'
-
-So 'branch loads' we mean 'branch instruction loaded and retired'
-
-I like all of them : 'branch loads', 'branch retired' or 'branches'
-
-Please let me know, which one is best option so that I can prepare the
-patch.
-
-Thanks,
---
-JSR 
-
-
+-- Dave
 
