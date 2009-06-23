@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760477AbZFWPEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbZFWPEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760477AbZFWPEw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbZFWPEG
+	id S1760300AbZFWPEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZFWPDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:04:06 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:36347 "EHLO
+	Tue, 23 Jun 2009 11:03:55 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:36307 "EHLO
 	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760192AbZFWPED (ORCPT
+	with ESMTP id S1750777AbZFWPDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:04:03 -0400
+	Tue, 23 Jun 2009 11:03:53 -0400
 From: Jesper Dangaard Brouer <hawk@comx.dk>
-Subject: [PATCH 02/10] bridge: Use rcu_barrier() instead of syncronize_net()
-	on unload.
+Subject: [PATCH 00/10] We must use rcu_barrier() on module unload
 To: "David S. Miller" <davem@davemloft.net>
 Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
@@ -24,10 +23,8 @@ Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
        shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
        bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
        tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
-Date: Tue, 23 Jun 2009 17:04:04 +0200
-Message-ID: <20090623150404.22490.15268.stgit@localhost>
-In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
-References: <20090623150330.22490.87327.stgit@localhost>
+Date: Tue, 23 Jun 2009 17:03:53 +0200
+Message-ID: <20090623150330.22490.87327.stgit@localhost>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -36,27 +33,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When unloading modules that uses call_rcu() callbacks, then we must
-use rcu_barrier().  This module uses syncronize_net() which is not
-enough to be sure that all callback has been completed.
+This patch series is an attempt to cleanup the entire tree, for
+potential oops'es during module unload, due to outstanding RCU
+callbacks. (My last rcu_barrier patch series only addressed net/).
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+If an unloadable module uses RCU callbacks, it need to use
+rcu_barrier() so that the module may be safely unloaded.
+
+For documentation see:
+
+ Paul E. McKenney's Blog
+ http://paulmck.livejournal.com/7314.html
+
+ http://lwn.net/Articles/217484/
+
+ Documentation/RCU/rcubarrier.txt
+
+
+Looking through the Linux kernel for call_rcu() users and unloadable
+modules I found 10 modules that didn't behave correctly.
+
+Please: MAINTAINERS needs to verify that the module exit code prevent
+any new RCU callbacks from being posted (before rcu_barrier() is
+called). (I have tried to do this verification, but most of these
+module are simply too large and complex for me to verify this within
+reasonable time)
+
+[Overview description, following patch ordering]
+
+The modules ext4, bridge, mac80211, sunrpc, nfs and ipv6 are fairly
+straight forward (maintainers still needs to check for prevent of new
+RCU callbacks).
+
+The module decnet, has disabled its module_exit() (since ^1da177e) but
+it still seems relevant to keep the code updated.
+
+The modules edac_core and cfq-iosched, has implemented their own
+open-coded wait_for_completion() scheme, in order to wait for
+call_rcu() calls.  Maintainers needs to look into removing this code
+and using rcu_barrier() instead.
+
+The module nf_conntrack, has embedded some comments that I would like
+Patrick McHardy to look at.  As I'm not sure which is are most optimal
+place to call rcu_barrier().  The patch probably calls rcu_barrier()
+too much, but its a better safe than sorry approach.
+
+
+I have made a patch for each individual module, so objections can be
+made on a per module basis.  I have Cc'ed all of the patches to the
+maintainers of each module (according to the MAINTAINERS file).
+
+
+The patchset is made on top of Linus Torvalds tree (starting on top of
+commit f234012f52a3).
+
+Who wants to pickup these patches? (I usually go through DaveM, but
+this also touches subsystems that are not (yet?) under DaveM's
+maintainer ship)
+
+
 ---
+Jesper Dangaard Brouer (10):
+      nf_conntrack: Use rcu_barrier().
+      cfq-iosched: Uses its own open-coded rcu_barrier.
+      edac_core: Uses call_rcu() and its own wait_for_completion scheme.
+      decnet: Use rcu_barrier() on module unload.
+      ipv6: Use rcu_barrier() on module unload.
+      nfs: Use rcu_barrier() on module unload.
+      sunrpc: Use rcu_barrier() on unload.
+      mac80211: Use rcu_barrier() on unload.
+      bridge: Use rcu_barrier() instead of syncronize_net() on unload.
+      ext4: Use rcu_barrier() on module unload.
 
- net/bridge/br.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/bridge/br.c b/net/bridge/br.c
-index 9aac521..e1241c7 100644
---- a/net/bridge/br.c
-+++ b/net/bridge/br.c
-@@ -93,7 +93,7 @@ static void __exit br_deinit(void)
- 
- 	unregister_pernet_subsys(&br_net_ops);
- 
--	synchronize_net();
-+	rcu_barrier(); /* Wait for completion of call_rcu()'s */
- 
- 	br_netfilter_fini();
- #if defined(CONFIG_ATM_LANE) || defined(CONFIG_ATM_LANE_MODULE)
+ block/cfq-iosched.c                     |    6 ++++++
+ drivers/edac/edac_device.c              |    5 +++++
+ drivers/edac/edac_mc.c                  |    5 +++++
+ drivers/edac/edac_pci.c                 |    5 +++++
+ fs/ext4/mballoc.c                       |    4 +++-
+ fs/nfs/inode.c                          |    1 +
+ net/bridge/br.c                         |    2 +-
+ net/decnet/af_decnet.c                  |    6 ++++++
+ net/ipv6/af_inet6.c                     |    2 ++
+ net/mac80211/main.c                     |    2 ++
+ net/netfilter/nf_conntrack_core.c       |    5 +++++
+ net/netfilter/nf_conntrack_standalone.c |    2 ++
+ net/sunrpc/sunrpc_syms.c                |    1 +
+ 13 files changed, 44 insertions(+), 2 deletions(-)
+
+
+--
+Best regards,
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
 
