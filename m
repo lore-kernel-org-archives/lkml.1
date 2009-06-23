@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbZFWLoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZFWLob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbZFWLoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759412AbZFWLnu
+	id S1759480AbZFWLob (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758097AbZFWLoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:43:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40314 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759406AbZFWLnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:43:49 -0400
-Subject: [PATCH -tip] perf_counter tools: fix verbose for perf stat
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 17:12:49 +0530
-Message-Id: <1245757369.3776.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Tue, 23 Jun 2009 07:44:18 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56727 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757368AbZFWLoQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 07:44:16 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: merging the per-bdi writeback patchset
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
+In-Reply-To: <20090623112849.GA31415@kernel.dk>
+References: <20090623201225.223F.A69D9226@jp.fujitsu.com> <20090623112849.GA31415@kernel.dk>
+Message-Id: <20090623204119.2245.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 23 Jun 2009 20:44:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > > > Can you please make reproduce program and post mesurement result?
+> > > > I hope to mesure the same program on my box.
+> > > 
+> > > For which issue? Lumpy writeout can often be observed just by doing
+> > > buffered writes to a bunch of files.
+> > 
+> > Yes, I know current behavior is not perfectly optimal.
+> > but I haven't seen it cause serious issue.
+> > 
+> > Then, I guess you have big degression workload, yes? if so, I hope to
+> > see it.
+> 
+> Not really, I was just interested in making it more optimal. I work from
+> various fio job files, one case that is sped up greatly is doing random
+> writes with mmap to an otherwise buffered file. pdflush is both lumpy
+> and a lot slower there, even with many pdflush threads active. Looking
+> at disk utilization, pdflush doesn't manage more than ~80% for that. The
+> per-bdi writeback is completely smooth and gets about as close to 100%
+> utilization as possible (around ~98% there). And this is just one 1
+> disk, the per-bdi writeback scales nicely upwards. pdflush falls flat.
+> 
+> And then there are lots of cases where the performance is the same. For
+> many workloads, pdflush isn't really very active.
+> 
+> > > > Plus, Can you please write more vervose patch description? your patch is a
+> > > > bit harder review.
+> > > 
+> > > OK, I can probably improve on that. Do you mean the general description
+> > > of the patchset, or some of the individual patches?
+> > 
+> > Hopefully both. honestly I haven't understand your main worryed issue.
+> 
+> Does the above help? It's all about making the writeback more
+> consistent. So getting rid of the lumpy writeback and eliminating the
+> pdflush starvation were the prime motivators.
 
-Error message should use stderr for verbose otherwise message will be lost for
- $ ./perf stat -v <cmd>  > /dev/null
-
-For example on AMD bus-cycles event is not available so now it looks like:
- $ ./perf stat -v -e bus-cycles ls > /dev/null
-Error: counter 0, sys_perf_counter_open() syscall returned with -1 (Invalid argument)
-
- Performance counter stats for 'ls':
-
-  <not counted>  bus-cycles
-
-    0.006765877  seconds time elapsed.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- tools/perf/builtin-stat.c |   20 ++++++++++++--------
- 1 files changed, 12 insertions(+), 8 deletions(-)
-
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 6d3eeac..5e04fcc 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -109,6 +109,10 @@ static u64			walltime_nsecs_noise;
- static u64			runtime_cycles_avg;
- static u64			runtime_cycles_noise;
- 
-+
-+#define ERR_PERF_OPEN \
-+"Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
-+
- static void create_perf_stat_counter(int counter)
- {
- 	struct perf_counter_attr *attr = attrs + counter;
-@@ -119,20 +123,20 @@ static void create_perf_stat_counter(int counter)
- 
- 	if (system_wide) {
- 		int cpu;
--		for (cpu = 0; cpu < nr_cpus; cpu ++) {
-+		for (cpu = 0; cpu < nr_cpus; cpu++) {
- 			fd[cpu][counter] = sys_perf_counter_open(attr, -1, cpu, -1, 0);
--			if (fd[cpu][counter] < 0 && verbose) {
--				printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[cpu][counter], strerror(errno));
--			}
-+			if (fd[cpu][counter] < 0 && verbose)
-+				fprintf(stderr, ERR_PERF_OPEN, counter,
-+					fd[cpu][counter], strerror(errno));
- 		}
- 	} else {
- 		attr->inherit	= inherit;
- 		attr->disabled	= 1;
- 
- 		fd[0][counter] = sys_perf_counter_open(attr, 0, -1, -1, 0);
--		if (fd[0][counter] < 0 && verbose) {
--			printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[0][counter], strerror(errno));
--		}
-+		if (fd[0][counter] < 0 && verbose)
-+			fprintf(stderr, ERR_PERF_OPEN, counter,
-+				fd[0][counter], strerror(errno));
- 	}
- }
- 
-@@ -168,7 +172,7 @@ static void read_counter(int counter)
- 	count[0] = count[1] = count[2] = 0;
- 
- 	nv = scale ? 3 : 1;
--	for (cpu = 0; cpu < nr_cpus; cpu ++) {
-+	for (cpu = 0; cpu < nr_cpus; cpu++) {
- 		if (fd[cpu][counter] < 0)
- 			continue;
- 
--- 
-1.6.0.6
+ok, thanks.
+I try to review your patch series without any bias later.
 
 
 
