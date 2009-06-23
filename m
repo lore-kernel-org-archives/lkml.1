@@ -1,96 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759272AbZFWNZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZFWN2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759272AbZFWNZY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbZFWNZO
+	id S1758131AbZFWN2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbZFWN2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:25:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41732 "EHLO mx2.mail.elte.hu"
+	Tue, 23 Jun 2009 09:28:41 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:34313 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753066AbZFWNZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:25:13 -0400
-Date: Tue, 23 Jun 2009 15:25:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Brice Goglin <Brice.Goglin@inria.fr>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-Message-ID: <20090623132506.GA32002@elte.hu>
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623131450.GA31519@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752910AbZFWN2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:28:41 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: haavard.skinnemoen@atmel.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       plagnioj@jcrosoft.com
+Cc: linux-kernel@vger.kernel.org, avictor.za@gmail.com,
+       nicolas.ferre@atmel.com
+Subject: [RFC PATCH] atmel_lcdfb Kconfig: remove long dependency line
+Date: Tue, 23 Jun 2009 16:30:56 +0200
+Message-Id: <1245767456-6434-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <4A40D695.5000302@atmel.com>
+References: <4A40D695.5000302@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Many Atmel SOC are embedding a LCD controller. This patch removes the long
+dependency line for this Atmel LCD framebuffer driver configuration entry.
+The ARCH_ATMEL_HAS_FB configuration option is located in the video Kconfig file
+as it may be setup by ARM/AT91 and AVR32 chips.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+Beware, this proposition goes on top of at91sam9g45 & at91sam9g10 patchsets
+already posted. My proposition is to wait for those series are queued before
+applying this modification.
 
-> > I guess there are still a lot of things on the TODOlist but I'd 
-> > like to understand a bit more where things are going. Sorry I 
-> > didn't read all the archives about this, there are way too many 
-> > of them recently :)
-> 
-> Yeah, there's indeed still a lot on the TODO list :-)
-> 
-> CPU_TO_DRAM_REQUESTS_TO_TARGET_NODE is a Barcelona hardware event, 
-> so if you know that it maps to raw ID 0x100000e0 then you can 
-> always extend the events that 'perf' knows about via raw events:
-> 
->  $ perf stat -e cycles -e instructions -e r1000ffe0 ./hackbench 10
+ arch/arm/mach-at91/Kconfig |    6 ++++++
+ arch/avr32/Kconfig         |    1 +
+ drivers/video/Kconfig      |    7 ++++++-
+ 3 files changed, 13 insertions(+), 1 deletions(-)
 
-Note, beyond using raw events, if you are interested in profiling 
-out 'locality badness' of your app, you are probably quite well 
-served with the default metrics on Barcelona as well:
+diff --git a/arch/arm/mach-at91/Kconfig b/arch/arm/mach-at91/Kconfig
+index 8f3e15a..00c7e08 100644
+--- a/arch/arm/mach-at91/Kconfig
++++ b/arch/arm/mach-at91/Kconfig
+@@ -22,24 +22,28 @@ config ARCH_AT91SAM9261
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91SAM9G10
+ 	bool "AT91SAM9G10"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91SAM9263
+ 	bool "AT91SAM9263"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91SAM9RL
+ 	bool "AT91SAM9RL"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91SAM9G20
+ 	bool "AT91SAM9G20"
+@@ -52,12 +56,14 @@ config ARCH_AT91SAM9G45
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91CAP9
+ 	bool "AT91CAP9"
+ 	select CPU_ARM926T
+ 	select GENERIC_TIME
+ 	select GENERIC_CLOCKEVENTS
++	select ARCH_ATMEL_HAS_FB
+ 
+ config ARCH_AT91X40
+ 	bool "AT91x40"
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index 35e3bd9..43d4946 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -92,6 +92,7 @@ config PLATFORM_AT32AP
+ 	select PERFORMANCE_COUNTERS
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select GENERIC_ALLOCATOR
++	select ARCH_ATMEL_HAS_FB
+ 
+ #
+ # CPU types
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 2dbede4..a2cdf88 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -931,9 +931,14 @@ config FB_S1D13XXX
+ 	  working with S1D13806). Product specs at
+ 	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
+ 
++config ARCH_ATMEL_HAS_FB
++	bool
++	depends on FB
++	default n
++
+ config FB_ATMEL
+ 	tristate "AT91/AT32 LCD Controller support"
+-	depends on FB && (ARCH_AT91SAM9261 || ARCH_AT91SAM9G10 || ARCH_AT91SAM9263 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45 || ARCH_AT91CAP9 || AVR32)
++	depends on FB && ARCH_ATMEL_HAS_FB
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+1.5.3.7
 
- $ perf stat ~/hackbench  10
- Time: 0.205
-
-  Performance counter stats for '/home/mingo/hackbench 10':
-
-    2187.328436  task-clock-msecs     #      3.315 CPUs 
-          54554  context-switches     #      0.025 M/sec
-           1160  CPU-migrations       #      0.001 M/sec
-          17755  page-faults          #      0.008 M/sec
-     4995437535  cycles               #   2283.808 M/sec
-     2150881875  instructions         #      0.431 IPC  
-      644099534  cache-references     #    294.469 M/sec
-        8516562  cache-misses         #      3.894 M/sec
-
-    0.659895237  seconds time elapsed.
-
-The cache-misses event is sufficiently well-represented to be 
-meaningful to profile based on it. Raw DRAM access stats can be 
-useful too - but they are generally layered much later and your app 
-can hurt already flip-flopping its working set, without hitting too 
-hard on the DRAM channels.
-
-So perhaps 'cache-misses' is a good first-level approximation metric 
-to measure and profile along. You can get a good 
-(last-level-)cache-misses profile using the auto-freq counters:
-
-  perf record -e cache-misses -F 10000 ./your-app
-
-The '-F 10000' tells the kernel to do 10 KHz sampling of your-app, 
-regardless of how frequent cache-misses are. The tools (perf report) 
-will take the weight of events into account, so it's all 
-well-normalized between the functions.
-
-So you dont need to specify the 'sampling interval' by hand to get a 
-sufficient number of samples, you just specify a sampling frequency 
-- and the perfcounters subsystem takes care of the rest.
-
-Also, your system wont over-sample nor under-sample if your workload 
-idles around occasionally.
-
-	Ingo
