@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbZFWLTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZFWLXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbZFWLTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 07:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbZFWLTq
+	id S1758248AbZFWLXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 07:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZFWLXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 07:19:46 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40661 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757157AbZFWLTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 07:19:45 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: merging the per-bdi writeback patchset
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
-In-Reply-To: <20090623105645.GX31415@kernel.dk>
-References: <20090623191803.2230.A69D9226@jp.fujitsu.com> <20090623105645.GX31415@kernel.dk>
-Message-Id: <20090623201225.223F.A69D9226@jp.fujitsu.com>
+	Tue, 23 Jun 2009 07:23:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40275 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752367AbZFWLXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 07:23:41 -0400
+Message-ID: <4A40BB73.600@redhat.com>
+Date: Tue, 23 Jun 2009 14:24:35 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [KVM PATCH v8 3/3] KVM: add iosignalfd support
+References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003045.15859.73197.stgit@dev.haskins.net> <20090623085633.GA16294@redhat.com> <4A40A721.3020901@redhat.com> <20090623104812.GB17635@redhat.com>
+In-Reply-To: <20090623104812.GB17635@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 23 Jun 2009 20:19:45 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Jun 23 2009, KOSAKI Motohiro wrote:
-> > Hi
-> > 
-> > > On Tue, Jun 23 2009, Andrew Morton wrote:
-> > > > On Tue, 23 Jun 2009 10:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > 
-> > > > > Things are looking good for this patchset and it's been in -next for
-> > > > > almost a week without any reports of problems. So I'd like to merge it
-> > > > > for 2.6.31 if at all possible. Any objections?
-> > > > 
-> > > > erk.  I was rather expecting I'd have time to have a look at it all.
-> > > 
-> > > OK, we can wait if we have to, just trying to avoid having to keep this
-> > > fresh for one full cycle. I have posted this patchset 11 times though
-> > > over months, so it's not like it's a new piece of work :-)
-> > > 
-> > > > It's unclear to me actually _why_ the performance changes which were
-> > > > observed have actually occurred.  In fact it's a bit unclear (to me)
-> > > > why the patchset was written and what it sets out to achieve :(
-> > > 
-> > > It started out trying to get rid of the pdflush uneven writeout. If you
-> > > look at various pdflush intensive workloads, even on a single disk you
-> > > often have 5 or more pdflush threads working the same device. It's just
-> > > not optimal. Another issue was starvation with request allocation. Given
-> > > that pdflush does non-blocking writes (it has to, by design), pdflush
-> > > can potentially be starved if someone else is working the device.
-> > 
-> > Can you please make reproduce program and post mesurement result?
-> > I hope to mesure the same program on my box.
-> 
-> For which issue? Lumpy writeout can often be observed just by doing
-> buffered writes to a bunch of files.
+On 06/23/2009 01:48 PM, Michael S. Tsirkin wrote:
+> On Tue, Jun 23, 2009 at 12:57:53PM +0300, Avi Kivity wrote:
+>    
+>> On 06/23/2009 11:56 AM, Michael S. Tsirkin wrote:
+>>      
+>>> On Thu, Jun 18, 2009 at 08:30:46PM -0400, Gregory Haskins wrote:
+>>>
+>>>        
+>>>> +static int
+>>>> +iosignalfd_group_in_range(struct kvm_io_device *this, gpa_t addr, int len,
+>>>> +			  int is_write)
+>>>> +{
+>>>> +	struct _iosignalfd_group *p = to_group(this);
+>>>> +
+>>>> +	return ((addr>= p->addr&&   (addr<   p->addr + p->length)));
+>>>> +}
+>>>>
+>>>>          
+>>> I think I see a problem here. For virtio, we do not necessarily want all
+>>> virtqueues for a device to live in kernel: there might be control
+>>> virtqueues that we want to leave in userspace. Since this claims all
+>>> writes to a specific address, the signal never makes it to userspace.
+>>>
+>>>        
+>> Userspace could create an eventfd for this control queue and wait for it
+>> to fire.
+>>      
+>
+> What if guest writes an unexpected value there?
+> The value it simply lost ... that's not very elegant.
+>    
 
-Yes, I know current behavior is not perfectly optimal.
-but I haven't seen it cause serious issue.
+True, it's better to have a lossless interface.
 
-Then, I guess you have big degression workload, yes? if so, I hope to see it.
-
-
-> > Plus, Can you please write more vervose patch description? your patch is a
-> > bit harder review.
-> 
-> OK, I can probably improve on that. Do you mean the general description
-> of the patchset, or some of the individual patches?
-
-Hopefully both. honestly I haven't understand your main worryed issue.
-
-
+-- 
+error compiling committee.c: too many arguments to function
 
