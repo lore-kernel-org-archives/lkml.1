@@ -1,120 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbZFWCrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZFWC7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbZFWCrd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZFWCr0
+	id S1753041AbZFWC7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZFWC7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:47:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38597 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750986AbZFWCrZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:47:25 -0400
-Date: Mon, 22 Jun 2009 19:44:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: John Stoffel <john@stoffel.org>
-cc: Bernd Schmidt <bernds_cb1@t-online.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Blackfin Architecture Team 
-	<uclinux-dist-devel@blackfin.uclinux.org>,
-       David Howells <dhowells@redhat.com>, stable@kernel.org
-Subject: Re: Fix for shared flat binary format in 2.6.30
-In-Reply-To: <19008.14107.115568.19439@stoffel.org>
-Message-ID: <alpine.LFD.2.01.0906221932130.3240@localhost.localdomain>
-References: <4A3F5EAE.7020402@t-online.de> <alpine.LFD.2.01.0906221137580.3240@localhost.localdomain> <19007.60396.259650.682653@stoffel.org> <alpine.LFD.2.01.0906221349220.3240@localhost.localdomain> <19008.14107.115568.19439@stoffel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 22 Jun 2009 22:59:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:40502 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751576AbZFWC7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:59:45 -0400
+Subject: Re: [PATCH] mm/init: cpu_hotplug_init() must be initialized before
+ SLAB
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Sachin Sant <sachinp@in.ibm.com>
+In-Reply-To: <alpine.LFD.2.01.0906221927280.3240@localhost.localdomain>
+References: <1245717089.4017.18.camel@pasglop>
+	 <alpine.LFD.2.01.0906221927280.3240@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 12:59:14 +1000
+Message-Id: <1245725954.4017.42.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 22 Jun 2009, John Stoffel wrote:
+On Mon, 2009-06-22 at 19:29 -0700, Linus Torvalds wrote:
 > 
-> Linus> Then, just edit the files, and use "git diff". That, along with
-> Linus> "git pull" would be the _only_ command you'd ever use - and you
-> Linus> now have a nice anoncvs-like environment to get used to git
-> Linus> with, without having to actually know a whole lot.
+> On Tue, 23 Jun 2009, Benjamin Herrenschmidt wrote:
 > 
-> So say I want to manage multiple branches, since I want to test some
-> patches out, or various kernel revisions, or even git bisection?  
+> > +	/*
+> > +	 * This initializes the mutex used by get/put_online_cpus()
+> > +	 * which is used by SLAB
+> > +	 */
+> > +	cpu_hotplug_init();
 > 
-> Or should I just use a completely seperate tree for a bisection run? 
-
-Oh, it really does sound like you want to do the whole "multiple branches" 
-thing, and want to do way more with git than just use it as an anoncvs 
-replacement.
-
-So your workflow is fine.
-
-My clarification was really meant for the case where people were perhaps 
-more used to the CVS kind of model (and SVN is very much the same one). 
-I bet there's lots of people who are used to anoncvs and carrying their 
-patches (uncommitted) in their trees, and then doing "cvs update".
-
-So I tried to just outline the git version of that. 
-
-It's a much weaker model, and not at all as capable, but it _is_ simpler.
-
-> Linus> 	git stash		# save your changes
-> Linus> 	git pull		# do the update
-> Linus> 	git stash apply		# re-apply your changes
+> Oh fudge it.
 > 
-> Ohh!  This is a new one to me.  Gotta remember this one, that's huge!
-> Maybe what I've written should be updated to use this method instead?  
+> Why not get rid of that stupid thing, rather than have that subtle 
+> dependency and a comment for it.
+> 
+> IOW, does this simpler alternative also work?
 
-Your multiple branch approach is much better since you do commits etc. A 
-commit is a long-term stash, and you can (obviously) queue them on top of 
-each other. 
+You mean static init ? Sure, it should do.
 
-With "git stash", you can have multiple different stashed things too, but 
-they don't queue up on each other - they are just random independent 
-patches that you've stashed away because they were inconvenient at some 
-point.
+> When given the choice of simplifying and removing code, always do so. 
 
-So the real "branches + commits" model is what a real git user does, and 
-your description wasn't bad at all. It was just perhaps more of a stretch 
-than some people who are used to CVS would necessarily want to begin with.
+Yup. Agreed. Thought about it... got shy :-)
 
-> Heh, from all I've seen with your rants, git pull --rebase isn't what
-> I want to do if I can help it.  :]  Even though I'll probably never
-> publish a branch, just small patches occasionally at times. 
+> Static initializers are much nicer than having to worry about when 
+> something gets initialized, no?
 
-There's nothing wrong with "git pull --rebase" if you're a "leaf 
-developer", ie you don't publish your git tree, and you don't integrate 
-work from other peoples git trees.
+I'll test that asap.
 
-Doing "git pull --rebase" (or "git fetch" + "git rebase origin", which is 
-the same thing) is very convenient for people who do commit their changes 
-with git, and aren't ready to publish them. 
+> 		Linus
+> 
+> ---
+>  include/linux/cpu.h |    5 -----
+>  init/main.c         |    1 -
+>  kernel/cpu.c        |   13 +++++--------
+>  3 files changed, 5 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index 2643d84..4d668e0 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -69,7 +69,6 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+>  
+>  int cpu_up(unsigned int cpu);
+>  void notify_cpu_starting(unsigned int cpu);
+> -extern void cpu_hotplug_init(void);
+>  extern void cpu_maps_update_begin(void);
+>  extern void cpu_maps_update_done(void);
+>  
+> @@ -84,10 +83,6 @@ static inline void unregister_cpu_notifier(struct notifier_block *nb)
+>  {
+>  }
+>  
+> -static inline void cpu_hotplug_init(void)
+> -{
+> -}
+> -
+>  static inline void cpu_maps_update_begin(void)
+>  {
+>  }
+> diff --git a/init/main.c b/init/main.c
+> index 09131ec..4870dfe 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -678,7 +678,6 @@ asmlinkage void __init start_kernel(void)
+>  #endif
+>  	page_cgroup_init();
+>  	enable_debug_pagealloc();
+> -	cpu_hotplug_init();
+>  	kmemtrace_init();
+>  	kmemleak_init();
+>  	debug_objects_mem_init();
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 395b697..8ce1004 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -34,14 +34,11 @@ static struct {
+>  	 * an ongoing cpu hotplug operation.
+>  	 */
+>  	int refcount;
+> -} cpu_hotplug;
+> -
+> -void __init cpu_hotplug_init(void)
+> -{
+> -	cpu_hotplug.active_writer = NULL;
+> -	mutex_init(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount = 0;
+> -}
+> +} cpu_hotplug = {
+> +	.active_writer = NULL,
+> +	.lock = __MUTEX_INITIALIZER(cpu_hotplug.lock),
+> +	.refcount = 0,
+> +};
+>  
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  
 
-I actually do it all the time myself - in my own private git source tree. 
-I send git patches to Junio by email, and I don't publish my own git tree 
-any more, since Junio is the real maintainer, and has been doing such a 
-stellar job.
-
-So when it comes to git, I occasionally have some git work going on 
-myself, and I tend to maintain those as commits in my private tree that I 
-then update with "git pull --rebase". It's an excellent _private_ 
-workflow, because it means that I can trivially keep my own work 
-up-to-date, and if part of it is something that I sent to Junio for 
-merging, if/when he merges it, when I do "git pull --rebase" my own 
-private commit automatically goes away since it's no longer needed, and 
-got merged.
-
-So it's true that I rant against people doing rebase, but I rant against 
-maintainers who either rebase other peoples commits (it's happily getting 
-fairly rare), or who keep a private tree that they rebase all the time, 
-and then they publish what is obviously _totally_ untested crap, because I 
-can tell that they rebased within the last few hours, and thus the weeks 
-or months of work that they then publish has been essentially made public 
-with zero testing.
-
-So rebase has huge downsides, but for private git patch queues it's 
-wonderful. There's a reason 'git rebase' is very much part of the core git 
-distribution, it's not some kind of second-class citizen.
-
-			Linus
