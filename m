@@ -1,90 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZFWK5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZFWK7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758138AbZFWK5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 06:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZFWK5e
+	id S1757347AbZFWK7b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 06:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZFWK7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 06:57:34 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15070 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756019AbZFWK5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 06:57:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,275,1243839600"; 
-   d="scan'208";a="157495076"
-From: "Gao, Yunpeng" <yunpeng.gao@intel.com>
-To: Greg KH <gregkh@suse.de>, David Woodhouse <dwmw2@infradead.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 23 Jun 2009 18:59:24 +0800
-Subject: RE: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
-Thread-Topic: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
-Thread-Index: Acnom9fsbC6nmM8RQLmVFIrKq5NfOwLTVFEA
-Message-ID: <38D9F46DFF92C54980D2F2C1E8EE313001A47964EB@pdsmsx503.ccr.corp.intel.com>
-References: <20090606164455.GB27257@intel.com>
- <20090606160413.08c254cf@lxorguk.ukuu.org.uk>
- <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
- <1244458030.30939.216.camel@macbook.infradead.org>
- <20090609003839.GB22766@suse.de>
-In-Reply-To: <20090609003839.GB22766@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+	Tue, 23 Jun 2009 06:59:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36692
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752761AbZFWK7V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 06:59:21 -0400
+Date: Tue, 23 Jun 2009 03:59:26 -0700 (PDT)
+Message-Id: <20090623.035926.155211513.davem@davemloft.net>
+To: elendil@planet.nl
+Cc: bzolnier@gmail.com, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ide-cd: Improve "weird block size" error message
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906230951.24615.elendil@planet.nl>
+References: <200906222101.38586.elendil@planet.nl>
+	<200906222335.06700.bzolnier@gmail.com>
+	<200906230951.24615.elendil@planet.nl>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5NAwj54013596
 
+From: Frans Pop <elendil@planet.nl>
+Date: Tue, 23 Jun 2009 09:51:23 +0200
 
->-----Original Message-----
->From: Greg KH [mailto:gregkh@suse.de]
->Sent: 2009Äê6ÔÂ9ÈÕ 8:39
->To: David Woodhouse
->Cc: Gao, Yunpeng; Alan Cox; linux-kernel@vger.kernel.org
->Subject: Re: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
->
->On Mon, Jun 08, 2009 at 11:47:10AM +0100, David Woodhouse wrote:
->> On Mon, 2009-06-08 at 12:23 +0800, Gao, Yunpeng wrote:
->> > The Moorestown NAND flash driver is licensed from the Moorestown NAND
->> > controller vendor. It's a standalone NAND driver. According to the
->> > vendor, this driver has some advanced features specific to the
->> > controller hardware and is difficult to port to MTD subsystem.
->>
->> I don't believe it. If the MTD subsystem doesn't support certain
->> features, the MTD subsystem needs to be updated to cope.
->
->Based on this response, I am guessing that you do not want me to take
->this in the staging tree? :)
->
->If so, please let me know and I'll drop it.
->
->thanks,
->
->greg k-h
+> In that case I'd like to propose the following patch. Currently the error
+> can get printed much to frequently when there's a disc in the drive.
+> Example:
+> 
+> Jun 13 18:06:28 gimli kernel: ide-cd: hdd: weird block size 2352
+> Jun 13 18:06:28 gimli kernel: ide-cd: hdd: default to 2kb block size
+> Jun 13 18:06:32 gimli kernel: ide-cd: hdd: weird block size 2352
+> Jun 13 18:06:42 gimli kernel: ide-cd: hdd: default to 2kb block size
 
-Hi Greg, David and Alan,
+Thinking about this a bit.  Let's look at what problem this is
+trying to avoid, as per the commit message:
 
-I have discussed with the architect of Moorestown NAND driver today, and we agreed that the Moorestown NAND driver can not be ported to MTD subsystem.
-The reason is: 
-The NAND driver has to keep compatibility with Moorestown IA Firmware (which also operates on NAND device and is close source), and if the NAND driver is ported to MTD, the driver has to be changed much and thus will fail to keep the compatibility with Firmware.
+--------------------
+    ide-cd: fix oops when using growisofs
+    
+    cdrom_read_capacity() will blindly return the capacity from the device
+    without sanity-checking it.  This later causes code in fs/buffer.c to
+    oops.
+    
+    Fix this by checking that the device is telling us sensible things.
+--------------------
 
-As this is a standalone NAND driver, I think I can re-submit it to the block subsystem (maintained by Jens Axboe). Thus the NAND driver need not to change its architecture and can keep the compatibility with Firmware.
+Well, for the values Frans's CDROM is giving, this OOPS would not
+take place and the weird sector value is completely harmless.
 
-Also, it'll be better if the NAND driver can be in Greg's staging tree before the driver becomes 'good enough' and accepted by the block subsystem. Because some customers and partners want to get the latest NAND driver code from the kernel tree before the driver is accepted finally.
+Since SECTOR_BITS is 9:
 
-Does this suggestion make sense?
+(2352 >> 9) == (2048 >> 9) == 4
 
-Thanks for your time.
+There is simply no benefit from this warning in this situation.
 
-Rgds,
-Yunpeng Gao
+Therefore, any objections to something like this?
 
+ide-cd: Don't warn on bogus block size unless it actually matters.
 
+Frans Pop reported that his CDROM drive reports a blocksize of 2352,
+and this causes new warnings due to commit
+e8e7b9eb11c34ee18bde8b7011af41938d1ad667 ("ide-cd: fix oops when using
+growisofs").
 
+What we're trying to do is make sure that "blocklen >> SECTOR_BITS"
+is something the block layer won't choke on.
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+And for Frans case "2352 >> SECTOR_BITS" is equal to
+"2048 >> SECTOR_BITS", and thats "4".
+
+So warning in this case gives no real benefit.
+
+Reported-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index 4a19686..a9a1bfb 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -876,9 +876,12 @@ static int cdrom_read_capacity(ide_drive_t *drive, unsigned long *capacity,
+ 		return stat;
+ 
+ 	/*
+-	 * Sanity check the given block size
++	 * Sanity check the given block size, in so far as making
++	 * sure the sectors_per_frame we give to the caller won't
++	 * end up being bogus.
+ 	 */
+ 	blocklen = be32_to_cpu(capbuf.blocklen);
++	blocklen = (blocklen >> SECTOR_BITS) << SECTOR_BITS;
+ 	switch (blocklen) {
+ 	case 512:
+ 	case 1024:
