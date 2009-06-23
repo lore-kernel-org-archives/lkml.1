@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZFWAES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757805AbZFWAIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZFWAES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 20:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZFWAEJ
+	id S1757805AbZFWAIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 20:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZFWAHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 20:04:09 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:35598 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZFWAEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 20:04:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=A5iUnrV3QqCUWhLgCHTEX5o8ybbG2bMN06+3qrWm5jQKm4IA5xITgsLROEu3e2p7zQ
-         gAhcpbAHpzpf8iPg/3SEcGch7vnd1z7Ebu5Ni/IfHOqVPrjZJWRmdz35N6PpbaJliWYh
-         g6VndYAOmsz8EMb5aCSYZ1xoDfpZj+Si/U7tU=
-Message-ID: <4A401C19.8090102@gmail.com>
-Date: Mon, 22 Jun 2009 18:04:41 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Raz <raziebe@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>
-Subject: Re: Permission to use list.h and atomic.h in user space
-References: <5d96567b0906220510q32d0280diec9a2179ed37216e@mail.gmail.com> 	<20090622153701.1012ca3c@t61.ukuu.org.uk> <5d96567b0906220644p4c412163m26d7cb16e6e5c58d@mail.gmail.com>
-In-Reply-To: <5d96567b0906220644p4c412163m26d7cb16e6e5c58d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 22 Jun 2009 20:07:53 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37669 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752538AbZFWAHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 20:07:52 -0400
+Subject: Re: [git pull] drm: previous pull req + 1.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
+Cc: Dave Airlie <airlied@linux.ie>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alex Deucher <alexdeucher@gmail.com>, Andrew Lutomirski <luto@mit.edu>,
+       dri-devel@lists.sf.net, Jerome Glisse <jglisse@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A3F3E3A.2030202@shipmail.org>
+References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
+	 <4A3DABE1.50309@mit.edu>
+	 <alpine.DEB.2.00.0906210615450.6234@skynet.skynet.ie>
+	 <alpine.LFD.2.01.0906210945170.3119@localhost.localdomain>
+	 <alpine.LFD.2.01.0906210948340.3119@localhost.localdomain>
+	 <cb0375e10906211150v7c54f355ga0066eccc128085@mail.gmail.com>
+	 <alpine.LFD.2.01.0906211223190.3119@localhost.localdomain>
+	 <alpine.DEB.2.00.0906212336200.20307@skynet.skynet.ie>
+	 <4A3F3E3A.2030202@shipmail.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 23 Jun 2009 10:00:13 +1000
+Message-Id: <1245715213.4017.13.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22/2009 07:44 AM, Raz wrote:
-> Hello
-> May I have permission to use atomic64.h ,atomic32.h and list.h in a
-> proprietary software ?
-> I do not know who the authors are.
-> Thank you
-> Raz
+On Mon, 2009-06-22 at 10:18 +0200, Thomas Hellström wrote:
 
-You would likely have to basically track down everyone who has ever 
-contributed to those files and get their permission, which seems 
-unlikely. So the short answer is almost certainly no.
+> It would be very helpful if we could introduce an fbdev mutex that 
+> protects fbdev accesses to the kernel map and to the fbdev acceleration 
+> functions.
 
-With newer gcc there are atomic built-in functions which will likely do 
-what you want for the atomic ops at least..
+As far as I can remember, all fbdev operations are done under the
+console semaphore.
+
+(I know I did fix a bunch of that crap ages ago).
+
+Cheers,
+Ben.
+
