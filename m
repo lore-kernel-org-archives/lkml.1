@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZFWIeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZFWIit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756089AbZFWIeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWIeM
+	id S1755046AbZFWIit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZFWIik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:34:12 -0400
-Received: from mga11.intel.com ([192.55.52.93]:64766 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751864AbZFWIeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:34:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,274,1243839600"; 
-   d="scan'208";a="468746992"
-Date: Tue, 23 Jun 2009 16:32:46 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Len Brown <lenb@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>
-Subject: Re: [PATCH 3/8] SFI: core support
-Message-ID: <20090623163246.1cdf755e@feng-desktop>
-In-Reply-To: <20090623075643.GC6397@elte.hu>
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com>
-	<8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com>
-	<20090623075643.GC6397@elte.hu>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 04:38:40 -0400
+Received: from mailout5.samsung.com ([203.254.224.35]:52589 "EHLO
+	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbZFWIii convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:38:38 -0400
+Date: Tue, 23 Jun 2009 10:37:23 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
+In-reply-to: <200906230022.39040.david-b@pacbell.net>
+To: "'David Brownell'" <david-b@pacbell.net>
+Cc: "'Alan Stern'" <stern@rowland.harvard.edu>,
+       "'Peter Korsgaard'" <jacmet@sunsite.dk>,
+       "'USB list'" <linux-usb@vger.kernel.org>,
+       "'Kernel development list'" <linux-kernel@vger.kernel.org>,
+       kyungmin.park@samsung.com,
+       "'Marek Szyprowski'" <m.szyprowski@samsung.com>
+Message-id: <002001c9f3dd$d7a24df0$86e6e9d0$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=iso-8859-2
+Content-language: pl
+Content-transfer-encoding: 8BIT
+Thread-index: Acnz02cXuhg7XJ/LQ+aAs6BkBa+L/gACXJnw
+References: <001201c9f341$20b8b710$622a2530$%szyprowski@samsung.com>
+ <200906222026.51511.david-b@pacbell.net>
+ <001c01c9f3cd$ad02b1d0$07081570$%szyprowski@samsung.com>
+ <200906230022.39040.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 15:56:43 +0800
-Ingo Molnar <mingo@elte.hu> wrote:
+Hello, 
 
+On Tuesday, June 23, 2009 9:23 AM, David Brownell wrote:
 
+> > > Like, oh, changing a spinlock to a mutex.   You might change the
+> > > low_latency setting and review how that's now supposed to behave.
 > >
-> > +#ifdef CONFIG_X86_LOCAL_APIC
-> > +static u64 sfi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
-> > +#endif
+> > In in gs_open() function in drivers/usb/gadget/u_serial.c, after the
+> > line 780 I've added:
+> >
+> > tty->low_latency = 1;
 > 
-> if SFI adds a 'depends on X86_LOCAL_APIC' the ugly #ifdef can be
-> dropped.
+> That's already how it's set.  Try instead *REMOVING* the line
+> which sets that flag.
 
-When Len designed the SFI spec, he considered the possibility of being used by
-multiple archs, so we chose not to add a x86 dependency, though adding these
-#ifdef does make code ugly :P
+My fault. I didn't notice that a few lines lower the low_latency flag is
+alredy set and I thought I should set it. After removing that, g_serial
+started working. :) Thanks a lot.
 
-> > +{
-> > +     unsigned long i;
-> 
-> ... like here.
-> 
-> > +     char *pchar = (char *)SFI_SYST_SEARCH_BEGIN;
-> > +
-> > +     for (i = 0; SFI_SYST_SEARCH_BEGIN + i < SFI_SYST_SEARCH_END;
-> > i += 16, pchar += 16) {
-> 
-> What does the magic constant '16' mean here?
+I noticed that there is also a comment:
+/* low_latency means ldiscs work in tasklet context, without
+ * needing a workqueue schedule ... easier to keep up.
+ */
 
-My bad not puting clear comments here, the SFI spec defines SYST table starts
-at a 16-byte boundary
+So in low latency mode calls are made from a tasklet. This is not true in
+my case, as the S3C OTG UDC driver does all its job in interrupts. This
+way also a (usb) packet_done callback is done from an interrupt. I expect
+that g_serial driver interacts with tty layer in that packet_done callback,
+so this is the source of the problems. I noticed that some other UDC
+drivers also does all its job from an interrupt, so they also might be
+affected. How this bug should be properly resolved?
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
 
 
-> > +
-> > +static int __init sfi_parse_apic(struct sfi_table_header *table)
-> > +{
-> > +     struct sfi_table_simple *sb;
-> > +     struct sfi_apic_table_entry *pentry;
-> > +     int i, num;
-> > +
-> > +     BUG_ON(!table);
-> 
-> Same as comment above - is this case anticipated? If yes, is a crash
-> the best answer?
-
-Yes, usually table won't be NULL
-
-> > +
-> > +#define SFI_ACPI_TABLE       1
-> 
-> In general, nice stuff - basically SFI is cleanly implemented ACPI
-> tables without any of the run-code-in-acpi-tables complications,
-> right?
-
-Thanks for the comments, I really got inspired :). The expectation for SFI
-is to be able to run cleanly with CONFIG_ACPI=n, and it works fine on some
-intel platform.
-
-Thanks,
-Feng
-
-> 
->         Ingo
