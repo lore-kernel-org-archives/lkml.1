@@ -1,106 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbZFWPVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760285AbZFWPVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbZFWPVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 11:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755094AbZFWPVc
+	id S1760285AbZFWPVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 11:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbZFWPVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 11:21:32 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:38620 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754742AbZFWPVb (ORCPT
+	Tue, 23 Jun 2009 11:21:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:52923 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759283AbZFWPVg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 11:21:31 -0400
-X-IronPort-AV: E=Sophos;i="4.42,276,1243807200"; 
-   d="scan'208";a="28605845"
-Message-ID: <4A40F31F.4030609@inria.fr>
-Date: Tue, 23 Jun 2009 17:22:07 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 23 Jun 2009 11:21:36 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] asm-generic fixes
+Date: Tue, 23 Jun 2009 17:20:35 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>, Paul Mundt <lethal@linux-sh.org>,
+       Magnus Damm <magnus.damm@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [perf] howto switch from pfmon
-References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr> <20090623143601.GA13415@elte.hu>
-In-Reply-To: <20090623143601.GA13415@elte.hu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906231720.38105.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/khPdkt8QPyzZjGbadrzgmyJXlce4GN7OlNRJ
+ oGHKDINQplmlV+Aj9w7zDSSeT5v8VLu4+QPY8ANuRN/gNJOxTJ
+ zU0AbFMShq+Uq12NyF4J53+E0XlVYkO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> btw., it might make sense to expose NUMA inbalance via generic 
-> enumeration. Right now we have:
->
->         PERF_COUNT_HW_CPU_CYCLES                = 0,
->         PERF_COUNT_HW_INSTRUCTIONS              = 1,
->         PERF_COUNT_HW_CACHE_REFERENCES          = 2,
->         PERF_COUNT_HW_CACHE_MISSES              = 3,
->         PERF_COUNT_HW_BRANCH_INSTRUCTIONS       = 4,
->         PERF_COUNT_HW_BRANCH_MISSES             = 5,
->         PERF_COUNT_HW_BUS_CYCLES                = 6,
->
-> plus we have cache stats:
->
->  * Generalized hardware cache counters:
->  *
->  *       { L1-D, L1-I, LLC, ITLB, DTLB, BPU } x
->  *       { read, write, prefetch } x
->  *       { accesses, misses }
->   
+Hi Linus,
 
-By the way, is there a way to know which cache was actually used when we
-request cache references/misses? Always the largest/top one by default?
+Please pull this set of fixes for include/asm-generic and
+the checksum code from
 
-> NUMA is here to stay, and expressing local versus remote access 
-> stats seems useful. We could add two generic counters:
->
->         PERF_COUNT_HW_RAM_LOCAL                 = 7,
->         PERF_COUNT_HW_RAM_REMOTE                = 8,
->
-> And map them properly on all CPUs that support such stats. They'd be 
-> accessible via '-e ram-local-refs' and '-e ram-remote-refs' type of 
-> event symbols.
->
-> What is your typical usage pattern of this counter? What (general) 
-> kind of app do you profile with it and how do you make use of the 
-> specific node masks?
->
-> Would a local/all-remote distinction be enough, or do you need to 
-> make a distinction between the individual nodes to get the best 
-> insight into the workload?
->   
+git://git.kernel.org:/pub/scm/linux/kernel/git/arnd/asm-generic.git for-linus
 
-People here work on OpenMP runtime systems where you try to keep threads
-and data together. So in the end, what's important is to maximize the
-overall local/remote access ratio. But during development, it may useful
-to have a distinction between individual nodes so as to understand
-what's going on. That said, we still have raw numbers when we really
-need that many details, and I don't know if it'd be easy for you to add
-a generic counter with a sort of node-number attribute.
+---
+Arnd Bergmann (4):
+  asm-generic: drop HARDIRQ_BITS definition from hardirq.h
+  asm-generic: list Arnd as asm-generic maintainer
+  asm-generic: hook up new system calls
+  lib/checksum.c: fix endianess bug
 
+Mike Frysinger (2):
+  asm-generic: uaccess: add missing access_ok() check to strnlen_user()
+  asm-generic: uaccess: fix up local access_ok() usage
 
-(including part of your other email here since it's relevant)
+Paul Mundt (1):
+  asm-generic: add dummy pgprot_noncached()
 
-> How many threads does your workload typically run, and how do you 
-> get their stats displayed?
->   
+ MAINTAINERS                   |    8 ++++++++
+ include/asm-generic/hardirq.h |   13 -------------
+ include/asm-generic/pgtable.h |    4 ++++
+ include/asm-generic/uaccess.h |   14 ++++++++------
+ include/asm-generic/unistd.h  |    7 ++++++-
+ lib/checksum.c                |   10 +++++++++-
+ 6 files changed, 35 insertions(+), 21 deletions(-)
 
-In the aforementioned OpenMP stuff, we use pfmon to get the local/remote
-numa memory access ratio of each thread. In this specific case, we bind
-one thread per core (even with a O(1) scheduler, people tend to avoid
-launching hundreds of threads on current machines). pfmon gives us
-something similar to the output of 'perf stat' in a file whose filename
-contains process and thread IDs. We apply our own custom script to
-convert these many pfmon output files into a single summary saying for
-each thread, its thread ID, its core binding, its individual numa node
-access numbers and percentages, and if they were local or remote (with
-the Barcelona counters we were talking about, you need to check where
-you were running before you know if accesses to node X are actually
-local or remote accesses).
-
-thanks,
-Brice
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 02f6f78..b85cf35 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2482,6 +2482,14 @@ F:	drivers/net/wan/pc300too.c
+ F:	drivers/net/wan/pci200syn.c
+ F:	drivers/net/wan/wanxl*
+ 
++GENERIC INCLUDE/ASM HEADER FILES
++P:	Arnd Bergmann
++M:	arnd@arndb.de
++L:	linux-arch@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
++S:	Maintained
++F:	include/asm-generic
++
+ GFS2 FILE SYSTEM
+ P:	Steven Whitehouse
+ M:	swhiteho@redhat.com
+diff --git a/include/asm-generic/hardirq.h b/include/asm-generic/hardirq.h
+index 3d5d2c9..23bb4da 100644
+--- a/include/asm-generic/hardirq.h
++++ b/include/asm-generic/hardirq.h
+@@ -11,19 +11,6 @@ typedef struct {
+ 
+ #include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+ 
+-#ifndef HARDIRQ_BITS
+-#define HARDIRQ_BITS	8
+-#endif
+-
+-/*
+- * The hardirq mask has to be large enough to have
+- * space for potentially all IRQ sources in the system
+- * nesting on a single CPU:
+- */
+-#if (1 << HARDIRQ_BITS) < NR_IRQS
+-# error HARDIRQ_BITS is too low!
+-#endif
+-
+ #ifndef ack_bad_irq
+ static inline void ack_bad_irq(unsigned int irq)
+ {
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index e410f60..e2bd73e 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -129,6 +129,10 @@ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addres
+ #define move_pte(pte, prot, old_addr, new_addr)	(pte)
+ #endif
+ 
++#ifndef pgprot_noncached
++#define pgprot_noncached(prot)	(prot)
++#endif
++
+ #ifndef pgprot_writecombine
+ #define pgprot_writecombine pgprot_noncached
+ #endif
+diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
+index 6d8cab2..b218b85 100644
+--- a/include/asm-generic/uaccess.h
++++ b/include/asm-generic/uaccess.h
+@@ -163,7 +163,7 @@ static inline __must_check long __copy_to_user(void __user *to,
+ #define put_user(x, ptr)					\
+ ({								\
+ 	might_sleep();						\
+-	__access_ok(ptr, sizeof (*ptr)) ?			\
++	access_ok(VERIFY_WRITE, ptr, sizeof(*ptr)) ?		\
+ 		__put_user(x, ptr) :				\
+ 		-EFAULT;					\
+ })
+@@ -219,7 +219,7 @@ extern int __put_user_bad(void) __attribute__((noreturn));
+ #define get_user(x, ptr)					\
+ ({								\
+ 	might_sleep();						\
+-	__access_ok(ptr, sizeof (*ptr)) ?			\
++	access_ok(VERIFY_READ, ptr, sizeof(*ptr)) ?		\
+ 		__get_user(x, ptr) :				\
+ 		-EFAULT;					\
+ })
+@@ -244,7 +244,7 @@ static inline long copy_from_user(void *to,
+ 		const void __user * from, unsigned long n)
+ {
+ 	might_sleep();
+-	if (__access_ok(from, n))
++	if (access_ok(VERIFY_READ, from, n))
+ 		return __copy_from_user(to, from, n);
+ 	else
+ 		return n;
+@@ -254,7 +254,7 @@ static inline long copy_to_user(void __user *to,
+ 		const void *from, unsigned long n)
+ {
+ 	might_sleep();
+-	if (__access_ok(to, n))
++	if (access_ok(VERIFY_WRITE, to, n))
+ 		return __copy_to_user(to, from, n);
+ 	else
+ 		return n;
+@@ -278,7 +278,7 @@ __strncpy_from_user(char *dst, const char __user *src, long count)
+ static inline long
+ strncpy_from_user(char *dst, const char __user *src, long count)
+ {
+-	if (!__access_ok(src, 1))
++	if (!access_ok(VERIFY_READ, src, 1))
+ 		return -EFAULT;
+ 	return __strncpy_from_user(dst, src, count);
+ }
+@@ -291,6 +291,8 @@ strncpy_from_user(char *dst, const char __user *src, long count)
+ #ifndef strnlen_user
+ static inline long strnlen_user(const char __user *src, long n)
+ {
++	if (!access_ok(VERIFY_READ, src, 1))
++		return 0;
+ 	return strlen((void * __force)src) + 1;
+ }
+ #endif
+@@ -316,7 +318,7 @@ static inline __must_check unsigned long
+ clear_user(void __user *to, unsigned long n)
+ {
+ 	might_sleep();
+-	if (!__access_ok(to, n))
++	if (!access_ok(VERIFY_WRITE, to, n))
+ 		return n;
+ 
+ 	return __clear_user(to, n);
+diff --git a/include/asm-generic/unistd.h b/include/asm-generic/unistd.h
+index 5b34b62..1125e5a 100644
+--- a/include/asm-generic/unistd.h
++++ b/include/asm-generic/unistd.h
+@@ -618,8 +618,13 @@ __SYSCALL(__NR_migrate_pages, sys_migrate_pages)
+ __SYSCALL(__NR_move_pages, sys_move_pages)
+ #endif
+ 
++#define __NR_rt_tgsigqueueinfo 240
++__SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
++#define __NR_perf_counter_open 241
++__SYSCALL(__NR_perf_counter_open, sys_perf_counter_open)
++
+ #undef __NR_syscalls
+-#define __NR_syscalls 240
++#define __NR_syscalls 242
+ 
+ /*
+  * All syscalls below here should go away really,
+diff --git a/lib/checksum.c b/lib/checksum.c
+index 12e5a1c..b2e2fd4 100644
+--- a/lib/checksum.c
++++ b/lib/checksum.c
+@@ -55,7 +55,11 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ 		goto out;
+ 	odd = 1 & (unsigned long) buff;
+ 	if (odd) {
++#ifdef __LITTLE_ENDIAN
+ 		result = *buff;
++#else
++		result += (*buff << 8);
++#endif
+ 		len--;
+ 		buff++;
+ 	}
+@@ -71,7 +75,7 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ 		if (count) {
+ 			unsigned long carry = 0;
+ 			do {
+-				unsigned long w = *(unsigned long *) buff;
++				unsigned long w = *(unsigned int *) buff;
+ 				count--;
+ 				buff += 4;
+ 				result += carry;
+@@ -87,7 +91,11 @@ static unsigned int do_csum(const unsigned char *buff, int len)
+ 		}
+ 	}
+ 	if (len & 1)
++#ifdef __LITTLE_ENDIAN
++		result += *buff;
++#else
+ 		result += (*buff << 8);
++#endif
+ 	result = from32to16(result);
+ 	if (odd)
+ 		result = ((result >> 8) & 0xff) | ((result & 0xff) << 8);
