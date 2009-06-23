@@ -1,98 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZFWSwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZFWSxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZFWSwV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 14:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZFWSwE
+	id S1754643AbZFWSxq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 14:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZFWSxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 14:52:04 -0400
-Received: from khc.piap.pl ([195.187.100.11]:50627 "EHLO khc.piap.pl"
+	Tue, 23 Jun 2009 14:53:38 -0400
+Received: from mga11.intel.com ([192.55.52.93]:63239 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751936AbZFWSwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 14:52:03 -0400
-To: Jake Edge <jake@lwn.net>
-Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       torvalds@linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Greg KH <greg@kroah.com>, "corbet\@lwn.net" <corbet@lwn.net>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm\@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan\@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "linux-wireless\@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "netdev\@vger.kernel.org" <netdev@vger.kernel.org>,
-       "tshibata\@ab.jp.nec.com" <tshibata@ab.jp.nec.com>
-Subject: Re: [PATCH v3.1415] Documentation: add documentation summary for rc-series and merge window
-References: <20090622222217.GH23972@bombadil.infradead.org>
-	<m3fxdqj2bz.fsf@lwn.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 23 Jun 2009 20:52:02 +0200
-In-Reply-To: <m3fxdqj2bz.fsf@lwn.net> (Jake Edge's message of "Tue\, 23 Jun 2009 11\:18\:40 -0600")
-Message-ID: <m3bpoen5pp.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752347AbZFWSxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 14:53:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,276,1243839600"; 
+   d="scan'208";a="701867868"
+Subject: Re: [PATCH] cpufreq: remove dbs_mutex
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Renninger <trenn@suse.de>, Dave Jones <davej@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "mark.langsdorf@amd.com" <mark.langsdorf@amd.com>
+In-Reply-To: <20090623184040.GA6908@elte.hu>
+References: <4A2835D8.6040903@kernel.org> <20090611105211.GA6760@elte.hu>
+	 <20090620124817.GA22831@elte.hu> <200906212155.49849.trenn@suse.de>
+	 <20090623181748.GA31148@elte.hu>  <20090623184040.GA6908@elte.hu>
+Content-Type: text/plain
+Date: Tue, 23 Jun 2009 11:51:56 -0700
+Message-Id: <1245783116.4534.17466.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jake Edge <jake@lwn.net> writes:
-
->> +After the merge window the kernel is worked on through the rc-series of the
->> +kernel release. The rc-series focus is to address regressions. The merge window
->> +closes upon the first rc-series release, rc1.
->
-> to address regressions and fix bugs introduced by the new features added
-> during the merge window.
-
-I would say, to address regressions and fix bugs. Not only those added
-recently, though obviously older bugs should have already been fixed.
-
->> +After a subsystem maintainer has sent his pull request to Linus during the merge
->> +window no further new development will be accepted for that
->> +foo-next-2.6.git
-
-This is IMHO uncertain. Typical, but uncertain. I guess the maintainer
-would already know what to do so I'm not sure there is a point to write
-it down in this file.
-
-> It doesn't seem like you need to keep stressing that the merge window
-> closes with -rc1 ... but maybe that's just me ...
-
-Me2 :-)
-
->> +Non-intrusive bug fixes fixes will very likely not be accepted.
-                      ^^^^^^^^^^^
-I guess it depends on many factors, such as importance of the bug vs the
-risk at the given point. Intrusive bug fixes are sometimes unavoidable
-and there may be simply no better option than applying them at once.
-
-> Again, maybe it's just me, but this 'non-intrusive' distinction doesn't
-> read quite right ...
-
-Me2 :-)
-
-> I guess the problem is that non-intrusive and
-> regression/security/oops fixes are not mutually exclusive
-
-Precisely. This is about risk vs gain.
-
-> so, when do these non-intrusive bug fixes get accepted?  only
-> pre-merge window?
-
-Doesn't make sense. Merge window = new features. Fixes can be accepted
-anytime (this obviously includes merge window).
-
->> +The very first release a new driver or filesystem is special. New drivers
->> +are accepted during the rc-series! Patches for the same driver then are
->> +also accepted during the same rc-series of a kernel as well as fixes for it
->> +cannot regress as no previous kernels exists with it.
-
-Given that fixes are accepted anytime (well, almost, depending on risk
-vs gain), then obviously fixes for new driver aren't worse.
 
 
-Perhaps it's just me :-) but I think we're trying to codify the rules
-way too much. The general rules (merge window = new features etc) are
-obviously ok but why do we need strict details like intrusive vs
-non-intrusive etc? People should just use a common sense and good
-judgement and, if in doubt in some particular case, ask. We are unable
-to describe all situations in a single text file.
--- 
-Krzysztof Halasa
+Mathieu Desnoyers sent a patch earlier that should address this problem.
+
+http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/00331.html
+
+Thanks,
+Venki
+
+On Tue, 2009-06-23 at 11:40 -0700, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > * Thomas Renninger <trenn@suse.de> wrote:
+> > 
+> > > > Note, this bug warning still triggers rather frequently with 
+> > > > latest -git (fb20871) during bootup on two test-systems - 
+> > > > relevant portion of the bootlog attached below. As usual i can 
+> > > > test any fix for this.
+> > >
+> > > Best rip out the dbs_mutex in drivers/cpufreq/cpufreq_ondemand.c 
+> > > totally. I can provide several locking cleanups for cpufreq for 
+> > > .31 the next days, including dbs_mutex removal, which I think is 
+> > > not needed. The dbs_mutex removal which should fix this could then 
+> > > be marked: CC: stable@kernel.org
+> > 
+> > drivers/cpufreq/cpufreq_conservative.c too i guess?
+> > 
+> > Something like the patch below?
+> > 
+> > Utterly untested and such.
+> 
+> i tested it and this blatant blind ripping out of a layer of locking 
+> uncovered the next layer:
+> 
+> [  144.961483] =======================================================
+> [  144.961685] [ INFO: possible circular locking dependency detected ]
+> [  144.961785] 2.6.30-tip-08973-gb747c8d-dirty #6295
+> [  144.961878] -------------------------------------------------------
+> [  144.961974] S99local/8461 is trying to acquire lock:
+> [  144.962016]  (&(&dbs_info->work)->work){+.+...}, at: [<c109962a>] wait_on_work+0x0/0xba
+> [  144.962016] 
+> [  144.962016] but task is already holding lock:
+> [  144.962016]  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
+> [  144.962016] 
+> [  144.962016] which lock already depends on the new lock.
+> 
+> (see below for the full details)
+> 
+> I guess someone who knows the cpufreq code will have to fix the 
+> locking in this code for real.
+> 
+> 	Ingo
+> 
+> [  144.767335] CPUFREQ: ondemand sampling_rate_max sysfs file is deprecated - used by: cat
+> [  144.961480] 
+> [  144.961483] =======================================================
+> [  144.961685] [ INFO: possible circular locking dependency detected ]
+> [  144.961785] 2.6.30-tip-08973-gb747c8d-dirty #6295
+> [  144.961878] -------------------------------------------------------
+> [  144.961974] S99local/8461 is trying to acquire lock:
+> [  144.962016]  (&(&dbs_info->work)->work){+.+...}, at: [<c109962a>] wait_on_work+0x0/0xba
+> [  144.962016] 
+> [  144.962016] but task is already holding lock:
+> [  144.962016]  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
+> [  144.962016] 
+> [  144.962016] which lock already depends on the new lock.
+> [  144.962016] 
+> [  144.962016] 
+> [  144.962016] the existing dependency chain (in reverse order) is:
+> [  144.962016] 
+> [  144.962016] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
+> [  144.962016]        [<c10bcd0d>] check_prev_add+0xf0/0x151
+> [  144.962016]        [<c10bcdd3>] check_prevs_add+0x65/0xbf
+> [  144.962016]        [<c10bce9e>] validate_chain+0x71/0x99
+> [  144.962016]        [<c10bd184>] __lock_acquire+0x2be/0x33d
+> [  144.962016]        [<c10bd27f>] lock_acquire+0x7c/0x9f
+> [  144.962016]        [<c23b1b36>] down_write+0x32/0x95
+> [  144.962016]        [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
+> [  144.962016]        [<c1f627cd>] do_dbs_timer+0x50/0x160
+> [  144.962016]        [<c1098de1>] run_workqueue+0xec/0x243
+> [  144.962016]        [<c109badf>] worker_thread+0x13b/0x14c
+> [  144.962016]        [<c10a05ed>] kthread+0x89/0x92
+> [  144.962016]        [<c10064a7>] kernel_thread_helper+0x7/0x10
+> [  144.962016]        [<ffffffff>] 0xffffffff
+> [  144.962016] 
+> [  144.962016] -> #0 (&(&dbs_info->work)->work){+.+...}:
+> [  144.962016]        [<c10bcc50>] check_prev_add+0x33/0x151
+> [  144.962016]        [<c10bcdd3>] check_prevs_add+0x65/0xbf
+> [  144.962016]        [<c10bce9e>] validate_chain+0x71/0x99
+> [  144.962016]        [<c10bd184>] __lock_acquire+0x2be/0x33d
+> [  144.962016]        [<c10bd27f>] lock_acquire+0x7c/0x9f
+> [  144.962016]        [<c1099662>] wait_on_work+0x38/0xba
+> [  144.962016]        [<c109975c>] __cancel_work_timer+0x78/0x99
+> [  144.962016]        [<c109978d>] cancel_delayed_work_sync+0x10/0x12
+> [  144.962016]        [<c1f62710>] dbs_timer_exit+0x17/0x19
+> [  144.962016]        [<c1f62d68>] cpufreq_governor_dbs+0x23f/0x2df
+> [  144.962016]        [<c1f5e7cb>] __cpufreq_governor+0x9a/0xde
+> [  144.962016]        [<c1f5ea3c>] __cpufreq_set_policy+0x22d/0x2fa
+> [  144.967630]        [<c1f5ebce>] store_scaling_governor+0xc5/0x108
+> [  144.967630]        [<c1f5e11d>] store+0xa4/0xbd
+> [  144.967630]        [<c11fa00f>] flush_write_buffer+0x6d/0x81
+> [  144.967630]        [<c11fb23f>] sysfs_write_file+0x66/0xa6
+> [  144.967630]        [<c11814e0>] vfs_write+0x1ad/0x1f9
+> [  144.967630]        [<c1181fc6>] sys_write+0x5e/0x80
+> [  144.967630]        [<c100582b>] sysenter_do_call+0x12/0x38
+> [  144.967630]        [<ffffffff>] 0xffffffff
+> [  144.967630] 
+> [  144.967630] other info that might help us debug this:
+> [  144.967630] 
+> [  144.967630] 2 locks held by S99local/8461:
+> [  144.967630]  #0:  (&buffer->mutex){+.+.+.}, at: [<c11fb201>] sysfs_write_file+0x28/0xa6
+> [  144.967630]  #1:  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at: [<c1f5dd3f>] lock_policy_rwsem_write+0x73/0xec
+> [  144.967630] 
+> [  144.967630] stack backtrace:
+> [  144.967630] Pid: 8461, comm: S99local Tainted: G        W  2.6.30-tip-08973-gb747c8d-dirty #6295
+> [  144.967630] Call Trace:
+> [  144.967630]  [<c10bb9d8>] print_circular_bug_tail+0x5d/0x68
+> [  144.967630]  [<c10bcc50>] check_prev_add+0x33/0x151
+> [  144.967630]  [<c10b8974>] ? list_add_tail_rcu+0xd/0xf
+> [  144.967630]  [<c10bcdd3>] check_prevs_add+0x65/0xbf
+> [  144.967630]  [<c10bce9e>] validate_chain+0x71/0x99
+> [  144.967630]  [<c10bd184>] __lock_acquire+0x2be/0x33d
+> [  144.967630]  [<c10bd27f>] lock_acquire+0x7c/0x9f
+> [  144.967630]  [<c109962a>] ? wait_on_work+0x0/0xba
+> [  144.967630]  [<c1099662>] wait_on_work+0x38/0xba
+> [  144.967630]  [<c109962a>] ? wait_on_work+0x0/0xba
+> [  144.967630]  [<c110c292>] ? ftrace_likely_update+0x11/0x22
+> [  144.967630]  [<c109975c>] __cancel_work_timer+0x78/0x99
+> [  144.967630]  [<c109978d>] cancel_delayed_work_sync+0x10/0x12
+> [  144.967630]  [<c1f62710>] dbs_timer_exit+0x17/0x19
+> [  144.967630]  [<c1f62d68>] cpufreq_governor_dbs+0x23f/0x2df
+> [  144.967630]  [<c1f5e7cb>] __cpufreq_governor+0x9a/0xde
+> [  144.967630]  [<c1f5ea3c>] __cpufreq_set_policy+0x22d/0x2fa
+> [  144.967630]  [<c1f5ebce>] store_scaling_governor+0xc5/0x108
+> [  144.967630]  [<c1f60123>] ? handle_update+0x0/0x2d
+> [  144.967630]  [<c1f5dd6f>] ? lock_policy_rwsem_write+0xa3/0xec
+> [  144.967630]  [<c1f5e11d>] store+0xa4/0xbd
+> [  144.967630]  [<c11fa00f>] flush_write_buffer+0x6d/0x81
+> [  144.967630]  [<c11fb23f>] sysfs_write_file+0x66/0xa6
+> [  144.967630]  [<c11814e0>] vfs_write+0x1ad/0x1f9
+> [  144.967630]  [<c1181fc6>] sys_write+0x5e/0x80
+> [  144.967630]  [<c100582b>] sysenter_do_call+0x12/0x38
+> [  146.085749] PM: Adding info for No Bus:vcs4
+> [  146.085864] PM: Adding info for No Bus:vcsa4
+> [  146.090924] PM: Adding info for No Bus:vcs9
+> [  146.091077] PM: Adding info for No Bus:vcsa9
+> [  146.092977] PM: Adding info for No Bus:vcs3
+
