@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZFWCk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757431AbZFWCmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZFWCk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 22:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZFWCku
+	id S1757431AbZFWCmi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 22:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZFWCmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 22:40:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38021 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbZFWCku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 22:40:50 -0400
-Date: Mon, 22 Jun 2009 23:39:36 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: mel@csn.ul.ie, akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, htd@fancy-poultry.org
-Subject: Re: [PATCH 3/3] net-dccp: Suppress warning about large allocations
-	from DCCP
-Message-ID: <20090623023936.GA2721@ghostprotocols.net>
-References: <1245685414-8979-1-git-send-email-mel@csn.ul.ie> <1245685414-8979-4-git-send-email-mel@csn.ul.ie> <20090622.161502.74508182.davem@davemloft.net>
+	Mon, 22 Jun 2009 22:42:31 -0400
+Received: from 219-87-157-155.static.tfn.net.tw ([219.87.157.155]:46788 "EHLO
+	ironport.rdc.com.tw" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751811AbZFWCmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 22 Jun 2009 22:42:31 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622.161502.74508182.davem@davemloft.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Subject: RE: Staging: add pata_rdc driver
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Tue, 23 Jun 2009 10:44:03 +0800
+Message-ID: <07905E0D268758488D76D7D747F21BB602B1FDA8@rdc8.rdc>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Staging: add pata_rdc driver
+Thread-Index: AcnzNYoeAiPEgTO0Tta3LeCIMwvhLQAbaFjgAAIjZyA=
+References: <200906200109.n5K19iaC012636@hera.kernel.org> <20090622133222.3a689f22@lxorguk.ukuu.org.uk> 
+From: =?big5?B?S2V2aW4gSHVhbmcgKLbAs82k5Sk=?= <Kevin.Huang@rdc.com.tw>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Cc: <greg@kroah.com>, <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="big5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5N2hG54008431
 
-Em Mon, Jun 22, 2009 at 04:15:02PM -0700, David Miller escreveu:
-> From: Mel Gorman <mel@csn.ul.ie>
-> Date: Mon, 22 Jun 2009 16:43:34 +0100
-> 
-> > The DCCP protocol tries to allocate some large hash tables during
-> > initialisation using the largest size possible.  This can be larger than
-> > what the page allocator can provide so it prints a warning. However, the
-> > caller is able to handle the situation so this patch suppresses the warning.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> It's probably much more appropriate to make this stuff use
-> alloc_large_system_hash(), like TCP does (see net/ipv4/tcp.c
-> tcp_init()).
-> 
-> All of this complicated DCCP hash table size computation code will
-> simply disappear.  And it'll fix the warning too :-)
-
-He mentioned that in the conversation that lead to this new patch
-series, problem is that alloc_large_system_hash is __init, so when you
-try to load dccp.ko it will not be available.
-
-- Arnaldo
+I just know all pata follow the ATA ATAPI Host Adapters Standard.pdf.This standard describes all hardware interfaces for pata. (like sata and AHCI standard spec.)
+The original draft does not have any Configuration Registers for Host Adapters. Then Intel proposes ATA Controller PCI Configuration Registers for this lack of the original draft, and T13 accept this proposal.
+But this spec. releases at 2003. So before its release, all vendor had own Configuration Registers.
+[Kevin Huang] -> According to this spec. OS can provide a standard driver for different vendor's pata controller.
+Our new controller have crypto function and crypto configuration registers.So it don¡¦t like Intel controller.Some Intel controller have RAID function, but we have not.
+---------------------------------------------------------------------------------- [E-mail Confidentiality Notice]The information in this e-mail is confidential and may be legally privileged otherwise  protected from disclosure. It is intended solely for the addressee.  Access to this e-mail by anyone else is unauthorized .If youare not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is prohibited and maybe unlawful.  Please delete the message and any attachments from your computer system; and destroy all hard copies. 
+ALL Intellectual Property Rights of RDC Reserved.---------------------------------------------------------------------------------- ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
