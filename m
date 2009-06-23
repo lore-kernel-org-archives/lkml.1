@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZFWSt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZFWSvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZFWSt6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 14:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZFWStu
+	id S1754786AbZFWSvk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 14:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZFWSvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 14:49:50 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46721 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751523AbZFWStt (ORCPT
+	Tue, 23 Jun 2009 14:51:32 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:42679 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbZFWSvc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 14:49:49 -0400
-Message-ID: <4A40F145.7050006@zytor.com>
-Date: Tue, 23 Jun 2009 08:14:13 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 23 Jun 2009 14:51:32 -0400
+Date: Tue, 23 Jun 2009 19:51:20 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Len Brown <lenb@kernel.org>
+Cc: sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI): initial
+	support
+Message-ID: <20090623185120.GA13824@srcf.ucam.org>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org> <20090623183153.GB12814@srcf.ucam.org> <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Feng Tang <feng.tang@intel.com>, Len Brown <lenb@kernel.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Brown, Len" <len.brown@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 2/8] SFI: include/linux/sfi.h
-References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <b3fb5fa65a532941d61a8c8415495f752aac540d.1245740912.git.len.brown@intel.com> <20090623072811.GB6397@elte.hu> <20090623154724.08a51ea3@feng-desktop> <20090623080047.GE6397@elte.hu> <20090623160225.1ebb5540@feng-desktop> <20090623080908.GA11181@elte.hu>
-In-Reply-To: <20090623080908.GA11181@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Feng Tang <feng.tang@intel.com> wrote:
+On Tue, Jun 23, 2009 at 02:41:28PM -0400, Len Brown wrote:
+> On Tue, 23 Jun 2009, Matthew Garrett wrote:
 > 
->> On Tue, 23 Jun 2009 16:00:47 +0800
->> Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> * Feng Tang <feng.tang@intel.com> wrote:
->>>
->>>> For these arch_early_ioremap/arch_early_iounmap API, do you mean 
->>>> we should put it in a sfi.h under "asm" folder? The reason we put 
->>>> it here is to give a arch independent API declaration here and let 
->>>> each arch implement its own func.
->>> Yeah, i'd suggest to create a new early-remap.h and 
->>> early-remap.c kind of file to collect the existing bits for 
->>> that. It's a bit ugly (not really the fault of SFI - these are 
->>> pre-existing facilities) and might need some love - we better 
->>> move it apart so that the light of attention shines on it.
->>>
->>> What's the target merge of the SFI stuff, 2.6.31?
->> AFAIK, Len's target is for 2.6.32
+> > There seems to be a huge amount of overlap between SFI and ACPI.
+> > Couldn't this have simply taken the form of some additional ACPI tables 
+> > and a decoupling of ACPI enumeration from runtime AML interpretation? 
+> > How final is this spec?
 > 
-> Ah, ok - then there's time. The code is almost good for .31 btw ;-)
+> > I realise that we're pretty much constrained to implementing this if 
+> > hardware actually ships with it, but it seems to be an additional 
+> > firmware interface with no real benefit - as far as I can tell it's not 
+> > possible for a platform to meaningfully implement both ACPI and SFI 
+> > without duplicating information?
 > 
+> Please let me know if your questions are not thoroughly answered here:
+> http://simplefirmware.org/faq
 
-The code is really quite clean; I recommended to Len that he target
-2.6.32 not because of the quality of the code, but just to get it plenty
-of time to get properly reviewed and any architectural issues getting
-fixed properly.
+Yeah, I read that and it didn't really seem to clear things up. There's 
+no especially meaningful reason for a specialised platform to include 
+any AML code - the closest equivalent case I'm thinking of is "acpi=ht" 
+where we parse some static ACPI tables but don't do any runtime 
+interpretation. In this universe, SFI would simply have been some 
+specced additional tables and a build option to include table parsing 
+but not the interpreter.
 
-	-hpa
+I appreciate that if this is what's going to be on the hardware then 
+we're stuck with it, but I'm hugely unconvinced that this couldn't have 
+taken the form of "embedded ACPI" rather than an entire new firmware 
+interface.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Matthew Garrett | mjg59@srcf.ucam.org
