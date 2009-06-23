@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZFWX4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZFWX6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbZFWX4q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 19:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZFWX4g
+	id S1759907AbZFWX6b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 19:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753836AbZFWX6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 19:56:36 -0400
-Received: from fed1rmmtao106.cox.net ([68.230.241.40]:62559 "EHLO
-	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753201AbZFWX4f (ORCPT
+	Tue, 23 Jun 2009 19:58:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751920AbZFWX6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 19:56:35 -0400
-X-VR-Score: -120.00
-X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=pGLkceISAAAA:8
- a=RugydN6MN-EL_xpUAtIA:9 a=CnmhoajxNzVp6HneV7RAqSx8cH8A:4 a=MSl-tDqOz04A:10
-X-CM-Score: 0.00
-To: =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>
-Cc: roel kluin <roel.kluin@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       git@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Junio C Hamano <gitster@pobox.com>
-Subject: Re: [PATCH] fread does not return negative on error
-References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
-	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
-	<4A3FB479.2090902@lsrfire.ath.cx>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Tue, 23 Jun 2009 16:56:32 -0700
-In-Reply-To: <4A3FB479.2090902@lsrfire.ath.cx> (=?utf-8?Q?=22Ren=C3=A9?=
- Scharfe"'s message of "Mon\, 22 Jun 2009 18\:42\:33 +0200")
-Message-ID: <7vhby64i8f.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Tue, 23 Jun 2009 19:58:24 -0400
+Date: Tue, 23 Jun 2009 16:56:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       miklos@szeredi.hu, npiggin@suse.de, tj@kernel.org
+Subject: Re: [PATCH 3/4] FUSE: implement fuse_req->prep()
+Message-Id: <20090623165657.5e42cd71.akpm@linux-foundation.org>
+In-Reply-To: <1245317073-24000-4-git-send-email-tj@kernel.org>
+References: <1245317073-24000-1-git-send-email-tj@kernel.org>
+	<1245317073-24000-4-git-send-email-tj@kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
+On Thu, 18 Jun 2009 18:24:32 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-> the following patch is for git.  I just removed the unneeded check for
-> res == 0 from your version.  Does it look OK?
+> Implement ->prep() which is the opposite equivalent of ->end().
 
-The patch looks good, and both of our in-tree users do error out when the
-returned value is 0 (imap-send.c checks with "<= 0" which looks a tad
-amateurish, though) correctly.
+The opposite of "end" is "begin".  I'd expect to see a sequence like
 
-Funny, there is no caller of this function in the original context this
-bug originally found, which I think is linux-2.6/tools/perf ;-).
+	-> prep
+	-> begin
+	-> end
 
-Thanks.
+so the naming choice here is unexpected.
 
-> From: Roel Kluin <roel.kluin@gmail.com>
+>  It's
+> called right before the request is passed to userland server in the
+> kernel context of the server.  ->prep() can fail the request without
+> disrupting the whole channel.
+> 
+> This will be used by direct mmap implementation.
+
+> ...
 >
-> size_t res cannot be less than 0. fread returns 0 on error.
->
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  strbuf.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/strbuf.c b/strbuf.c
-> index a884960..f03d117 100644
-> --- a/strbuf.c
-> +++ b/strbuf.c
-> @@ -260,7 +260,7 @@ size_t strbuf_fread(struct strbuf *sb, size_t size, FILE *f)
->  	res = fread(sb->buf + sb->len, 1, size, f);
->  	if (res > 0)
->  		strbuf_setlen(sb, sb->len + res);
-> -	else if (res < 0 && oldalloc == 0)
-> +	else if (oldalloc == 0)
->  		strbuf_release(sb);
->  	return res;
->  }
+> --- a/fs/fuse/fuse_i.h
+> +++ b/fs/fuse/fuse_i.h
+> @@ -292,6 +292,12 @@ struct fuse_req {
+>  	/** Link on fi->writepages */
+>  	struct list_head writepages_entry;
+>  
+> +	/** Request preparation callback.  Called from the kernel
+> +	    context of the FUSE server before passing the request to
+> +	    the FUSE server.  Non-zero return from this function will
+> +	    fail the request. */
+> +	int (*prep)(struct fuse_conn *, struct fuse_req *);
+> +
+>  	/** Request completion callback.  This function is called from
+>  	    the kernel context of the FUSE server if the request isn't
+>  	    being aborted.  If the request is being aborted, it's
+
+Why the strange comment layout?  Does kerneldoc actually recognise and
+appropriately process this text?  if not, please do
+
+	/*
+	 * Request preparation callback.  Called from the kernel
+	 * context of the FUSE server before passing the request to
+	 * the FUSE server.  Non-zero return from this function will
+	 * fail the request.
+	 */
+
+If that looks odd then, well, that wasn't your fault ;)
