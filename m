@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZFWIzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbZFWIzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbZFWIzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:55:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFWIzE
+	id S1758852AbZFWIzn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZFWIze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:55:04 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45012 "EHLO kernel.dk"
+	Tue, 23 Jun 2009 04:55:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35844 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbZFWIzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:55:03 -0400
-Date: Tue, 23 Jun 2009 10:55:05 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
-Subject: Re: merging the per-bdi writeback patchset
-Message-ID: <20090623085505.GU31415@kernel.dk>
-References: <20090623081156.GT31415@kernel.dk> <20090623014835.1fc8fb14.akpm@linux-foundation.org>
+	id S1754904AbZFWIzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:55:33 -0400
+Date: Tue, 23 Jun 2009 10:55:35 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: Alex Riesen <raa.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Tom Talpey <tmtalpey@gmail.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [PATCH] Use formatting of module name in SUNRPC
+In-Reply-To: <20090527175955.GB8969@blimp.localdomain>
+Message-ID: <alpine.LNX.2.00.0906231054570.7457@wotan.suse.de>
+References: <20090527175955.GB8969@blimp.localdomain>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623014835.1fc8fb14.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23 2009, Andrew Morton wrote:
-> On Tue, 23 Jun 2009 10:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Wed, 27 May 2009, Alex Riesen wrote:
+
+> Besides, the old code caused gcc-4.3.3 to produce the warning:
+>   "format not a string literal and no format arguments"
 > 
-> > Things are looking good for this patchset and it's been in -next for
-> > almost a week without any reports of problems. So I'd like to merge it
-> > for 2.6.31 if at all possible. Any objections?
+> Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
+> ---
+>  net/sunrpc/xprt.c |    5 +----
+>  1 files changed, 1 insertions(+), 4 deletions(-)
 > 
-> erk.  I was rather expecting I'd have time to have a look at it all.
+> diff --git a/net/sunrpc/xprt.c b/net/sunrpc/xprt.c
+> index 06ca058..82f62fd 100644
+> --- a/net/sunrpc/xprt.c
+> +++ b/net/sunrpc/xprt.c
+> @@ -162,7 +162,6 @@ EXPORT_SYMBOL_GPL(xprt_unregister_transport);
+>  int xprt_load_transport(const char *transport_name)
+>  {
+>  	struct xprt_class *t;
+> -	char module_name[sizeof t->name + 5];
+>  	int result;
+>  
+>  	result = 0;
+> @@ -174,9 +173,7 @@ int xprt_load_transport(const char *transport_name)
+>  		}
+>  	}
+>  	spin_unlock(&xprt_list_lock);
+> -	strcpy(module_name, "xprt");
+> -	strncat(module_name, transport_name, sizeof t->name);
+> -	result = request_module(module_name);
+> +	result = request_module("xprt%s", transport_name);
+>  out:
+>  	return result;
+>  }
 
-OK, we can wait if we have to, just trying to avoid having to keep this
-fresh for one full cycle. I have posted this patchset 11 times though
-over months, so it's not like it's a new piece of work :-)
+Trond, are you planning to take this one through your tree?
 
-> It's unclear to me actually _why_ the performance changes which were
-> observed have actually occurred.  In fact it's a bit unclear (to me)
-> why the patchset was written and what it sets out to achieve :(
-
-It started out trying to get rid of the pdflush uneven writeout. If you
-look at various pdflush intensive workloads, even on a single disk you
-often have 5 or more pdflush threads working the same device. It's just
-not optimal. Another issue was starvation with request allocation. Given
-that pdflush does non-blocking writes (it has to, by design), pdflush
-can potentially be starved if someone else is working the device.
-
-> A long time ago the XFS guys (Dave Chinner iirc) said that XFS needs
-> more than one thread per device to keep the device saturated.  Did that
-> get addressed?
-
-It supports up to 32-threads per device, but Chinner et all have been
-silent. So the support is there and there's a
-super_operations->inode_get_wb() to map a dirty inode to a writeback
-device. Nobody is doing that yet though.
-
-> (kthread_run() returns an ERR_PTR() on error, btw - not NULL.)
-
-Oh thanks, will fix that up.
+Thanks,
 
 -- 
-Jens Axboe
+Jiri Kosina
+SUSE Labs
 
