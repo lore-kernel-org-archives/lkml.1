@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbZFWWIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbZFWWIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759059AbZFWWIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbZFWWHv
+	id S1759327AbZFWWIo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbZFWWIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:07:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38866 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756152AbZFWWHu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:07:50 -0400
-Date: Tue, 23 Jun 2009 15:07:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
-       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
-Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
-Message-Id: <20090623150728.7d77970b.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0906231448100.17001@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
-	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
-	<20090623131848.b876d42e.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
-	<20090623142909.42776e75.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231428460.17001@makko.or.mcafeemobile.com>
-	<20090623144638.22ca61ea.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0906231448100.17001@makko.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 18:08:36 -0400
+Received: from mail.open.by ([193.232.92.17]:64893 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757388AbZFWWIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 18:08:36 -0400
+X-Greylist: delayed 2594 seconds by postgrey-1.27 at vger.kernel.org; Tue, 23 Jun 2009 18:08:35 EDT
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8817 [Jun 23 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Wed, 24 Jun 2009 01:10:07 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: kmemleak: Early log buffer exceeded
+Message-ID: <20090623221007.GB9502@localdomain.by>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 14:48:51 -0700 (PDT)
-Davide Libenzi <davidel@xmailserver.org> wrote:
+>2. When (crt_early_log >= ARRAY_SIZE(early_log)) == 1 we just can see stack.
+>Since we have "full" early_log maybe it'll be helpfull to see it?
 
-> > > This becomes pretty painful when the function calls other functions, for 
-> > > which just relays the error code.
-> > > Should we be just documenting the error codes introduced by the function 
-> > > code, and say that the function returns errors A, B, C plus all the ones 
-> > > returned by the called functions X, Y, Z?
-> > > If not, it becomes hell in maintaining the comments...
-> > 
-> > Well.  Don't worry about making rules.  Taste and common sense apply.  "Will
-> > it be useful to readers if I explicitly document the return value".  If
-> > "yes" then document away.  If "no" then don't.
-> 
-> Are you OK with the format in the patch below?
+Sorry, sent you wrong message. Right one has no 'to see it' part.
+I meant 'to do something more than just print stack'.
 
-Looks great to me.
-
-Obviously the cost of maintaining this level of detail is fairly high,
-and the chances of bitrot are also high.  So I wouldn't be expecting
-people to document things at this level in general.  But if you're
-prepared to maintain this then good for you.
-
-
-
+	Sergey
