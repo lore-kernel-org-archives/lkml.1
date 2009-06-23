@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbZFWNJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZFWNMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbZFWNJW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbZFWNJO
+	id S1757526AbZFWNMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbZFWNMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:09:14 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:57483 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbZFWNJO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:09:14 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 2/2 v2] Blackfin: fix dma-mapping build errors
-Date: Tue, 23 Jun 2009 15:07:45 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-References: <20090623111430D.fujita.tomonori@lab.ntt.co.jp> <200906231040.46767.arnd@arndb.de> <8bd0f97a0906230409u5ec65e45je59cc2bea4852cde@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906230409u5ec65e45je59cc2bea4852cde@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 23 Jun 2009 09:12:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53919 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756435AbZFWNMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:12:36 -0400
+Message-ID: <4A40D499.6000805@redhat.com>
+Date: Tue, 23 Jun 2009 09:11:53 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
+       Tim Abbott <tabbott@ksplice.com>
+Subject: Re: [RFC][ PATCH -tip v2 4/7] kprobes: kprobes jump optimization
+ core
+References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212319.5384.56039.stgit@localhost.localdomain> <20090623125806.GD8340@linux.vnet.ibm.com>
+In-Reply-To: <20090623125806.GD8340@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906231507.45737.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18AeJmUcL5vBbK4ac25cR6SqCkcxsQCcQvINqo
- ykpOzoXxHLnjyR4PzPD6asAPEHGrh7e7gBWcmekZ9OmpqZWlji
- GRVLb8/UDiI1d2tOKsQxROrOoK3MdNy
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, Mike Frysinger wrote:
-> i'll just integrate this into the patch you sent previously during the
-> next merge window.  these new functions werent actually being used
-> anywhere on Blackfin systems, so i'm not terribly worried about them
-> for now.
+Srikar Dronamraju wrote:
+>> +	/* .insn_size is initialized later */
+>> +	.nr_garbage = 0,
+>> +};
+> 
+>> +#if defined(CONFIG_OPTPROBES) && defined(__ARCH_WANT_KPROBES_INSN_SLOT)
+>> +	/* Init kprobe_optinsn_slots */
+>> +	kprobe_optinsn_slots.insn_size = MAX_OPTINSN_SIZE;
+>> +#endif
+>> +
+> 
+> What would be be the size of kprobe_optinsn_slots.insn_size if
+> CONFIG_OPTPROBES is defined but __ARCH_WANT_KPROBES_INSN_SLOT is not
+> defined? 
 
-Ok, fair enough.
+No problem. If __ARCH_WANT_KPROBES_INSN_SLOT is not defined,
+kprobe_optinsn_slots doesn't exist.
 
-	Arnd <><
+Thank you,
+> 
+> -Srikar
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
