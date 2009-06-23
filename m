@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761896AbZFXUD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbZFXUDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761896AbZFXUD0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZFXUDG
+	id S1762026AbZFXUDj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZFXUDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:03:06 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:36041 "EHLO
+	Wed, 24 Jun 2009 16:03:08 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:34011 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZFXUDE (ORCPT
+	with ESMTP id S1751485AbZFXUDF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:03:04 -0400
+	Wed, 24 Jun 2009 16:03:05 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH] slow-work: add (module*)work->owner to fix races with
-	module clients
-To: linux-kernel@vger.kernel.org
-Cc: dhowells@redhat.com
-Date: Wed, 24 Jun 2009 15:28:11 -0400
-Message-ID: <20090624192742.5315.69023.stgit@dev.haskins.net>
+Subject: [KVM PATCH v4 3/4] slow-work: add (module*)work->owner to fix races
+	with module clients
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
+       davidel@xmailserver.org, dhowells@redhat.com
+Date: Tue, 23 Jun 2009 18:40:48 -0400
+Message-ID: <20090623224048.5254.39232.stgit@dev.haskins.net>
+In-Reply-To: <20090623223717.5254.22497.stgit@dev.haskins.net>
+References: <20090623223717.5254.22497.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -24,23 +27,6 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-(Applies to Linus' git master:626f380d)
-
-Hi All,
-  I found this while working on KVM.  I actually posted this patch with a KVM
-series yesterday, but it seems to have not made it to the lists.  So this
-is a repost with the patch by itself, and rebased to Linus' tree instead
-of kvm.git.
-
-Thoughts?
-
-Regards,
--Greg
-
------------------------------
-
-slow-work: add (module*)work->owner to fix races with module clients
 
 The slow_work facility was designed to use reference counting instead of
 barriers for synchronization.  The reference counting mechanism is
@@ -68,8 +54,8 @@ CC: David Howells <dhowells@redhat.com>
 ---
 
  include/linux/slow-work.h |    4 ++++
- kernel/slow-work.c        |    6 ++++++
- 2 files changed, 10 insertions(+), 0 deletions(-)
+ kernel/slow-work.c        |    5 +++++
+ 2 files changed, 9 insertions(+), 0 deletions(-)
 
 diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
 index b65c888..9f48dab 100644
@@ -108,19 +94,18 @@ index b65c888..9f48dab 100644
  	work->ops = ops;
  	INIT_LIST_HEAD(&work->link);
 diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index 09d7519..1dc3486 100644
+index 521ed20..fa27500 100644
 --- a/kernel/slow-work.c
 +++ b/kernel/slow-work.c
-@@ -220,6 +220,8 @@ static bool slow_work_execute(void)
+@@ -220,6 +220,7 @@ static bool slow_work_execute(void)
  	}
  
  	work->ops->put_ref(work);
-+	barrier(); /* ensure that put_ref is not re-ordered with module_put */
 +	module_put(work->owner);
  	return true;
  
  auto_requeue:
-@@ -299,6 +301,8 @@ int slow_work_enqueue(struct slow_work *work)
+@@ -299,6 +300,8 @@ int slow_work_enqueue(struct slow_work *work)
  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
  		} else {
@@ -129,7 +114,7 @@ index 09d7519..1dc3486 100644
  			if (work->ops->get_ref(work) < 0)
  				goto cant_get_ref;
  			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
-@@ -313,6 +317,8 @@ int slow_work_enqueue(struct slow_work *work)
+@@ -313,6 +316,8 @@ int slow_work_enqueue(struct slow_work *work)
  	return 0;
  
  cant_get_ref:
