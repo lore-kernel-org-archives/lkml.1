@@ -1,206 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZFWIYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZFWIYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZFWIYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751495AbZFWIXv
+	id S1756639AbZFWIYu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZFWIYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:23:51 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:33971 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbZFWIXt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 04:23:49 -0400
-Subject: Re: [PATCH] proc connector: add event for process becoming session
- leader
-From: Scott James Remnant <scott@ubuntu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Matt Helsley <matthltc@us.ibm.com>
-In-Reply-To: <20090622161909.e5706885.akpm@linux-foundation.org>
-References: <E1MGUmL-00036A-EE@zelda.netsplit.com>
-	 <20090622161909.e5706885.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DnFNN84UR4ufDIiUsIuP"
-Date: Tue, 23 Jun 2009 09:23:40 +0100
-Message-Id: <1245745420.3477.16.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.3 
+	Tue, 23 Jun 2009 04:24:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35089 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751495AbZFWIYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 04:24:33 -0400
+Date: Tue, 23 Jun 2009 10:24:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2 -tip] perf_counter: parse-events.c introduce alias
+	member in event_symbol
+Message-ID: <20090623082411.GC11181@elte.hu>
+References: <1245669194.17153.6.camel@localhost.localdomain> <1245669268.17153.8.camel@localhost.localdomain> <20090622113256.GA22479@elte.hu> <1245675657.7537.3.camel@localhost.localdomain> <20090622141009.GB6486@elte.hu> <1245700551.6167.5.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245700551.6167.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-DnFNN84UR4ufDIiUsIuP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-On Mon, 2009-06-22 at 16:19 -0700, Andrew Morton wrote:
+> On Mon, 2009-06-22 at 16:10 +0200, Ingo Molnar wrote:
+> > yeah, somethig like that. I'd suggest to print out the actual 
+> > measured events:
+> > 
+> >     cache-references      10123 events
+> >     cache-misses             15 events
+> > 
+> > and if something does not appear to be ticking then do something 
+> > like:
+> > 
+> >     cache-misses          <inactive>
+> > 
+> > I.e. 'perf test' could be a quick way both to users and to 
+> > developers to see all possible hw and sw events.
+> > 
+> > Perhaps builtin-test.c should also do specific testcases for certain 
+> > counters - say intentionally migrate to a CPU and back to see the 
+> > CPU-migration count.
+> > 
+> > Also, you seem to have copied builtin-stat.c, right? Try to 
+> > librarize as much of the functionality (into util/*) to make the 
+> > resulting linecount increase as small as possible.
+> 
+> perf test also need some command to execute otherwise it will also 
+> show long list of <inactive>
 
-> Let's cc the Process Events developer..
->=20
-Ah great, thanks - I couldn't find an e-mail address.
+I think what it should do is to execute test-cases _internally_. Not 
+just execute some random command on the system and hope for events.
 
-> On Mon, 15 Jun 2009 13:03:08 +0100
-> Scott James Remnant <scott@ubuntu.com> wrote:
->=20
-> > The act of a process becoming a session leader is a useful signal to a
-> > supervising init daemon such as Upstart.
-> >=20
-> > While a daemon will normally do this as part of the process of becoming
-> > a daemon, it is rare for its children to do so.  When the children do,
-> > it is nearly always a sign that the child should be considered detached
-> > from the parent and not supervised along with it.
-> >=20
-> > The poster-child example is OpenSSH; the per-login children call setsid=
-()
-> > so that they may control the pty connected to them.  If the primary dae=
-mon
-> > dies or is restarted, we do not want to consider the per-login children
-> > and want to respawn the primary daemon without killing the children.
-> >=20
-> > This patch adds a new PROC_SID_EVENT and associated structure to the
-> > proc_event event_data union, it arranges for this to be emitted when
-> > the special PIDTYPE_SID pid is set.
-> >=20
->=20
-> hm, well, I don't have much useful to say about the overall idea, but
-> it seems to slot into the existing code simply enough.
->=20
-> > ---
-> >  drivers/connector/cn_proc.c |   25 +++++++++++++++++++++++++
-> >  include/linux/cn_proc.h     |   10 ++++++++++
-> >  kernel/exit.c               |    4 +++-
-> >  3 files changed, 38 insertions(+), 1 deletions(-)
->=20
-> We seem to have forgotten to document this entire interface, so I can't
-> ding you for forgetting to update the forgotten documentation.
->=20
-> > diff --git a/drivers/connector/cn_proc.c b/drivers/connector/cn_proc.c
-> > index c5afc98..7d48cd9 100644
-> > --- a/drivers/connector/cn_proc.c
-> > +++ b/drivers/connector/cn_proc.c
-> > @@ -139,6 +139,31 @@ void proc_id_connector(struct task_struct *task, i=
-nt which_id)
-> >  	cn_netlink_send(msg, CN_IDX_PROC, GFP_KERNEL);
-> >  }
-> > =20
-> > +void proc_sid_connector(struct task_struct *task)
->=20
-> It would be nice to have a nice comment explaining what this function
-> does.  Ditto all the others in there, really.
->=20
-> > +{
-> > +	struct cn_msg *msg;
-> > +	struct proc_event *ev;
-> > +	struct timespec ts;
-> > +	__u8 buffer[CN_PROC_MSG_SIZE];
-> > +
-> > +	if (atomic_read(&proc_event_num_listeners) < 1)
-> > +		return;
-> > +
-> > +	msg =3D (struct cn_msg*)buffer;
-> > +	ev =3D (struct proc_event*)msg->data;
->=20
-> Please pass all patches through scripts/checkpatch.pl.
->=20
-> > +	get_seq(&msg->seq, &ev->cpu);
-> > +	ktime_get_ts(&ts); /* get high res monotonic timestamp */
-> > +	put_unaligned(timespec_to_ns(&ts), (__u64 *)&ev->timestamp_ns);
-> > +	ev->what =3D PROC_EVENT_SID;
-> > +	ev->event_data.sid.process_pid =3D task->pid;
->=20
-> This is a bit of a worry.  In a containerised environment, pids are not
-> unique.  Now what do we do?
->=20
-I must admit, that I just copy and pasted the existing functions - bugs
-and all :-)
+> I think better I should support all events in perf stat so user 
+> can get better information from it and we can all add some other 
+> testing option to it.
 
-> > +	ev->event_data.sid.process_tgid =3D task->tgid;
-> > +
-> > +	memcpy(&msg->id, &cn_proc_event_id, sizeof(msg->id));
-> > +	msg->ack =3D 0; /* not used */
-> > +	msg->len =3D sizeof(*ev);
-> > +	cn_netlink_send(msg, CN_IDX_PROC, GFP_KERNEL);
-> > +}
-> > +
-> >  void proc_exit_connector(struct task_struct *task)
-> >  {
-> >  	struct cn_msg *msg;
-> > diff --git a/include/linux/cn_proc.h b/include/linux/cn_proc.h
-> > index b8125b2..47dac5e 100644
-> > --- a/include/linux/cn_proc.h
-> > +++ b/include/linux/cn_proc.h
-> > @@ -52,6 +52,7 @@ struct proc_event {
-> >  		PROC_EVENT_EXEC =3D 0x00000002,
-> >  		PROC_EVENT_UID  =3D 0x00000004,
-> >  		PROC_EVENT_GID  =3D 0x00000040,
-> > +		PROC_EVENT_SID  =3D 0x00000080,
-> >  		/* "next" should be 0x00000400 */
-> >  		/* "last" is the last process event: exit */
-> >  		PROC_EVENT_EXIT =3D 0x80000000
-> > @@ -89,6 +90,11 @@ struct proc_event {
-> >  			} e;
-> >  		} id;
-> > =20
-> > +		struct sid_proc_event {
-> > +			__kernel_pid_t process_pid;
-> > +			__kernel_pid_t process_tgid;
-> > +		} sid;
-> > +
-> >  		struct exit_proc_event {
-> >  			__kernel_pid_t process_pid;
-> >  			__kernel_pid_t process_tgid;
-> > @@ -102,6 +108,7 @@ struct proc_event {
-> >  void proc_fork_connector(struct task_struct *task);
-> >  void proc_exec_connector(struct task_struct *task);
-> >  void proc_id_connector(struct task_struct *task, int which_id);
-> > +void proc_sid_connector(struct task_struct *task);
-> >  void proc_exit_connector(struct task_struct *task);
-> >  #else
-> >  static inline void proc_fork_connector(struct task_struct *task)
-> > @@ -114,6 +121,9 @@ static inline void proc_id_connector(struct task_st=
-ruct *task,
-> >  				     int which_id)
-> >  {}
-> > =20
-> > +static inline void proc_sid_connector(struct task_struct *task)
-> > +{}
-> > +
-> >  static inline void proc_exit_connector(struct task_struct *task)
-> >  {}
-> >  #endif	/* CONFIG_PROC_EVENTS */
-> > diff --git a/kernel/exit.c b/kernel/exit.c
-> > index b6c90b5..5162589 100644
-> > --- a/kernel/exit.c
-> > +++ b/kernel/exit.c
-> > @@ -360,8 +360,10 @@ void __set_special_pids(struct pid *pid)
-> >  {
-> >  	struct task_struct *curr =3D current->group_leader;
-> > =20
-> > -	if (task_session(curr) !=3D pid)
-> > +	if (task_session(curr) !=3D pid) {
-> >  		change_pid(curr, PIDTYPE_SID, pid);
-> > +		proc_sid_connector(curr);
-> > +	}
-> > =20
-> >  	if (task_pgrp(curr) !=3D pid)
-> >  		change_pid(curr, PIDTYPE_PGID, pid);
->=20
+I agree - see my previous mail about how to achieve this better: we 
+should extend event string parsing with wildcards (regex) and with 
+'set of events' symbols that act as convenient specifiers for 
+certain typical uses.
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
+> Anyway currently it looks like this :
+> 
+> [RFC][PATCH] perf_counter tools: introduce perf test to test event for ticks
+> 
+> perf test to Test performance counter events, its output on AMD box :
+> 
+> ./perf test -a -- ls -lR > /dev/null
+> 
+>  Performance counter stats for 'ls' -lR:
+> 
+>  cycles                                             1226819954
+>  instructions                                        283680441
+>  cache-references                                    144893559
+>  cache-misses                                          3268438
+>  branches                                             37488241
+>  branch-misses                                         2464027
+>  bus-cycles                                         <inactive>
+>  cpu-clock-msecs                                   17175506056
+>  task-clock-msecs                                  17175086665
+>  page-faults                                               488
+>  minor-faults                                              488
+>  major-faults                                       <inactive>
 
---=-DnFNN84UR4ufDIiUsIuP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+We should try to provoke a real major fault (i.e. a fault with IO) 
+here. Not sure how though :-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+>  context-switches                                         7956
+>  CPU-migrations                                              7
 
-iEYEABECAAYFAkpAkQwACgkQSnQiFMl4yK6/TgCgjKac+2iHUeLFXlZnjes58QDH
-M/AAoKyXRhILnHtWSz94e4woi70F1djf
-=bijE
------END PGP SIGNATURE-----
+this needs to be provoked intentionally via sched_setaffinity(): 
+first migrate to cpu0, then to cpu1.
 
---=-DnFNN84UR4ufDIiUsIuP--
+>  L1-data-Cache-Load-Referencees                      398303881
+>  L1-data-Cache-Load-Misses                             3552374
+>  L1-data-Cache-Store-Referencees                        270178
+>  L1-data-Cache-Store-Misses                         <inactive>
 
+this is probably inactive due to AMD not having events for that and 
+the generic cache event being 0 there, right?
+
+>  L1-data-Cache-Prefetch-Referencees                     611622
+>  L1-data-Cache-Prefetch-Misses                          399730
+>  L1-instruction-Cache-Load-Referencees               124696447
+>  L1-instruction-Cache-Load-Misses                      2912802
+>  L1-instruction-Cache-Store-Referencees             <inactive>
+>  L1-instruction-Cache-Store-Misses                  <inactive>
+>  L1-instruction-Cache-Prefetch-Referencees              156576
+>  L1-instruction-Cache-Prefetch-Misses               <inactive>
+>  L2-Cache-Load-Referencees                             4312353
+>  L2-Cache-Load-Misses                                   470382
+>  L2-Cache-Store-Referencees                            4392945
+>  L2-Cache-Store-Misses                              <inactive>
+>  L2-Cache-Prefetch-Referencees                      <inactive>
+>  L2-Cache-Prefetch-Misses                           <inactive>
+>  Data-TLB-Cache-Load-Referencees                     127076487
+>  Data-TLB-Cache-Load-Misses                            1930048
+>  Data-TLB-Cache-Store-Referencees                   <inactive>
+>  Data-TLB-Cache-Store-Misses                        <inactive>
+>  Data-TLB-Cache-Prefetch-Referencees                <inactive>
+>  Data-TLB-Cache-Prefetch-Misses                     <inactive>
+>  Instruction-TLB-Cache-Load-Referencees              132768077
+>  Instruction-TLB-Cache-Load-Misses                        6406
+>  Instruction-TLB-Cache-Store-Referencees            <inactive>
+>  Instruction-TLB-Cache-Store-Misses                 <inactive>
+>  Instruction-TLB-Cache-Prefetch-Referencees         <inactive>
+>  Instruction-TLB-Cache-Prefetch-Misses              <inactive>
+>  Branch-Cache-Load-Referencees                        58030210
+>  Branch-Cache-Load-Misses                              3257804
+>  Branch-Cache-Store-Referencees                     <inactive>
+>  Branch-Cache-Store-Misses                          <inactive>
+>  Branch-Cache-Prefetch-Referencees                  <inactive>
+>  Branch-Cache-Prefetch-Misses                       <inactive>
+> 
+>     8.681671511  seconds time elapsed.
+
+looks nice.
+
+	Ingo
