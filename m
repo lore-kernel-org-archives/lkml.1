@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbZFWQcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZFWQc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbZFWQcm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 12:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFWQce
+	id S1760933AbZFWQc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 12:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760830AbZFWQcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 12:32:34 -0400
-Received: from kroah.org ([198.145.64.141]:53077 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751316AbZFWQcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 12:32:33 -0400
-Date: Tue, 23 Jun 2009 09:28:21 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: linux-next: driver-core tree build failure
-Message-ID: <20090623162821.GA8482@kroah.com>
-References: <20090623160100.ab086e63.sfr@canb.auug.org.au> <20090623152916.GA27467@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623152916.GA27467@kroah.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 23 Jun 2009 12:32:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43067 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751796AbZFWQcp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 12:32:45 -0400
+Date: Tue, 23 Jun 2009 17:33:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: dhowells@redhat.com, Miklos Szeredi <miklos@szeredi.hu>, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, viro@ZenIV.linux.org.uk, adilger@sun.com,
+       akpm@linux-foundation.org
+Subject: Re: [RFC] O_NOACC: open without any access
+Message-ID: <20090623173340.66f71915@lxorguk.ukuu.org.uk>
+In-Reply-To: <16755.1245773452@redhat.com>
+References: <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk>
+	<E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu>
+	<E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu>
+	<20090623134640.GA13831@infradead.org>
+	<E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu>
+	<20090623143408.GA2147@infradead.org>
+	<16370.1245772337@redhat.com>
+	<16755.1245773452@redhat.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 08:29:16AM -0700, Greg KH wrote:
-> On Tue, Jun 23, 2009 at 04:01:00PM +1000, Stephen Rothwell wrote:
-> > Hi Greg,
-> > 
-> > Today's linux-next build (arm omap_osk_5912_defconfig) failed like this:
-> > 
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_num':
-> > drivers/video/omap/omapfb_main.c:1253: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_caps_text':
-> > drivers/video/omap/omapfb_main.c:1273: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_panel_name':
-> > drivers/video/omap/omapfb_main.c:1320: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_level':
-> > drivers/video/omap/omapfb_main.c:1329: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_store_bklight_level':
-> > drivers/video/omap/omapfb_main.c:1344: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_bklight_max':
-> > drivers/video/omap/omapfb_main.c:1363: error: 'struct device' has no member named 'driver_data'
-> > drivers/video/omap/omapfb_main.c: In function 'omapfb_show_ctrl_name':
-> > drivers/video/omap/omapfb_main.c:1396: error: 'struct device' has no member named 'driver_data'
-> > 
-> > Caused by commit 53d8ba57f16029a47ed5df9840ab6c3f9abd3727 ("Driver core:
-> > move dev_get/set_drvdata to drivers/base/dd.c") from the driver-core tree.
-> > 
-> > I see more grepping in your future :-)
+On Tue, 23 Jun 2009 17:10:52 +0100
+David Howells <dhowells@redhat.com> wrote:
+
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> Heh, thanks, I got i386, x86-64, and ppc64 working properly this time
-> around, but new things keep slipping in :)
+> > So how are you going to make that work in conjunction with the in
+> > progress work on doing stuff like revoke(), and with module reference
+> > counting ?
 > 
-> I'll go resolve these as well.
+> Reference count on which module?  This would not take a reference on the device
+> driver as it would not refer to it, but would still have a file struct, an
+> inode struct and a dentry struct on the underlying fs.
 
-Now fixed and pushed out.
+Which means the device could be unloaded, something else loaded and your
+handle wouldn't be invalidated but would be stale ?
 
-thanks,
-
-greg k-h
+Perhaps it would make more sense to me if I knew why you needed to do
+this ?
