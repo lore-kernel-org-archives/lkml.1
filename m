@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZFWUf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZFWUgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755551AbZFWUf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 16:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZFWUfS
+	id S1755645AbZFWUgJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 16:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZFWUf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 16:35:18 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3743 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZFWUfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 16:35:17 -0400
-Date: Tue, 23 Jun 2009 22:35:18 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: Greg KH <greg@kroah.com>
-Cc: Frans Pop <elendil@planet.nl>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31-rc0-git: lsusb stopped working?
-Message-ID: <20090623203518.GA8388@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Greg KH <greg@kroah.com>, Frans Pop <elendil@planet.nl>,
-	Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
-References: <20090623135529.GA2668@elf.ucw.cz> <200906231709.45851.elendil@planet.nl> <20090623161334.GA503@kroah.com>
-Mime-Version: 1.0
+	Tue, 23 Jun 2009 16:35:57 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:58320 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbZFWUf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 16:35:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F3vC8GDiVaV2dRtxR20V+NfdY5ks1rCf82FJ7gCc70dybhCKcZGRkUAocqaD79k9T3
+         lDprbkGZxAZusIavx6/EZ/G7DawWVydmW+TA2702b1RW8ChJGFbVqpd3igJNtsTaFXtK
+         zWYeaWqHHe/Qn3p9S6Ev9f2G/SBweJX+Tq0jY=
+Date: Tue, 23 Jun 2009 16:35:50 -0400
+From: Tj Hariharan <tj.physicist@gmail.com>
+To: linux-kernel@vger.kernel.org, kernel-newbie@vger.kernel.org
+Subject: ACPI: undefined processor 0?!
+Message-ID: <20090623203527.GA634@TjsLaptop>
+References: <c2c826570906231331rfddcc71o72480e45c9152528@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090623161334.GA503@kroah.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <c2c826570906231331rfddcc71o72480e45c9152528@mail.gmail.com>
+User-Agent: Mutt/1.5.17-muttng (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 09:13:34AM -0700, Greg KH wrote:
-> If for some reason you can not use the /dev/bus/usb/ device nodes, you
-> can enable the config option by turning on CONFIG_EMBEDDED.
+Hi I am a user of arch linux. I compil my own kernel (from linus' git
+tree). Now, as of about 2 days ago, my syslog has been getting spammed with
+the following message:
 
-Wasn't CONFIG_EMBEDDED defined as an option to enable _removing_
-useful stuff normal people do not want to remove?  I for one would
-never imagine going there to put back legacy stuff.
+"Jun 23 11:37:38 TjsLaptop logger: ACPI group/action undefined: processor /
+CPU0"
 
-  OG.
+Can anyone tell me as to the reason for this. ACPI seems to work fine
+otherwise. /proc/acpi is populated like it always is, as far as i can tell
+everything is where it should be in there. (Including a
+/proc/acpi/processors/CPU0, its there and working).
+
+Thank you in advance.
+-- 
+-Tj (Tejas Hariharan)
+ Tj@archlinux.us
+ 
