@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZFWV40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZFWWCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZFWV40 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZFWV4E
+	id S1755927AbZFWWCO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZFWWB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:56:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60292 "EHLO mx2.redhat.com"
+	Tue, 23 Jun 2009 18:01:58 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46121 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757586AbZFWV4D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:56:03 -0400
-Message-ID: <4A414F55.2040808@redhat.com>
-Date: Tue, 23 Jun 2009 17:55:33 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: akataria@vmware.com
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
-References: <20090623093459.2204.A69D9226@jp.fujitsu.com>	 <1245732411.18339.6.camel@alok-dev1>	 <20090623135017.220D.A69D9226@jp.fujitsu.com>	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com> <1245793331.24110.33.camel@alok-dev1>
-In-Reply-To: <1245793331.24110.33.camel@alok-dev1>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751888AbZFWWB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 18:01:57 -0400
+Subject: Re: [PATCH] PCI: remove pcibios_scan_all_fns()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, Alex Chiang <achiang@hp.com>,
+       jbarnes@virtuousgeek.org, linux-arch@vger.kernel.org,
+       Kyle McMartin <kyle@mcmartin.ca>, Tony Luck <tony.luck@intel.com>,
+       Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>,
+       Avi Kivity <avi@redhat.com>, Ian Campbell <Ian.Campbell@eu.citrix.com>
+In-Reply-To: <4A413C66.5010306@goop.org>
+References: <20090622140807.25509.54448.stgit@bob.kio>
+	 <20090622143431.GT19977@parisc-linux.org> <4A3FCB68.3030004@goop.org>
+	 <20090622183056.GY19977@parisc-linux.org> <1245714008.4017.7.camel@pasglop>
+	 <20090623190826.GJ19977@parisc-linux.org>  <4A413C66.5010306@goop.org>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 07:49:18 +1000
+Message-Id: <1245793758.10356.27.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alok Kataria wrote:
-> On Tue, 2009-06-23 at 14:24 -0700, Rik van Riel wrote:
-
->> I can see something reasonable on both sides of this
->> particular debate.  However, even with this patch the
->> "unevictable" statistic does not reclaim the total
->> number of pages that are unevictable pages from a
->> zone, so I am not sure how it helps you achieve your
->> goal.
+On Tue, 2009-06-23 at 13:34 -0700, Jeremy Fitzhardinge wrote:
+> On reflection, I think this will work.  We have a Xen pci passthrough
+> driver which gets told about the passed-through devices via xenbus,
+> and
+> does the appropriate setup.  At first glance, there doesn't seem to be
+> any problem with that code just explicitly instantiate the devices at
+> the PCI level in the same way pci_scan_device does (ie,
+> alloc_pci_device, initalize the dev struct, pci_setup_device).
 > 
-> Yes but most of the other memory (page table and others) which is
-> unevictable is actually static in nature.  IOW, the amount of this other
-> kind of kernel unevictable pages can be actually interpolated from the
-> amount of physical memory on the system. 
+> Is that what you mean?
+> 
+> IanC has looked at that code more closely, so perhaps he can confirm
+> that this will work on our side.
+> 
+Yes, we do that in arch/powerpc/kernel/pci_64.c (and somewhere in
+arch/sparc too). I'll merge those 2 implementations one of these days
+and move them to drivers/of.
 
-That would be a fair argument, if it were true.
+I think Willy was actually suggesting that you start using our
+OF/device-tree stuff though which is a slightly more invasive deal but
+might end up useful for other things in the long run :-)
 
-Things like page tables and dentry/inode caches vary
-according to the use case and are allocated as needed.
-They are in no way "static in nature".
+Cheers,
+Ben.
 
--- 
-All rights reversed.
+
