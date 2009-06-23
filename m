@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZFWWHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbZFWWIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbZFWWHo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 18:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZFWWHg
+	id S1759059AbZFWWIA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 18:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758824AbZFWWHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 18:07:36 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63872 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZFWWHf (ORCPT
+	Tue, 23 Jun 2009 18:07:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38866 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756152AbZFWWHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 18:07:35 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH 05/17] Blackfin: convert to generic checksum code
-Date: Wed, 24 Jun 2009 00:06:09 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michal Simek <monstr@monstr.eu>, Paul Mundt <lethal@linux-sh.org>
-References: <1244980878-2124-1-git-send-email-vapier@gentoo.org> <200906232314.18261.arnd@arndb.de> <8bd0f97a0906231453m308dc972mdf624545794f398e@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906231453m308dc972mdf624545794f398e@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+	Tue, 23 Jun 2009 18:07:50 -0400
+Date: Tue, 23 Jun 2009 15:07:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
+       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+Message-Id: <20090623150728.7d77970b.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0906231448100.17001@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
+	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
+	<20090623131848.b876d42e.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231400010.17001@makko.or.mcafeemobile.com>
+	<20090623142909.42776e75.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231428460.17001@makko.or.mcafeemobile.com>
+	<20090623144638.22ca61ea.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231448100.17001@makko.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906240006.10881.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18QtDl9K4A2lh2WF1ySkyTSXE5G731ek8g+wYk
- UPZLSdFtWldbjh2zahEiahj7YvPEqKBjly1qzwx1a5mieZuyyj
- ymEGA9HaEvV8haDxmgtDA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, Mike Frysinger wrote:
-> and this is an internal tester ... if we're going to let arches
-> override it, then its function signature are pretty much set in stone.
-> i agree we should test every checksum function, but i think only
-> testing do_csum indirectly would be detrimental to the people who
-> would want to use this -- arch maintainers looking to implement
-> do_csum() themselves.  otherwise they need to step through the
-> surrounding functions a bit to find the exact values given to
-> do_csum() and the exact value expected back such that the calling
-> function still works.  and every arch guy is going to do this same
-> thing.
+On Tue, 23 Jun 2009 14:48:51 -0700 (PDT)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-It depends on how we want to use it. If it's only for testing architecture
-that have moved to the generic checksum code, that's fine. I was
-thinking we could also use it for architectures that want to keep
-their own code, but we don't have to.
+> > > This becomes pretty painful when the function calls other functions, for 
+> > > which just relays the error code.
+> > > Should we be just documenting the error codes introduced by the function 
+> > > code, and say that the function returns errors A, B, C plus all the ones 
+> > > returned by the called functions X, Y, Z?
+> > > If not, it becomes hell in maintaining the comments...
+> > 
+> > Well.  Don't worry about making rules.  Taste and common sense apply.  "Will
+> > it be useful to readers if I explicitly document the return value".  If
+> > "yes" then document away.  If "no" then don't.
+> 
+> Are you OK with the format in the patch below?
 
-> i'm a bit of a nub here wrt checksuming.  the test module i came up
-> with by simply flooding my board and copying & pasting mismatched
-> buffers ;).  are you saying the following should be OK ?
-> -    if (tret != do_csum_data[i].ret) {
-> +    if (tret != le16_to_cpu(do_csum_data[i].ret)) {
+Looks great to me.
 
-yes, that should work.
+Obviously the cost of maintaining this level of detail is fairly high,
+and the chances of bitrot are also high.  So I wouldn't be expecting
+people to document things at this level in general.  But if you're
+prepared to maintain this then good for you.
 
-> unless there is a macro i could use that'd do the expansion at CPP
-> time so i'd write the test data as:
-> static struct do_csum_data __initdata do_csum_data[] = {
->         DO_CSUM_DATA(1, le16_to_cpu(0x0020)),
-> ...
 
-Ah, right that won't. I tested only on x86 (little-endian), so
-le16_to_cpu() is an identity function that can be evaluated for
-constants, but on big-endian that would break.
 
-	Arnd <><
