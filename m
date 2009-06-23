@@ -1,91 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZFWIwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758005AbZFWIwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZFWIwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 04:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZFWIwO
+	id S1758005AbZFWIwg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 04:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbZFWIwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 04:52:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43077 "EHLO hera.kernel.org"
+	Tue, 23 Jun 2009 04:52:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43078 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751642AbZFWIwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752283AbZFWIwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 23 Jun 2009 04:52:13 -0400
-Date: Tue, 23 Jun 2009 08:51:47 GMT
-From: tip-bot for Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Date: Tue, 23 Jun 2009 08:51:34 GMT
+From: tip-bot for Pekka J Enberg <penberg@cs.helsinki.fi>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       arun@linux.vnet.ibm.com, tglx@linutronix.de, mingo@elte.hu,
-       mpnayak@linux.vnet.ibm.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       arun@linux.vnet.ibm.com, tglx@linutronix.de, mpnayak@linux.vnet.ibm.com,
+       yinghai@kernel.org, penberg@cs.helsinki.fi, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <20090623043058.GA3249@linux.vnet.ibm.com>
-References: <20090623043058.GA3249@linux.vnet.ibm.com>
-Subject: [tip:timers/urgent] timers: Fix timer_migration interface which accepts any number as input
-Message-ID: <tip-bfdb4d9f0f611687d71cf6a460efc9e755f4a462@git.kernel.org>
-Git-Commit-ID: bfdb4d9f0f611687d71cf6a460efc9e755f4a462
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <Pine.LNX.4.64.0906221731210.19474@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906221731210.19474@melkki.cs.Helsinki.FI>
+Subject: [tip:x86/urgent] x86: Move init_gbpages() to setup_arch()
+Message-ID: <tip-854c879f5abf309ebd378bea1ee41acf4ddf7194@git.kernel.org>
+Git-Commit-ID: 854c879f5abf309ebd378bea1ee41acf4ddf7194
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 08:51:48 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 23 Jun 2009 08:51:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bfdb4d9f0f611687d71cf6a460efc9e755f4a462
-Gitweb:     http://git.kernel.org/tip/bfdb4d9f0f611687d71cf6a460efc9e755f4a462
-Author:     Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-AuthorDate: Tue, 23 Jun 2009 10:00:58 +0530
+Commit-ID:  854c879f5abf309ebd378bea1ee41acf4ddf7194
+Gitweb:     http://git.kernel.org/tip/854c879f5abf309ebd378bea1ee41acf4ddf7194
+Author:     Pekka J Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Mon, 22 Jun 2009 17:39:41 +0300
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 23 Jun 2009 10:49:33 +0200
+CommitDate: Tue, 23 Jun 2009 10:33:32 +0200
 
-timers: Fix timer_migration interface which accepts any number as input
+x86: Move init_gbpages() to setup_arch()
 
-Poornima Nayek reported:
+The init_gbpages() function is conditionally called from
+init_memory_mapping() function. There are two call-sites where
+this 'after_bootmem' condition can be true: setup_arch() and
+mem_init() via pci_iommu_alloc().
 
-| Timer migration interface /proc/sys/kernel/timer_migration in
-| 2.6.30-git9 accepts any numerical value as input.
-|
-| Steps to reproduce:
-| 1. echo -6666666 > /proc/sys/kernel/timer_migration
-| 2. cat /proc/sys/kernel/timer_migration
-| -6666666
-|
-| 1. echo 44444444444444444444444444444444444444444444444444444444444 > /proc/sys/kernel/timer_migration
-| 2. cat /proc/sys/kernel/timer_migration
-| -1357789412
-|
-| Expected behavior: Should 'echo: write error: Invalid argument' while
-| setting any value other then 0 & 1
+Therefore, it's safe to move the call to init_gbpages() to
+setup_arch() as it's always called before mem_init().
 
-Restrict valid values to 0 and 1.
+This removes an after_bootmem use - paving the way to remove
+all uses of that state variable.
 
-Reported-by: Poornima Nayak <mpnayak@linux.vnet.ibm.com>
-Tested-by: Poornima Nayak <mpnayak@linux.vnet.ibm.com>
-Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-Cc: poornima nayak <mpnayak@linux.vnet.ibm.com>
-Cc: Arun Bharadwaj <arun@linux.vnet.ibm.com>
-LKML-Reference: <20090623043058.GA3249@linux.vnet.ibm.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Acked-by: Yinghai Lu <yinghai@kernel.org>
+LKML-Reference: <Pine.LNX.4.64.0906221731210.19474@melkki.cs.Helsinki.FI>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sysctl.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ arch/x86/kernel/setup.c |   16 ++++++++++++++++
+ arch/x86/mm/init.c      |   17 -----------------
+ 2 files changed, 16 insertions(+), 17 deletions(-)
 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 62e4ff9..c428ba1 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -335,7 +335,10 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_timer_migration,
- 		.maxlen		= sizeof(unsigned int),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &one,
- 	},
- #endif
- 	{
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index be5ae80..de2cab1 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -289,6 +289,20 @@ void * __init extend_brk(size_t size, size_t align)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_X86_64
++static void __init init_gbpages(void)
++{
++	if (direct_gbpages && cpu_has_gbpages)
++		printk(KERN_INFO "Using GB pages for direct mapping\n");
++	else
++		direct_gbpages = 0;
++}
++#else
++static inline void init_gbpages(void)
++{
++}
++#endif
++
+ static void __init reserve_brk(void)
+ {
+ 	if (_brk_end > _brk_start)
+@@ -871,6 +885,8 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	reserve_brk();
+ 
++	init_gbpages();
++
+ 	/* max_pfn_mapped is updated here */
+ 	max_low_pfn_mapped = init_memory_mapping(0, max_low_pfn<<PAGE_SHIFT);
+ 	max_pfn_mapped = max_low_pfn_mapped;
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index f53b57e..47ce9a2 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -177,20 +177,6 @@ static int __meminit save_mr(struct map_range *mr, int nr_range,
+ 	return nr_range;
+ }
+ 
+-#ifdef CONFIG_X86_64
+-static void __init init_gbpages(void)
+-{
+-	if (direct_gbpages && cpu_has_gbpages)
+-		printk(KERN_INFO "Using GB pages for direct mapping\n");
+-	else
+-		direct_gbpages = 0;
+-}
+-#else
+-static inline void init_gbpages(void)
+-{
+-}
+-#endif
+-
+ /*
+  * Setup the direct mapping of the physical memory at PAGE_OFFSET.
+  * This runs before bootmem is initialized and gets pages directly from
+@@ -210,9 +196,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 
+ 	printk(KERN_INFO "init_memory_mapping: %016lx-%016lx\n", start, end);
+ 
+-	if (!after_bootmem)
+-		init_gbpages();
+-
+ #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_KMEMCHECK)
+ 	/*
+ 	 * For CONFIG_DEBUG_PAGEALLOC, identity mapping will use small pages.
