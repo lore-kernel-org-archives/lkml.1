@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZFWMYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZFWM0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbZFWMYj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 08:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZFWMYc
+	id S1757119AbZFWM0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 08:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZFWM0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 08:24:32 -0400
-Received: from nox.protox.org ([88.191.38.29]:32816 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752747AbZFWMYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 08:24:32 -0400
-Subject: Re: [PATCH] radeon: use vmalloc instead of kmalloc
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Dave Airlie <airlied@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jerome Glisse <jglisse@redhat.com>,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-In-Reply-To: <21d7e9970906230442n3dcfeff8le0ffc3b8ea0c3bd0@mail.gmail.com>
-References: <1245691561-15336-1-git-send-email-jglisse@redhat.com>
-	 <1245756936.19816.1652.camel@twins>
-	 <21d7e9970906230442n3dcfeff8le0ffc3b8ea0c3bd0@mail.gmail.com>
+	Tue, 23 Jun 2009 08:26:06 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:13900 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910AbZFWM0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 08:26:05 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: akataria@vmware.com, LKML <linux-kernel@vger.kernel.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090623135017.220D.A69D9226@jp.fujitsu.com>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Tue, 23 Jun 2009 14:23:23 +0200
-Message-Id: <1245759803.2674.0.camel@localhost>
+Organization: HP/LKTT
+Date: Tue, 23 Jun 2009 08:26:03 -0400
+Message-Id: <1245759963.1944.11.camel@lts-notebook>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 21:42 +1000, Dave Airlie wrote:
-> On Tue, Jun 23, 2009 at 9:35 PM, Peter Zijlstra<peterz@infradead.org> wrote:
-> > On Mon, 2009-06-22 at 19:26 +0200, Jerome Glisse wrote:
-> >> We don't need to allocated contiguous pages in cs codepath
-> >> so use vmalloc instead.
-> >
-> > Best would be to not require >PAGE_SIZE allocations at all of course.
+On Tue, 2009-06-23 at 14:05 +0900, KOSAKI Motohiro wrote:
+> > > > Unevictable:           0 kB
+> > > > Mlocked:               0 kB
+> > > > HugePages_Total:      20
+> > > > HugePages_Free:       20
+> > > > HugePages_Rsvd:        0
+> > > > HugePages_Surp:        0
+> > > > 
+> > > > After the patch:
+> > > > 
+> > > > Unevictable:       81920 kB
+> > > > Mlocked:               0 kB
+> > > > HugePages_Total:      20
+> > > > HugePages_Free:       20
+> > > > HugePages_Rsvd:        0
+> > > > HugePages_Surp:        0
+> > > 
+> > > At first, We should clarify the spec of unevictable.
+> > > Currently, Unevictable field mean the number of pages in unevictable-lru
+> > > and hugepage never insert any lru.
+> > > 
+> > > I think this patch will change this rule.
+> > 
+> > I agree, and that's why I added a comment to the documentation file to
+> > that effect. If you think its not explicit or doesn't explain what its
+> > supposed to we can add something more there.
+> > 
+> > IMO, the proc output should give the total number of unevictable pages
+> > in the system and, since hugepages are also in fact unevictable so I
+> > don't see a reason why they shouldn't be accounted accordingly.
+> > What do you think ? 
 > 
-> It gets messy when you have copy from user and spinlocks, it would be nice
-> to just parse the userspace PAGE_SIZE at a time, but it would mean dropping
-> a lock we probably need to hold.
+> ummm...
 > 
-> > But barring that, it would be great to have something like:
-> >
-> >  ptr = kmalloc(size, GFP_KERNEL | __GFP_NOWARN);
-> >  if (!ptr)
-> >    ptr = vmalloc(size);
+> I'm not sure this unevictable definition is good idea or not. currently
+> hugepage isn't only non-account memory, but also various kernel memory doesn't
+> account.
 > 
-> we have a drm_calloc_large workaround already for the Intel driver which also
-> need this.
-> >
-> > Also, how long do these allocations live? vmalloc space can be quite
-> > limited (i386) and it can fragment too.
+> one of drawback is that zone_page_state(UNEVICTABLE) lost to mean #-of-unevictable-pages.
+> e.g.  following patch is wrong?
 > 
-> Only an ioctl lifetime so they aren't that bad. We however do have some vmaps
-> that might be quite large, mainly the fbcon framebuffer (up to 8MB in
-> some cases)
+> fs/proc/meminfo.c meminfo_proc_show()
+> ----------------------------
+> -                K(pages[LRU_UNEVICTABLE]),
+> +                K(pages[LRU_UNEVICTABLE]) + hstate->nr_huge_pages,
 > 
-> Dave.
+> 
+> Plus, I didn't find any practical benefit in this patch. do you have it?
+> or You only want to natural definition?
+> 
+> I don't have any strong oppose reason, but I also don't have any strong
+> agree reason.
+> 
+> 
+> Lee, What do you think?
+> 
 
+Alok asked me about this off-list.  Like you, I have no strong feelings
+either way.  Before this patch, yes, the Unevictable meminfo item does
+correspond to the number of pages on the unevictable lru.  However, I
+don't know that this is all that useful to an administrator.  And, I
+don't think we depend on this count anywhere in the code.  So, perhaps
+having the system "do the math" to add the unevictable huge pages to
+this item is more useful.  Then, again, as you point out, there is a lot
+of kernel memory that is also unevictable that would not be accounted
+here.  
 
-I will rework cs parsing a bit see with what i can come up with. Forget
-this patch, i will get back with a new one.
-
-Jerome
+Lee
 
