@@ -1,122 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbZFWVan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbZFWVay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbZFWVan (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 17:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbZFWVaP
+	id S1758081AbZFWVay (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 17:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757692AbZFWVaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 17:30:15 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:18830 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754022AbZFWVaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 17:30:11 -0400
-X-IronPort-AV: E=Sophos;i="4.42,277,1243839600"; 
-   d="scan'208";a="195108999"
-Subject: Re: [PATCH 2/5] VFS: Add VFS helper functions for setting up
- private namespaces
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090623201307.GA25760@us.ibm.com>
-References: <20090622190913.27923.31665.stgit@heimdal.trondhjem.org>
-	 <20090622190913.27923.61549.stgit@heimdal.trondhjem.org>
-	 <20090623201307.GA25760@us.ibm.com>
-Content-Type: text/plain
+	Tue, 23 Jun 2009 17:30:22 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:49553 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756227AbZFWVaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 17:30:19 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] ide-cd: Improve "weird block size" error message
+Date: Tue, 23 Jun 2009 23:30:18 +0200
+User-Agent: KMail/1.9.9
+References: <200906222101.38586.elendil@planet.nl> <200906230951.24615.elendil@planet.nl> <20090623.035926.155211513.davem@davemloft.net>
+In-Reply-To: <20090623.035926.155211513.davem@davemloft.net>
+Cc: bzolnier@gmail.com, sparclinux@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 23 Jun 2009 17:29:49 -0400
-Message-Id: <1245792589.5133.24.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 23 Jun 2009 21:30:12.0992 (UTC) FILETIME=[CADB2800:01C9F449]
+Content-Disposition: inline
+Message-Id: <200906232330.20519.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Jun 2009 21:30:21.0400 (UTC) FILETIME=[CFDE1D80:01C9F449]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 15:13 -0500, Serge E. Hallyn wrote:
-> Quoting Trond Myklebust (Trond.Myklebust@netapp.com):
-> > The purpose of this patch is to improve the remote mount path lookup
-> > support for distributed filesystems such as the NFSv4 client.
-> > 
-> > When given a mount command of the form "mount server:/foo/bar /mnt", the
-> > NFSv4 client is required to look up the filehandle for "server:/", and
-> > then look up each component of the remote mount path "foo/bar" in order
-> > to find the directory that is actually going to be mounted on /mnt.
-> > Following that remote mount path may involve following symlinks,
-> > crossing server-side mount points and even following referrals to
-> > filesystem volumes on other servers.
-> > 
-> > Since the standard VFS path lookup code already supports walking paths
-> > that contain all these features (using in-kernel automounts for
-> > following referrals) we would like to be able to reuse that rather than
-> > duplicate the full path traversal functionality in the NFSv4 client code.
-> > 
-> > This patch therefore defines a VFS helper function create_mnt_ns(), that
-> > sets up a temporary filesystem namespace and attaches a root filesystem to
-> > it. It exports the create_mnt_ns() and put_mnt_ns() function for use by
-> > filesystem modules.
-> > 
-> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> 
-> This looks good, thanks.  Though I see no reason not to also switch over
-> init_mount_tree() to the new helper.
-> 
-> (Seems plausible that c/r code would use this as well)
-> 
-> Reviewed-by: Serge Hallyn <serue@us.ibm.com>
-> 
-> thanks,
-> -serge
+On Tuesday 23 June 2009, David Miller wrote:
+> ide-cd: Don't warn on bogus block size unless it actually matters.
+>
+> Frans Pop reported that his CDROM drive reports a blocksize of 2352,
+> and this causes new warnings due to commit
+> e8e7b9eb11c34ee18bde8b7011af41938d1ad667 ("ide-cd: fix oops when using
+> growisofs").
+>
+> What we're trying to do is make sure that "blocklen >> SECTOR_BITS"
+> is something the block layer won't choke on.
+>
+> And for Frans case "2352 >> SECTOR_BITS" is equal to
+> "2048 >> SECTOR_BITS", and thats "4".
 
-Thanks for the review! I missed the code duplication in
-init_mount_tree(). Something like the following?
+Pedantic correction: Frans' case
 
-Cheers
-  Trond
---------------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-VFS: Switch init_mount_tree() to use the new create_mnt_ns() helper
+> So warning in this case gives no real benefit.
+>
+> Reported-by: Frans Pop <elendil@planet.nl>
+> Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Eliminates some duplicated code...
+As expected, it's gone. Nice.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/namespace.c |   11 ++---------
- 1 files changed, 2 insertions(+), 9 deletions(-)
-
-
-diff --git a/fs/namespace.c b/fs/namespace.c
-index a7bea8c..4a86b85 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -2222,16 +2222,9 @@ static void __init init_mount_tree(void)
- 	mnt = do_kern_mount("rootfs", 0, "rootfs", NULL);
- 	if (IS_ERR(mnt))
- 		panic("Can't create rootfs");
--	ns = kmalloc(sizeof(*ns), GFP_KERNEL);
--	if (!ns)
-+	ns = create_mnt_ns(mnt);
-+	if (IS_ERR(ns))
- 		panic("Can't allocate initial namespace");
--	atomic_set(&ns->count, 1);
--	INIT_LIST_HEAD(&ns->list);
--	init_waitqueue_head(&ns->poll);
--	ns->event = 0;
--	list_add(&mnt->mnt_list, &ns->list);
--	ns->root = mnt;
--	mnt->mnt_ns = ns;
- 
- 	init_task.nsproxy->mnt_ns = ns;
- 	get_mnt_ns(ns);
-
-
--- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Tested-by: Frans Pop <elendil@planet.nl>
