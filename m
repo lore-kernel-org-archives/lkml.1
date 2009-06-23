@@ -1,72 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZFWD07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbZFWDjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZFWD07 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 22 Jun 2009 23:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZFWD0u
+	id S1756620AbZFWDjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 22 Jun 2009 23:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZFWDjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 22 Jun 2009 23:26:50 -0400
-Received: from n26.bullet.mail.mud.yahoo.com ([68.142.206.221]:35060 "HELO
-	n26.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751372AbZFWD0t (ORCPT
+	Mon, 22 Jun 2009 23:39:41 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32681 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbZFWDjk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 22 Jun 2009 23:26:49 -0400
-X-Yahoo-Newman-Id: 473108.61758.bm@omp422.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Ymqu0ORKIUYVMvlXdJ42WtuLbJk1LVtCwDGAOtSsCiz35tZ4r07I2trYD0xyuTaWOhzT6LPMo3m5OHHyh35WaCWUHx+EAqcR5NcvTqgMfe8oFM+h8eb4a0Sw+NCOutX5qEH30Lbo/Mx5OdNMb12cNhkPD8lAoouw/Nc30KSzcwQ=  ;
-X-YMail-OSG: 3mOnKBYVM1mxk5XqyDXGY5zp1XDZHnj_5JjSFLUdeblQSeSYIojW4MfJmv9VOEXHZWN0bb5Og6_0_g4EoRx.l.lDNYOxZyoowu5PSygjqjEgsnXscVynU4lU_QpoTB6..ozkd11wFKSNNPHElNL68enhpf_1RbOdANZGZk3IQjWIBlRkKEDp7MR4radG1bciizAk5.Ec4_ISyULJKDTSgJHKVZ5_ZH93V5BPnqb7PCwK2VHDhHxVjk6hhbjyELT98_wu0enjF19WOkXn
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
-Date: Mon, 22 Jun 2009 20:26:51 -0700
-User-Agent: KMail/1.9.10
-Cc: "'Alan Stern'" <stern@rowland.harvard.edu>,
-       "'Peter Korsgaard'" <jacmet@sunsite.dk>,
-       "'USB list'" <linux-usb@vger.kernel.org>,
-       "'Kernel development list'" <linux-kernel@vger.kernel.org>,
-       kyungmin.park@samsung.com
-References: <001201c9f341$20b8b710$622a2530$%szyprowski@samsung.com> <Pine.LNX.4.44L0.0906221004590.2991-100000@iolanthe.rowland.org> <001301c9f343$7e16ed80$7a44c880$%szyprowski@samsung.com>
-In-Reply-To: <001301c9f343$7e16ed80$7a44c880$%szyprowski@samsung.com>
+	Mon, 22 Jun 2009 23:39:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,273,1243839600"; 
+   d="scan'208";a="526963251"
+From: "Wang, Yong Y" <yong.y.wang@intel.com>
+To: "eranian@gmail.com" <eranian@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>
+Date: Tue, 23 Jun 2009 11:38:36 +0800
+Subject: RE: perf_counter Atom patch
+Thread-Topic: perf_counter Atom patch
+Thread-Index: Acnzd7W+LJf0q1C+SPuJ7hbMoHeBlgANx2pQ
+Message-ID: <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
+References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
+In-Reply-To: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200906222026.51511.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 22 June 2009, Marek Szyprowski wrote:
+> From: stephane eranian [mailto:eranian@googlemail.com] 
 > 
-> > This is just a guess...  But there's a good possibility that the oops
-> > was caused by recent changes to the serial layer which have not been
-> > propagated through to the g_serial driver.
+> I would like to better understand what makes you think
+> this is the case.
 > 
-> How recent these changes are? I did a test on another ARM-based Linux 
-> platform with old 2.6.28 kernel and the result was exactly the same as 
-> above...
 
-Just for the record, the reworked g_serial code merged in 2.6.27
-and was mostly developed on 2.6.25 and 2.6.26 ... and it included
-a lot of stress testing.  No such mutex_lock() in_irq() bug showed
-up at that time.  And that was running with all practical kernel
-debug options, so it should have showed up if it were that easy.
+Because I observed that the output of 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>'
+is always like below without the quirk.
 
-I do however recall turning up several regressions in how "sparse"
-lock checking behaved.  As in, it broke when faced with common
-idioms like needing to temporarily drop a lock deep in a call stack.
+ Performance counter stats for '<cmd>':
 
-Now, the serial layer has been getting a *LONG* overdue incremental
-overhaul since before that started.  So there's been plenty of time
-for incompatible changes to sneak in; I believe Alan Cox focuses on
-host side things, out of defensive necessity.
+              0  cycles
+              0  instructions
+              0  bus-cycles
 
-Like, oh, changing a spinlock to a mutex.   You might change the
-low_latency setting and review how that's now supposed to behave.
+> Perfmon is working on Atom and there, fixed counters work perfectly:
+> $ head -6 /proc/cpuinfo
+> processor	: 0
+> vendor_id	: GenuineIntel
+> cpu family	: 6
+> model		: 28
+> model name	: Intel(R) Atom(TM) CPU  230   @ 1.60GHz
+> stepping	: 2
+> ...
 
-- Dave
+My cpuinfo is below and the only difference I can see is 270 vs 230.
 
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 28
+model name      : Intel(R) Atom(TM) CPU N270   @ 1.60GHz
+stepping        : 2
 
+> $ pfmon -v --us-c -e
+> unhalted_core_cycles,unhalted_reference_cycles,instructions_retired
+> noploop 10
+> [FIXED_CTRL(pmc16)=0xaaa pmi0=1 en0=0x2 any0=0 pmi1=1 en1=0x2 any1=0
+> pmi2=1 en2=0x2 any2=0] INSTRUCTIONS_RETIRED UNHALTED_CORE_CYCLES
+> UNHALTED_REFERENCE_CYCLES
+> [FIXED_CTR0(pmd16)]
+> [FIXED_CTR1(pmd17)]
+> [FIXED_CTR2(pmd18)]
+> noploop for 10 seconds
+> 15,902,604,169 UNHALTED_CORE_CYCLES
+> 15,902,586,180 UNHALTED_REFERENCE_CYCLES
+> 7,941,842,505 INSTRUCTIONS_RETIRED
+> 
+
+Could you pls try to revert my patch, run 'perf stat -e 0:0 -e 0:1 -e 0:6 <cmd>' and see
+whether the counters count or not? I tried pfmon on my atom box but it always runs into
+segfault. If the fixed counters work for you, I will ask Atom hw foks here in Intel why this
+is the case and revise the code accordingly.
+
+> 
+> I seem to recall that what may be bogus on Atom is what is returned by
+> CPUID(0xa)
+> for the fixed counters. But they are there and they work. Thus, I
+> believe, the quirk
+> should be  at the location where CPUID(0xa) is invoked not 
+> where you've put it.
+> 
+
+The return value of CPUID(0xa) is indeed bogus, too and there is another quirk for that in
+intel_pmu_init() in arch/x86/kernel/cpu/perf_counter.c
+
+x86_pmu.num_counters_fixed      = max((int)edx.split.num_counters_fixed, 3);
+
+Is this what you were talking about?
