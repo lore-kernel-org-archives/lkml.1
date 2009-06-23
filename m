@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZFWTTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZFWTUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbZFWTTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 15:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZFWTSy
+	id S1754022AbZFWTUv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 15:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZFWTUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 15:18:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42957 "EHLO mx3.mail.elte.hu"
+	Tue, 23 Jun 2009 15:20:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43385 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZFWTSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 15:18:54 -0400
-Date: Tue, 23 Jun 2009 21:18:38 +0200
+	id S1751024AbZFWTUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 15:20:43 -0400
+Date: Tue, 23 Jun 2009 21:20:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Miroslav Lichvar <mlichvar@redhat.com>
-Cc: John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+To: Len Brown <lenb@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Yinghai Lu <yinghai@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT pull] ntp updates for 2.6.31
-Message-ID: <20090623191838.GB14852@elte.hu>
-References: <20090616090647.GD13771@elte.hu> <20090616125248.GA23541@localhost> <1245253102.6067.94.camel@jstultz-laptop> <20090617172325.GA32332@localhost> <20090617172601.GA3493@elte.hu> <20090618121320.GA13025@localhost> <20090623095745.GC30634@elte.hu> <20090623131628.GA11827@localhost> <20090623133625.GA3026@elte.hu> <20090623143323.GA13932@localhost>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       sfi-devel@simplefirmware.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Feng Tang <feng.tang@intel.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 3/8] SFI: core support
+Message-ID: <20090623192024.GC14852@elte.hu>
+References: <7425334c8329b15bec7cb4ecd0b17af042e97465.1245740912.git.len.brown@intel.com> <8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com> <20090623075643.GC6397@elte.hu> <alpine.LFD.2.00.0906231312550.21402@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090623143323.GA13932@localhost>
+In-Reply-To: <alpine.LFD.2.00.0906231312550.21402@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,24 +39,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Miroslav Lichvar <mlichvar@redhat.com> wrote:
+* Len Brown <lenb@kernel.org> wrote:
 
-> > > I'm not very familiar with the PPS API, is there something 
-> > > wrong with it?
-> > 
-> > The PPS patches i've seen just export IRQ timestamps to 
-> > user-space.
-> > 
-> > That is not very robust in my opinion when it comes to do time 
-> > approximations - to get quick, low-latency action and precise 
-> > measurements it's best to keep the critical path as short as 
-> > possible, and within a single source code repository: i.e. 
-> > within the kernel.
+> Re: #define PREFIX "SFI: "
 > 
-> That's what kernel PPS discipline does, it will be probably 
-> included later. Its performance is an order or two better than the 
-> PLL/FLL discipline.
+> The SFI code uses all pr_info/debug/warning/err format
+> and so it looks like the way to go is like this;
+> 
+> #define KMSG_COMPONENT "SFI"
+> #define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
+> 
+> and get rid of the PREFIX stuff in the actual messages.
+> Is that the recommended way to go these days?
 
-Is there some kernel patch i can look at?
+Yeah, overloadig pr_fmt looks entirely correct and per design. That 
+will make it even cleaner.
 
 	Ingo
