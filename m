@@ -1,46 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbZFWNre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZFWNsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759936AbZFWNre (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 09:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZFWNr1
+	id S1757842AbZFWNsC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 09:48:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZFWNry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 09:47:27 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:48046 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755396AbZFWNr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 09:47:26 -0400
-Date: Tue, 23 Jun 2009 22:46:27 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, niv@us.ibm.com,
-       dvhltc@us.ibm.com, kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v5 RCU: the bloatwatch edition
-Message-ID: <20090623134627.GB26674@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>, David Howells <dhowells@redhat.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	niv@us.ibm.com, dvhltc@us.ibm.com, kernel@wantstofly.org,
-	matthew@wil.cx
-References: <20090623042442.GA15630@linux.vnet.ibm.com> <28711.1245748358@redhat.com> <20090623093208.GD23698@elte.hu> <20090623125832.GA6872@linux.vnet.ibm.com>
+	Tue, 23 Jun 2009 09:47:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55041 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755396AbZFWNrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 09:47:53 -0400
+Date: Tue, 23 Jun 2009 15:47:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [perf] howto switch from pfmon
+Message-ID: <20090623134749.GA6897@elte.hu>
+References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090623125832.GA6872@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090623131450.GA31519@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 05:58:32AM -0700, Paul E. McKenney wrote:
-> On Tue, Jun 23, 2009 at 11:32:08AM +0200, Ingo Molnar wrote:
-> > Paul, i guess this is .32 material anyway, right?
-> 
-> I am personally OK with it being .32, as long as David Howells,
-> Lennert Buytenhek, and Paul Mundt are OK with that schedule.
-> 
-It's hard to see how this is going to cause any regressions, so I don't
-see any problem with this going in to 2.6.31. OTOH, it's not too
-pressing, so 2.6.32 is ok for me too.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+>  $ perf stat -e cycles -e instructions -e r1000ffe0 ./hackbench 10
+>  Time: 0.186
+
+Correction: that should be r10000ffe0.
+
+	Ingo
