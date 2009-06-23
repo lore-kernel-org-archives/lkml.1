@@ -1,106 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZFWGN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZFWGO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbZFWGN7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 02:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZFWGNv
+	id S1758131AbZFWGO1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 02:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZFWGOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 02:13:51 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:7051 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbZFWGNv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 02:13:51 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: I.5 - Mmaped count
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>, Maynard Johnson <mpjohn@us.ibm.com>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-In-Reply-To: <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
-	 <20090622115239.GF24366@elte.hu>
-	 <7c86c4470906220525x409bedadj29be01236e42ea1@mail.gmail.com>
-	 <1245674154.19816.228.camel@twins>
-	 <19008.9265.758076.907649@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 23 Jun 2009 08:13:56 +0200
-Message-Id: <1245737636.19816.1470.camel@twins>
+	Tue, 23 Jun 2009 02:14:20 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57756 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752590AbZFWGOU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 02:14:20 -0400
+Date: Tue, 23 Jun 2009 16:14:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: linux-next: rr tree build failure
+Message-Id: <20090623161416.072b43ba.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__23_Jun_2009_16_14_16_+1000_vT1CKCZHo2Anuj.I"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 10:39 +1000, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> > I think we would have to add that do the data page,.. something like the
-> > below?
-> > 
-> > Paulus?
-> > 
-> > ---
-> > Index: linux-2.6/include/linux/perf_counter.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/perf_counter.h
-> > +++ linux-2.6/include/linux/perf_counter.h
-> > @@ -232,6 +232,10 @@ struct perf_counter_mmap_page {
-> >  	__u32	lock;			/* seqlock for synchronization */
-> >  	__u32	index;			/* hardware counter identifier */
-> >  	__s64	offset;			/* add to hardware counter value */
-> > +	__u64	total_time;		/* total time counter active */
-> > +	__u64	running_time;		/* time counter on cpu */
-> > +
-> > +	__u64	__reserved[123];	/* align at 1k */
-> >  
-> >  	/*
-> >  	 * Control data for the mmap() data buffer.
-> > Index: linux-2.6/kernel/perf_counter.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/perf_counter.c
-> > +++ linux-2.6/kernel/perf_counter.c
-> > @@ -1782,6 +1782,12 @@ void perf_counter_update_userpage(struct
-> >  	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
-> >  		userpg->offset -= atomic64_read(&counter->hw.prev_count);
-> >  
-> > +	userpg->total_time = counter->total_time_enabled +
-> > +			atomic64_read(&counter->child_total_time_enabled);
-> > +
-> > +	userpg->running_time = counter->total_time_running +
-> > +			atomic64_read(&counter->child_total_time_running);
-> 
-> Hmmm, when the counter is running, what you want is not so much the
-> total time so far as a way to compute the total time so far from the
-> current TSC/timebase value.  So we would need to export tstamp_enabled
-> and tstamp_running plus a scale/offset for converting the TSC/timebase
-> value to nanoseconds consistent with ctx->time.  On powerpc that's
-> pretty straightforward because the timebases, but on x86 I gather the
-> offset and maybe also the scale would need to be per-cpu (which is OK,
-> because all the values in the mmapped page are only useful on one
-> specific CPU).
-> 
-> How would we compute the scale and offset on x86, given the current
-> TSC value and ctx->time?
+--Signature=_Tue__23_Jun_2009_16_14_16_+1000_vT1CKCZHo2Anuj.I
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-With pain and suffering ;-)
+Hi Rusty,
 
-The userpage would have to provide a multiplier and offset, and we'd
-have to register a cpufreq notifier hook and iterate all active counters
-and update these mult,offset bits when the cpu freq changes.
+Today's linux-next build (arm realview-smp_defconfig) failed like this:
 
-An alternative could be to simply ensure we update these timestamps at
-least once per the RR interval (tick), that way the times are more or
-less recent and could still be used for scaling purposes.
+arch/arm/kernel/smp.c: In function 'flush_tlb_mm':
+arch/arm/kernel/smp.c:646: error: lvalue required as unary '&' operand
+arch/arm/kernel/smp.c: In function 'flush_tlb_page':
+arch/arm/kernel/smp.c:657: error: lvalue required as unary '&' operand
+arch/arm/kernel/smp.c: In function 'flush_tlb_range':
+arch/arm/kernel/smp.c:680: error: lvalue required as unary '&' operand
 
-The most important data in these timestamps is their ratio, not their
-absolute value, therefore if we keep the ratio statistically significant
-we're good enough.
+Caused by commit e97df8b735e20500a1d6a3743bef153869c472d3
+("cpumask:use-mm_cpumask-arm").
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__23_Jun_2009_16_14_16_+1000_vT1CKCZHo2Anuj.I
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpAcrgACgkQjjKRsyhoI8yMYQCgjh9MIJMnk85dL8fFP/u2Z6xj
+a9wAn2SLPGZTKDjhxkO/Jt4PcmcWz8qY
+=3k7E
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__23_Jun_2009_16_14_16_+1000_vT1CKCZHo2Anuj.I--
