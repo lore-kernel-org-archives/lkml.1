@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbZFXJ0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZFXJ0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbZFXJ0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZFXJ0G
+	id S1754312AbZFXJ0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFXJ0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:26:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53033 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751437AbZFXJ0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:26:05 -0400
-Message-ID: <4A41F165.2000906@cn.fujitsu.com>
-Date: Wed, 24 Jun 2009 17:27:01 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 24 Jun 2009 05:26:41 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:55425 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbZFXJ0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:26:40 -0400
+Subject: [PATCH] pseries: cpu: Reduce the polling interval in __cpu_up()
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+From: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Nathan Lynch <ntl@pobox.com>
+Date: Wed, 24 Jun 2009 14:56:37 +0530
+Message-ID: <20090624092637.32078.88042.stgit@sofia.in.ibm.com>
+User-Agent: StGit/0.14.3.384.g9ab0
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: fix trace_buf_size boot option
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We should be able to specify [KMG] when setting trace_buf_size
-boot option, as documented in kernel-parameters.txt
+Time time taken for a single cpu online operation on a pseries machine
+is as follows:
+Dedicated LPAR (POWER6): ~220ms.
+Shared LPAR (POWER5)   : ~240ms.
 
-[ Impact: allow to specify [KMG] in trace_buf_size boot option ]
+Of this time, approximately 200ms is taken up by __cpu_up(). This is because
+we poll every 200ms to check if the new cpu has notified it's presence
+through the cpu_callin_map. We repeat this operation until the new cpu sets
+the value in cpu_callin_map or 5 seconds elapse, whichever comes earlier.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+However, using completion_structs instead of polling loops,
+the time taken by the new processor to indicate it's presence has
+found to be less than 1ms on pseries. This method however may not
+work on all powerpc platforms due to the time-base synchronization code.
+
+Keeping this in mind, we could reduce msleep polling interval from
+200ms to 1ms while retaining the 5 second timeout.
+
+With this, the time taken for a cpu online operation changes as follows:
+Dedicated LPAR (POWER6): 20-25ms.
+Shared LPAR (POWER5)   : 60-80ms.
+
+In both these cases, it was found that the code polls through the loop
+only once indicating that 1ms is a reasonable value, atleast on pseries.
+
+The code needs testing on other powerpc platforms.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
- Documentation/kernel-parameters.txt |    3 ++-
- kernel/trace/trace.c                |    5 ++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/smp.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 256a650..421f1e6 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2446,7 +2446,8 @@ and is between 256 and 4096 characters. It is defined in the file
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 65484b2..00c13a1 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -411,9 +411,8 @@ int __cpuinit __cpu_up(unsigned int cpu)
+ 		 * CPUs can take much longer to come up in the
+ 		 * hotplug case.  Wait five seconds.
+ 		 */
+-		for (c = 25; c && !cpu_callin_map[cpu]; c--) {
+-			msleep(200);
+-		}
++		for (c = 5000; c && !cpu_callin_map[cpu]; c--)
++			msleep(1);
+ #endif
  
- 	tp720=		[HW,PS2]
- 
--	trace_buf_size=nn[KMG] [ftrace] will set tracing buffer size.
-+	trace_buf_size=nn[KMG]
-+			[FTRACE] will set tracing buffer size.
- 
- 	trix=		[HW,OSS] MediaTrix AudioTrix Pro
- 			Format:
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 3bb3100..7068468 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -284,13 +284,12 @@ void trace_wake_up(void)
- static int __init set_buf_size(char *str)
- {
- 	unsigned long buf_size;
--	int ret;
- 
- 	if (!str)
- 		return 0;
--	ret = strict_strtoul(str, 0, &buf_size);
-+	buf_size = memparse(str, &opt);
- 	/* nr_entries can not be zero */
--	if (ret < 0 || buf_size == 0)
-+	if (buf_size == 0)
- 		return 0;
- 	trace_buf_size = buf_size;
- 	return 1;
--- 
-1.5.4.rc3
+ 	if (!cpu_callin_map[cpu]) {
 
