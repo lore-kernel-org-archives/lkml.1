@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZFXByN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZFXCGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbZFXByN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 21:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFXBx6
+	id S1753116AbZFXCGO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 22:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZFXCGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 21:53:58 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59155 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752517AbZFXBx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 21:53:57 -0400
-Message-ID: <4A41876E.2060407@cn.fujitsu.com>
-Date: Wed, 24 Jun 2009 09:54:54 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Liming Wang <liming.wang@windriver.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 7/7] ftrace: fix t_hash_start()
-References: <4A4186C6.9090706@cn.fujitsu.com>
-In-Reply-To: <4A4186C6.9090706@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 23 Jun 2009 22:06:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55802 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751996AbZFXCGB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 22:06:01 -0400
+Date: Tue, 23 Jun 2009 19:04:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, rgetz@blackfin.uclinux.org
+Subject: Re: [PATCH 1/4] asm/sections: add text/data checking functions for
+  arches to override
+Message-Id: <20090623190426.d4cc9853.akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0906231848u61d07a3j803f51cb26b72dab@mail.gmail.com>
+References: <1245255744-21039-1-git-send-email-vapier@gentoo.org>
+	<20090623154022.61e83c33.akpm@linux-foundation.org>
+	<8bd0f97a0906231848u61d07a3j803f51cb26b72dab@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the output of set_ftrace_filter is larger than PAGE_SIZE,
-t_hash_start() will be called the 2nd time, and then we start
-from the head of a hlist, which is wrong and causes some entries
-to be outputed twice.
+On Tue, 23 Jun 2009 21:48:03 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-The worse is, if the hlist is large enough, reading set_ftrace_filter
-won't stop but in a dead loop.
+> > I suppose that for completeness and consistency etc really we should have
+> >
+> > #define arch_is_kernel_text arch_is_kernel_text
+> > #define arch_is_kernel_data arch_is_kernel_data
+> >
+> > in here.
+> 
+> *shrug* other places that use this style dont include these defines
+> for completeness
 
-[ Impact: fix output of set_ftrace_filter for selected functions ]
+Examples?
 
-Reviewed-by: Liming Wang <liming.wang@windriver.com>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/ftrace.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+All the ones I can find do things like
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 7946938..5771cc1 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1416,10 +1416,20 @@ static void *t_hash_start(struct seq_file *m, loff_t *pos)
- {
- 	struct ftrace_iterator *iter = m->private;
- 	void *p = NULL;
-+	loff_t l;
-+
-+	if (!(iter->flags & FTRACE_ITER_HASH))
-+		*pos = 0;
- 
- 	iter->flags |= FTRACE_ITER_HASH;
- 
--	return t_hash_next(m, p, pos);
-+	iter->hidx = 0;
-+	for (l = 0; l <= *pos; ) {
-+		p = t_hash_next(m, p, &l);
-+		if (!p)
-+			break;
-+	}
-+	return p;
- }
- 
- static int t_hash_show(struct seq_file *m, void *v)
--- 
-1.5.4.rc3
+#ifndef vmcore_elf_check_arch_cross
+#define vmcore_elf_check_arch_cross(x) 0
+#endif
+
+> as the define muck is for the header to know about
+> (arches providing their own version), not any source code -- they
+> shouldnt know anything about the ifdef stuff.
+
+Failing to do the #define will have various tricky failure modes.  But
+it's more a question of "what is the _right_ thing to do", then doing
+that consistently.
+
+>  i dont care much either way.
+
+Someone has to.
