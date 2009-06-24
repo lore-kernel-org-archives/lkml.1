@@ -1,154 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZFXCZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZFXCaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbZFXCZn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 22:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZFXCZf
+	id S1753788AbZFXCaQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 22:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZFXCaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 22:25:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57681 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbZFXCZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 22:25:35 -0400
-Subject: [PATCH] perf stat: fix hardcoded nr_counter
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 07:54:56 +0530
-Message-Id: <1245810296.3434.3.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 23 Jun 2009 22:30:05 -0400
+Received: from mga07.intel.com ([143.182.124.22]:19244 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751622AbZFXCaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 22:30:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,279,1243839600"; 
+   d="scan'208";a="157813380"
+Date: Wed, 24 Jun 2009 10:13:24 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: stephane eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] perf_counter/x86: Set global control MSR correctly
+Message-ID: <20090624021324.GA2788@ywang-moblin2.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Previous code made an assumption that the power on value of global
+control MSR has enabled all fixed and general purpose counters properly.
+However, this is not the case for certain Intel processors, such as
+Atom. Each enable bit in IA32_PERF_GLOBAL_CTRL is AND'ed with the
+enable bits for all privilege levels in the respective IA32_PERFEVTSELx
+or IA32_PERF_FIXED_CTR_CTRL MSRs to start/stop the counting of
+respective counters. Counting is enabled if the AND'ed results is true;
+counting is disabled when the result is false. The end result is that
+all fixed counters are always disabled on Atom processors because the
+assumption is just invalid.
 
-nr_counter should be based on number of default_attrs entries.
+Reported-by: stephane eranian <eranian@googlemail.com>
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
 
-Remove dead code and some code alignment.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- tools/perf/builtin-stat.c |   48 ++++++++++++++------------------------------
- 1 files changed, 15 insertions(+), 33 deletions(-)
+ arch/x86/kernel/cpu/perf_counter.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 5e04fcc..e22b32f 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -45,7 +45,7 @@
- #include <sys/prctl.h>
- #include <math.h>
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 22eb3a1..a310d19 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -969,13 +969,6 @@ fixed_mode_idx(struct perf_counter *counter, struct hw_perf_counter *hwc)
+ 	if (!x86_pmu.num_counters_fixed)
+ 		return -1;
  
--static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
-+static struct perf_counter_attr default_attrs[] = {
- 
-   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK	},
-   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
-@@ -59,42 +59,27 @@ static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
- 
- };
- 
-+#define MAX_RUN			100
-+
- static int			system_wide			=  0;
--static int			inherit				=  1;
- static int			verbose				=  0;
+-	/*
+-	 * Quirk, IA32_FIXED_CTRs do not work on current Atom processors:
+-	 */
+-	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+-					boot_cpu_data.x86_model == 28)
+-		return -1;
 -
--static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+ 	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
+ 
+ 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
+@@ -1428,8 +1421,6 @@ static int intel_pmu_init(void)
+ 	 */
+ 	x86_pmu.num_counters_fixed	= max((int)edx.split.num_counters_fixed, 3);
+ 
+-	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
 -
--static int			target_pid			= -1;
- static int			nr_cpus				=  0;
--static unsigned int		page_size;
-+static int			run_idx				=  0;
+ 	/*
+ 	 * Install the hw-cache-events table:
+ 	 */
+@@ -1514,6 +1505,7 @@ void __init init_hw_perf_counters(void)
  
-+static int			run_count			=  1;
-+static int			inherit				=  1;
- static int			scale				=  1;
-+static int			target_pid			= -1;
+ 	perf_counter_mask |=
+ 		((1LL << x86_pmu.num_counters_fixed)-1) << X86_PMC_IDX_FIXED;
++	x86_pmu.intel_ctrl = perf_counter_mask;
  
--static const unsigned int default_count[] = {
--	1000000,
--	1000000,
--	  10000,
--	  10000,
--	1000000,
--	  10000,
--};
--
--#define MAX_RUN 100
-+static u64			runtime_nsecs[MAX_RUN];
-+static u64			walltime_nsecs[MAX_RUN];
-+static u64			runtime_cycles[MAX_RUN];
- 
--static int			run_count		=  1;
--static int			run_idx			=  0;
-+static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
- static u64			event_res[MAX_RUN][MAX_COUNTERS][3];
- static u64			event_scaled[MAX_RUN][MAX_COUNTERS];
- 
--//static u64			event_hist[MAX_RUN][MAX_COUNTERS][3];
--
--
--static u64			runtime_nsecs[MAX_RUN];
--static u64			walltime_nsecs[MAX_RUN];
--static u64			runtime_cycles[MAX_RUN];
--
- static u64			event_res_avg[MAX_COUNTERS][3];
- static u64			event_res_noise[MAX_COUNTERS][3];
- 
-@@ -109,7 +94,6 @@ static u64			walltime_nsecs_noise;
- static u64			runtime_cycles_avg;
- static u64			runtime_cycles_noise;
- 
--
- #define ERR_PERF_OPEN \
- "Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
- 
-@@ -470,9 +454,9 @@ static const struct option options[] = {
- 	OPT_INTEGER('p', "pid", &target_pid,
- 		    "stat events on existing pid"),
- 	OPT_BOOLEAN('a', "all-cpus", &system_wide,
--			    "system-wide collection from all CPUs"),
-+		    "system-wide collection from all CPUs"),
- 	OPT_BOOLEAN('S', "scale", &scale,
--			    "scale/normalize counters"),
-+		    "scale/normalize counters"),
- 	OPT_BOOLEAN('v', "verbose", &verbose,
- 		    "be more verbose (show counter open errors, etc)"),
- 	OPT_INTEGER('r', "repeat", &run_count,
-@@ -484,8 +468,6 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- {
- 	int status;
- 
--	page_size = sysconf(_SC_PAGE_SIZE);
--
- 	memcpy(attrs, default_attrs, sizeof(attrs));
- 
- 	argc = parse_options(argc, argv, options, stat_usage, 0);
-@@ -495,7 +477,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- 		usage_with_options(stat_usage, options);
- 
- 	if (!nr_counters)
--		nr_counters = 8;
-+		nr_counters = ARRAY_SIZE(default_attrs);
- 
- 	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
- 	assert(nr_cpus <= MAX_NR_CPUS);
-@@ -515,7 +497,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- 	status = 0;
- 	for (run_idx = 0; run_idx < run_count; run_idx++) {
- 		if (run_count != 1 && verbose)
--			fprintf(stderr, "[ perf stat: executing run #%d ... ]\n", run_idx+1);
-+			fprintf(stderr, "[ perf stat: executing run #%d ... ]\n", run_idx + 1);
- 		status = run_perf_stat(argc, argv);
- 	}
- 
--- 
-1.6.0.6
-
-
-
+ 	perf_counters_lapic_init();
+ 	register_die_notifier(&perf_counter_nmi_notifier);
