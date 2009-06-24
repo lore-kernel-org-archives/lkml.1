@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZFXKJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbZFXKJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZFXKJS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZFXKJF
+	id S1757536AbZFXKJa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZFXKJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:09:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:39144 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751657AbZFXKJE (ORCPT
+	Wed, 24 Jun 2009 06:09:13 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:44685 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754653AbZFXKJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:09:04 -0400
-Subject: Re: [PATCH] [JFFS2] jffs2_start_garbage_collect_thread() return
- value cleanup
-From: David Woodhouse <dwmw2@infradead.org>
-To: Gerard Lledo <gerard.lledo@gmail.com>
-Cc: akpm@linux-foundation.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1243944686-7039-2-git-send-email-gerard.lledo@gmail.com>
-References: <20090602113216.GA3513@tank>
-	 <1243944686-7039-1-git-send-email-gerard.lledo@gmail.com>
-	 <1243944686-7039-2-git-send-email-gerard.lledo@gmail.com>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 11:09:01 +0100
-Message-Id: <1245838141.25547.5207.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 24 Jun 2009 06:09:11 -0400
+Date: Wed, 24 Jun 2009 11:09:12 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: "Richard A. Smith" <richard@laptop.org>
+Cc: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
+       dsaxena@laptop.org
+Subject: Re: [PATCH 3/5] power_supply: add a TRICKLE_CHARGING status, and
+	add it to the olpc driver
+Message-ID: <20090624100911.GB21919@sirena.org.uk>
+References: <20090622234607.11f61bec@mycelium.queued.net> <20090623103717.GH5422@sirena.org.uk> <4A412CC0.6050500@laptop.org> <20090623224434.GB16188@opensource.wolfsonmicro.com> <4A41618D.4020900@laptop.org> <20090623232537.GE16188@opensource.wolfsonmicro.com> <4A416952.2050809@laptop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A416952.2050809@laptop.org>
+X-Cookie: Now I am depressed ...
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-02 at 15:11 +0300, Gerard Lledo wrote:
-> There is no user of this return value in the kernel.  Change it to return void
-> instead.
+On Tue, Jun 23, 2009 at 07:46:26PM -0400, Richard A. Smith wrote:
+> Mark Brown wrote:
 
-NAK. I hate this type of patch.
+>> It's really no bother from the driver point of view either way, it's the
+>> user space applications that are the concern here - are they going to
+>> cope well with a new state appearing there?
 
-A function _should_ return an error value indicating success or failure,
-if there's _any_ chance that it (or a future rewrite of it) may fail.
+> I can only speak for OLPC's usage.  But my script, the documentation on  
+> our wiki, and HAL are the only things that I know of that use that info  
+> and none of them should have any problem with it changing.
 
-It's up to the _callers_ to act on that result, or not, as they see fit.
+The other thing that has a reasonable number of users is the in-kernel
+APM emulation - when I last looked quite a few users were using that
+still.
 
-If you don't do that, you end up with whole stacks of functions which
-neither handle nor propagate errors -- and it's a _complete_ pain when
-you later find that you _do_ have to make one of the innermost functions
-return an error.
-
-Gerard, if you persist in sending this kind of patch, please could I ask
-you to send me a cloth doll of yourself? I would like to stick pins in
-it next time I have to retrofit error handling to a stack of functions
-that lack it.
-
-It's not even as if this patch is going to give any real performance
-improvement. It's a single register load in a once-per-mount code path.
-
-There _may_ be some places where this kind of patch is reasonable -- but
-the commit comment should have a clear explanation of why the return
-value will _never_ be needed, rather than merely observing that it is
-not _currently_ used. Or show that there is a _significant_ improvement
-obtained by doing so, perhaps.
-
-Andrew, may I suggest that you look for such justification in future
-patches of this type?
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
-
+I'd expect that either HAL or things that use it would need to know
+about the new state to do something sensible with it.  All the widely
+deployed users should be using those, I don't recall any of the other
+things I found being things that I'd particularly heard of.
