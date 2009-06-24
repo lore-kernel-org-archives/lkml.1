@@ -1,123 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZFXKGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZFXKGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZFXKGY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZFXKGG
+	id S1757363AbZFXKGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZFXKGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:06:06 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:55898 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751560AbZFXKGE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:06:04 -0400
-Subject: Re: [PATCH 03/10] mac80211: Use rcu_barrier() on unload.
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
-       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-In-Reply-To: <1245770155.21314.38.camel@johannes.local>
-References: <20090623150330.22490.87327.stgit@localhost>
-	 <20090623150409.22490.99106.stgit@localhost>
-	 <1245770155.21314.38.camel@johannes.local>
-Content-Type: text/plain
-Organization: ComX Networks A/S
-Date: Wed, 24 Jun 2009 12:06:05 +0200
-Message-Id: <1245837965.6695.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2009 10:06:05.0688 (UTC) FILETIME=[632B5F80:01C9F4B3]
+	Wed, 24 Jun 2009 06:06:41 -0400
+Received: from mail.open.by ([193.232.92.17]:50981 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755562AbZFXKGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:06:40 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8821 [Jun 24 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Wed, 24 Jun 2009 13:08:09 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: kmemleak: Early log buffer exceeded
+Message-ID: <20090624100809.GA3299@localdomain.by>
+References: <20090623212648.GA9502@localdomain.by>
+ <1245836105.16283.13.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245836105.16283.13.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 17:15 +0200, Johannes Berg wrote:
-> On Tue, 2009-06-23 at 17:04 +0200, Jesper Dangaard Brouer wrote:
-> > The mac80211 module uses rcu_call() thus it should use rcu_barrier()
-> > on module unload.
-> > 
-> > I'm having a hardtime verifying that no more call_rcu() callbacks can
-> > be schedules in the module unload path.  Could a maintainer please
-> > look into this?
-> > 
-> > Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
-> > ---
-> > 
-> >  net/mac80211/main.c |    2 ++
-> >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/net/mac80211/main.c b/net/mac80211/main.c
-> > index 092a017..e9f70ce 100644
-> > --- a/net/mac80211/main.c
-> > +++ b/net/mac80211/main.c
-> > @@ -1100,6 +1100,8 @@ static void __exit ieee80211_exit(void)
-> >  		ieee80211s_stop();
-> >  
-> >  	ieee80211_debugfs_netdev_exit();
-> > +
-> > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
-> >  }
+On (06/24/09 10:35), Catalin Marinas wrote:
+> > So, my questions are:
+> > 1. Is 200 really enough? Why 200 not 512, 1024 (for example)?
 > 
-> I don't think this is correct at all -- note that call_rcu() is done in
-> some of the mesh code, so I would think you need to do this in
-> ieee80211_stop() since the call_rcu() code requires the interface to
-> still be around. And when it's stopped everything should be idle.
+> It seems that in your case it isn't. It is fine on the machines I tested
+> it on but choosing this figure wasn't too scientific.
+> 
+> I initially had it bigger and marked with the __init attribute to free
+> it after initialisation but this was causing (harmless) section mismatch
+> warnings.
+>
+Hello. 
 
-Should it then not be in mesh.c ieee80211_stop_mesh().  We can replace
-the synchronize_rcu() in this function with a rcu_barrier().
+Why not configure it?
 
-> I can fix it later, but I'm deep in some other stuff right now.
+//EXAMPLE
+config DEBUG_KMEMLEAK_EARLY_LOG_SIZE
+	int "Maximum early log entries"
+	range 200 2000
+	default "300"
+	depends on DEBUG_KMEMLEAK
+	help
+	  Specify early_log size (200,400,etc.).
 
-Yes, I noticed you seem quite active :-)
-I can also do a repost... what about the patch below?
+kmemleak.c
+static struct early_log early_log[CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE];
 
--- 
-Med venlig hilsen / Best regards
-  Jesper Brouer
-  ComX Networks A/S
-  Linux Network developer
-  Cand. Scient Datalog / MSc.
-  Author of http://adsl-optimizer.dk
-  LinkedIn: http://www.linkedin.com/in/brouer
-
-
-[PATCH v2 03/10] mac80211: Use rcu_barrier() on unload.
-
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-
-The mac80211 module uses rcu_call() thus it should use rcu_barrier()
-on module unload.
-
-The rcu_barrier() is placed in mech.c ieee80211_stop_mesh() which is
-invoked from ieee80211_stop() in case vif.type == NL80211_IFTYPE_MESH_POINT.
-
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
----
-
- net/mac80211/mesh.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+(Well, CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE is a bit ugly.)
 
 
-diff --git a/net/mac80211/mesh.c b/net/mac80211/mesh.c
-index fc712e6..11cf45b 100644
---- a/net/mac80211/mesh.c
-+++ b/net/mac80211/mesh.c
-@@ -494,7 +494,7 @@ void ieee80211_stop_mesh(struct ieee80211_sub_if_data *sdata)
- 	 * should it be using the interface and enqueuing
- 	 * frames at this very time on another CPU.
- 	 */
--	synchronize_rcu();
-+	rcu_barrier(); /* Wait for RX path and call_rcu()'s */
- 	skb_queue_purge(&sdata->u.mesh.skb_queue);
- }
+> What kind of hardware do you have?
+>
+Most of time - ASUS F3Jc laptop.
+
  
+> > 2. When (crt_early_log >= ARRAY_SIZE(early_log)) == 1 we just can see stack.
+> > Since we have "full" early_log maybe it'll be helpfull to see it?
+> 
+> I recall allocating this dynamically didn't work properly but I'll give
+> it another try. Otherwise, I can make it configurable and print a better
+> message (probably without the stack dump).
+> 
+> -- 
+> Catalin
+> 
 
-
+	Sergey
