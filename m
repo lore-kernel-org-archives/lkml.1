@@ -1,53 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760580AbZFXLnC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbZFXLo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760580AbZFXLnC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:43:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760170AbZFXLmA
+	id S1758386AbZFXLo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZFXLop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:42:00 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:56384 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760248AbZFXLl7 (ORCPT
+	Wed, 24 Jun 2009 07:44:45 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:47724 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753382AbZFXLon (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:41:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=rMxwTRYBqrf9drpkzA6Z+yAciNezFoK2tmbtbIniDnHxvy3x4FCHMBtC3YvRkGTC82
-         AuIUHY2Ou4a3ofWuIY1maobvHwbr2qWIB8XWvLRSRCpha2Q/g2vbpS1VyiqlrSVERfvK
-         KyP1SlmWOvO1nzH1jPT3NL2iGiZYbQpn4uvNc=
-Message-ID: <4A4210FC.6010102@gmail.com>
-Date: Wed, 24 Jun 2009 13:41:48 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.7 Thunderbird/3.0b3pre
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 1/1] Char: tty, fix tty_port_block_til_ready waiting
-References: <1245311173-1197-1-git-send-email-jirislaby@gmail.com> <20090623163006.f05b75ee.akpm@linux-foundation.org>
-In-Reply-To: <20090623163006.f05b75ee.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Jun 2009 07:44:43 -0400
+Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+To: Chrissie Caulfield <christine.caulfield@googlemail.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       Patrick McHardy <kaber@trash.net>, Trond.Myklebust@netapp.com,
+       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+In-Reply-To: <4A41C67E.8070301@googlemail.com>
+References: <20090623150330.22490.87327.stgit@localhost>
+	 <20090623150429.22490.15113.stgit@localhost>
+	 <4A41C67E.8070301@googlemail.com>
+Content-Type: text/plain
+Organization: ComX Networks A/S
+Date: Wed, 24 Jun 2009 13:44:44 +0200
+Message-Id: <1245843884.6695.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 11:44:45.0104 (UTC) FILETIME=[2B6A9300:01C9F4C1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24/2009 01:30 AM, Andrew Morton wrote:
-> On Thu, 18 Jun 2009 09:46:13 +0200
->> --- a/drivers/char/tty_port.c
->> +++ b/drivers/char/tty_port.c
->> @@ -193,7 +193,7 @@ int tty_port_block_til_ready(struct tty_port *port,
->>  {
->>  	int do_clocal = 0, retval;
->>  	unsigned long flags;
->> -	DECLARE_WAITQUEUE(wait, current);
->> +	DEFINE_WAIT(wait);
->>  	int cd;
->>  
->>  	/* block if port is in the process of being closed */
+On Wed, 2009-06-24 at 07:23 +0100, Chrissie Caulfield wrote:
+> The issues with DECnet module unloading are a little more than just an
+> RCU leak I think!
 > 
-> Why is nobody reporting the oopses?
+> Though that area does need reviewing ... when I get some time.
 
-Myaybe because only few drivers use that function. I hit it the first
-time I tested cyclades patchset.
+Fine.  Now you have read my comment in the code, then there is a updated
+patch below.  Will you ack-that?
+
+-- 
+Med venlig hilsen / Best regards
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
+
+
+[PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+
+The decnet module unloading as been disabled with a '#if 0' statement,
+because it have had issues.
+
+We add a rcu_barrier() anyhow for correctness.
+
+The maintainer (Chrissie Caulfield) will look into the unload issue
+when time permits.
+
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+---
+
+ net/decnet/af_decnet.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+
+diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+index d351b8d..bff12da 100644
+--- a/net/decnet/af_decnet.c
++++ b/net/decnet/af_decnet.c
+@@ -2393,6 +2393,10 @@ module_init(decnet_init);
+  * Prevent DECnet module unloading until its fixed properly.
+  * Requires an audit of the code to check for memory leaks and
+  * initialisation problems etc.
++ *
++ * hawk@comx.dk 2009-06-19:
++ *  I have added a rcu_barrier() which should plug some of your
++ *  module unload issues.  Maintainers please try it out...
+  */
+ #if 0
+ static void __exit decnet_exit(void)
+@@ -2413,6 +2417,8 @@ static void __exit decnet_exit(void)
+ 	proc_net_remove(&init_net, "decnet");
+ 
+ 	proto_unregister(&dn_proto);
++
++	rcu_barrier_bh(); /* Wait for completion of call_rcu_bh()'s */
+ }
+ module_exit(decnet_exit);
+ #endif
+
+
