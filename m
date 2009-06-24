@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZFXXtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZFXXtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZFXXtV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 19:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZFXXtM
+	id S1757134AbZFXXtc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 19:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbZFXXtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 19:49:12 -0400
+	Wed, 24 Jun 2009 19:49:19 -0400
 Received: from mail-fx0-f213.google.com ([209.85.220.213]:37059 "EHLO
 	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZFXXtM convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1757150AbZFXXtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 19:49:12 -0400
+	Wed, 24 Jun 2009 19:49:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
+        d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=Fh5rUBo6Xs9mNIQkdavgVzzBsr3NajnxE+NgKl8UlPkxBkOJxQ6PjW3jQPVX5YDd6z
-         xISHw0Sm1WhhcG/dzylfPszWkzwKhprdqxLwFxST8f4E9EerXDW0XhwER0VdepqQ9Yl9
-         Zdzj8Hix7Sb7R1DcTfSrDrSmLwcBQ5lfMTU5k=
+        b=NTJ4VkLQm3eHql/G350pN+XLbjTJ17JY0bJL97Li+F9kelqie8El2mdtmRc8wmkL2M
+         TDPhOQXlrvkboOO+TBZkvqs4YtL6LULNzIU0qUhlnGC2IeTm/QLTg9GlvwoZqnZonu8M
+         pIJcs7oCw2a98waNrTYgvHcOTSTjGlTfZKp/U=
 MIME-Version: 1.0
-In-Reply-To: <20090624162125.a3a9b2c4.akpm@linux-foundation.org>
-References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com>
-	 <20090624162125.a3a9b2c4.akpm@linux-foundation.org>
-Date: Thu, 25 Jun 2009 01:49:13 +0200
-Message-ID: <1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
-Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not 
-	mounted
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, vapier@gentoo.org
+In-Reply-To: <4A42AD76.8040303@bluewatersys.com>
+References: <4A3F017B.2010409@bluewatersys.com>
+	 <63386a3d0906220122x31d0b23fk7bd86145b719d9b5@mail.gmail.com>
+	 <4A3FFE02.8020001@bluewatersys.com>
+	 <63386a3d0906230004m66360f4fhbdc80c8e552a01d0@mail.gmail.com>
+	 <4A413F8F.6030500@bluewatersys.com>
+	 <63386a3d0906241543n16da1f0gc988738f9efd8782@mail.gmail.com>
+	 <4A42AD76.8040303@bluewatersys.com>
+Date: Thu, 25 Jun 2009 01:49:21 +0200
+Message-ID: <63386a3d0906241649l60142ea2j1a608ce27c0f65cc@mail.gmail.com>
+Subject: Re: [PATCH] SST25L (non JEDEC) SPI Flash driver
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Ryan Mallon <ryan@bluewatersys.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
+       spi-devel-general@lists.sourceforge.net, mike@steroidmicros.com,
+       linux kernel <linux-kernel@vger.kernel.org>, dedekind@infradead.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 1:21 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> On Thu, 25 Jun 2009 01:00:56 +0200
-> Denys Vlasenko <vda.linux@googlemail.com> wrote:
->> In some circumstances running process needs to re-execute
->> its image.
-...
->> More elegant way is to execute /proc/self/exe.
->> This works just fine as long as /proc is mounted.
+2009/6/25 Ryan Mallon <ryan@bluewatersys.com>:
+> Linus Walleij wrote:
+>> 2009/6/23 Ryan Mallon <ryan@bluewatersys.com>:
 >>
->> But it breaks if /proc isn't mounted, and this can happen in real-world
->> usage. For example, when shell invoked very early in initrd/initramfs.
+>>> BTW, most of my other patches go via the ARM list, which uses the patch
+>>> system. Whats the procedure for most other lists, do patches just get
+>>> collected by the subsection maintainer when they are okay?
+>>
+>> That's the most typical procedure, however I think the SPI maintainer
+>> (David) has been busy with other things so I merged the PL022
+>> driver through the ARM tree instead. Another possibility is to send
+>> it off to Andrew Mortons tree I guess.
 >
-> Why can't userspace mount /proc before doing the daemonization?
+> Can I get your acked-by and then just CC Andrew Morton?
 
-Some people want to unset CONFIG_PROC_FS, and still have
-working POSIX compatible shell. Coincidentally, NOMMU
-machines, ones which *require* re-execution of the shell to support that,
-tent to be the most memory starved machines too (thus most likely
-to be those where people desire to unset CONFIG_PROC_FS).
+I'm not much of a stakeholder in the SPI subsystem, but FWIW:
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
 
-> Oh geeze.  Hard-coded "/proc/self/exec" it the middle of the core exec
-> code?  You're a brave man.
-
-There are other alternatives. This looked to be the least ugly
-to me.
-
-We can special-case execve(NULL, ...).
-But I feared people would say this will change previously-buggy
-userspace code into one acting weirdly; in come cases
-leading to infinite execve loops. Do you think it's better
-than "/proc/self/exe"?
-
-Then I thought about using a special name to mean "re-execute me",
-like "", or "/./self" or whatever. Whatever I though about,
-it was either risking a collision with a real file, or was too ugly,
-or both.
-
-Then it occurred to me that "/proc/self/exe" _already is_
-such a name. It is _already used_ for this purpose, so the userspace
-does not need to be changed.
-
-For the extra non-intrusiveness, the hack kicks in only if
-/proc/self/exe does not exist.
-
-
-[code style notes skipped. I will re-write it in whatever form
- you like it most, when/if it will be agreed on in principle ]
-
-> But don't do any of that yet.  This will be an unpopular patch and I
-> fear for its future ;)
-
-Propose some other way to make it possible to re-execute a binary
-without /proc.
---
-vda
+Yours,
+Linus Walleij
