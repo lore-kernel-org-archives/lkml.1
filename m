@@ -1,98 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758143AbZFXNPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZFXNSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758143AbZFXNPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 09:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZFXNPm
+	id S1754192AbZFXNSu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 09:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZFXNSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 09:15:42 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:53691 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZFXNPl (ORCPT
+	Wed, 24 Jun 2009 09:18:43 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:60260 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751344AbZFXNSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 09:15:41 -0400
-Date: Wed, 24 Jun 2009 22:14:40 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-Message-ID: <20090624131440.GA9700@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090624131104.705c828d@skybase> <20090624112929.GB2079@linux-sh.org> <20090624142828.7c6a2337@skybase> <20090624123416.GB9510@linux-sh.org> <20090624124542.GB32306@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624124542.GB32306@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 24 Jun 2009 09:18:42 -0400
+Subject: Re: kmemleak: Early log buffer exceeded
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20090624100809.GA3299@localdomain.by>
+References: <20090623212648.GA9502@localdomain.by>
+	 <1245836105.16283.13.camel@pc1117.cambridge.arm.com>
+	 <20090624100809.GA3299@localdomain.by>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 24 Jun 2009 14:18:20 +0100
+Message-Id: <1245849500.32629.22.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 13:18:21.0258 (UTC) FILETIME=[3EE7AAA0:01C9F4CE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 02:45:42PM +0200, Ingo Molnar wrote:
+On Wed, 2009-06-24 at 13:08 +0300, Sergey Senozhatsky wrote:
+> On (06/24/09 10:35), Catalin Marinas wrote:
+> > > So, my questions are:
+> > > 1. Is 200 really enough? Why 200 not 512, 1024 (for example)?
+> > 
+> > It seems that in your case it isn't. It is fine on the machines I tested
+> > it on but choosing this figure wasn't too scientific.
+> > 
+> > I initially had it bigger and marked with the __init attribute to free
+> > it after initialisation but this was causing (harmless) section mismatch
+> > warnings.
 > 
-> * Paul Mundt <lethal@linux-sh.org> wrote:
-> 
-> > My current plan is to migrate things over to the perf_counter API 
-> > and annoy Ingo with my interrupt deprived counters ;-)
-> 
-> Please do :-)
-> 
-> I just wrote a longer explanation about them: i think they can be 
-> made full-blown hardware counters, which in the end would be 
-> basically just as capable as 'real' IRQ capable counters.
-> 
-Thanks for the hints, now that all of my -rc1 stuff is out of the way,
-I've got some spare cycles to start working on the hardware counters.
+> Why not configure it?
 
-The lack of design awareness for these sorts of use cases has been one of
-the biggest hassles of trying to deal with oprofile and the various
-incarnations of perfmon and so on in the past, but perf_counter certainly
-looks like a good way forward here.
+Yes, that's the best approach for now. As for dynamic allocation,
+alloc_bootmem is the only option but it needs more testing to make sure
+it doesn't fail in certain circumstances.
 
-> The main complication that such counters bring is that in their 'own 
-> metric' they do interrupt periods in an 'irregular' way (because 
-> they interrupt in the nanosec metric - being hrtimers) - but both 
-> the tools can deal with uneven periods just fine and the auto-freq 
-> code can auto-balance based on this just fine too.
-> 
-How we have mostly handled these counters in the past have been for
-long-term workload analysis. A given user wants to measure certain events
-across the lifetime of their workload to get an idea of where the hot
-spots are, and then send us numbers later. 64-bit hardware counters give
-them quite a bit of time to accumulate results, and in these cases
-precision is not so important as continuous non-interactive monitoring.
+> (Well, CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE is a bit ugly.)
 
-On the other hand trying to beat these sorts of counters in to a
-framework where they can leverage existing userspace tools has never
-really worked as well as it could have, and this too is something that
-perf_counter seems well suited to accomodate.
+I couldn't come up with a better one either. Here's the patch:
 
-I knew quite a few other architectures that also have similar counters,
-so having these tie in cleanly in a generic way will make these a lot
-more useful, especially since in the past people have either just thrown
-them at sysfs or just ignored them completely.
 
-> So you should be able to implement this within arch/sh/ with 
-> existing perf_counter facilities and hrtimers, or you can help us 
-> librarize it in kernel/perf_counter.c some more, to minimize 
-> architecture code.
-> 
-Architecturally we have two fairly different counter types that follow a
-similar design, so they will need separate drivers regardless. I don't
-have much interest in hiding generic stuff in arch/sh/, especially given
-that we aren't the only ones with these types of counters, so I'll
-certainly hack on kernel/perf_counter.c as necessary to get things moving
-along. I expect between the two types of SH counters we have to handle
-there will already be quite a bit of variation.
+kmemleak: Allow the early log buffer to be configurable.
 
-> [ Of course, given that you are the first architecture to do this,
->   you would be fair to expect some unexpected details along the way 
->   as well ;-) ]
-> 
-That tends to be the way things go more often than not. In any event,
-it's certainly worth spending time on getting right, and I would rather
-spend my time being the guinea pig for evolving in-tree code than not
-having the counters be useful at all. ;-)
+From: Catalin Marinas <catalin.marinas@arm.com>
+
+Kmemleak needs to track all the memory allocations but some of these
+happen before kmemleak is initialised. These are stored in an internal
+buffer which may be exceeded in some kernel configurations. This patch
+adds a configuration option with a default value of 300 and removes the
+stack dump when the kmemleak early log buffer is exceeded.
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ lib/Kconfig.debug |   12 ++++++++++++
+ mm/kmemleak.c     |    5 +++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 4c32b1a..5cba26f 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -359,6 +359,18 @@ config DEBUG_KMEMLEAK
+ 	  In order to access the kmemleak file, debugfs needs to be
+ 	  mounted (usually at /sys/kernel/debug).
+ 
++config DEBUG_KMEMLEAK_EARLY_LOG_SIZE
++	int "Maximum kmemleak early log entries"
++	depends on DEBUG_KMEMLEAK
++	range 200 2000
++	default 300
++	help
++	  Kmemleak must track all the memory allocations to avoid
++	  reporting false positives. Since memory may be allocated or
++	  freed before kmemleak is initialised, an early log buffer is
++	  used to store these actions. If kmemleak reports "early log
++	  buffer exceeded", please increase this value.
++
+ config DEBUG_KMEMLEAK_TEST
+ 	tristate "Simple test for the kernel memory leak detector"
+ 	depends on DEBUG_KMEMLEAK
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index c96f2c8..17096d1 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -235,7 +235,7 @@ struct early_log {
+ };
+ 
+ /* early logging buffer and current position */
+-static struct early_log early_log[200];
++static struct early_log early_log[CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE];
+ static int crt_early_log;
+ 
+ static void kmemleak_disable(void);
+@@ -696,7 +696,8 @@ static void log_early(int op_type, const void *ptr, size_t size,
+ 	struct early_log *log;
+ 
+ 	if (crt_early_log >= ARRAY_SIZE(early_log)) {
+-		kmemleak_stop("Early log buffer exceeded\n");
++		pr_warning("Early log buffer exceeded\n");
++		kmemleak_disable();
+ 		return;
+ 	}
+ 
+
+Thanks.
+
+-- 
+Catalin
+
