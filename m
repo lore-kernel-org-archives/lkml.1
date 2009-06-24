@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZFXUvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZFXU4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418AbZFXUvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZFXUvj
+	id S1753835AbZFXU4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZFXU4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:51:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34803 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773AbZFXUvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:51:38 -0400
-Date: Wed, 24 Jun 2009 16:50:42 -0400
-From: Dave Jones <davej@redhat.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Joseph Cihula <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com
-Subject: Re: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
-	Technology support for Linux - Details
-Message-ID: <20090624205042.GA8664@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Joseph Cihula <joseph.cihula@intel.com>,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
-	andi@firstfloor.org, chrisw@sous-sol.org, jmorris@namei.org,
-	jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
-	shane.wang@intel.com
-References: <4A4024B6.2060600@intel.com> <20090624201415.GA18291@redhat.com> <4A428E9D.7080509@linux.intel.com>
+	Wed, 24 Jun 2009 16:56:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45615 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbZFXU4X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:56:23 -0400
+Date: Wed, 24 Jun 2009 22:56:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Brian Swetland <swetland@google.com>, Russell King <rmk@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream
+	device
+Message-ID: <20090624205618.GD9149@elf.ucw.cz>
+References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com> <1245033557-10968-4-git-send-email-swetland@google.com> <20090615132248.GB14555@elf.ucw.cz> <a55d774e0906151125h36ee7c36yb9ecf5fb3fb8e41b@mail.gmail.com> <20090615182850.GA10490@elf.ucw.cz> <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A428E9D.7080509@linux.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 01:37:49PM -0700, Arjan van de Ven wrote:
- > Dave Jones wrote:
- > > On Mon, Jun 22, 2009 at 05:41:26PM -0700, Joseph Cihula wrote:
- > >  
- > >  > The Q35_SINIT_17.BIN file is what Intel TXT refers to as an
- > >  > Authenticated Code Module.  It is specific to the chipset in the system
- > >  > and can also be found on the Trusted Boot site.  It is a firmware module
- > >  > digitally signed by Intel that is used as part of the DRTM process to
- > >  > verify and configure the system.  
- > > 
- > > This seems a little disingenious.  Firmware isn't typically loaded by grub
- > > into main memory and executed by the host processor.
- > > 
- > > so, is this all worthless without the binary blob ?
- > > 
- > > "trust us, it's signed by intel" doesn't make me feel more secure.
- > 
- > how's that different from your normal bios ?
+On Mon 2009-06-15 11:51:57, Brian Swetland wrote:
+> On Mon, Jun 15, 2009 at 11:28 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> > (Now... I'm trying to figure out how leds are set up. It seems that
+> > there are two classes -- leds-gpio, which is backlights, and 4colored
+> > led. I'd like to use 4colored led for debugging... Unfortunately
+> > drivers/leds/leds-cpld.c is quite "interesting" (and really abuses
+> > interface at least with "blink" file). Is there easy way to turn some
+> > light manually, best something that works early and can be used for
+> > debugging?)
+> 
+> The 4color LED is controlled by an I2C led controller, so it's a bit
+> of a pain to interact with very early on.
+> 
+> There are LED backlights behind the keyboard and the buttons on the
+> "chin" of the device, controlled by the CPLD (see
+> TROUT_GPIO_QTKEY_LED_EN and TROUT_GPIO_UI_LED_EN and and the cpld gpio
+> stuff in board-trout-gpio.c).
 
-well..
+Thanks, I got button backlight to blink. 
 
-AFAICS, this code exists solely to enable a binary blob. We don't do that
-for the BIOS.  Even for blobs like ACPI, we at least have documentation on
-the opcodes/data structures.
+> This is actually another reason why I'd actually prefer to stick with
+> trout at least inside the board-dream-* files... just a lot of code
+> that uses this name that's we've been working with for a year or so.
+> Renaming the files is trivial and updating the config options is easy
+> too, but it gets to be a lot of shuffling around to keep changing the
+> names internally.  A lot of hardware has names used be the
+> developers/manufacturers/etc that don't match the product names (HTC
+> calls "magic" sapphire, for example, and the board files reflect
+> that), and of course these devices have different names in different
+> markets too.
 
-Also, if they're the same as you claim, why isn't the blob just included as
-part of the BIOS ?
+Well, there will be more readers/users than authors... But it does not
+matter that much.
 
-	Dave
-
+Are there any issues that prevent this from being merged? Russell, can
+you take those patches?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
