@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759683AbZFXP4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZFXP4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759683AbZFXP4c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 11:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZFXP4Z
+	id S1758155AbZFXP4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 11:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZFXP4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 11:56:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44255 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbZFXP4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 11:56:24 -0400
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+	Wed, 24 Jun 2009 11:56:46 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39072 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbZFXP4q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 11:56:46 -0400
+Date: Wed, 24 Jun 2009 08:56:32 -0700
+From: Gary Hade <garyhade@us.ibm.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Gary Hade <garyhade@us.ibm.com>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+Message-ID: <20090624155632.GB7239@us.ibm.com>
+References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 In-Reply-To: <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
-References: <4A418254.9050607@lwfinger.net>
-	 <1245845787.3093.3.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 21:25:48 +0530
-Message-Id: <1245858948.3216.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 16:51 +0200, Thomas Gleixner wrote:
+On Wed, Jun 24, 2009 at 04:51:48PM +0200, Thomas Gleixner wrote:
 > On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
 > > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
 > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
@@ -50,9 +51,6 @@ On Wed, 2009-06-24 at 16:51 +0200, Thomas Gleixner wrote:
 > > +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
 > > +		return AE_OK;
 > > +
-
-We need to test this otherwise we will get another oops.
-
 > >  	status = resource_to_addr(acpi_res, &addr);
 > >  	if (!ACPI_SUCCESS(status))
 > >  		return AE_OK;
@@ -76,10 +74,6 @@ We need to test this otherwise we will get another oops.
 > 
 > > +		info->bus->resource[info->res_num] = res;
 > 
-
-We need to set the resource even it is transparent bridge, otherwise pci
-will fail and system will not able to boot.
-
 > Storing the resource in defeats the purpose of the original patch,
 > which makes sure that we do _NOT_ use the last 3 slots of the resource
 > array for a root bus with a transparent bridge.
@@ -88,16 +82,25 @@ will fail and system will not able to boot.
 > 
 > This is the real bug. info->res_num should not be incremented when we
 > run out of resources already.
-> 
 
-No, you cannot remove it, otherwise you will get another oops.
+This probably isn't needed but I don't think it is the cause of
+the problem.  It is just counting the number of _CRS returned
+resources and I believe subsequent visits to setup_resource()
+for additional returned resources will generate the same warning
+as it also would if the instruction were removed and no longer
+being used to keep an accurate count.
 
-You need all of the 3 things above otherwise system will not boot. Only
-thing you can remove is cleanup ;-)
+I suspect that the resource array is simply not large enough
+for that system (and possibly others) and will have to be made
+larger by increasing PCI_BUS_NUM_RESOURCES.
 
-Or you need to revert f9cde5ffed17bf74f6bef
+Gary
 
-Thanks,
---
-JSR
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
