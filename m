@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZFXXsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZFXXsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZFXXsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 19:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZFXXsB
+	id S1756653AbZFXXsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 19:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZFXXsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 19:48:01 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34180 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751898AbZFXXsA (ORCPT
+	Wed, 24 Jun 2009 19:48:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58954 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755303AbZFXXsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 19:48:00 -0400
-Subject: Re: [PATCH 01/10] percpu: use dynamic percpu allocator as the
- default percpu allocator
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
-       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
-       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
-       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Hirokazu Takata <takata@linux-m32r.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-In-Reply-To: <1245825924-30412-2-git-send-email-tj@kernel.org>
-References: <1245825924-30412-1-git-send-email-tj@kernel.org>
-	 <1245825924-30412-2-git-send-email-tj@kernel.org>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 18:47:55 -0500
-Message-Id: <1245887275.4022.619.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 19:48:22 -0400
+Date: Wed, 24 Jun 2009 16:44:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Larry Finger <Larry.Finger@lwfinger.net>
+cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gary Hade <garyhade@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+In-Reply-To: <4A42B7BC.2000402@lwfinger.net>
+Message-ID: <alpine.LFD.2.01.0906241639030.3605@localhost.localdomain>
+References: <1245845787.3093.3.camel@localhost.localdomain>  <20090624112849.55b38fff@jbarnes-g45>  <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>  <20090624194839.GG7239@us.ibm.com> <4A4286F8.9020501@lwfinger.net> 
+ <86802c440906241432l6d601f76sf2a413d6e19079e6@mail.gmail.com>  <4A429DAA.3010303@lwfinger.net>  <86802c440906241444g1aabcc5rb2d189dca0965e36@mail.gmail.com>  <4A42A2FD.1060401@lwfinger.net>  <86802c440906241511i3d534723u4dfdef9448b54bb9@mail.gmail.com>
+ <86802c440906241553j11c84adm45ef6e6e8f1fe10e@mail.gmail.com> <4A42B7BC.2000402@lwfinger.net>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 15:45 +0900, Tejun Heo wrote:
-> This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
-> dynamic percpu allocator.  The first chunk is allocated using
-> embedding helper and 8k is reserved for modules.  This ensures that
-> the new allocator behaves almost identically to the original allocator
-> as long as static percpu variables are concerned, so it shouldn't
-> introduce much breakage.
+
+
+On Wed, 24 Jun 2009, Larry Finger wrote:
 > 
-> s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
-> range limit the addressing model imposes.  Unfortunately, this breaks
-> if the address is specified using a variable, so for now, the two
-> archs aren't converted.
-> 
-> The following architectures are affected by this change.
-> 
-> * sh
-> * arm
-> * cris
-> * mips
-> * sparc(32)
-> * blackfin
-> * avr32
-> * parisc (broken, under investigation)
+> From what I read in Linus's mails, it may be a moot point; however, my
+> system boots with these 3, and only these 3, patches applied.
 
-OK, I thought I'd investigate this.  Unfortunately, your git tree
-doesn't build when pulled into head ... could you update?
+Well, it's definitely not moot. We want "use_crs" to work, whether it's 
+the default or not. I just doubt it should be the default (necessarily 
+ever).
 
-mm/percpu.c: In function 'setup_per_cpu_areas':
-mm/percpu.c:2007: error: too many arguments to function 'pcpu_embed_first_chunk'
+The resources listed in the _CRS table may well be useful to make 
+decisions on (minimally: "is this a root bridge", but possibly also 
+scanning decisions). But I seriously doubt it makes any sense to insert 
+the _CRS resources into the bus resource list. 
 
-James
+It might, for example, make sense to add them to the resource tree (after 
+scanning), the same way we add the e820 resources to the resource tree. 
 
+But judging from your dmesg:
 
+	pci_bus 0000:00: resource 0 io:  [0x00-0xcf7]
+	pci_bus 0000:00: resource 1 io:  [0xd00-0xffff]
+	pci_bus 0000:00: resource 2 mem: [0x0a0000-0x0bffff]
+	pci_bus 0000:00: resource 3 mem: [0x0c0000-0x0c3fff]
+	pci_bus 0000:00: resource 4 mem: [0x0c4000-0x0c7fff]
+	pci_bus 0000:00: resource 5 mem: [0x0c8000-0x0cbfff]
+	pci_bus 0000:00: resource 6 mem: [0x0cc000-0x0cffff]
+	pci_bus 0000:00: resource 7 mem: [0x0d4000-0x0d7fff]
+	pci_bus 0000:00: resource 8 mem: [0x0d8000-0x0dbfff]
+	pci_bus 0000:00: resource 9 mem: [0x0dc000-0x0dffff]
+	pci_bus 0000:00: resource 10 mem: [0x0e0000-0x0e3fff]
+	pci_bus 0000:00: resource 11 mem: [0x0e4000-0x0e7fff]
+	pci_bus 0000:00: resource 12 mem: [0x0e8000-0x0ebfff]
+	pci_bus 0000:00: resource 13 mem: [0x0ec000-0x0effff]
+	pci_bus 0000:00: resource 14 mem: [0x0f0000-0x0fffff]
+	pci_bus 0000:00: resource 15 mem: [0xc0000000-0xfebfffff]
+	pci_bus 0000:01: resource 1 mem: [0xfc100000-0xfc1fffff]
+	pci_bus 0000:01: resource 3 io:  [0x00-0xcf7]
+	pci_bus 0000:01: resource 4 io:  [0xd00-0xffff]
+	pci_bus 0000:01: resource 5 mem: [0x0a0000-0x0bffff]
+	pci_bus 0000:01: resource 6 mem: [0x0c0000-0x0c3fff]
+	pci_bus 0000:01: resource 7 mem: [0x0c4000-0x0c7fff]
+	pci_bus 0000:01: resource 8 mem: [0x0c8000-0x0cbfff]
+	pci_bus 0000:01: resource 9 mem: [0x0cc000-0x0cffff]
+	pci_bus 0000:01: resource 10 mem: [0x0d4000-0x0d7fff]
+	pci_bus 0000:01: resource 11 mem: [0x0d8000-0x0dbfff]
+	pci_bus 0000:01: resource 12 mem: [0x0dc000-0x0dffff]
+	pci_bus 0000:01: resource 13 mem: [0x0e0000-0x0e3fff]
+	pci_bus 0000:01: resource 14 mem: [0x0e4000-0x0e7fff]
+	pci_bus 0000:01: resource 15 mem: [0x0e8000-0x0ebfff]
+	pci_bus 0000:01: resource 16 mem: [0x0ec000-0x0effff]
+	pci_bus 0000:01: resource 17 mem: [0x0f0000-0x0fffff]
+	pci_bus 0000:01: resource 18 mem: [0xc0000000-0xfebfffff]
+
+none of those look in any way like sensible "resources" to be put in the 
+device. Quite frankly, they look like total garbage to me.
+
+			Linus
