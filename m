@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZFXIXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZFXI0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752851AbZFXIXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZFXIXU
+	id S1753619AbZFXI0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFXI0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:23:20 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:49500 "EHLO dan.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbZFXIXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:23:17 -0400
-Subject: Re: Main things left in linux-next
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Joel Becker <Joel.Becker@oracle.com>,
-       =?ISO-8859-1?Q?=22Fr=E9d=E9ric?= "Weisbecker\"" 
-	<fweisbec@gmail.com>,
-       Len Brown <lenb@kernel.org>, Avi Kivity <avi@qumranet.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Jon Masters <jonathan@jonmasters.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <20090624172735.9b500674.sfr@canb.auug.org.au>
-References: <20090624164617.b7c49974.sfr@canb.auug.org.au>
-	 <20090624172735.9b500674.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 09:10:52 +0100
-Message-Id: <1245831052.6008.3.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 24 Jun 2009 04:26:07 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:54529 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZFXI0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 04:26:05 -0400
+X-Auth-Info: hI1SnzCr9WEt2ydH5nfPfRULr+r80LnTeClCyNmgP7k=
+Message-ID: <4A41E31B.1030703@grandegger.com>
+Date: Wed, 24 Jun 2009 10:26:03 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: socketcan@hartkopp.net, heiko.carstens@de.ibm.com, schwidefsky@de.ibm.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
+References: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>	<4A412C53.8050607@grandegger.com>	<4A41CD36.8030202@hartkopp.net> <20090624.000109.49664041.davem@davemloft.net>
+In-Reply-To: <20090624.000109.49664041.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 17:27 +1000, Stephen Rothwell wrote:
-> The main obvious things left are:
+David Miller wrote:
+> From: Oliver Hartkopp <socketcan@hartkopp.net>
+> Date: Wed, 24 Jun 2009 08:52:38 +0200
 > 
-> a leds tree update
+>> Wolfgang Grandegger wrote:
+>>> Heiko Carstens wrote:
+>>
+>>>> Index: linux-2.6/drivers/net/can/Kconfig
+>>>> ===================================================================
+>>>> --- linux-2.6.orig/drivers/net/can/Kconfig
+>>>> +++ linux-2.6/drivers/net/can/Kconfig
+>>>> @@ -36,7 +36,7 @@ config CAN_CALC_BITTIMING
+>>>>  	  If unsure, say Y.
+>>>>  
+>>>>  config CAN_SJA1000
+>>>> -	depends on CAN_DEV
+>>>> +	depends on CAN_DEV && HAS_IOMEM
+>>>>  	tristate "Philips SJA1000"
+>>>>  	---help---
+>>>>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
+>>> Hm, this Kconfig entry is not directly responsible for building
+>>> sja1000_platform.o. It builds sja1000.o, which does not rely on
+>>> HAS_IOMEM. It should be added to "config CAN_SJA1000_PLATFORM" instead.
+>> Hi Wolfgang,
+>>
+>> the question is, if we should add HAS_IOMEM to almost every SJA1000 depended
+>> driver like SJA1000_PLATFORM, SJA1000_OF_PLATFORM, EMS_PCI and KVASER_PCI ???
+>>
+>> Is it possible to have a support for the SJA1000 that does *not* depend on
+>> HAS_IOMEM?
 
-A pull request for this has been sent recently.
+In principle yes by using an appropriate driver accessing the SJA1000
+with other methods. But I might be wrong because it does not make sense
+hardware-wise.
 
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+> This was my initial impression when I saw Wolfgang's suggested patch,
+> and I still feel this way, and thus Heiko's patch seems the best for
+> now until there is an exception.
+> 
+> And in fact Heiko's patch has been in my tree for a while already :)
 
+OK, that's fine for the moment. We may even consider making CONFIG_CAN
+depend on HAS_IOMEM like for SPI, USB, Serial, etc.
+
+Wolfgang.
+Woflgang.
