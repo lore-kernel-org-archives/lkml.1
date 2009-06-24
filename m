@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbZFXLmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbZFXLmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760160AbZFXLmE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:42:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757688AbZFXLgz
+	id S1760404AbZFXLmt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759788AbZFXLki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:36:55 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:52803 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757921AbZFXLgy (ORCPT
+	Wed, 24 Jun 2009 07:40:38 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:59488 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759703AbZFXLkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:36:54 -0400
-From: Imre Deak <imre.deak@nokia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Antonino Daplas <adaplas@gmail.com>, Tony Lindgren <tony@atomide.com>,
-       Tomi Valkeinen <Tomi.Valkeinen@nokia.com>
-Subject: [PATCH 12/20] N770: Enable LCD MIPI-DCS in Kconfig
-Date: Wed, 24 Jun 2009 14:33:37 +0300
-Message-Id: <db880b91c36cbd5672f503e249d44411448533bd.1245842329.git.imre.deak@nokia.com>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <279625bb9ea911185e017cdf8d18a46f263fbb5c.1245842329.git.imre.deak@nokia.com>
-References: <1245843225-1036-1-git-send-email-imre.deak@nokia.com>
- <34904fad6190ff9d35eb942460ece639f4b7d58f.1245842329.git.imre.deak@nokia.com>
- <5cf7e298c3b70ad6e07d34034cc901689445e978.1245842329.git.imre.deak@nokia.com>
- <f2b49525146391a3d01b944bf4ebce045cb503d4.1245842329.git.imre.deak@nokia.com>
- <9cecdc5077b72042551eb8e3dc96911e9f4fa3fd.1245842329.git.imre.deak@nokia.com>
- <a3b6ef17cc694c350bc3a585a1697cf57cb0b1c1.1245842329.git.imre.deak@nokia.com>
- <0e2b7b0555c657a8eab00df0091b9828fb292f4c.1245842329.git.imre.deak@nokia.com>
- <af3d1e0dff22f0bb72f6ccee57dfa9a1e5f31abb.1245842329.git.imre.deak@nokia.com>
- <6881ca5b34fcf36c3f39b13de85857dcc20f568d.1245842329.git.imre.deak@nokia.com>
- <726d4af0547b42ec8a9af7c6f0079cf9b7fadf5c.1245842329.git.imre.deak@nokia.com>
- <742d96c9c8d6826eddd49a913b6adaa8f176edbe.1245842329.git.imre.deak@nokia.com>
- <279625bb9ea911185e017cdf8d18a46f263fbb5c.1245842329.git.imre.deak@nokia.com>
-In-Reply-To: <34904fad6190ff9d35eb942460ece639f4b7d58f.1245842329.git.imre.deak@nokia.com>
-References: <34904fad6190ff9d35eb942460ece639f4b7d58f.1245842329.git.imre.deak@nokia.com>
-X-OriginalArrivalTime: 24 Jun 2009 11:36:11.0779 (UTC) FILETIME=[F9736530:01C9F4BF]
-X-Nokia-AV: Clean
+	Wed, 24 Jun 2009 07:40:33 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk, gregkh@suse.de, linux-usb@vger.kernel.org,
+       oliver@neukum.name,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH 2/3] Fix oops when closing ACM tty device right after open has failed.
+Date: Wed, 24 Jun 2009 08:31:16 -0300
+Message-Id: <1245843077-4442-2-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3
+In-Reply-To: <1245843077-4442-1-git-send-email-cascardo@holoscopio.com>
+References: <1245843077-4442-1-git-send-email-cascardo@holoscopio.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Imre Deak <imre.deak@nokia.com>
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+This commit 10077d4a6674f535abdbe25cdecb1202af7948f1 has stopped
+checking if there was a valid acm device associated to the tty, which is
+not true right after open fails and tty subsystem tries to close the
+device.
+
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 ---
- arch/arm/configs/n770_defconfig |    2 +-
+ drivers/usb/class/cdc-acm.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/configs/n770_defconfig b/arch/arm/configs/n770_defconfig
-index 672f6db..a1657b7 100644
---- a/arch/arm/configs/n770_defconfig
-+++ b/arch/arm/configs/n770_defconfig
-@@ -875,7 +875,7 @@ CONFIG_FB_OMAP_LCDC_EXTERNAL=y
- CONFIG_FB_OMAP_LCDC_HWA742=y
- # CONFIG_FB_OMAP_LCDC_BLIZZARD is not set
- CONFIG_FB_OMAP_MANUAL_UPDATE=y
--# CONFIG_FB_OMAP_LCD_MIPID is not set
-+CONFIG_FB_OMAP_LCD_MIPID=y
- # CONFIG_FB_OMAP_BOOTLOADER_INIT is not set
- CONFIG_FB_OMAP_CONSISTENT_DMA_SIZE=2
- # CONFIG_FB_OMAP_DMA_TUNE is not set
+diff --git a/drivers/usb/class/cdc-acm.c b/drivers/usb/class/cdc-acm.c
+index 02eb60b..3f10459 100644
+--- a/drivers/usb/class/cdc-acm.c
++++ b/drivers/usb/class/cdc-acm.c
+@@ -677,7 +677,7 @@ static void acm_tty_close(struct tty_struct *tty, struct file *filp)
+ 
+ 	/* Perform the closing process and see if we need to do the hardware
+ 	   shutdown */
+-	if (tty_port_close_start(&acm->port, tty, filp) == 0)
++	if (!acm || tty_port_close_start(&acm->port, tty, filp) == 0)
+ 		return;
+ 	acm_port_down(acm, 0);
+ 	tty_port_close_end(&acm->port, tty);
 -- 
-1.6.3.2
+1.6.3
 
