@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbZFXThT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761761AbZFXTl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760555AbZFXThT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbZFXThI
+	id S1761761AbZFXTl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909AbZFXTlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:37:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47858 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751874AbZFXThH (ORCPT
+	Wed, 24 Jun 2009 15:41:21 -0400
+Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:54643
+	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753287AbZFXTlU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:37:07 -0400
-Date: Wed, 24 Jun 2009 12:36:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-Id: <20090624123624.26c93459.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
-References: <20090624080753.4f677847@infradead.org>
-	<20090624094622.d0b0fd82.akpm@linux-foundation.org>
-	<84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
-	<20090624105517.904f93da.akpm@linux-foundation.org>
-	<4A426825.80905@cs.helsinki.fi>
-	<20090624113037.7d72ed59.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241134510.3240@localhost.localdomain>
-	<20090624120617.1e6799b5.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 15:41:20 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 15:41:20 EDT
+Date: Wed, 24 Jun 2009 22:34:39 +0300
+From: Dan Aloni <dan@aloni.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH] prevent rtl8192su from crashing dev_ioctl in SIOCGIWNAME
+Message-ID: <20090624193439.GA23924@localhost>
+References: <20090620133222.GA18731@localhost> <200906202251.16916.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906202251.16916.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 12:16:20 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+(adapted from the rtl8187se patch)
 
-> Lookie here. This is 2.6.0:mm/page_alloc.c:
-> 
->         do_retry = 0;
->         if (!(gfp_mask & __GFP_NORETRY)) {
->                 if ((order <= 3) || (gfp_mask & __GFP_REPEAT))
->                         do_retry = 1;
->                 if (gfp_mask & __GFP_NOFAIL)
->                         do_retry = 1;
->         }
->         if (do_retry) {
->                 blk_congestion_wait(WRITE, HZ/50);
->                 goto rebalance;
->         }
+ieee80211_wx_get_name() ignores sizeof(wrqu->name) which is IFNAMSIZ (16), and
+on certain conditions, the concatenated string will be larger than IFNAMSIZ
+including the terminating zero.
 
-rebalance:
-	if ((p->flags & (PF_MEMALLOC | PF_MEMDIE)) && !in_interrupt()) {
-		/* go through the zonelist yet again, ignoring mins */
-		for (i = 0; zones[i] != NULL; i++) {
-			struct zone *z = zones[i];
+    length ("802.11" ++ "b" ++ "/g" ++ " linked" ++ "\x00") == 17
 
-			page = buffered_rmqueue(z, order, cold);
-			if (page)
-				goto got_pg;
-		}
-		goto nopage;
-	}
+This fix uses strl{cpy,cat} in addition to the reduction of the total
+possible length of the output string by a char.
 
+It can be applied to 2.6.30-stable as well.
+
+Signed-off-by: Dan Aloni <dan@aloni.org>
+---
+ .../rtl8192su/ieee80211/ieee80211_softmac_wx.c     |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
+index 1f50c46..b93ddc9 100644
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac_wx.c
+@@ -548,21 +548,21 @@ int ieee80211_wx_get_name(struct ieee80211_device *ieee,
+ 			     struct iw_request_info *info,
+ 			     union iwreq_data *wrqu, char *extra)
+ {
+-	strcpy(wrqu->name, "802.11");
++	strlcpy(wrqu->name, "802.11", IFNAMSIZ);
+ 	if(ieee->modulation & IEEE80211_CCK_MODULATION){
+-		strcat(wrqu->name, "b");
++		strlcat(wrqu->name, "b", IFNAMSIZ);
+ 		if(ieee->modulation & IEEE80211_OFDM_MODULATION)
+-			strcat(wrqu->name, "/g");
++			strlcat(wrqu->name, "/g", IFNAMSIZ);
+ 	}else if(ieee->modulation & IEEE80211_OFDM_MODULATION)
+-		strcat(wrqu->name, "g");
++		strlcat(wrqu->name, "g", IFNAMSIZ);
+ 	if (ieee->mode & (IEEE_N_24G | IEEE_N_5G))
+-		strcat(wrqu->name, "/n");
++		strlcat(wrqu->name, "/n", IFNAMSIZ);
+ 
+ 	if((ieee->state == IEEE80211_LINKED) ||
+ 		(ieee->state == IEEE80211_LINKED_SCANNING))
+-		strcat(wrqu->name," linked");
++		strlcat(wrqu->name,"  link", IFNAMSIZ);
+ 	else if(ieee->state != IEEE80211_NOLINK)
+-		strcat(wrqu->name," link..");
++		strlcat(wrqu->name," .....", IFNAMSIZ);
+ 
+ 
+ 	return 0;
+-- 
+1.6.0.4
