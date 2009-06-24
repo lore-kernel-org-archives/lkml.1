@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752741AbZFXLXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZFXL2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752741AbZFXLXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZFXLXB
+	id S1754767AbZFXL2y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFXL2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:23:01 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39894 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751517AbZFXLXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:23:00 -0400
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX1+1OSNjOHm1TTS93p2zb/ADBND9eEeYEp8QZYNesq
-	CWsHBtqiTpeaBK
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: trivial@kernel.org
-Subject: [PATCH] scsi: adding __init/__exit macros to ibmvstgt.c
-Date: Wed, 24 Jun 2009 13:22:57 +0200
-User-Agent: KMail/1.9.9
-Cc: kernel-janitors@vger.kernel.org, James.Bottomley@hansenpartnership.com,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       harvey.harrison@gmail.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, peterhuewe@gmx.de
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906241322.58136.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+	Wed, 24 Jun 2009 07:28:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45968 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbZFXL2q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 07:28:46 -0400
+Subject: Re: Bluetooth HID devices not getting properly removed
+From: David Woodhouse <dwmw2@infradead.org>
+To: Thomas =?ISO-8859-1?Q?B=E4chler?= <thomas@archlinux.org>
+Cc: linux-kernel@vger.kernel.org, marcel@holtmann.org
+In-Reply-To: <4A4209D2.4060209@archlinux.org>
+References: <4A4209D2.4060209@archlinux.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 24 Jun 2009 12:28:46 +0100
+Message-Id: <1245842926.25547.5415.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
+On Wed, 2009-06-24 at 13:11 +0200, Thomas Bächler wrote:
+> 
+> KERNEL[1245834012.631443] remove 
+> /devices/pci0000:00/0000:00:1d.0/usb2/2-2/2-2:1.0/bluetooth/hci0/hci0:11 
+> (bluetooth)
+> KERNEL[1245834012.632668] remove   /hci0:11/input12/mouse2 (input)
+> KERNEL[1245834012.641797] remove   /hci0:11/input12/event8 (input)
+> KERNEL[1245834012.655447] remove   /hci0:11/input12 (input)
+> KERNEL[1245834012.655502] remove   /hci0:11/0005:046D:B002.0004 (hid)
+> 
+> See how the device path of the removed input devices is truncated? When 
+> I do the same with a USB mouse, a full device path is returned each time.
+> 
+> All of this results in hal not removing its logical input device, which 
+> means the number of (non-existent) mice in the hal device tree increases 
+> whenever I disable and re-enable my mouse.
+> 
+> So where do I put this bug? Linux? Bluez? Udev? Hal? My guess is Linux, 
+> as these device paths come from Linux originally and are in fact 
+> inconsistent. This is all tested on 2.6.30, I have no idea if it was the 
+> case on older kernels.
 
-Trivial patch which adds the __init and __exit macros to the module_init /
-module_exit functions from drivers/scsi/ibmvscsi/ibmvstgt.c
-linux version 2.6.30 - linus git tree.
+It's in the BlueZ HID code. I pointed it out to Marcel a few months ago
+-- it happens when the ACL connection is killed (orphaning the HID
+device in sysfs), and the HID device is only killed _later_, so the path
+on the removal is wrong.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
-I'm sorry if you receive this message twice - but my first message does 
-not seemto be delivered to any of the mailing lists.
-diff --git a/drivers/scsi/ibmvscsi/ibmvstgt.c b/drivers/scsi/ibmvscsi/ibmvstgt.c
-index d5eaf97..30a25da 100644
---- a/drivers/scsi/ibmvscsi/ibmvstgt.c
-+++ b/drivers/scsi/ibmvscsi/ibmvstgt.c
-@@ -955,7 +955,7 @@ static struct srp_function_template ibmvstgt_transport_functions = {
- 	.it_nexus_response = ibmvstgt_it_nexus_response,
- };
- 
--static int ibmvstgt_init(void)
-+static int __init ibmvstgt_init(void)
- {
- 	int err = -ENOMEM;
- 
-@@ -986,7 +986,7 @@ release_transport:
- 	return err;
- }
- 
--static void ibmvstgt_exit(void)
-+static void __exit ibmvstgt_exit(void)
- {
- 	printk("Unregister IBM virtual SCSI driver\n");
- 
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
