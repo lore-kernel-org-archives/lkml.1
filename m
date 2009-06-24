@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZF0JuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbZF0Kpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZF0JuK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 05:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZF0Jt4
+	id S1754135AbZF0Kpm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 06:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZF0Kp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 05:49:56 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:54982 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752576AbZF0Jtz (ORCPT
+	Sat, 27 Jun 2009 06:45:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53430 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751432AbZF0Kp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 05:49:55 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [2.6.31-rc1] iwlagn (4965): no wireless due to RFKILL problem
-Date: Sat, 27 Jun 2009 11:49:54 +0200
-User-Agent: KMail/1.9.9
-References: <200906261336.29318.elendil@planet.nl> <200906261410.58808.elendil@planet.nl> <1246048132.21314.75.camel@johannes.local>
-In-Reply-To: <1246048132.21314.75.camel@johannes.local>
+	Sat, 27 Jun 2009 06:45:27 -0400
+Date: Wed, 24 Jun 2009 16:21:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marco <marco.stornelli@gmail.com>
+Cc: Jamie Lokier <jamie@shareable.org>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090624142102.GA1512@ucw.cz>
+References: <20090613155957.GA16220@shareable.org> <4A34A394.5040509@gmail.com> <20090614114613.GC9514@shareable.org> <4A351FA9.1090808@gmail.com> <20090616150750.GF29040@shareable.org> <4A37EF4A.1080006@gmail.com> <20090624174140.GH14121@shareable.org> <2ea1731b0906242344x5c8a6e58t5f82377be3d73411@mail.gmail.com> <20090626113016.GB17737@shareable.org> <4A44FDDB.1000902@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>, linux-wireless@vger.kernel.org,
-       Netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906271149.56051.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Jun 2009 09:49:56.0659 (UTC) FILETIME=[A0D28830:01C9F70C]
+In-Reply-To: <4A44FDDB.1000902@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 June 2009, Johannes Berg wrote:
-> On Fri, 2009-06-26 at 14:10 +0200, Frans Pop wrote:
-> > Well, with 2.6.30 hp-wmi worked together with rfkill without
-> > problems. Looking at the commit logs, it looks like the rfkill
-> > rewrite by Johannes and Alan is the cause here. CCs added.
->
-> Hmm, looks like there might be another polarity error, try this:
-> -       int query = BIT(b + 8) | ((!!blocked) << b);
-> +       int query = BIT(b + 8) | ((!blocked) << b);
 
-Thanks Johannes, that makes wireless work again.
+> >>> If it loses power when doing atomic rename (to replace config files,
+> >>> for example), it's likely that the whole /pramfs/configs/ directory
+> >>> will be corrupt, because the rename is writing to the directory inode,
+> >>> so you lose access to all names in that directory?
+> >>>
+> >>> That sounds like it can't be used for persistent configuration data.
+> >> It's true from this point of view currently there is a lack for this
+> >> and it needs a bit of effort to resolve this problem.  >From this
+> >> point of view I'd like to point out that I know that there was some
+> >> aspects to study in a deeper way, so I'll need of more then one
+> >> review :) but since this fs has been abandoned since 2004 and it
+> >> hadn't ever reviewed, it was important to do a serious review with
+> >> the kernel community to understand all the problems.
+> > 
+> > That's reasonable.
+> > 
+> > What do you think of my suggestion to double-buffer writes using a
+> > single fixed position block, as explained elsewhere in this thread?
+> > 
+> > It should give the power fail safety with very little code.  I don't
+> > know how much it would slwo down writing.  That probably depends on
+> > whether it's the checksum which is slow (which only needs to be done
+> > once when double-buffering), or the writing.
+> 
+> Yeah it can be a choice. For this fs it's important to use "simple" but
+> useful mechanism. What do you exactly mean with "fixed position block"?
+> A fixed position in the fs? For example superblock+inodetable+in-use
+> bitmap+blocks+"double-buffering block"? Using a temp block of the same
+> size of blocks used, isn't it? I agree, but I think it needs more then
+> 100 lines of code. Even with this simple schema it needs a mechanism
+> with a timeout to do the "commit" of the temp block, it needs a
+> mechanism to read the temp block instead of the "old" block or a
+> mechanism to write-back the temp block. So it can be implemented but it
+> needs a bit of effort. I think I'll implement it in the next release.
 
-However, I just saw another possible issue.
+I think you should really use ext3 over special block device.
 
-When I disable wireless using the hardware switch and the enable it again
-almost immediately after on 2.6.30, I get:
-[disable]
-iwlagn 0000:10:00.0: Radio Frequency Kill Switch is On:
-Kill switch must be turned off for wireless networking to work.
-usb 3-1: USB disconnect, address 2
-[enable]
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-usb 3-1: new full speed USB device using uhci_hcd and address 3
-usb 3-1: configuration #1 chosen from 1 choice
-wlan0: no probe response from AP 00:14:c1:38:e5:15 - disassociating
-iwlagn 0000:10:00.0: index 0 not used in uCode key table.
-wlan0: authenticate with AP 00:14:c1:38:e5:15
-wlan0: authenticate with AP 00:14:c1:38:e5:15
-wlan0: authenticated
-wlan0: associate with AP 00:14:c1:38:e5:15
-wlan0: RX ReassocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-wlan0: associated
+Initially this filesystem was presented as fast (it is not) then you
+claim it is reliable (it is not). If you want it to get reliable
+you'll need journalling+fsck. Good luck.
+								Pavel
 
-And without any other action networking is up again.
-
-With 2.6.31 I get this:
-[disable]
-wlan0: deauthenticating by local choice (reason=3)
-iwlagn 0000:10:00.0: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
-mac80211-phy0: failed to remove key (0, 00:14:c1:38:e5:15) from hardware (-5)
-iwlagn 0000:10:00.0: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
-mac80211-phy0: failed to remove key (1, ff:ff:ff:ff:ff:ff) from hardware (-5)
-usb 3-1: USB disconnect, address 2
-[enable]
-usb 3-1: new full speed USB device using uhci_hcd and address 3
-usb 3-1: configuration #1 chosen from 1 choice
-
-A lot uglier with those errors. And after that I have to run ifdown/ifup
-before networking is up again (ifup only does not work as it will complain
-"interface already configured"):
-
-[ifdown wlan0]
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-ADDRCONF(NETDEV_UP): wlan0: link is not ready
-[ifup wlan 0]
-Registered led device: iwl-phy0::radio
-Registered led device: iwl-phy0::assoc
-Registered led device: iwl-phy0::RX
-Registered led device: iwl-phy0::TX
-ADDRCONF(NETDEV_UP): wlan0: link is not ready
-wlan0: authenticate with AP 00:14:c1:38:e5:15
-wlan0: authenticated
-wlan0: associate with AP 00:14:c1:38:e5:15
-wlan0: RX AssocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
-wlan0: associated
-ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
-
-BTW, would it make sense to bring back the first two lines shown with .30
-(or at least the first one):
-   iwlagn 0000:10:00.0: Radio Frequency Kill Switch is On:
-   Kill switch must be turned off for wireless networking to work.
-IMHO it's good to register the reason for the disconnect.
-
-Cheers,
-FJP
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
