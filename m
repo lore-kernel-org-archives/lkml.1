@@ -1,122 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZFXHgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZFXHi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZFXHgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZFXHf5
+	id S1753094AbZFXHi6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZFXHis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:35:57 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:47083 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbZFXHf4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:35:56 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefani Seibold <stefani@seibold.net>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org>
-	<1245824444.22613.3.camel@wall-e>
-	<20090623233247.7ed661b7.akpm@linux-foundation.org>
-	<1245825903.23818.4.camel@wall-e>
-	<20090624001302.18de9e21.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 24 Jun 2009 00:35:52 -0700
-In-Reply-To: <20090624001302.18de9e21.akpm@linux-foundation.org> (Andrew Morton's message of "Wed\, 24 Jun 2009 00\:13\:02 -0700")
-Message-ID: <m1my7ykrs7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 24 Jun 2009 03:38:48 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57669 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751324AbZFXHir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 03:38:47 -0400
+Date: Wed, 24 Jun 2009 09:38:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Ken Milmore <ken.milmore@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: Write barriers on MD RAID1
+Message-ID: <20090624073849.GG31415@kernel.dk>
+References: <4A188CAD.1080009@googlemail.com> <0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name> <4A3E3C49.7010907@googlemail.com> <19009.41191.662901.179565@notabene.brown>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, adobriyan@gmail.com, stefani@seibold.net
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [merged] proctxt-update-kernel-filesystem-proctxt-documentation.patch removed from -mm tree
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <19009.41191.662901.179565@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Wed, Jun 24 2009, Neil Brown wrote:
+> On Sunday June 21, ken.milmore@googlemail.com wrote:
+> > I thought I had better bump my previous post as this regression is still 
+> > present in 2.6.29.5.
+> 
+> Thanks Ken.
+> 
+> > 
+> > To recap, commit cec0707e40ae25794b5a2de7b7f03c51961f80d9 has broken 
+> > write barriers on md raid1 block devices in 2.6.29 and later kernels. 
+> > Reversing this commit appears to fix the problem.
+> > 
+> > Please let me know if I'm harassing the wrong maintainers here!
+> 
+> Jens,
+>   have you had a chance to look at this?
 
-> On Wed, 24 Jun 2009 08:45:03 +0200 Stefani Seibold <stefani@seibold.net> wrote:
->
->> Am Dienstag, den 23.06.2009, 23:32 -0700 schrieb Andrew Morton:
->> > On Wed, 24 Jun 2009 08:20:44 +0200 Stefani Seibold <stefani@seibold.net> wrote:
->> > 
->> > > what is with the associated
->> > > procfs-provide-stack-information-for-threads-v08.patch
->> > > patch?
->> > > 
->> > > There was no real objections against this patch, so why not merge it for
->> > > 2.6.31?
->> > 
->> > Alexey pointed out that it doesn't actually work.
->> 
->> That is not true... it works. With my patch the kernel does exactly know
->> where the thread stack is and therefor it is easy to determinate the
->> associated map.
+Yeah, I think it's the right way to go. I'll queue it up for .31 and we
+should put in in -stable as well.
 
-Usually yes, but not in all cases.
+> 
+> I think the following patch is appropriate and should go in to
+> -stable.
+> 
+> Thanks,
+> NeilBrown
+> 
+> 
+> From addd8b129835a63d6df9a38eae20caaa15de5988 Mon Sep 17 00:00:00 2001
+> From: NeilBrown <neilb@suse.de>
+> Date: Wed, 24 Jun 2009 13:39:15 +1000
+> Subject: [PATCH] Restore barrier support for md and probably other virtual devices.
+> 
+> The next_ordered flag is only meaningful for devices that use __make_request.
+> So move the test against next_ordered out of generic code and in to
+> __make_request
+> 
+> Since this test was added, barriers have not worked on md, and (I
+> think) dm and similar devices that don't use __make_request and so
+> don't bother to set next_ordered.
+> 
+> Cc: stable@kernel.org
+> Cc: Ken Milmore <ken.milmore@googlemail.com>
+> Signed-off-by: NeilBrown <neilb@suse.de>
+> ---
+>  block/blk-core.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/block/blk-core.c b/block/blk-core.c
+> index b06cf5c..fc221aa 100644
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+> @@ -1172,6 +1172,11 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+>  	const int unplug = bio_unplug(bio);
+>  	int rw_flags;
+>  
+> +	if (bio_barrier(bio) && bio_has_data(bio) &&
+> +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> +		bio_endio(bio, -EOPNOTSUPP)
+> +			return 0;
+> +	}
+>  	/*
+>  	 * low level driver can indicate that it wants pages above a
+>  	 * certain limit bounced to low memory (ie for highmem, or even
+> @@ -1472,11 +1477,6 @@ static inline void __generic_make_request(struct bio *bio)
+>  			err = -EOPNOTSUPP;
+>  			goto end_io;
+>  		}
+> -		if (bio_barrier(bio) && bio_has_data(bio) &&
+> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> -			err = -EOPNOTSUPP;
+> -			goto end_io;
+> -		}
+>  
+>  		ret = q->make_request_fn(q, bio);
+>  	} while (ret);
+> -- 
+> 1.6.3.1
+> 
 
+-- 
+Jens Axboe
 
-> On Tue, 16 Jun 2009 02:33:33 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
->
->> On Mon, Jun 15, 2009 at 03:02:05PM -0700, akpm@linux-foundation.org wrote:
->> >      procfs-provide-stack-information-for-threads-v08.patch
->> > --- a/fs/proc/array.c~procfs-provide-stack-information-for-threads-v08
->> 
->> > +++ a/fs/proc/array.c
->> > @@ -321,6 +321,54 @@ static inline void task_context_switch_c
->> >  			p->nivcsw);
->> >  }
->> >  
->> > +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
->> > +					struct task_struct *p)
->> > +{
->> > +	unsigned long	i;
->> > +	struct page	*page;
->> > +	unsigned long	stkpage;
->> > +
->> > +	stkpage = KSTK_ESP(p) & PAGE_MASK;
->> > +
->> > +#ifdef CONFIG_STACK_GROWSUP
->> > +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
->> > +
->> > +		page = follow_page(vma, i-PAGE_SIZE, 0);
->> 
->> How can this work?
->> 
->> If stack page got swapped out, you'll get smaller than actual result.
->
-> Alexey's point is that follow_page() will return NULL if it hits a
-> swapped-out stack page and the loop will exit, leading to an incorrect
-> (ie: short) return value from get_stack_usage_in_bytes().
->
-> Is this claim wrong?
-
-
-Add to that the code is unnecessarily complicated.
-
-The patch mixes several different changes together.  It deserves being
-broken up into at least two patches.
-
-I am concerned about the performance.  Glibc opens /proc/self/maps in
-practically every application so doing something like following page
-tables requires testing and verifying the performance.
-
-Eric
