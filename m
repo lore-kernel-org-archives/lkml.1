@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZFXK6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009AbZFXK7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZFXK6z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZFXK6r
+	id S1753009AbZFXK7W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZFXK7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:58:47 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:51817 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbZFXK6q (ORCPT
+	Wed, 24 Jun 2009 06:59:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46487
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750800AbZFXK7J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:58:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=tWG/+1HmgFXotTn+ooaEsv0fVSusDA5s47eEGFVP7CQU9nA1s4QPbvJNrNSe2pQ+Qx
-         eLJaOUbEwWrr+H5PehzQhnNYDfMcnR7M+RywEDsTToMsqpVFb/yk4gjAIgNBzbGqXNCV
-         j8S8HhGne+3nuzhI4jTsssZY2F/OSMuDZrivY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
-Date: Wed, 24 Jun 2009 13:04:14 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200906240336.25263.bzolnier@gmail.com> <20090624.025518.75726622.davem@davemloft.net> <200906241248.21173.bzolnier@gmail.com>
-In-Reply-To: <200906241248.21173.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 24 Jun 2009 06:59:09 -0400
+Date: Wed, 24 Jun 2009 03:59:14 -0700 (PDT)
+Message-Id: <20090624.035914.156829493.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: NMI watchdog + NOHZ question
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090624105223.GO6760@one.firstfloor.org>
+References: <20090624102325.GN6760@one.firstfloor.org>
+	<20090624.033233.170094460.davem@davemloft.net>
+	<20090624105223.GO6760@one.firstfloor.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906241304.14926.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009 12:48:20 Bartlomiej Zolnierkiewicz wrote:
+From: Andi Kleen <andi@firstfloor.org>
+Date: Wed, 24 Jun 2009 12:52:23 +0200
 
-> > 1) You want the device to be quiescent anyways when you do this
-> >    SET_XFER command.  What better way than to plug the queue
-> >    and make sure all currently outstanding requests complete?
-> > 
-> >    And as already discussed, we even already have logic to support
-> >    this kind of thing for the sake of power-management.
+> On Wed, Jun 24, 2009 at 03:32:33AM -0700, David Miller wrote:
+>> From: Andi Kleen <andi@firstfloor.org>
+>> Date: Wed, 24 Jun 2009 12:23:25 +0200
+>> 
+>> >> And similarly to sparc64, if that 5+ second qla2xxx interrupt
+>> >> sequence happens after the tick_nohz_stop_sched_tick() call
+>> >> we can run into the same situation.
+>> > 
+>> > Yes it would be probably safer to do the tick disabling with
+>> > interrupts off already.
+>> 
+>> That only makes sense if you're really putting the cpu to sleep
+>> until an interrupt or similar happens.
 > 
-> Power management requests are kind of special and need block layer support.
-> 
-> Please take a look at REQ_DEVSET_EXEC special requests from ide-devsets.c
-> instead if you would like to investigate possibility of a cleaner (although
-> more invasive) solution.
-> 
-> > 2) All commands going into the device do so from a context from
-> >    which we could take a sleeping lock such as a mutex.  It's
-> >    therefore the most natural way to synchonize things.
-> 
-> The fact is that we need to synchronize against all commands going into
-> the device and they are synchronized using block queue (which is protected
-> with spinlock by block layer). Adding an extra mutex (even if possible)
+> That is what the idle loop is supposed to do, isn't it?
 
-We need to also take the synchronization between block queues of all devices
-on the port and the serialized ports into account..  This is quite complex
-and fragile code (vide cmd64x screaming IRQ issue ;)..
+Some sparc64 cpu's don't have a yield, and therefore can't
+truly "sleep" during this loop.  That's what I'm talking
+about.
 
-I would personally try going with 1) and avoid 2) at all costs..
+>> > These days NMI watchdog is not used much on x86 anymore because it's 
+>> > default off, so probably people never noticed that.
+>> 
+>> I really didn't want to provide the feature that way on sparc64 which
+>> is why I made it on by default.  It would be interesting to reconsider
+>> x86's default, perhaps even only on a trial basis in -next.
+> 
+> The reason it was turned off is that there are a few systems (e.g.
+> laptops from a particular vendor) which don't handle NMIs correctly
+> in the platform. When the NMI happens while SMI is active
+> they hang. Also there were a few other strange problems
+> on other systems that went away when it was disabled.
+
+I wonder how many of those "few other strange problems" were of
+the variety I'm diagnosing here :-)
+
+Yes, it's a messy problem to turn on by default on x86 then.
+
+Is this realm of systems-with-NMI-issues exclusive to x86-32 
+or would it be more doable to turn it on by default for 64-bit
+x86 builds?
