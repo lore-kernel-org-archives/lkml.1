@@ -1,116 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZFXM2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZFXMa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbZFXM2g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbZFXM22
+	id S1756588AbZFXMa7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 08:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZFXMaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:28:28 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:46115 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbZFXM22 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:28:28 -0400
-Date: Wed, 24 Jun 2009 14:28:28 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-Message-ID: <20090624142828.7c6a2337@skybase>
-In-Reply-To: <20090624112929.GB2079@linux-sh.org>
-References: <20090624131104.705c828d@skybase>
-	<20090624112929.GB2079@linux-sh.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	Wed, 24 Jun 2009 08:30:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59006 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751602AbZFXMav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 08:30:51 -0400
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Gary Hade <garyhade@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       x86 maintainers <x86@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090624122209.GC20564@elte.hu>
+References: <4A418254.9050607@lwfinger.net>
+	 <1245845787.3093.3.camel@localhost.localdomain>
+	 <20090624122209.GC20564@elte.hu>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 18:00:16 +0530
+Message-Id: <1245846616.3093.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 20:29:29 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
-
-> On Wed, Jun 24, 2009 at 01:11:04PM +0200, Martin Schwidefsky wrote:
-> > Hi Paul,
-> > following Ingo's suggestion I'm working on a patch to use a per-cpu
-> > hrtimer instead of the timer_hook for the oprofile ticks. Given that
-> > oprofile is the only user of the timer_hook I want to remove it
-> > completely. That way I came across the register_timer_hook call in
-> > arch/sh/oprofile/op_model_sh7750.c. Did this ever work? The startup
-> > of oprofile is done in two steps, on module load oprofile_init is
-> > called, on profiling start oprofile_start is called.
-> > Now for SH7750 this happens:
+On Wed, 2009-06-24 at 14:22 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
+> > > My latest pull from Linus's tree fails to boot. Bisection leads to the
+> > > commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
+> > > resources and warn if exceeded" with hash
+> > > f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
+> > > capture the first error message as it scrolls off the screen, but the
+> > > second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
+> > > ahci_enable_ahci() because HOST_AHCI_EN is not set.
+> > > 
 > > 
-> > oprofile_init()
-> > 	...
-> > 	oprofile_arch_init(&oprofile_ops);
-> > 		...
-> > 		lmodel->init(); 
-> > 		/* init() is sh7750_ppc_init for CPU_SH7750/CPU_7750S */
-> > 			sh7750_ppc_reset();
-> > 			register_timer_hook(sh7750_timer_notify);
-> > 			...
-> > 		...
-> > 	oprofile_timer_init(&oprofile_ops);
-> > 		...
-> > 		ops->start = timer_start;
-> > 		...
-> > 	...
+> > This patch fixes boot failure on my AMD 64 laptop, can you please test
+> > this patch:
 > > 
-> > oprofile_start()
-> > 	...
-> > 	oprofile_ops.start();
-> > 	/* start() is timer_start set by oprofile_timer_init */
-> > 		register_timer_hook(timer_notify);
-> > 	...
+> > [PATCH] x86: fix _CRS resources return handling
 > > 
-> > As far as I can see the second register_timer_hook will fail
-> > because sh7750_timer_notify is already registered. That will cause
-> > oprofile_start to fail with -EBUSY, no?
+> > We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
 > > 
-> No. oprofile_timer_init() is only entered if the performance counters
-> fail to register in the SH7750 case, so there is only one timer hook user
-> at a time:
+> > Also set info->bus->resource[info->res_num] for _CRS resources return handling
+> > 
+> > Fixed boot failure on some machine.
+> > 
+> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/pci/acpi.c |   16 ++++++++++------
+> >  1 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> static int __init oprofile_init(void)
-> {
->         int err;
+> Ah, nice! I suspect it was this upstream commit causing it:
 > 
->         err = oprofile_arch_init(&oprofile_ops);
+> f9cde5f: x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
 > 
->         if (err < 0 || timer) {
->                 printk(KERN_INFO "oprofile: using timer interrupt.\n");
->                 oprofile_timer_init(&oprofile_ops);
->         }
-> ...
+> right?
 
-Oh, I see. That is the reason why the s390 version of
-oprofile_arch_init returns -ENODEV. It does so to trigger the fallback
-to the timer_hook. That should work for sh as well, no?
+Yes :
 
-> The sh7750 performance counter code has always purposely abused the timer
-> interrupt as its profiling interrupt given that the counters themselves do not
-> generate IRQs on their own. There are a couple of 64-bit counters that can
-> count various events, but have no real event associated with them. As long as
-> they are periodically read, they return accurate statistics, but the granularity
-> is never better than the timer IRQ.
-> 
-> In practice oprofile has never been a good fit for these sorts of counters, so
-> this has fairly limited use. If there's a way to wiggle these types of counters
-> in to the new perf_counter API, then I'll convert that over and just kill the
-> old oprofile driver off completely. Barring that, I'll just end up converting it
-> over to hrtimers as well, so don't let that stop you from ripping out the timer
-> hook bits.
-> 
-> Most of this code predates hrtimers anyways, and it also predates the timer
-> hook, which is only something that we converted to some years back.
+git-bisect start
+[jaswinder@hpdv5 linux-2.6-tip]$ git-bisect bad
+[jaswinder@hpdv5 linux-2.6-tip]$ git-bisect good d06063cc221fdef
+Bisecting: 612 revisions left to test after this
+[59835e6e10a76865be52da556e76d77afb7c6bb6] Merge branch 'sched/urgent'
 
-Consider the timer_hook as history :-)
 
--- 
-blue skies,
-   Martin.
+git-bisect good
+Bisecting: 334 revisions left to test after this
+[df36b439c5fedefe013d4449cb6a50d15e2f4d70] Merge branch 'for-2.6.31' of git://git.linux-nfs.org/projects/trondmy/nfs-2.6
 
-"Reality continues to ruin my life." - Calvin.
+git-bisect bad
+Bisecting: 167 revisions left to test after this
+[59ef7a83f1127038a433464597df02e2dc9540e7] Merge branch 'linux-next' of git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6
+
+git-bisect bad
+Bisecting: 92 revisions left to test after this
+[5165aece0efac6574fc3e32b6f1c2a964820d1c6] Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next-2.6
+
+git-bisect good
+Bisecting: 37 revisions left to test after this
+[1eb3948716f68bdb71509d0175765295f1aca23d] PCI: use pci_is_root_bus() in pci_common_swizzle()
+
+git-bisect good
+Bisecting: 18 revisions left to test after this
+[7d9a73f6dcf4390d256bf19330c81e91523a26d5] PCI PM: consistently use type bool for wake enable variable
+
+git-bisect bad
+Bisecting: 9 revisions left to test after this
+[70298c6e6c1ba68346336b4ea54bd5c0abbf73c8] PCI AER: support Multiple Error Received and no error source id
+
+git-bisect good
+Bisecting: 4 revisions left to test after this
+[f85876ba82281f15bc4da11e41b94243a8b2b5b4] PCI: support PM D0hot->D3 transition reset
+
+git-bisect good
+Bisecting: 2 revisions left to test after this
+[d2abdf62882d982c58e7a6b09ecdcfcc28075e2e] PCI PM: Fix handling of devices without PM support by pci_target_state()
+
+git-bisect good
+Bisecting: 1 revisions left to test after this
+[f9cde5ffed17bf74f6bef042d99edb0622f58576] x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
+
+git-bisect bad
+Bisecting: 0 revisions left to test after this
+[ab7de999a2c771482698efa6fe7c7b7fcb1d482a] PCI: remove invalid comment of msi_mask_irq()
+
+ git-bisect good
+f9cde5ffed17bf74f6bef042d99edb0622f58576 is first bad commit
+commit f9cde5ffed17bf74f6bef042d99edb0622f58576
+Author: Gary Hade <garyhade@us.ibm.com>
+Date:   Wed May 27 12:41:44 2009 -0700
+
+    x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
+    
+    Issue a warning if _CRS returns too many resource descriptors to be
+    accommodated by the fixed size resource array instances.  If there is no
+    transparent bridge on the root bus "too many" is the
+    PCI_BUS_NUM_RESOURCES size of the resource array.  Otherwise, the last 3
+    slots of the resource array must be excluded making the maximum
+    (PCI_BUS_NUM_RESOURCES - 3).
+    
+    The current code:
+     - is silent when _CRS returns too many resource descriptors and
+     - incorrectly allows use of the last 3 slots of the resource array
+       for a root bus with a transparent bridge
+    
+    Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+:040000 040000 b1b02b4085b3ebd774ed5bcbf166b2957312bdf5 b7e4d2681c8e2615378df21a6489c5dde22a1954 M	arch
+
+Thanks,
+--
+JSR
 
