@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZFXL2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZFXLaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZFXL2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFXL2r
+	id S1754597AbZFXLaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZFXLab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:28:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45968 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZFXL2q (ORCPT
+	Wed, 24 Jun 2009 07:30:31 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49226 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbZFXLaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:28:46 -0400
-Subject: Re: Bluetooth HID devices not getting properly removed
-From: David Woodhouse <dwmw2@infradead.org>
-To: Thomas =?ISO-8859-1?Q?B=E4chler?= <thomas@archlinux.org>
-Cc: linux-kernel@vger.kernel.org, marcel@holtmann.org
-In-Reply-To: <4A4209D2.4060209@archlinux.org>
-References: <4A4209D2.4060209@archlinux.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 24 Jun 2009 12:28:46 +0100
-Message-Id: <1245842926.25547.5415.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 24 Jun 2009 07:30:30 -0400
+Date: Wed, 24 Jun 2009 20:29:29 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: register_timer_hook use in arch/sh/oprofile
+Message-ID: <20090624112929.GB2079@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	linux-kernel <linux-kernel@vger.kernel.org>
+References: <20090624131104.705c828d@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624131104.705c828d@skybase>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 13:11 +0200, Thomas Bächler wrote:
+On Wed, Jun 24, 2009 at 01:11:04PM +0200, Martin Schwidefsky wrote:
+> Hi Paul,
+> following Ingo's suggestion I'm working on a patch to use a per-cpu
+> hrtimer instead of the timer_hook for the oprofile ticks. Given that
+> oprofile is the only user of the timer_hook I want to remove it
+> completely. That way I came across the register_timer_hook call in
+> arch/sh/oprofile/op_model_sh7750.c. Did this ever work? The startup
+> of oprofile is done in two steps, on module load oprofile_init is
+> called, on profiling start oprofile_start is called.
+> Now for SH7750 this happens:
 > 
-> KERNEL[1245834012.631443] remove 
-> /devices/pci0000:00/0000:00:1d.0/usb2/2-2/2-2:1.0/bluetooth/hci0/hci0:11 
-> (bluetooth)
-> KERNEL[1245834012.632668] remove   /hci0:11/input12/mouse2 (input)
-> KERNEL[1245834012.641797] remove   /hci0:11/input12/event8 (input)
-> KERNEL[1245834012.655447] remove   /hci0:11/input12 (input)
-> KERNEL[1245834012.655502] remove   /hci0:11/0005:046D:B002.0004 (hid)
+> oprofile_init()
+> 	...
+> 	oprofile_arch_init(&oprofile_ops);
+> 		...
+> 		lmodel->init(); 
+> 		/* init() is sh7750_ppc_init for CPU_SH7750/CPU_7750S */
+> 			sh7750_ppc_reset();
+> 			register_timer_hook(sh7750_timer_notify);
+> 			...
+> 		...
+> 	oprofile_timer_init(&oprofile_ops);
+> 		...
+> 		ops->start = timer_start;
+> 		...
+> 	...
 > 
-> See how the device path of the removed input devices is truncated? When 
-> I do the same with a USB mouse, a full device path is returned each time.
+> oprofile_start()
+> 	...
+> 	oprofile_ops.start();
+> 	/* start() is timer_start set by oprofile_timer_init */
+> 		register_timer_hook(timer_notify);
+> 	...
 > 
-> All of this results in hal not removing its logical input device, which 
-> means the number of (non-existent) mice in the hal device tree increases 
-> whenever I disable and re-enable my mouse.
+> As far as I can see the second register_timer_hook will fail
+> because sh7750_timer_notify is already registered. That will cause
+> oprofile_start to fail with -EBUSY, no?
 > 
-> So where do I put this bug? Linux? Bluez? Udev? Hal? My guess is Linux, 
-> as these device paths come from Linux originally and are in fact 
-> inconsistent. This is all tested on 2.6.30, I have no idea if it was the 
-> case on older kernels.
+No. oprofile_timer_init() is only entered if the performance counters
+fail to register in the SH7750 case, so there is only one timer hook user
+at a time:
 
-It's in the BlueZ HID code. I pointed it out to Marcel a few months ago
--- it happens when the ACL connection is killed (orphaning the HID
-device in sysfs), and the HID device is only killed _later_, so the path
-on the removal is wrong.
+static int __init oprofile_init(void)
+{
+        int err;
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+        err = oprofile_arch_init(&oprofile_ops);
 
+        if (err < 0 || timer) {
+                printk(KERN_INFO "oprofile: using timer interrupt.\n");
+                oprofile_timer_init(&oprofile_ops);
+        }
+...
+
+The sh7750 performance counter code has always purposely abused the timer
+interrupt as its profiling interrupt given that the counters themselves do not
+generate IRQs on their own. There are a couple of 64-bit counters that can
+count various events, but have no real event associated with them. As long as
+they are periodically read, they return accurate statistics, but the granularity
+is never better than the timer IRQ.
+
+In practice oprofile has never been a good fit for these sorts of counters, so
+this has fairly limited use. If there's a way to wiggle these types of counters
+in to the new perf_counter API, then I'll convert that over and just kill the
+old oprofile driver off completely. Barring that, I'll just end up converting it
+over to hrtimers as well, so don't let that stop you from ripping out the timer
+hook bits.
+
+Most of this code predates hrtimers anyways, and it also predates the timer
+hook, which is only something that we converted to some years back.
