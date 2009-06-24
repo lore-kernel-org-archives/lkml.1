@@ -1,78 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbZFXVYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755652AbZFXVay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759026AbZFXVYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 17:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZFXVY0
+	id S1755652AbZFXVay (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 17:30:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZFXVap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 17:24:26 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:52259 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbZFXVY0 (ORCPT
+	Wed, 24 Jun 2009 17:30:45 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:50852 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751679AbZFXVao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 17:24:26 -0400
-Date: Wed, 24 Jun 2009 14:24:24 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Gary Hade <garyhade@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624212424.GH7239@us.ibm.com>
-References: <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain> <1245859068.3216.5.camel@localhost.localdomain> <20090624161306.GC7239@us.ibm.com> <1245861219.3216.15.camel@localhost.localdomain> <20090624094411.08fc66e6@jbarnes-g45> <20090624175513.GE7239@us.ibm.com> <20090624112849.55b38fff@jbarnes-g45> <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain> <20090624194839.GG7239@us.ibm.com> <4A4286F8.9020501@lwfinger.net>
+	Wed, 24 Jun 2009 17:30:44 -0400
+Date: Wed, 24 Jun 2009 17:30:45 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
+ I/O devices (rev. 5)
+In-Reply-To: <200906242124.05511.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906241724020.22054-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4286F8.9020501@lwfinger.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 03:05:12PM -0500, Larry Finger wrote:
-> Gary Hade wrote:
-> > On Wed, Jun 24, 2009 at 08:45:31PM +0200, Thomas Gleixner wrote:
-> >> Can we just bring the limit check back and increase the number for now
-> >> until folks come up with a better solution ?
-> > 
-> > Another possible option is leaving in the limit check (still valid
-> > IMO for correct behavior of previous 'pci=use_crs') and reverting
-> >  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9e9f46c44e487af0a82eb61b624553e2f7118f5b
-> > until the better solution for the fixed size array issue is
-> > available.
-> 
-> Either increasing PCI_BUS_NUM_RESOURCES from 16 to 20 or 24
+On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
 
-Yes, it looks to me like 20 might be the absolute minimum
-that your system could tolerate.  The big mystery is how much
-to increase it so we don't see the same problem on other
-systems where _CRS may return some unknown amount more that
-the 17 resources that are being returned on your system.
+> +config PM_RUNTIME
+> +	bool "Run-time PM core functionality"
+> +	depends on PM
+> +	---help---
+> +	  Enable functionality allowing I/O devices to be put into energy-saving
+> +	  (low power) states at run time (or autosuspended) after a specified
+> +	  period of inactivity and woken up in response to a hardware-generated
+> +	  wake-up event or a driver's request.
+> +
+> +	  Hardware support is generally required for this functionality to work
+> +	  and the bus type drivers of the buses the devices are on are
+> +	  responsibile for the actual handling of the autosuspend requests and
 
-> or reverting f9cde5f will work for my system.
+s/ibile/ible/
 
-This would not be good without also reverting
-9e9f46c44e487af0a82eb61b624553e2f7118f5b since devices
-below the transparent bridge on your's and other's systems
-may have trouble getting the resources they need.
+> @@ -165,6 +168,28 @@ typedef struct pm_message {
+>   * It is allowed to unregister devices while the above callbacks are being
+>   * executed.  However, it is not allowed to unregister a device from within any
+>   * of its own callbacks.
+> + *
+> + * There also are the following callbacks related to run-time power management
+> + * of devices:
+> + *
+> + * @runtime_suspend: Prepare the device for a condition in which it won't be
+> + *	able to communicate with the CPU(s) and RAM due to power management.
+> + *	This need not mean that the device should be put into a low power state.
+> + *	For example, if the device is behind a link which is about to be turned
+> + *	off, the device may remain at full power.  Still, if the device does go
 
-Removing the check would only hide possibly more insidious
-and difficult to debug problems that could show up later.
-This was the main reason I provided the patch.  This kind
-of check should have actually existed prior to
-9e9f46c44e487af0a82eb61b624553e2f7118f5b when 'pci=use_crs'
-was needed to enable use of the _CRS data.
+s/Still, if/If/ -- the word "Still" seems a little odd in this context.
 
-Thanks,
-Gary
+> + *	to low power and if device_may_wakeup(dev) is true, remote wake-up
+> + *	(i.e. hardware mechanism allowing the device to request a change of its
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+s/i.e. /i.e., a /
+
+> + *	power state, such as PCI PME) should be enabled for it.
+> + *
+> + * @runtime_resume: Put the device into the fully active state in response to a
+> + *	wake-up event generated by hardware or at a request of software.  If
+
+s/at a request/at the request/
+
+> + *	necessary, put the device into the full power state and restore its
+> + *	registers, so that it is fully operational.
+
+
+> + * RPM_ACTIVE		Device is fully operational, no run-time PM requests are
+> + *			pending for it.
+> + *
+> + * RPM_IDLE		It has been requested that the device be suspended.
+> + *			Suspend request has been put into the run-time PM
+> + *			workqueue and it's pending execution.
+> + *
+> + * RPM_SUSPENDING	Device bus type's ->runtime_suspend() callback is being
+> + *			executed.
+> + *
+> + * RPM_SUSPENDED	Device bus type's ->runtime_suspend() callback has
+> + *			completed successfully.  The device is regarded as
+> + *			suspended.
+> + *
+> + * RPM_WAKE		It has been requested that the device be woken up.
+> + *			Resume request has been put into the run-time PM
+> + *			workqueue and it's pending execution.
+> + *
+> + * RPM_RESUMING		Device bus type's ->runtime_resume() callback is being
+> + *			executed.
+
+Remember to add RPM_NOTIFY.
+
+
+> +/**
+> + * __pm_get_child - Increment the counter of unsuspended children of a device.
+> + * @dev: Device to handle;
+> + */
+> +static void __pm_get_child(struct device *dev)
+> +{
+> +	atomic_inc(&dev->power.child_count);
+> +}
+> +
+> +/**
+> + * __pm_put_child - Decrement the counter of unsuspended children of a device.
+> + * @dev: Device to handle;
+> + */
+> +static void __pm_put_child(struct device *dev)
+> +{
+> +	if (!atomic_add_unless(&dev->power.child_count, -1, 0))
+> +		dev_WARN(dev, "Unbalanced counter decrementation");
+> +}
+
+I think we don't need this dev_WARN.  It should be straightforward to
+verify that the increments and decrements balance correctly, and the
+child_count field isn't manipulated by drivers.
+
+In fact, these don't need to be separate routines at all.  Just call
+atomic_inc or atomic_dec directly.
+
+> +
+> +/**
+> + * __pm_runtime_suspend - Run a device bus type's runtime_suspend() callback.
+> + * @dev: Device to suspend.
+> + * @sync: If unset, the funtion has been called via pm_wq.
+> + *
+> + * Check if the run-time PM status of the device is appropriate and run the
+> + * ->runtime_suspend() callback provided by the device's bus type.  Update the
+> + * run-time PM flags in the device object to reflect the current status of the
+> + * device.
+> + */
+> +int __pm_runtime_suspend(struct device *dev, bool sync)
+> +{
+> +	struct device *parent = NULL;
+> +	unsigned long flags;
+> +	int error = -EINVAL;
+
+Remove the initializer.
+
+> +
+> +	might_sleep();
+> +
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +
+> + repeat:
+> +	if (dev->power.runtime_status == RPM_ERROR) {
+
+Insert:		error = -EINVAL;
+
+> +		goto out;
+> +	} else if (dev->power.runtime_status & RPM_SUSPENDED) {
+
+...
+
+
+> +void pm_runtime_put(struct device *dev)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +
+> +	if (!__pm_runtime_put(dev)) {
+> +		dev_WARN(dev, "Unbalanced counter decrementation");
+
+"decrementation" isn't a word -- or if it is, it shouldn't be.  :-)  
+Just use "decrement".  Similarly in other places.
+
+> +/**
+> + * pm_runtime_add - Update run-time PM fields of a device while adding it.
+> + * @dev: Device object being added to device hierarchy.
+> + */
+> +void pm_runtime_add(struct device *dev)
+> +{
+> +	dev->power.runtime_notify = false;
+> +	INIT_DELAYED_WORK(&dev->power.suspend_work, pm_runtime_suspend_work);
+
+Doesn't INIT_DELAYED_WORK belong in pm_runtime_init?
+Do we want the bus subsystem to be responsible for doing:
+
+	dev->power.runtime_disabled = false;
+	pm_runtime_put(dev);
+
+after calling device_add?  Or should device_add do it?
+
+
+> Index: linux-2.6/include/linux/pm_runtime.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/include/linux/pm_runtime.h
+
+> +static inline struct device *suspend_work_to_device(struct work_struct *work)
+> +{
+> +	struct delayed_work *dw = to_delayed_work(work);
+> +	struct dev_pm_info *dpi;
+> +
+> +	dpi = container_of(dw, struct dev_pm_info, suspend_work);
+> +	return container_of(dpi, struct device, power);
+> +}
+
+You don't need to iterate container_of like this.  You can do:
+
+	return container_of(dw, struct device, power.suspend_work);
+
+> +
+> +static inline struct device *work_to_device(struct work_struct *work)
+> +{
+> +	struct dev_pm_info *dpi;
+> +
+> +	dpi = container_of(work, struct dev_pm_info, work);
+> +	return container_of(dpi, struct device, power);
+> +}
+
+Similarly here.
+
+These two routines aren't used outside of runtime.c.  They should be
+moved into that file.  The same goes for pm_children_suspended and
+pm_suspend_possible.
+
+> +
+> +static inline void __pm_runtime_get(struct device *dev)
+> +{
+> +	atomic_inc(&dev->power.resume_count);
+> +}
+
+Why introduce __pm_runtime_get?  Just make this pm_runtime_get.
+
+> +static inline void pm_runtime_remove(struct device *dev)
+> +{
+> +	pm_runtime_disable(dev);
+> +}
+
+You forgot to decrement the parent's child_count if dev isn't
+suspended (and then do a idle_notify on the parent).  Because of this 
+additional complexity, don't inline the routine.
+
+> Index: linux-2.6/drivers/base/dd.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/base/dd.c
+> +++ linux-2.6/drivers/base/dd.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/kthread.h>
+>  #include <linux/wait.h>
+>  #include <linux/async.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include "base.h"
+>  #include "power/power.h"
+> @@ -202,8 +203,12 @@ int driver_probe_device(struct device_dr
+>  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+>  		 drv->bus->name, __func__, dev_name(dev), drv->name);
+>  
+> +	pm_runtime_disable(dev);
+> +
+>  	ret = really_probe(dev, drv);
+>  
+> +	pm_runtime_enable(dev);
+> +
+
+Shouldn't we guarantee that a device isn't probed while it is in a
+suspended state?  So this should be
+
+	pm_runtime_get(dev);
+	ret = pm_runtime_resume(dev);
+	if (ret == 0)
+		ret = really_probe(dev, drv);
+	pm_runtime_put(dev);	
+
+It might be nice to have a simple combined pm_runtime_get_and_resume
+for this sort of situation.
+
+
+More comments to follow when I get time to review more of the code...
+
+Alan Stern
 
