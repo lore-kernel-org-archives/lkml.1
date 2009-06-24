@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbZFXNvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZFXNyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756737AbZFXNvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 09:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753313AbZFXNuy
+	id S1758567AbZFXNyM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 09:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZFXNx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 09:50:54 -0400
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:54002 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752735AbZFXNuw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 09:50:52 -0400
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       axboe@kernel.dk, Patrick McHardy <kaber@trash.net>,
-       Trond.Myklebust@netapp.com, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-Message-Id: <5A680E0A-EFEB-44EA-9F06-F338E6CBD6D1@googlemail.com>
-From: Chrissie Caulfield <christine.caulfield@googlemail.com>
-To: jdb@comx.dk
-In-Reply-To: <1245845367.24921.3.camel@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
-Date: Wed, 24 Jun 2009 14:50:42 +0100
-References: <20090623150330.22490.87327.stgit@localhost> <20090623150429.22490.15113.stgit@localhost> <4A41C67E.8070301@googlemail.com> <1245843884.6695.54.camel@localhost.localdomain> <1245845367.24921.3.camel@localhost.localdomain>
-X-Mailer: Apple Mail (2.935.3)
-X-Cloudmark-Analysis: v=1.0 c=1 a=MGslJ2IUW1kA:10 a=vyou9Eqb-qFr1Z_fdWkA:9 a=5d0fOzmILjma5ZzziYhgdVGcDAUA:4
+	Wed, 24 Jun 2009 09:53:59 -0400
+Received: from fifo99.com ([67.223.236.141]:40760 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752527AbZFXNx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 09:53:58 -0400
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
+	usage
+From: Daniel Walker <dwalker@fifo99.com>
+To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       hackbod@android.com
+In-Reply-To: <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+	 <4A380494.6030506@goop.org> <1245249469.5982.251.camel@desktop>
+	 <4A390B9A.40806@goop.org> <1245254936.5982.261.camel@desktop>
+	 <4A391A54.7000109@goop.org>
+	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
+	 <1245274308.5982.268.camel@desktop>
+	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
+	 <1245451983.32124.25.camel@desktop>
+	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Wed, 24 Jun 2009 06:13:43 -0700
+Message-Id: <1245849223.32124.112.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-06-19 at 17:13 -0700, Arve Hjønnevåg wrote:
+> 
+> These are mostly questions for the framework team. The binder driver
+> is there to support our user space code. At some point we used the
+> driver from www.open-binder.org, but we ran into, and fixed, a lot of
+> bugs (especially when processes died), so we determined it would be
+> faster to rewrite the driver from scratch.
+> 
 
-On 24 Jun 2009, at 13:09, Jesper Dangaard Brouer wrote:
+Is there someone in your framework team that would be willing to respond
+to these questions ? (I know you added hackbod to the CC, but they
+aren't responding..)
 
-> On Wed, 2009-06-24 at 13:44 +0200, Jesper Dangaard Brouer wrote:
->> On Wed, 2009-06-24 at 07:23 +0100, Chrissie Caulfield wrote:
->>> The issues with DECnet module unloading are a little more than  
->>> just an
->>> RCU leak I think!
->>>
->>> Though that area does need reviewing ... when I get some time.
->>
->> Fine.  Now you have read my comment in the code, then there is a  
->> updated
->> patch below.  Will you ack-that?
->
-
-I don't have any objection to the patch at all, it just seemed a  
-little odd to deliberately add code inside #if 0 ;-)
-
-Chrissie
-
-
-> Sorry wrong patch... forgot save the code and 'stg refresh'...
->
-> [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
->
-> From: Jesper Dangaard Brouer <hawk@comx.dk>
->
-> The decnet module unloading as been disabled with a '#if 0' statement,
-> because it have had issues.
->
-> We add a rcu_barrier() anyhow for correctness.
->
-> The maintainer (Chrissie Caulfield) will look into the unload issue
-> when time permits.
->
-> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
-> ---
->
-> net/decnet/af_decnet.c |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
->
->
-> diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
-> index d351b8d..77d4028 100644
-> --- a/net/decnet/af_decnet.c
-> +++ b/net/decnet/af_decnet.c
-> @@ -2413,6 +2413,8 @@ static void __exit decnet_exit(void)
-> 	proc_net_remove(&init_net, "decnet");
->
-> 	proto_unregister(&dn_proto);
-> +
-> +	rcu_barrier_bh(); /* Wait for completion of call_rcu_bh()'s */
-> }
-> module_exit(decnet_exit);
-> #endif
->
->
+Daniel
 
