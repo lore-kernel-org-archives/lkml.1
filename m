@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761135AbZFXTpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbZFXTpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761135AbZFXTpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZFXTpS
+	id S1761986AbZFXTpo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761789AbZFXTp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:45:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58504 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbZFXTpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:45:17 -0400
-Date: Wed, 24 Jun 2009 18:30:24 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com
-Subject: Re: [RFC] tcp: race in receive part
-Message-ID: <20090624163024.GA29337@redhat.com>
-References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com> <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com> <4A40AF2A.3050509@gmail.com> <20090624102038.GA5409@jolsa.lab.eng.brq.redhat.com> <4A42082D.9060402@gmail.com> <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 24 Jun 2009 15:45:29 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:11871 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761858AbZFXTp2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 15:45:28 -0400
+Date: Wed, 24 Jun 2009 21:45:10 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: avorontsov@ru.mvista.com
+Cc: Ryan Mallon <ryan@bluewatersys.com>,
+       linux kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
+       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] ds2782 battery gas gauge driver
+Message-ID: <20090624214510.27233eb1@hyperion.delvare>
+In-Reply-To: <20090624141834.GA9035@oksana.dev.rtsoft.ru>
+References: <4A371CDF.3070407@bluewatersys.com>
+	<20090617110908.17b47a18@hyperion.delvare>
+	<20090624141834.GA9035@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24, Jiri Olsa wrote:
->
-> +/* The read_lock() on x86 is a full memory barrier. */
-> +#define smp_mb__after_read_lock() barrier()
+On Wed, 24 Jun 2009 18:18:34 +0400, Anton Vorontsov wrote:
+> On Wed, Jun 17, 2009 at 11:09:08AM +0200, Jean Delvare wrote:
+> > Hi Ryan,
+> > 
+> > On Tue, 16 Jun 2009 16:17:35 +1200, Ryan Mallon wrote:
+> > > Add support for the the ds2782 standalone I2C gas-gauge.
+> > > 
+> > > Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+> > 
+> > I suggest you send this patch to the maintainers of the power supply
+> > subsystem for review: Anton Vorontsov and David Woodhouse (Cc'd.)
+> 
+> Thanks for Cc'ing and for the review, Jean.
 
-Just curious, why do we need barrier() ?
+You're welcome.
 
-I must admit, personally I dislike _read_lock part. Because I think we
-need a "more generic" smp_mb__{before,after}_lock() or whatever which
-work for spin_lock/read_lock/write_lock.
+> [...]
+> > > +static int ds2782_get_temp(struct ds2782_info *info)
+> > > +{
+> > > +	u16 raw;
+> > > +	s16 temp;
+> > > +
+> > > +	/* Temperature is measured in units of 0.125 degrees celcius */
+> > > +	raw = ds2782_read_reg16(info, DS2782_REG_TEMP_MSB);
+> > > +	temp = (raw >> 5) & 0x7ff;
+> > > +	if (raw & (1 << 15))
+> > > +		temp |= 0xf800;
+> > > +	return (temp * 125) / 100;
+> > > +}
+> > 
+> > I don't know if the power supply class has a standard to reporting
+> > temperature values, but the hwmon class does, and it says that
+> > temperatures should be reported in millidegrees C. That's not what you
+> > do here AFAICS. It might be convenient to register a hwmon class device
+> > and export the temperature there, so that libsensors picks it.
+> 
+> Hwmon feels like a good idea. But no, drivers should not bother
+> with registering hwmon classes. Instead, some day we might want to
+> create power_supply_hwmon.c interface (like _sysfs.c that we have
+> already), the interface would register all needed stuff. And all
+> drivers will benefit right away without any modifications.
 
-In that case it can have more users. Btw, in fs/select.c too, see
-__pollwake().
+Sounds like a very good plan indeed.
 
-And surprise,
-
-> --- a/fs/select.c
-> +++ b/fs/select.c
-> @@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
->  	init_waitqueue_func_entry(&entry->wait, pollwake);
->  	entry->wait.private = pwq;
->  	add_wait_queue(wait_address, &entry->wait);
-> +
-> +	/* This memory barrier is paired with the smp_mb__after_read_lock
-> +	 * in the sk_has_sleeper. */
-> +	smp_mb();
-
-This could be smp_mb__after_lock() too.
-
-Oleg.
-
+-- 
+Jean Delvare
