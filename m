@@ -1,54 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZFXNyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759007AbZFXN6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758567AbZFXNyM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 09:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZFXNx7
+	id S1759007AbZFXN6q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 09:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZFXN6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 09:53:59 -0400
-Received: from fifo99.com ([67.223.236.141]:40760 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbZFXNx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 09:53:58 -0400
-Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
-	usage
-From: Daniel Walker <dwalker@fifo99.com>
-To: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
-Cc: Brian Swetland <swetland@google.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       hackbod@android.com
-In-Reply-To: <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
-	 <4A380494.6030506@goop.org> <1245249469.5982.251.camel@desktop>
-	 <4A390B9A.40806@goop.org> <1245254936.5982.261.camel@desktop>
-	 <4A391A54.7000109@goop.org>
-	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
-	 <1245274308.5982.268.camel@desktop>
-	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
-	 <1245451983.32124.25.camel@desktop>
-	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 24 Jun 2009 06:13:43 -0700
-Message-Id: <1245849223.32124.112.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 24 Jun 2009 09:58:35 -0400
+Received: from stinky.trash.net ([213.144.137.162]:47283 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbZFXN6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 09:58:34 -0400
+Message-ID: <4A423108.60109@trash.net>
+Date: Wed, 24 Jun 2009 15:58:32 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: jdb@comx.dk
+CC: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
+       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH v2 10/10] nf_conntrack: Use rcu_barrier() and fix	kmem_cache_create
+ flags
+References: <20090623150330.22490.87327.stgit@localhost>	 <20090623150444.22490.27931.stgit@localhost>  <4A410185.3090706@trash.net>	 <1245834139.6695.31.camel@localhost.localdomain> <1245836409.6695.35.camel@localhost.localdomain>
+In-Reply-To: <1245836409.6695.35.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-19 at 17:13 -0700, Arve Hjønnevåg wrote:
+Jesper Dangaard Brouer wrote:
+> Adjusting SLAB_DESTROY_BY_RCU flags.
 > 
-> These are mostly questions for the framework team. The binder driver
-> is there to support our user space code. At some point we used the
-> driver from www.open-binder.org, but we ran into, and fixed, a lot of
-> bugs (especially when processes died), so we determined it would be
-> faster to rewrite the driver from scratch.
+>  kmem_cache_create("nf_conntrack", ...) does not need the
+>  SLAB_DESTROY_BY_RCU flag.
+
+It does need it. We're using it instead of call_rcu() for conntracks.
+
+>  But the
+>  kmem_cache_create("nf_conntrack_expect", ...) should use the
+>  SLAB_DESTROY_BY_RCU flag, because it uses a call_rcu() callback to
+>  invoke kmem_cache_free().
+
+No, using call_rcu() means we don't need SLAB_DESTROY_BY_RCU.
+Please see the note in include/linux/slab.h.
+
+> RCU barriers, rcu_barrier(), is inserted two places.
 > 
+>  In nf_conntrack_expect.c nf_conntrack_expect_fini() before the
+>  kmem_cache_destroy(), even though the use of the SLAB_DESTROY_BY_RCU
+>  flag, because slub does not (currently) handle rcu sync correctly.
 
-Is there someone in your framework team that would be willing to respond
-to these questions ? (I know you added hackbod to the CC, but they
-aren't responding..)
+I think that should be fixed in slub then.
 
-Daniel
+>  And in nf_conntrack_extend.c nf_ct_extend_unregister(), inorder to
+>  wait for completion of callbacks to __nf_ct_ext_free_rcu(), which is
+>  invoked by __nf_ct_ext_add().  It might be more efficient to call
+>  rcu_barrier() in nf_conntrack_core.c nf_conntrack_cleanup_net(), but
+>  thats make it more difficult to read the code (as the callback code
+>  in located in nf_conntrack_extend.c).
+
+This one looks fine.
+
+> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+> index 5f72b94..438ce84 100644
+> --- a/net/netfilter/nf_conntrack_core.c
+> +++ b/net/netfilter/nf_conntrack_core.c
+> @@ -1242,7 +1242,7 @@ static int nf_conntrack_init_init_net(void)
+>  
+>  	nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
+>  						sizeof(struct nf_conn),
+> -						0, SLAB_DESTROY_BY_RCU, NULL);
+> +						0, 0, NULL);
+>  	if (!nf_conntrack_cachep) {
+>  		printk(KERN_ERR "Unable to create nf_conn slab cache\n");
+>  		ret = -ENOMEM;
+> diff --git a/net/netfilter/nf_conntrack_expect.c b/net/netfilter/nf_conntrack_expect.c
+> index afde8f9..56227c2 100644
+> --- a/net/netfilter/nf_conntrack_expect.c
+> +++ b/net/netfilter/nf_conntrack_expect.c
+> @@ -593,7 +593,7 @@ int nf_conntrack_expect_init(struct net *net)
+>  	if (net_eq(net, &init_net)) {
+>  		nf_ct_expect_cachep = kmem_cache_create("nf_conntrack_expect",
+>  					sizeof(struct nf_conntrack_expect),
+> -					0, 0, NULL);
+> +					0, SLAB_DESTROY_BY_RCU, NULL);
+>  		if (!nf_ct_expect_cachep)
+>  			goto err2;
+>  	}
+> @@ -617,8 +617,15 @@ err1:
+>  void nf_conntrack_expect_fini(struct net *net)
+>  {
+>  	exp_proc_remove(net);
+> -	if (net_eq(net, &init_net))
+> +	if (net_eq(net, &init_net)) {
+> +		/* hawk@comx.dk 2009-06-24: The rcu_barrier() can be
+> +		 * removed once the sl*b allocators has been fixed
+> +		 * regarding handling the SLAB_DESTROY_BY_RCU flag
+> +		 * correctly.
+> +		 */
+> +		rcu_barrier(); /* Wait for call_rcu() before destroy */
+>  		kmem_cache_destroy(nf_ct_expect_cachep);
+> +	}
+>  	nf_ct_free_hashtable(net->ct.expect_hash, net->ct.expect_vmalloc,
+>  			     nf_ct_expect_hsize);
+>  }
+> diff --git a/net/netfilter/nf_conntrack_extend.c b/net/netfilter/nf_conntrack_extend.c
+> index 4b2c769..fef95be 100644
+> --- a/net/netfilter/nf_conntrack_extend.c
+> +++ b/net/netfilter/nf_conntrack_extend.c
+> @@ -186,6 +186,6 @@ void nf_ct_extend_unregister(struct nf_ct_ext_type *type)
+>  	rcu_assign_pointer(nf_ct_ext_types[type->id], NULL);
+>  	update_alloc_size(type);
+>  	mutex_unlock(&nf_ct_ext_type_mutex);
+> -	synchronize_rcu();
+> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>  }
+>  EXPORT_SYMBOL_GPL(nf_ct_extend_unregister);
+> 
 
