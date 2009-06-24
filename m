@@ -1,99 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZFXWiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZFXWlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZFXWiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 18:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZFXWhw
+	id S1754614AbZFXWlF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 18:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbZFXWkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 18:37:52 -0400
-Received: from kroah.org ([198.145.64.141]:47858 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbZFXWhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 18:37:51 -0400
-Date: Wed, 24 Jun 2009 15:33:43 -0700
-From: Greg KH <greg@kroah.com>
-To: asdf@kroah.com, Richard Purdie <rpurdie@rpsys.net>,
-       Richard Purdie <rpurdie@linux.intel.com>,
-       Guennadi Liakhovetski <lg@denx.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] LED: Reply-To: use correct name for
-	/sys/devices/virtual/leds/ entries
-Message-ID: <20090624223343.GA17235@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 24 Jun 2009 18:40:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35968 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751577AbZFXWky (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 18:40:54 -0400
+Date: Wed, 24 Jun 2009 15:40:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Karl Beldan <karl.beldan@gmail.com>
+Cc: linux-ext4@vger.kernel.org, bdonlan@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] ext[234]: Return -EIO not -ESTALE on directory
+ traversal
+Message-Id: <20090624154025.285e108c.akpm@linux-foundation.org>
+In-Reply-To: <4A425F8B.2000907@gmail.com>
+References: <4A425F8B.2000907@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Olaf Hering <olh@suse.de>
+On Wed, 24 Jun 2009 19:16:59 +0200
+Karl Beldan <karl.beldan@gmail.com> wrote:
 
-This is needed to get kde-powersave to work properly on some g4
-powerbooks.
+> Hi,
+> 
+> e6f009b for ext4,
+> de18f3b for ext3.
+> 
+> It seems that ext2 didn't get it.
+> 
 
-From: Olaf Hering <olh@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+hm, well spotted.  I seem to have fumbled that patch.  I'll send it in
+for 2.6.31.
 
----
-This has been shipping in the SuSE kernels for a while.  I do not know
-why it was not sent to you previously, sorry - gregkh
-
- drivers/leds/leds-cobalt-qube.c   |    2 +-
- drivers/leds/leds-cobalt-raq.c    |    4 ++--
- drivers/leds/ledtrig-default-on.c |    2 +-
- drivers/macintosh/via-pmu-led.c   |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
-
---- a/drivers/leds/leds-cobalt-qube.c
-+++ b/drivers/leds/leds-cobalt-qube.c
-@@ -28,7 +28,7 @@ static void qube_front_led_set(struct le
- }
- 
- static struct led_classdev qube_front_led = {
--	.name			= "qube-front",
-+	.name			= "qube::front",
- 	.brightness		= LED_FULL,
- 	.brightness_set		= qube_front_led_set,
- 	.default_trigger	= "ide-disk",
---- a/drivers/leds/leds-cobalt-raq.c
-+++ b/drivers/leds/leds-cobalt-raq.c
-@@ -49,7 +49,7 @@ static void raq_web_led_set(struct led_c
- }
- 
- static struct led_classdev raq_web_led = {
--	.name		= "raq-web",
-+	.name		= "raq::web",
- 	.brightness_set	= raq_web_led_set,
- };
- 
-@@ -70,7 +70,7 @@ static void raq_power_off_led_set(struct
- }
- 
- static struct led_classdev raq_power_off_led = {
--	.name			= "raq-power-off",
-+	.name			= "raq::power-off",
- 	.brightness_set		= raq_power_off_led_set,
- 	.default_trigger	= "power-off",
- };
---- a/drivers/leds/ledtrig-default-on.c
-+++ b/drivers/leds/ledtrig-default-on.c
-@@ -23,7 +23,7 @@ static void defon_trig_activate(struct l
- }
- 
- static struct led_trigger defon_led_trigger = {
--	.name     = "default-on",
-+	.name     = "default::on",
- 	.activate = defon_trig_activate,
- };
- 
---- a/drivers/macintosh/via-pmu-led.c
-+++ b/drivers/macintosh/via-pmu-led.c
-@@ -72,7 +72,7 @@ static void pmu_led_set(struct led_class
- }
- 
- static struct led_classdev pmu_led = {
--	.name = "pmu-front-led",
-+	.name = "pmu-led::front",
- #ifdef CONFIG_ADB_PMU_LED_IDE
- 	.default_trigger = "ide-disk",
- #endif
