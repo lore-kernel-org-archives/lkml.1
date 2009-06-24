@@ -1,90 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756499AbZFXKES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZFXKEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756499AbZFXKES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZFXKEH
+	id S1757304AbZFXKEb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbZFXKEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:04:07 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:46314 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbZFXKEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:04:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=RvfDwyqRCoXzHiGcwmUHkStmaU7VCN4cH0WbPsw7EHJjwgmRrwDr40UFKiNDR95lWC
-         QGp6ILqYeN7/+mHvnM7K530IO9CKHgGH5jDrd60gne5p6XKh2+1R5qMlqKkkKYu21LTN
-         aKyCiGn08y6X8REHg1GJ4Afv2tsyAxW9DftCo=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 2/6] ide: fix ide_kill_rq() for special ide-{floppy,tape} driver requests
-Date: Wed, 24 Jun 2009 12:09:53 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       petkovbb@gmail.com, htejun@gmail.com
-References: <200906232326.06830.bzolnier@gmail.com> <20090623.234929.32348223.davem@davemloft.net>
-In-Reply-To: <20090623.234929.32348223.davem@davemloft.net>
+	Wed, 24 Jun 2009 06:04:14 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59018 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753764AbZFXKEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:04:12 -0400
+Date: Wed, 24 Jun 2009 12:04:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
+Subject: Re: merging the per-bdi writeback patchset
+Message-ID: <20090624100414.GJ31415@kernel.dk>
+References: <20090623081156.GT31415@kernel.dk> <20090623014835.1fc8fb14.akpm@linux-foundation.org> <20090623085505.GU31415@kernel.dk> <20090623080137.33cdc45c.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906241209.53891.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090623080137.33cdc45c.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009 08:49:29 David Miller wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Tue, 23 Jun 2009 23:26:06 +0200
+On Tue, Jun 23 2009, Andrew Morton wrote:
+> On Tue, 23 Jun 2009 10:55:05 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> > @@ -152,7 +152,7 @@ void ide_kill_rq(ide_drive_t *drive, str
-> >  
-> >  	if ((media == ide_floppy || media == ide_tape) && drv_req) {
-> >  		rq->errors = 0;
-> > -		ide_complete_rq(drive, 0, blk_rq_bytes(rq));
-> > +		ide_complete_rq(drive, -EIO, blk_rq_bytes(rq));
-> >  	} else {
-> >  		if (media == ide_tape)
-> >  			rq->errors = IDE_DRV_ERROR_GENERAL;
+> > On Tue, Jun 23 2009, Andrew Morton wrote:
+> > > On Tue, 23 Jun 2009 10:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > Things are looking good for this patchset and it's been in -next for
+> > > > almost a week without any reports of problems. So I'd like to merge it
+> > > > for 2.6.31 if at all possible. Any objections?
+> > > 
+> > > erk.  I was rather expecting I'd have time to have a look at it all.
+> > 
+> > OK, we can wait if we have to, just trying to avoid having to keep this
+> > fresh for one full cycle. I have posted this patchset 11 times though
+> > over months, so it's not like it's a new piece of work :-)
 > 
-> I've done some research and this logic of returning "0" appears to be
-> intentional.
+> Yeah, sorry.  
 > 
-> It keeps the block layer from printing the "I/O error" kernel log
-> message during completion of the request.
-
-It would be pretty illogical behavior for driver to intentionally not
-let user know about the failed requests..
-
-> IDE tape as one example, seems to have it's own system of passing
-> errors back up to the special command completion, via rq->errors
-> and IDE_DRV_ERROR_GENERAL.
-
-Please look at the patch/code:
-
- 		rq->errors = 0;
--		ide_complete_rq(drive, 0, blk_rq_bytes(rq));
-+		ide_complete_rq(drive, -EIO, blk_rq_bytes(rq));
-
-and notice rq->errors line.
-
-> See idetape_queue_rw_tail() and ide_tape_callback() for example.
+> > > It's unclear to me actually _why_ the performance changes which were
+> > > observed have actually occurred.  In fact it's a bit unclear (to me)
+> > > why the patchset was written and what it sets out to achieve :(
+> > 
+> > It started out trying to get rid of the pdflush uneven writeout. If you
+> > look at various pdflush intensive workloads, even on a single disk you
+> > often have 5 or more pdflush threads working the same device. It's just
+> > not optimal.
 > 
-> IDE floppy has similar pieces of logic, and possibly similar desires
-> wrt. emission of the block layer I/O error log message during
-> special requests.
+> That's a bug, isn't it?  This
 > 
-> When something sticks out like an eyesore (as this -EIO thing does)
-> and seems to make no sense at all, there often is some obscure
-> reason.
+> 		/* Is another pdflush already flushing this queue? */
+> 		if (current_is_pdflush() && !writeback_acquire(bdi))
+> 			break;
+> 
+> isn't working.
 
-The obscure reasons is just the fact that both ide-floppy and ide-tape
-had a they own duplicated/buggy request completion routines.
+But that's on a per-inode basis. I didn't look further into the problem
+to be honest, just noticed that you very quickly get a handful of
+pdflush threads ticking along.
 
-While they were being unified the whole bunch of similar class of bugs
-were fixed so I agree that there may still be more issues to deal with
-there.
+> > Another issue was starvation with request allocation. Given
+> > that pdflush does non-blocking writes (it has to, by design), pdflush
+> > can potentially be starved if someone else is working the device.
+> 
+> hm, true.  100% starved, or just "slowed down"?  The latter I trust -
+> otherwise there are still failure modes?
+
+Just slowed down, I'm suspecting this is where the lumpiness comes from
+as well. At least in the cases I have seen, in theory you could starve
+the pdflush thread indefinitely.
+
+> > > A long time ago the XFS guys (Dave Chinner iirc) said that XFS needs
+> > > more than one thread per device to keep the device saturated.  Did that
+> > > get addressed?
+> > 
+> > It supports up to 32-threads per device, but Chinner et all have been
+> > silent. So the support is there and there's a
+> > super_operations->inode_get_wb() to map a dirty inode to a writeback
+> > device. Nobody is doing that yet though.
+> 
+> OK.
+> 
+> How many kernel threads do the 1000-spindle people end up with?
+
+If all 1000 spindles are exposed and flushing dirty data, you get 1000
+threads. Realistically, you'll likely use some sort of dm/md frontend
+though. And then you only get 1 thread per dm/md device.
+
+-- 
+Jens Axboe
+
