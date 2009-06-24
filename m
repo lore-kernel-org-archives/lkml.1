@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZFXH4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753439AbZFXIEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754039AbZFXH4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:56:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZFXH4l
+	id S1753439AbZFXIEq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZFXIE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:56:41 -0400
-Received: from mailhost5.gawab.com ([66.220.20.5]:55814 "HELO info14.gawab.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751406AbZFXH4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:56:40 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Ralf Gross <Ralf-Lists@ralfgross.de>
-Subject: Re: io-scheduler tuning for better read/write ratio
-Date: Wed, 24 Jun 2009 10:57:41 +0300
-User-Agent: KMail/1.5
-References: <4A37CB2A.6010209@davidnewall.com> <x49iqinys2k.fsf@segfault.boston.devel.redhat.com> <20090624072554.GA16642@p15145560.pureserver.info>
-In-Reply-To: <20090624072554.GA16642@p15145560.pureserver.info>
-Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com
+	Wed, 24 Jun 2009 04:04:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59515 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZFXIEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 04:04:25 -0400
+Message-ID: <4A41DDE6.1090209@kernel.org>
+Date: Wed, 24 Jun 2009 17:03:50 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       davem@davemloft.net
+Subject: [PATCH 11/10] sparc64: fix build breakage introduced by percpu-convert-most
+ patchset
+References: <1245825924-30412-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1245825924-30412-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906241057.41227.a1426z@gawab.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 08:03:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ralf Gross wrote:
-> The main problem is with bacula. It reads/writes from/to two
-> spoolfiles on the same device.
->
-> I get the same behavior with 2 dd processes, one reading from disk, one
-> writing to it.
->
-> Here's the output from dstat (5 sec intervall).
->
-> --dsk/md1--
-> _read _writ
->   26M   95M
->   31M   96M
->   20M   85M
->   31M  108M
->   28M   89M
->   24M   95M
->   26M   79M
->   32M  115M
->   50M   74M
->  129M   15k
->  147M 1638B
->  147M    0
->  147M    0
->  113M    0
->
->
-> At the end I stopped the dd process that is writing to the device, so you
-> can see that the md device is capable of reading with >120 MB/s.
->
-> I did this with these two commands.
->
-> dd if=/dev/zero of=test bs=1MB
-> dd if=/dev/md1 of=/dev/null bs=1M
+Commit e74e396204bfcb67570ba4517b08f5918e69afea incorrectly added
+added HAVE_LEGACY_PER_CPU_AREA to sparc64 although it already has been
+converted to dynamic percpu allocator.  Drop both
+HAVE_{LEGACY|DYNAMIC}_PER_CPU_AREA.
 
-Try changing /proc/sys/vm/dirty_ratio = 1
+[ Impact: fix build breakage ]
 
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: David Miller <davem@davemloft.net>
+---
+This patch fixes build breakage caused by changed patch apply order.
+Thanks.
 
-Thanks!
+ arch/sparc/Kconfig |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
---
-Al
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 7a8698b..4f6ed0f 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -92,15 +92,9 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
+ 
+-config HAVE_LEGACY_PER_CPU_AREA
+-	def_bool y if SPARC64
+-
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y if SPARC64
+ 
+-config HAVE_DYNAMIC_PER_CPU_AREA
+-	def_bool y if SPARC64
+-
+ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	def_bool y if SPARC64
+-- 
+1.6.0.2
 
