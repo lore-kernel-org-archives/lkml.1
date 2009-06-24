@@ -1,49 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbZFXHnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZFXHn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbZFXHnj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755965AbZFXHn0
+	id S1755941AbZFXHn2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbZFXHnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:43:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44243 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755894AbZFXHnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:43:25 -0400
-Message-ID: <4A41D939.40507@garzik.org>
-Date: Wed, 24 Jun 2009 03:43:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <lenb@kernel.org>,
-       Avi Kivity <avi@qumranet.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Richard Purdie <rpurdie@rpsys.net>, Boaz Harrosh <bharrosh@panasas.com>
-Subject: Re: Main things left in linux-next
-References: <20090624164617.b7c49974.sfr@canb.auug.org.au> <20090624172735.9b500674.sfr@canb.auug.org.au>
-In-Reply-To: <20090624172735.9b500674.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Jun 2009 03:43:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56867
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755556AbZFXHnN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 03:43:13 -0400
+Date: Wed, 24 Jun 2009 00:43:17 -0700 (PDT)
+Message-Id: <20090624.004317.71339627.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, kaber@trash.net
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> The main obvious things left are:
-> 
-> osdblk from the osd tree
 
+[ Ingo, the top of this pull request is commit
+  7959ea254ed18faee41160b1c50b3c9664735967, so you can use
+  that to know when to start checking to see if your netfilter
+  crashes are fixed. ]
 
-I thought Boaz pushed this one the other day...
+1) Drivers like DJA1000 and KS8842 cannot compile on platforms like
+   s390, make them depen on HAS_IOMEM.  From Heiko Carstnes.
 
-	Jeff
+2) NETXEN build fix, and a fix for firmware handshaking, from
+   Dhananjay Phadke.
 
+3) The ipv6 layers pass ICMP6 type and code fields around as
+   ints, which is silly.  When those values are use to index
+   tables, because they are int's, it looks like out-of-range
+   access are possible so people send "fixes" for that.
 
+   Fix it right by using "u8" consistently as the type to pass
+   these values around.  From Brian Haley.
 
+4) Unconditional skb_orphan() call in netif_receive_skb() created
+   regressions in protocols such as CAN which expect skb->sk and
+   destructors to survive from transmit back to receive into
+   their stack.  Fix from Herbert Xu.
+
+5) Netfilter fixes via Patrick McHardy.  In particular fixes for
+   crashes reported by Ingo Molnar that were due to various races.
+
+6) Another routing fix from Neil Horman based upon suggestions by
+   Alexey Kuznetsov.  When we decide to not cache, we would leak
+   the route.
+
+7) Before being brought up, bnx2 devices report incorrect link state.
+   Fix from Ooiwa Naohiro.
+
+8) qla3xxx bug fixes from Ron Mercer.  Sleep while holding spinlock
+   and missing delay after PHY reset.
+
+Please pull, thanks a lot!
+
+The following changes since commit 4e8a2372f9255a1464ef488ed925455f53fbdaa1:
+  Mikael Pettersson (1):
+        nvidiafb: fix boot-time printk string
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-next-2.6.git master
+
+Brian Haley (1):
+      ipv6: Use correct data types for ICMPv6 type and code
+
+Dhananjay Phadke (2):
+      netxen: fix build with without CONFIG_PM
+      netxen: fix firmware init handshake
+
+Eric Dumazet (1):
+      netfilter: nf_conntrack: death_by_timeout() fix
+
+Heiko Carstens (2):
+      can: let SJA1000 driver depend on HAS_IOMEM
+      net: let KS8842 driver depend on HAS_IOMEM
+
+Herbert Xu (1):
+      net: Move rx skb_orphan call to where needed
+
+Jan Engelhardt (1):
+      netfilter: xt_quota: fix incomplete initialization
+
+Neil Horman (1):
+      ipv4 routing: Ensure that route cache entries are usable and reclaimable with caching is off
+
+Ooiwa Naohiro (1):
+      bnx2: Fix the behavior of ethtool when ONBOOT=no
+
+Patrick McHardy (5):
+      netfilter: nf_conntrack: fix confirmation race condition
+      netfilter: nf_conntrack: fix conntrack lookup race
+      netfilter: fix some sparse endianess warnings
+      netfilter: nf_log: fix direct userspace memory access in proc handler
+      netfilter: xt_rateest: fix comparison with self
+
+Ron Mercer (2):
+      qla3xxx: Give the PHY time to come out of reset.
+      qla3xxx: Don't sleep while holding lock.
+
+ drivers/net/Kconfig                  |    1 +
+ drivers/net/bnx2.c                   |   10 ++++++++-
+ drivers/net/can/Kconfig              |    2 +-
+ drivers/net/netxen/netxen_nic_init.c |   37 ++++++++++++++++++---------------
+ drivers/net/netxen/netxen_nic_main.c |    7 +++++-
+ drivers/net/qla3xxx.c                |    6 ++++-
+ include/linux/icmpv6.h               |    6 ++--
+ include/net/protocol.h               |    2 +-
+ include/net/rawv6.h                  |    2 +-
+ include/net/sctp/sctp.h              |    1 +
+ include/net/sock.h                   |    2 +
+ include/net/xfrm.h                   |    2 +-
+ net/ax25/ax25_in.c                   |    3 +-
+ net/core/dev.c                       |    2 -
+ net/dccp/ipv6.c                      |    2 +-
+ net/ipv4/route.c                     |   26 +++++++++++++++++++++--
+ net/ipv6/ah6.c                       |    2 +-
+ net/ipv6/esp6.c                      |    2 +-
+ net/ipv6/icmp.c                      |   12 +++++-----
+ net/ipv6/ip6_tunnel.c                |   18 ++++++++--------
+ net/ipv6/ipcomp6.c                   |    2 +-
+ net/ipv6/mip6.c                      |    2 +-
+ net/ipv6/raw.c                       |    4 +-
+ net/ipv6/route.c                     |    2 +-
+ net/ipv6/tcp_ipv6.c                  |    2 +-
+ net/ipv6/tunnel6.c                   |    2 +-
+ net/ipv6/udp.c                       |    6 ++--
+ net/ipv6/udp_impl.h                  |    2 +-
+ net/ipv6/udplite.c                   |    2 +-
+ net/ipv6/xfrm6_tunnel.c              |    2 +-
+ net/irda/af_irda.c                   |    3 --
+ net/irda/ircomm/ircomm_lmp.c         |    1 +
+ net/netfilter/nf_conntrack_core.c    |   25 ++++++++++++++++++----
+ net/netfilter/nf_log.c               |   16 ++++++++++----
+ net/netfilter/xt_NFQUEUE.c           |    8 +++---
+ net/netfilter/xt_cluster.c           |    8 +++---
+ net/netfilter/xt_quota.c             |    1 +
+ net/netfilter/xt_rateest.c           |    2 +-
+ net/sctp/ipv6.c                      |    2 +-
+ 39 files changed, 149 insertions(+), 88 deletions(-)
