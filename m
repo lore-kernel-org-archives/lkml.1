@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZFXPNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZFXPQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZFXPNS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 11:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZFXPNI
+	id S1756335AbZFXPQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 11:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZFXPQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 11:13:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39806 "EHLO mx3.mail.elte.hu"
+	Wed, 24 Jun 2009 11:16:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32838 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752336AbZFXPNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 11:13:07 -0400
-Date: Wed, 24 Jun 2009 17:13:02 +0200
+	id S1751969AbZFXPQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 11:16:49 -0400
+Date: Wed, 24 Jun 2009 17:16:34 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: PREEMPT_ACTIVE too low error with all asm-generic headers for
-	some arches
-Message-ID: <20090624151302.GA15037@elte.hu>
-References: <8bd0f97a0906231508s4c115d3dr2848626bc5a28c5e@mail.gmail.com> <20090624131357.GA6224@elte.hu> <200906241602.38422.arnd@arndb.de> <8bd0f97a0906240802ieec96fav2864fa199d3f1b90@mail.gmail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+Message-ID: <20090624151634.GC15037@elte.hu>
+References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <4A423686.8050905@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0906240802ieec96fav2864fa199d3f1b90@mail.gmail.com>
+In-Reply-To: <4A423686.8050905@lwfinger.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,62 +38,43 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mike Frysinger <vapier.adi@gmail.com> wrote:
+* Larry Finger <Larry.Finger@lwfinger.net> wrote:
 
-> On Wed, Jun 24, 2009 at 10:02, Arnd Bergmann wrote:
-> > On Wednesday 24 June 2009, Ingo Molnar wrote:
-> >> * Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >> > if we look at linux/hardirq.h, it makes this claim:
-> >> >  * - bit 28 is the PREEMPT_ACTIVE flag
-> >> > if that's true, then why are we letting any arch set this define ?  a
-> >> > quick survey shows that half the arches (11) are using 0x10000000 (bit
-> >> > 28) while the other half (10) are using 0x4000000 (bit 26).  and then
-> >> > there is the ia64 oddity which uses bit 30.  the exact value here
-> >> > shouldnt really matter across arches though should it ?
-> >
-> > actually alpha, arm and avr32 also use bit 30 (0x40000000), there are only
-> > five (or eight, depending on how you count) architectures (blackfin, h8300,
-> > m68k, s390 and sparc) using bit 26.
-> 
-> meh, too many zeros ;)
-> 
-> >> Correct - what matters is to have no collision between the fields.
+> Jaswinder Singh Rajput wrote:
+> > On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
+> >> My latest pull from Linus's tree fails to boot. Bisection leads to the
+> >> commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
+> >> resources and warn if exceeded" with hash
+> >> f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
+> >> capture the first error message as it scrolls off the screen, but the
+> >> second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
+> >> ahci_enable_ahci() because HOST_AHCI_EN is not set.
 > >>
-> >> > how about adding this to linux/thread_info.h:
-> >> > #ifndef PREEMPT_ACTIVE
-> >> > # ifndef PREEMPT_ACTIVE_BIT
-> >> > #  define PREEMPT_ACTIVE_BIT 28
-> >> > # endif
-> >> > # define PREEMPT_ACTIVE (1 << PREEMPT_ACTIVE_BIT)
-> >> > #endif
-> >>
-> >> Makes sense i guess - but do we really need that level of
-> >> #ifdef nesting? PREEMPT_ACTIVE_BIT should be the main control - with
-> >> a default to 28 if it's not set. PREEMPT_ACTIVE is then derived off
-> >> that, without any #ifdefs.
-> >
-> > I think it would fit better into linux/hardirq.h instead of
-> > linux/thread_info.h, because that is where the other bits of
-> > the preempt count are defined.
+> > 
+> > This patch fixes boot failure on my AMD 64 laptop, can you please test
+> > this patch:
+> > 
+> > [PATCH] x86: fix _CRS resources return handling
+> > 
+> > We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
+> > 
+> > Also set info->bus->resource[info->res_num] for _CRS resources return handling
+> > 
+> > Fixed boot failure on some machine.
+> > 
+> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/pci/acpi.c |   16 ++++++++++------
+> >  1 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> agreed
+> Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
 > 
-> > --- a/include/linux/hardirq.h
-> > +++ b/include/linux/hardirq.h
-> > @@ -62,6 +62,12 @@
-> >  #define HARDIRQ_OFFSET (1UL << HARDIRQ_SHIFT)
-> >  #define NMI_OFFSET     (1UL << NMI_SHIFT)
-> >
-> > +#ifndef PREEMPT_ACTIVE
-> > +#define PREEMPT_ACTIVE_BITS    1
-> > +#define PREEMPT_ACTIVE_SHIFT   (NMI_SHIFT + NMI_BITS)
-> > +#define PREEMPT_ACTIVE (__IRQ_MASK(PREEMPT_ACTIVE_BITS) << PREEMPT_SHIFT)
-> 
-> i think you meant "<< PREEMPT_ACTIVE_SHIFT" there.  once i make 
-> that change, it builds fine.
+> Thanks for the patch. With it, my machine boots with the latest
+> 2.6.30-gitX.
 
-With that fix:
-
- Acked-by: Ingo Molnar <mingo@elte.hu>
+Please note the comments from Yinghai and Thomas. The fix does 
+something weird after injecting unrelated cleanups and the changelog 
+does not cover that.
 
 	Ingo
