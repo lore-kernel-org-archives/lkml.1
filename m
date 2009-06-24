@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZFXRPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZFXRRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbZFXRPQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZFXRPF
+	id S1755992AbZFXRRR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZFXRRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:15:05 -0400
-Received: from cluster-d.mailcontrol.com ([85.115.60.190]:33826 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbZFXRPE (ORCPT
+	Wed, 24 Jun 2009 13:17:02 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:44822 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753947AbZFXRRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:15:04 -0400
-Message-ID: <4A425DD9.1080007@csr.com>
-Date: Wed, 24 Jun 2009 18:09:45 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 24 Jun 2009 13:17:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=AK639CzS1FByZuLRfcoTXRsZ/bRg4fUl4MN0o1me5crfZFbs73Y6e7hEzGOoy/QWtx
+         JEKeYCAnWtbjJ+/XReVt3m6p2AcH+mtGsVWZZmqt4LdfJHmY/8odEEDBwR+X4eb3lpKi
+         LgPGcCsRnnqn8WB7uDlSdmoEQ1Qp/TMxZ4HWY=
+Message-ID: <4A425F8B.2000907@gmail.com>
+Date: Wed, 24 Jun 2009 19:16:59 +0200
+From: Karl Beldan <karl.beldan@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] UWB fixes for 2.6.31
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-ext4@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>, bdonlan@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2] ext[234]: Return -EIO not -ESTALE on directory traversal
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2009 17:09:46.0000 (UTC) FILETIME=[92DB2900:01C9F4EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi,
 
-Please pull two small bug fixes for the UWB system.
+e6f009b for ext4,
+de18f3b for ext3.
 
-The following changes since commit 3218911f839b6c85acbf872ad264ea69aa4d89ad:
-  Linus Torvalds (1):
-        Merge git://git.infradead.org/~dwmw2/mtd-2.6.30
+It seems that ext2 didn't get it.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/dvrabel/uwb.git for-upstream
-
-Frank Leipold (1):
-      uwb: allow WLP to be used with IPv6.
-
-Roel Kluin (1):
-      uwb: event_size should be signed
-
- drivers/uwb/hwa-rc.c   |    2 +-
- drivers/uwb/wlp/txrx.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
