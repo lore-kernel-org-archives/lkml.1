@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715AbZFXXnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZFXXsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756715AbZFXXnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 19:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZFXXnr
+	id S1755077AbZFXXsP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 19:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZFXXsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 19:43:47 -0400
-Received: from n22b.bullet.mail.mud.yahoo.com ([68.142.206.159]:26086 "HELO
-	n22b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753395AbZFXXnr (ORCPT
+	Wed, 24 Jun 2009 19:48:01 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:34180 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751898AbZFXXsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 19:43:47 -0400
-X-Yahoo-Newman-Id: 346646.28251.bm@omp425.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nYmSKVgQ9BMSjR34RMoc8cp9Yrd9JJQzRPd9BgtSPhek5cMYxe6H5cp4X+nEv4TglcjikzwrFsVzNhCZilpgGfHPguKTOeJiNjKm3Euhk4EXwPyyf8W44p7pK/9Brzddi92u82Az8skkjIGohGoPtDOgoCviTb2OwL9rDiwaF8Q=  ;
-X-YMail-OSG: YyyxbQYVM1mBD1BpaCCYye5vEPYMpzldFP3NbOmedGSeZilRq3NKqANBY_mhHEwzISENK89mFC2wFfiwdc.OV6lYNiox1NhMZQWP5mowJvDQrvh1P81FT0WOtMm3hBW6gzOdLPpcBUnQA5Vgae5O8g7P46VEzVEhJ4_.IIkfMQ8NQA4Cn8Whc66LzAvYVzXV168R_tIFoKEEirho0ybXJxq.agrF5AwAM6e8VVcZkKX0Z8FDWUTieQ9c5yD98BM078JHTyLddQpozU.KYO41LxYmMnCmU8yi06HHDDuAyD7ieq9_No0C
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
-Date: Wed, 24 Jun 2009 16:43:48 -0700
-User-Agent: KMail/1.9.10
-Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
-       "'Alan Stern'" <stern@rowland.harvard.edu>,
-       "'Peter Korsgaard'" <jacmet@sunsite.dk>,
-       "'USB list'" <linux-usb@vger.kernel.org>,
-       "'Kernel development list'" <linux-kernel@vger.kernel.org>,
-       kyungmin.park@samsung.com
-References: <001201c9f341$20b8b710$622a2530$%szyprowski@samsung.com> <200906240149.41013.david-b@pacbell.net> <003b01c9f4b6$c39002b0$4ab00810$%szyprowski@samsung.com>
-In-Reply-To: <003b01c9f4b6$c39002b0$4ab00810$%szyprowski@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200906241643.48421.david-b@pacbell.net>
+	Wed, 24 Jun 2009 19:48:00 -0400
+Subject: Re: [PATCH 01/10] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
+       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <1245825924-30412-2-git-send-email-tj@kernel.org>
+References: <1245825924-30412-1-git-send-email-tj@kernel.org>
+	 <1245825924-30412-2-git-send-email-tj@kernel.org>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 18:47:55 -0500
+Message-Id: <1245887275.4022.619.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009, Marek Szyprowski wrote:
+On Wed, 2009-06-24 at 15:45 +0900, Tejun Heo wrote:
+> This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
+> dynamic percpu allocator.  The first chunk is allocated using
+> embedding helper and 8k is reserved for modules.  This ensures that
+> the new allocator behaves almost identically to the original allocator
+> as long as static percpu variables are concerned, so it shouldn't
+> introduce much breakage.
 > 
-> > So it's looking like tty->driver_data is somehow NULL.  That's
-> > never supposed to happen.  Did gs_open() fail or something?
+> s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
+> range limit the addressing model imposes.  Unfortunately, this breaks
+> if the address is specified using a variable, so for now, the two
+> archs aren't converted.
 > 
-> I've triggered this bug by running a 'getty -L 115200 ttyGS0 vt100' and trying
-> to login on that usb console and then pressing 'enter' key for longer time.
-> getty might abort after a few failed logins, so the /dev/ttyGS0 file might be
-> closed before all characters that need to be echoed were processed (usb udc debug
-> messages really slows it down). This is however a pure guessing, I know nothing
-> about tty framework and internals.
+> The following architectures are affected by this change.
+> 
+> * sh
+> * arm
+> * cris
+> * mips
+> * sparc(32)
+> * blackfin
+> * avr32
+> * parisc (broken, under investigation)
 
-Hmm, that would mean the shutdown processing isn't behaving
-right.  Plausible, it's tricky to test.
+OK, I thought I'd investigate this.  Unfortunately, your git tree
+doesn't build when pulled into head ... could you update?
 
-Patches accepted.  ;)
+mm/percpu.c: In function 'setup_per_cpu_areas':
+mm/percpu.c:2007: error: too many arguments to function 'pcpu_embed_first_chunk'
 
+James
 
 
