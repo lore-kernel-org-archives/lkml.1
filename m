@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZFXKy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZFXK6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbZFXKy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbZFXKyN
+	id S1752154AbZFXK6z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZFXK6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:54:13 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:42599 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757136AbZFXKyM (ORCPT
+	Wed, 24 Jun 2009 06:58:47 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:51817 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbZFXK6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:54:12 -0400
-Date: Wed, 24 Jun 2009 11:53:36 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       alan@lxorguk.ukuu.org.uk, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       adilger@sun.com, akpm@linux-foundation.org
-Subject: Re: [RFC] O_NOACC: open without any access
-Message-ID: <20090624105336.GO8633@ZenIV.linux.org.uk>
-References: <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com> <17310.1245776720@redhat.com> <alpine.LFD.2.01.0906231019250.3240@localhost.localdomain>
+	Wed, 24 Jun 2009 06:58:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=tWG/+1HmgFXotTn+ooaEsv0fVSusDA5s47eEGFVP7CQU9nA1s4QPbvJNrNSe2pQ+Qx
+         eLJaOUbEwWrr+H5PehzQhnNYDfMcnR7M+RywEDsTToMsqpVFb/yk4gjAIgNBzbGqXNCV
+         j8S8HhGne+3nuzhI4jTsssZY2F/OSMuDZrivY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
+Date: Wed, 24 Jun 2009 13:04:14 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906240336.25263.bzolnier@gmail.com> <20090624.025518.75726622.davem@davemloft.net> <200906241248.21173.bzolnier@gmail.com>
+In-Reply-To: <200906241248.21173.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906231019250.3240@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906241304.14926.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 10:34:49AM -0700, Linus Torvalds wrote:
+On Wednesday 24 June 2009 12:48:20 Bartlomiej Zolnierkiewicz wrote:
 
-> That said, I do _not_ like the notion of
+> > 1) You want the device to be quiescent anyways when you do this
+> >    SET_XFER command.  What better way than to plug the queue
+> >    and make sure all currently outstanding requests complete?
+> > 
+> >    And as already discussed, we even already have logic to support
+> >    this kind of thing for the sake of power-management.
 > 
-> 	> Add a new inode->i_filesystem_fop pointer
+> Power management requests are kind of special and need block layer support.
 > 
-> regardless of whether it's in inode->i_op or wherever. I think we should 
-> just handle this in the regular "inode->f_op->open" routine, the same way 
-> we handle FMODE_EXCLUSIVE (O_EXCL), FMODE_NDELAY (O_NONBLOCK) and lack of 
-> access rights (O_NOACCESS) in the driver open routines that currently 
-> handle those specially (O_NDELAY is spe
+> Please take a look at REQ_DEVSET_EXEC special requests from ide-devsets.c
+> instead if you would like to investigate possibility of a cleaner (although
+> more invasive) solution.
 > 
-> Al?
+> > 2) All commands going into the device do so from a context from
+> >    which we could take a sleeping lock such as a mutex.  It's
+> >    therefore the most natural way to synchonize things.
+> 
+> The fact is that we need to synchronize against all commands going into
+> the device and they are synchronized using block queue (which is protected
+> with spinlock by block layer). Adding an extra mutex (even if possible)
 
-i_filesystem_fop is certainly bogus, but why do we want to bother with
-file_operations at all?
+We need to also take the synchronization between block queues of all devices
+on the port and the serialized ports into account..  This is quite complex
+and fragile code (vide cmd64x screaming IRQ issue ;)..
 
-Unless you really insist on unlimited use of ioctl(2) on such beasts (and
-any users will be non-portable for obvious reasons anyway), there's no need
-to go anywhere near ->open() *or* ->f_op in general.
-
-Just add new methods to ->i_op (and we already have that coming from
-fs code) and teach do_filp_open() to
-	* call permission() with new flag (MAY_TALK_TO_FS_NODE) for such
-open()
-	* do not die with -ELOOP on symlinks if we have O_NOFOLLOW + your flag
-	* do not call ->f_op->open() at all for such open()
-and we are all set.  Hell, we can even teach sys_ioctl() that given set
-of ioctls maps to calls of our new methods.  Taken from ->i_op...
-
-If we want full-blown ->ioctl() coming from the fs code on such opens, we
-will need distinct file_operations, no matter what we do with ->open().
-It's also doable (we'd need ->i_fop pointing to new foofs_special_file_ops
-and its ->open() to be a boilerplate that would replace file->f_op with
-the normal one in case of normal open()), but it's more boilerplate patches
-and I really don't see what would it buy...
-
-Comments?
+I would personally try going with 1) and avoid 2) at all costs..
