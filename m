@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZFXKwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZFXKyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbZFXKwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZFXKwW
+	id S1755994AbZFXKyH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZFXKxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:52:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51611 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbZFXKwV (ORCPT
+	Wed, 24 Jun 2009 06:53:54 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:57728 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbZFXKxx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:52:21 -0400
-Date: Wed, 24 Jun 2009 12:52:23 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: David Miller <davem@davemloft.net>
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: NMI watchdog + NOHZ question
-Message-ID: <20090624105223.GO6760@one.firstfloor.org>
-References: <20090624075342.GL6760@one.firstfloor.org> <20090624.024428.215194313.davem@davemloft.net> <20090624102325.GN6760@one.firstfloor.org> <20090624.033233.170094460.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624.033233.170094460.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 24 Jun 2009 06:53:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=O0Eh0drhh0Tk6qMj7IAxWSzrbtOdCwER8G8PD9RY2UUuCz3zstM3R48vDHwppWemxS
+         y6gQBcf9PIEUcv/aGzj94VkxzVaMchho5+m07CUDWPEJ+Y6BBLsdw8JwRojAGBSnToey
+         SGk9kQb0xbrcA/zEQo6bRf6JqLwh5C/iWgL8U=
+MIME-Version: 1.0
+In-Reply-To: <20090624081819.GA10436@elte.hu>
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
+	 <25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
+	 <4A3FB479.2090902@lsrfire.ath.cx>
+	 <7vhby64i8f.fsf@alter.siamese.dyndns.org>
+	 <20090624081819.GA10436@elte.hu>
+Date: Wed, 24 Jun 2009 12:53:51 +0200
+Message-ID: <c07716ae0906240353h67932054w3dc3ba6dbb864dff@mail.gmail.com>
+Subject: Re: [PATCH] fread does not return negative on error
+From: Christian Couder <christian.couder@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Junio C Hamano <gitster@pobox.com>,
+       =?ISO-8859-1?Q?Ren=E9_Scharfe?= <rene.scharfe@lsrfire.ath.cx>,
+       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 03:32:33AM -0700, David Miller wrote:
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: Wed, 24 Jun 2009 12:23:25 +0200
-> 
-> >> And similarly to sparc64, if that 5+ second qla2xxx interrupt
-> >> sequence happens after the tick_nohz_stop_sched_tick() call
-> >> we can run into the same situation.
-> > 
-> > Yes it would be probably safer to do the tick disabling with
-> > interrupts off already.
-> 
-> That only makes sense if you're really putting the cpu to sleep
-> until an interrupt or similar happens.
+Hi,
 
-That is what the idle loop is supposed to do, isn't it?
+On Wed, Jun 24, 2009 at 10:18 AM, Ingo Molnar<mingo@elte.hu> wrote:
+>
+> * Junio C Hamano <gitster@pobox.com> wrote:
+>
+>> René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
+>>
+>> > the following patch is for git.  I just removed the unneeded check for
+>> > res == 0 from your version.  Does it look OK?
+>>
+>> The patch looks good, and both of our in-tree users do error out
+>> when the returned value is 0 (imap-send.c checks with "<= 0" which
+>> looks a tad amateurish, though) correctly.
+>>
+>> Funny, there is no caller of this function in the original context
+>> this bug originally found, which I think is linux-2.6/tools/perf
+>> ;-).
+>
+> Hehe, yes :-)
+>
+> Background: when creating tools/perf/ i cherry-picked all the nice
+> Git libraries into tools/perf/util/, to give a standard environment
+> for all tooling things that might come up in the future.
+>
+> Some of those are not used yet but it looked more logical to pick up
+> whole pieces - some already gained uses. For example config.c is not
+> truly used yet, but very much expected to have a role in the future.
+>
+> ( The only invasive thing i had to do was the s/git_/perf_/ mass
+>  rename across all the files - having 'git_' in perf looked
+>  quite confusing. )
+>
+> And our general experience with the Git libraries in
+> tools/perf/util/* is: we love them!
+>
+> For example parse-options.c is a striking improvement compared to
+> getopt.h we used before, and all the other facilities are sane and
+> straight to the point as well. So in this sense 'perf' is an ...
+> interesting cross-discipline 'fork' of Git's generic libraries.
+>
+> The auto-generation of everything out of Documentation/*.txt is
+> another thing we picked up, and that's very nice too.
+>
+> One bookeeping issue: i found few explicit credits in those files -
+> so i noted in the changelog that i took them from Git and i noted
+> the specific upstream Git sha1 when i copied them. Would be nice to
+> update each file with names to make credit more explicit:
 
-> > These days NMI watchdog is not used much on x86 anymore because it's 
-> > default off, so probably people never noticed that.
-> 
-> I really didn't want to provide the feature that way on sparc64 which
-> is why I made it on by default.  It would be interesting to reconsider
-> x86's default, perhaps even only on a trial basis in -next.
+>From http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=tree;f=tools/perf;hb=HEAD
+it looks like there may be some other files like builtin-help.c (and
+perhaps some files in perf/Documentation/ too though there should be
+some AUTHOR information already in them).
 
-The reason it was turned off is that there are a few systems (e.g.
-laptops from a particular vendor) which don't handle NMIs correctly
-in the platform. When the NMI happens while SMI is active
-they hang. Also there were a few other strange problems
-on other systems that went away when it was disabled.
-
-One way to handle all that would be to have a big NMI white/black
-list for specific systems. That would be useful because there are
-a few cases where NMIs are really useful: one example right now
-is panic which is currently unable to stop other CPUs not
-enabling interrupts.
-
-But creating and maintaining such a list would be a lot of 
-work (at least initially), and so far nobody was interested
-enough to do that.
-
-When you don't have as many different platforms and vendors
-things are a lot easier.
-
-> 
-> It's so useful, and in the short time sparc64 has had this NMI code I
-> can count at least 8 bugs I've fixed only because it was on all the
-> time.
-
-Yes when it was still on it also found bugs. On the other hand once
-it is default one the number of new bugs you find with it goes
-down quite fast.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+Christian.
