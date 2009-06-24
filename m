@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZFXSl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZFXSlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbZFXSl2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZFXSlS
+	id S1757857AbZFXSlj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZFXSlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:41:18 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:42990 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751768AbZFXSlS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:41:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=cijrjQAY/o/ucKDUXzAP/tUvQqbzeBFO7U2ELzIENB0ckV8eMaqxD8AAWCrDzOEihZ
-         2DSJdQgzVFOAEJ8MUQ12NPjKCxDzKIY7eCuKzHQYmoaNJWHRJpcS7ZQrBirQypSRSIHn
-         D+zg3P0WiZAzl0dtz83km95qW3uqtLNweWiT4=
+	Wed, 24 Jun 2009 14:41:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48141 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbZFXSlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:41:21 -0400
+Date: Wed, 24 Jun 2009 11:32:37 -0700
+From: Greg KH <gregkh@suse.de>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, hjk@linutronix.de
+Subject: Re: [PATCH 1/2] UIO: add device clock support
+Message-ID: <20090624183237.GA27633@suse.de>
+References: <1245857425-25389-1-git-send-email-daniel@caiaq.de> <1245857425-25389-2-git-send-email-daniel@caiaq.de> <20090624163414.GB26409@suse.de> <20090624182936.GY29236@buzzloop.caiaq.de>
 MIME-Version: 1.0
-In-Reply-To: <E1MJWrI-0002Bm-Bk@pomaz-ex.szeredi.hu>
-References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <a36005b50906241002g7a116d17n52e6af2ff9891f87@mail.gmail.com> 
-	<E1MJWrI-0002Bm-Bk@pomaz-ex.szeredi.hu>
-From: Ulrich Drepper <drepper@gmail.com>
-Date: Wed, 24 Jun 2009 11:34:01 -0700
-Message-ID: <a36005b50906241134x2f403213lb89e23d4c319a635@mail.gmail.com>
-Subject: Re: [RFC] O_NOACC: open without any access
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
-       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624182936.GY29236@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 11:06, Miklos Szeredi<miklos@szeredi.hu> wrote:
-> Is it available online somewhere?  If not, could you please post the
-> relevant parts?
+On Wed, Jun 24, 2009 at 08:29:36PM +0200, Daniel Mack wrote:
+> On Wed, Jun 24, 2009 at 09:34:14AM -0700, Greg KH wrote:
+> > On Wed, Jun 24, 2009 at 05:30:24PM +0200, Daniel Mack wrote:
+> > > Add a pointer to a 'struct clk' to uio_info. Drivers can set
+> > > this pointer if a clock is needed, and the UIO core will care
+> > > to enable and disable it upon device open and release.
+> > 
+> > Do you have a UIO driver that needs this?
+> 
+> No.
+> 
+> > If so, please submit it at the same time, otherwise adding
+> > infrastructure for no driver that needs it, is pretty pointless.
+> 
+> As I wrote in my introduction email, I wanted to use this framework but
+> eventually I didn't. But then I had these patches flying around and I
+> thought sharing them is better than throwing them away. They work well,
+> it's just that this particular feature has no uses at the moment.
 
-The OpenGroup publishes the man pages.  Here is what google finds:
+Thanks for the change, it looks nice, but until we have a driver that
+needs it, I say we hold off on this patch.
 
-http://www.opengroup.org/onlinepubs/9699919799/functions/open.html
+thanks,
 
-
-
-> I suspect they are not quite what we want (both of them requring
-> MAY_EXEC on file, no?)
-
-No that's the differences between O_EXEC and O_SEARCH.  We
-deliberately introduced two different names even though some OSes
-might implement it using the same flag and even though in both cases
-irritatingly the x permission bit is used.
+greg k-h
