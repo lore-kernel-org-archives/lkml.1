@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbZFXUhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762173AbZFXUiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbZFXUhk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZFXUhd
+	id S1762173AbZFXUiD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:38:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759784AbZFXUhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:37:33 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:30288 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754529AbZFXUhc (ORCPT
+	Wed, 24 Jun 2009 16:37:54 -0400
+Received: from mga10.intel.com ([192.55.52.92]:32628 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753948AbZFXUhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:37:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=LiRqGHAnnu288lRFDle/QYzmVaLmCiBhPSH3w8VraokSxP2Wc+YE2jE5dhdKEky2IF
-         rhTgiXri/zjYzt++gyTHnPa1VC5AyxSNgPpLcWd1IaP5Vi9qrppOT+gBCNl4u6h34i2r
-         5RSKPpWL4hX9rkIfx0VKmH1+b1MudgZ9VfFHU=
+	Wed, 24 Jun 2009 16:37:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,285,1243839600"; 
+   d="scan'208";a="702223896"
+Message-ID: <4A428E9D.7080509@linux.intel.com>
+Date: Wed, 24 Jun 2009 13:37:49 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-In-Reply-To: <4A41F780.60000@atmel.com>
-References: <4A41F780.60000@atmel.com>
-Date: Wed, 24 Jun 2009 13:37:34 -0700
-X-Google-Sender-Auth: 95699a0e2dbd73f4
-Message-ID: <e9c3a7c20906241337r524bbe32ua93e6e7859dc18f0@mail.gmail.com>
-Subject: Re: dmaengine: update of at_hdmac
-From: Dan Williams <dan.j.williams@intel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Dave Jones <davej@redhat.com>, Joseph Cihula <joseph.cihula@intel.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution	Technology
+ support for Linux - Details
+References: <4A4024B6.2060600@intel.com> <20090624201415.GA18291@redhat.com>
+In-Reply-To: <20090624201415.GA18291@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 2:53 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
-> Hi,
->
-> I would like to update the at_hdmac dmaengine driver. I have submitted
-> it long ago but did not manage to follow it for mainline inclusion at
-> that time.
->
-> Can you tell me to which git tree I must base my update upon ?
-> - linux-next
-> - djbw/async_tx.git (which branch)
+Dave Jones wrote:
+> On Mon, Jun 22, 2009 at 05:41:26PM -0700, Joseph Cihula wrote:
+>  
+>  > The Q35_SINIT_17.BIN file is what Intel TXT refers to as an
+>  > Authenticated Code Module.  It is specific to the chipset in the system
+>  > and can also be found on the Trusted Boot site.  It is a firmware module
+>  > digitally signed by Intel that is used as part of the DRTM process to
+>  > verify and configure the system.  
+> 
+> This seems a little disingenious.  Firmware isn't typically loaded by grub
+> into main memory and executed by the host processor.
+> 
+> so, is this all worthless without the binary blob ?
+> 
+> "trust us, it's signed by intel" doesn't make me feel more secure.
 
-The 'next' branch of djbw/async_tx.git is where dmaengine patches are
-staged before they hit Linus' tree.  Be aware that it is occasionally
-rebased.
-
-Regards,
-Dan
+how's that different from your normal bios ?
