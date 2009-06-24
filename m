@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757536AbZFXKJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZFXKTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757536AbZFXKJa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753846AbZFXKJN
+	id S1756736AbZFXKTu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZFXKTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:09:13 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:44685 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754653AbZFXKJL (ORCPT
+	Wed, 24 Jun 2009 06:19:39 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:64822 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbZFXKTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:09:11 -0400
-Date: Wed, 24 Jun 2009 11:09:12 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: "Richard A. Smith" <richard@laptop.org>
-Cc: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
-       dsaxena@laptop.org
-Subject: Re: [PATCH 3/5] power_supply: add a TRICKLE_CHARGING status, and
-	add it to the olpc driver
-Message-ID: <20090624100911.GB21919@sirena.org.uk>
-References: <20090622234607.11f61bec@mycelium.queued.net> <20090623103717.GH5422@sirena.org.uk> <4A412CC0.6050500@laptop.org> <20090623224434.GB16188@opensource.wolfsonmicro.com> <4A41618D.4020900@laptop.org> <20090623232537.GE16188@opensource.wolfsonmicro.com> <4A416952.2050809@laptop.org>
+	Wed, 24 Jun 2009 06:19:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=awEfJ1+56jCwnOVO0ozHcYPy7gWlAxF79eLY2WUsDUkFmG0jl/DYycmVhTkV1GO7+B
+         oO1HWZaH037ObqGD5z14I1ukFh5K4DqgaAtcQk7nWYAXPlsGhd+MmtsER9PhLDhH6wn6
+         04JWLs9iupSvcTflO2yyKAYiiFtLdc6vCVDXY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A416952.2050809@laptop.org>
-X-Cookie: Now I am depressed ...
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <40f31dec0906030535k3af1f6e7u68c82a4f984e7029@mail.gmail.com>
+References: <20090403182724.GA7364@tuxdriver.com>
+	 <40f31dec0906030535k3af1f6e7u68c82a4f984e7029@mail.gmail.com>
+Date: Wed, 24 Jun 2009 13:19:38 +0300
+Message-ID: <40f31dec0906240319q52444a96w32c21b4c9ec461c@mail.gmail.com>
+Subject: Re: Linux wireless mini-summit -- Berlin, June 2009
+From: Nick Kossifidis <mickflemm@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 07:46:26PM -0400, Richard A. Smith wrote:
-> Mark Brown wrote:
+2009/6/3 Nick Kossifidis <mickflemm@gmail.com>:
+>
+>
+> Can we book a room on Holiday in
+> (http://fedoraproject.org/wiki/FUDCon:Berlin_2009_lodging) or is it
+> only for Fedora people ? What's the process ? I've managed to find
+> some funding for travel expenses but most hotels are really expensive
+> (i plan to come on 24 and leave on 29).
+>
 
->> It's really no bother from the driver point of view either way, it's the
->> user space applications that are the concern here - are they going to
->> cope well with a new state appearing there?
+Just arrived, looking forward to see you all ;-)
 
-> I can only speak for OLPC's usage.  But my script, the documentation on  
-> our wiki, and HAL are the only things that I know of that use that info  
-> and none of them should have any problem with it changing.
 
-The other thing that has a reasonable number of users is the in-kernel
-APM emulation - when I last looked quite a few users were using that
-still.
-
-I'd expect that either HAL or things that use it would need to know
-about the new state to do something sensible with it.  All the widely
-deployed users should be using those, I don't recall any of the other
-things I found being things that I'd particularly heard of.
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
