@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZFXGwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbZFXGwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZFXGwh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 02:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFXGw2
+	id S1756578AbZFXGwz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 02:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZFXGwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 02:52:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54489
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752134AbZFXGw2 (ORCPT
+	Wed, 24 Jun 2009 02:52:42 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:32277 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbZFXGwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 02:52:28 -0400
-Date: Tue, 23 Jun 2009 23:52:32 -0700 (PDT)
-Message-Id: <20090623.235232.56133010.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] ide: improve handling of Power Management requests
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906232335.57161.bzolnier@gmail.com>
-References: <200906232335.57161.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 24 Jun 2009 02:52:41 -0400
+X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7mseH1AU4LKDnsoMWy
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A41CD36.8030202@hartkopp.net>
+Date: Wed, 24 Jun 2009 08:52:38 +0200
+From: Oliver Hartkopp <socketcan@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       David Miller <davem@davemloft.net>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
+References: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com> <4A412C53.8050607@grandegger.com>
+In-Reply-To: <4A412C53.8050607@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Tue, 23 Jun 2009 23:35:56 +0200
+Wolfgang Grandegger wrote:
+> Heiko Carstens wrote:
 
-> Make hwif->rq point to PM request during PM sequence and do not allow
-> any other types of requests to slip in (the old comment was never correct
-> as there should be no such requests generated during PM sequence).
+
+>> Index: linux-2.6/drivers/net/can/Kconfig
+>> ===================================================================
+>> --- linux-2.6.orig/drivers/net/can/Kconfig
+>> +++ linux-2.6/drivers/net/can/Kconfig
+>> @@ -36,7 +36,7 @@ config CAN_CALC_BITTIMING
+>>  	  If unsure, say Y.
+>>  
+>>  config CAN_SJA1000
+>> -	depends on CAN_DEV
+>> +	depends on CAN_DEV && HAS_IOMEM
+>>  	tristate "Philips SJA1000"
+>>  	---help---
+>>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
 > 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> This was tested in the past (with an additional testing from Borislav)
-> however there were block layer changes in the meantime so you may want
-> to give it some more testing time just to be sure.
+> Hm, this Kconfig entry is not directly responsible for building
+> sja1000_platform.o. It builds sja1000.o, which does not rely on
+> HAS_IOMEM. It should be added to "config CAN_SJA1000_PLATFORM" instead.
 
-This patch looks great, applied!
+Hi Wolfgang,
 
-Thanks.
+the question is, if we should add HAS_IOMEM to almost every SJA1000 depended
+driver like SJA1000_PLATFORM, SJA1000_OF_PLATFORM, EMS_PCI and KVASER_PCI ???
+
+Is it possible to have a support for the SJA1000 that does *not* depend on
+HAS_IOMEM?
+
+Regards,
+Oliver
