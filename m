@@ -1,44 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbZFXDuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbZFXEJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbZFXDuS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 23:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZFXDuF
+	id S1751721AbZFXEJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 00:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbZFXEJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 23:50:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:20393 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752604AbZFXDuE (ORCPT
+	Wed, 24 Jun 2009 00:09:41 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:53738 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbZFXEJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 23:50:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=gido4DPygw8GEDZtXinu8+BnjRSmvOWicxh9pgnNetcNJApZcdF43LjKGK3yLuxY1g
-         JgfbUc4UODaZyyWTZFDI9VE9vpY67R3Ds8PVazuxQoowuIBnQkatca/ZQWjQNgVx6XIQ
-         B7RUEBb8eJ8GS0aqlzGryYxo2LEQ1x8cgF1nU=
-MIME-Version: 1.0
-Date: Wed, 24 Jun 2009 11:50:06 +0800
-Message-ID: <cb9ecdfa0906232050n6fcfee31ubeee4bcd9b8c0dfe@mail.gmail.com>
-Subject: How the kernel printk works before do console_setup.
-From: Johnny Hung <johnny.hacking@gmail.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       linux-embedded@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Jun 2009 00:09:40 -0400
+Date: Wed, 24 Jun 2009 13:05:12 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] memcg: cgroup fix rmdir hang
+Message-Id: <20090624130512.9e4550c4.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All:
-    I have a powerpc arch platform. The default console is ttyS1 not
-ttyS0 in the platform. My question is how the kernel print debug
-message
-like DBG before parse kernel command line and do console_setup
-function. The command line passed to kernel about console info is
-console=ttyS1.
-So kernel can not print anything before parse cmd line and initial
-console but the result is against. Anyone point me or give me a clue
-is appreciate.
+On Tue, 23 Jun 2009 16:08:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Now, cgroup has a logic to wait until ready-to-rmdir for avoiding
+> frequent -EBUSY at rmdir.
+>  (See Commit ec64f51545fffbc4cb968f0cea56341a4b07e85a
+>   cgroup: fix frequent -EBUSY at rmdir.
+> 
+> Nishimura-san reported bad case for waiting and This is a fix to
+> make it reliable. A thread waiting for thread cannot be waken up
+> when a refcnt gotten by css_tryget() isn't put immediately.
+> (Original code assumed css_put() will be called soon.)
+> 
+> memcg has this case and this is a fix for the problem. This adds
+> retry_rmdir() callback to subsys and check we can sleep or not.
+> 
+> Note: another solution will be adding "rmdir state" to subsys.
+> But it will be much complicated than this do-enough-check solution.
+> 
+> Changelog v1 -> v2:
+>  - splitted into 2 patches. This just includes retry_rmdir() modification.
+> 
+> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-BR, H. Johnny
+Looks good to me.
+
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+I've been testing with [2/2] applied (because both of these patches are
+necessary to fix this problem completely), and it works fine so far.
+But I want to test in more test cases.
+
+
+Thanks,
+Daisuke Nishimura.
+
+> ---
+>  Documentation/cgroups/cgroups.txt |   11 +++++++++++
+>  include/linux/cgroup.h            |    1 +
+>  kernel/cgroup.c                   |   20 +++++++++++++++++++-
+>  mm/memcontrol.c                   |   14 ++++++++++++--
+>  4 files changed, 43 insertions(+), 3 deletions(-)
+> 
+> Index: fix-rmdir-cgroup/include/linux/cgroup.h
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/include/linux/cgroup.h
+> +++ fix-rmdir-cgroup/include/linux/cgroup.h
+> @@ -374,6 +374,7 @@ struct cgroup_subsys {
+>  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+>  						  struct cgroup *cgrp);
+>  	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +	int (*retry_rmdir)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>  	int (*can_attach)(struct cgroup_subsys *ss,
+>  			  struct cgroup *cgrp, struct task_struct *tsk);
+> Index: fix-rmdir-cgroup/kernel/cgroup.c
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/kernel/cgroup.c
+> +++ fix-rmdir-cgroup/kernel/cgroup.c
+> @@ -636,6 +636,23 @@ static int cgroup_call_pre_destroy(struc
+>  		}
+>  	return ret;
+>  }
+> +/*
+> + * Call subsys's retry_rmdir() handler. If this returns non-Zero, we retry
+> + * rmdir immediately and call pre_destroy again.
+> + */
+> +static int cgroup_check_retry_rmdir(struct cgroup *cgrp)
+> +{
+> +	struct cgroup_subsys *ss;
+> +	int ret = 0;
+> +
+> +	for_each_subsys(cgrp->root, ss)
+> +		if (ss->pre_destroy) {
+> +			ret = ss->retry_rmdir(ss, cgrp);
+> +			if (ret)
+> +				break;
+> +		}
+> +	return ret;
+> +}
+>  
+>  static void free_cgroup_rcu(struct rcu_head *obj)
+>  {
+> @@ -2722,7 +2739,8 @@ again:
+>  
+>  	if (!cgroup_clear_css_refs(cgrp)) {
+>  		mutex_unlock(&cgroup_mutex);
+> -		schedule();
+> +		if (!cgroup_check_retry_rmdir(cgrp))
+> +			schedule();
+>  		finish_wait(&cgroup_rmdir_waitq, &wait);
+>  		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>  		if (signal_pending(current))
+> Index: fix-rmdir-cgroup/mm/memcontrol.c
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/mm/memcontrol.c
+> +++ fix-rmdir-cgroup/mm/memcontrol.c
+> @@ -1457,8 +1457,6 @@ __mem_cgroup_commit_charge_swapin(struct
+>  		}
+>  		rcu_read_unlock();
+>  	}
+> -	/* add this page(page_cgroup) to the LRU we want. */
+> -
+>  }
+>  
+>  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+> @@ -2571,6 +2569,17 @@ static int mem_cgroup_pre_destroy(struct
+>  	return mem_cgroup_force_empty(mem, false);
+>  }
+>  
+> +static int mem_cgroup_retry_rmdir(struct cgroup_subsys *ss,
+> +				  struct cgroup *cont)
+> +{
+> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+> +
+> +	if (res_counter_read_u64(&mem->res, RES_USAGE))
+> +		return 1;
+> +	return 0;
+> +}
+> +
+> +
+>  static void mem_cgroup_destroy(struct cgroup_subsys *ss,
+>  				struct cgroup *cont)
+>  {
+> @@ -2610,6 +2619,7 @@ struct cgroup_subsys mem_cgroup_subsys =
+>  	.subsys_id = mem_cgroup_subsys_id,
+>  	.create = mem_cgroup_create,
+>  	.pre_destroy = mem_cgroup_pre_destroy,
+> +	.retry_rmdir = mem_cgroup_retry_rmdir,
+>  	.destroy = mem_cgroup_destroy,
+>  	.populate = mem_cgroup_populate,
+>  	.attach = mem_cgroup_move_task,
+> Index: fix-rmdir-cgroup/Documentation/cgroups/cgroups.txt
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/Documentation/cgroups/cgroups.txt
+> +++ fix-rmdir-cgroup/Documentation/cgroups/cgroups.txt
+> @@ -500,6 +500,17 @@ there are not tasks in the cgroup. If pr
+>  rmdir() will fail with it. From this behavior, pre_destroy() can be
+>  called multiple times against a cgroup.
+>  
+> +int retry_rmdir(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +
+> +Called at rmdir right after the kernel finds there are remaining refcnt on
+> +subsystems after pre_destroy(). When retry_rmdir() returns 0, the caller enter
+> +sleep and wakes up when css's refcnt goes down to 0 by css_put().
+> +When this returns 1, the caller doesn't sleep and retry rmdir immediately.
+> +This is useful when the subsys knows remaining css's refcnt is not temporal
+> +and to calling pre_destroy() again is proper way to remove that.
+> +(or proper way to retrun -EBUSY.)
+> +
+> +
+>  int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
+>  	       struct task_struct *task)
+>  (cgroup_mutex held by caller)
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
