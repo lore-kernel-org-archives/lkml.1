@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbZFXJrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbZFXJrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbZFXJrk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758756AbZFXJrX
+	id S1759093AbZFXJrx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbZFXJrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:47:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59768 "EHLO hera.kernel.org"
+	Wed, 24 Jun 2009 05:47:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59782 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758746AbZFXJrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:47:21 -0400
-Date: Wed, 24 Jun 2009 09:46:41 GMT
+	id S1758891AbZFXJre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:47:34 -0400
+Date: Wed, 24 Jun 2009 09:46:55 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,117 +18,72 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
        tglx@linutronix.de, liming.wang@windriver.com, mingo@elte.hu
-In-Reply-To: <4A41874B.4090507@cn.fujitsu.com>
-References: <4A41874B.4090507@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] ftrace: Don't manipulate @pos in t_start()
-Message-ID: <tip-694ce0a544fba37a60025a6803ee6265be8a2a22@git.kernel.org>
-Git-Commit-ID: 694ce0a544fba37a60025a6803ee6265be8a2a22
+In-Reply-To: <4A41876E.2060407@cn.fujitsu.com>
+References: <4A41876E.2060407@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] ftrace: Fix t_hash_start()
+Message-ID: <tip-d82d62444f87e5993af2fa82ed636b2206e052ea@git.kernel.org>
+Git-Commit-ID: d82d62444f87e5993af2fa82ed636b2206e052ea
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 09:46:42 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 09:46:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  694ce0a544fba37a60025a6803ee6265be8a2a22
-Gitweb:     http://git.kernel.org/tip/694ce0a544fba37a60025a6803ee6265be8a2a22
+Commit-ID:  d82d62444f87e5993af2fa82ed636b2206e052ea
+Gitweb:     http://git.kernel.org/tip/d82d62444f87e5993af2fa82ed636b2206e052ea
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Wed, 24 Jun 2009 09:54:19 +0800
+AuthorDate: Wed, 24 Jun 2009 09:54:54 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 24 Jun 2009 11:02:53 +0200
 
-ftrace: Don't manipulate @pos in t_start()
+ftrace: Fix t_hash_start()
 
-It's rather confusing that in t_start(), in some cases @pos is
-incremented, and in some cases it's decremented and then incremented.
+When the output of set_ftrace_filter is larger than PAGE_SIZE,
+t_hash_start() will be called the 2nd time, and then we start
+from the head of a hlist, which is wrong and causes some entries
+to be outputed twice.
 
-This patch rewrites t_start() in a much more general way.
-
-Thus we fix a bug that if ftrace_filtered == 1, functions have tracer
-hooks won't be printed, because the branch is always unreachable:
-
-static void *t_start(...)
-{
-	...
-	if (!p)
-		return t_hash_start(m, pos);
-	return p;
-}
-
-Before:
-  # echo 'sys_open' > /mnt/tracing/set_ftrace_filter
-  # echo 'sys_write:traceon:4' >> /mnt/tracing/set_ftrace_filter
-  sys_open
-
-After:
-  # echo 'sys_open' > /mnt/tracing/set_ftrace_filter
-  # echo 'sys_write:traceon:4' >> /mnt/tracing/set_ftrace_filter
-  sys_open
-  sys_write:traceon:count=4
+The worse is, if the hlist is large enough, reading set_ftrace_filter
+won't stop but in a dead loop.
 
 Reviewed-by: Liming Wang <liming.wang@windriver.com>
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4A41874B.4090507@cn.fujitsu.com>
+LKML-Reference: <4A41876E.2060407@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/ftrace.c |   19 ++++++++-----------
- 1 files changed, 8 insertions(+), 11 deletions(-)
+ kernel/trace/ftrace.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index cde74b9..dc81020 100644
+index dc81020..71a52c1 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -1467,8 +1467,6 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 			iter->pg = iter->pg->next;
- 			iter->idx = 0;
- 			goto retry;
--		} else {
--			iter->idx = -1;
- 		}
- 	} else {
- 		rec = &iter->pg->records[iter->idx++];
-@@ -1497,6 +1495,7 @@ static void *t_start(struct seq_file *m, loff_t *pos)
+@@ -1417,10 +1417,20 @@ static void *t_hash_start(struct seq_file *m, loff_t *pos)
  {
  	struct ftrace_iterator *iter = m->private;
  	void *p = NULL;
 +	loff_t l;
++
++	if (!(iter->flags & FTRACE_ITER_HASH))
++		*pos = 0;
  
- 	mutex_lock(&ftrace_lock);
- 	/*
-@@ -1508,23 +1507,21 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 		if (*pos > 0)
- 			return t_hash_start(m, pos);
- 		iter->flags |= FTRACE_ITER_PRINTALL;
--		(*pos)++;
- 		return iter;
- 	}
+ 	iter->flags |= FTRACE_ITER_HASH;
  
- 	if (iter->flags & FTRACE_ITER_HASH)
- 		return t_hash_start(m, pos);
- 
--	if (*pos > 0) {
--		if (iter->idx < 0)
--			return p;
--		(*pos)--;
--		iter->idx--;
-+	iter->pg = ftrace_pages_start;
-+	iter->idx = 0;
+-	return t_hash_next(m, p, pos);
++	iter->hidx = 0;
 +	for (l = 0; l <= *pos; ) {
-+		p = t_next(m, p, &l);
++		p = t_hash_next(m, p, &l);
 +		if (!p)
 +			break;
- 	}
++	}
++	return p;
+ }
  
--	p = t_next(m, p, pos);
--
--	if (!p)
-+	if (!p && iter->flags & FTRACE_ITER_FILTER)
- 		return t_hash_start(m, pos);
- 
- 	return p;
+ static int t_hash_show(struct seq_file *m, void *v)
