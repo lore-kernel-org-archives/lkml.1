@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZFXIyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbZFXIya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZFXIyR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFXIyG
+	id S1756737AbZFXIya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbZFXIyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:54:06 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:46483 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270AbZFXIyF (ORCPT
+	Wed, 24 Jun 2009 04:54:21 -0400
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:42736 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756701AbZFXIyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:54:05 -0400
-Subject: Re: +
- proc-connector-add-event-for-process-becoming-session-leader.patch added to
- -mm tree
-From: Scott James Remnant <scott@ubuntu.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090623202937.GA31252@redhat.com>
-References: <20090623202937.GA31252@redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-YVOI5tQskgj5pQUcS8XN"
-Date: Wed, 24 Jun 2009 09:53:51 +0100
-Message-Id: <1245833631.3280.0.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.3 
+	Wed, 24 Jun 2009 04:54:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=g6nrR3JTB6USb3xI7qua0397R7UpCv7/FVliPtOH76ULsSLlM97BpbasWjkZbjt5P6I17u44VnXwAqyhUM285oiQ18CxDS+ygdY/jTzWiSNOZrZiRtB012mz/LkcF0yfeqMboYf/WSnAooybHh/YUcSfPeuvQVmSHgcA2Ovk0ko=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: A6DA6eEVM1lciyON8D.6SiHdz4aOQ3VxCXr9G0MrWTeghvTCjUUim517kf2auDvJx737bN8aPONXGeVfK9wK889wkkxl2nx5tnL5ZgC9jhlyjtGd0CpF7.Y4e0yxWSPk8hBk.lBykWwzXWmSK4XatVZX8NbfKRg1375R.NDGqb2lrzBKpvdNUPuNL9zgvr3qBxxUbVDDovCGL8pDaTOuHIAXjMEcGzDgffyXyJx2IhhE6OAlboZpW5sAukdfN5Ho4BaO6pWNs9We8sTK
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: PROBLEM: kernel oops with g_serial USB gadget on 2.6.30
+Date: Wed, 24 Jun 2009 01:54:20 -0700
+User-Agent: KMail/1.9.10
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+       "'Alan Stern'" <stern@rowland.harvard.edu>,
+       "'Peter Korsgaard'" <jacmet@sunsite.dk>,
+       "'USB list'" <linux-usb@vger.kernel.org>,
+       "'Kernel development list'" <linux-kernel@vger.kernel.org>,
+       kyungmin.park@samsung.com
+References: <001201c9f341$20b8b710$622a2530$%szyprowski@samsung.com> <002101c9f49a$6cfcaf50$46f60df0$%szyprowski@samsung.com> <20090624094240.4097db11@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090624094240.4097db11@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906240154.21349.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 24 June 2009, Alan Cox wrote:
+> Looks to me like the gs_write_room function takes a lock already held
+> when the driver calls tty_flip_buffer_push() - which will and can call
+> back into the driver (eg for echo processing)
 
---=-YVOI5tQskgj5pQUcS8XN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+That doesn't seem to explain whatever null pointer was being
+traversed though.
 
-On Tue, 2009-06-23 at 22:29 +0200, Oleg Nesterov wrote:
-
-> > The act of a process becoming a session leader is a useful signal to a
-> > supervising init daemon such as Upstart.
-> ...
-> > @@ -360,8 +360,10 @@ void __set_special_pids(struct pid *pid)
-> >  {
-> >  	struct task_struct *curr =3D current->group_leader;
-> >
-> > -	if (task_session(curr) !=3D pid)
-> > +	if (task_session(curr) !=3D pid) {
-> >  		change_pid(curr, PIDTYPE_SID, pid);
-> > +		proc_sid_connector(curr);
-> > +	}
->=20
-> Wouldn't it better to change sys_setsid() then? This looks more clear
-> imho, and we can move proc_sid_connector() outside of tasklist_lock.
->=20
-> Note also that __set_special_pids() does not neccessary mean we are
-> becoming a session leader, see daemonize().
->=20
-Actually, I specifically wanted to receive this event if the process
-called daemonize() which is why this is done here rather than in
-sys_setsid()
-
-The new session is important information to init in figuring out what
-the process is up to (ie, fork(), setsid(), fork() =3D daemonise)
-
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
-
---=-YVOI5tQskgj5pQUcS8XN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpB6ZsACgkQSnQiFMl4yK7ImwCeJ+Mqx637z+C7ih3l7cOUj1cc
-9oQAoKPxMXIwrOhKM5/2az44NaZIkQdw
-=owtZ
------END PGP SIGNATURE-----
-
---=-YVOI5tQskgj5pQUcS8XN--
+A lock-already-held problem would self-deadlock, not oops.
 
