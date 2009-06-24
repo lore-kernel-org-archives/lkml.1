@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZFXI0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZFXI1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbZFXI0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFXI0H
+	id S1754365AbZFXI1a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZFXI1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:26:07 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:54529 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbZFXI0F (ORCPT
+	Wed, 24 Jun 2009 04:27:17 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:44557 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751796AbZFXI1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:26:05 -0400
-X-Auth-Info: hI1SnzCr9WEt2ydH5nfPfRULr+r80LnTeClCyNmgP7k=
-Message-ID: <4A41E31B.1030703@grandegger.com>
-Date: Wed, 24 Jun 2009 10:26:03 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: socketcan@hartkopp.net, heiko.carstens@de.ibm.com, schwidefsky@de.ibm.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
-References: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>	<4A412C53.8050607@grandegger.com>	<4A41CD36.8030202@hartkopp.net> <20090624.000109.49664041.davem@davemloft.net>
-In-Reply-To: <20090624.000109.49664041.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 24 Jun 2009 04:27:16 -0400
+Subject: Re: BUS_ID_SIZE is going away
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Greg KH <greg@kroah.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Takashi Iwai <tiwai@suse.de>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1245675383.25547.50.camel@macbook.infradead.org>
+References: <1245527124.30962.14.camel@yio.site>
+	 <1245675383.25547.50.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 10:27:18 +0200
+Message-Id: <1245832038.2483.3.camel@yio.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Oliver Hartkopp <socketcan@hartkopp.net>
-> Date: Wed, 24 Jun 2009 08:52:38 +0200
-> 
->> Wolfgang Grandegger wrote:
->>> Heiko Carstens wrote:
->>
->>>> Index: linux-2.6/drivers/net/can/Kconfig
->>>> ===================================================================
->>>> --- linux-2.6.orig/drivers/net/can/Kconfig
->>>> +++ linux-2.6/drivers/net/can/Kconfig
->>>> @@ -36,7 +36,7 @@ config CAN_CALC_BITTIMING
->>>>  	  If unsure, say Y.
->>>>  
->>>>  config CAN_SJA1000
->>>> -	depends on CAN_DEV
->>>> +	depends on CAN_DEV && HAS_IOMEM
->>>>  	tristate "Philips SJA1000"
->>>>  	---help---
->>>>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
->>> Hm, this Kconfig entry is not directly responsible for building
->>> sja1000_platform.o. It builds sja1000.o, which does not rely on
->>> HAS_IOMEM. It should be added to "config CAN_SJA1000_PLATFORM" instead.
->> Hi Wolfgang,
->>
->> the question is, if we should add HAS_IOMEM to almost every SJA1000 depended
->> driver like SJA1000_PLATFORM, SJA1000_OF_PLATFORM, EMS_PCI and KVASER_PCI ???
->>
->> Is it possible to have a support for the SJA1000 that does *not* depend on
->> HAS_IOMEM?
+On Mon, 2009-06-22 at 13:56 +0100, David Woodhouse wrote:
+> I have this queued for 2.6.31 but have been on jury duty for the last 2
+> weeks so I'm hoping to get the pull request to Linus today now that I'm
+> free.
 
-In principle yes by using an appropriate driver accessing the SJA1000
-with other methods. But I might be wrong because it does not make sense
-hardware-wise.
+The old one is gone, but seems you merged a new one with BUS_ID_SIZE :)
 
-> This was my initial impression when I saw Wolfgang's suggested patch,
-> and I still feel this way, and thus Heiko's patch seems the best for
-> now until there is an exception.
-> 
-> And in fact Heiko's patch has been in my tree for a while already :)
+  ./drivers/mtd/maps/integrator-flash.c:#define SUBDEV_NAME_SIZE	(BUS_ID_SIZE + 2)
 
-OK, that's fine for the moment. We may even consider making CONFIG_CAN
-depend on HAS_IOMEM like for SPI, USB, Serial, etc.
+Thanks,
+Kay
 
-Wolfgang.
-Woflgang.
