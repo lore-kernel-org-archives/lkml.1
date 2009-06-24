@@ -1,137 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZFXVsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZFXVwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZFXVsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 17:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZFXVsi
+	id S1752929AbZFXVwi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 17:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZFXVwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 17:48:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37208 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZFXVsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 17:48:37 -0400
-Message-ID: <4A429F29.4070007@kernel.org>
-Date: Wed, 24 Jun 2009 14:48:25 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 24 Jun 2009 17:52:30 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9847 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbZFXVw3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 17:52:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=F2VoO7GbxQ12i0SxStc8lUXL2b6AInac0IV3YsYN3fVv/k5kVfXr8+NH8S5E5f7bw
+	0aeds/8FgSQSuU+QAKyUw==
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Larry Finger <Larry.Finger@lwfinger.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: [PATCH] x86/pci: get root CRS before scan child -v2
-References: <20090624122433.GA24781@elte.hu> <20090624145119.GA12664@elte.hu> <4A429EBB.5010209@kernel.org>
-In-Reply-To: <4A429EBB.5010209@kernel.org>
+In-Reply-To: <1245443858-8487-19-git-send-email-vgoyal@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>
+	 <1245443858-8487-19-git-send-email-vgoyal@redhat.com>
+Date: Wed, 24 Jun 2009 14:52:19 -0700
+Message-ID: <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
+Subject: Re: [PATCH 18/20] io-controller: Support per cgroup per device 
+	weights and io class
+From: Paul Menage <menage@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+>
+> You can use the following format to play with the new interface.
+> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+> weight=0 means removing the policy for DEV.
+>
+> Examples:
+> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+> # echo /dev/hdb:300:2 > io.policy
+> # cat io.policy
+> dev weight class
+> /dev/hdb 300 2
 
-so we could remove adjust_transparent_bridge_resources..
+I think that the read and write should be consistent. Can you just use
+white-space separation for both, rather than colon-separation for
+writes and white-space separation for reads?
 
-and give x86_pci_root_bus_res_quirks chance when _CRS is not used or
-not there.
+Also, storing device inode paths statically as strings into the
+io_policy structure seems wrong, since it's quite possible for the
+device node that was used originally to be gone by the time that
+someone reads the io.policy file, or renamed, or even replaced with an
+inode that refers to to a different block device
 
-v2: add print out if pci conf reading for res is used for root
+My preferred alternatives would be:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+- read/write the value as a device number rather than a name
+- read/write the block device's actual name (e.g. hda or sda) rather
+than a path to the inode
 
----
- arch/x86/pci/acpi.c    |   32 +++++++++-----------------------
- arch/x86/pci/amd_bus.c |    8 ++++++--
- 2 files changed, 15 insertions(+), 25 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/acpi.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/acpi.c
-+++ linux-2.6/arch/x86/pci/acpi.c
-@@ -118,23 +118,6 @@ setup_resource(struct acpi_resource *acp
- }
- 
- static void
--adjust_transparent_bridge_resources(struct pci_bus *bus)
--{
--	struct pci_dev *dev;
--
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		int i;
--		u16 class = dev->class >> 8;
--
--		if (class == PCI_CLASS_BRIDGE_PCI && dev->transparent) {
--			for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
--				dev->subordinate->resource[i] =
--						dev->bus->resource[i - 3];
--		}
--	}
--}
--
--static void
- get_current_resources(struct acpi_device *device, int busnum,
- 			int domain, struct pci_bus *bus)
- {
-@@ -161,8 +144,6 @@ get_current_resources(struct acpi_device
- 	info.res_num = 0;
- 	acpi_walk_resources(device->handle, METHOD_NAME__CRS, setup_resource,
- 				&info);
--	if (info.res_num)
--		adjust_transparent_bridge_resources(bus);
- 
- 	return;
- 
-@@ -225,8 +206,15 @@ struct pci_bus * __devinit pci_acpi_scan
- 		 */
- 		memcpy(bus->sysdata, sd, sizeof(*sd));
- 		kfree(sd);
--	} else
--		bus = pci_scan_bus_parented(NULL, busnum, &pci_root_ops, sd);
-+	} else {
-+		bus = pci_create_bus(NULL, busnum, &pci_root_ops, sd);
-+		if (bus) {
-+			if (!(pci_probe & PCI_NO_ROOT_CRS))
-+				get_current_resources(device, busnum, domain,
-+							bus);
-+			bus->subordinate = pci_scan_child_bus(bus);
-+		}
-+	}
- 
- 	if (!bus)
- 		kfree(sd);
-@@ -241,8 +229,6 @@ struct pci_bus * __devinit pci_acpi_scan
- #endif
- 	}
- 
--	if (bus && !(pci_probe & PCI_NO_ROOT_CRS))
--		get_current_resources(device, busnum, domain, bus);
- 	return bus;
- }
- 
-Index: linux-2.6/arch/x86/pci/amd_bus.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/amd_bus.c
-+++ linux-2.6/arch/x86/pci/amd_bus.c
-@@ -100,8 +100,9 @@ void x86_pci_root_bus_res_quirks(struct
- 	int j;
- 	struct pci_root_info *info;
- 
--	/* don't go for it if _CRS is used */
--	if (!(pci_probe & PCI_NO_ROOT_CRS))
-+       /* don't go for it if _CRS is used already */
-+	if (b->resource[0] != &ioport_resource ||
-+	    b->resource[1] != &iomem_resource)
- 		return;
- 
- 	/* if only one root bus, don't need to anything */
-@@ -116,6 +117,9 @@ void x86_pci_root_bus_res_quirks(struct
- 	if (i == pci_root_num)
- 		return;
- 
-+	printk(KERN_DEBUG "PCI: peer root bus %02x res updated from pci conf\n",
-+			b->number);
-+
- 	info = &pci_root_info[i];
- 	for (j = 0; j < info->res_num; j++) {
- 		struct resource *res;
+Paul
