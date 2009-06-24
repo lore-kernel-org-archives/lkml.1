@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbZFXOcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZFXOcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759208AbZFXOcD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZFXOby
+	id S1760241AbZFXOcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbZFXOb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:31:54 -0400
-Received: from ru.mvista.com ([213.79.90.228]:5450 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751409AbZFXObx (ORCPT
+	Wed, 24 Jun 2009 10:31:57 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:56915 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757293AbZFXOb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:31:53 -0400
-Date: Wed, 24 Jun 2009 18:30:51 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: cbou@mail.ru, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       richard@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Fox <pgf@laptop.org>, dsaxena@laptop.org
-Subject: Re: [PATCH 5/5] Revert "power_supply: remove capacity_level from
-	list of sysfs attributes"
-Message-ID: <20090624143051.GC9035@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090622234626.677cdab3@mycelium.queued.net>
+	Wed, 24 Jun 2009 10:31:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pNFCDBOfODn/8g231qxLFZORti28w7JTH1Lf1vDSH70AfNZA4iJxEISQ1AqX40CpEe
+         4sM+Ll5KecGKpE8L/ohQfzr39F8Jh2SsQGntsC4pn1D5I7JGeEa3hFDAx2/6QvVgQAHJ
+         S+qtFHx5PWcBDoHp4nprzUoHc+4Ln+hQ4/Tw4=
+Message-ID: <4A4238D2.2060501@googlemail.com>
+Date: Wed, 24 Jun 2009 16:31:46 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090610)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090622234626.677cdab3@mycelium.queued.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dave Airlie <airlied@linux.ie>
+CC: Ma Ling <ling.ma@intel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] drm fixes + intel display port
+References: <alpine.DEB.2.00.0906240723420.18292@skynet.skynet.ie> <1820d69d0906240715v6c3591c4x30ee87e9ec8774f7@mail.gmail.com>
+In-Reply-To: <1820d69d0906240715v6c3591c4x30ee87e9ec8774f7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 11:46:26PM -0400, Andres Salomon wrote:
+[ forgot to CC LKML , sorry ]
+
+Gabriel C wrote:
+
+> 2009/6/24 Dave Airlie <airlied@linux.ie>:
+>> Hi Linus,
+>>
+>> Please pull the 'drm-fixes' branch from
+>> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
+>>
 > 
-> This reverts commit 4cbc76eadf56399cd11fb736b33c53aec9caab8c.
+> Hi Dave ,
 > 
-> This is part of the CAPACITY_LEVEL re-add.
-
-The two patches (4/5 and 5/5) looks OK, but could you merge them
-together? Title them "Re-add capacity_level ...".
-
-And place them somewhere in the beginning of this series, i.e.
-before 2/5 and 3/5. That way we can apply 1/5, 4/5, and 5/5,
-without depending on 2/5 and 3/5.
-
-Thanks,
-
-> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
-> ---
->  drivers/power/power_supply_sysfs.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> I own an DQ45CB Intel motherboard. When enabling KMS with kernels from
+> 2.6.29* to current git / linux-next on that board
+> I don't get any console. My Monitor is saying 'No signal' , however
+> once X starts up I can login in KDE/gnome etc.
 > 
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index fef37b2..d22d9c9 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -116,6 +116,7 @@ static struct device_attribute power_supply_attrs[] = {
->  	POWER_SUPPLY_ATTR(energy_now),
->  	POWER_SUPPLY_ATTR(energy_avg),
->  	POWER_SUPPLY_ATTR(capacity),
-> +	POWER_SUPPLY_ATTR(capacity_level),
->  	POWER_SUPPLY_ATTR(temp),
->  	POWER_SUPPLY_ATTR(temp_ambient),
->  	POWER_SUPPLY_ATTR(time_to_empty_now),
-> -- 
-> 1.5.6.5
+> The monitor is connected with an DVI-I -> VGA connector.
 > 
+> I found on the gfx mailing list the following patch from Ma Ling :
+> 
+> http://lists.freedesktop.org/archives/intel-gfx/2009-May/002504.html
+> 
+> which seems to fix my problem. With that patch applied I get a console
+> and everything works fine.
+> 
+> However I still have such :
+> 
+> [   21.205449] i2c-adapter i2c-1: unable to read EDID block.
+> [   21.205452] i915 0000:00:02.0: VGA-1: no EDID data
+> 
+> 
+> messages in my dmesg but it works.
+> 
+> 
+> Is there any reason why this patch never got merged ?
+> 
+> Best Regards,
+> 
+> Gabriel C
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
