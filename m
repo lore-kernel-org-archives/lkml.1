@@ -1,100 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbZFXBnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZFXBnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbZFXBnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 21:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZFXBnE
+	id S1752565AbZFXBnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 21:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZFXBnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 21:43:04 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51838 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751566AbZFXBnD (ORCPT
+	Tue, 23 Jun 2009 21:43:45 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58615 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbZFXBno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 21:43:03 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 0/3] make mapped executable pages the first class citizen
-Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <7561.1245768237@redhat.com>
-References: <20090620043303.GA19855@localhost> <7561.1245768237@redhat.com>
-Message-Id: <20090624104150.2257.A69D9226@jp.fujitsu.com>
+	Tue, 23 Jun 2009 21:43:44 -0400
+Message-ID: <4A4184C3.6060503@novell.com>
+Date: Tue, 23 Jun 2009 21:43:31 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 24 Jun 2009 10:43:02 +0900 (JST)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+References: <20090623150008.GA21059@redhat.com>
+In-Reply-To: <20090623150008.GA21059@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA03B4605AE98452441E3A8E6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > David, could you try running this when it occurred again?
-> > 
-> >         make Documentation/vm/page-types
-> >         Documentation/vm/page-types --raw  # run as root
-> 
-> Okay.  I managed to catch it between the first and second OOMs, and ran the
-> command you asked for.
-> 
-> David
-> ---
->              flags	page-count       MB  symbolic-flags			long-symbolic-flags
-> 0x0000000000000000	    142261      555  ________________________________	
-> 0x0000000100000000	      5588       21  ____________________r___________	reserved
-> 0x0000004000000000	        17        0  __________________________h_____	arch
-> 0x0000000800000004	         4        0  __R____________________P________	referenced,private
-> 0x0000000800000024	      2073        8  __R__l_________________P________	referenced,lru,private
-> 0x0000000400000028	     69911      273  ___U_l________________d_________	uptodate,lru,mappedtodisk
-> 0x0001000400000028	        16        0  ___U_l________________d_____I___	uptodate,lru,mappedtodisk,readahead
-> 0x0000000800000028	        25        0  ___U_l_________________P________	uptodate,lru,private
-> 0x0000000000000028	        11        0  ___U_l__________________________	uptodate,lru
-> 0x000000040000002c	      3045       11  __RU_l________________d_________	referenced,uptodate,lru,mappedtodisk
-> 0x000000080000002c	         4        0  __RU_l_________________P________	referenced,uptodate,lru,private
-> 0x0000000800000034	         9        0  __R_Dl_________________P________	referenced,dirty,lru,private
-> 0x0000000800000038	         1        0  ___UDl_________________P________	uptodate,dirty,lru,private
-> 0x0000000000004038	        13        0  ___UDl________b_________________	uptodate,dirty,lru,swapbacked
-> 0x000000080000003c	         1        0  __RUDl_________________P________	referenced,uptodate,dirty,lru,private
-> 0x0000000800000060	       183        0  _____lA________________P________	lru,active,private
-> 0x0000000800000064	       982        3  __R__lA________________P________	referenced,lru,active,private
-> 0x0000000400000068	       473        1  ___U_lA_______________d_________	uptodate,lru,active,mappedtodisk
-> 0x0000000c00000068	         1        0  ___U_lA_______________dP________	uptodate,lru,active,mappedtodisk,private
-> 0x000000040000006c	       392        1  __RU_lA_______________d_________	referenced,uptodate,lru,active,mappedtodisk
-> 0x0000000c0000006c	         1        0  __RU_lA_______________dP________	referenced,uptodate,lru,active,mappedtodisk,private
-> 0x0000000800000070	         1        0  ____DlA________________P________	dirty,lru,active,private
-> 0x0000000800000074	        20        0  __R_DlA________________P________	referenced,dirty,lru,active,private
-> 0x0000000c00000078	         2        0  ___UDlA_______________dP________	uptodate,dirty,lru,active,mappedtodisk,private
-> 0x0000000000004078	         1        0  ___UDlA_______b_________________	uptodate,dirty,lru,active,swapbacked
-> 0x000000080000007c	         1        0  __RUDlA________________P________	referenced,uptodate,dirty,lru,active,private
-> 0x0000000000000080	     18684       72  _______S________________________	slab
-> 0x0000000000000400	      6797       26  __________B_____________________	buddy
-> 0x0000000000000804	         1        0  __R________M____________________	referenced,mmap
-> 0x0000000400000828	       195        0  ___U_l_____M__________d_________	uptodate,lru,mmap,mappedtodisk
-> 0x000000040000082c	        35        0  __RU_l_____M__________d_________	referenced,uptodate,lru,mmap,mappedtodisk
-> 0x0000000000004838	         2        0  ___UDl_____M__b_________________	uptodate,dirty,lru,mmap,swapbacked
-> 0x0000000400000868	        11        0  ___U_lA____M__________d_________	uptodate,lru,active,mmap,mappedtodisk
-> 0x000000040000086c	       274        1  __RU_lA____M__________d_________	referenced,uptodate,lru,active,mmap,mappedtodisk
-> 0x0000000800000878	         1        0  ___UDlA____M___________P________	uptodate,dirty,lru,active,mmap,private
-> 0x000000080000087c	         2        0  __RUDlA____M___________P________	referenced,uptodate,dirty,lru,active,mmap,private
-> 0x0000000000005008	         8        0  ___U________a_b_________________	uptodate,anonymous,swapbacked
-> 0x0000000000005808	         6        0  ___U_______Ma_b_________________	uptodate,mmap,anonymous,swapbacked
-> 0x0000000000005828	      4325       16  ___U_l_____Ma_b_________________	uptodate,lru,mmap,anonymous,swapbacked
-> 0x0000000000005868	       366        1  ___U_lA____Ma_b_________________	uptodate,lru,active,mmap,anonymous,swapbacked
-> 0x000000000000586c	         1        0  __RU_lA____Ma_b_________________	referenced,uptodate,lru,active,mmap,anonymous,swapbacked
->              total	    255744      999
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA03B4605AE98452441E3A8E6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-reclaimable pages are very few. I don't think we see vmscan issue.
-I guess it's memory leak issue.
+Michael S. Tsirkin wrote:
+> Remove in_range from kvm_io_device and ask read/write callbacks, if
+> supplied, to perform range checks internally. This allows aliasing
+> (mostly for in-kernel virtio), as well as better error handling by
+> making it possible to pass errors up to userspace. And it's enough to
+> look at the diffstat to see that it's a better API anyway.
+>
+> While we are at it, document locking rules for kvm_io_device.
+>  =20
+
+Hi Michael,
+
+I just tried to apply this to kvm.git/master, and it blew up really
+badly.  What tree should I be using?
+
+-Greg
 
 
 
+--------------enigA03B4605AE98452441E3A8E6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpBhMQACgkQlOSOBdgZUxnoFwCfRpPI0T2154qXstuSDF1XtWRd
++G0AnApL7cAmbe3BXkTT39ez1mWuIg1e
+=aQvv
+-----END PGP SIGNATURE-----
+
+--------------enigA03B4605AE98452441E3A8E6--
