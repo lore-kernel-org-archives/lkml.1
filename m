@@ -1,97 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZFXAao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZFXAfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbZFXAao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 20:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZFXAag
+	id S1752048AbZFXAfb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 20:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180AbZFXAfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 20:30:36 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:45844 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZFXAag (ORCPT
+	Tue, 23 Jun 2009 20:35:23 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:62880 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751076AbZFXAfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 20:30:36 -0400
-Date: Tue, 23 Jun 2009 17:28:55 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: [GIT PULL] ocfs2 updates for 2.6.31, take 2
-Message-ID: <20090624002855.GA17214@mail.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A4173A0.01B0:SCFMA4539814,ss=1,fgs=0
+	Tue, 23 Jun 2009 20:35:23 -0400
+Date: Tue, 23 Jun 2009 20:35:09 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Justen, Jordan L" <jordan.l.justen@intel.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [SFI-devel] [RFC/PATCH 2.6.32] Simple Firmware Interface (SFI):
+ initial support
+In-reply-to: <5B8ABB4480AEBB4ABFF06629589B20CD7230EEF8@orsmsx509.amr.corp.intel.com>
+Message-id: <alpine.LFD.2.00.0906231959130.32742@localhost.localdomain>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
+ <20090623183153.GB12814@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231438190.23079@localhost.localdomain>
+ <20090623185120.GA13824@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231541400.23079@localhost.localdomain>
+ <20090623202302.GA15265@srcf.ucam.org> <20090623204524.GA15891@srcf.ucam.org>
+ <alpine.LFD.2.00.0906231734170.32098@localhost.localdomain>
+ <5B8ABB4480AEBB4ABFF06629589B20CD7230EEF8@orsmsx509.amr.corp.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, et al,
-	Here are some more ocfs2 updates for 2.6.31.  More bug fixes,
-mostly.  The one non-fix is lockdep annotation for ocfs2's cluster
-locking.  Thanks to Jan Kara for that.  Please pull.
+On Tue, 23 Jun 2009, Justen, Jordan L wrote:
 
-Joel
+> > Should a platform require them, any and all of the ACPI
+> > defined/reserved tables can be accessed on an SFI system
+> > if needed.  Today, the PCI MCFG is the only ACPI table
+> > implemented in the known universe of SFI systems.
+> 
+> When for ACPI tables are used in SFI, they retain the common
+> ACPI header format, including the OEM Revision, Creator ID and
+> Creator Revision fields  unlike the other SFI structure, correct?
 
-The following changes since commit 3fe0344faf7fdcb158bd5c1a9aec960a8d70c8e8:
-  Linus Torvalds (1):
-        Merge branch 'kmemleak' of git://linux-arm.org/linux-2.6
+Yes.  ACPI tables are real ACPI tables, per their spec.
 
-are available in the git repository at:
+> Regarding stripping those fields from the SFI structures,
+> how much space does it save in a typical system versus if they
+> had retained the common header format that ACPI defines?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jlbec/ocfs2.git upstream-linus
+While we do save 12-bytes per table, I don't think that is material,
+even if firmware folks claim they turn backflips to save every byte...
 
-Jan Kara (2):
-      vfs: Set special lockdep map for dirs only if not set by fs
-      ocfs2: Add lockdep annotations
+(Though it is sort of snappy that an SFI table with
+ a single 64-bit pointer fits exactly into 32-bytes;
+ if density were the primary goal, we'd pack everything in the
+ system into a single table with one shared header...)
 
-Joel Becker (1):
-      ocfs2: Provide the ocfs2_dlm_lvb_valid() stack API.
+So the motivation to remove unused fields was not part of
+an effort to reduce total memory footprint.
+They were removed because it was not possible
+to justify their existence.
 
-Sunil Mushran (5):
-      ocfs2: Pin journal head before accessing jh->b_committed_data
-      ocfs2: Fix ocfs2_osb_dump()
-      ocfs2: Stop orphan scan as early as possible during umount
-      ocfs2: Do not initialize lvb in ocfs2_orphan_scan_lock_res_init()
-      ocfs2: Disable orphan scanning for local and hard-ro mounts
+The benefit of the SFI header being a proper sub-set of
+the ACPI header is that it allows the SFI-OS to not have a
+special case to parse the XSDT.  It is both a valid SFI table
+and a valid ACPI table...
 
-Tao Ma (2):
-      ocfs2: Update atime in splice read if necessary.
-      ocfs2/trivial: Wrap ocfs2_sysfile_cluster_lock_key within define.
+However, as I've had to answer this question multiple
+times, I'm thinking that it might have been less total effort
+to use a table header that was arbitrarliy different
+and have a special case for finding the ACPI XSDT:-)
 
- fs/inode.c              |   17 ++++--
- fs/ocfs2/dlmglue.c      |  123 ++++++++++++++++++++++++++++++++++-------------
- fs/ocfs2/dlmglue.h      |   24 +++++++--
- fs/ocfs2/file.c         |    6 +-
- fs/ocfs2/inode.c        |   11 ++++
- fs/ocfs2/journal.c      |   43 +++++++++++-----
- fs/ocfs2/journal.h      |    2 +-
- fs/ocfs2/namei.c        |   15 ++++--
- fs/ocfs2/ocfs2.h        |   10 ++++
- fs/ocfs2/stack_o2cb.c   |   11 ++++
- fs/ocfs2/stack_user.c   |    8 +++
- fs/ocfs2/stackglue.c    |   13 +++--
- fs/ocfs2/stackglue.h    |    6 ++
- fs/ocfs2/suballoc.c     |   28 +++++++++--
- fs/ocfs2/super.c        |   69 ++++++++++++++-------------
- fs/ocfs2/sysfile.c      |   19 +++++++
- include/linux/lockdep.h |   15 ++++++
- 17 files changed, 309 insertions(+), 111 deletions(-)
+cheers,
+-Len Brown, Intel Open Source Technology Center
 
--- 
-
-Life's Little Instruction Book #99
-
-	"Think big thoughts, but relish small pleasures."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
