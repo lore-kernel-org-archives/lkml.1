@@ -1,201 +1,437 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZFXGtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZFXGsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbZFXGtP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 02:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZFXGs7
+	id S1755608AbZFXGsZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 02:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZFXGqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 02:48:59 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40003 "EHLO mx1.suse.de"
+	Wed, 24 Jun 2009 02:46:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57107 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753249AbZFXGs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 02:48:58 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix error handling in add_disk
-Date: Wed, 24 Jun 2009 12:18:13 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-References: <200906171231.10438.knikanth@suse.de> <20090623142357.b2050c14.akpm@linux-foundation.org>
-In-Reply-To: <20090623142357.b2050c14.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906241218.13538.knikanth@suse.de>
+	id S1754228AbZFXGq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 02:46:28 -0400
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: Tejun Heo <tj@kernel.org>, Paul Mundt <lethal@linux-sh.org>,
+       Russell King <rmk@arm.linux.org.uk>, Mikael Starvik <starvik@axis.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Bryan Wu <cooloney@kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [PATCH 01/10] percpu: use dynamic percpu allocator as the default percpu allocator
+Date: Wed, 24 Jun 2009 15:45:15 +0900
+Message-Id: <1245825924-30412-2-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1245825924-30412-1-git-send-email-tj@kernel.org>
+References: <1245825924-30412-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 06:45:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009 02:53:57 Andrew Morton wrote:
-> On Wed, 17 Jun 2009 12:31:10 +0530
->
-> Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > Fix error handling in add_disk. Also add WARN_ON()'s in case
-> > of error, which can be removed once the callers handle the error.
->
-> I have a vague ancestral memory that some of the unchecked errors which
-> you're now checking for actually do happen in practice, and that this
-> "fix" will end up breaking currently-working setups.
->
-> Or maybe I'm thinking of a similar but different piece of code (maybe
-> it was the partition code?).
->
-> Still, I think it would be prudent to initially make this patch
-> continue to ignore the errors.  So add the warnings, but don't change
-> the response to errors.  Then we can get the change distributed for a
-> bit of testing and if that all looks good then we can add the control
-> flow changes later.
->
+This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
+dynamic percpu allocator.  The first chunk is allocated using
+embedding helper and 8k is reserved for modules.  This ensures that
+the new allocator behaves almost identically to the original allocator
+as long as static percpu variables are concerned, so it shouldn't
+introduce much breakage.
 
-add_disk and blk_register_region are functions returning void masking the
-error, which this patch changes. So no caller check for it's return value! And
-hence errors are ignored, and nothing breaks.
+s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
+range limit the addressing model imposes.  Unfortunately, this breaks
+if the address is specified using a variable, so for now, the two
+archs aren't converted.
 
-> >  	retval = blk_alloc_devt(&disk->part0, &devt);
-> >  	if (retval) {
-> >  		WARN_ON(1);
-> > -		return;
-> > +		goto err_out;
-> >  	}
-> > ...
-> > +	if (retval) {
-> > +		WARN_ON(1);
-> > +		goto err_free_devt;
-> > +	}
-> > ...
-> > +	if (retval) {
-> > +		WARN_ON(1);
-> > +		goto err_free_region;
-> > +	}
-> > ...
-> > -	WARN_ON(retval);
-> > +	if (retval) {
-> > +		WARN_ON(1);
-> > +		goto err_free_queue;
-> > +	}
->
-> These all can be coded as
->
-> 	if (WARN_ON(retval))
-> 		goto foo;
+The following architectures are affected by this change.
 
-done.
+* sh
+* arm
+* cris
+* mips
+* sparc(32)
+* blackfin
+* avr32
+* parisc (broken, under investigation)
+* m32r
+* powerpc(32)
 
-Thanks
-Nikanth
+As this change makes the dynamic allocator the default one,
+CONFIG_HAVE_DYNAMIC_PER_CPU_AREA is replaced with its invert -
+CONFIG_HAVE_LEGACY_PER_CPU_AREA, which is added to yet-to-be converted
+archs.  These archs implement their own setup_per_cpu_areas() and the
+conversion is not trivial.
 
+* powerpc(64)
+* sparc(64)
+* ia64
+* alpha
+* s390
 
-Fix error handling in add_disk. Also add WARN_ON()'s in case
-of error, which can be removed once the callers handle the error.
+Boot and batch alloc/free tests on x86_32 with debug code (x86_32
+doesn't use default first chunk initialization).  Compile tested on
+sparc(32), powerpc(32), arm and alpha.
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Kyle McMartin reported that this change breaks parisc.  The problem is
+still under investigation and he is okay with pushing this patch
+forward and fixing parisc later.
 
+[ Impact: use dynamic allocator for most archs w/o custom percpu setup ]
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: David S. Miller <davem@davemloft.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reviewed-by: Christoph Lameter <cl@linux.com>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Mikael Starvik <starvik@axis.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Grant Grundler <grundler@parisc-linux.org>
+Cc: Hirokazu Takata <takata@linux-m32r.org>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
+ arch/alpha/Kconfig     |    3 +++
+ arch/ia64/Kconfig      |    3 +++
+ arch/powerpc/Kconfig   |    3 +++
+ arch/s390/Kconfig      |    3 +++
+ arch/sparc/Kconfig     |    3 +++
+ arch/x86/Kconfig       |    3 ---
+ include/linux/percpu.h |   12 +++++++++---
+ init/main.c            |   24 ------------------------
+ kernel/module.c        |    6 +++---
+ mm/Makefile            |    2 +-
+ mm/allocpercpu.c       |   28 ++++++++++++++++++++++++++++
+ mm/percpu.c            |   40 +++++++++++++++++++++++++++++++++++++++-
+ 12 files changed, 95 insertions(+), 35 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index fe7ccc0..ae48a89 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -472,11 +472,11 @@ static char *bdevt_str(dev_t devt, char *buf)
-  * range must be nonzero
-  * The hash chain is sorted on range, so that subranges can override.
-  */
--void blk_register_region(dev_t devt, unsigned long range, struct module *module,
-+int blk_register_region(dev_t devt, unsigned long range, struct module *module,
- 			 struct kobject *(*probe)(dev_t, int *, void *),
- 			 int (*lock)(dev_t, void *), void *data)
- {
--	kobj_map(bdev_map, devt, range, module, probe, lock, data);
-+	return kobj_map(bdev_map, devt, range, module, probe, lock, data);
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 9fb8aae..05d8640 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -70,6 +70,9 @@ config AUTO_IRQ_AFFINITY
+ 	depends on SMP
+ 	default y
+ 
++config HAVE_LEGACY_PER_CPU_AREA
++	def_bool y
++
+ source "init/Kconfig"
+ source "kernel/Kconfig.freezer"
+ 
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 170042b..328d2f8 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -89,6 +89,9 @@ config GENERIC_TIME_VSYSCALL
+ 	bool
+ 	default y
+ 
++config HAVE_LEGACY_PER_CPU_AREA
++	def_bool y
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index bf6cedf..a774c2a 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -46,6 +46,9 @@ config GENERIC_HARDIRQS_NO__DO_IRQ
+ 	bool
+ 	default y
+ 
++config HAVE_LEGACY_PER_CPU_AREA
++	def_bool PPC64
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool PPC64
+ 
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index a14dba0..f4a3cc6 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -75,6 +75,9 @@ config VIRT_CPU_ACCOUNTING
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+ 	def_bool y
+ 
++config HAVE_LEGACY_PER_CPU_AREA
++	def_bool y
++
+ mainmenu "Linux Kernel Configuration"
+ 
+ config S390
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 3f8b6a9..7a8698b 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -92,6 +92,9 @@ config AUDIT_ARCH
+ 	bool
+ 	default y
+ 
++config HAVE_LEGACY_PER_CPU_AREA
++	def_bool y if SPARC64
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y if SPARC64
+ 
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index d1430ef..a48a900 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -149,9 +149,6 @@ config ARCH_HAS_CACHE_LINE_SIZE
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
+ 
+-config HAVE_DYNAMIC_PER_CPU_AREA
+-	def_bool y
+-
+ config HAVE_CPUMASK_OF_CPU_MAP
+ 	def_bool X86_64_SMP
+ 
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 26fd9d1..e500034 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -34,7 +34,7 @@
+ 
+ #ifdef CONFIG_SMP
+ 
+-#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ 
+ /* minimum unit size, also is the maximum supported allocation size */
+ #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
+@@ -80,7 +80,7 @@ extern ssize_t __init pcpu_embed_first_chunk(
+ 
+ extern void *__alloc_reserved_percpu(size_t size, size_t align);
+ 
+-#else /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
++#else /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
+ 
+ struct percpu_data {
+ 	void *ptrs[1];
+@@ -99,11 +99,15 @@ struct percpu_data {
+         (__typeof__(ptr))__p->ptrs[(cpu)];				\
+ })
+ 
+-#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
++#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
+ 
+ extern void *__alloc_percpu(size_t size, size_t align);
+ extern void free_percpu(void *__pdata);
+ 
++#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
++extern void __init setup_per_cpu_areas(void);
++#endif
++
+ #else /* CONFIG_SMP */
+ 
+ #define per_cpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
+@@ -124,6 +128,8 @@ static inline void free_percpu(void *p)
+ 	kfree(p);
  }
  
- EXPORT_SYMBOL(blk_register_region);
-@@ -511,9 +511,9 @@ static int exact_lock(dev_t devt, void *data)
-  * This function registers the partitioning information in @disk
-  * with the kernel.
-  *
-- * FIXME: error handling
-+ * TODO: Remove WARN_ON()'s when all the callers handle the error.
-  */
--void add_disk(struct gendisk *disk)
-+int add_disk(struct gendisk *disk)
- {
- 	struct backing_dev_info *bdi;
- 	dev_t devt;
-@@ -529,10 +529,9 @@ void add_disk(struct gendisk *disk)
- 	disk->flags |= GENHD_FL_UP;
++static inline void __init setup_per_cpu_areas(void) { }
++
+ #endif /* CONFIG_SMP */
  
- 	retval = blk_alloc_devt(&disk->part0, &devt);
--	if (retval) {
--		WARN_ON(1);
--		return;
+ #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type), \
+diff --git a/init/main.c b/init/main.c
+index 09131ec..602d724 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -357,7 +357,6 @@ static void __init smp_init(void)
+ #define smp_init()	do { } while (0)
+ #endif
+ 
+-static inline void setup_per_cpu_areas(void) { }
+ static inline void setup_nr_cpu_ids(void) { }
+ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
+ 
+@@ -378,29 +377,6 @@ static void __init setup_nr_cpu_ids(void)
+ 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
+ }
+ 
+-#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+-unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+-
+-EXPORT_SYMBOL(__per_cpu_offset);
+-
+-static void __init setup_per_cpu_areas(void)
+-{
+-	unsigned long size, i;
+-	char *ptr;
+-	unsigned long nr_possible_cpus = num_possible_cpus();
+-
+-	/* Copy section for each CPU (we discard the original) */
+-	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
+-	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
+-
+-	for_each_possible_cpu(i) {
+-		__per_cpu_offset[i] = ptr - __per_cpu_start;
+-		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
+-		ptr += size;
 -	}
-+	if (WARN_ON(retval))
-+		goto err_out;
-+
- 	disk_to_dev(disk)->devt = devt;
+-}
+-#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
+-
+ /* Called by boot processor to activate the rest. */
+ static void __init smp_init(void)
+ {
+diff --git a/kernel/module.c b/kernel/module.c
+index 38928fc..f593495 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -364,7 +364,7 @@ EXPORT_SYMBOL_GPL(find_module);
  
- 	/* ->major and ->first_minor aren't supposed to be
-@@ -541,16 +540,34 @@ void add_disk(struct gendisk *disk)
- 	disk->major = MAJOR(devt);
- 	disk->first_minor = MINOR(devt);
+ #ifdef CONFIG_SMP
  
--	blk_register_region(disk_devt(disk), disk->minors, NULL,
-+	retval = blk_register_region(disk_devt(disk), disk->minors, NULL,
- 			    exact_match, exact_lock, disk);
-+	if (WARN_ON(retval))
-+		goto err_free_devt;
-+
- 	register_disk(disk);
--	blk_register_queue(disk);
-+
-+	retval = blk_register_queue(disk);
-+	if (WARN_ON(retval))
-+		goto err_free_region;
+-#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
++#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
  
- 	bdi = &disk->queue->backing_dev_info;
- 	bdi_register_dev(bdi, disk_devt(disk));
- 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
- 				   "bdi");
--	WARN_ON(retval);
-+	if (WARN_ON(retval))
-+		goto err_free_queue;
-+
-+	return 0;
-+
-+err_free_queue:
-+	blk_unregister_queue(disk);
-+err_free_region:
-+	blk_unregister_region(disk_devt(disk), disk->minors);
-+err_free_devt:
-+	blk_free_devt(disk_devt(disk));
-+err_out:
-+	return retval;
+ static void *percpu_modalloc(unsigned long size, unsigned long align,
+ 			     const char *name)
+@@ -389,7 +389,7 @@ static void percpu_modfree(void *freeme)
+ 	free_percpu(freeme);
  }
  
- EXPORT_SYMBOL(add_disk);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 149fda2..df3344a 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -339,7 +339,7 @@ static inline void part_dec_in_flight(struct hd_struct *part)
- extern void part_round_stats(int cpu, struct hd_struct *part);
+-#else /* ... !CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
++#else /* ... CONFIG_HAVE_LEGACY_PER_CPU_AREA */
  
- /* block/genhd.c */
--extern void add_disk(struct gendisk *disk);
-+extern int add_disk(struct gendisk *disk);
- extern void del_gendisk(struct gendisk *gp);
- extern void unlink_gendisk(struct gendisk *gp);
- extern struct gendisk *get_gendisk(dev_t dev, int *partno);
-@@ -534,7 +534,7 @@ extern struct gendisk *alloc_disk_node(int minors, int node_id);
- extern struct gendisk *alloc_disk(int minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
--extern void blk_register_region(dev_t devt, unsigned long range,
-+extern int blk_register_region(dev_t devt, unsigned long range,
- 			struct module *module,
- 			struct kobject *(*probe)(dev_t, int *, void *),
- 			int (*lock)(dev_t, void *),
+ /* Number of blocks used and allocated. */
+ static unsigned int pcpu_num_used, pcpu_num_allocated;
+@@ -535,7 +535,7 @@ static int percpu_modinit(void)
+ }
+ __initcall(percpu_modinit);
+ 
+-#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
++#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
+ 
+ static unsigned int find_pcpusec(Elf_Ehdr *hdr,
+ 				 Elf_Shdr *sechdrs,
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..c77c648 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -33,7 +33,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
+ obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
+ obj-$(CONFIG_FS_XIP) += filemap_xip.o
+ obj-$(CONFIG_MIGRATION) += migrate.o
+-ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
++ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
+ obj-$(CONFIG_SMP) += percpu.o
+ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
+index dfdee6a..df34cea 100644
+--- a/mm/allocpercpu.c
++++ b/mm/allocpercpu.c
+@@ -5,6 +5,8 @@
+  */
+ #include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/bootmem.h>
++#include <asm/sections.h>
+ 
+ #ifndef cache_line_size
+ #define cache_line_size()	L1_CACHE_BYTES
+@@ -147,3 +149,29 @@ void free_percpu(void *__pdata)
+ 	kfree(__percpu_disguise(__pdata));
+ }
+ EXPORT_SYMBOL_GPL(free_percpu);
++
++/*
++ * Generic percpu area setup.
++ */
++#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
++unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
++
++EXPORT_SYMBOL(__per_cpu_offset);
++
++void __init setup_per_cpu_areas(void)
++{
++	unsigned long size, i;
++	char *ptr;
++	unsigned long nr_possible_cpus = num_possible_cpus();
++
++	/* Copy section for each CPU (we discard the original) */
++	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
++	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
++
++	for_each_possible_cpu(i) {
++		__per_cpu_offset[i] = ptr - __per_cpu_start;
++		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
++		ptr += size;
++	}
++}
++#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
+diff --git a/mm/percpu.c b/mm/percpu.c
+index b70f2ac..b149845 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -43,7 +43,7 @@
+  *
+  * To use this allocator, arch code should do the followings.
+  *
+- * - define CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
++ * - drop CONFIG_HAVE_LEGACY_PER_CPU_AREA
+  *
+  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
+  *   regular address to percpu pointer and back if they need to be
+@@ -1275,3 +1275,41 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
+ 				      reserved_size, dyn_size,
+ 				      pcpue_unit_size, pcpue_ptr, NULL);
+ }
++
++/*
++ * Generic percpu area setup.
++ *
++ * The embedding helper is used because its behavior closely resembles
++ * the original non-dynamic generic percpu area setup.  This is
++ * important because many archs have addressing restrictions and might
++ * fail if the percpu area is located far away from the previous
++ * location.  As an added bonus, in non-NUMA cases, embedding is
++ * generally a good idea TLB-wise because percpu area can piggy back
++ * on the physical linear memory mapping which uses large page
++ * mappings on applicable archs.
++ */
++#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
++unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
++EXPORT_SYMBOL(__per_cpu_offset);
++
++void __init setup_per_cpu_areas(void)
++{
++	size_t static_size = __per_cpu_end - __per_cpu_start;
++	ssize_t unit_size;
++	unsigned long delta;
++	unsigned int cpu;
++
++	/*
++	 * Always reserve area for module percpu variables.  That's
++	 * what the legacy allocator did.
++	 */
++	unit_size = pcpu_embed_first_chunk(static_size, PERCPU_MODULE_RESERVE,
++					   PERCPU_DYNAMIC_RESERVE, -1);
++	if (unit_size < 0)
++		panic("Failed to initialized percpu areas.");
++
++	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
++	for_each_possible_cpu(cpu)
++		__per_cpu_offset[cpu] = delta + cpu * unit_size;
++}
++#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
+-- 
+1.6.0.2
 
