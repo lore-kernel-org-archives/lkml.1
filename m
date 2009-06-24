@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZFXMXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757152AbZFXM0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZFXMXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZFXMXE
+	id S1757152AbZFXM0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 08:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZFXM0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:23:04 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:1271
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750957AbZFXMXE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:23:04 -0400
-Message-ID: <4A421AA6.5060908@panasas.com>
-Date: Wed, 24 Jun 2009 15:23:02 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 24 Jun 2009 08:26:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48889 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbZFXM0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 08:26:02 -0400
+Date: Wed, 24 Jun 2009 14:26:00 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Doug Thompson <norsk5@yahoo.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ranganathan Desikan <rdesikan@jetzbroadband.com>,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: Re: [PATCH] MAINTAINERS: pair names/addresses in EDAC-I82975X
+In-Reply-To: <589165.9933.qm@web50102.mail.re2.yahoo.com>
+Message-ID: <alpine.LRH.2.00.0906241425510.31685@twin.jikos.cz>
+References: <589165.9933.qm@web50102.mail.re2.yahoo.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-CC: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
-References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com> <20090622024610.GC5893@cr0.nay.redhat.com>
-In-Reply-To: <20090622024610.GC5893@cr0.nay.redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2009 12:23:06.0103 (UTC) FILETIME=[86EB2870:01C9F4C6]
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-1842657311-1245844424=:31685"
+Content-ID: <alpine.LRH.2.00.0906241424410.31685@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/22/2009 05:46 AM, Amerigo Wang wrote:
-> On Fri, Jun 19, 2009 at 05:55:24PM -0700, Paul Menage wrote:
->> UML: Fix some apparent bitrot
->>
->> - migration of net_device methods into net_device_ops
->> - dma_sync_single() changes
->> - cpumask_clear() -> cpumask_clear_cpu()
->>
->> Signed-off-by: Paul Menage <menage@google.com>
-> 
-> 
-> Looks good.
-> 
-> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
-> 
-> 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Dear Jeff, Amerigo
+---1747641777-1842657311-1245844424=:31685
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.LRH.2.00.0906241424411.31685@twin.jikos.cz>
 
-who is pushing this patch to Linus for 2.6.31. (ASAP)
-Linus has threatened to cut -rc1 soon, and it is
-unbuildable for UML currently.
+On Tue, 23 Jun 2009, Doug Thompson wrote:
 
-Thanks in advance
-Boaz
+> > From: Joe Perches <joe@perches.com>
+> > Subject: [PATCH] MAINTAINERS: pair names/addresses in EDAC-I82975X
+> > To: "LKML" <linux-kernel@vger.kernel.org>
+> > Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Ranganathan Desikan" <rdesikan@jetzbroadband.com>, "Arvind R." <arvind@acarlab.com>, bluesmoke-devel@lists.sourceforge.net
+> > Date: Thursday, June 18, 2009, 12:54 PM
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+> 
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index fb94add..e139389 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -2052,8 +2052,8 @@ F:   
+> > drivers/edac/i5400_edac.c
+> >  
+> >  EDAC-I82975X
+> >  P:    Ranganathan Desikan
+> > -P:    Arvind R.
+> >  M:    rdesikan@jetzbroadband.com
+> > +P:    Arvind R.
+
+How about putting the full name there, while you are at changing it 
+anyway?
+
+> > M:    arvind@acarlab.com
+
+And I had to drop this address from CC while replying to this mail, as it 
+doesn't resolve
+
+	# host -t ns acarlab.com
+	Host acarlab.com not found: 2(SERVFAIL)
+
+-- 
+Jiri Kosina
+SUSE Labs
+---1747641777-1842657311-1245844424=:31685--
