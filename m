@@ -1,204 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbZFXH0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZFXH2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753774AbZFXH0Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZFXH0R
+	id S1752991AbZFXH2D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZFXH1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:26:17 -0400
-Received: from stz-softwaretechnik.de ([217.160.223.211]:4566 "EHLO
-	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750818AbZFXH0Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:26:16 -0400
-Date: Wed, 24 Jun 2009 09:25:55 +0200
-From: Ralf Gross <Ralf-Lists@ralfgross.de>
-To: linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: Re: io-scheduler tuning for better read/write ratio
-Message-ID: <20090624072554.GA16642@p15145560.pureserver.info>
-References: <4A37CB2A.6010209@davidnewall.com> <20090616184027.GB7043@p15145560.pureserver.info> <4A37E7DB.7030100@redhat.com> <20090616185600.GC7043@p15145560.pureserver.info> <x49d494c4u0.fsf@segfault.boston.devel.redhat.com> <x49fxdsl46y.fsf@segfault.boston.devel.redhat.com> <20090622163113.GD12483@p15145560.pureserver.info> <x49hby8jbrd.fsf@segfault.boston.devel.redhat.com> <20090623072418.GE12483@p15145560.pureserver.info> <x49iqinys2k.fsf@segfault.boston.devel.redhat.com>
+	Wed, 24 Jun 2009 03:27:55 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55574 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbZFXH1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 03:27:54 -0400
+Date: Wed, 24 Jun 2009 17:27:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Joel Becker <Joel.Becker@oracle.com>,
+       =?UTF-8?B?IkZyw6lkw6lyaWMgV2Vpc2Jl?= =?UTF-8?B?Y2tlciI=?= 
+	<fweisbec@gmail.com>,
+       Len Brown <lenb@kernel.org>, Avi Kivity <avi@qumranet.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Richard Purdie <rpurdie@rpsys.net>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jon Masters <jonathan@jonmasters.org>, Greg KH <greg@kroah.com>
+Subject: Main things left in linux-next
+Message-Id: <20090624172735.9b500674.sfr@canb.auug.org.au>
+In-Reply-To: <20090624164617.b7c49974.sfr@canb.auug.org.au>
+References: <20090624164617.b7c49974.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49iqinys2k.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__24_Jun_2009_17_27_35_+1000_xyVrSPE3ISmiD_1y"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Moyer schrieb:
-> Ralf Gross <Ralf-Lists@ralfgross.de> writes:
-> 
-> > Jeff Moyer schrieb:
-> >> Ralf Gross <rg@STZ-Softwaretechnik.com> writes:
-> >> 
-> >> > Jeff Moyer schrieb:
-> >> >> Jeff Moyer <jmoyer@redhat.com> writes:
-> >> >> 
-> >> >> > Ralf Gross <rg@stz-softwaretechnik.com> writes:
-> >> >> >
-> >> >> >> Casey Dahlin schrieb:
-> >> >> >>> On 06/16/2009 02:40 PM, Ralf Gross wrote:
-> >> >> >>> > David Newall schrieb:
-> >> >> >>> >> Ralf Gross wrote:
-> >> >> >>> >>> write throughput is much higher than the read throughput (40 MB/s
-> >> >> >>> >>> read, 90 MB/s write).
-> >> >> >>> > 
-> >> >> >>> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
-> >> >> >>> > to the device at the same time.
-> >> >> >>> > 
-> >> >> >>> > Ralf
-> >> >> >>> 
-> >> >> >>> How specifically are you testing? It could depend a lot on the
-> >> >> >>> particular access patterns you're using to test.
-> >> >> >>
-> >> >> >> I did the basic tests with tiobench. The real test is a test backup
-> >> >> >> (bacula) with 2 jobs that create 2 30 GB spool files on that device.
-> >> >> >> The jobs partially write to the device in parallel. Depending which
-> >> >> >> spool file reaches the 30 GB first, one starts reading from that file
-> >> >> >> and writing to tape, while to other is still spooling.
-> >> >> >
-> >> >> > We are missing a lot of details, here.  I guess the first thing I'd try
-> >> >> > would be bumping up the max_readahead_kb parameter, since I'm guessing
-> >> >> > that your backup application isn't driving very deep queue depths.  If
-> >> >> > that doesn't work, then please provide exact invocations of tiobench
-> >> >> > that reprduce the problem or some blktrace output for your real test.
-> >> >> 
-> >> >> Any news, Ralf?
-> >> >
-> >> > sorry for the delay. atm there are large backups running and using the
-> >> > raid device for spooling. So I can't do any tests.
-> >> >
-> >> > Re. read ahead: I tested different settings from 8Kb to 65Kb, this
-> >> > didn't help.
-> >> >
-> >> > I'll do some more tests when the backups are done (3-4 more days).
-> >> 
-> >> The default is 128KB, I believe, so it's strange that you would test
-> >> smaller values.  ;)  I would try something along the lines of 1 or 2 MB.
-> >
-> > Err, yes this should have been MB not KB.
-> >
-> >
-> > $cat /sys/block/sdc/queue/read_ahead_kb 
-> > 16384
-> > $cat /sys/block/sdd/queue/read_ahead_kb 
-> > 16384
-> >
-> > I also tried different values for max_sectors_kb, nr_requests. But the
-> > trend that writes were much faster than reads while there was read and
-> > write load on the device didn't change.
-> >
-> > Changing the deadline parameter writes_starved, write_expire,
-> > read_expire, front_merges or fifo_batch didn't change this behavoir.
-> 
-> OK, bumping up readahead and changing the deadline parameters listed
-> should have give some better results, I would think.  Can you give the
-> invocation of tiobench you used so I can try to reproduce this?
+--Signature=_Wed__24_Jun_2009_17_27_35_+1000_xyVrSPE3ISmiD_1y
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The main problem is with bacula. It reads/writes from/to two
-spoolfiles on the same device.
+Hi All,
 
-I get the same behavior with 2 dd processes, one reading from disk, one writing
-to it.
+$ git diff --shortstat -M stable..HEAD^
+ 587 files changed, 27313 insertions(+), 12317 deletions(-)
 
-Here's the output from dstat (5 sec intervall).
+We seem to be going backwards :-( Yesterday's was:
+ 556 files changed, 27596 insertions(+), 7123 deletions(-)
 
---dsk/md1--
-_read _writ
-  26M   95M
-  31M   96M
-  20M   85M
-  31M  108M
-  28M   89M
-  24M   95M
-  26M   79M
-  32M  115M
-  50M   74M
- 129M   15k
- 147M 1638B
- 147M    0 
- 147M    0 
- 113M    0
+$ git diff --dirstat -M stable..HEAD^
+   4.9% Documentation/powerpc/dts-bindings/
+   5.1% Documentation/powerpc/
+   3.0% Documentation/vm/
+   3.9% arch/sparc/
+   3.9% arch/x86/kvm/
+   4.4% arch/x86/
+   6.9% drivers/md/
+   4.7% drivers/misc/
+   9.8% drivers/staging/et131x/
+   4.3% drivers/staging/
+   6.6% drivers/usb/otg/
+  14.5% drivers/
+   5.5% include/linux/
+  12.6% mm/
 
+The main obvious things left are:
 
-At the end I stopped the dd process that is writing to the device, so you can
-see that the md device is capable of reading with >120 MB/s.
+SLQB from the slab tree
+an m68k update
+an ocfs2 update
+the reiserfs kill-the-bkl effort
+an acpi update
+a kvm update
+some more cpumask work from the rr tree
+the writeback changes form the block tree
+a device-mapper update
+a battery tree update
+a leds tree update
+osdblk from the osd tree
+the new hwlat tree
+devtmpfs from the driver-core tree (hmmm?)
 
-I did this with these two commands.
+Please do not shoot the messenger. :-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-dd if=/dev/zero of=test bs=1MB
-dd if=/dev/md1 of=/dev/null bs=1M
+--Signature=_Wed__24_Jun_2009_17_27_35_+1000_xyVrSPE3ISmiD_1y
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Maybe this is too simple, but with a real world application I see the same
-behavior. md1 is a md raid 0 device with 2 disks.
+iEYEARECAAYFAkpB1WcACgkQjjKRsyhoI8x4dgCfZw7Uzp5f6BlAH/jepn+aiQ6Y
+VMcAn1NNwsV+J6J7vRqEd25OI1xZ0SMk
+=cOOS
+-----END PGP SIGNATURE-----
 
-
-md1 : active raid0 sdc[0] sdd[1]
-      781422592 blocks 64k chunks
-
-sdc:
-
-/sys/block/sdc/queue/hw_sector_size
-512
-/sys/block/sdc/queue/max_hw_sectors_kb
-32767
-/sys/block/sdc/queue/max_sectors_kb
-512
-/sys/block/sdc/queue/nomerges
-0
-/sys/block/sdc/queue/nr_requests
-128
-/sys/block/sdc/queue/read_ahead_kb
-16384
-/sys/block/sdc/queue/scheduler
-noop anticipatory [deadline] cfq
-
-/sys/block/sdc/queue/iosched/fifo_batch
-16
-/sys/block/sdc/queue/iosched/front_merges
-1
-/sys/block/sdc/queue/iosched/read_expire
-500
-/sys/block/sdc/queue/iosched/write_expire
-5000
-/sys/block/sdc/queue/iosched/writes_starved
-2
-
-
-sdd:
-
-/sys/block/sdd/queue/hw_sector_size
-512
-/sys/block/sdd/queue/max_hw_sectors_kb
-32767
-/sys/block/sdd/queue/max_sectors_kb
-512
-/sys/block/sdd/queue/nomerges
-0
-/sys/block/sdd/queue/nr_requests
-128
-/sys/block/sdd/queue/read_ahead_kb
-16384
-/sys/block/sdd/queue/scheduler
-noop anticipatory [deadline] cfq 
-
-
-/sys/block/sdd/queue/iosched/fifo_batch
-16
-/sys/block/sdd/queue/iosched/front_merges
-1
-/sys/block/sdd/queue/iosched/read_expire
-500
-/sys/block/sdd/queue/iosched/write_expire
-5000
-/sys/block/sdd/queue/iosched/writes_starved
-2
-
-
-The deadline parameters are the default ones. Setting writes_starved much
-higher I expected a change in the read/write ratio, but didn't see any change.
-
-
-
-Ralf
+--Signature=_Wed__24_Jun_2009_17_27_35_+1000_xyVrSPE3ISmiD_1y--
