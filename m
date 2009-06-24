@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZFXU4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZFXU47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbZFXU4b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZFXU4Y
+	id S1754862AbZFXU47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZFXU4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:56:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45615 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbZFXU4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:56:23 -0400
-Date: Wed, 24 Jun 2009 22:56:19 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>, Russell King <rmk@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream
-	device
-Message-ID: <20090624205618.GD9149@elf.ucw.cz>
-References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com> <1245033557-10968-4-git-send-email-swetland@google.com> <20090615132248.GB14555@elf.ucw.cz> <a55d774e0906151125h36ee7c36yb9ecf5fb3fb8e41b@mail.gmail.com> <20090615182850.GA10490@elf.ucw.cz> <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com>
+	Wed, 24 Jun 2009 16:56:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51193 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752905AbZFXU4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:56:44 -0400
+Date: Wed, 24 Jun 2009 13:33:52 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
+       pavel@ucw.cz, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp,
+       linux-usb@vger.kernel.org, akpm@linux-foundation.org,
+       stern@rowland.harvard.edu, ben-linux@fluff.org,
+       linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       felipe.balbi@nokia.com
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver pm
+	callbacks V2
+Message-ID: <20090624203352.GA28516@suse.de>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se> <200906242048.40956.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200906242048.40956.rjw@sisk.pl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-06-15 11:51:57, Brian Swetland wrote:
-> On Mon, Jun 15, 2009 at 11:28 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> > (Now... I'm trying to figure out how leds are set up. It seems that
-> > there are two classes -- leds-gpio, which is backlights, and 4colored
-> > led. I'd like to use 4colored led for debugging... Unfortunately
-> > drivers/leds/leds-cpld.c is quite "interesting" (and really abuses
-> > interface at least with "blink" file). Is there easy way to turn some
-> > light manually, best something that works early and can be used for
-> > debugging?)
+On Wed, Jun 24, 2009 at 08:48:39PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday 24 June 2009, Magnus Damm wrote:
+> > pm: remove late/early platform driver pm callbacks V2
+> > 
+> > [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> > [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> > [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> > [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> > [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> > [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> > [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> > 
+> > These patches simply remove ->suspend_late() and ->resume_early()
+> > from struct platform_driver. Drivers are converted to dev_pm_ops
+> > with CONFIG_SUSPEND in mind. Untested.
+> > 
+> > All patches except [02/07] are known to compile.
+> > 
+> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > 
-> The 4color LED is controlled by an I2C led controller, so it's a bit
-> of a pain to interact with very early on.
-> 
-> There are LED backlights behind the keyboard and the buttons on the
-> "chin" of the device, controlled by the CPLD (see
-> TROUT_GPIO_QTKEY_LED_EN and TROUT_GPIO_UI_LED_EN and and the cpld gpio
-> stuff in board-trout-gpio.c).
+> If no one objects, I'd like to take this series into the suspend-2.6 tree as
+> 2.6.32 material.  Greg?
 
-Thanks, I got button backlight to blink. 
+Looks good to me, feel free to add an:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+to the whole series.
 
-> This is actually another reason why I'd actually prefer to stick with
-> trout at least inside the board-dream-* files... just a lot of code
-> that uses this name that's we've been working with for a year or so.
-> Renaming the files is trivial and updating the config options is easy
-> too, but it gets to be a lot of shuffling around to keep changing the
-> names internally.  A lot of hardware has names used be the
-> developers/manufacturers/etc that don't match the product names (HTC
-> calls "magic" sapphire, for example, and the board files reflect
-> that), and of course these devices have different names in different
-> markets too.
+thanks,
 
-Well, there will be more readers/users than authors... But it does not
-matter that much.
-
-Are there any issues that prevent this from being merged? Russell, can
-you take those patches?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+greg k-h
