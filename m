@@ -1,89 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbZFXJcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZFXJdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbZFXJcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbZFXJc2
+	id S1757921AbZFXJdf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZFXJdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:32:28 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53018 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756722AbZFXJc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:32:27 -0400
-Message-ID: <4A41F2DB.4020102@cn.fujitsu.com>
-Date: Wed, 24 Jun 2009 17:33:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix trace_buf_size boot option
-References: <4A41F165.2000906@cn.fujitsu.com>
-In-Reply-To: <4A41F165.2000906@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 24 Jun 2009 05:33:12 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:59653 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757713AbZFXJdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:33:08 -0400
+X-Greylist: delayed 1850 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 05:33:07 EDT
+Subject: Re: [PATCH 10/10] nf_conntrack: Use rcu_barrier().
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+To: Patrick McHardy <kaber@trash.net>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
+       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+In-Reply-To: <4A410185.3090706@trash.net>
+References: <20090623150330.22490.87327.stgit@localhost>
+	 <20090623150444.22490.27931.stgit@localhost>  <4A410185.3090706@trash.net>
+Content-Type: text/plain
+Organization: ComX Networks A/S
+Date: Wed, 24 Jun 2009 11:02:19 +0200
+Message-Id: <1245834139.6695.31.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 09:02:19.0786 (UTC) FILETIME=[7AC10EA0:01C9F4AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -	ret = strict_strtoul(str, 0, &buf_size);
-> +	buf_size = memparse(str, &opt);
+On Tue, 2009-06-23 at 18:23 +0200, Patrick McHardy wrote:
+> Jesper Dangaard Brouer wrote:
+> > I'm not sure which is are most optimal place to call rcu_barrier().
+> > The patch probably calls rcu_barrier() too much, but its a better
+> > safe than sorry approach.
+> > 
+> > There is embedded some comments that I would like Patrick McHardy
+> > to look at.
+> > 
+> > diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+> > index 5f72b94..cea4537 100644
+> > --- a/net/netfilter/nf_conntrack_core.c
+> > +++ b/net/netfilter/nf_conntrack_core.c
+> > @@ -1084,6 +1084,8 @@ static void nf_conntrack_cleanup_init_net(void)
+> >  {
+> >  	nf_conntrack_helper_fini();
+> >  	nf_conntrack_proto_fini();
+> > +	rcu_barrier();
+> > +	/* Need to wait for call_rcu() before dealloc the kmem_cache */
+> >  	kmem_cache_destroy(nf_conntrack_cachep);
+> 
+> Which call_rcu() is this referring to? 
 
-Sorry, there's a typo: s/opt/str. I forgot to commit the
-change after fixing it.
+It is the call_rcu() in nf_conntrack_expect.c (which is linked into
+nf_conntrack.ko).  But that also means that it should have been the slab
+cache called "nf_ct_expect_cachep" we should have waited for... (and I
+also notice that "nf_ct_expect_cachep" is missing the
+SLAB_DESTROY_BY_RCU flag, and the SLAB_DESTROY_BY_RCU flag should be
+removed from "nf_conntrack_cachep")
+
+> If its the conntrack destruction,
+> that one is gone in the current kernel and I think destruction is
+> handled properly by the sl*b-allocators (SLAB_DESTROY_BY_RCU).
+
+Just dived into the slab.c code and noticed that it also is flawed,
+ARGH!.  When the SLAB_DESTROY_BY_RCU flags is set, it only calls
+synchronize_rcu() and not rcu_barrier() as it should!
+
+I'll fix that up in another patch series... 
+
+Looking into slub and slob at the moment, and it seems that they
+schedule another call_rcu callback for freeing when the
+SLAB_DESTROY_BY_RCU flags is set.  That seems racy to me... Paul?
 
 
-========================
+> > @@ -1118,6 +1120,9 @@ void nf_conntrack_cleanup(struct net *net)
+> >  	/* This makes sure all current packets have passed through
+> >  	   netfilter framework.  Roll on, two-stage module
+> >  	   delete... */
+> > +	/* hawk@comx.dk 2009-06-20: Think this should be replaced by a
+> > +          rcu_barrier() ???
+> > +	*/
+> >  	synchronize_net();
+> 
+> AFAICT this one is used to make sure the old value of the ip_ct_attach
+> hook is not visible anymore before beginning cleanup and is not needed
+> for anything else.
+
+Fine!
+
+> >  	nf_conntrack_cleanup_net(net);
+> > diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
+> > index 1935153..29c6cd0 100644
+> > --- a/net/netfilter/nf_conntrack_standalone.c
+> > +++ b/net/netfilter/nf_conntrack_standalone.c
+> > @@ -500,6 +500,8 @@ static void nf_conntrack_net_exit(struct net *net)
+> >  	nf_conntrack_standalone_fini_sysctl(net);
+> >  	nf_conntrack_standalone_fini_proc(net);
+> >  	nf_conntrack_cleanup(net);
+> > +	/* hawk@comx.dk: Think rcu_barrier() should to be called earlier? */
+> > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+> >  }
+> 
+> Which call_rcu() is this referring to? We should place them in
+> the cleanup sub-functions to make this clearly visible.
+
+This call_rcu() is the one done in nf_conntrack_extend.c:114  (notice
+"_extend" NOT "_expect"), which calls __nf_ct_ext_free_rcu().
+
+Guess this rcu_barrier() should then be move to
+nf_ct_extend_unregister() right? (it already invokes a
+synchronize_rcu() that should be replaced by rcu_barrier()).
+Although this means the nf_ct_extend_unregister() will be called three
+times in nf_conntrack_cleanup_net() when unregistering ecache, acct and
+expect.
 
 
-[PATCH] tracing: fix trace_buf_size boot option
-
-We should be able to specify [KMG] when setting trace_buf_size
-boot option, as documented in kernel-parameters.txt
-
-[ Impact: allow to specify [KMG] in trace_buf_size boot option ]
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- Documentation/kernel-parameters.txt |    3 ++-
- kernel/trace/trace.c                |    5 ++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 256a650..421f1e6 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2446,7 +2446,8 @@ and is between 256 and 4096 characters. It is defined in the file
- 
- 	tp720=		[HW,PS2]
- 
--	trace_buf_size=nn[KMG] [ftrace] will set tracing buffer size.
-+	trace_buf_size=nn[KMG]
-+			[FTRACE] will set tracing buffer size.
- 
- 	trix=		[HW,OSS] MediaTrix AudioTrix Pro
- 			Format:
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 3bb3100..3aa0a0d 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -284,13 +284,12 @@ void trace_wake_up(void)
- static int __init set_buf_size(char *str)
- {
- 	unsigned long buf_size;
--	int ret;
- 
- 	if (!str)
- 		return 0;
--	ret = strict_strtoul(str, 0, &buf_size);
-+	buf_size = memparse(str, &str);
- 	/* nr_entries can not be zero */
--	if (ret < 0 || buf_size == 0)
-+	if (buf_size == 0)
- 		return 0;
- 	trace_buf_size = buf_size;
- 	return 1;
+Thank you for your feedback :-) ... I'll post a new v2 patch...
 -- 
-1.5.4.rc3
+Med venlig hilsen / Best regards
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
 
