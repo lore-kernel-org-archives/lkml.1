@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbZFXQxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbZFXQx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761425AbZFXQxb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761326AbZFXQxV
+	id S1761575AbZFXQx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbZFXQxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:53:21 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:36606 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761152AbZFXQxT (ORCPT
+	Wed, 24 Jun 2009 12:53:48 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:41855 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761326AbZFXQxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:53:19 -0400
+	Wed, 24 Jun 2009 12:53:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Ttc/aAC7uK9k54vrOR2A3pLRe/rz1fSulCgfjG3yJCokJyfsTveiGQCwhaANvXL80v
-         JnAfn5Im3grPK2RArqbxWbbBGSg0bHv7PDqBcsUd+dILEbpFnFf+AJo5mMhrcglGm+iX
-         huq3gjQ7ICEeCyw3CMZbGif4O0GRy6heqbzvE=
-Message-ID: <4A425907.2060105@gmail.com>
-Date: Wed, 24 Jun 2009 18:49:11 +0200
+        b=I5D/HcwaLLNncKwWAbzybCodBbZXcrQdPhsrL4PfAmBRjiuF5RQZo8bihR6YWesaOP
+         hWTVlZSfHX4t4Ua/s2QpTy3aoig2can2dNCOn0J8YWsSR54VhehIrlJhRAPMEMCjscba
+         XfUegj2i6T++ecweCT5VN5rURnfHsob2dHLaI=
+Message-ID: <4A425925.7000601@gmail.com>
+Date: Wed, 24 Jun 2009 18:49:41 +0200
 From: Marco <marco.stornelli@gmail.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: pavel@ucw.cz
-CC: tim.bird@am.sony.com, jamie@shareable.org,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
+To: Arnd Bergmann <arnd@arndb.de>
+CC: David Woodhouse <dwmw2@infradead.org>,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Tim Bird <tim.bird@am.sony.com>,
+       Chris Simmonds <chris@2net.co.uk>,
        Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-References: <4a4254e2.09c5660a.109d.46f8@mx.google.com>
-In-Reply-To: <4a4254e2.09c5660a.109d.46f8@mx.google.com>
-Content-Type: text/plain; charset=us-ascii
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 06/14] Pramfs: Include files
+References: <4A33A7EC.6070008@gmail.com> <200906232355.34134.arnd@arndb.de> <2ea1731b0906232332n2488d452p27419eac7edab7e4@mail.gmail.com> <200906241730.37151.arnd@arndb.de>
+In-Reply-To: <200906241730.37151.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Pavel Machek wrote:
->>> On Mon 2009-06-22 14:50:01, Tim Bird wrote:
->>>> Pavel Machek wrote:
->>>>>> block of fast non-volatile RAM that need to access data on it using a
->>>>>> standard filesytem interface."
->>>>> Turns a block of fast RAM into 13MB/sec disk. Hmm. I believe you are
->>>>> better with ext2.
->>>> Not if you want the RAM-based filesystem to persist over a kernel
->>>> invocation.
->>> Yes, you'll need to code Persistent, RAM-based _block_device_. 
->> First of all I have to say that I'd like to update the site and make it
->> clearer but at the moment it's not possible because I'm not the admin
->> and I've already asked to the sourceforge support to have this possibility.
->>
->> About the comments: sincerely I don't understand the comments. We have
->> *already* a fs that takes care to remap a piace of ram (ram, sram,
->> nvram, etc.), takes care of caching problems, takes care of write
+Arnd Bergmann wrote:
+> On Wednesday 24 June 2009, Marco Stornelli wrote:
+>>> Actually, reading from /dev/mem is only valid on real RAM. If the nvram
+>>> is part of an IO memory mapping, you have to do mmap()+memcpy() rather
+>>> than read(). So dd won't do it, but it's still easy to read from user
+>>> space.
+>> For "security" reasons pram reserve the region of memory with
+>> reserve_mem_region_exclusive().....
 > 
-> Well, it looks pramfs design is confused. 13MB/sec shows that caching
-> _is_ useful for pramfs. So...?
-
-caching problems means to avoid filesystem corruption, so dirty pages in
-the page cache are not allowed to be written back to the backing-store
-RAM. It's clear that there is a performance penalty. This penalty should
-be reduced by the access speed of the RAM, however the performance are
-not important for this special fs as Tim Bird said, so this question is
-not relevant for me. If this issue is not clear enough on the web site,
-I hope I can update the information in the future.
-
+> That will only prevent other device drivers from stepping on it,
+> /dev/mem does not care about mem_region reservations.
 > 
->> You are talked about journaling. This schema works well for a disk, but
->> what about a piece of ram? What about a crazy kernel that write in that
->> area for a bug? Do you remember for example the e1000e bug? It's not
+> 	Arnd <><
 > 
-> I believe you need both journaling *and* write protection. How do you
-> handle power fault while writing data?
-> 								Pavel
 
-Ah now the write protection is a "needed feature", in your previous
-comment you talked about why not use ext2/3.......
+Userland may not map this resource, so /dev/mem and the sysfs MMIO
+access will not be allowed. This restriction depends on STRICT_DEVMEM
+option. It's true that currently is only implemented in the x86 world.
 
 Marco
+
