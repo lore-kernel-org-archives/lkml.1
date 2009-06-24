@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZFXMTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169AbZFXMWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753781AbZFXMTR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZFXMTE
+	id S1754169AbZFXMWc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 08:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbZFXMWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:19:04 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:62212 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbZFXMTD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:19:03 -0400
-Date: Wed, 24 Jun 2009 15:16:08 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: "Deak Imre (Nokia-D/Helsinki)" <imre.deak@nokia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Antonino Daplas <adaplas@gmail.com>, Tony Lindgren <tony@atomide.com>,
-       "Valkeinen Tomi (Nokia-D/Helsinki)" <Tomi.Valkeinen@nokia.com>
-Subject: Re: [PATCH 16/20] omapfb: dispc: Allow multiple external IRQ
- handlers
-Message-ID: <20090624121608.GA17604@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <34904fad6190ff9d35eb942460ece639f4b7d58f.1245842329.git.imre.deak@nokia.com>
- <a9da40529f3dc3d0bf304c4d15cb45f1af8ae150.1245842329.git.imre.deak@nokia.com>
+	Wed, 24 Jun 2009 08:22:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40723 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbZFXMWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 08:22:24 -0400
+Date: Wed, 24 Jun 2009 14:22:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+Message-ID: <20090624122209.GC20564@elte.hu>
+References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a9da40529f3dc3d0bf304c4d15cb45f1af8ae150.1245842329.git.imre.deak@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 24 Jun 2009 12:17:46.0163 (UTC) FILETIME=[C8383030:01C9F4C5]
-X-Nokia-AV: Clean
+In-Reply-To: <1245845787.3093.3.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 01:33:41PM +0200, Deak Imre (Nokia-D/Helsinki) wrote:
-> From: Daniel Stone <daniel.stone@nokia.com>
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
+> > My latest pull from Linus's tree fails to boot. Bisection leads to the
+> > commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
+> > resources and warn if exceeded" with hash
+> > f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
+> > capture the first error message as it scrolls off the screen, but the
+> > second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
+> > ahci_enable_ahci() because HOST_AHCI_EN is not set.
+> > 
 > 
-> Previously, the only external (to dispc.c) IRQ handler was RFBI's
-> frame done handler.  dispc's IRQ framework was very dumb: you could only
-> have one handler, and the semantics of {request,free}_irq were odd, to
-> say the least.
+> This patch fixes boot failure on my AMD 64 laptop, can you please test
+> this patch:
 > 
-> The new framework allows multiple consumers to register arbitrary IRQ
-> masks.
+> [PATCH] x86: fix _CRS resources return handling
+> 
+> We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
+> 
+> Also set info->bus->resource[info->res_num] for _CRS resources return handling
+> 
+> Fixed boot failure on some machine.
+> 
+> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/pci/acpi.c |   16 ++++++++++------
+>  1 files changed, 10 insertions(+), 6 deletions(-)
 
-No chance to use genirq ?
+Ah, nice! I suspect it was this upstream commit causing it:
 
-Then rfbi and others could simply request_irq() as usual
+f9cde5f: x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
 
--- 
-balbi
+right?
+
+Jesse, you'll handle this, right? I'll apply it to tip:out-of-tree 
+(not-for-upstream) for testing.
+
+	Ingo
