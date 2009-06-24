@@ -1,41 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbZFXQQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbZFXQTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbZFXQQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760560AbZFXQQh
+	id S1760447AbZFXQTN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZFXQS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:16:37 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:20845 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751976AbZFXQQg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:16:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type
-         :content-transfer-encoding;
-        b=K6HloMXjRW8EciKZxtYCH8uVHRb5a1CKhi0NcjBL9GpnI2n9y/ZRNZkeWKxx/vuIRx
-         YpOhpCjwbF3EUMxZugiGgWXYrrsGY1UpbvsC10NQhU4lXbj2/e3exVRPl62WTg5I1AX8
-         OsqND+l8iCM+GEqrQcD6MbsJDoU3a1dN1Nwm4=
+	Wed, 24 Jun 2009 12:18:59 -0400
+Received: from www.tglx.de ([62.245.132.106]:36631 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbZFXQS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 12:18:59 -0400
+Date: Wed, 24 Jun 2009 18:17:18 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+In-Reply-To: <1245858948.3216.4.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0906241802170.2767@localhost.localdomain>
+References: <4A418254.9050607@lwfinger.net>  <1245845787.3093.3.camel@localhost.localdomain>  <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain> <1245858948.3216.4.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Wed, 24 Jun 2009 12:16:18 -0400
-Message-ID: <3e8340490906240916v8017770w279e7ecfab079894@mail.gmail.com>
-Subject: PI futexes - allocations required?
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I was reading the futex.c code, I noticed that locking a PI mutex
-can apparently cause an allocation, via alloc_pi_state() and
-refill_pi_state_cache(). Doesn't this mean that memory allocation (and
-the corresponding possible IO latency) could be introduced into
-real-time code - the primary user of PI mutexes?
+On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-06-24 at 16:51 +0200, Thomas Gleixner wrote:
+> > On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
+> > > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  arch/x86/pci/acpi.c |   16 ++++++++++------
+> > >  1 files changed, 10 insertions(+), 6 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+> > > index 16c3fda..0bc015f 100644
+> > > --- a/arch/x86/pci/acpi.c
+> > > +++ b/arch/x86/pci/acpi.c
+> > > @@ -69,6 +69,9 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+> > >  	struct resource *root;
+> > >  	int max_root_bus_resources = PCI_BUS_NUM_RESOURCES;
+> > >  
+> > > +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
+> > > +		return AE_OK;
+> > > +
+> 
+> We need to test this otherwise we will get another oops.
 
-Am I missing something here, or is some sort of PI mutex "prefaulting"
-needed to avoid allocation when taking PI locks? It would seem that
-the sleeps and unbounded latency that a GFP_KERNEL allocation can
-introduce would make these unusable for real-time code...
+Right, because you would store beyond the end of the array.
+ 
+> > >  	status = resource_to_addr(acpi_res, &addr);
+> > >  	if (!ACPI_SUCCESS(status))
+> > >  		return AE_OK;
+> > > @@ -94,17 +97,18 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+> > >  	if (bus_has_transparent_bridge(info->bus))
+> > >  		max_root_bus_resources -= 3;
+> > >  	if (info->res_num >= max_root_bus_resources) {
+> > > -		printk(KERN_WARNING "PCI: Failed to allocate 0x%lx-0x%lx "
+> > > -			"from %s for %s due to _CRS returning more than "
+> > > -			"%d resource descriptors\n", (unsigned long) res->start,
+> > > -			(unsigned long) res->end, root->name, info->name,
+> > > -			max_root_bus_resources);
+> > > +		pr_warning("PCI: Failed to allocate 0x%lx-0x%lx "
+> > > +			   "from %s for %s due to _CRS returning more than "
+> > > +			   "%d resource descriptors\n",
+> > > +			   (unsigned long)res->start, (unsigned long)res->end,
+> > > +			   root->name, info->name, max_root_bus_resources);
+> > 
+> > Can you please avoid mixing cleanup patches with bug fixes ? I almost
+> > did not see the line below.
+> > 
+> > > +		info->bus->resource[info->res_num] = res;
+> > 
+> 
+> We need to set the resource even it is transparent bridge, otherwise pci
+> will fail and system will not able to boot.
+
+The fact that the system does boot with that patch is not making the
+patch more correct. It fixes the boot problem at hand, but it does not
+fix the root cause of the problem.
+
+You stick the resource into the resource array, but it does not call
+insert_resource(). Also you print a warning while the system seems to
+be happy to use the device.
+
+This is just inconsistent and the patch simply papers over the root
+cause of the problem.
+
+The reservation of the last 3 resources in the transparent case is
+more likely the real reason as it reduces the number of available
+slots in bus->resource[].
+
+Can you please increase PCI_BUS_NUM_RESOURCES by at least 3 and test
+with the one liner patch which removes the increment applied.
+
+Also please provide the output of lspci on 2.6.30 (which does not have
+f9cde5f applied).
+
+Thanks,
+
+	tglx
+
