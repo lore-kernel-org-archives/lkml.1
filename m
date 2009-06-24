@@ -1,82 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZFXCaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZFXCcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZFXCaQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 22:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZFXCaF
+	id S1753937AbZFXCcz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 22:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZFXCcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 22:30:05 -0400
-Received: from mga07.intel.com ([143.182.124.22]:19244 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751622AbZFXCaE (ORCPT
+	Tue, 23 Jun 2009 22:32:48 -0400
+Received: from 219-87-157-155.static.tfn.net.tw ([219.87.157.155]:8586 "EHLO
+	ironport.rdc.com.tw" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751316AbZFXCcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 22:30:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,279,1243839600"; 
-   d="scan'208";a="157813380"
-Date: Wed, 24 Jun 2009 10:13:24 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: stephane eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH -tip] perf_counter/x86: Set global control MSR correctly
-Message-ID: <20090624021324.GA2788@ywang-moblin2.bj.intel.com>
+	Tue, 23 Jun 2009 22:32:47 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: RE: Staging: add pata_rdc driver
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Wed, 24 Jun 2009 10:34:19 +0800
+Message-ID: <07905E0D268758488D76D7D747F21BB602B2002E@rdc8.rdc>
+In-Reply-To: <20090623094706.5df94c96@lxorguk.ukuu.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Staging: add pata_rdc driver
+Thread-Index: Acnz30zA1eSex7OFTo6wWnSMul7o/gAjk9gg
+References: <200906200109.n5K19iaC012636@hera.kernel.org><20090622133222.3a689f22@lxorguk.ukuu.org.uk><07905E0D268758488D76D7D747F21BB602B1FD86@rdc8.rdc> <20090623094706.5df94c96@lxorguk.ukuu.org.uk>
+From: =?big5?B?S2V2aW4gSHVhbmcgKLbAs82k5Sk=?= <Kevin.Huang@rdc.com.tw>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <greg@kroah.com>, <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="big5"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5O2XX54025599
 
-Previous code made an assumption that the power on value of global
-control MSR has enabled all fixed and general purpose counters properly.
-However, this is not the case for certain Intel processors, such as
-Atom. Each enable bit in IA32_PERF_GLOBAL_CTRL is AND'ed with the
-enable bits for all privilege levels in the respective IA32_PERFEVTSELx
-or IA32_PERF_FIXED_CTR_CTRL MSRs to start/stop the counting of
-respective counters. Counting is enabled if the AND'ed results is true;
-counting is disabled when the result is false. The end result is that
-all fixed counters are always disabled on Atom processors because the
-assumption is just invalid.
+http://www.t13.org/Documents/MinutesDefault.aspx?DocumentType=4&DocumentStage=2INCITS 370-2004 (1510D): ATA Host Adapter Standards
+You can download the last draft of ATA Host Adapter Standards.
 
-Reported-by: stephane eranian <eranian@googlemail.com>
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
 
----
- arch/x86/kernel/cpu/perf_counter.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 22eb3a1..a310d19 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -969,13 +969,6 @@ fixed_mode_idx(struct perf_counter *counter, struct hw_perf_counter *hwc)
- 	if (!x86_pmu.num_counters_fixed)
- 		return -1;
- 
--	/*
--	 * Quirk, IA32_FIXED_CTRs do not work on current Atom processors:
--	 */
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
--					boot_cpu_data.x86_model == 28)
--		return -1;
--
- 	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
- 
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
-@@ -1428,8 +1421,6 @@ static int intel_pmu_init(void)
- 	 */
- 	x86_pmu.num_counters_fixed	= max((int)edx.split.num_counters_fixed, 3);
- 
--	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
--
- 	/*
- 	 * Install the hw-cache-events table:
- 	 */
-@@ -1514,6 +1505,7 @@ void __init init_hw_perf_counters(void)
- 
- 	perf_counter_mask |=
- 		((1LL << x86_pmu.num_counters_fixed)-1) << X86_PMC_IDX_FIXED;
-+	x86_pmu.intel_ctrl = perf_counter_mask;
- 
- 	perf_counters_lapic_init();
- 	register_die_notifier(&perf_counter_nmi_notifier);
+---------------------------------------------------------------------------------- [E-mail Confidentiality Notice]The information in this e-mail is confidential and may be legally privileged otherwise  protected from disclosure. It is intended solely for the addressee.  Access to this e-mail by anyone else is unauthorized .If youare not the intended recipient, any disclosure, copying, distribution or any action taken or omitted to be taken in reliance on it, is prohibited and maybe unlawful.  Please delete the message and any attachments from your computer system; and destroy all hard copies. 
+ALL Intellectual Property Rights of RDC Reserved.---------------------------------------------------------------------------------- ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
