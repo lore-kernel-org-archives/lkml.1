@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZFXAF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZFXAIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbZFXAF6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 20:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZFXAFv
+	id S1758408AbZFXAIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 20:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZFXAIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 20:05:51 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:44404 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753770AbZFXAFu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 20:05:50 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, devel@ksplice.com,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH 1/2] Add new macros for page-aligned data and bss sections.
-Date: Tue, 23 Jun 2009 19:59:35 -0400
-Message-Id: <1245801576-13374-1-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
-References: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 23 Jun 2009 20:08:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40028 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752761AbZFXAII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 20:08:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM: Introduce core framework for run-time PM of I/O devices (rev. 3)
+Date: Wed, 24 Jun 2009 02:08:22 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906240208.23482.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is preparation for replacing most uses of
-".bss.page_aligned" and ".data.page_aligned" in the kernel with
-macros, so that the section name can later be changed without having
-to touch a lot of the kernel.
+On Tuesday 23 June 2009, Alan Stern wrote:
+> On Tue, 23 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > Hi,
+> > 
+> > Below is a new revision of the patch introducing the run-time PM framework.
+> > 
+> > The most visible changes from the last version:
+> > 
+> > * I realized that if child_count is atomic, we can drop the parent locking from
+> >   all of the functions, so I did that.
+> > 
+> > * Introduced pm_runtime_put() that decrements the resume counter and queues
+> >   up an idle notification if the counter went down to 0 (and wasn't 0 previously).
+> >   Using asynchronous notification makes it possible to call pm_runtime_put()
+> >   from interrupt context, if necessary.
+> > 
+> > * Changed the meaning of the RPM_WAKE bit slightly (it is now also used for
+> >   disabling run-time PM for a device along with the resume counter).
+> > 
+> > Please let me know if I've overlooked anything. :-)
+> 
+> This first thing to strike me was that you moved the idle notifications 
+> into the workqueue.
 
-The long-term goal here is to be able to change the kernel's magic
-section names to those that are compatible with -ffunction-sections
--fdata-sections.  This requires renaming all magic sections with names
-of the form ".data.foo".
-
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: David Howells <dhowells@redhat.com>
----
- include/linux/linkage.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/linkage.h b/include/linux/linkage.h
-index fee9e59..691f591 100644
---- a/include/linux/linkage.h
-+++ b/include/linux/linkage.h
-@@ -22,6 +22,15 @@
- #define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
+Yes, I did.
  
- /*
-+ * For assembly routines.
-+ *
-+ * Note when using these that you must specify the appropriate
-+ * alignment directives yourself
-+ */
-+#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw"
-+#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw"
-+
-+/*
-  * This is used by architectures to keep arguments on the stack
-  * untouched by the compiler by keeping them live until the end.
-  * The argument stack may be owned by the assembly-language
--- 
-1.6.3.1
+> Is that really needed?  Would we be better off just make the idle
+> callbacks directly from pm_runtime_put?  They would run in whatever
+> context the driver happened to be in at the time.
+> 
+> It's not clear exactly how much work the idle callbacks will need to 
+> do, but it seems likely that they won't have to do too much more than 
+> call pm_request_suspend.  And of course, that can be done in_interrupt.
 
+I just don't want to put any constraints on the implementation of
+->runtime_idle().  The requirement that it be suitable for calling from
+interrupt context may be quite inconvenient for some drivers and I'm afraid
+they may have problems with meeting it.
+
+Best,
+Rafael
