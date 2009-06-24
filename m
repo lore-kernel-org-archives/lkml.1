@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZFXHCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZFXHDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZFXHCS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZFXHCJ
+	id S1754232AbZFXHDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZFXHDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:02:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49227
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751566AbZFXHCI (ORCPT
+	Wed, 24 Jun 2009 03:03:09 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55064 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbZFXHDH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:02:08 -0400
-Date: Wed, 24 Jun 2009 00:02:11 -0700 (PDT)
-Message-Id: <20090624.000211.175032622.davem@davemloft.net>
-To: hawk@comx.dk
-Cc: paulmck@linux.vnet.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk, kaber@trash.net,
-       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
-       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 00/10] We must use rcu_barrier() on module unload
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
-References: <20090623150330.22490.87327.stgit@localhost>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 03:03:07 -0400
+Date: Wed, 24 Jun 2009 16:02:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] sh updates for 2.6.31-rc1, part 3.
+Message-ID: <20090624070205.GA2079@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Kyle McMartin <kyle@mcmartin.ca>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090623184032.GA713@linux-sh.org> <20090624013137.GC3101@bombadil.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624013137.GC3101@bombadil.infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-Date: Tue, 23 Jun 2009 17:03:53 +0200
+On Tue, Jun 23, 2009 at 09:31:37PM -0400, Kyle McMartin wrote:
+> On Wed, Jun 24, 2009 at 03:40:33AM +0900, Paul Mundt wrote:
+> >       sh: Fix up HAVE_PERF_COUNTERS typo.
+> > 
+> 
+> just fyi while wiring this up myself...
+> 
+> Your set_perf_counter_pending when CONFIG_PERF_COUNTERS=y is wrong,
+> as it's a extern in <linux/perf_counters.h>, you'll probably want to
+> make it a static inline. (Yeah, I blagged your header. ;-)
+> 
+Figures, I copied it from an earlier x86 version ;-)
 
-> This patch series is an attempt to cleanup the entire tree, for
-> potential oops'es during module unload, due to outstanding RCU
-> callbacks. (My last rcu_barrier patch series only addressed net/).
-
-This series has net/ stuff too :-)
-
-I'll let the networking cases sit for a while and get review before
-I apply them.
+I'll fix it up, thanks for the note.
