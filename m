@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZFXP4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZFXP6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbZFXP4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 11:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZFXP4q
+	id S1758443AbZFXP6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 11:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZFXP6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 11:56:46 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39072 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbZFXP4q (ORCPT
+	Wed, 24 Jun 2009 11:58:04 -0400
+Received: from www84.your-server.de ([213.133.104.84]:54132 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753917AbZFXP6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 11:56:46 -0400
-Date: Wed, 24 Jun 2009 08:56:32 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624155632.GB7239@us.ibm.com>
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 24 Jun 2009 11:58:04 -0400
+Subject: Re: [merged]
+ proctxt-update-kernel-filesystem-proctxt-documentation.patch removed from
+ -mm tree
+From: Stefani Seibold <stefani@seibold.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090624083032.2d250488.akpm@linux-foundation.org>
+References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org>
+	 <1245824444.22613.3.camel@wall-e>
+	 <20090623233247.7ed661b7.akpm@linux-foundation.org>
+	 <1245825903.23818.4.camel@wall-e>
+	 <20090624001302.18de9e21.akpm@linux-foundation.org>
+	 <m1my7ykrs7.fsf@fess.ebiederm.org> <1245836005.32678.36.camel@wall-e>
+	 <20090624083032.2d250488.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 17:57:48 +0200
+Message-Id: <1245859068.13531.10.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 04:51:48PM +0200, Thomas Gleixner wrote:
-> On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
-> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/pci/acpi.c |   16 ++++++++++------
-> >  1 files changed, 10 insertions(+), 6 deletions(-)
+Am Mittwoch, den 24.06.2009, 08:30 -0700 schrieb Andrew Morton:
+> On Wed, 24 Jun 2009 11:33:25 +0200 Stefani Seibold <stefani@seibold.net> wrote:
+> 
+> > > > Alexey's point is that follow_page() will return NULL if it hits a
+> > > > swapped-out stack page and the loop will exit, leading to an incorrect
+> > > > (ie: short) return value from get_stack_usage_in_bytes().
+> > > >
+> > > > Is this claim wrong?
+> > > 
 > > 
-> > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-> > index 16c3fda..0bc015f 100644
-> > --- a/arch/x86/pci/acpi.c
-> > +++ b/arch/x86/pci/acpi.c
-> > @@ -69,6 +69,9 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
-> >  	struct resource *root;
-> >  	int max_root_bus_resources = PCI_BUS_NUM_RESOURCES;
-> >  
-> > +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
-> > +		return AE_OK;
-> > +
-> >  	status = resource_to_addr(acpi_res, &addr);
-> >  	if (!ACPI_SUCCESS(status))
-> >  		return AE_OK;
-> > @@ -94,17 +97,18 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
-> >  	if (bus_has_transparent_bridge(info->bus))
-> >  		max_root_bus_resources -= 3;
-> >  	if (info->res_num >= max_root_bus_resources) {
-> > -		printk(KERN_WARNING "PCI: Failed to allocate 0x%lx-0x%lx "
-> > -			"from %s for %s due to _CRS returning more than "
-> > -			"%d resource descriptors\n", (unsigned long) res->start,
-> > -			(unsigned long) res->end, root->name, info->name,
-> > -			max_root_bus_resources);
-> > +		pr_warning("PCI: Failed to allocate 0x%lx-0x%lx "
-> > +			   "from %s for %s due to _CRS returning more than "
-> > +			   "%d resource descriptors\n",
-> > +			   (unsigned long)res->start, (unsigned long)res->end,
-> > +			   root->name, info->name, max_root_bus_resources);
+> > No.
+> > 
+> > I digged in the kernel source and the only solution i found is to use
+> > the walk_page_range() like show_smap() in proc/fs/task_mmu.c.
+> > 
+> > Maybe there is an easier way, but i dont know.
+> > 
+> > So i would implement a similar function like smaps_pte_range() in
+> > proc/fs/task_mmu.c to detected the high water usage.
 > 
-> Can you please avoid mixing cleanup patches with bug fixes ? I almost
-> did not see the line below.
+> Perhaps we could enhance follow_page() so that it can tell the caller
+> when the target page is "virtually there", but swapped out.  Add a new
+> FOLL_SWAP, I guess.
 > 
-> > +		info->bus->resource[info->res_num] = res;
-> 
-> Storing the resource in defeats the purpose of the original patch,
-> which makes sure that we do _NOT_ use the last 3 slots of the resource
-> array for a root bus with a transparent bridge.
-> 
-> >  		info->res_num++;
-> 
-> This is the real bug. info->res_num should not be incremented when we
-> run out of resources already.
 
-This probably isn't needed but I don't think it is the cause of
-the problem.  It is just counting the number of _CRS returned
-resources and I believe subsequent visits to setup_resource()
-for additional returned resources will generate the same warning
-as it also would if the instruction were removed and no longer
-being used to keep an accurate count.
+I currently fixed it by using walk_page_range(). I think this is a quiet
+good solution. But if you like i can do it in a future version.
 
-I suspect that the resource array is simply not large enough
-for that system (and possibly others) and will have to be made
-larger by increasing PCI_BUS_NUM_RESOURCES.
+> How to communicate this back to the caller?  Perhaps add another
+> argument to follow_page(), perhaps return some magic value such as
+> 
+> #define FOLLOW_PAGE_SWAPPED_PAGE ((struct page *)1)
+> 
+> Adding the additional argument would be nicer.
 
-Gary
+IMHO i think it would be the best to add a new FOLL_NOTIFY_SWAP flag and
+if the page is swapped out return the FOLLOW_PAGE_SWAPPED_PAGE magic if
+this flag is passed.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
 
