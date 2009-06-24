@@ -1,73 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZFXUTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761668AbZFXUXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbZFXUTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbZFXUTQ
+	id S1761668AbZFXUXI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZFXUW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:19:16 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56016 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751151AbZFXUTQ (ORCPT
+	Wed, 24 Jun 2009 16:22:57 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42086 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753605AbZFXUW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:19:16 -0400
-Date: Wed, 24 Jun 2009 16:19:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM
- of I/O devices
-In-Reply-To: <200906242114.10530.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906241604510.22054-100000@iolanthe.rowland.org>
+	Wed, 24 Jun 2009 16:22:56 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH v2] slow-work: add (module*)work->owner to fix races with
+	module clients
+To: linux-kernel@vger.kernel.org
+Cc: dhowells@redhat.com
+Date: Wed, 24 Jun 2009 16:22:50 -0400
+Message-ID: <20090624202107.15071.51490.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
+(Try 2: applies to Linus' git master:626f380d)
 
-> > The difficulty is that some USB interface drivers require remote wakeup
-> > to be enabled while their interfaces are suspended.  But remote wakeup
-> > is a global setting; it doesn't take effect until the entire physical
-> > device is suspended.  (To put it another way, USB has no notion of
-> > suspending interfaces.)  This means we must not allow these interfaces
-> > to be suspended before the whole device is.  But the whole device is
-> > the parent of the interfaces -- if we can't suspend the children before
-> > suspending the parent then we're stuck.
-> 
-> Not if we use the power.ignore_children flag on the parent.
-> 
-> > Clearly this is something the USB stack has to deal with; it shouldn't
-> > affect the general PM framework.  However the only solution I can think
-> > of involves subverting the framework, which isn't very nice.  The idea
-> > is to ignore runtime_suspend callbacks for these interface drivers;
-> > allow them to keep on running even though the PM core thinks they are
-> > suspended.  Then suspend and resume them as part of the callbacks for
-> > the entire device.  (For interface drivers that don't require remote
-> > wakeup there is no problem; it doesn't matter when they get suspended.)
-> > 
-> > This will work, but it's a hack.  Does anybody have a better idea?
-> 
-> Well, as I said above, you can set power.ignore_children on the device
-> and then it can be suspended even if the interfaces aren't.
+[ Changelog:
 
-Hmm.  The hard part still remains: to make sure that the interfaces 
-don't get suspended without the device also getting suspended.
+    v2:
+       *) cache "owner" value to prevent invalid access after put_ref
 
-I suppose we could attack this by making the device do a runtime_get on
-each of the interfaces, which would be released in the device's
-runtime_suspend method.  But then conversely, each interface driver
-would have to do its gets and puts on the _device's_ resume_counter.  
-If they used the interface counters then the values would never go to 0
-and so nothing would ever be suspended.
+    v1:
+       *) initial release
+]
 
-You've got to admit, this does sound rather bizarre.  :-)  But it ought 
-to work...
 
-Alan Stern
+-------------------------
+
+slow-work: add (module*)work->owner to fix races with module clients
+
+The slow_work facility was designed to use reference counting instead of
+barriers for synchronization.  The reference counting mechanism is
+implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
+problematic for module use of the slow_work facility because it is
+impossible to synchronize against the .text installed in the callbacks:
+There is no way to ensure that the slow-work threads have completely
+exited the .text in question and rmmod may yank it out from under the
+slow_work thread.
+
+This patch attempts to address this issue by transparently mapping "struct
+module* owner" to the slow_work item, and maintaining a module reference
+count coincident with the more externally visible reference count.  Since
+the slow_work facility is resident in kernel, it should be a race-free
+location to issue a module_put() call.  This will ensure that modules
+can properly cleanup before exiting.
+
+A module_get()/module_put() pair on slow_work_enqueue() and the subsequent
+dequeue technically adds the overhead of the atomic operations for every
+work item scheduled.  However, slow_work is designed for deferring
+relatively long-running and/or sleepy tasks to begin with, so this
+overhead will hopefully be negligible.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/slow-work.h |    4 ++++
+ kernel/slow-work.c        |   17 ++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index b65c888..9f48dab 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_SLOW_WORK
+ 
+ #include <linux/sysctl.h>
++#include <linux/module.h>
+ 
+ struct slow_work;
+ 
+@@ -42,6 +43,7 @@ struct slow_work_ops {
+  *   queued
+  */
+ struct slow_work {
++	struct module          *owner;
+ 	unsigned long		flags;
+ #define SLOW_WORK_PENDING	0	/* item pending (further) execution */
+ #define SLOW_WORK_EXECUTING	1	/* item currently executing */
+@@ -61,6 +63,7 @@ struct slow_work {
+ static inline void slow_work_init(struct slow_work *work,
+ 				  const struct slow_work_ops *ops)
+ {
++	work->owner = THIS_MODULE;
+ 	work->flags = 0;
+ 	work->ops = ops;
+ 	INIT_LIST_HEAD(&work->link);
+@@ -78,6 +81,7 @@ static inline void slow_work_init(struct slow_work *work,
+ static inline void vslow_work_init(struct slow_work *work,
+ 				   const struct slow_work_ops *ops)
+ {
++	work->owner = THIS_MODULE;
+ 	work->flags = 1 << SLOW_WORK_VERY_SLOW;
+ 	work->ops = ops;
+ 	INIT_LIST_HEAD(&work->link);
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 09d7519..468af2a 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -145,6 +145,17 @@ static unsigned slow_work_calc_vsmax(void)
+ 	return min(vsmax, slow_work_max_threads - 1);
+ }
+ 
++static void slow_work_put(struct slow_work *work)
++{
++	/* cache values that are needed during/after pointer invalidation */
++	struct module *owner = work->owner;
++
++	work->ops->put_ref(work);
++
++	barrier(); /* ensure that put_ref is not re-ordered with module_put */
++	module_put(owner);
++}
++
+ /*
+  * Attempt to execute stuff queued on a slow thread.  Return true if we managed
+  * it, false if there was nothing to do.
+@@ -219,7 +230,7 @@ static bool slow_work_execute(void)
+ 		spin_unlock_irq(&slow_work_queue_lock);
+ 	}
+ 
+-	work->ops->put_ref(work);
++	slow_work_put(work);
+ 	return true;
+ 
+ auto_requeue:
+@@ -299,6 +310,8 @@ int slow_work_enqueue(struct slow_work *work)
+ 		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
+ 			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
+ 		} else {
++			if (!try_module_get(work->owner))
++				goto cant_get_mod;
+ 			if (work->ops->get_ref(work) < 0)
+ 				goto cant_get_ref;
+ 			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
+@@ -313,6 +326,8 @@ int slow_work_enqueue(struct slow_work *work)
+ 	return 0;
+ 
+ cant_get_ref:
++	module_put(work->owner);
++cant_get_mod:
+ 	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
+ 	return -EAGAIN;
+ }
 
