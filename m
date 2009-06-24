@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZFXSx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbZFXS4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbZFXSx7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZFXSxv
+	id S1756942AbZFXS4U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbZFXS4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:53:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42209 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbZFXSxu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:53:50 -0400
-Message-ID: <4A427631.4090609@redhat.com>
-Date: Wed, 24 Jun 2009 11:53:37 -0700
-From: Josh Stone <jistone@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b5pre) Gecko/20090513 Fedora/3.0-2.4.b3pre.hg.6a6386c16e98.fc11 Lightning/1.0pre Thunderbird/3.0b3pre
+	Wed, 24 Jun 2009 14:56:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52285 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbZFXS4H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:56:07 -0400
+Date: Wed, 24 Jun 2009 20:56:02 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Magnus Damm <magnus.damm@gmail.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, hskinnemoen@atmel.com,
+       anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org,
+       akpm@linux-foundation.org, stern@rowland.harvard.edu,
+       ben-linux@fluff.org, linux-omap@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver pm
+	callbacks V2
+Message-ID: <20090624185602.GA7683@elf.ucw.cz>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se> <200906242048.40956.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Rober Richter <robert.richter@amd.com>, anil.s.keshavamurthy@intel.com,
-       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com,
-       SystemTap <systemtap@sources.redhat.com>, Eric Anholt <eric@anholt.net>,
-       Chris Wilson <chris@chris-wilson.co.uk>,
-       intel-gfx@lists.freedesktop.org
-Subject: Re: Infrastructure for tracking driver performance events
-References: <20090624172912.GB5565@ben-laptop>
-In-Reply-To: <20090624172912.GB5565@ben-laptop>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906242048.40956.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24/2009 10:29 AM, Ben Gamari wrote:
-[...]
-> I recently wrote a very simple patch to add accounting for these types
-> of stalls to the i915 driver[1], exposing a list of wait-event counts to
-> userspace through debugfs. While this is useful for giving a general
-> overview of the drivers' performance, it does very little to expose
-> individual bottlenecks in the driver or userland components. It has been
-> suggested[2] that this wait-event tracking functionality would be far more
-> useful if we could provide stack backtraces all the way into user space
-> for each wait event.
-[...]
-> Another option seems to be systemtap. It has already been documented[3]
-> that this option could provide both user-mode and kernel-mode
-> backtraces. The driver could provide a kernel marker at every potential
-> wait point (or a single marker in a function called at each wait point,
-> for that matter) which would be picked up by systemtap and processed in
-> usermode, calling ptrace to acquire a usermode backtrace. This approach
-> seems slightly cleaner as it doesn't require the tracing on the entire
-> machine to catch what should be reasonably rare events (hopefully).
+On Wed 2009-06-24 20:48:39, Rafael J. Wysocki wrote:
+> On Wednesday 24 June 2009, Magnus Damm wrote:
+> > pm: remove late/early platform driver pm callbacks V2
+> > 
+> > [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> > [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> > [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> > [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> > [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> > [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> > [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> > 
+> > These patches simply remove ->suspend_late() and ->resume_early()
+> > from struct platform_driver. Drivers are converted to dev_pm_ops
+> > with CONFIG_SUSPEND in mind. Untested.
+> > 
+> > All patches except [02/07] are known to compile.
+> > 
+> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
 > 
-> Unfortunately, the systemtap approach described in [3] requires that
-> each process have an associated "driver" process to get a usermode
-> backtrace. It would be nice to avoid this requirement as there are
-> generally far more gpu clients than just the X server (i.e. direct
-> rendering clients) and tracking them all could get tricky.
-[...]
-> [3] http://sourceware.org/ml/systemtap/2006-q4/msg00198.html
+> If no one objects, I'd like to take this series into the suspend-2.6 tree as
+> 2.6.32 material.  Greg?
+> 
+> Pavel, is your ACK for the entire series?
 
-I have to say, I'm a bit surprised to see my hacky suggestion
-resurrected from the archives.  :)  I would guess that that approach
-would add way too much overhead to be of use in diagnosing stalls though.
+Well, I don't really understand stuff like dw_dmac.c, but it looks
+basically okay to me. I guess ACK might be okay.
 
-However, I think we can do a lot better with systemtap these days.
-We're growing the ability to do userspace backtraces[1] directly within
-your systemtap script, which should be much less intrusive.
+> >  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
+> >  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
+> >  drivers/base/platform.c          |   36 ------------------------------------
+> >  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
+> >  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
+> >  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
+> >  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
+> >  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
+> >  include/linux/platform_device.h  |    2 --
+> >  9 files changed, 82 insertions(+), 79 deletions(-)
 
-Please take a look at ubacktrace() and family in recent systemtap and
-let us know how you think it could improve.
-
-Thanks,
-
-Josh
-
-[1] http://sourceware.org/ml/systemtap/2009-q2/msg00364.html
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
