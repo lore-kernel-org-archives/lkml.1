@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbZFXHzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754039AbZFXH4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbZFXHzg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406AbZFXHz3
+	id S1754039AbZFXH4s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZFXH4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:55:29 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52476 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751344AbZFXHz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:55:28 -0400
-Date: Wed, 24 Jun 2009 09:55:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Feng Tang <feng.tang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Len Brown <lenb@kernel.org>,
-       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/8] SFI: core support
-Message-ID: <20090624075531.GM6760@one.firstfloor.org>
-References: <1245741246-6503-1-git-send-email-lenb@kernel.org> <8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com> <87iqin166f.fsf@basil.nowhere.org> <20090624113440.2774d13d@feng-desktop> <20090624071220.GJ6760@one.firstfloor.org> <20090624154052.1301144f@feng-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jun 2009 03:56:41 -0400
+Received: from mailhost5.gawab.com ([66.220.20.5]:55814 "HELO info14.gawab.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751406AbZFXH4k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 03:56:40 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: Ralf Gross <Ralf-Lists@ralfgross.de>
+Subject: Re: io-scheduler tuning for better read/write ratio
+Date: Wed, 24 Jun 2009 10:57:41 +0300
+User-Agent: KMail/1.5
+References: <4A37CB2A.6010209@davidnewall.com> <x49iqinys2k.fsf@segfault.boston.devel.redhat.com> <20090624072554.GA16642@p15145560.pureserver.info>
+In-Reply-To: <20090624072554.GA16642@p15145560.pureserver.info>
+Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090624154052.1301144f@feng-desktop>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200906241057.41227.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> understand your concern, but to walk a list we still need have some global
-> parameter like SYST address, and do the map/unmap and checksum work.
+Ralf Gross wrote:
+> The main problem is with bacula. It reads/writes from/to two
+> spoolfiles on the same device.
+>
+> I get the same behavior with 2 dd processes, one reading from disk, one
+> writing to it.
+>
+> Here's the output from dstat (5 sec intervall).
+>
+> --dsk/md1--
+> _read _writ
+>   26M   95M
+>   31M   96M
+>   20M   85M
+>   31M  108M
+>   28M   89M
+>   24M   95M
+>   26M   79M
+>   32M  115M
+>   50M   74M
+>  129M   15k
+>  147M 1638B
+>  147M    0
+>  147M    0
+>  113M    0
+>
+>
+> At the end I stopped the dd process that is writing to the device, so you
+> can see that the md device is capable of reading with >120 MB/s.
+>
+> I did this with these two commands.
+>
+> dd if=/dev/zero of=test bs=1MB
+> dd if=/dev/md1 of=/dev/null bs=1M
 
-You just keep it mapped always. And the checksums only need to 
-be checked once at the beginning. If there's a checksum error
-anywhere it's better to complete disable SFI
+Try changing /proc/sys/vm/dirty_ratio = 1
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
+Thanks!
+
+--
+Al
+
