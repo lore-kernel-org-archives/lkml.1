@@ -1,60 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZFXWh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZFXWiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZFXWh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 18:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZFXWht
+	id S1754286AbZFXWiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 18:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZFXWhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 18:37:49 -0400
-Received: from outbound-mail-04.bluehost.com ([69.89.21.14]:41943 "HELO
-	outbound-mail-04.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751523AbZFXWhs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 18:37:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=dH3IYuT+jnxjxrczMyh7RCjX4yM+axPLPtiwXlD/HC1fbDoMQ3/Vxpu8elahD0LcxcGUZ3udHwsdfM9+YG89lm1Fnro1jly77QgsCF2sz5ROuMUZxQ0ysjVfYQpbtK2m;
-Date: Wed, 24 Jun 2009 15:37:48 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gary Hade <garyhade@us.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH] x86/pci: get root CRS before scan child -v2
-Message-ID: <20090624153748.2ba17aea@jbarnes-g45>
-In-Reply-To: <4A429F29.4070007@kernel.org>
-References: <20090624122433.GA24781@elte.hu>
-	<20090624145119.GA12664@elte.hu>
-	<4A429EBB.5010209@kernel.org>
-	<4A429F29.4070007@kernel.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 24 Jun 2009 18:37:52 -0400
+Received: from kroah.org ([198.145.64.141]:47858 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752239AbZFXWhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 18:37:51 -0400
+Date: Wed, 24 Jun 2009 15:33:43 -0700
+From: Greg KH <greg@kroah.com>
+To: asdf@kroah.com, Richard Purdie <rpurdie@rpsys.net>,
+       Richard Purdie <rpurdie@linux.intel.com>,
+       Guennadi Liakhovetski <lg@denx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] LED: Reply-To: use correct name for
+	/sys/devices/virtual/leds/ entries
+Message-ID: <20090624223343.GA17235@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 14:48:25 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
+From: Olaf Hering <olh@suse.de>
 
-> 
-> so we could remove adjust_transparent_bridge_resources..
-> 
-> and give x86_pci_root_bus_res_quirks chance when _CRS is not used or
-> not there.
-> 
-> v2: add print out if pci conf reading for res is used for root
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+This is needed to get kde-powersave to work properly on some g4
+powerbooks.
 
-Do you think this is generally safe?  I was hoping we could do
-something more complete, like making the code handle arbitrary numbers
-of resources in _CRS.  Hacking that together now.
+From: Olaf Hering <olh@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+---
+This has been shipping in the SuSE kernels for a while.  I do not know
+why it was not sent to you previously, sorry - gregkh
+
+ drivers/leds/leds-cobalt-qube.c   |    2 +-
+ drivers/leds/leds-cobalt-raq.c    |    4 ++--
+ drivers/leds/ledtrig-default-on.c |    2 +-
+ drivers/macintosh/via-pmu-led.c   |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+--- a/drivers/leds/leds-cobalt-qube.c
++++ b/drivers/leds/leds-cobalt-qube.c
+@@ -28,7 +28,7 @@ static void qube_front_led_set(struct le
+ }
+ 
+ static struct led_classdev qube_front_led = {
+-	.name			= "qube-front",
++	.name			= "qube::front",
+ 	.brightness		= LED_FULL,
+ 	.brightness_set		= qube_front_led_set,
+ 	.default_trigger	= "ide-disk",
+--- a/drivers/leds/leds-cobalt-raq.c
++++ b/drivers/leds/leds-cobalt-raq.c
+@@ -49,7 +49,7 @@ static void raq_web_led_set(struct led_c
+ }
+ 
+ static struct led_classdev raq_web_led = {
+-	.name		= "raq-web",
++	.name		= "raq::web",
+ 	.brightness_set	= raq_web_led_set,
+ };
+ 
+@@ -70,7 +70,7 @@ static void raq_power_off_led_set(struct
+ }
+ 
+ static struct led_classdev raq_power_off_led = {
+-	.name			= "raq-power-off",
++	.name			= "raq::power-off",
+ 	.brightness_set		= raq_power_off_led_set,
+ 	.default_trigger	= "power-off",
+ };
+--- a/drivers/leds/ledtrig-default-on.c
++++ b/drivers/leds/ledtrig-default-on.c
+@@ -23,7 +23,7 @@ static void defon_trig_activate(struct l
+ }
+ 
+ static struct led_trigger defon_led_trigger = {
+-	.name     = "default-on",
++	.name     = "default::on",
+ 	.activate = defon_trig_activate,
+ };
+ 
+--- a/drivers/macintosh/via-pmu-led.c
++++ b/drivers/macintosh/via-pmu-led.c
+@@ -72,7 +72,7 @@ static void pmu_led_set(struct led_class
+ }
+ 
+ static struct led_classdev pmu_led = {
+-	.name = "pmu-front-led",
++	.name = "pmu-led::front",
+ #ifdef CONFIG_ADB_PMU_LED_IDE
+ 	.default_trigger = "ide-disk",
+ #endif
