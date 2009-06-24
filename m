@@ -1,102 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761398AbZFXTcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbZFXTde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761398AbZFXTcr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZFXTck
+	id S1761012AbZFXTde (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:33:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZFXTd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:32:40 -0400
-Received: from outbound-mail-21.bluehost.com ([69.89.21.16]:49025 "HELO
-	outbound-mail-21.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752158AbZFXTck (ORCPT
+	Wed, 24 Jun 2009 15:33:27 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43395 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751633AbZFXTd1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:32:40 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=jfJIpJXSaBJ6Dztj8NqC1VynfV5ALxcSJZf7dIzMoKhSGmbs+NH1oTI2izeqDbyB9ago1KPQ7yHyqk0F/82PfJWLsOnJBZ/zLThbSOzGvRVLo9O0usRfG66NHO3RNfEj;
-Date: Wed, 24 Jun 2009 12:32:41 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Justin Mattock <justinmattock@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: pci 0000:01:00.0: BAR 6: no parent found for of device 
- [0xfffe0000-0xffffffff]
-Message-ID: <20090624123241.01ca4fec@jbarnes-g45>
-In-Reply-To: <dd18b0c30906241027u152274b1kd4c854ada4de33dd@mail.gmail.com>
-References: <dd18b0c30906241027u152274b1kd4c854ada4de33dd@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 24 Jun 2009 15:33:27 -0400
+Message-ID: <4A427F83.8010404@novell.com>
+Date: Wed, 24 Jun 2009 15:33:23 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       dhowells@redhat.com
+Subject: [RFC PATCH] slow-work: add (module*)work->owner to fix races with
+ module clients
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4288D2E4CF7B575D66B0567A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 10:27:42 -0700
-Justin Mattock <justinmattock@gmail.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4288D2E4CF7B575D66B0567A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> (just pulled the latest git)
-> And am seeing this:
-> 
-> 
-> [    0.696001] pci 0000:01:00.0: BAR 6: no parent found for of device
-> [0xfffe0000-0xffffffff]
-> [    0.696010] pci 0000:02:00.0: BAR 6: no parent found for of device
-> [0xfffe0000-0xffffffff]
-> [    0.696069] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-> [    0.696074] pci 0000:00:01.0:   IO window: 0x3000-0x3fff
-> [    0.696081] pci 0000:00:01.0:   MEM window: 0x50300000-0x503fffff
-> [    0.696087] pci 0000:00:01.0:   PREFETCH window:
-> 0x00000040000000-0x00000047ffffff
-> [    0.696096] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:02
-> [    0.696102] pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
-> [    0.696111] pci 0000:00:1c.0:   MEM window: 0x50200000-0x502fffff
-> [    0.696118] pci 0000:00:1c.0:   PREFETCH window:
-> 0x50500000-0x505fffff [    0.696126] pci 0000:00:1c.1: PCI bridge,
-> secondary bus 0000:03 [    0.696130] pci 0000:00:1c.1:   IO window:
-> disabled [    0.696138] pci 0000:00:1c.1:   MEM window:
-> 0x50100000-0x501fffff [    0.696145] pci 0000:00:1c.1:   PREFETCH
-> window: disabled [    0.696152] pci 0000:00:1c.2: PCI bridge,
-> secondary bus 0000:04 [    0.696158] pci 0000:00:1c.2:   IO window:
-> 0x1000-0x1fff [    0.696167] pci 0000:00:1c.2:   MEM window:
-> 0x4c100000-0x500fffff [    0.696174] pci 0000:00:1c.2:   PREFETCH
-> window: 0x00000048000000-0x0000004bffffff
-> [    0.696186] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:0c
-> [    0.696190] pci 0000:00:1e.0:   IO window: disabled
-> [    0.696198] pci 0000:00:1e.0:   MEM window: 0x4c000000-0x4c0fffff
-> [    0.696205] pci 0000:00:1e.0:   PREFETCH window: disabled
-> [    0.696219] pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) ->
-> IRQ 16 [    0.696225] pci 0000:00:01.0: setting latency timer to 64
-> [    0.696235] pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) ->
-> IRQ 17 [    0.696243] pci 0000:00:1c.0: setting latency timer to 64
-> [    0.696254] pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) ->
-> IRQ 16 [    0.696261] pci 0000:00:1c.1: setting latency timer to 64
-> [    0.696273] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) ->
-> IRQ 18 [    0.696280] pci 0000:00:1c.2: setting latency timer to 64
-> [    0.696437] pci 0000:00:1e.0: power state changed by ACPI to D0
-> [    0.696446] pci 0000:00:1e.0: setting latency timer to 64
-> 
-> 
-> Is this good or bad?
-> (BAR 6: no parent found for of device)
+(Applies to Linus' git master:626f380d)
 
-There have been a few changes in this area recently, notably
+Hi All,
+  I found this while working on KVM.  I actually posted this patch with
+a KVM
+series yesterday and standalone earlier today, but neither seems to have
+made it to the lists.  I suspect there is an issue with git-mail/postfix
+on my system.
 
-commit 9e9f46c44e487af0a82eb61b624553e2f7118f5b
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Thu Jun 11 10:58:28 2009 -0700
+I digress. This is a repost with the patch by itself, and rebased to
+Linus' tree instead of kvm.git.  Apologies if the system finally
+corrects itself and the others show up.
 
-    PCI: use ACPI _CRS data by default
+Thoughts?
 
-and some related to
+Regards,
+-Greg
 
-commit ff54250a0ebab7f90a5f848a0ba63f999830c872
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Sat Apr 18 21:44:24 2009 -0700
+-----------------------------
 
-    Remove 'recurse into child resources' logic from ...
+slow-work: add (module*)work->owner to fix races with module clients
 
-The first you can control with the nocrs boot param, the other ones
-will have to be bisected through though...
+The slow_work facility was designed to use reference counting instead of
+barriers for synchronization.  The reference counting mechanism is
+implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
+problematic for module use of the slow_work facility because it is
+impossible
+to synchronize against the .text installed in the callbacks: There is
+no way to ensure that the slow-work threads have completely exited the
+=2Etext in question and rmmod may yank it out from under the slow_work th=
+read.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+This patch attempts to address this issue by transparently mapping "struc=
+t
+module* owner" to the slow_work item, and maintaining a module reference
+count coincident with the more externally visible reference count.  Since=
+
+the slow_work facility is resident in kernel, it should be a race-free
+location to issue a module_put() call.  This will ensure that modules
+can properly cleanup before exiting.
+
+A module_get()/module_put() pair on slow_work_enqueue() and the subsequen=
+t
+dequeue technically adds the overhead of the atomic operations for every
+work item scheduled.  However, slow_work is designed for deferring
+relatively long-running and/or sleepy tasks to begin with, so this
+overhead will hopefully be negligible.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/slow-work.h |    4 ++++
+ kernel/slow-work.c        |    6 ++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index b65c888..9f48dab 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_SLOW_WORK
+=20
+ #include <linux/sysctl.h>
++#include <linux/module.h>
+=20
+ struct slow_work;
+=20
+@@ -42,6 +43,7 @@ struct slow_work_ops {
+  *   queued
+  */
+ struct slow_work {
++    struct module          *owner;
+     unsigned long        flags;
+ #define SLOW_WORK_PENDING    0    /* item pending (further) execution */=
+
+ #define SLOW_WORK_EXECUTING    1    /* item currently executing */
+@@ -61,6 +63,7 @@ struct slow_work {
+ static inline void slow_work_init(struct slow_work *work,
+                   const struct slow_work_ops *ops)
+ {
++    work->owner =3D THIS_MODULE;
+     work->flags =3D 0;
+     work->ops =3D ops;
+     INIT_LIST_HEAD(&work->link);
+@@ -78,6 +81,7 @@ static inline void slow_work_init(struct slow_work *wor=
+k,
+ static inline void vslow_work_init(struct slow_work *work,
+                    const struct slow_work_ops *ops)
+ {
++    work->owner =3D THIS_MODULE;
+     work->flags =3D 1 << SLOW_WORK_VERY_SLOW;
+     work->ops =3D ops;
+     INIT_LIST_HEAD(&work->link);
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 09d7519..1dc3486 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -220,6 +220,8 @@ static bool slow_work_execute(void)
+     }
+=20
+     work->ops->put_ref(work);
++    barrier(); /* ensure that put_ref is not re-ordered with module_put =
+*/
++    module_put(work->owner);
+     return true;
+=20
+ auto_requeue:
+@@ -299,6 +301,8 @@ int slow_work_enqueue(struct slow_work *work)
+         if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
+             set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
+         } else {
++            if (!try_module_get(work->owner))
++                goto cant_get_mod;
+             if (work->ops->get_ref(work) < 0)
+                 goto cant_get_ref;
+             if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
+@@ -313,6 +317,8 @@ int slow_work_enqueue(struct slow_work *work)
+     return 0;
+=20
+ cant_get_ref:
++    module_put(work->owner);
++cant_get_mod:
+     spin_unlock_irqrestore(&slow_work_queue_lock, flags);
+     return -EAGAIN;
+ }
+
+
+
+--------------enig4288D2E4CF7B575D66B0567A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpCf4MACgkQlOSOBdgZUxlhCgCfawXYS5v7GVTNUuSSHQLs9X+I
+DGAAn0esJBFBqEZZyQESSUffieBSFbKl
+=WG+O
+-----END PGP SIGNATURE-----
+
+--------------enig4288D2E4CF7B575D66B0567A--
