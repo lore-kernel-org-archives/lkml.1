@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZFXLtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZFXL5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbZFXLtG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZFXLs4
+	id S1753866AbZFXL5r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:57:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZFXL5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:48:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35475 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbZFXLsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:48:55 -0400
-Date: Wed, 24 Jun 2009 13:48:56 +0200
-From: Jan Kara <jack@suse.cz>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] udf: remove redundant tests on unsigned
-Message-ID: <20090624114856.GA2303@duck.suse.cz>
-References: <4A3FF3BD.1040702@gmail.com>
+	Wed, 24 Jun 2009 07:57:39 -0400
+Received: from mail-yx0-f194.google.com ([209.85.210.194]:39866 "EHLO
+	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbZFXL5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 07:57:39 -0400
+X-Greylist: delayed 441 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 07:57:38 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TqT8Gn4mz+vDkhC8MHBsfeDxCUe+HFBDJwnLefdOdwylXv6jICTtX/o+EimNe42gae
+         4hlq4TmMgpva+avEPXnSEYoCqSXXOfvtmMUkk2Hym8OfTqp5IfK8yrtK3Sre7S9aBtS4
+         cEiQ5F6q6A7Son6WBvZTxyMU7JC7sVEfVM8OI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3FF3BD.1040702@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <87r5xhqzr4.fsf@deeprootsystems.com>
+References: <20090610121659.27937.13560.sendpatchset@rx1.opensource.se>
+	 <87r5xhqzr4.fsf@deeprootsystems.com>
+Date: Wed, 24 Jun 2009 20:50:18 +0900
+Message-ID: <aec7e5c30906240450w2c204b1bo8e06cdc26eaad753@mail.gmail.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V3
+From: Magnus Damm <magnus.damm@gmail.com>
+To: rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, paul@pwsan.com, gregkh@suse.de,
+       khilman@deeprootsystems.com, stern@rowland.harvard.edu,
+       linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 22-06-09 23:12:29, Roel Kluin wrote:
-> first_block and goal are unsigned. When negative they are wrapped and caught by
-> the other test.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-  Thanks for the patch. I've merged it in UDF tree.
+On Fri, Jun 19, 2009 at 1:21 AM, Kevin
+Hilman<khilman@deeprootsystems.com> wrote:
+> Magnus Damm <magnus.damm@gmail.com> writes:
+>
+>> From: Magnus Damm <damm@igel.co.jp>
+>>
+>> Allow architecture specific data in struct platform_device V3.
+>>
+>> With this patch struct pdev_archdata is added to struct
+>> platform_device, similar to struct dev_archdata in found in
+>> struct device. Useful for architecture code that needs to
+>> keep extra data associated with each platform device.
+>>
+>> Struct pdev_archdata is different from dev.platform_data, the
+>> convention is that dev.platform_data points to driver-specific
+>> data. It may or may not be required by the driver. The format
+>> of this depends on driver but is the same across architectures.
+>>
+>> The structure pdev_archdata is a place for architecture specific
+>> data. This data is handled by architecture specific code (for
+>> example runtime PM), and since it is architecture specific it
+>> should _never_ be touched by device driver code. Exactly like
+>> struct dev_archdata but for platform devices.
+>>
+>> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+>
+> Since there is no 'Feature-desired-by:' tag, I'll addd
+>
+> Acked-by: Kevin Hilman <khilman@deeprootsystems.com>
+>
+> For PM on ARM in general, and OMAP in particular we definitely need a
+> generic way to handle arch-specific data per platform_device.
 
-									Honza
+Thanks, Kevin! So ARM in general or at least OMAP wants this, and so
+does SuperH.
 
-> ---
-> diff --git a/fs/udf/balloc.c b/fs/udf/balloc.c
-> index e48e9a3..1e06853 100644
-> --- a/fs/udf/balloc.c
-> +++ b/fs/udf/balloc.c
-> @@ -238,7 +238,7 @@ static int udf_bitmap_prealloc_blocks(struct super_block *sb,
->  
->  	mutex_lock(&sbi->s_alloc_mutex);
->  	part_len = sbi->s_partmaps[partition].s_partition_len;
-> -	if (first_block < 0 || first_block >= part_len)
-> +	if (first_block >= part_len)
->  		goto out;
->  
->  	if (first_block + block_count > part_len)
-> @@ -297,7 +297,7 @@ static int udf_bitmap_new_block(struct super_block *sb,
->  	mutex_lock(&sbi->s_alloc_mutex);
->  
->  repeat:
-> -	if (goal < 0 || goal >= sbi->s_partmaps[partition].s_partition_len)
-> +	if (goal >= sbi->s_partmaps[partition].s_partition_len)
->  		goal = 0;
->  
->  	nr_groups = bitmap->s_nr_groups;
-> @@ -666,8 +666,7 @@ static int udf_table_prealloc_blocks(struct super_block *sb,
->  	int8_t etype = -1;
->  	struct udf_inode_info *iinfo;
->  
-> -	if (first_block < 0 ||
-> -		first_block >= sbi->s_partmaps[partition].s_partition_len)
-> +	if (first_block >= sbi->s_partmaps[partition].s_partition_len)
->  		return 0;
->  
->  	iinfo = UDF_I(table);
-> @@ -743,7 +742,7 @@ static int udf_table_new_block(struct super_block *sb,
->  		return newblock;
->  
->  	mutex_lock(&sbi->s_alloc_mutex);
-> -	if (goal < 0 || goal >= sbi->s_partmaps[partition].s_partition_len)
-> +	if (goal >= sbi->s_partmaps[partition].s_partition_len)
->  		goal = 0;
->  
->  	/* We search for the closest matching block to goal. If we find
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Rafael, you kindly gave feedback on earlier versions, are you ok with
+this version?
+
+Cheers,
+
+/ magnus
