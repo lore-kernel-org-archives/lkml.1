@@ -1,50 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZFXJ4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZFXKCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZFXJ4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZFXJ4B
+	id S1752888AbZFXKCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZFXKCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:56:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50806
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752320AbZFXJ4A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:56:00 -0400
-Date: Wed, 24 Jun 2009 02:56:04 -0700 (PDT)
-Message-Id: <20090624.025604.162446127.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       petkovbb@gmail.com, htejun@gmail.com
-Subject: Re: [patch 3/6] ide: always kill the whole request on error
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906241138.00687.bzolnier@gmail.com>
-References: <200906240249.33505.bzolnier@gmail.com>
-	<20090623.234948.121450964.davem@davemloft.net>
-	<200906241138.00687.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 06:02:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50329 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751460AbZFXKCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:02:05 -0400
+X-Authenticated: #1490710
+X-Provags-ID: V01U2FsdGVkX1+htDFJ4O+h/JpKDnyg+E8ltONQMsj6BR+TJnGAtK
+	Uo/uFZmtfeHD/B
+Date: Wed, 24 Jun 2009 12:03:29 +0200 (CEST)
+From: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+X-X-Sender: schindelin@pacific.mpi-cbg.de
+To: Ingo Molnar <mingo@elte.hu>
+cc: Junio C Hamano <gitster@pobox.com>,
+       =?ISO-8859-15?Q?Ren=E9_Scharfe?= <rene.scharfe@lsrfire.ath.cx>,
+       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fread does not return negative on error
+In-Reply-To: <20090624081819.GA10436@elte.hu>
+Message-ID: <alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de>
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu> <25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com> <4A3FB479.2090902@lsrfire.ath.cx> <7vhby64i8f.fsf@alter.siamese.dyndns.org> <20090624081819.GA10436@elte.hu>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1678002513-1245837811=:4773"
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Wed, 24 Jun 2009 11:38:00 +0200
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Wednesday 24 June 2009 08:49:48 David Miller wrote:
->> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->> Date: Wed, 24 Jun 2009 02:49:32 +0200
->> 
->> The previous patch is a prerequesite for this one.  So we should
->> discuss them as a whole.  Because if we can't remove the "ide/floppy
->> RQ error 0 instead of -EIO" bit, then we don't make these further
->> consolidations either.
+--8323328-1678002513-1245837811=:4773
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+
+Hi,
+
+On Wed, 24 Jun 2009, Ingo Molnar wrote:
+
+> One bookeeping issue: i found few explicit credits in those files - 
+> so i noted in the changelog that i took them from Git and i noted 
+> the specific upstream Git sha1 when i copied them. Would be nice to 
+> update each file with names to make credit more explicit:
 > 
-> Untrue, we can easily redo the patch #3 to not be dependent on patch #2.
+> -rw-rw-r-- 1 mingo mingo  2808 2009-06-23 10:49 abspath.c
+> -rw-rw-r-- 1 mingo mingo  1447 2009-06-23 10:49 alias.c
+> -rw-rw-r-- 1 mingo mingo  4660 2009-06-23 10:49 cache.h
+> -rw-rw-r-- 1 mingo mingo  4817 2009-06-23 10:49 color.c
+> -rw-rw-r-- 1 mingo mingo  1187 2009-06-23 10:49 color.h
+> -rw-rw-r-- 1 mingo mingo 19149 2009-06-23 10:49 config.c
+> -rw-rw-r-- 1 mingo mingo  1041 2009-06-23 10:52 ctype.c
+> -rw-rw-r-- 1 mingo mingo   256 2009-06-23 10:49 environment.c
+> -rw-rw-r-- 1 mingo mingo  3262 2009-06-23 10:49 exec_cmd.c
+> -rw-rw-r-- 1 mingo mingo   496 2009-06-23 10:49 exec_cmd.h
+> -rw-rw-r-- 1 mingo mingo  8515 2009-06-23 10:49 help.c
+> -rw-rw-r-- 1 mingo mingo   751 2009-06-23 10:49 help.h
+> -rw-rw-r-- 1 mingo mingo  2592 2009-06-23 10:49 levenshtein.c
+> -rw-rw-r-- 1 mingo mingo   201 2009-06-23 10:49 levenshtein.h
+> -rw-rw-r-- 1 mingo mingo  1909 2009-06-23 10:49 pager.c
+> -rw-rw-r-- 1 mingo mingo 12454 2009-06-23 10:49 parse-options.c
+> -rw-rw-r-- 1 mingo mingo  5693 2009-06-23 10:49 parse-options.h
+> -rw-rw-r-- 1 mingo mingo  7986 2009-06-23 10:49 path.c
+> -rw-rw-r-- 1 mingo mingo 10442 2009-06-23 10:49 quote.c
+> -rw-rw-r-- 1 mingo mingo  2667 2009-06-23 10:49 quote.h
+> -rw-rw-r-- 1 mingo mingo  7966 2009-06-23 10:49 run-command.c
+> -rw-rw-r-- 1 mingo mingo  2838 2009-06-23 10:49 run-command.h
+> -rw-rw-r-- 1 mingo mingo   969 2009-06-23 10:49 sigchain.c
+> -rw-rw-r-- 1 mingo mingo   215 2009-06-23 10:49 sigchain.h
+> -rw-rw-r-- 1 mingo mingo  7270 2009-06-23 10:49 strbuf.c
+> -rw-rw-r-- 1 mingo mingo  4995 2009-06-23 10:49 strbuf.h
+> -rw-rw-r-- 1 mingo mingo   556 2009-06-23 10:52 string.c
+> -rw-rw-r-- 1 mingo mingo   120 2009-06-23 10:52 string.h
+> -rw-rw-r-- 1 mingo mingo 13859 2009-06-24 10:01 symbol.c
+> -rw-rw-r-- 1 mingo mingo  1112 2009-06-23 10:52 symbol.h
+> -rw-rw-r-- 1 mingo mingo  1690 2009-06-23 10:49 usage.c
+> -rw-rw-r-- 1 mingo mingo  9878 2009-06-23 10:52 util.h
+> -rw-rw-r-- 1 mingo mingo  4249 2009-06-23 10:49 wrapper.c
 
-Good point.
+This here script:
 
-> Do you prefer such version instead?
+-- snip --
+for file in abspath.c alias.c cache.h color.c color.h config.c ctype.c \
+	environment.c exec_cmd.c exec_cmd.h help.c help.h levenshtein.c \
+	levenshtein.h pager.c parse-options.c parse-options.h path.c \
+	quote.c quote.h run-command.c run-command.h sigchain.c sigchain.h \
+	strbuf.c strbuf.h string.c string.h symbol.c symbol.h usage.c \
+	util.h wrapper.c
+do
+	echo $file
+	git shortlog -n -s $file | head -n 2
+done
+-- snap --
 
-Let's wait until we come to some conclusion about patch #2.
+outputs this (note that a few files you mentioned are not in git.git):
+
+abspath.c
+     2	Junio C Hamano
+     1	Dmitry Potapov
+alias.c
+     2	Jeff King
+     1	Felipe Contreras
+cache.h
+   295	Junio C Hamano
+    98	Linus Torvalds
+color.c
+     4	Junio C Hamano
+     3	Jeff King
+color.h
+     2	Jeff King
+     2	Johannes Schindelin
+config.c
+    65	Junio C Hamano
+    20	Johannes Schindelin
+ctype.c
+     4	René Scharfe
+     2	Junio C Hamano
+environment.c
+    29	Junio C Hamano
+    11	Johannes Schindelin
+exec_cmd.c
+     8	Johannes Sixt
+     7	Junio C Hamano
+exec_cmd.h
+     2	Junio C Hamano
+     2	Scott R Parish
+help.c
+    18	Junio C Hamano
+    14	Christian Couder
+help.h
+     2	Miklos Vajna
+     1	Alex Riesen
+levenshtein.c
+     2	Johannes Schindelin
+     1	Mike Ralphson
+levenshtein.h
+     1	Johannes Schindelin
+pager.c
+     9	Junio C Hamano
+     4	Johannes Schindelin
+parse-options.c
+    18	Pierre Habouzit
+     8	Junio C Hamano
+parse-options.h
+    15	Pierre Habouzit
+     6	Stephen Boyd
+path.c
+    20	Junio C Hamano
+     5	Johannes Sixt
+quote.c
+    12	Junio C Hamano
+     5	Christian Couder
+quote.h
+     6	Junio C Hamano
+     5	Christian Couder
+run-command.c
+    11	Shawn O. Pearce
+     7	Johannes Sixt
+run-command.h
+    10	Shawn O. Pearce
+     5	Johannes Sixt
+sigchain.c
+     2	Jeff King
+sigchain.h
+     2	Jeff King
+strbuf.c
+     9	Pierre Habouzit
+     8	Junio C Hamano
+strbuf.h
+     9	Pierre Habouzit
+     4	Junio C Hamano
+string.c
+string.h
+symbol.c
+symbol.h
+usage.c
+     3	Linus Torvalds
+     2	Junio C Hamano
+util.h
+wrapper.c
+     4	Junio C Hamano
+     2	Linus Torvalds
+
+Ciao,
+Dscho
+
+--8323328-1678002513-1245837811=:4773--
