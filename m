@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZFXM5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZFXM6B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbZFXM5l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZFXM5e
+	id S1758392AbZFXM6B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 08:58:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbZFXM5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:57:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58760 "EHLO hera.kernel.org"
+	Wed, 24 Jun 2009 08:57:51 -0400
+Received: from kroah.org ([198.145.64.141]:60102 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZFXM5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:57:34 -0400
-Subject: Re: [PATCH] perf stat: fix hardcoded nr_counter
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090624085812.GD18713@elte.hu>
-References: <1245810296.3434.3.camel@ht.satnam>
-	 <20090624085812.GD18713@elte.hu>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 18:26:57 +0530
-Message-Id: <1245848217.2681.8.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753006AbZFXM5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 08:57:50 -0400
+Date: Wed, 24 Jun 2009 05:52:26 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Joel Becker <Joel.Becker@oracle.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Len Brown <lenb@kernel.org>, Avi Kivity <avi@qumranet.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Richard Purdie <rpurdie@rpsys.net>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: Main things left in linux-next
+Message-ID: <20090624125226.GA24328@kroah.com>
+References: <20090624164617.b7c49974.sfr@canb.auug.org.au> <20090624172735.9b500674.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624172735.9b500674.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 10:58 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > nr_counter should be based on number of default_attrs entries.
-> 
-> The problem is, this will cause a _lot_ of counters to be used by 
-> default, overloading the PMU quite significantly and reducing 
-> precision. The number of hw counters is chosen intentionally the way 
-> it is now, so that on common hardware there's no over-commit.
-> 
-> As i suggested before, your change does make sense if introduced as 
-> extended event specifications to 'perf stat':
-> 
->  -e all
->  -e all-sw-counters
->  -e all-hw-counters
-> 
-> with regex wildcard support too.
-> 
+On Wed, Jun 24, 2009 at 05:27:35PM +1000, Stephen Rothwell wrote:
+> devtmpfs from the driver-core tree (hmmm?)
 
-Ok I will support it now.
+this will remain until .32.
 
-> Instead, you chose to ignore my feedback and wasted my time by 
-> re-sending the same broken patch. If you do such things i'll have to 
-> start ignoring you - it is very ineffective for me to repeat every 
-> argument and suggestion two or more times and no other contributor 
-> does this ...
-> 
+thanks,
 
-oops, I am sorry my AMD box was not able to boot because of the
-regression the only machine which supports performance counter. I was
-doing git-bisect on AMD box in the mean time I prepare this patch on old
-Intel box.
-
-> > Remove dead code and some code alignment.
-> 
-> Could you please send this separately?
-> 
-
-Send [PATCH -tip] perf stat: remove dead code
-
-Thanks,
---
-JSR
-
+greg k-h
