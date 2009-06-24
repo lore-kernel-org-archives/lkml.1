@@ -1,173 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZFXRVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760912AbZFXRWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbZFXRVt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbZFXRVl
+	id S1760912AbZFXRWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZFXRWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:21:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34134 "EHLO mx2.redhat.com"
+	Wed, 24 Jun 2009 13:22:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34161 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755850AbZFXRVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:21:40 -0400
-Date: Wed, 24 Jun 2009 13:19:16 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Chandra Seetharaman <sekharan@us.ibm.com>,
-       Christof Schmitt <christof.schmitt@de.ibm.com>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Hannes Reinecke <hare@suse.de>,
-       Jonathan Brassow <jbrassow@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, martin.petersen@oracle.com,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Peter Rajnoha <prajnoha@redhat.com>,
-       Stefan Bader <stefan.bader@canonical.com>
-Subject: Re: [git pull] device-mapper patches for 2.6.31-rc1
-Message-ID: <20090624171915.GA17246@redhat.com>
-References: <20090622093227.GH5744@agk-dp.fab.redhat.com>
+	id S1753524AbZFXRWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 13:22:34 -0400
+Date: Wed, 24 Jun 2009 13:22:26 -0400
+From: Dave Jones <davej@redhat.com>
+To: alan@lxorguk.ukuu.org.uk
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Mathias Adam <a2@adamis.de>
+Subject: serial: enable higher baud rates for 16c95x
+Message-ID: <20090624172213.GA21123@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, alan@lxorguk.ukuu.org.uk,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Mathias Adam <a2@adamis.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622093227.GH5744@agk-dp.fab.redhat.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+This patch has been around (and in Fedora) for 4 years.
 
-Given that you recently expressed your intent to release -rc1 soon:
-http://lkml.org/lkml/2009/6/23/618
+Previous discussion around this patch:
+http://marc.theaimsgroup.com/?l=linux-kernel&m=112687270832687&w=2
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=126403
+http://lkml.org/lkml/2006/8/2/208
 
-Alasdair is at linuxtag all week, so I figured I'd point out his DM pull
-request from a couple days ago in case you missed it.
+The objection seemed to be summarised as "it might break something else".
+In the four years it's been in Fedora, I don't recall seeing a single
+serial bug report that was related.
 
-Thanks,
-Mike
+From: Mathias Adam <a2@adamis.de>
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-On Mon, Jun 22 2009 at  5:32am -0400,
-Alasdair G Kergon <agk@redhat.com> wrote:
+--- linux-2.6.13-org/drivers/serial/8250.c	2005-08-29 01:41:01.000000000 +0200
++++ linux-2.6.13/drivers/serial/8250.c	2005-09-16 12:18:14.000000000 +0200
+@@ -7,6 +7,9 @@
+  *
+  *  Copyright (C) 2001 Russell King.
+  *
++ *  2005/09/16: Enabled higher baud rates for 16C95x.
++ *		(Mathias Adam <a2@adamis.de>)
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+@@ -1652,6 +1655,14 @@
+ 	else if ((port->flags & UPF_MAGIC_MULTIPLIER) &&
+ 		 baud == (port->uartclk/8))
+ 		quot = 0x8002;
++	/*
++	 * For 16C950s UART_TCR is used in combination with divisor==1
++	 * to achieve baud rates up to baud_base*4.
++	 */
++	else if ((port->type == PORT_16C950) &&
++		 baud > (port->uartclk/16))
++		quot = 1;
++
+ 	else
+ 		quot = uart_get_divisor(port, baud);
+ 
+@@ -1665,7 +1676,7 @@
+ 	struct uart_8250_port *up = (struct uart_8250_port *)port;
+ 	unsigned char cval, fcr = 0;
+ 	unsigned long flags;
+-	unsigned int baud, quot;
++	unsigned int baud, quot, max_baud;
+ 
+ 	switch (termios->c_cflag & CSIZE) {
+ 	case CS5:
+@@ -2034,7 +2034,8 @@ serial8250_set_termios(struct uart_port 
+ 	/*
+ 	 * Ask the core to calculate the divisor for us.
+ 	 */
+-	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
++	max_baud = (up->port.type == PORT_16C950 ? port->uartclk/4 : port->uartclk/16);
++	baud = uart_get_baud_rate(port, termios, old, 0, max_baud);
+ 	quot = serial8250_get_divisor(port, baud);
+ 
+ 	/*
+@@ -1733,6 +1745,19 @@
+ 	 */
+ 	spin_lock_irqsave(&up->port.lock, flags);
+ 
++	/*
++	 * 16C950 supports additional prescaler ratios between 1:16 and 1:4
++	 * thus increasing max baud rate to uartclk/4.
++	 */
++	if (up->port.type == PORT_16C950) {
++		if (baud == port->uartclk/4)
++			serial_icr_write(up, UART_TCR, 0x4);
++		else if (baud == port->uartclk/8)
++			serial_icr_write(up, UART_TCR, 0x8);
++		else
++			serial_icr_write(up, UART_TCR, 0);
++	}
++
+ 	/*
+ 	 * Update the per-port timeout.
+ 	 */
 
-> Please pull from:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
-> 
-> to get the following device-mapper changes for 2.6.31-rc1:
-> 
-> Alasdair G Kergon (1):
->       dm: initialise tio in alloc_tio
-> 
-> Chandra Seetharaman (1):
->       dm mpath: call activate fn for each path in pg_init
-> 
-> Hannes Reinecke (1):
->       dm mpath: change attached scsi_dh
-> 
-> Jonathan Brassow (1):
->       dm exception store: fix exstore lookup to be case insensitive
-> 
-> Jonthan Brassow (2):
->       dm table: improve warning message when devices not freed before destruction
->       dm raid1: add userspace log
-> 
-> Kiyoshi Ueda (8):
->       dm mpath: add start_io and nr_bytes to path selectors
->       dm mpath: add queue length load balancer
->       dm mpath: add service time load balancer
->       dm: prepare for request based option
->       dm: enable request based option
->       dm: do not set QUEUE_ORDERED_DRAIN if request based
->       dm: disable interrupt when taking map_lock
->       dm mpath: change to be request based
-> 
-> Mike Snitzer (7):
->       dm table: ensure targets are aligned to logical_block_size
->       dm table: validate device logical_block_size
->       dm table: replace struct io_restrictions with struct queue_limits
->       dm table: establish queue limits by copying table limits
->       dm target:s introduce iterate devices fn
->       dm log: fix create_log_context to use logical_block_size of log device
->       dm: calculate queue limits during resume not load
-> 
-> Mikulas Patocka (24):
->       dm mpath: validate table argument count
->       dm mpath: validate hw_handler argument count
->       dm raid1: keep retrying alloc if mempool_alloc failed
->       dm mpath: flush keventd queue in destructor
->       dm: avoid unsupported spanning of md stripe boundaries
->       dm: use i_size_read
->       dm: rename suspended_bdev to bdev
->       dm: always hold bdev reference
->       dm: make dm_flush return void
->       dm: process requeue in dm_wq_work
->       dm: store only first barrier error
->       dm: remove EOPNOTSUPP for barriers
->       dm: remove check that prevents mapping empty bios
->       dm: introduce num_flush_requests
->       dm: send empty barriers to targets in dm_flush
->       dm: linear support flush
->       dm: stripe support flush
->       dm crypt: support flush
->       dm delay: support barriers
->       dm mpath: support barriers
->       dm snapshot: support barriers
->       dm io: record eopnotsupp
->       dm io: retry after barrier error
->       dm snapshot: use barrier when writing exception store
-> 
-> Milan Broz (2):
->       dm: sysfs skip output when device is being destroyed
->       dm ioctl: support cookies for udev
-> 
-> Peter Rajnoha (1):
->       dm: sysfs add suspended attribute
-> 
->  Documentation/device-mapper/dm-log.txt          |   54 ++
->  Documentation/device-mapper/dm-queue-length.txt |   39 +
->  Documentation/device-mapper/dm-service-time.txt |   91 ++
->  drivers/md/Kconfig                              |   30 +
->  drivers/md/Makefile                             |    5 +
->  drivers/md/dm-crypt.c                           |   19 +-
->  drivers/md/dm-delay.c                           |   26 +-
->  drivers/md/dm-exception-store.c                 |    2 +-
->  drivers/md/dm-exception-store.h                 |    2 +-
->  drivers/md/dm-io.c                              |   14 +-
->  drivers/md/dm-ioctl.c                           |   27 +-
->  drivers/md/dm-linear.c                          |   15 +-
->  drivers/md/dm-log-userspace-base.c              |  696 ++++++++++++++
->  drivers/md/dm-log-userspace-transfer.c          |  276 ++++++
->  drivers/md/dm-log-userspace-transfer.h          |   18 +
->  drivers/md/dm-log.c                             |    9 +-
->  drivers/md/dm-mpath.c                           |  334 +++++---
->  drivers/md/dm-path-selector.h                   |    8 +-
->  drivers/md/dm-queue-length.c                    |  263 ++++++
->  drivers/md/dm-raid1.c                           |   17 +-
->  drivers/md/dm-region-hash.c                     |    2 +-
->  drivers/md/dm-round-robin.c                     |    2 +-
->  drivers/md/dm-service-time.c                    |  339 +++++++
->  drivers/md/dm-snap-persistent.c                 |    2 +-
->  drivers/md/dm-snap.c                            |   11 +
->  drivers/md/dm-stripe.c                          |   33 +-
->  drivers/md/dm-sysfs.c                           |    9 +
->  drivers/md/dm-table.c                           |  465 +++++++---
->  drivers/md/dm.c                                 | 1133 ++++++++++++++++++++---
->  drivers/md/dm.h                                 |   35 +-
->  include/linux/Kbuild                            |    1 +
->  include/linux/connector.h                       |    4 +-
->  include/linux/device-mapper.h                   |   47 +-
->  include/linux/dm-ioctl.h                        |   14 +-
->  include/linux/dm-log-userspace.h                |  386 ++++++++
->  35 files changed, 3993 insertions(+), 435 deletions(-)
->  create mode 100644 Documentation/device-mapper/dm-log.txt
->  create mode 100644 Documentation/device-mapper/dm-queue-length.txt
->  create mode 100644 Documentation/device-mapper/dm-service-time.txt
->  create mode 100644 drivers/md/dm-log-userspace-base.c
->  create mode 100644 drivers/md/dm-log-userspace-transfer.c
->  create mode 100644 drivers/md/dm-log-userspace-transfer.h
->  create mode 100644 drivers/md/dm-queue-length.c
->  create mode 100644 drivers/md/dm-service-time.c
->  create mode 100644 include/linux/dm-log-userspace.h
-> 
-> Alasdair
-> -- 
-> agk@redhat.com
