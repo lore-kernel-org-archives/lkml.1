@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbZFXMp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZFXMrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757097AbZFXMp6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbZFXMpt
+	id S1755980AbZFXMrY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 08:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZFXMrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:45:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35352 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZFXMpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:45:49 -0400
-Date: Wed, 24 Jun 2009 14:45:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-Message-ID: <20090624124542.GB32306@elte.hu>
-References: <20090624131104.705c828d@skybase> <20090624112929.GB2079@linux-sh.org> <20090624142828.7c6a2337@skybase> <20090624123416.GB9510@linux-sh.org>
+	Wed, 24 Jun 2009 08:47:17 -0400
+Received: from mailfilter2.ihug.co.nz ([203.109.136.2]:52738 "EHLO
+	mailfilter2.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbZFXMrQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 08:47:16 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlFXAJu9QUpBeDlE/2dsb2JhbACOaAKIboFuJoYAsnyCNAeBUAWFcw
+X-IronPort-AV: E=Sophos;i="4.42,283,1243771200"; 
+   d="scan'208";a="189971321"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624123416.GB9510@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Thu, 25 Jun 2009 00:44:02 +1200
+From: Camelot <info@cgl.com>
+To: undisclosed-recipients:;
+Subject: REF NO.REF:UKL/74-A0802742009
+Reply-To: claimsdomain@9.cn
+Message-ID: <ac44b94affd2a7600f1006b2cda99f00@ihug.co.nz>
+SenderIP: 65.120.57.68
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+REF NO.REF:UKL/74-A0802742009
+Congrats in our Uk monthly online award bonanza by sending your
+Name,Add,Age,Tel to(claimsdomain@9.cn) for 891,934GBP.send your data for
+more details.Choose your claims option.
+          (1)Courier Delivery
+          (2)Bank Transfer
 
-* Paul Mundt <lethal@linux-sh.org> wrote:
-
-> My current plan is to migrate things over to the perf_counter API 
-> and annoy Ingo with my interrupt deprived counters ;-)
-
-Please do :-)
-
-I just wrote a longer explanation about them: i think they can be 
-made full-blown hardware counters, which in the end would be 
-basically just as capable as 'real' IRQ capable counters.
-
-The main complication that such counters bring is that in their 'own 
-metric' they do interrupt periods in an 'irregular' way (because 
-they interrupt in the nanosec metric - being hrtimers) - but both 
-the tools can deal with uneven periods just fine and the auto-freq 
-code can auto-balance based on this just fine too.
-
-So you should be able to implement this within arch/sh/ with 
-existing perf_counter facilities and hrtimers, or you can help us 
-librarize it in kernel/perf_counter.c some more, to minimize 
-architecture code.
-
-[ Of course, given that you are the first architecture to do this,
-  you would be fair to expect some unexpected details along the way 
-  as well ;-) ]
-
-	Ingo
