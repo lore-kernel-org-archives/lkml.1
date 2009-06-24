@@ -1,389 +1,383 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760334AbZFXNdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbZFXNeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760334AbZFXNdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 09:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZFXNbu
+	id S1760371AbZFXNeF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 09:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759484AbZFXNbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 09:31:50 -0400
-Received: from smtpq2.gn.mail.iss.as9143.net ([212.54.34.165]:40717 "EHLO
-	smtpq2.gn.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759466AbZFXNbs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 09:31:53 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37996 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759396AbZFXNbs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Jun 2009 09:31:48 -0400
-Date: Wed, 24 Jun 2009 15:31:48 +0200
-From: Dick Streefland <dick@streefland.net>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
-Message-ID: <20090624133148.GA12878@streefland.net>
-References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624114607.GA10817@streefland.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
-X-ZiggoSMTP-MailScanner-ID: 1MJSZp-0007FJ-9z
-X-ZiggoSMTP-MailScanner: Found to be clean
-X-ZiggoSMTP-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.091, required 5, ALL_TRUSTED -1.80, BAYES_00 -2.60,
-	TW_IK 0.08, TW_NM 0.08, TW_PN 0.08, TW_RG 0.08)
-X-ZiggoSMTP-MailScanner-From: dick@streefland.net
+From: Mike Frysinger <vapier@gentoo.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] add checksum selftest
+Date: Wed, 24 Jun 2009 09:31:29 -0400
+Message-Id: <1245850289-6673-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 2009-06-24 13:46, Dick Streefland wrote:
-| Because I don't want to rely on a particular version of grep, I've
-| modified the script to use perl instead. I hope that's OK. Below is
-| a new patch.
-<snip>
+Start a checksum internal testsuite for arch porters and people mucking
+about in the checksum code -- regressions are bad.
 
-I found a way to work around the differences in behavior of grep.
-Older versions of grep report the byte offset of the start of the
-line instead of the byte offset of the pattern. By using tr to
-make sure the pattern is always at the start of a "line", both old
-and new versions of grep can be used.
-
-Below is a third version of the patch without a dependency on perl,
-which may be undesirable in some situations.
-
-======================================================================
-
-I've rewritten the extract-ikconfig script to extract the kernel
-configuration from a kernel compiled with CONFIG_IKCONFIG. The main
-motivation for the rewrite was to remove the dependency on the
-external C program binoffset.c, which is compiled on the initial run.
-
-The binoffset executable is invoked with a relative path, which means
-that the old script can only be run from the top of the kernel tree,
-and only when you have write permission in the scripts directory.
-The new script uses tr/grep/tail/zcat only, and can be invoked from
-anywhere. The binoffset.c program has been removed.
-
-Signed-off-by: Dick Streefland <dick@streefland.net>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
+Arnd: i've tested this on my Blackfin and it seems to work ... can you
+check for any places i missed little endian swapping ?
 
- Documentation/dontdiff   |    1 -
- scripts/.gitignore       |    1 -
- scripts/binoffset.c      |  163 ----------------------------------------------
- scripts/extract-ikconfig |  113 ++++++++++++-------------------
- 4 files changed, 44 insertions(+), 234 deletions(-)
+ lib/Kconfig.debug       |    9 ++
+ lib/Makefile            |    1 +
+ lib/checksum-selftest.c |  292 +++++++++++++++++++++++++++++++++++++++++++++++
+ lib/checksum.c          |    2 +-
+ 4 files changed, 303 insertions(+), 1 deletions(-)
+ create mode 100644 lib/checksum-selftest.c
 
-diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index 88519da..6fef118 100644
---- a/Documentation/dontdiff
-+++ b/Documentation/dontdiff
-@@ -68,7 +68,6 @@ autoconf.h*
- bbootsect
- bin2c
- binkernel.spec
--binoffset
- bootsect
- bounds.h
- bsetup
-diff --git a/scripts/.gitignore b/scripts/.gitignore
-index b939fbd..a1f52cb 100644
---- a/scripts/.gitignore
-+++ b/scripts/.gitignore
-@@ -6,4 +6,3 @@ kallsyms
- pnmtologo
- bin2c
- unifdef
--binoffset
-diff --git a/scripts/binoffset.c b/scripts/binoffset.c
-deleted file mode 100644
-index 1a2e39b..0000000
---- a/scripts/binoffset.c
-+++ /dev/null
-@@ -1,163 +0,0 @@
--/***************************************************************************
-- * binoffset.c
-- * (C) 2002 Randy Dunlap <rdunlap@xenotime.net>
--
--#   This program is free software; you can redistribute it and/or modify
--#   it under the terms of the GNU General Public License as published by
--#   the Free Software Foundation; either version 2 of the License, or
--#   (at your option) any later version.
--#
--#   This program is distributed in the hope that it will be useful,
--#   but WITHOUT ANY WARRANTY; without even the implied warranty of
--#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
--#   GNU General Public License for more details.
--#
--#   You should have received a copy of the GNU General Public License
--#   along with this program; if not, write to the Free Software
--#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
--
--# binoffset.c:
--# - searches a (binary) file for a specified (binary) pattern
--# - returns the offset of the located pattern or ~0 if not found
--# - exits with exit status 0 normally or non-0 if pattern is not found
--#   or any other error occurs.
--
--****************************************************************/
--
--#include <stdio.h>
--#include <stdlib.h>
--#include <string.h>
--#include <errno.h>
--#include <unistd.h>
--#include <fcntl.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--#include <sys/mman.h>
--
--#define VERSION		"0.1"
--#define BUF_SIZE	(16 * 1024)
--#define PAT_SIZE	100
--
--char		*progname;
--char		*inputname;
--int		inputfd;
--unsigned int	bix;			/* buf index */
--unsigned char	patterns [PAT_SIZE] = {0}; /* byte-sized pattern array */
--int		pat_len;		/* actual number of pattern bytes */
--unsigned char	*madr;			/* mmap address */
--size_t		filesize;
--int		num_matches = 0;
--off_t		firstloc = 0;
--
--void usage (void)
--{
--	fprintf (stderr, "%s ver. %s\n", progname, VERSION);
--	fprintf (stderr, "usage:  %s filename pattern_bytes\n",
--			progname);
--	fprintf (stderr, "        [prints location of pattern_bytes in file]\n");
--	exit (1);
--}
--
--void get_pattern (int pat_count, char *pats [])
--{
--	int ix, err, tmp;
--
--#ifdef DEBUG
--	fprintf (stderr,"get_pattern: count = %d\n", pat_count);
--	for (ix = 0; ix < pat_count; ix++)
--		fprintf (stderr, "  pat # %d:  [%s]\n", ix, pats[ix]);
--#endif
--
--	for (ix = 0; ix < pat_count; ix++) {
--		tmp = 0;
--		err = sscanf (pats[ix], "%5i", &tmp);
--		if (err != 1 || tmp > 0xff) {
--			fprintf (stderr, "pattern or value error in pattern # %d [%s]\n",
--					ix, pats[ix]);
--			usage ();
--		}
--		patterns [ix] = tmp;
--	}
--	pat_len = pat_count;
--}
--
--void search_pattern (void)
--{
--	for (bix = 0; bix < filesize; bix++) {
--		if (madr[bix] == patterns[0]) {
--			if (memcmp (&madr[bix], patterns, pat_len) == 0) {
--				if (num_matches == 0)
--					firstloc = bix;
--				num_matches++;
--			}
--		}
--	}
--}
--
--#ifdef NOTDEF
--size_t get_filesize (int fd)
--{
--	off_t end_off = lseek (fd, 0, SEEK_END);
--	lseek (fd, 0, SEEK_SET);
--	return (size_t) end_off;
--}
--#endif
--
--size_t get_filesize (int fd)
--{
--	int err;
--	struct stat stat;
--
--	err = fstat (fd, &stat);
--	fprintf (stderr, "filesize: %ld\n", err < 0 ? (long)err : stat.st_size);
--	if (err < 0)
--		return err;
--	return (size_t) stat.st_size;
--}
--
--int main (int argc, char *argv [])
--{
--	progname = argv[0];
--
--	if (argc < 3)
--		usage ();
--
--	get_pattern (argc - 2, argv + 2);
--
--	inputname = argv[1];
--
--	inputfd = open (inputname, O_RDONLY);
--	if (inputfd == -1) {
--		fprintf (stderr, "%s: cannot open '%s'\n",
--				progname, inputname);
--		exit (3);
--	}
--
--	filesize = get_filesize (inputfd);
--
--	madr = mmap (0, filesize, PROT_READ, MAP_PRIVATE, inputfd, 0);
--	if (madr == MAP_FAILED) {
--		fprintf (stderr, "mmap error = %d\n", errno);
--		close (inputfd);
--		exit (4);
--	}
--
--	search_pattern ();
--
--	if (munmap (madr, filesize))
--		fprintf (stderr, "munmap error = %d\n", errno);
--
--	if (close (inputfd))
--		fprintf (stderr, "%s: error %d closing '%s'\n",
--				progname, errno, inputname);
--
--	fprintf (stderr, "number of pattern matches = %d\n", num_matches);
--	if (num_matches == 0)
--		firstloc = ~0;
--	printf ("%ld\n", firstloc);
--	fprintf (stderr, "%ld\n", firstloc);
--
--	exit (num_matches ? 0 : 2);
--}
--
--/* end binoffset.c */
-diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
-index 72997c3..37f30d3 100755
---- a/scripts/extract-ikconfig
-+++ b/scripts/extract-ikconfig
-@@ -1,78 +1,53 @@
- #!/bin/sh
--# extracts .config info from a [b]zImage file
--# uses: binoffset (new), dd, zcat, strings, grep
--# $arg1 is [b]zImage filename
--
--binoffset="./scripts/binoffset"
--test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
--
--IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
--IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
--dump_config() {
--    file="$1"
--
--    start=`$binoffset $file $IKCFG_ST 2>/dev/null`
--    [ "$?" != "0" ] && start="-1"
--    if [ "$start" -eq "-1" ]; then
--	return
--    fi
--    end=`$binoffset $file $IKCFG_ED 2>/dev/null`
--
--    start=`expr $start + 8`
--    size=`expr $end - $start`
--
--    dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
--
--    clean_up
--    exit 0
--}
--
--
--usage()
-+# ----------------------------------------------------------------------
-+# extract-ikconfig - Extract the .config file from a kernel image
-+#
-+# This will only work when the kernel was compiled with CONFIG_IKCONFIG.
-+#
-+# The obscure use of the "tr" filter is to work around older versions of
-+# "grep" that report the byte offset of the line instead of the pattern.
-+#
-+# (c) 2009, Dick Streefland <dick@streefland.net>
-+# Licensed under the terms of the GNU General Public License.
-+# ----------------------------------------------------------------------
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 4c32b1a..c5cb167 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -631,6 +631,15 @@ config DEBUG_SG
+ 
+ 	  If unsure, say N.
+ 
++config CHECKSUM_SELFTEST
++	bool "Checksum boot-time self-tests"
++	depends on DEBUG_KERNEL
++	help
++	  Say Y here if you want the kernel to run a short self-test at boot.
++	  The self-test checks whether the networking checksum functions are
++	  operating as expected.  Useful if you are trying to implement your
++	  own optimized replacements for the generic code.
 +
-+gz1='\037\213\010'
-+gz2='01'
-+cf1='IKCFG_ST\037\213\010'
-+cf2='0123456789'
+ config DEBUG_NOTIFIERS
+ 	bool "Debug notifier call chains"
+ 	depends on DEBUG_KERNEL
+diff --git a/lib/Makefile b/lib/Makefile
+index b6d1857..fde861c 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -94,6 +94,7 @@ obj-$(CONFIG_NLATTR) += nlattr.o
+ obj-$(CONFIG_DMA_API_DEBUG) += dma-debug.o
+ 
+ obj-$(CONFIG_GENERIC_CSUM) += checksum.o
++obj-$(CONFIG_CHECKSUM_SELFTEST) += checksum-selftest.o
+ 
+ obj-$(CONFIG_GENERIC_ATOMIC64) += atomic64.o
+ 
+diff --git a/lib/checksum-selftest.c b/lib/checksum-selftest.c
+new file mode 100644
+index 0000000..8cf5194
+--- /dev/null
++++ b/lib/checksum-selftest.c
+@@ -0,0 +1,292 @@
++/*
++ * Networking checksum self checks.
++ *
++ * Licensed under the GPL-2.
++ */
 +
-+dump_config()
- {
--	echo "  usage: extract-ikconfig [b]zImage_filename"
--}
--
--clean_up()
--{
--	if [ "$TMPFILE" != "" ]; then
--		rm -f $TMPFILE
-+	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
-+	then
-+		pos=${pos%%:*}
-+		tail -c+$(($pos+8)) "$1" | zcat -q
-+		exit 0
- 	fi
++/*
++ * The test vectors here are encoded in little endian format.  We do byte
++ * swapping below at runtime as needed to get the right comparison value.
++ */
++
++#define pr_fmt(fmt) "csum-selftest: " fmt
++
++#include <linux/kernel.h>
++#include <net/checksum.h>
++#include <asm/byteorder.h>
++
++
++/*
++ * The do_csum() interface is "internal" to the generic checksum code.
++ * Do not require it if the arch has not switched over.
++ */
++extern unsigned short do_csum(const unsigned char *buff, int len);
++
++struct do_csum_data {
++	unsigned short ret;
++	unsigned char *buff;
++	int len;
++};
++#define DO_CSUM_DATA(_num, _ret) \
++{ \
++	.ret = _ret, \
++	.buff = do_csum_data##_num, \
++	.len = ARRAY_SIZE(do_csum_data##_num), \
++}
++static unsigned char __initdata do_csum_data1[] = {
++	0x20,
++};
++static unsigned char __initdata do_csum_data2[] = {
++	0x0d, 0x0a,
++};
++static unsigned char __initdata do_csum_data3[] = {
++	0xff, 0xfb, 0x01,
++};
++static unsigned char __initdata do_csum_data4[] = {
++	0x63, 0x68, 0x65, 0x64,
++};
++static unsigned char __initdata do_csum_data5[] = {
++	0x67, 0x72, 0x5d, 0x0d, 0x00,
++};
++static unsigned char __initdata do_csum_data6[] = {
++	0x20, 0x20, 0x31, 0x30, 0x38, 0x20
++};
++static unsigned char __initdata do_csum_data7[] = {
++	0x20, 0x20, 0x20, 0x35, 0x37, 0x20, 0x20,
++};
++static unsigned char __initdata do_csum_data8[] = {
++	0x00, 0x00, 0x00, 0x00, 0x7f, 0x0f, 0x00, 0x02,
++};
++static unsigned char __initdata do_csum_data9[] = {
++	0x20, 0x20, 0x31, 0x31, 0x34, 0x20, 0x20, 0x20, 0x31,
++};
++static unsigned char __initdata do_csum_data10[] = {
++	0xd, 0xa, 0x72, 0x6f, 0x6f, 0x74, 0x3a, 0x2f, 0x3e, 0x20
++};
++static unsigned char __initdata do_csum_data255[] = {
++	0x20, 0x34, 0x34, 0x34, 0x20, 0x53, 0x20, 0x20, 0x20, 0x20, 0x2d,
++	0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x68, 0x20, 0x0d, 0x0a, 0x20,
++	0x20, 0x31, 0x30, 0x35, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20,
++	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x34, 0x34, 0x20, 0x53, 0x20,
++	0x20, 0x20, 0x20, 0x2f, 0x73, 0x62, 0x69, 0x6e, 0x2f, 0x69, 0x6e,
++	0x65, 0x74, 0x64, 0x20, 0x0d, 0x0a, 0x20, 0x20, 0x31, 0x30, 0x36,
++	0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
++	0x20, 0x34, 0x33, 0x36, 0x20, 0x53, 0x20, 0x20, 0x20, 0x20, 0x2f,
++	0x73, 0x62, 0x69, 0x6e, 0x2f, 0x73, 0x79, 0x73, 0x6c, 0x6f, 0x67,
++	0x64, 0x20, 0x2d, 0x6e, 0x20, 0x0d, 0x0a, 0x20, 0x20, 0x31, 0x30,
++	0x37, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20,
++	0x20, 0x20, 0x34, 0x33, 0x32, 0x20, 0x52, 0x20, 0x20, 0x20, 0x20,
++	0x2f, 0x73, 0x62, 0x69, 0x6e, 0x2f, 0x6b, 0x6c, 0x6f, 0x67, 0x64,
++	0x20, 0x2d, 0x6e, 0x20, 0x0d, 0x0a, 0x20, 0x20, 0x31, 0x30, 0x38,
++	0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
++	0x20, 0x20, 0x33, 0x32, 0x20, 0x53, 0x20, 0x20, 0x20, 0x20, 0x2f,
++	0x62, 0x69, 0x6e, 0x2f, 0x77, 0x61, 0x74, 0x63, 0x68, 0x64, 0x6f,
++	0x67, 0x64, 0x20, 0x2d, 0x66, 0x20, 0x2d, 0x73, 0x20, 0x0d, 0x0a,
++	0x20, 0x20, 0x31, 0x30, 0x39, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20,
++	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x35, 0x36, 0x20, 0x52,
++	0x20, 0x20, 0x20, 0x20, 0x2f, 0x62, 0x69, 0x6e, 0x2f, 0x74, 0x65,
++	0x6c, 0x6e, 0x65, 0x74, 0x64, 0x20, 0x0d, 0x0a, 0x20, 0x20, 0x31,
++	0x31, 0x30, 0x20, 0x72, 0x6f, 0x6f, 0x74, 0x20, 0x20, 0x20, 0x20,
++	0x20, 0x20
++};
++static struct do_csum_data __initdata do_csum_data[] = {
++	DO_CSUM_DATA(1, 0x0020),
++	DO_CSUM_DATA(2, 0x0a0d),
++	DO_CSUM_DATA(3, 0xfc00),
++	DO_CSUM_DATA(4, 0xccc8),
++	DO_CSUM_DATA(5, 0x7fc4),
++	DO_CSUM_DATA(6, 0x7089),
++	DO_CSUM_DATA(7, 0x7597),
++	DO_CSUM_DATA(8, 0x117f),
++	DO_CSUM_DATA(9, 0x91d6),
++	DO_CSUM_DATA(10, 0x3d67),
++	DO_CSUM_DATA(255, 0x4f96),
++};
++
++static int __init do_csum_selftest(void)
++{
++	int i, ret;
++	unsigned short tret, eret;
++
++	ret = 0;
++	for (i = 0; i < ARRAY_SIZE(do_csum_data); ++i) {
++		unsigned char *buff = do_csum_data[i].buff;
++		int len = do_csum_data[i].len;
++		int hret = le16_to_cpu(do_csum_data[i].ret);
++
++#ifdef CONFIG_GENERIC_CSUM
++		eret = hret;
++		tret = do_csum(buff, len);
++		if (tret != eret) {
++			pr_err("%s: (d_c) test %i: %#x != %#x: FAIL\n",
++				__func__, i, tret, eret);
++			ret = 1;
++		}
++#endif
++
++		eret = ~hret;
++		tret = ip_compute_csum(buff, len);
++		if (tret != eret) {
++			pr_err("%s: (i_c_c) test %i: %#x != %#x: FAIL\n",
++				__func__, i, tret, eret);
++			ret = 1;
++		}
++
++		if (len % 4 == 0) {
++			eret = ~hret;
++			tret = ip_fast_csum(buff, len / 4);
++			if (tret != eret) {
++				pr_err("%s: (i_f_c) test %i: %#x != %#x: FAIL\n",
++					__func__, i, tret, eret);
++				ret = 1;
++			}
++		}
++	}
++
++	return ret;
++}
++
++
++struct csum_partial_data {
++	__wsum ret;
++	const void *buff;
++	int len;
++	__wsum wsum;
++};
++#define CSUM_PARTIAL_DATA(_num, _ret, _wsum) \
++{ \
++	.ret = _ret, \
++	.buff = csum_partial_data##_num, \
++	.len = ARRAY_SIZE(csum_partial_data##_num), \
++	.wsum = _wsum, \
++}
++static unsigned char __initdata csum_partial_data1[] = {
++	0x74,
++};
++static unsigned char __initdata csum_partial_data2[] = {
++	0x0d, 0x0a,
++};
++static unsigned char __initdata csum_partial_data3[] = {
++	0xff, 0xfd, 0x01,
++};
++static unsigned char __initdata csum_partial_data5[] = {
++	0x20, 0x20, 0x31, 0x30, 0x33,
++};
++static unsigned char __initdata csum_partial_data8[] = {
++	0x8b, 0xd1, 0x89, 0x13, 0x00, 0x08, 0x69, 0x97,
++};
++static unsigned char __initdata csum_partial_data8b[] = {
++	0x3, 0x3, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
++};
++static unsigned char __initdata csum_partial_data9[] = {
++	0xb6, 0xf9, 0x89, 0x13, 0x0, 0x9, 0x3e, 0x6d, 0x0,
++};
++static struct csum_partial_data __initdata csum_partial_data[] = {
++	CSUM_PARTIAL_DATA(1,  0x00000074, 0x0),
++	CSUM_PARTIAL_DATA(2,  0x00000a0d, 0x0),
++	CSUM_PARTIAL_DATA(3,  0x0000fe00, 0x0),
++	CSUM_PARTIAL_DATA(5,  0x00005084, 0x0),
++	CSUM_PARTIAL_DATA(8,  0x1101eefe, 0x11016a80),
++	CSUM_PARTIAL_DATA(8b, 0x00008781, 0x847e),
++	CSUM_PARTIAL_DATA(9,  0x1101eefe, 0x11016b80),
++};
++
++static unsigned char __initdata csum_partial_scratch[1024];
++static int __init csum_partial_selftest(void)
++{
++	int i, ret;
++	unsigned short tret, eret;
++
++	ret = 0;
++	for (i = 0; i < ARRAY_SIZE(csum_partial_data); ++i) {
++		const unsigned char *buff = csum_partial_data[i].buff;
++		int len = csum_partial_data[i].len;
++		__wsum wsum = csum_partial_data[i].wsum;
++		eret = le16_to_cpu(csum_partial_data[i].ret);
++
++		tret = csum_partial(buff, len, wsum);
++		if (tret != eret) {
++			pr_err("%s: (c_p) test %i: %#x != %#x: FAIL\n",
++				__func__, i, tret, eret);
++			ret = 1;
++		}
++
++		tret = csum_partial_copy(buff, csum_partial_scratch, len, wsum);
++		if (tret != eret) {
++			pr_err("%s: (c_p_c) test %i: %#x != %#x: FAIL\n",
++				__func__, i, tret, eret);
++			ret = 1;
++		}
++	}
++
++	return ret;
++}
++
++
++struct csum_tcpudp_nofold_data {
++	__wsum ret;
++	__be32 saddr;
++	__be32 daddr;
++	unsigned short len;
++	unsigned short proto;
++	__wsum sum;
++};
++#define C_T_N_D(_ret, _saddr, _daddr, _len, _proto, _sum) \
++{ \
++	.ret = _ret, \
++	.saddr = _saddr, \
++	.daddr = _daddr, \
++	.len = _len, \
++	.proto = _proto, \
++	.sum = _sum, \
++}
++static struct csum_tcpudp_nofold_data __initdata csum_tcpudp_nofold_data[] = {
++	C_T_N_D(0x11016a80, 0x0200a8c0, 0x0f00a8c0, 0x008, 0x11, 0x00000),
++	C_T_N_D(0x11016b80, 0x0200a8c0, 0x0f00a8c0, 0x009, 0x11, 0x00000),
++	C_T_N_D(0x1101da80, 0x0200a8c0, 0x0f00a8c0, 0x078, 0x11, 0x00000),
++	C_T_N_D(0x11050180, 0x0200a8c0, 0x0f00a8c0, 0x39f, 0x11, 0x00000),
++	C_T_N_D(0x11017d4c, 0x0f00a8c0, 0x0200a8c0, 0x020, 0x06, 0x005cc),
++	C_T_N_D(0x11027185, 0x0f00a8c0, 0x0200a8c0, 0x028, 0x06, 0x0f205),
++	C_T_N_D(0x11032bc2, 0x0f00a8c0, 0x0200a8c0, 0x035, 0x06, 0x19f42),
++	C_T_N_D(0x11019280, 0x0200a8c0, 0x0f00a8c0, 0x03b, 0x06, 0x00000),
++	C_T_N_D(0x11041290, 0x0f00a8c0, 0x0200a8c0, 0x11f, 0x06, 0x19c10),
++};
++
++static int __init csum_tcpudp_nofold_selftest(void)
++{
++	int i, ret;
++	unsigned short tret, eret;
++
++	ret = 0;
++	for (i = 0; i < ARRAY_SIZE(csum_tcpudp_nofold_data); ++i) {
++		eret = le16_to_cpu(csum_tcpudp_nofold_data[i].ret);
++		tret = csum_tcpudp_nofold(
++			csum_tcpudp_nofold_data[i].saddr,
++			csum_tcpudp_nofold_data[i].daddr,
++			csum_tcpudp_nofold_data[i].len,
++			csum_tcpudp_nofold_data[i].proto,
++			csum_tcpudp_nofold_data[i].sum);
++		if (tret != eret) {
++			pr_err("%s: test %i: %#x != %#x: FAIL\n",
++				__func__, i, tret, eret);
++			ret = 1;
++		}
++	}
++
++	return ret;
++}
++
++
++static int __init csum_selftest_init(void)
++{
++	int ret =
++		do_csum_selftest() +
++		csum_partial_selftest() +
++		csum_tcpudp_nofold_selftest();
++
++	if (!ret)
++		pr_info("all tests passed!\n");
++
++	return 0;
++}
++module_init(csum_selftest_init);
+diff --git a/lib/checksum.c b/lib/checksum.c
+index 45c9c93..bebfab2 100644
+--- a/lib/checksum.c
++++ b/lib/checksum.c
+@@ -46,7 +46,7 @@ static inline unsigned short from32to16(unsigned long x)
+ 	return x;
  }
  
--if [ $# -lt 1 ]
-+# Check invocation:
-+me=${0##*/}
-+img=$1
-+if	[ $# -ne 1 -o ! -s "$img" ]
- then
--	usage
--	exit 1
-+	echo "Usage: $me <kernel-image>" >&2
-+	exit 2
- fi
- 
--TMPFILE=`mktemp -t ikconfig-XXXXXX` || exit 1
--image="$1"
--
--# vmlinux: Attempt to dump the configuration from the file directly
--dump_config "$image"
--
--GZHDR1="0x1f 0x8b 0x08 0x00"
--GZHDR2="0x1f 0x8b 0x08 0x08"
--
--# vmlinux.gz: Check for a compressed images
--off=`$binoffset "$image" $GZHDR1 2>/dev/null`
--[ "$?" != "0" ] && off="-1"
--if [ "$off" -eq "-1" ]; then
--	off=`$binoffset "$image" $GZHDR2 2>/dev/null`
--	[ "$?" != "0" ] && off="-1"
--fi
--if [ "$off" -eq "0" ]; then
--	zcat <"$image" >"$TMPFILE"
--	dump_config "$TMPFILE"
--elif [ "$off" -ne "-1" ]; then
--	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
--		zcat >"$TMPFILE"
--	dump_config "$TMPFILE"
--fi
--
--echo "ERROR: Unable to extract kernel configuration information."
--echo "       This kernel image may not have the config info."
--
--clean_up
-+# Initial attempt for uncompressed images or objects:
-+dump_config "$img"
-+
-+# That didn't work, so decompress and try again:
-+tmp=/tmp/ikconfig$$
-+trap "rm -f $tmp" 0
-+for	pos in `tr "$gz1\n$gz2" "\n$gz2=" < "$img" | grep -abo "^$gz2"`
-+do
-+	pos=${pos%%:*}
-+	tail -c+$pos "$img" | zcat 2> /dev/null > $tmp
-+	dump_config $tmp
-+done
-+
-+# Bail out:
-+echo "$me: Cannot find kernel config." >&2
- exit 1
+-static unsigned int do_csum(const unsigned char *buff, int len)
++unsigned int do_csum(const unsigned char *buff, int len)
+ {
+ 	int odd, count;
+ 	unsigned long result = 0;
+-- 
+1.6.3.3
+
