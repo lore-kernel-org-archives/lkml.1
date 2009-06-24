@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbZFXPQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZFXPUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbZFXPQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 11:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZFXPQu
+	id S1757930AbZFXPUi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 11:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZFXPUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 11:16:50 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32838 "EHLO mx2.mail.elte.hu"
+	Wed, 24 Jun 2009 11:20:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58999 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969AbZFXPQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 11:16:49 -0400
-Date: Wed, 24 Jun 2009 17:16:34 +0200
+	id S1751808AbZFXPUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 11:20:31 -0400
+Date: Wed, 24 Jun 2009 17:20:19 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>,
-       Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624151634.GC15037@elte.hu>
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <4A423686.8050905@lwfinger.net>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 2/2] procfs: provide stack information for threads V0.10
+Message-ID: <20090624152019.GD15037@elte.hu>
+References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org> <1245824444.22613.3.camel@wall-e> <20090623233247.7ed661b7.akpm@linux-foundation.org> <1245825903.23818.4.camel@wall-e> <20090624001302.18de9e21.akpm@linux-foundation.org> <m1my7ykrs7.fsf@fess.ebiederm.org> <1245854033.10579.4.camel@wall-e>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A423686.8050905@lwfinger.net>
+In-Reply-To: <1245854033.10579.4.camel@wall-e>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -38,43 +37,34 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Larry Finger <Larry.Finger@lwfinger.net> wrote:
+* Stefani Seibold <stefani@seibold.net> wrote:
 
-> Jaswinder Singh Rajput wrote:
-> > On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
-> >> My latest pull from Linus's tree fails to boot. Bisection leads to the
-> >> commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
-> >> resources and warn if exceeded" with hash
-> >> f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
-> >> capture the first error message as it scrolls off the screen, but the
-> >> second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
-> >> ahci_enable_ahci() because HOST_AHCI_EN is not set.
-> >>
-> > 
-> > This patch fixes boot failure on my AMD 64 laptop, can you please test
-> > this patch:
-> > 
-> > [PATCH] x86: fix _CRS resources return handling
-> > 
-> > We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
-> > 
-> > Also set info->bus->resource[info->res_num] for _CRS resources return handling
-> > 
-> > Fixed boot failure on some machine.
-> > 
-> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/pci/acpi.c |   16 ++++++++++------
-> >  1 files changed, 10 insertions(+), 6 deletions(-)
+> Hi,
 > 
-> Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
+> this is the newest version of the formaly named "detailed stack info"
+> patch which give you a better overview of the userland application stack
+> usage, especially for embedded linux.
 > 
-> Thanks for the patch. With it, my machine boots with the latest
-> 2.6.30-gitX.
+> Currently you are only able to dump the main process/thread stack usage
+> which is showed in /proc/pid/status by the "VmStk" Value. But you get no
+> information about the consumed stack memory of the the threads.
+> 
+> There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
+> marks the vm mapping where the thread stack pointer reside with "[thread
+> stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
+> value information, because libpthread doesn't set the start of the stack
+> to the top of the mapped area, depending of the pthread usage.
+> 
+> A sample output of /proc/<pid>/task/<tid>/maps looks like:
+> 
+> 08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
+> 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
+> 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
+> a7d12000-a7d13000 ---p 00000000 00:00 0 
+> a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
 
-Please note the comments from Yinghai and Thomas. The fix does 
-something weird after injecting unrelated cleanups and the changelog 
-does not cover that.
+I have the same question as before: have you checked the use of that 
+field in tools/perf/builtin-record.c, and how your change will 
+impact that?
 
 	Ingo
