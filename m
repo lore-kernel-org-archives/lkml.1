@@ -1,123 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760952AbZFXQoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760671AbZFXQpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760952AbZFXQoT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZFXQoM
+	id S1760671AbZFXQpt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbZFXQpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:44:12 -0400
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:52602 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753969AbZFXQoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=A2P5A1sAulFu/1WzD2lUS27yIfh972xCRaKPL6fabK15Bhkx693bAoGC0iTm+Lxzc+igyMcYQTaVD8/gxQScZeRUec6eLy3JsNPpkY9z5bO4f1ixuDwsjwCGLFe8osLS;
-Date: Wed, 24 Jun 2009 09:44:11 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Gary Hade <garyhade@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624094411.08fc66e6@jbarnes-g45>
-In-Reply-To: <1245861219.3216.15.camel@localhost.localdomain>
-References: <4A418254.9050607@lwfinger.net>
-	<1245845787.3093.3.camel@localhost.localdomain>
-	<4A423686.8050905@lwfinger.net>
-	<alpine.LFD.2.00.0906241715500.2767@localhost.localdomain>
-	<1245859068.3216.5.camel@localhost.localdomain>
-	<20090624161306.GC7239@us.ibm.com>
-	<1245861219.3216.15.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 24 Jun 2009 12:45:39 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:41066 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754061AbZFXQpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 12:45:38 -0400
+Date: Wed, 24 Jun 2009 09:45:36 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org,
+       mathieu.desnoyers@polymtl.ca
+Subject: [PATCH -tip 0/3] expedited "big hammer" RCU grace periods
+Message-ID: <20090624164535.GA13334@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 22:03:39 +0530
-Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+This patch set implements the "big hammer" expedited RCU grace periods.
+This leverages the existing per-CPU migration kthreads, as suggested
+by Ingo.  These are awakened in a loop, and waited for in a second loop.
+Not fully scalable, but removing the extra hop through smp_call_function
+reduces latency on systems with moderate numbers of CPUs.  The
+synchronize_rcu_expedited() and synchronize_bh_expedited() primitives
+invoke synchronize_sched_expedited(), except for CONFIG_PREEMPT_RCU,
+where they instead invoke synchronize_rcu() and synchronize_rcu_bh(),
+respectively.  This will be fixed in the future, after preemptable RCU
+is folded into the rcutree implementation.
 
-> On Wed, 2009-06-24 at 09:13 -0700, Gary Hade wrote:
-> > On Wed, Jun 24, 2009 at 09:27:48PM +0530, Jaswinder Singh Rajput
-> > wrote:
-> > > On Wed, 2009-06-24 at 17:19 +0200, Thomas Gleixner wrote:
-> > > > Larry,
-> > > > 
-> > > > On Wed, 24 Jun 2009, Larry Finger wrote:
-> > > > > For the record, the printout from the patch results in the
-> > > > > following:
-> > > > > 
-> > > > > PCI: Failed to allocate 0xd0000-0xd3fff from PCI mem for PCI
-> > > > > Bus 0000:00 PCI: Failed to allocate 0xec000-0xeffff from PCI
-> > > > > mem for PCI Bus 0000:00 due to _CRS returning more than 13
-> > > > > resource descriptors PCI: Failed to allocate 0xf0000-0xfffff
-> > > > > from PCI mem for PCI Bus 0000:00 due to _CRS returning more
-> > > > > than 13 resource descriptors PCI: Failed to allocate
-> > > > > 0xc0000000-0xfebfffff from PCI mem for PCI Bus 0000:00 due to
-> > > > > _CRS returning more than 13 resource descriptors
-> > > > 
-> > > > can you please the patch below instead of the other one ?
-> > > > 
-> > > > Thanks,
-> > > > 
-> > > > 	tglx
-> > > > ---
-> > > > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-> > > > index 16c3fda..39a0cce 100644
-> > > > --- a/arch/x86/pci/acpi.c
-> > > > +++ b/arch/x86/pci/acpi.c
-> > > > @@ -99,7 +99,6 @@ setup_resource(struct acpi_resource
-> > > > *acpi_res, void *data) "%d resource descriptors\n", (unsigned
-> > > > long) res->start, (unsigned long) res->end, root->name,
-> > > > info->name, max_root_bus_resources);
-> > > > -		info->res_num++;
-> > > >  		return AE_OK;
-> > > >  	}
-> > > >  
-> > > 
-> > > This fails and system does not boot, I already tested this patch
-> > > 8 hours ago.
-> > 
-> > I think the resource array needs to be larger.  Can you try
-> > the below patch?
-> > 
-> > Gary
-> > 
-> > --- linux-2.6.30-rc8/include/linux/pci.h.ORIG	2009-06-24
-> > 09:03:41.000000000 -0700 +++
-> > linux-2.6.30-rc8/include/linux/pci.h	2009-06-24
-> > 09:06:50.000000000 -0700 @@ -319,7 +319,7 @@ static inline void
-> > pci_add_saved_cap(str } 
-> >  #ifndef PCI_BUS_NUM_RESOURCES
-> > -#define PCI_BUS_NUM_RESOURCES	16
-> > +#define PCI_BUS_NUM_RESOURCES	20
-> >  #endif
-> >  
-> >  #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of
-> > resource flags tell us the PCI region flags */
-> 
-> 
-> Larry already suggested PCI_BUS_NUM_RESOURCES to 24 in his patch
-> (check first reply from him).
-> 
-> Then what is the point of removing last 3 and then adding 3 or more
-> resources, so patch f9cde5f lost its purpose, best case will be to
-> revert f9cde5f as it also removed :
-> 
-> if (info->res_num >= PCI_BUS_NUM_RESOURCES)
->                 return AE_OK;
-> 
-> which is required in any case.
+As before, this does nothing to expedite callbacks already registered
+with call_rcu() or call_rcu_bh(), but there is no need to.
 
-Yeah, I missed that too...  Gary how do you feel about that as the real
-fix?  Would it be safe to make this a fairly high value like 64?  Or
-should we try to do something more flexible...
+Passes many hours of rcutorture testing in parallel with a script
+that randomly offlines and onlines CPUs in a number of configurations.
+Grace periods take about 40 microseconds on an 8-CPU Power machine, which
+I believe is good enough from a performance viewpoint for the near future.
+This represents some slowdown from v7, which was unfortunately necessary
+to fix some bugs.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+This is finally ready for inclusion.  ;-)
+
+Shortcomings:
+
+o	Does not address preemptable RCU (though synchronize_sched_expedited()
+	is in fact expedited in this configuration).
+
+o	Probably not helpful on systems with thousands of CPUs, but likely
+	quite helpful even on systems with a few hundred CPUs.
+
+Changes since v7:
+
+o	Fixed several embarrassing bugs turned up by tests on multiple
+	configurations.
+
+Changes since v6:
+
+o	Moved to using the migration threads, as suggested by Ingo.
+
+Changes since v5:
+
+o	Fixed several embarrassing locking bugs, including those
+	noted by Ingo and Lai.
+
+o	Added a missing set of braces.
+
+o	Cut out the extra kthread, so that synchronize_sched_expedited()
+	directly calls smp_call_function() and waits for the quiescent
+	states.
+
+o	Removed some debug code, but promoted one to production.
+
+o	Fix a compiler warning.
+
+Changes since v4:
+
+o	Use per-CPU kthreads to force the quiescent states in parallel.
+
+Changes since v3:
+
+o	Use a kthread that schedules itself on each CPU in turn to
+	force a grace period.  The synchronize_rcu() primitive
+	wakes up the kthread in order to avoid messing with affinity
+	masks on user tasks.
+
+o	Tried a number of additional variations on the v3 approach, none
+	of which helped much.
+
+Changes since v2:
+
+o	Use reschedule IPIs rather than a softirq.
+
+Changes since v1:
+
+o	Added rcutorture support, and added exports required by
+	rcutorture.
+
+o	Added comment stating that smp_call_function() implies a
+	memory barrier, suggested by Mathieu.
+
+o	Added #include for delay.h.
+
+ Documentation/RCU/torture.txt |   17 +++
+ include/linux/rcuclassic.h    |   15 ++-
+ include/linux/rcupdate.h      |   25 ++---
+ include/linux/rcupreempt.h    |   10 ++
+ include/linux/rcutree.h       |   12 ++
+ kernel/rcupdate.c             |   25 +++++
+ kernel/rcutorture.c           |  202 ++++++++++++++++++++++--------------------
+ kernel/sched.c                |  129 ++++++++++++++++++++++++++
+ 8 files changed, 327 insertions(+), 108 deletions(-)
