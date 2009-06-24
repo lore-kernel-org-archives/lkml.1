@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZFXVwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZFXV4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZFXVwi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 17:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776AbZFXVwa
+	id S1753797AbZFXV4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 17:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZFXVz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 17:52:30 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9847 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbZFXVw3 (ORCPT
+	Wed, 24 Jun 2009 17:55:58 -0400
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:65245 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbZFXVz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 17:52:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=F2VoO7GbxQ12i0SxStc8lUXL2b6AInac0IV3YsYN3fVv/k5kVfXr8+NH8S5E5f7bw
-	0aeds/8FgSQSuU+QAKyUw==
+	Wed, 24 Jun 2009 17:55:57 -0400
+X-VR-Score: -100.00
+X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=pGLkceISAAAA:8
+ a=tW5YD1WfPYsZa-yfGNkA:9 a=9NHhnpXBFkgtjR8gaL0A:7
+ a=2h2WSfJHheX7L_Xill1dpOuUT6EA:4 a=MSl-tDqOz04A:10
+X-CM-Score: 0.00
+To: Alex Riesen <raa.lkml@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
+       Junio C Hamano <gitster@pobox.com>,
+       =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>,
+       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fread does not return negative on error
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
+	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
+	<4A3FB479.2090902@lsrfire.ath.cx>
+	<7vhby64i8f.fsf@alter.siamese.dyndns.org>
+	<20090624081819.GA10436@elte.hu>
+	<alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de>
+	<7vws71wquf.fsf@alter.siamese.dyndns.org>
+	<alpine.DEB.1.00.0906241835240.7946@intel-tinevez-2-302>
+	<20090624175940.GC7576@elte.hu>
+	<81b0412b0906241419q3bdef822laf9a879ce790d8f@mail.gmail.com>
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 24 Jun 2009 14:55:59 -0700
+In-Reply-To: <81b0412b0906241419q3bdef822laf9a879ce790d8f@mail.gmail.com> (Alex Riesen's message of "Wed\, 24 Jun 2009 23\:19\:54 +0200")
+Message-ID: <7veit9qosw.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1245443858-8487-19-git-send-email-vgoyal@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>
-	 <1245443858-8487-19-git-send-email-vgoyal@redhat.com>
-Date: Wed, 24 Jun 2009 14:52:19 -0700
-Message-ID: <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
-Subject: Re: [PATCH 18/20] io-controller: Support per cgroup per device 
-	weights and io class
-From: Paul Menage <menage@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+Alex Riesen <raa.lkml@gmail.com> writes:
+
+> 2009/6/24 Ingo Molnar <mingo@elte.hu>:
+>> +Here is an (incomplete!) list of main contributors to those files
+>> +in util/* and elsewhere:
+>> +
+>> + Alex Riesen
 >
-> You can use the following format to play with the new interface.
-> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-> weight=0 means removing the policy for DEV.
+> Wow. But I actually think it may be more fair to sort the list after
+> any kind of rating (even something as dumb as commit count).
 >
-> Examples:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo /dev/hdb:300:2 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
+> As everyone one the list knows, I am nowhere near a "major contributor"
+> to the project, as the first place may imply to a casual reader.
 
-I think that the read and write should be consistent. Can you just use
-white-space separation for both, rather than colon-separation for
-writes and white-space separation for reads?
+Heh, it was kind of obvious to a casual reader that the list was sorted
+alphabetically by the first name (unusual, eh?).
 
-Also, storing device inode paths statically as strings into the
-io_policy structure seems wrong, since it's quite possible for the
-device node that was used originally to be gone by the time that
-someone reads the io.policy file, or renamed, or even replaced with an
-inode that refers to to a different block device
+And no, you are indeed a valuable contributor to the git project.
 
-My preferred alternatives would be:
-
-- read/write the value as a device number rather than a name
-- read/write the block device's actual name (e.g. hda or sda) rather
-than a path to the inode
-
-Paul
+Thanks.
