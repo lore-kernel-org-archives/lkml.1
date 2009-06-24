@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZFXKo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZFXKpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754031AbZFXKo4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZFXKos
+	id S1757177AbZFXKpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZFXKpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:44:48 -0400
-Received: from tundra.namei.org ([65.99.196.166]:42842 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751560AbZFXKos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:44:48 -0400
-Date: Wed, 24 Jun 2009 20:44:09 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Joseph Cihula <joseph.cihula@intel.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
-       shane.wang@intel.com
-Subject: Re: [RFC v5][PATCH 1/4] intel_txt: Intel(R) TXT boot support
-In-Reply-To: <4A4024BA.9040505@intel.com>
-Message-ID: <alpine.LRH.2.00.0906242043171.18503@tundra.namei.org>
-References: <4A4024BA.9040505@intel.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 24 Jun 2009 06:45:40 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:2802 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbZFXKpj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:45:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=bZFQjlbs3/GTZgx6GdIS84HEqTG/+P5zqwZDuKYTBOQbHQDZjJDuewfQnUIgF5V1ep
+         jwbhvhsS14OikfjV3WpHSTfPvBToJzVYKRHtXZ3gs9jQ9amWXV/DP5dC3YAoSFw2ASXW
+         XlsYpq6pfM/U2HAWTdIu6aTsbg/jCORjkv/CI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <abe8a1fd0906240341h2ed015a2pf83785efed8de1b5@mail.gmail.com>
+References: <abe8a1fd0906240341h2ed015a2pf83785efed8de1b5@mail.gmail.com>
+Date: Wed, 24 Jun 2009 16:15:41 +0530
+Message-ID: <abe8a1fd0906240345y3e50e8bck59e7c8682c81713e@mail.gmail.com>
+Subject: linux PowerPC 85xx Address space query
+From: kernel mailz <kernelmailz@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Joseph Cihula wrote:
+Hi,
 
+I am a newbie, trying to learn but have a few queries, nice if you could respond
+For linux on 85xx systems...
 
-> +void tboot_copy_fadt(const struct acpi_table_fadt *fadt)
-> +{
-> +#define TB_COPY_GAS(tbg, g)			\
-> +	tbg.space_id     = g.space_id;		\
-> +	tbg.bit_width    = g.bit_width;		\
-> +	tbg.bit_offset   = g.bit_offset;	\
-> +	tbg.access_width = g.access_width;	\
-> +	tbg.address      = g.address;
-> +
-> +	TB_COPY_GAS(tboot_shared->acpi_sinfo.pm1a_cnt_blk,
-> +		    fadt->xpm1a_control_block);
-> +	TB_COPY_GAS(tboot_shared->acpi_sinfo.pm1b_cnt_blk,
-> +		    fadt->xpm1b_control_block);
-> +	TB_COPY_GAS(tboot_shared->acpi_sinfo.pm1a_evt_blk,
-> +		    fadt->xpm1a_event_block);
-> +	TB_COPY_GAS(tboot_shared->acpi_sinfo.pm1b_evt_blk,
-> +		    fadt->xpm1b_event_block);
+(a) Kernel code runs in PR=0 AS=0 and PID=0, which user space
+application run in PR=1 AS=0 and PID 1-255.
+Is this correct.
 
-Not a showstopper, but why not simply make a static tb_copy_gas() 
-function?
+(b) I am writing a small program where the application code opens
+invokes a ioctl call and passes a buffer pointer ( say 0x10000 in user
+space)
+Now the driver code is using copy_from_user.
+How this works internally ?
 
--- 
-James Morris
-<jmorris@namei.org>
+1. User code executes ioctl
+2. interrupt goes to the kernel
+3. ioctl handler in driver gets invoked
+The buffer pointer still contains 0x10000.
+
+How kernel code running in PR=0 accesses it and does the copy. I am
+not able to see a address space switch in the asm code of
+copy_tofrom_user.
+
+Please respond
+
+-TRX
