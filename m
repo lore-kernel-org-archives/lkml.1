@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZFXIaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZFXIeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZFXIaX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZFXIaI
+	id S1754957AbZFXIeP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZFXIeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:30:08 -0400
-Received: from nox.protox.org ([88.191.38.29]:53269 "EHLO nox.protox.org"
+	Wed, 24 Jun 2009 04:34:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47460 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZFXIaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:30:06 -0400
-Subject: Re: [PATCH] radeon: preallocate memory for command stream parsing
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Jerome Glisse <jglisse@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <84144f020906231252u5131ffbdk74f06f8a0f692cf9@mail.gmail.com>
-References: <1245786367-2773-1-git-send-email-jglisse@redhat.com>
-	 <84144f020906231252u5131ffbdk74f06f8a0f692cf9@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 10:29:01 +0200
-Message-Id: <1245832141.2408.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	id S1751289AbZFXIeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 04:34:03 -0400
+Date: Wed, 24 Jun 2009 10:33:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Christoph Hellwig <hch@infradead.org>
+Cc: Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
+       Tom Zanussi <tzanussi@gmail.com>, karim@opersys.com,
+       Michel Dagenais <michel.dagenais@polymtl.ca>,
+       ltt-dev@lists.casi.polymtl.ca, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Robert Wisniewski <bob@watson.ibm.com>
+Subject: Re: Dual-licensing LTTng, marker and tracepoints under
+	GPLv2+/LGPLv2.1+
+Message-ID: <20090624083334.GB16850@elte.hu>
+References: <4A412702.80707@polymtl.ca> <20090623191128.GA19010@Krystal> <20090623191513.GA20253@Krystal> <20090624004356.GB28911@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624004356.GB28911@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 22:52 +0300, Pekka Enberg wrote:
-> Hi Jerome,
-> 
-> On Tue, Jun 23, 2009 at 10:46 PM, Jerome Glisse<jglisse@redhat.com> wrote:
-> > Command stream parsing is the most common operation and can
-> > happen hundred of times per second, we don't want to allocate/free
-> > memory each time this ioctl is call. This rework the ioctl
-> > to avoid doing so by allocating temporary memory along the
-> > ib pool.
-> >
-> > Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-> 
-> So how much does this help (i.e. where are the numbers)? I am bit
-> surprised "hundred of times per second" is an issue for our slab
-> allocators. Hmm?
-> 
 
-I didn't have real number but the vmap path was really slower,
-quake3 fps goes from ~20 to ~40 on average when going from vmap
-to preallocated. When using kmalloc i don't thing there was so
-much performance hit. But i think the biggest hit was that in
-previous code i asked for zeroed memory so i am pretty sure kernel
-spend a bit of time clearing page. I reworked the code to avoid
-needing cleared memory and so avoid memset, this is likely why
-we get a performance boost.
+* Mathieu Desnoyers <compudj@krystal.dyndns.org> wrote:
 
-Cheers,
-Jerome
+> Hi,
+> 
+> We want to re-license LTTng as
+> 
+>   dual-license GPLv2 (or better)/LGPLv2.1 (or better)
+> 
+> to facilitate code exchange between the GPLv2 LTTng kernel tracer 
+> and LGPLv2.1 userspace LTTng tracing library.  This will also 
+> include kernel/marker.c, include/linux/marker.h, 
+> kernel/tracepoint.c and include/linux/tracepoint.h. For the LTTng 
+> tree, everything under the ltt/ subdirectory is targeted.
+> 
+> I am the main author of most of these files, and I allow such 
+> license change as far as my code is concerned. Additionally, we 
+> need the approval of most people who contributed code to either 
+> LTTng, Linux Kernel Marker and Tracepoints.
 
+Why dont you license the user-space library under the GPLv2?
+
+Also, i dont agree that such interfaces should be ABIs, hence i 
+oppose the librarization of such raw kernel interfaces. For example 
+markers will be removed in the future, and tracepoints will sure 
+undergo more corrective iterations as well.
+
+	Ingo
