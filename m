@@ -1,85 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZFXOq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZFXOv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZFXOq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZFXOqv
+	id S1754776AbZFXOv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZFXOvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:46:51 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44510 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbZFXOqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:46:50 -0400
-Date: Wed, 24 Jun 2009 07:46:46 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Gary Hade <garyhade@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624144646.GA7239@us.ibm.com>
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <20090624122209.GC20564@elte.hu>
+	Wed, 24 Jun 2009 10:51:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38047 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751240AbZFXOvR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 10:51:17 -0400
+Date: Wed, 24 Jun 2009 10:51:17 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM
+ of I/O devices
+In-Reply-To: <200906240217.39608.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906241014170.3199-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624122209.GC20564@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 02:22:09PM +0200, Ingo Molnar wrote:
-> 
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
-> > > My latest pull from Linus's tree fails to boot. Bisection leads to the
-> > > commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
-> > > resources and warn if exceeded" with hash
-> > > f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
-> > > capture the first error message as it scrolls off the screen, but the
-> > > second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
-> > > ahci_enable_ahci() because HOST_AHCI_EN is not set.
-> > > 
-> > 
-> > This patch fixes boot failure on my AMD 64 laptop, can you please test
-> > this patch:
-> > 
-> > [PATCH] x86: fix _CRS resources return handling
-> > 
-> > We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
-> > 
-> > Also set info->bus->resource[info->res_num] for _CRS resources return handling
-> > 
-> > Fixed boot failure on some machine.
-> > 
-> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/pci/acpi.c |   16 ++++++++++------
-> >  1 files changed, 10 insertions(+), 6 deletions(-)
-> 
-> Ah, nice! I suspect it was this upstream commit causing it:
-> 
-> f9cde5f: x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
-> 
-> right?
+On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
 
-This change was made in conjunction with the previous
-"PCI: use ACPI _CRS data by default" 9e9f46c44e487af0a82eb61b624553e2f7118f5b
-change to help expose systems that might be incompatible with
-that change.  See http://marc.info/?l=linux-pci&m=124345331521386&w=2
-for more discussion on this. 
+> > One question still remains: If the counter is 0 at the end of a
+> > successful pm_runtime_resume, should the core then call pm_notify_idle?  
+> > Or should we make the driver responsible for that too?
+> 
+> Good question. :-)
+> 
+> I think the core may call pm_notify_idle() in that case, but not necessarily in
+> the synchronous case.
 
-Gary
+I'm not sure; we may want to do it even for synchronous resumes.  
+Otherwise the callers would be forced to do it.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+There's also the other side of the coin.  What if the counter is 0 at
+the end of a failed pm_runtime_suspend?
+
+For example, suppose the driver's runtime_suspend method decides that
+the device hasn't been idle for long enough, so it wants to fail the
+suspend attempt with -EBUSY and queue a new delayed autosuspend
+request.  But at this point the status is RPM_SUSPENDING, so new
+suspend requests won't be accepted (N.B., the test for this in the most
+recent patch doesn't look right).
+
+Even with a queued notification, there's no guarantee that the
+notification won't be sent before the status changes from
+RPM_SUSPENDING to RPM_ACTIVE.  So we really do need the notification to
+be sent by pm_runtime_suspend, after it has updated the status and
+dropped the lock.
+
+
+There's another totally separate issue worth discussing here.  This 
+will affect the USB implementation of the new runtime PM framework.
+
+The difficulty is that some USB interface drivers require remote wakeup
+to be enabled while their interfaces are suspended.  But remote wakeup
+is a global setting; it doesn't take effect until the entire physical
+device is suspended.  (To put it another way, USB has no notion of
+suspending interfaces.)  This means we must not allow these interfaces
+to be suspended before the whole device is.  But the whole device is
+the parent of the interfaces -- if we can't suspend the children before
+suspending the parent then we're stuck.
+
+Clearly this is something the USB stack has to deal with; it shouldn't
+affect the general PM framework.  However the only solution I can think
+of involves subverting the framework, which isn't very nice.  The idea
+is to ignore runtime_suspend callbacks for these interface drivers;
+allow them to keep on running even though the PM core thinks they are
+suspended.  Then suspend and resume them as part of the callbacks for
+the entire device.  (For interface drivers that don't require remote
+wakeup there is no problem; it doesn't matter when they get suspended.)
+
+This will work, but it's a hack.  Does anybody have a better idea?
+
+Alan Stern
 
