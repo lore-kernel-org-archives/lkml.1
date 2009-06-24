@@ -1,168 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbZFXIJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZFXISu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752526AbZFXIJz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFXIJl
+	id S1754027AbZFXISu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZFXISe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:09:41 -0400
-Received: from customer-relay.songnetworks.se ([195.42.210.9]:36857 "EHLO
-	customer-relay.songnetworks.se" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751560AbZFXIJj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:09:39 -0400
-Message-ID: <4A41DF44.4060705@mocean-labs.com>
-Date: Wed, 24 Jun 2009 10:09:40 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Wed, 24 Jun 2009 04:18:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36485 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbZFXISb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 04:18:31 -0400
+Date: Wed, 24 Jun 2009 10:18:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Junio C Hamano <gitster@pobox.com>
+Cc: =?iso-8859-1?Q?Ren=E9?= Scharfe <rene.scharfe@lsrfire.ath.cx>,
+       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND][PATCH] SPI: xilinx_spi: Added platform driver and support
- for DS570
-References: <4A366622.2050606@mocean-labs.com> <200906231237.54278.david-b@pacbell.net>
-In-Reply-To: <200906231237.54278.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-15
+Subject: Re: [PATCH] fread does not return negative on error
+Message-ID: <20090624081819.GA10436@elte.hu>
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu> <25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com> <4A3FB479.2090902@lsrfire.ath.cx> <7vhby64i8f.fsf@alter.siamese.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <7vhby64i8f.fsf@alter.siamese.dyndns.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-06-23 21.37, David Brownell wrote:
-> On Monday 15 June 2009, Richard Röjfors wrote:
->> This patch splits xilinx_spi into three parts, an OF and a platform
->> driver and generic part.
->>
->> The generic part now also works on X86 and also supports the Xilinx
->> SPI IP DS570
+
+* Junio C Hamano <gitster@pobox.com> wrote:
+
+> René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
 > 
-> Your Kconfig still mentions only DS464.
-
-Correct, will update.
-
-
-> Is there any reason the platform driver shouldn't also build on x86?
-> Surely *any* system should be able to talk to an FPGA which exports
-> this register interface?
-
-The platform _builds_ on X86, previously the driver only built on PPC.
-
-That's one of my updates.
-
-
->> Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+> > the following patch is for git.  I just removed the unneeded check for
+> > res == 0 from your version.  Does it look OK?
 > 
-> I'll second Andrew's comments.  Also, for my review, it'd be
-> better to split OF bits out from the rest ... but maybe that's
-> not practical given the previous xilinx_spi code.  At least
-> future patches will have a more-sane structure to build on.
-
-Ah I will generate three patches in the future. (generic, platform, of).
-
-
->> +config SPI_XILINX_OF
->> +	tristate "Xilinx SPI controller OF device"
->> +	depends on SPI_XILINX && XILINX_VIRTEX
->> +	help
->> +	  This exposes the SPI controller IP from the Xilinx EDK.
+> The patch looks good, and both of our in-tree users do error out 
+> when the returned value is 0 (imap-send.c checks with "<= 0" which 
+> looks a tad amateurish, though) correctly.
 > 
-> If it's IP, then why is it dependent on VIRTEX?  Surely
-> the same IP should work on Spartan etc.  I'd think just
-> depending on something like OF should suffice.
+> Funny, there is no caller of this function in the original context 
+> this bug originally found, which I think is linux-2.6/tools/perf 
+> ;-).
 
-Actually I left the OF part with the same dependencies as the whole
-driver had before.
+Hehe, yes :-)
 
-We run the IP on a spartan, so you are completely right :)
+Background: when creating tools/perf/ i cherry-picked all the nice 
+Git libraries into tools/perf/util/, to give a standard environment 
+for all tooling things that might come up in the future.
 
-Will update to OF-something.
+Some of those are not used yet but it looked more logical to pick up 
+whole pieces - some already gained uses. For example config.c is not 
+truly used yet, but very much expected to have a role in the future.
 
+( The only invasive thing i had to do was the s/git_/perf_/ mass 
+  rename across all the files - having 'git_' in perf looked
+  quite confusing. )
 
->> +
->> +	  See the "OPB Serial Peripheral Interface (SPI) (v1.00e)"
->> +	  Product Specification document (DS464) for hardware details.
->> +
->> +config SPI_XILINX_PLTFM
->> +	tristate "Xilinx SPI controller platform device"
->> +	depends on SPI_XILINX
-> 
-> This should go first in the Kconfig, so that you don't goof up
-> the dependency display ... the OF bits depend on it.
+And our general experience with the Git libraries in 
+tools/perf/util/* is: we love them!
 
-The OF parts only depend on SPI_XILINX, not SPI_XILINX_PLTFM. But
-I can change the order anyway(?)
+For example parse-options.c is a striking improvement compared to 
+getopt.h we used before, and all the other facilities are sane and 
+straight to the point as well. So in this sense 'perf' is an ... 
+interesting cross-discipline 'fork' of Git's generic libraries.
 
+The auto-generation of everything out of Documentation/*.txt is 
+another thing we picked up, and that's very nice too.
 
->> --- linux-2.6.30-rc7-spi/drivers/spi/xilinx_spi_of.c	(revision 0)
->> +++ linux-2.6.30-rc7-spi/drivers/spi/xilinx_spi_of.c	(revision 912)
->> @@ -0,0 +1,123 @@
->> 	...
-> 
->> +
->> +/* work with hotplug and coldplug */
->> +MODULE_ALIAS("platform:" XILINX_SPI_NAME);
-> 
-> This is clearly inappropriate for a file with an OpenFirmware driver.
-> For that matter, it's not needed with platform devices any more either;
-> so take it out of your platform driver code too.
+One bookeeping issue: i found few explicit credits in those files - 
+so i noted in the changelog that i took them from Git and i noted 
+the specific upstream Git sha1 when i copied them. Would be nice to 
+update each file with names to make credit more explicit:
 
-Oops, my mistake, will remove it.
+-rw-rw-r-- 1 mingo mingo  2808 2009-06-23 10:49 abspath.c
+-rw-rw-r-- 1 mingo mingo  1447 2009-06-23 10:49 alias.c
+-rw-rw-r-- 1 mingo mingo  4660 2009-06-23 10:49 cache.h
+-rw-rw-r-- 1 mingo mingo  4817 2009-06-23 10:49 color.c
+-rw-rw-r-- 1 mingo mingo  1187 2009-06-23 10:49 color.h
+-rw-rw-r-- 1 mingo mingo 19149 2009-06-23 10:49 config.c
+-rw-rw-r-- 1 mingo mingo  1041 2009-06-23 10:52 ctype.c
+-rw-rw-r-- 1 mingo mingo   256 2009-06-23 10:49 environment.c
+-rw-rw-r-- 1 mingo mingo  3262 2009-06-23 10:49 exec_cmd.c
+-rw-rw-r-- 1 mingo mingo   496 2009-06-23 10:49 exec_cmd.h
+-rw-rw-r-- 1 mingo mingo  8515 2009-06-23 10:49 help.c
+-rw-rw-r-- 1 mingo mingo   751 2009-06-23 10:49 help.h
+-rw-rw-r-- 1 mingo mingo  2592 2009-06-23 10:49 levenshtein.c
+-rw-rw-r-- 1 mingo mingo   201 2009-06-23 10:49 levenshtein.h
+-rw-rw-r-- 1 mingo mingo  1909 2009-06-23 10:49 pager.c
+-rw-rw-r-- 1 mingo mingo 12454 2009-06-23 10:49 parse-options.c
+-rw-rw-r-- 1 mingo mingo  5693 2009-06-23 10:49 parse-options.h
+-rw-rw-r-- 1 mingo mingo  7986 2009-06-23 10:49 path.c
+-rw-rw-r-- 1 mingo mingo 10442 2009-06-23 10:49 quote.c
+-rw-rw-r-- 1 mingo mingo  2667 2009-06-23 10:49 quote.h
+-rw-rw-r-- 1 mingo mingo  7966 2009-06-23 10:49 run-command.c
+-rw-rw-r-- 1 mingo mingo  2838 2009-06-23 10:49 run-command.h
+-rw-rw-r-- 1 mingo mingo   969 2009-06-23 10:49 sigchain.c
+-rw-rw-r-- 1 mingo mingo   215 2009-06-23 10:49 sigchain.h
+-rw-rw-r-- 1 mingo mingo  7270 2009-06-23 10:49 strbuf.c
+-rw-rw-r-- 1 mingo mingo  4995 2009-06-23 10:49 strbuf.h
+-rw-rw-r-- 1 mingo mingo   556 2009-06-23 10:52 string.c
+-rw-rw-r-- 1 mingo mingo   120 2009-06-23 10:52 string.h
+-rw-rw-r-- 1 mingo mingo 13859 2009-06-24 10:01 symbol.c
+-rw-rw-r-- 1 mingo mingo  1112 2009-06-23 10:52 symbol.h
+-rw-rw-r-- 1 mingo mingo  1690 2009-06-23 10:49 usage.c
+-rw-rw-r-- 1 mingo mingo  9878 2009-06-23 10:52 util.h
+-rw-rw-r-- 1 mingo mingo  4249 2009-06-23 10:49 wrapper.c
 
-
->> --- linux-2.6.30-rc7-spi/include/linux/spi/xilinx_spi.h	(revision 0)
->> +++ linux-2.6.30-rc7-spi/include/linux/spi/xilinx_spi.h	(revision 912)
->> @@ -0,0 +1,19 @@
->> +#ifndef __LINUX_SPI_XILINX_SPI_H
->> +#define __LINUX_SPI_XILINX_SPI_H
->> +
->> +#define XILINX_SPI_MODEL_DS464 0
->> +#define XILINX_SPI_MODEL_DS570 1
->> +
->> +/* SPI Controller IP */
->> +struct xspi_platform_data {
->> +	s16 bus_num;
-> 
-> Not needed on the platform_bus; pdev->id suffices.
-> This is specific to the OF glue, yes?
-
-Good point, it can be removed, and pdev->id used instead.
-
-
->> +	u16 num_chipselect;
->> +	u8 model;
->> +	u8 bits_per_word;
-> 
-> Synthesis data that's not explicitly visible in
-> the IP registers, I guess.
-
-Exactly, its built into the IP and can not be read.
-
-
->> +	/* devices to add to the bus when the host is up */
->> +	struct spi_board_info *devices;
->> +	u8 num_devices;
-> 
-> This is duplicating functionality in the SPI core code.
-> That's not really the way to fly.
-
-I have discussed the same problem in the I2C list.
-
-We have a PCIe device which is a MFD (multifunction device).
-
-Several MFD devices could be connected to a standard PC ->
-we don't know the bus numbers in advance, and there could be
-several PCIe devices connected. Which mean the we can not use
-spi_register_board_info.
-
-We can not call spi_add_device from the MFD because when it's
-probed the drivers for the SPI bus might not be available.
-
-So the solution in the I2C case was to add this into the driver
-and if this tend to be a generic problem some generic solution might
-be implemented.
-
-So I would like to have the same thing in here.
-
---Richard
+	Ingo
