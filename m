@@ -1,113 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZFXJBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZFXJEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZFXJBf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZFXJB0
+	id S1756186AbZFXJEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZFXJEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:01:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56977 "EHLO hera.kernel.org"
+	Wed, 24 Jun 2009 05:04:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40521 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752735AbZFXJBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:01:25 -0400
-Date: Wed, 24 Jun 2009 09:00:34 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, eranian@googlemail.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, yong.y.wang@intel.com, arjan@infradead.org,
-       yong.y.wang@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, eranian@googlemail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, yong.y.wang@intel.com,
-       arjan@infradead.org, yong.y.wang@linux.intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090624021324.GA2788@ywang-moblin2.bj.intel.com>
-References: <20090624021324.GA2788@ywang-moblin2.bj.intel.com>
-Subject: [tip:perfcounters/urgent] perf_counter, x86: Set global control MSR correctly
-Message-ID: <tip-c14dab5c0782ef632742963a66276a195418a63c@git.kernel.org>
-Git-Commit-ID: c14dab5c0782ef632742963a66276a195418a63c
-X-Mailer: tip-git-log-daemon
+	id S1751853AbZFXJED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:04:03 -0400
+Date: Wed, 24 Jun 2009 11:03:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Liming Wang <liming.wang@windriver.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/7] tracing: seqfile fixes, take 2
+Message-ID: <20090624090358.GA25212@elte.hu>
+References: <4A4186C6.9090706@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 09:00:36 +0000 (UTC)
+In-Reply-To: <4A4186C6.9090706@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c14dab5c0782ef632742963a66276a195418a63c
-Gitweb:     http://git.kernel.org/tip/c14dab5c0782ef632742963a66276a195418a63c
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Wed, 24 Jun 2009 10:13:24 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 24 Jun 2009 10:51:24 +0200
 
-perf_counter, x86: Set global control MSR correctly
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Previous code made an assumption that the power on value of global
-control MSR has enabled all fixed and general purpose counters properly.
+> While testing syscall tracepoints proposed by Jason, I found some
+> entries were missing when reading available_events.
+> 
+> It turned out there's bug in seqfile handling. The bug is, it's
+> wrong to increment @pos in seq start().
+> 
+> The bug exists in some other places. I also fixed some other different
+> bugs.
+> 
+> All the patches have been reviewed and tested.
+> 
+> Thanks Liming Wang for the review.
+> 
+> [PATCH 1/7] tracing/events: don't increment @pos in s_start()
+> [PATCH 2/7] tracing_bprintk: don't increment @pos in t_start()
+> [PATCH 3/7] trace_stat: don't increment @pos in seq start()
+> [PATCH 4/7] tracing: reset iterator in t_start()
+> [PATCH 5/7] ftrace: don't increment @pos in g_start()
+> [PATCH 6/7] ftrace: don't manipulate @pos in t_start()
+> [PATCH 7/7] ftrace: fix t_hash_start()
+> ---
+>  kernel/trace/ftrace.c       |   52 ++++++++++++++++++++++++-------------------
+>  kernel/trace/trace.c        |   18 +++-----------
+>  kernel/trace/trace_events.c |   28 ++++++++++++++++++-----
+>  kernel/trace/trace_printk.c |   26 +++++----------------
+>  kernel/trace/trace_stat.c   |    6 +----
+>  5 files changed, 62 insertions(+), 68 deletions(-)
 
-However, this is not the case for certain Intel processors, such as
-Atom - and it might also be firmware dependent.
+Applied to tip:tracing/urgent, thanks a lot!
 
-Each enable bit in IA32_PERF_GLOBAL_CTRL is AND'ed with the
-enable bits for all privilege levels in the respective IA32_PERFEVTSELx
-or IA32_PERF_FIXED_CTR_CTRL MSRs to start/stop the counting of
-respective counters. Counting is enabled if the AND'ed results is true;
-counting is disabled when the result is false.
-
-The end result is that all fixed counters are always disabled on Atom
-processors because the assumption is just invalid.
-
-Fix this by not initializing the ctrl-mask out of the global MSR,
-but setting it to perf_counter_mask.
-
-Reported-by: Stephane Eranian <eranian@googlemail.com>
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <20090624021324.GA2788@ywang-moblin2.bj.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/cpu/perf_counter.c |   10 +---------
- 1 files changed, 1 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 22eb3a1..a310d19 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -969,13 +969,6 @@ fixed_mode_idx(struct perf_counter *counter, struct hw_perf_counter *hwc)
- 	if (!x86_pmu.num_counters_fixed)
- 		return -1;
- 
--	/*
--	 * Quirk, IA32_FIXED_CTRs do not work on current Atom processors:
--	 */
--	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
--					boot_cpu_data.x86_model == 28)
--		return -1;
--
- 	event = hwc->config & ARCH_PERFMON_EVENT_MASK;
- 
- 	if (unlikely(event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
-@@ -1428,8 +1421,6 @@ static int intel_pmu_init(void)
- 	 */
- 	x86_pmu.num_counters_fixed	= max((int)edx.split.num_counters_fixed, 3);
- 
--	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
--
- 	/*
- 	 * Install the hw-cache-events table:
- 	 */
-@@ -1514,6 +1505,7 @@ void __init init_hw_perf_counters(void)
- 
- 	perf_counter_mask |=
- 		((1LL << x86_pmu.num_counters_fixed)-1) << X86_PMC_IDX_FIXED;
-+	x86_pmu.intel_ctrl = perf_counter_mask;
- 
- 	perf_counters_lapic_init();
- 	register_die_notifier(&perf_counter_nmi_notifier);
+	Ingo
