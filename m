@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbZFXS53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbZFXS6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761355AbZFXS53 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbZFXS5K
+	id S1760860AbZFXS6S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbZFXS6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:57:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51826 "EHLO mx2.redhat.com"
+	Wed, 24 Jun 2009 14:58:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36279 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760451AbZFXS5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:57:08 -0400
-Date: Wed, 24 Jun 2009 17:41:51 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ratan Nalumasu <rnalumasu@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 0/2] do_wait() wakeup optimization
-Message-ID: <20090624154151.GC23848@redhat.com>
-References: <20090622170432.GA4895@redhat.com> <93ad5f3f0906230955x357ff9evc334d4a5c6def20@mail.gmail.com> <20090623143054.GA10069@redhat.com> <93ad5f3f0906240953v3b328f9bxca51cd9d3838d05c@mail.gmail.com>
+	id S1752202AbZFXS6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:58:05 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <93ad5f3f0906240953v3b328f9bxca51cd9d3838d05c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Ratan Nalumasu <rnalumasu@gmail.com>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
+	wakeup
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 24 June 2009 17:21:43 +0200 <20090624152143.GB23848@redhat.com>
+References: <20090622170437.GA4906@redhat.com>
+	<20090624091316.73D0F4059B@magilla.sf.frob.com>
+	<20090624152143.GB23848@redhat.com>
+X-Zippy-Says: Well, I'm a classic ANAL RETENTIVE!!  And I'm looking for a way to
+    VICARIOUSLY experience some reason to LIVE!!
+Message-Id: <20090624185701.AA74C4059B@magilla.sf.frob.com>
+Date: Wed, 24 Jun 2009 11:57:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24, Ratan Nalumasu wrote:
->
-> On Tue, Jun 23, 2009 at 7:30 AM, Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > On 06/23, Ratan Nalumasu wrote:
-> > >
-> > > Yes, it is something we really need. The specific case I have (hundreds
-> > of
-> > > NTPL threads in a program, and each thread managing a child process), the
-> > > CPU load is >99% with NTPL threads, near 0% with the patch
-> >                                                    ^^^^^^^^^
-> >
-> > Thanks. Did you test this patch, or do you mean the previous one?
-> >
->
-> Sorry, I meant the previous patch. I realize that there are more steps to
-> take before we get to a complete solution.
+> I think the check below is orthogonal to eligible_child(). 
 
-I think Roland has already showed us the necessary step.
+Yes.
 
-I'd like to think a bit more before sending this patch, but any chance you
-can test these 2 patches + "3/2" below?
+> Not sure
+> eligible_child() can really help, but otoh it is cheap and doesn't hurt.
+> But perhaps we can kill it later.
 
-Oleg.
+No, it's a very good check to have.  It is ideal for waitpid(ONE_PID,...)
+uses, which are also probably quite common.
 
---- WAIT/kernel/exit.c~	2009-06-22 18:55:08.000000000 +0200
-+++ WAIT/kernel/exit.c	2009-06-24 17:32:03.000000000 +0200
-@@ -1569,6 +1569,9 @@ static int child_wait_callback(wait_queu
- 	if (!eligible_child(wo, p))
- 		return 0;
- 
-+	if ((wo->wo_flags & __WNOTHREAD) && wait->private != p->parent)
-+		return 0;
-+
- 	return default_wake_function(wait, mode, sync, key);
- }
- 
+> > (and ->parent is perhaps
+> > not right in all cases there).
+> 
+> I think this is right... Except I'd like to avoid using ->parent.
 
+Agreed.  The not-right case I had in mind was do_notify_parent_cldstop
+where maybe it could be ->real_parent of the untraced group_leader.
+
+> > Your two patches as they are look safe and useful to me and I hope they can
+> > go in soon.
+> 
+> Thanks.
+> 
+> Yes I think these 2 patches should be applied first, even if eligible_child()
+> itself doesn't buy much. It will be cleaner if we add "real" checks on top.
+
+Agreed.
+
+
+Thanks,
+Roland
