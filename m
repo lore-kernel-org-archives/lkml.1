@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZFXAIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbZFXAIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbZFXAIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 20:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZFXAIJ
+	id S1760546AbZFXAIj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 20:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbZFXAIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 20:08:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40028 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbZFXAII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 20:08:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM: Introduce core framework for run-time PM of I/O devices (rev. 3)
-Date: Wed, 24 Jun 2009 02:08:22 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
-       Magnus Damm <magnus.damm@gmail.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 23 Jun 2009 20:08:32 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:59919 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753601AbZFXAIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 20:08:31 -0400
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Mel Gorman <mel@csn.ul.ie>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <1245800490.31856.21.camel@nimitz>
+References: <20090623093459.2204.A69D9226@jp.fujitsu.com>
+	 <1245732411.18339.6.camel@alok-dev1>
+	 <20090623135017.220D.A69D9226@jp.fujitsu.com>
+	 <20090623141147.8f2cef18.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1245736441.18339.21.camel@alok-dev1>  <4A41481D.1060607@redhat.com>
+	 <1245793331.24110.33.camel@alok-dev1> <1245795352.17685.31312.camel@nimitz>
+	 <1245795823.24110.48.camel@alok-dev1>  <1245800490.31856.21.camel@nimitz>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 23 Jun 2009 17:08:34 -0700
+Message-Id: <1245802114.24110.80.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906240208.23482.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, Alan Stern wrote:
-> On Tue, 23 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > Hi,
-> > 
-> > Below is a new revision of the patch introducing the run-time PM framework.
-> > 
-> > The most visible changes from the last version:
-> > 
-> > * I realized that if child_count is atomic, we can drop the parent locking from
-> >   all of the functions, so I did that.
-> > 
-> > * Introduced pm_runtime_put() that decrements the resume counter and queues
-> >   up an idle notification if the counter went down to 0 (and wasn't 0 previously).
-> >   Using asynchronous notification makes it possible to call pm_runtime_put()
-> >   from interrupt context, if necessary.
-> > 
-> > * Changed the meaning of the RPM_WAKE bit slightly (it is now also used for
-> >   disabling run-time PM for a device along with the resume counter).
-> > 
-> > Please let me know if I've overlooked anything. :-)
-> 
-> This first thing to strike me was that you moved the idle notifications 
-> into the workqueue.
 
-Yes, I did.
- 
-> Is that really needed?  Would we be better off just make the idle
-> callbacks directly from pm_runtime_put?  They would run in whatever
-> context the driver happened to be in at the time.
+On Tue, 2009-06-23 at 16:41 -0700, Dave Hansen wrote:
+> On Tue, 2009-06-23 at 15:23 -0700, Alok Kataria wrote:
+> > > Could you just teach the thing to which you are hinting that it also
+> > > needs to go look in sysfs for huge page counts?
+> > 
+> > :) yeah i could do that too...the point is that its a module and the
+> > function to get the hugepages count is not exported right now. I could
+> > very well add this as an exported symbol and use it from there, but
+> > there can be someone who doesn't want symbols to be unnecessarily
+> > exported if their is no in-tree modular usage of that symbol. 
 > 
-> It's not clear exactly how much work the idle callbacks will need to 
-> do, but it seems likely that they won't have to do too much more than 
-> call pm_request_suspend.  And of course, that can be done in_interrupt.
+> Hmmm.  So what is the module doing?  The ol', "try to get as much memory
+> as I possibly can" game? :)
+> 
+> It sounds like you can get access to the vm statistics from existing
+> exported symbols, but the stats don't give you quite the info that you
+> need.
 
-I just don't want to put any constraints on the implementation of
-->runtime_idle().  The requirement that it be suitable for calling from
-interrupt context may be quite inconvenient for some drivers and I'm afraid
-they may have problems with meeting it.
+>   So, you're trying to change things that you *can* get access to.
 
-Best,
-Rafael
+:) Not entirely, I thought that UNEVICTABLE by definition should
+consider hugepages too. 
+
+> 
+> We do export all this stuff to userspace.  We export all of the huge
+> page sizes and how many pages are reserved, used, and allocated in each,
+> plus the contentious Unevictable.  Could you just do this calculation in
+> userspace and pass it into the module with a modparam or sysfs file?
+
+Hmm...lets see, I will look to moving that to userspace or something. 
+
+But irrespective of my need, we must clear the confusion around what
+unevictable should actually mean. 
+
+I am biased towards getting hugepages accounted in that :), but what do
+others think ? 
+
+Lee, I will let you take a decision on that, if the current semantics
+look okay, it would be great if you could update the unevictable_lru
+documentation about this being just the number of pages on
+unevictable_lru.
+
+Thanks,
+Alok
+> 
+> -- Dave
+> 
+
