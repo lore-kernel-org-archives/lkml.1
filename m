@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZFXU47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZFXU5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZFXU47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZFXU4p
+	id S1753835AbZFXU5X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZFXU4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:56:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51193 "EHLO mx2.suse.de"
+	Wed, 24 Jun 2009 16:56:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51213 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbZFXU4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:56:44 -0400
-Date: Wed, 24 Jun 2009 13:33:52 -0700
+	id S1754472AbZFXU4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:56:47 -0400
+Date: Wed, 24 Jun 2009 13:34:58 -0700
 From: Greg KH <gregkh@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp,
-       linux-usb@vger.kernel.org, akpm@linux-foundation.org,
-       stern@rowland.harvard.edu, ben-linux@fluff.org,
-       linux-omap@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       felipe.balbi@nokia.com
-Subject: Re: [PATCH 00/07] pm: remove late/early platform driver pm
-	callbacks V2
-Message-ID: <20090624203352.GA28516@suse.de>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se> <200906242048.40956.rjw@sisk.pl>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-kernel@vger.kernel.org, pavel@ucw.cz, hskinnemoen@atmel.com,
+       anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org,
+       akpm@linux-foundation.org, rjw@sisk.pl, stern@rowland.harvard.edu,
+       ben-linux@fluff.org, linux-omap@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+Subject: Re: [PATCH 06/07] usb: rework musb suspend()/resume_early()
+Message-ID: <20090624203458.GB28516@suse.de>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se> <20090624092400.14276.94490.sendpatchset@rx1.opensource.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906242048.40956.rjw@sisk.pl>
+In-Reply-To: <20090624092400.14276.94490.sendpatchset@rx1.opensource.se>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 08:48:39PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday 24 June 2009, Magnus Damm wrote:
-> > pm: remove late/early platform driver pm callbacks V2
-> > 
-> > [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
-> > [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
-> > [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
-> > [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
-> > [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
-> > [PATCH 06/07] usb: rework musb suspend()/resume_early()
-> > [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
-> > 
-> > These patches simply remove ->suspend_late() and ->resume_early()
-> > from struct platform_driver. Drivers are converted to dev_pm_ops
-> > with CONFIG_SUSPEND in mind. Untested.
-> > 
-> > All patches except [02/07] are known to compile.
-> > 
-> > Signed-off-by: Magnus Damm <damm@igel.co.jp>
+On Wed, Jun 24, 2009 at 06:24:00PM +0900, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> If no one objects, I'd like to take this series into the suspend-2.6 tree as
-> 2.6.32 material.  Greg?
+> This patch reworks platform driver power management code
+> for musb from legacy callbacks to dev_pm_ops.
+> 
+> The callbacks are converted for CONFIG_SUSPEND like this:
+>   suspend() -> suspend()
+>   resume_early() -> resume_noirq()
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
+> 
+>  Untested but compiles fine.
+> 
+>  drivers/i2c/busses/i2c-pxa.c |   25 +++++++++++++++++--------
+>  1 file changed, 17 insertions(+), 8 deletions(-)
+> 
+> --- 0001/drivers/usb/musb/musb_core.c
 
-Looks good to me, feel free to add an:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-to the whole series.
+I think you need to look at the tools you used to create this series,
+the diffstat doesn't seem to match up here :)
 
 thanks,
 
