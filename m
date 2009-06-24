@@ -1,110 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZFXHi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZFXHkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZFXHi6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZFXHis
+	id S1755355AbZFXHkz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZFXHkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:38:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57669 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751324AbZFXHir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:38:47 -0400
-Date: Wed, 24 Jun 2009 09:38:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Ken Milmore <ken.milmore@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: Write barriers on MD RAID1
-Message-ID: <20090624073849.GG31415@kernel.dk>
-References: <4A188CAD.1080009@googlemail.com> <0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name> <4A3E3C49.7010907@googlemail.com> <19009.41191.662901.179565@notabene.brown>
+	Wed, 24 Jun 2009 03:40:49 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:33776 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbZFXHks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 03:40:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Ex94yrtCcLBzHttVM6z2tVNZdpQBii3VwHjJFn2fxxGfd7gfmj5DYPeptQ0qtoFWil
+         GRxrwnld9EY9AK5GwkiSBRQfqj1ah1p8iKg2/EXuPQ/avFpAjRnqP+5dZsClzgTyZOOc
+         oXsKe9LFAKxOAokwlQejn7sMY63F2a/v7c2t4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19009.41191.662901.179565@notabene.brown>
+In-Reply-To: <20090624172735.9b500674.sfr@canb.auug.org.au>
+References: <20090624164617.b7c49974.sfr@canb.auug.org.au>
+	 <20090624172735.9b500674.sfr@canb.auug.org.au>
+Date: Wed, 24 Jun 2009 10:40:48 +0300
+X-Google-Sender-Auth: 86ba7f5a0c4b1dbd
+Message-ID: <84144f020906240040ycf40bd6q20af82907315adc2@mail.gmail.com>
+Subject: Re: Main things left in linux-next
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>, Nick Piggin <npiggin@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24 2009, Neil Brown wrote:
-> On Sunday June 21, ken.milmore@googlemail.com wrote:
-> > I thought I had better bump my previous post as this regression is still 
-> > present in 2.6.29.5.
-> 
-> Thanks Ken.
-> 
-> > 
-> > To recap, commit cec0707e40ae25794b5a2de7b7f03c51961f80d9 has broken 
-> > write barriers on md raid1 block devices in 2.6.29 and later kernels. 
-> > Reversing this commit appears to fix the problem.
-> > 
-> > Please let me know if I'm harassing the wrong maintainers here!
-> 
-> Jens,
->   have you had a chance to look at this?
+Hi Stephen,
 
-Yeah, I think it's the right way to go. I'll queue it up for .31 and we
-should put in in -stable as well.
+[ I'm trimming the cc list a bit. ]
 
-> 
-> I think the following patch is appropriate and should go in to
-> -stable.
-> 
-> Thanks,
-> NeilBrown
-> 
-> 
-> From addd8b129835a63d6df9a38eae20caaa15de5988 Mon Sep 17 00:00:00 2001
-> From: NeilBrown <neilb@suse.de>
-> Date: Wed, 24 Jun 2009 13:39:15 +1000
-> Subject: [PATCH] Restore barrier support for md and probably other virtual devices.
-> 
-> The next_ordered flag is only meaningful for devices that use __make_request.
-> So move the test against next_ordered out of generic code and in to
-> __make_request
-> 
-> Since this test was added, barriers have not worked on md, and (I
-> think) dm and similar devices that don't use __make_request and so
-> don't bother to set next_ordered.
-> 
-> Cc: stable@kernel.org
-> Cc: Ken Milmore <ken.milmore@googlemail.com>
-> Signed-off-by: NeilBrown <neilb@suse.de>
-> ---
->  block/blk-core.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index b06cf5c..fc221aa 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -1172,6 +1172,11 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->  	const int unplug = bio_unplug(bio);
->  	int rw_flags;
->  
-> +	if (bio_barrier(bio) && bio_has_data(bio) &&
-> +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> +		bio_endio(bio, -EOPNOTSUPP)
-> +			return 0;
-> +	}
->  	/*
->  	 * low level driver can indicate that it wants pages above a
->  	 * certain limit bounced to low memory (ie for highmem, or even
-> @@ -1472,11 +1477,6 @@ static inline void __generic_make_request(struct bio *bio)
->  			err = -EOPNOTSUPP;
->  			goto end_io;
->  		}
-> -		if (bio_barrier(bio) && bio_has_data(bio) &&
-> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> -			err = -EOPNOTSUPP;
-> -			goto end_io;
-> -		}
->  
->  		ret = q->make_request_fn(q, bio);
->  	} while (ret);
-> -- 
-> 1.6.3.1
-> 
+2009/6/24 Stephen Rothwell <sfr@canb.auug.org.au>:
+> The main obvious things left are:
+>
+> SLQB from the slab tree
 
--- 
-Jens Axboe
+This didn't make it to 2.6.31. Do you want me to drop it until -rc1 is out?
 
+                                        Pekka
