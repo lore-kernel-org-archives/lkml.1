@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZFXQtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbZFXQse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756162AbZFXQtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZFXQtM
+	id S1761449AbZFXQse (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761313AbZFXQsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:49:12 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:45452 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751548AbZFXQtM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:49:12 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtEEAGfxQUpMQWRX/2dsb2JhbACBUdMjhAsFgTQ
-Date: Wed, 24 Jun 2009 12:49:09 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@infradead.org>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
-       Tom Zanussi <tzanussi@gmail.com>, karim@opersys.com,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       ltt-dev@lists.casi.polymtl.ca, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Robert Wisniewski <bob@watson.ibm.com>
-Subject: Re: Dual-licensing LTTng, marker and tracepoints under
-	GPLv2+/LGPLv2.1+
-Message-ID: <20090624164909.GA20653@Krystal>
-References: <4A412702.80707@polymtl.ca> <20090623191128.GA19010@Krystal> <20090623191513.GA20253@Krystal> <20090624004356.GB28911@Krystal> <20090624083334.GB16850@elte.hu> <20090624141438.GA15420@Krystal> <y0mprctzj5v.fsf@fche.csb>
-Mime-Version: 1.0
+	Wed, 24 Jun 2009 12:48:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35742 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760790AbZFXQsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 12:48:21 -0400
+Date: Wed, 24 Jun 2009 09:48:19 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org,
+       mathieu.desnoyers@polymtl.ca
+Subject: [PATCH -tip 3/3] synchronize_sched_expedited() rcutorture doc
+Message-ID: <20090624164819.GC13796@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090624164535.GA13334@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <y0mprctzj5v.fsf@fche.csb>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:44:37 up 116 days, 13:10,  3 users,  load average: 0.00, 0.03,
-	0.06
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090624164535.GA13334@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
-> 
-> > [...]  The goal we pursue by dual-licensing with GPLv2/LGPLv2.1 is
-> > to permit instrumented applications to be themselves distributed
-> > under other license than GPL. [...]
-> 
-> Is there some reason you can't just fork/copy off some earlier version
-> of these files over which you had sole authorship (if any)?
-> 
+This patch updates the rcutorture documentation to include updated
+output format.
 
-Actually, for LTTng, I own the copyright of almost everything we need.
-Most files written by others are mainly the debugfs interfaces done by
-Fujitsu. There is some derived work from RelayFS in
-ltt/ltt-relay-alloc.c and include/linux/ltt-relay.h, where getting IBM's
-approval would be good, but I think in the end this will end up being
-only a few tens of lines.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
 
-> 
-> > [...]The goal is to permit this library, which includes the
-> > tracepoints, markers and LTTng features, to be used by userspace
-> > applications and libraries so they can add static instrumentation
-> > (as we currently do in the kernel). [...]
-> 
-> Just in case you're not aware, some API prior art for this is the
-> dtrace sdt.h widget (already supported by systemtap), and of course
-> it has no similarity to the various kernel tracing APIs.
+ torture.txt |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-Yep, we're aware of this. However, last time I checked, dtrace SDT used
-a breakpoint even for their userspace tracing, which has a way too large
-performance overhead for our needs.
-
-Moreover, they support only very, very limited typing (0 to 5 u32). In
-this respect, tracepoints and markers are much more flexible.
-
-Thanks,
-
-Mathieu
-
-> 
-> - FChE
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/Documentation/RCU/torture.txt b/Documentation/RCU/torture.txt
+index a342b6e..f39a3fc 100644
+--- a/Documentation/RCU/torture.txt
++++ b/Documentation/RCU/torture.txt
+@@ -162,6 +162,23 @@ of the "old" and "current" counters for the corresponding CPU.  The
+ "idx" value maps the "old" and "current" values to the underlying array,
+ and is useful for debugging.
+ 
++Similarly, sched_expedited RCU provides the following:
++
++	sched_expedited-torture: rtc: d0000000016c1880 ver: 1090796 tfle: 0 rta: 1090796 rtaf: 0 rtf: 1090787 rtmbe: 0 nt: 27713319
++	sched_expedited-torture: Reader Pipe:  12660320201 95875 0 0 0 0 0 0 0 0 0
++	sched_expedited-torture: Reader Batch:  12660424885 0 0 0 0 0 0 0 0 0 0
++	sched_expedited-torture: Free-Block Circulation:  1090795 1090795 1090794 1090793 1090792 1090791 1090790 1090789 1090788 1090787 0
++	state: -1 / 0:0 3:0 4:0
++
++As before, the first four lines are similar to those for RCU.
++The last line shows the task-migration state.  The first number is
++-1 if synchronize_sched_expedited() is idle, -2 if in the process of
++posting wakeups to the migration kthreads, and N when waiting on CPU N.
++Each of the colon-separated fields following the "/" is a CPU:state pair.
++Valid states are "0" for idle, "1" for waiting for quiescent state,
++"2" for passed through quiescent state, and "3" when a race with a
++CPU-hotplug event forces use of the synchronize_sched() primitive.
++
+ 
+ USAGE
+ 
