@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbZFXUmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZFXUrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762479AbZFXUmT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZFXUmC
+	id S1754432AbZFXUrN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZFXUq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:42:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43914 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759994AbZFXUmB (ORCPT
+	Wed, 24 Jun 2009 16:46:59 -0400
+Received: from smtp-out-036.synserver.de ([212.40.180.36]:1158 "HELO
+	smtp-out-036.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751654AbZFXUq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:42:01 -0400
-Date: Wed, 24 Jun 2009 13:41:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Wed, 24 Jun 2009 16:46:58 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 2448
+Date: Wed, 24 Jun 2009 22:46:58 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
 To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 Subject: Re: Build failure latest git. (acl related)
-In-Reply-To: <20090624203815.GT8633@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.01.0906241340410.3154@localhost.localdomain>
-References: <20090624200941.GA30531@phenom2.trippelsdorf.de> <20090624202852.GA31192@phenom2.trippelsdorf.de> <20090624203330.GS8633@ZenIV.linux.org.uk> <20090624203815.GT8633@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+Message-ID: <20090624204658.GB31192@phenom2.trippelsdorf.de>
+References: <20090624200941.GA30531@phenom2.trippelsdorf.de> <20090624202852.GA31192@phenom2.trippelsdorf.de> <20090624203330.GS8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624203330.GS8633@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 24 Jun 2009, Al Viro wrote:
+On Wed, Jun 24, 2009 at 09:33:30PM +0100, Al Viro wrote:
+> On Wed, Jun 24, 2009 at 10:28:52PM +0200, Markus Trippelsdorf wrote:
+> > 
+> > This patch should fix it:
 > 
-> Please, pull from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linux
-> 
-> Missing ifdef in posix_acl.h...
+> Applied.
 
-I assume that should be 'for-linus'.
+While we're at it:
 
-			Linus
+diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
+index 78ad38d..1f7aa6c 100644
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -2122,10 +2122,12 @@ static void btrfs_read_locked_inode(struct inode *inode)
+ 	 * any xattrs or acls
+ 	 */
+ 	maybe_acls = acls_after_inode_item(leaf, path->slots[0], inode->i_ino);
++#ifdef CONFIG_FS_POSIX_ACL
+ 	if (!maybe_acls) {
+ 		inode->i_acl = NULL;
+ 		inode->i_default_acl = NULL;
+ 	}
++#endif
+ 
+ 	BTRFS_I(inode)->block_group = btrfs_find_block_group(root, 0,
+ 						alloc_group_block, 0);
+-- 
+Markus
