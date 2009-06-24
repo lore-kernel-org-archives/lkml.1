@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbZFXQNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZFXQPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760658AbZFXQNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZFXQNN
+	id S1755532AbZFXQPb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZFXQPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:13:13 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:41416 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbZFXQNN (ORCPT
+	Wed, 24 Jun 2009 12:15:20 -0400
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:62603 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZFXQPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:13:13 -0400
-Date: Wed, 24 Jun 2009 09:13:06 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624161306.GC7239@us.ibm.com>
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <4A423686.8050905@lwfinger.net> <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain> <1245859068.3216.5.camel@localhost.localdomain>
+	Wed, 24 Jun 2009 12:15:19 -0400
+X-VR-Score: -100.00
+X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=gA5Y4G7fYRxiLLm0FjAA:9
+ a=9tMDMil1Dg2kv_TpEFYsQ9AIYZwA:4 a=_RhRFcbxBZMA:10
+X-CM-Score: 0.00
+To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>,
+       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fread does not return negative on error
+References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
+	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
+	<4A3FB479.2090902@lsrfire.ath.cx>
+	<7vhby64i8f.fsf@alter.siamese.dyndns.org>
+	<20090624081819.GA10436@elte.hu>
+	<alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de>
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 24 Jun 2009 09:15:20 -0700
+In-Reply-To: <alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de> (Johannes Schindelin's message of "Wed\, 24 Jun 2009 12\:03\:29 +0200 \(CEST\)")
+Message-ID: <7vws71wquf.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245859068.3216.5.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 09:27:48PM +0530, Jaswinder Singh Rajput wrote:
-> On Wed, 2009-06-24 at 17:19 +0200, Thomas Gleixner wrote:
-> > Larry,
-> > 
-> > On Wed, 24 Jun 2009, Larry Finger wrote:
-> > > For the record, the printout from the patch results in the following:
-> > > 
-> > > PCI: Failed to allocate 0xd0000-0xd3fff from PCI mem for PCI Bus 0000:00
-> > > PCI: Failed to allocate 0xec000-0xeffff from PCI mem for PCI Bus
-> > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > > PCI: Failed to allocate 0xf0000-0xfffff from PCI mem for PCI Bus
-> > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > > PCI: Failed to allocate 0xc0000000-0xfebfffff from PCI mem for PCI Bus
-> > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > 
-> > can you please the patch below instead of the other one ?
-> > 
-> > Thanks,
-> > 
-> > 	tglx
-> > ---
-> > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-> > index 16c3fda..39a0cce 100644
-> > --- a/arch/x86/pci/acpi.c
-> > +++ b/arch/x86/pci/acpi.c
-> > @@ -99,7 +99,6 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
-> >  			"%d resource descriptors\n", (unsigned long) res->start,
-> >  			(unsigned long) res->end, root->name, info->name,
-> >  			max_root_bus_resources);
-> > -		info->res_num++;
-> >  		return AE_OK;
-> >  	}
-> >  
-> 
-> This fails and system does not boot, I already tested this patch 8 hours
-> ago.
+Johannes Schindelin <Johannes.Schindelin@gmx.de> writes:
 
-I think the resource array needs to be larger.  Can you try
-the below patch?
+> This here script:
+>
+> -- snip --
+> for file in abspath.c alias.c cache.h color.c color.h config.c ctype.c \
+> 	environment.c exec_cmd.c exec_cmd.h help.c help.h levenshtein.c \
+> 	levenshtein.h pager.c parse-options.c parse-options.h path.c \
+> 	quote.c quote.h run-command.c run-command.h sigchain.c sigchain.h \
+> 	strbuf.c strbuf.h string.c string.h symbol.c symbol.h usage.c \
+> 	util.h wrapper.c
+> do
+> 	echo $file
+> 	git shortlog -n -s $file | head -n 2
+> done
 
-Gary
+I have thought about suggesting this myself, and your output for many of
+the files matched my intuition, but some were grossly off, so I checked.
 
---- linux-2.6.30-rc8/include/linux/pci.h.ORIG	2009-06-24 09:03:41.000000000 -0700
-+++ linux-2.6.30-rc8/include/linux/pci.h	2009-06-24 09:06:50.000000000 -0700
-@@ -319,7 +319,7 @@ static inline void pci_add_saved_cap(str
- }
- 
- #ifndef PCI_BUS_NUM_RESOURCES
--#define PCI_BUS_NUM_RESOURCES	16
-+#define PCI_BUS_NUM_RESOURCES	20
- #endif
- 
- #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of resource flags tell us the PCI region flags */
+The above procedure counts commits, and a one liner "s/char \*/const &/"
+weighs as heavily as the patch that implemented the whole thing, for a
+file that was done in one commit almost perfectly except that it needed a
+small constness fix.  Summarizing output from "blame" for each file may
+give you a more meaningful results:
+
+    # timestamp
+    ts='[12][0-9][0-9][0-9]-[0-9][0-9]-[0-3][0-9] ..:..:.. [-+]....'
+    # linenum
+    lno='[1-9][0-9]*'
+    git blame "$file" |
+    sed -e 's/^[^ ]*  *(\([^)]*[^ ]\)  *'"$ts  *$lno"').*/\1/' |
+    sort |
+    uniq -c |
+    sort -r -n
+
+For example, I do not think it is fair to credit me for abspath.c more
+than Dmitry like this:
+
+> outputs this (note that a few files you mentioned are not in git.git):
+>
+> abspath.c
+>      2	Junio C Hamano
+>      1	Dmitry Potapov
+
+Initially Dmitry introduced this file with 5b8e6f8 (shrink git-shell by
+avoiding redundant dependencies, 2008-06-28) at 68 lines.  J6t added 36
+lines for add_path() with 10c4c88 (Allow add_path() to add non-existent
+directories to the path, 2008-07-21), I added 12 lines to add a new
+function with 90b4a71 (is_directory(): a generic helper function,
+2008-09-09) and then added a two-liner out-of-bounds-then-die check in
+737e31a (make_absolute_path(): check bounds when seeing an overlong
+symlink, 2008-12-17).
