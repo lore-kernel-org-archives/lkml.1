@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZFXKyH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbZFXKy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZFXKyH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:54:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZFXKxy
+	id S1757464AbZFXKy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbZFXKyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:53:54 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:57728 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZFXKxx convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jun 2009 06:54:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:42599 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757136AbZFXKyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:53:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O0Eh0drhh0Tk6qMj7IAxWSzrbtOdCwER8G8PD9RY2UUuCz3zstM3R48vDHwppWemxS
-         y6gQBcf9PIEUcv/aGzj94VkxzVaMchho5+m07CUDWPEJ+Y6BBLsdw8JwRojAGBSnToey
-         SGk9kQb0xbrcA/zEQo6bRf6JqLwh5C/iWgL8U=
+	Wed, 24 Jun 2009 06:54:12 -0400
+Date: Wed, 24 Jun 2009 11:53:36 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Miklos Szeredi <miklos@szeredi.hu>,
+       alan@lxorguk.ukuu.org.uk, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       adilger@sun.com, akpm@linux-foundation.org
+Subject: Re: [RFC] O_NOACC: open without any access
+Message-ID: <20090624105336.GO8633@ZenIV.linux.org.uk>
+References: <20090623170610.7fd8a3f8@lxorguk.ukuu.org.uk> <E1MJ7gC-0007mx-CY@pomaz-ex.szeredi.hu> <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <20090623134640.GA13831@infradead.org> <E1MJ6jW-0007cz-Mp@pomaz-ex.szeredi.hu> <20090623143408.GA2147@infradead.org> <16370.1245772337@redhat.com> <16755.1245773452@redhat.com> <17310.1245776720@redhat.com> <alpine.LFD.2.01.0906231019250.3240@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090624081819.GA10436@elte.hu>
-References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
-	 <25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
-	 <4A3FB479.2090902@lsrfire.ath.cx>
-	 <7vhby64i8f.fsf@alter.siamese.dyndns.org>
-	 <20090624081819.GA10436@elte.hu>
-Date: Wed, 24 Jun 2009 12:53:51 +0200
-Message-ID: <c07716ae0906240353h67932054w3dc3ba6dbb864dff@mail.gmail.com>
-Subject: Re: [PATCH] fread does not return negative on error
-From: Christian Couder <christian.couder@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Junio C Hamano <gitster@pobox.com>,
-       =?ISO-8859-1?Q?Ren=E9_Scharfe?= <rene.scharfe@lsrfire.ath.cx>,
-       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906231019250.3240@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 23, 2009 at 10:34:49AM -0700, Linus Torvalds wrote:
 
-On Wed, Jun 24, 2009 at 10:18 AM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * Junio C Hamano <gitster@pobox.com> wrote:
->
->> René Scharfe <rene.scharfe@lsrfire.ath.cx> writes:
->>
->> > the following patch is for git.  I just removed the unneeded check for
->> > res == 0 from your version.  Does it look OK?
->>
->> The patch looks good, and both of our in-tree users do error out
->> when the returned value is 0 (imap-send.c checks with "<= 0" which
->> looks a tad amateurish, though) correctly.
->>
->> Funny, there is no caller of this function in the original context
->> this bug originally found, which I think is linux-2.6/tools/perf
->> ;-).
->
-> Hehe, yes :-)
->
-> Background: when creating tools/perf/ i cherry-picked all the nice
-> Git libraries into tools/perf/util/, to give a standard environment
-> for all tooling things that might come up in the future.
->
-> Some of those are not used yet but it looked more logical to pick up
-> whole pieces - some already gained uses. For example config.c is not
-> truly used yet, but very much expected to have a role in the future.
->
-> ( The only invasive thing i had to do was the s/git_/perf_/ mass
->  rename across all the files - having 'git_' in perf looked
->  quite confusing. )
->
-> And our general experience with the Git libraries in
-> tools/perf/util/* is: we love them!
->
-> For example parse-options.c is a striking improvement compared to
-> getopt.h we used before, and all the other facilities are sane and
-> straight to the point as well. So in this sense 'perf' is an ...
-> interesting cross-discipline 'fork' of Git's generic libraries.
->
-> The auto-generation of everything out of Documentation/*.txt is
-> another thing we picked up, and that's very nice too.
->
-> One bookeeping issue: i found few explicit credits in those files -
-> so i noted in the changelog that i took them from Git and i noted
-> the specific upstream Git sha1 when i copied them. Would be nice to
-> update each file with names to make credit more explicit:
+> That said, I do _not_ like the notion of
+> 
+> 	> Add a new inode->i_filesystem_fop pointer
+> 
+> regardless of whether it's in inode->i_op or wherever. I think we should 
+> just handle this in the regular "inode->f_op->open" routine, the same way 
+> we handle FMODE_EXCLUSIVE (O_EXCL), FMODE_NDELAY (O_NONBLOCK) and lack of 
+> access rights (O_NOACCESS) in the driver open routines that currently 
+> handle those specially (O_NDELAY is spe
+> 
+> Al?
 
->From http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=tree;f=tools/perf;hb=HEAD
-it looks like there may be some other files like builtin-help.c (and
-perhaps some files in perf/Documentation/ too though there should be
-some AUTHOR information already in them).
+i_filesystem_fop is certainly bogus, but why do we want to bother with
+file_operations at all?
 
-Thanks,
-Christian.
+Unless you really insist on unlimited use of ioctl(2) on such beasts (and
+any users will be non-portable for obvious reasons anyway), there's no need
+to go anywhere near ->open() *or* ->f_op in general.
+
+Just add new methods to ->i_op (and we already have that coming from
+fs code) and teach do_filp_open() to
+	* call permission() with new flag (MAY_TALK_TO_FS_NODE) for such
+open()
+	* do not die with -ELOOP on symlinks if we have O_NOFOLLOW + your flag
+	* do not call ->f_op->open() at all for such open()
+and we are all set.  Hell, we can even teach sys_ioctl() that given set
+of ioctls maps to calls of our new methods.  Taken from ->i_op...
+
+If we want full-blown ->ioctl() coming from the fs code on such opens, we
+will need distinct file_operations, no matter what we do with ->open().
+It's also doable (we'd need ->i_fop pointing to new foofs_special_file_ops
+and its ->open() to be a boilerplate that would replace file->f_op with
+the normal one in case of normal open()), but it's more boilerplate patches
+and I really don't see what would it buy...
+
+Comments?
