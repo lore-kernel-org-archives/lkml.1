@@ -1,50 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbZFXKrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZFXKwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757097AbZFXKrb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZFXKrY
+	id S1755059AbZFXKwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZFXKwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:47:24 -0400
-Received: from tundra.namei.org ([65.99.196.166]:38108 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZFXKrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:47:24 -0400
-Date: Wed, 24 Jun 2009 20:46:50 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Joseph Cihula <joseph.cihula@intel.com>
-cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
-       shane.wang@intel.com
-Subject: Re: [RFC v5][PATCH 2/4] intel_txt: Intel(R) TXT reboot/halt shutdown
- support
-In-Reply-To: <4A4024BE.5090206@intel.com>
-Message-ID: <alpine.LRH.2.00.0906242045290.18503@tundra.namei.org>
-References: <4A4024BE.5090206@intel.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Jun 2009 06:52:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51611 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbZFXKwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:52:21 -0400
+Date: Wed, 24 Jun 2009 12:52:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: David Miller <davem@davemloft.net>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: NMI watchdog + NOHZ question
+Message-ID: <20090624105223.GO6760@one.firstfloor.org>
+References: <20090624075342.GL6760@one.firstfloor.org> <20090624.024428.215194313.davem@davemloft.net> <20090624102325.GN6760@one.firstfloor.org> <20090624.033233.170094460.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624.033233.170094460.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 22 Jun 2009, Joseph Cihula wrote:
-
-> Support for graceful handling of kernel reboots after an Intel(R) TXT launch.
+On Wed, Jun 24, 2009 at 03:32:33AM -0700, David Miller wrote:
+> From: Andi Kleen <andi@firstfloor.org>
+> Date: Wed, 24 Jun 2009 12:23:25 +0200
 > 
-> Without this patch, attempting to reboot or halt the system will cause the
-> TXT hardware to lock memory upon system restart because the secrets-in-memory
-> flag that was set on launch was never cleared.  This will in turn cause BIOS
-> to execute a TXT Authenticated Code Module (ACM) that will scrub all of memory
-> and then unlock it.  Depending on the amount of memory in the system and its type,
-> this may take some time.
+> >> And similarly to sparc64, if that 5+ second qla2xxx interrupt
+> >> sequence happens after the tick_nohz_stop_sched_tick() call
+> >> we can run into the same situation.
+> > 
+> > Yes it would be probably safer to do the tick disabling with
+> > interrupts off already.
 > 
+> That only makes sense if you're really putting the cpu to sleep
+> until an interrupt or similar happens.
 
-Does this mean that after a power failure, the system will perform this 
-memory scrub on the next boot?  How long does it take per MB on a typical 
-system?
+That is what the idle loop is supposed to do, isn't it?
 
+> > These days NMI watchdog is not used much on x86 anymore because it's 
+> > default off, so probably people never noticed that.
+> 
+> I really didn't want to provide the feature that way on sparc64 which
+> is why I made it on by default.  It would be interesting to reconsider
+> x86's default, perhaps even only on a trial basis in -next.
+
+The reason it was turned off is that there are a few systems (e.g.
+laptops from a particular vendor) which don't handle NMIs correctly
+in the platform. When the NMI happens while SMI is active
+they hang. Also there were a few other strange problems
+on other systems that went away when it was disabled.
+
+One way to handle all that would be to have a big NMI white/black
+list for specific systems. That would be useful because there are
+a few cases where NMIs are really useful: one example right now
+is panic which is currently unable to stop other CPUs not
+enabling interrupts.
+
+But creating and maintaining such a list would be a lot of 
+work (at least initially), and so far nobody was interested
+enough to do that.
+
+When you don't have as many different platforms and vendors
+things are a lot easier.
+
+> 
+> It's so useful, and in the short time sparc64 has had this NMI code I
+> can count at least 8 bugs I've fixed only because it was on all the
+> time.
+
+Yes when it was still on it also found bugs. On the other hand once
+it is default one the number of new bugs you find with it goes
+down quite fast.
+
+-Andi
 
 -- 
-James Morris
-<jmorris@namei.org>
+ak@linux.intel.com -- Speaking for myself only.
