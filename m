@@ -1,158 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZFXJdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZFXJfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbZFXJdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZFXJdl
+	id S1756747AbZFXJfp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZFXJfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:33:41 -0400
-Received: from www84.your-server.de ([213.133.104.84]:52257 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757863AbZFXJdj (ORCPT
+	Wed, 24 Jun 2009 05:35:32 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:47156 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZFXJfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:33:39 -0400
-Subject: Re: [merged]
- proctxt-update-kernel-filesystem-proctxt-documentation.patch removed from
- -mm tree
-From: Stefani Seibold <stefani@seibold.net>
-To: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <m1my7ykrs7.fsf@fess.ebiederm.org>
-References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org>
-	 <1245824444.22613.3.camel@wall-e>
-	 <20090623233247.7ed661b7.akpm@linux-foundation.org>
-	 <1245825903.23818.4.camel@wall-e>
-	 <20090624001302.18de9e21.akpm@linux-foundation.org>
-	 <m1my7ykrs7.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 11:33:25 +0200
-Message-Id: <1245836005.32678.36.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 24 Jun 2009 05:35:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=l0z2pX8ij9IYRtu6s7pbrARSUO42BG8oU4RSScT5T2wgPQvFz8n4ViSo5Gi7bOajBc
+         ou01t6ByDznvRcctQ+BiLkVVVUatO09Uj1JXxIx3SV19B3uUHIp8dUAzm9pGjHRv5Grw
+         dhEJPAoiQ2r0leR4XFns64PoCjCox7TwDFqDs=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, ben-linux@fluff.org, hskinnemoen@atmel.com,
+       anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org,
+       Magnus Damm <magnus.damm@gmail.com>, rjw@sisk.pl,
+       stern@rowland.harvard.edu, pavel@ucw.cz,
+       linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org,
+       akpm@linux-foundation.org, felipe.balbi@nokia.com
+Date: Wed, 24 Jun 2009 18:23:50 +0900
+Message-Id: <20090624092350.14276.82072.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, den 24.06.2009, 00:35 -0700 schrieb Eric W. Biederman:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > On Wed, 24 Jun 2009 08:45:03 +0200 Stefani Seibold <stefani@seibold.net> wrote:
-> >
-> >> Am Dienstag, den 23.06.2009, 23:32 -0700 schrieb Andrew Morton:
-> >> > On Wed, 24 Jun 2009 08:20:44 +0200 Stefani Seibold <stefani@seibold.net> wrote:
-> >> > 
-> >> > > what is with the associated
-> >> > > procfs-provide-stack-information-for-threads-v08.patch
-> >> > > patch?
-> >> > > 
-> >> > > There was no real objections against this patch, so why not merge it for
-> >> > > 2.6.31?
-> >> > 
-> >> > Alexey pointed out that it doesn't actually work.
-> >> 
-> >> That is not true... it works. With my patch the kernel does exactly know
-> >> where the thread stack is and therefor it is easy to determinate the
-> >> associated map.
-> 
-> Usually yes, but not in all cases.
+From: Magnus Damm <damm@igel.co.jp>
 
-Which cases? The only way i know is to set the stack pointer to an
-arbitrary place in user space.... And this is not a common use case.  
+This is V2 of the i2c-s3c2410 dev_pm_ops patch.
 
-> 
-> 
-> > On Tue, 16 Jun 2009 02:33:33 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> >
-> >> On Mon, Jun 15, 2009 at 03:02:05PM -0700, akpm@linux-foundation.org wrote:
-> >> >      procfs-provide-stack-information-for-threads-v08.patch
-> >> > --- a/fs/proc/array.c~procfs-provide-stack-information-for-threads-v08
-> >> 
-> >> > +++ a/fs/proc/array.c
-> >> > @@ -321,6 +321,54 @@ static inline void task_context_switch_c
-> >> >  			p->nivcsw);
-> >> >  }
-> >> >  
-> >> > +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-> >> > +					struct task_struct *p)
-> >> > +{
-> >> > +	unsigned long	i;
-> >> > +	struct page	*page;
-> >> > +	unsigned long	stkpage;
-> >> > +
-> >> > +	stkpage = KSTK_ESP(p) & PAGE_MASK;
-> >> > +
-> >> > +#ifdef CONFIG_STACK_GROWSUP
-> >> > +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-> >> > +
-> >> > +		page = follow_page(vma, i-PAGE_SIZE, 0);
-> >> 
-> >> How can this work?
-> >>
+The callbacks are converted for CONFIG_SUSPEND like this:
+  suspend_late() -> suspend_noirq()
+  resume() -> resume()
 
-I replied a message for a solution to this problem but i get no answer.
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
->  
-> >> If stack page got swapped out, you'll get smaller than actual result.
-> >
-> > Alexey's point is that follow_page() will return NULL if it hits a
-> > swapped-out stack page and the loop will exit, leading to an incorrect
-> > (ie: short) return value from get_stack_usage_in_bytes().
-> >
-> > Is this claim wrong?
-> 
+ Changes since V1:
+ - resolved conflicts to fit upstream changes
 
-No.
+ drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
-I digged in the kernel source and the only solution i found is to use
-the walk_page_range() like show_smap() in proc/fs/task_mmu.c.
-
-Maybe there is an easier way, but i dont know.
-
-So i would implement a similar function like smaps_pte_range() in
-proc/fs/task_mmu.c to detected the high water usage.
-
-> 
-> Add to that the code is unnecessarily complicated.
-> 
-
-I don't like statements like that, without a explaination.
-
-> The patch mixes several different changes together.  It deserves being
-> broken up into at least two patches.
-> 
-
-Everybody tells me a different way to do a patch. Which one is the right
-way. Ingo's, Andrew's or your way?  
-
-And it is a question of time if you a hacker girl which is not a full
-time linux kernel developer.
-
-> I am concerned about the performance.  Glibc opens /proc/self/maps in
-> practically every application so doing something like following page
-> tables requires testing and verifying the performance.
-> 
-
-I understand your concern, that is the reason why i display the stack
-high water usage mark only in /proc/<pid>/status. This is normally a
-human interface.
-
-/proc/<pid>/maps or smaps will only show where the thread stack is
-resided and the max. of the stack size, which is only a simple
-subtraction.
-
-The reason to display the max. size is, because the stack start isn't
-equal to the map start address. 
-
-> Eric
-
-Stefani
-
-Write a patch: 16 hours
-To get a patch into the kernel: 16 days
-Overhead: 800 percent
-
-
+--- 0001/drivers/i2c/busses/i2c-s3c2410.c
++++ work/drivers/i2c/busses/i2c-s3c2410.c	2009-06-22 17:18:22.000000000 +0900
+@@ -951,17 +951,20 @@ static int s3c24xx_i2c_remove(struct pla
+ }
+ 
+ #ifdef CONFIG_PM
+-static int s3c24xx_i2c_suspend_late(struct platform_device *dev,
+-				    pm_message_t msg)
++static int s3c24xx_i2c_suspend_noirq(struct device *dev)
+ {
+-	struct s3c24xx_i2c *i2c = platform_get_drvdata(dev);
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
++
+ 	i2c->suspended = 1;
++
+ 	return 0;
+ }
+ 
+-static int s3c24xx_i2c_resume(struct platform_device *dev)
++static int s3c24xx_i2c_resume(struct device *dev)
+ {
+-	struct s3c24xx_i2c *i2c = platform_get_drvdata(dev);
++	struct platform_device *pdev = to_platform_device(dev);
++	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
+ 
+ 	i2c->suspended = 0;
+ 	s3c24xx_i2c_init(i2c);
+@@ -969,9 +972,14 @@ static int s3c24xx_i2c_resume(struct pla
+ 	return 0;
+ }
+ 
++static struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
++	.suspend_noirq = s3c24xx_i2c_suspend_noirq,
++	.resume = s3c24xx_i2c_resume,
++};
++
++#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
+ #else
+-#define s3c24xx_i2c_suspend_late NULL
+-#define s3c24xx_i2c_resume NULL
++#define S3C24XX_DEV_PM_OPS NULL
+ #endif
+ 
+ /* device driver for platform bus bits */
+@@ -990,12 +998,11 @@ MODULE_DEVICE_TABLE(platform, s3c24xx_dr
+ static struct platform_driver s3c24xx_i2c_driver = {
+ 	.probe		= s3c24xx_i2c_probe,
+ 	.remove		= s3c24xx_i2c_remove,
+-	.suspend_late	= s3c24xx_i2c_suspend_late,
+-	.resume		= s3c24xx_i2c_resume,
+ 	.id_table	= s3c24xx_driver_ids,
+ 	.driver		= {
+ 		.owner	= THIS_MODULE,
+ 		.name	= "s3c-i2c",
++		.pm	= S3C24XX_DEV_PM_OPS,
+ 	},
+ };
+ 
