@@ -1,88 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZFXD24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZFXDgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZFXD24 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 23:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZFXD2s
+	id S1754163AbZFXDgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 23:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZFXDgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 23:28:48 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:38215 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbZFXD2r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 23:28:47 -0400
-In-Reply-To: <87zlbz17fb.fsf@basil.nowhere.org>
-To: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
+	Tue, 23 Jun 2009 23:36:31 -0400
+Received: from mga02.intel.com ([134.134.136.20]:19666 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbZFXDga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 23:36:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,279,1243839600"; 
+   d="scan'208";a="527289637"
+Date: Wed, 24 Jun 2009 11:34:40 +0800
+From: Feng Tang <feng.tang@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Len Brown <lenb@kernel.org>,
+       "sfi-devel@simplefirmware.org" <sfi-devel@simplefirmware.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: [PATCH 3/8] SFI: core support
+Message-ID: <20090624113440.2774d13d@feng-desktop>
+In-Reply-To: <87iqin166f.fsf@basil.nowhere.org>
+References: <1245741246-6503-1-git-send-email-lenb@kernel.org>
+	<8d9bab79ce1169afd419035f70177e52d47626ca.1245740912.git.len.brown@intel.com>
+	<87iqin166f.fsf@basil.nowhere.org>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 MIME-Version: 1.0
-Subject: Re: S+core architecture (arch/score/) support files
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF06F6A918.AA4716A4-ON482575DF.000B4993-482575DF.0013010F@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Wed, 24 Jun 2009 11:22:44 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/24 ?? 11:22:46,
-	Serialize complete at 2009/06/24 ?? 11:22:46
-Content-Type: text/plain; charset="GB2312"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5O3TY54026110
 
-Andi Kleen <andi@firstfloor.org> Ð´ÓÚ 2009-06-23 20:06:00:
+On Tue, 23 Jun 2009 20:32:56 +0800
+Andi Kleen <andi@firstfloor.org> wrote:
 
-> IMHO a full successfull LTP run should be minimal criterium for
-> merging an architecture. That should catch most of the possible
-> "simple" mistakes in the syscall ABI. I would suggest to wait to after
-> this has been done.
+> > +static void __iomem *sfi_map_memory(u32 phys, u32 size)
+> > +{
+> > +	if (!phys || !size)
+> > +		return NULL;
+> > +
+> > +	if (sfi_tbl_permanant_mapped)
+> 
+> 
+> 
+> > +		return ioremap((unsigned long)phys, size);
+> > +	else
+> > +		return arch_early_ioremap((unsigned long)phys,
+> > size); +}
+> 
+> imho it would be cleaner if the callers just called these functions
+> directly. Are the !phys !size checks really needed?
 
-Oh, Andi, it isn't a short time work. especially we use 
-asm-generic/unistd.h instead of score old asm/unistd.h.
-You see, the most work was focus on glibc/applications.
+Andi,
 
-linux-arch-owner@vger.kernel.org Ð´ÓÚ 2009-06-23 18:51:47:
+Thanks for many good comments, will address them.
 
-> Before we commit the code to linux.org, 
-> Linux had run on spct6600 score platform well. 
-> It had passed LTP test and could run many general applications.
-> S+core application depend on glibc-2.3.6, which support static
-> and dynamic applications.
+For this question, this sfi_map_memory() may get called before and after
+the ioremap() is ready, so we add a permanent flag to judge the
+environment and chose the right API automatically. e.g. after system is 
+booted, cpu freq driver will implicitly call this API to get freq info 
+> 
+> 
+> > +
+> > +void sfi_tb_install_table(u64 addr, u32 flags)
+> > +{
+> > +	struct sfi_table_header *table;
+> > +	u32 length;
+> > +
+> > +	/* only map table header before knowing actual length */
+> > +	table = sfi_map_memory(addr, sizeof(struct
+> > sfi_table_header));
+> > +	if (!table)
+> > +		return;
+> > +
+> > +	length = table->length;
+> > +	sfi_unmap_memory(table, sizeof(struct sfi_table_header));
+> > +
+> > +	table = sfi_map_memory(addr, length);
+> > +	if (!table)
+> > +		return;
+> 
+> 
+> Since the mappings are always 4K you would only need to remap
+> if the size is > PAGE_SIZE
 
-void merge_score_to_upstream(void)
-{
-        if (asm-generic is the right direction for all linux arch) {
-                if (merge score code) {
-                        It's easy for us to update score code and
-                                commit the asm-generic problems we meet.
-                } else {
-                        People will pay no attation to score/asm-generic
-                                problems.
-                        printk("it haven't help asm-generic to stable.");
-                }
-        else {
-                we could use score old asm/unistd.h instead.
-        }
-}
+yes, some of the table may be in one page, but some may not start at page
+boundary and cross pages, we do it this way as this map/unmap/remap/unmap
+routine only happen few times in boot phase.
 
-I think merge score to upstream will be no harm to linux kernel.
+> 
+> > +
+> > +	if (sfi_tb_verify_checksum(table, length))
+> > +		goto unmap_and_exit;
+> > +
+> > +	/* Initialize sfi_tblist entry */
+> > +	sfi_tblist.tables[sfi_tblist.count].flags = flags;
+> > +	sfi_tblist.tables[sfi_tblist.count].address = addr;
+> > +	sfi_tblist.tables[sfi_tblist.count].pointer = NULL;
+> > +	memcpy(&sfi_tblist.tables[sfi_tblist.count].header,
+> > +		table, sizeof(struct sfi_table_header));
+> 
+> To be honest I'm not sure why this list exists at all.
+> Is it that difficult to just rewalk the firmware supplied
+> table as needed? 
 
-Christoph Hellwig <hch@infradead.org> Ð´ÓÚ 2009-06-23 22:50:59:
+Currently, there are about 10 SFI tables (more are expected), and most of
+them will be parsed in driver initialization phase, like timer/cpu idle/
+cpu frequency/rtc/system wake driver. Using a global list may save some
+system overhead
 
-> Still doesn't seem to be quite uptodate in the ptrace area, e.g. not
-> using regsets at all.  It would be really helpful if the final ptrace
-> code could be ran past Roland McGrath as the ptrace maintainer.
-
-As a new comer, we don't know what we should or shouldn't do,
-Since we begin to commit linux/score code to linux.org, we found
-the best way is as simple as possible, because in linux world
-people also have the different suggestions, it will make us 
-confused and don't know what todo next soon.
-
-The simple code has little error. We think it isn't the right
-time to add utrace code so we don't do it.
-
-Best Regards
-Liqin
----
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Thanks,
+Feng
+> 
+> 
+> -andi
