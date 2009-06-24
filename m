@@ -1,102 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbZFXLaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZFXLcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbZFXLaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 07:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZFXLab
+	id S1755689AbZFXLcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 07:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZFXLcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 07:30:31 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49226 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZFXLaa (ORCPT
+	Wed, 24 Jun 2009 07:32:18 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:51190 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752154AbZFXLcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 07:30:30 -0400
-Date: Wed, 24 Jun 2009 20:29:29 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-Message-ID: <20090624112929.GB2079@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090624131104.705c828d@skybase>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624131104.705c828d@skybase>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 24 Jun 2009 07:32:16 -0400
+Subject: Re: [PATCH 03/10] mac80211: Use rcu_barrier() on unload.
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
+       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+In-Reply-To: <1245838862.21314.48.camel@johannes.local>
+References: <20090623150330.22490.87327.stgit@localhost>
+	 <20090623150409.22490.99106.stgit@localhost>
+	 <1245770155.21314.38.camel@johannes.local>
+	 <1245837965.6695.45.camel@localhost.localdomain>
+	 <1245838862.21314.48.camel@johannes.local>
+Content-Type: text/plain
+Organization: ComX Networks A/S
+Date: Wed, 24 Jun 2009 13:32:17 +0200
+Message-Id: <1245843137.6695.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 11:32:18.0152 (UTC) FILETIME=[6E32BE80:01C9F4BF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 01:11:04PM +0200, Martin Schwidefsky wrote:
-> Hi Paul,
-> following Ingo's suggestion I'm working on a patch to use a per-cpu
-> hrtimer instead of the timer_hook for the oprofile ticks. Given that
-> oprofile is the only user of the timer_hook I want to remove it
-> completely. That way I came across the register_timer_hook call in
-> arch/sh/oprofile/op_model_sh7750.c. Did this ever work? The startup
-> of oprofile is done in two steps, on module load oprofile_init is
-> called, on profiling start oprofile_start is called.
-> Now for SH7750 this happens:
+On Wed, 2009-06-24 at 12:21 +0200, Johannes Berg wrote:
+> On Wed, 2009-06-24 at 12:06 +0200, Jesper Dangaard Brouer wrote:
+> > On Tue, 2009-06-23 at 17:15 +0200, Johannes Berg wrote:
+> > > On Tue, 2009-06-23 at 17:04 +0200, Jesper Dangaard Brouer wrote:
+> > > > The mac80211 module uses rcu_call() thus it should use rcu_barrier()
+> > > > on module unload.
+> > > > 
+> > > > I'm having a hardtime verifying that no more call_rcu() callbacks can
+> > > > be schedules in the module unload path.  Could a maintainer please
+> > > > look into this?
+> > > > 
+> > > > Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> > > > ---
+> > > > 
+> > > >  net/mac80211/main.c |    2 ++
+> > > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > > 
+> > > > diff --git a/net/mac80211/main.c b/net/mac80211/main.c
+> > > > index 092a017..e9f70ce 100644
+> > > > --- a/net/mac80211/main.c
+> > > > +++ b/net/mac80211/main.c
+> > > > @@ -1100,6 +1100,8 @@ static void __exit ieee80211_exit(void)
+> > > >  		ieee80211s_stop();
+> > > >  
+> > > >  	ieee80211_debugfs_netdev_exit();
+> > > > +
+> > > > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+> > > >  }
+> > > 
+> > > I don't think this is correct at all -- note that call_rcu() is done in
+> > > some of the mesh code, so I would think you need to do this in
+> > > ieee80211_stop() since the call_rcu() code requires the interface to
+> > > still be around. And when it's stopped everything should be idle.
+> > 
+> > Should it then not be in mesh.c ieee80211_stop_mesh().  We can replace
+> > the synchronize_rcu() in this function with a rcu_barrier().
 > 
-> oprofile_init()
-> 	...
-> 	oprofile_arch_init(&oprofile_ops);
-> 		...
-> 		lmodel->init(); 
-> 		/* init() is sh7750_ppc_init for CPU_SH7750/CPU_7750S */
-> 			sh7750_ppc_reset();
-> 			register_timer_hook(sh7750_timer_notify);
-> 			...
-> 		...
-> 	oprofile_timer_init(&oprofile_ops);
-> 		...
-> 		ops->start = timer_start;
-> 		...
-> 	...
+> Yes, this seems correct.
 > 
-> oprofile_start()
-> 	...
-> 	oprofile_ops.start();
-> 	/* start() is timer_start set by oprofile_timer_init */
-> 		register_timer_hook(timer_notify);
-> 	...
-> 
-> As far as I can see the second register_timer_hook will fail
-> because sh7750_timer_notify is already registered. That will cause
-> oprofile_start to fail with -EBUSY, no?
-> 
-No. oprofile_timer_init() is only entered if the performance counters
-fail to register in the SH7750 case, so there is only one timer hook user
-at a time:
+> johannes
 
-static int __init oprofile_init(void)
-{
-        int err;
+Can I consider this a:
 
-        err = oprofile_arch_init(&oprofile_ops);
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
 
-        if (err < 0 || timer) {
-                printk(KERN_INFO "oprofile: using timer interrupt.\n");
-                oprofile_timer_init(&oprofile_ops);
-        }
-...
+???
 
-The sh7750 performance counter code has always purposely abused the timer
-interrupt as its profiling interrupt given that the counters themselves do not
-generate IRQs on their own. There are a couple of 64-bit counters that can
-count various events, but have no real event associated with them. As long as
-they are periodically read, they return accurate statistics, but the granularity
-is never better than the timer IRQ.
+DaveM seems to like this as patchwork.ozlabs.org picks up this
+automatically...
 
-In practice oprofile has never been a good fit for these sorts of counters, so
-this has fairly limited use. If there's a way to wiggle these types of counters
-in to the new perf_counter API, then I'll convert that over and just kill the
-old oprofile driver off completely. Barring that, I'll just end up converting it
-over to hrtimers as well, so don't let that stop you from ripping out the timer
-hook bits.
+-- 
+Med venlig hilsen / Best regards
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
 
-Most of this code predates hrtimers anyways, and it also predates the timer
-hook, which is only something that we converted to some years back.
