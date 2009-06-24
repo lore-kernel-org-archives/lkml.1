@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZFXJGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZFXJHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbZFXJGq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZFXJGi
+	id S1754271AbZFXJHV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZFXJHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:06:38 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49216 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbZFXJGh (ORCPT
+	Wed, 24 Jun 2009 05:07:07 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:49123 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZFXJHF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:06:37 -0400
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-To: linux-kernel@vger.kernel.org
-Cc: sameo@linux.intel.com, dbrownell@users.sourceforge.net,
-       linux-omap@vger.kernel.org
-Subject: [PATCH 0/3] TWL4030: Add support for dynamic power switching
-Date: Wed, 24 Jun 2009 12:06:30 +0300
-Message-Id: <1245834390-7904-1-git-send-email-amit.kucheria@verdurent.com>
-X-Mailer: git-send-email 1.6.3.1
-X-OriginalArrivalTime: 24 Jun 2009 09:06:32.0498 (UTC) FILETIME=[1161D920:01C9F4AB]
-X-Nokia-AV: Clean
+	Wed, 24 Jun 2009 05:07:05 -0400
+X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7mseH1AU4KMzD7MA==
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A41ECB8.3060209@hartkopp.net>
+Date: Wed, 24 Jun 2009 11:07:04 +0200
+From: Oliver Hartkopp <socketcan@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: David Miller <davem@davemloft.net>, heiko.carstens@de.ibm.com,
+       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] can: let SJA1000 driver depend on HAS_IOMEM
+References: <20090623073120.GA5955@osiris.boeblingen.de.ibm.com>	<4A412C53.8050607@grandegger.com>	<4A41CD36.8030202@hartkopp.net> <20090624.000109.49664041.davem@davemloft.net> <4A41E31B.1030703@grandegger.com> <4A41E56F.6030302@hartkopp.net> <4A41E91F.1020509@grandegger.com>
+In-Reply-To: <4A41E91F.1020509@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The TWL4030/5030 family of multifunction devices allow dynamic power
-switching based on board-specific applications through power 'scripts'.
+Wolfgang Grandegger wrote:
+> Oliver Hartkopp wrote:
+>> Wolfgang Grandegger wrote:
 
-Add board-independent core support for this feature and add support for
-the RX51 board based on OMAP3.
+>>> We may even consider making CONFIG_CAN
+>>> depend on HAS_IOMEM like for SPI, USB, Serial, etc.
+>> Why CONFIG_CAN ??
+>>
+>> CONFIG_CAN provides a network protocol family that can be used e.g. with the
+>> vcan driver without any hardware. So HAS_IOMEM only has to take care of some
+>> drivers, that fiddle on CAN controller registers themselves. E.g. for SPI, USB
+>> and Serial these 'underlying' interfaces bring their own requirements. When we
+>> depend on SPI, it should bring HAS_IOMEM as a dependency of SPI.
+> 
+> OK, then s/CONFIG_CAN/CONFIG_CAN_DEV/
 
-Amit Kucheria (3):
-  TWL4030: power: Add support for TWL4030/5030 dynamic power switching
-  TWL4030: power: print warning for out-of-order script loading
-  TWL4030: power: OMAP: Board-specifc DPS scripts for RX51 board
+IMHO not even CONFIG_CAN_DEV that also provides bittime calculation and
+standard CAN driver stuff that does not depend on a specific hardware.
 
- arch/arm/mach-omap2/board-rx51-peripherals.c |  120 ++++++++-
- drivers/mfd/Kconfig                          |   13 +
- drivers/mfd/Makefile                         |    1 +
- drivers/mfd/twl4030-core.c                   |   26 ++
- drivers/mfd/twl4030-power.c                  |  396 ++++++++++++++++++++++++++
- include/linux/i2c/twl4030.h                  |   91 ++++++-
- 6 files changed, 636 insertions(+), 11 deletions(-)
- create mode 100644 drivers/mfd/twl4030-power.c
+HAS_IOMEM should be a dependency on specific drivers (like stated above).
 
+Regards,
+Oliver
