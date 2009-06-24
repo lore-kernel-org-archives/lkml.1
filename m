@@ -1,113 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759792AbZFXO0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbZFXO2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759792AbZFXO0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZFXO0m
+	id S1760217AbZFXO2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbZFXO2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:26:42 -0400
-Received: from ru.mvista.com ([213.79.90.228]:5418 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751240AbZFXO0l (ORCPT
+	Wed, 24 Jun 2009 10:28:07 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51651 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751240AbZFXO2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:26:41 -0400
-Date: Wed, 24 Jun 2009 18:25:38 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: cbou@mail.ru, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       richard@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Fox <pgf@laptop.org>, dsaxena@laptop.org
-Subject: Re: [PATCH 2/5] power_supply: add an ERROR property that displays
-	raw errors and use for OLPC
-Message-ID: <20090624142538.GB9035@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090622234559.6ca17ab8@mycelium.queued.net>
+	Wed, 24 Jun 2009 10:28:06 -0400
+Date: Wed, 24 Jun 2009 19:58:01 +0530
+From: "M. Mohan Kumar" <mohan@in.ibm.com>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, ankita@in.ibm.com
+Subject: [PATCH] Use do_IRQ in lkdtm
+Message-ID: <20090624142801.GC8664@in.ibm.com>
+Reply-To: mohan@in.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622234559.6ca17ab8@mycelium.queued.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andres,
+[PATCH] Use do_IRQ in lkdtm
 
-On Mon, Jun 22, 2009 at 11:45:59PM -0400, Andres Salomon wrote:
-> Grab the error code from EC_BAT_ERRCODE and let the user see it (rather
-> than attempting to decode it as we do with PROP_HEALTH).
+Current lkdtm code puts a probe on __do_IRQ for some of the kdump test
+cases. Since __do_IRQ is deprecated, change lkdtm code to use do_IRQ
+function.
 
-I don't think that raw errcode is a good idea. Nobody will able to
-interpret the 'raw' err value without a special knowledge about
-this particular battery. So it feels like the olpc_battery driver
-better register its own sysfs attribute.
+Signed-off-by: M. Mohan Kumar <mohan@in.ibm.com>
+Cc: Ankita Garg <ankita@in.ibm.com>
+---
+ drivers/misc/lkdtm.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Or, you can interpret it in the driver and express it to outside
-via some known values (ERROR_FOO, ERROR_BAR).
-
-Thanks,
-
-> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
-> ---
->  drivers/power/olpc_battery.c       |    8 ++++++++
->  drivers/power/power_supply_sysfs.c |    1 +
->  include/linux/power_supply.h       |    1 +
->  3 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> index 8f41733..f8d2d6b 100644
-> --- a/drivers/power/olpc_battery.c
-> +++ b/drivers/power/olpc_battery.c
-> @@ -242,6 +242,13 @@ static int olpc_bat_get_property(struct power_supply *psy,
->  		}
->  		break;
->  
-> +	case POWER_SUPPLY_PROP_ERROR:
-> +		ret = olpc_ec_cmd(EC_BAT_ERRCODE, NULL, 0, &ec_byte, 1);
-> +		if (ret)
-> +			return ret;
-> +		val->intval = ec_byte;
-> +		break;
-> +
->  	case POWER_SUPPLY_PROP_MANUFACTURER:
->  		ret = olpc_bat_get_mfr(val);
->  		if (ret)
-> @@ -319,6 +326,7 @@ static enum power_supply_property olpc_bat_props[] = {
->  	POWER_SUPPLY_PROP_CAPACITY,
->  	POWER_SUPPLY_PROP_TEMP,
->  	POWER_SUPPLY_PROP_TEMP_AMBIENT,
-> +	POWER_SUPPLY_PROP_ERROR,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
->  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
-> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-> index da73591..add5f39 100644
-> --- a/drivers/power/power_supply_sysfs.c
-> +++ b/drivers/power/power_supply_sysfs.c
-> @@ -115,6 +115,7 @@ static struct device_attribute power_supply_attrs[] = {
->  	POWER_SUPPLY_ATTR(time_to_empty_avg),
->  	POWER_SUPPLY_ATTR(time_to_full_now),
->  	POWER_SUPPLY_ATTR(time_to_full_avg),
-> +	POWER_SUPPLY_ATTR(error),
->  	/* Properties of type `const char *' */
->  	POWER_SUPPLY_ATTR(model_name),
->  	POWER_SUPPLY_ATTR(manufacturer),
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 594c494..1e45cbc 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -95,6 +95,7 @@ enum power_supply_property {
->  	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
->  	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
->  	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
-> +	POWER_SUPPLY_PROP_ERROR,
->  	/* Properties of type `const char *' */
->  	POWER_SUPPLY_PROP_MODEL_NAME,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
-> -- 
-> 1.5.6.5
-> 
-
+diff --git a/drivers/misc/lkdtm.c b/drivers/misc/lkdtm.c
+index 1bfe5d1..3648b23 100644
+--- a/drivers/misc/lkdtm.c
++++ b/drivers/misc/lkdtm.c
+@@ -283,7 +283,7 @@ static int __init lkdtm_module_init(void)
+ 
+ 	switch (cpoint) {
+ 	case INT_HARDWARE_ENTRY:
+-		lkdtm.kp.symbol_name = "__do_IRQ";
++		lkdtm.kp.symbol_name = "do_IRQ";
+ 		lkdtm.entry = (kprobe_opcode_t*) jp_do_irq;
+ 		break;
+ 	case INT_HW_IRQ_EN:
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.6.2.2
+
