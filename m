@@ -1,45 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZFXRCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZFXRMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbZFXRCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755638AbZFXRCW
+	id S1759292AbZFXRMn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbZFXRMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:02:22 -0400
-Received: from mail-yx0-f194.google.com ([209.85.210.194]:53612 "EHLO
-	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbZFXRCV convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jun 2009 13:12:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48970 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755436AbZFXRMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:02:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=fwEFbM1v7h3738uIyLm0b9dCc5G8ir5iKCmlwMHE5npKnU2pdAR+agdub2rjfL9myt
-         gJXxJ9qCG+1iYI8dz2GIZ5h8An2gwEeBBqhyDeBlAi2+8EamxSdbm8gGPKr2s2dmRHRG
-         vGUoXFNRHvRfMJXGp14npNGFzOz2CWGW9ePtc=
-MIME-Version: 1.0
-In-Reply-To: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu>
-References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu>
-From: Ulrich Drepper <drepper@gmail.com>
-Date: Wed, 24 Jun 2009 10:02:04 -0700
-Message-ID: <a36005b50906241002g7a116d17n52e6af2ff9891f87@mail.gmail.com>
-Subject: Re: [RFC] O_NOACC: open without any access
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
-       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 24 Jun 2009 13:12:35 -0400
+Subject: Re: [RFC] x86: gup_fast() batch limit
+From: Peter Zijlstra <peterz@infradead.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org
+In-Reply-To: <4A422E22.6020801@inria.fr>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <1238242929.4039.706.camel@laptop> <1238244374.4039.743.camel@laptop>
+	 <200904022219.53949.nickpiggin@yahoo.com.au>  <4A422E22.6020801@inria.fr>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 24 Jun 2009 19:07:18 +0200
+Message-Id: <1245863238.31755.20.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 23:55, Miklos Szeredi<miklos@szeredi.hu> wrote:
-> The sole purpose is to help race free "userspace lookup" type
-> operations.  So fstat, fch*, *at work but nothing else.  Filesystem's
-> ->open() is not called and f_op is set to NULL.
+On Wed, 2009-06-24 at 15:46 +0200, Brice Goglin wrote:
+> Any news about this patch?
 
-Before adding something like this, please look at the 2009 POSIX spec.
- There are two new open() flags which have to be implemented: O_EXEC
-and O_SEARCH.  These might already suffice for what you want.
+I knew I was forgetting something, I'll try and find a hole to
+ressurect/finish this ;-)
+
