@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761705AbZFXTzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761833AbZFXT6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761705AbZFXTzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbZFXTzk
+	id S1761833AbZFXT6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZFXT6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:55:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38486 "EHLO mx2.redhat.com"
+	Wed, 24 Jun 2009 15:58:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43473 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752991AbZFXTzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:55:38 -0400
-Date: Wed, 24 Jun 2009 18:41:02 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com
-Subject: Re: [RFC] tcp: race in receive part
-Message-ID: <20090624164102.GB29337@redhat.com>
-References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com> <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com> <4A40AF2A.3050509@gmail.com> <20090624102038.GA5409@jolsa.lab.eng.brq.redhat.com> <4A42082D.9060402@gmail.com> <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com> <20090624163024.GA29337@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624163024.GA29337@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751485AbZFXT6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 15:58:17 -0400
+Subject: Re: Build failure with v2.6.30-8722-gc82e6d4 on x86_64
+From: Eric Paris <eparis@redhat.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+In-Reply-To: <200906242145.39438.elendil@planet.nl>
+References: <200906242145.39438.elendil@planet.nl>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 15:57:59 -0400
+Message-Id: <1245873479.11046.8.camel@dhcp235-23.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24, Oleg Nesterov wrote:
->
-> On 06/24, Jiri Olsa wrote:
-> >
-> > +/* The read_lock() on x86 is a full memory barrier. */
-> > +#define smp_mb__after_read_lock() barrier()
->
-> Just curious, why do we need barrier() ?
->
-> I must admit, personally I dislike _read_lock part. Because I think we
-> need a "more generic" smp_mb__{before,after}_lock() or whatever which
-> work for spin_lock/read_lock/write_lock.
->
-> In that case it can have more users. Btw, in fs/select.c too, see
-> __pollwake().
->
-> And surprise,
->
-> > --- a/fs/select.c
-> > +++ b/fs/select.c
-> > @@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
-> >  	init_waitqueue_func_entry(&entry->wait, pollwake);
-> >  	entry->wait.private = pwq;
-> >  	add_wait_queue(wait_address, &entry->wait);
-> > +
-> > +	/* This memory barrier is paired with the smp_mb__after_read_lock
-> > +	 * in the sk_has_sleeper. */
-> > +	smp_mb();
->
-> This could be smp_mb__after_lock() too.
+On Wed, 2009-06-24 at 21:45 +0200, Frans Pop wrote:
+> Help!
+> 
+> Cheers,
+> FJP
+> 
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `audit_compare_rule':
+> auditfilter.c:(.text+0x3f1ec): undefined reference to `audit_watch_path'
+> auditfilter.c:(.text+0x3f1fc): undefined reference to `audit_watch_path'
+> kernel/built-in.o: In function `audit_free_rule':
+> auditfilter.c:(.text+0x3f580): undefined reference to `audit_put_watch'
+> kernel/built-in.o: In function `audit_data_to_entry':
+> auditfilter.c:(.text+0x3f9ad): undefined reference to `audit_to_watch'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x3fde6): undefined reference to `audit_watch_path'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x3ffb7): undefined reference to `audit_add_watch'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x3ffde): undefined reference to `audit_watch_inode'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x40104): undefined reference to `audit_put_watch'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x401bf): undefined reference to `audit_remove_watch_rule'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x4023f): undefined reference to `audit_inotify_unregister'
+> kernel/built-in.o: In function `audit_receive_filter':
+> (.text+0x4024c): undefined reference to `audit_put_watch'
+> kernel/built-in.o: In function `audit_dupe_rule':
+> (.text+0x404d1): undefined reference to `audit_get_watch'
+> kernel/built-in.o: In function `audit_update_lsm_rules':
+> (.text+0x40610): undefined reference to `audit_watch_rules'
+> make[5]: *** [.tmp_vmlinux1] Error 1
 
-Cough. this needs mb__after_UNlock(), sorry.
+building with CONFIG_AUDIT_SYSCALL will shut it up.  I'll fix
+momentarily.
 
-Oleg.
+-Eric
 
