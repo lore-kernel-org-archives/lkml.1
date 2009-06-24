@@ -1,95 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758257AbZFXRmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbZFXRob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758257AbZFXRmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZFXRmn
+	id S1761145AbZFXRob (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbZFXRoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:42:43 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:60298 "EHLO
+	Wed, 24 Jun 2009 13:44:18 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:34230 "EHLO
 	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbZFXRmm (ORCPT
+	with ESMTP id S1760863AbZFXRoP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:42:42 -0400
+	Wed, 24 Jun 2009 13:44:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=GizCsGGMofRvdShu47TExVZjfii06eqxRLYAPew2BOubnN7T3aYiCZEcbssRvmYx8y
-         7G8fS5CWJ78tRjzpxtIn8sre3NE0e4zFk00xcWj0OZiQYzI7TRH3bGV5e1/A14zhc++6
-         WibqWcVI6DdKVcY4u47KATci53+fhv5kmi+n0=
-Message-ID: <4A42649D.6080509@gmail.com>
-Date: Wed, 24 Jun 2009 19:38:37 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=VLh36DfUoURWAlMuHMDo9t03f+7U2+nZvInf6xLhVsoCDaY78LXAqn6H3SYVXm5EL4
+         ssK5PWFms7exzTUmUnGGYDlePOJMi6pCelTm8Knmi8z5fTx+YHzGA+D+gJ36KVA6/Ik3
+         DG1ggfVJa+IXR6x+6pJNS0dYrYZs+JxI3jc7E=
+Date: Wed, 24 Jun 2009 19:44:11 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: David Miller <davem@davemloft.net>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 2/6] ide: fix ide_kill_rq() for special
+	ide-{floppy,tape} driver requests
+Message-ID: <20090624174411.GA5729@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	David Miller <davem@davemloft.net>, bzolnier@gmail.com,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	htejun@gmail.com
+References: <200906232326.06830.bzolnier@gmail.com> <20090623.234929.32348223.davem@davemloft.net> <200906241209.53891.bzolnier@gmail.com> <20090624.033909.147195176.davem@davemloft.net>
 MIME-Version: 1.0
-To: pavel@ucw.cz
-CC: tim.bird@am.sony.com, jamie@shareable.org,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Daniel Walker <dwalker@soe.ucsc.edu>
-Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
-References: <4a4254e2.09c5660a.109d.46f8@mx.google.com> <4A425907.2060105@gmail.com>
-In-Reply-To: <4A425907.2060105@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090624.033909.147195176.davem@davemloft.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Pavel Machek wrote:
->>>> On Mon 2009-06-22 14:50:01, Tim Bird wrote:
->>>>> Pavel Machek wrote:
->>>>>>> block of fast non-volatile RAM that need to access data on it using a
->>>>>>> standard filesytem interface."
->>>>>> Turns a block of fast RAM into 13MB/sec disk. Hmm. I believe you are
->>>>>> better with ext2.
->>>>> Not if you want the RAM-based filesystem to persist over a kernel
->>>>> invocation.
->>>> Yes, you'll need to code Persistent, RAM-based _block_device_. 
->>> First of all I have to say that I'd like to update the site and make it
->>> clearer but at the moment it's not possible because I'm not the admin
->>> and I've already asked to the sourceforge support to have this possibility.
->>>
->>> About the comments: sincerely I don't understand the comments. We have
->>> *already* a fs that takes care to remap a piace of ram (ram, sram,
->>> nvram, etc.), takes care of caching problems, takes care of write
->> Well, it looks pramfs design is confused. 13MB/sec shows that caching
->> _is_ useful for pramfs. So...?
+On Wed, Jun 24, 2009 at 03:39:09AM -0700, David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Wed, 24 Jun 2009 12:09:53 +0200
 > 
-> caching problems means to avoid filesystem corruption, so dirty pages in
-> the page cache are not allowed to be written back to the backing-store
-> RAM. It's clear that there is a performance penalty. This penalty should
-> be reduced by the access speed of the RAM, however the performance are
-> not important for this special fs as Tim Bird said, so this question is
-> not relevant for me. If this issue is not clear enough on the web site,
-> I hope I can update the information in the future.
+> > The obscure reasons is just the fact that both ide-floppy and ide-tape
+> > had a they own duplicated/buggy request completion routines.
+> > 
+> > While they were being unified the whole bunch of similar class of bugs
+> > were fixed so I agree that there may still be more issues to deal with
+> > there.
 > 
->>> You are talked about journaling. This schema works well for a disk, but
->>> what about a piece of ram? What about a crazy kernel that write in that
->>> area for a bug? Do you remember for example the e1000e bug? It's not
->> I believe you need both journaling *and* write protection. How do you
->> handle power fault while writing data?
->> 								Pavel
+> I see, the ->pc_callback() of these things set rq->errors and then
+> ide_pc_intr() happily overrides whatever was set there, either on it's
+> own or via ide_complete_rq().
 > 
-> Ah now the write protection is a "needed feature", in your previous
-> comment you talked about why not use ext2/3.......
-> 
-> Marco
-> 
+> I'll look over this some more while I wait for the testing results
+> from Borislav.
 
-Just for your information I tried the same test with pc in a virtual machine with 32MB of RAM:
+Ok, let's see now, I did some testing but can't seem to hit that
+particular path because it is taken relatively rarely - it can be
+reached from start_request() and ide_atapi_error() via ide_error for
+ide-floppy and ide-tape.
 
-Version 1.03e       ------Sequential Output------ --Sequential Input- --Random-
-                    -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
-Machine   Size:chnk K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
-hostname     15M:1k 14156  99 128779 100 92240 100 11669 100 166242  99 80058  82
-                    ------Sequential Create------ --------Random Create--------
-                    -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
-              files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
-                  4  2842  99 133506 104 45088 101  2787  99 79581 101 58212 102
+If my code staring doesn't mislead me, the start_request()-one has to
+happen during an IDE reset operation, while we're polling for reset
+completion _and_ when drive->failures has reached drive->max_failures
+since this is the only site the drive->failures counter is increased.
 
-These data are the proof of the importance of the environment, workload and so on when we talk 
-about benchmark. Your consideration are really superficial.
+The ide_atapi_error() cannot happen because (!blk_fs_request(rq))
+requests are being completed in ide_error() with the respective error
+status.
 
-Marco
+It is possible that I've missed something so feel free to correct me
+and/or suggest a different testing approach.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
