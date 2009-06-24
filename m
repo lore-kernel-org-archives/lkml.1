@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbZFXRq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZFXRrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760830AbZFXRq6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbZFXRqv
+	id S1761385AbZFXRrL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761162AbZFXRrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:46:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53009 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755984AbZFXRqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:46:50 -0400
-Date: Wed, 24 Jun 2009 19:46:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Stefani Seibold <stefani@seibold.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 2/2] procfs: provide stack information for threads V0.10
-Message-ID: <20090624174637.GA7576@elte.hu>
-References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org> <1245824444.22613.3.camel@wall-e> <20090623233247.7ed661b7.akpm@linux-foundation.org> <1245825903.23818.4.camel@wall-e> <20090624001302.18de9e21.akpm@linux-foundation.org> <m1my7ykrs7.fsf@fess.ebiederm.org> <1245854033.10579.4.camel@wall-e> <20090624152019.GD15037@elte.hu> <1245858590.13531.2.camel@wall-e> <20090624174025.GA13170@cmpxchg.org>
+	Wed, 24 Jun 2009 13:47:01 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:34616 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761156AbZFXRq7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 13:46:59 -0400
+Date: Wed, 24 Jun 2009 18:47:00 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Marco <marco.stornelli@gmail.com>, Tim Bird <tim.bird@am.sony.com>,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090624174700.GI14121@shareable.org>
+References: <2ea1731b0906212333r20deb71q2f021fc79bcc8a8e@mail.gmail.com> <20090622172003.GB21149@elf.ucw.cz> <4A3FBFF0.40006@am.sony.com> <20090622173704.GC21299@elf.ucw.cz> <4A3FC84A.6060608@gmail.com> <20090622204031.GA24236@elf.ucw.cz> <4A3FFC89.4070006@am.sony.com> <20090622215753.GA25434@elf.ucw.cz> <4A4119DB.4030203@gmail.com> <20090623182941.GA2045@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090624174025.GA13170@cmpxchg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090623182941.GA2045@elf.ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Johannes Weiner <hannes@cmpxchg.org> wrote:
-
-> On Wed, Jun 24, 2009 at 05:49:50PM +0200, Stefani Seibold wrote:
-> > Am Mittwoch, den 24.06.2009, 17:20 +0200 schrieb Ingo Molnar:
-> > > * Stefani Seibold <stefani@seibold.net> wrote:
-> > > 
-> > > > Hi,
-> > > > 
-> > > > this is the newest version of the formaly named "detailed stack info"
-> > > > patch which give you a better overview of the userland application stack
-> > > > usage, especially for embedded linux.
-> > > > 
-> > > > Currently you are only able to dump the main process/thread stack usage
-> > > > which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-> > > > information about the consumed stack memory of the the threads.
-> > > > 
-> > > > There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-> > > > marks the vm mapping where the thread stack pointer reside with "[thread
-> > > > stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
-> > > > value information, because libpthread doesn't set the start of the stack
-> > > > to the top of the mapped area, depending of the pthread usage.
-> > > > 
-> > > > A sample output of /proc/<pid>/task/<tid>/maps looks like:
-> > > > 
-> > > > 08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
-> > > > 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
-> > > > 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
-> > > > a7d12000-a7d13000 ---p 00000000 00:00 0 
-> > > > a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
-> > > 
-> > > I have the same question as before: have you checked the use of that 
-> > > field in tools/perf/builtin-record.c, and how your change will 
-> > > impact that?
-> > > 
-> > 
-> > Good question... i have another one: What is 
-> > tools/perf/builtin-record.c and where can i find it? Then i 
-> > could check it.
+Pavel Machek wrote:
+> On Tue 2009-06-23 20:07:23, Marco wrote:
+> > You are talked about journaling. This schema works well for a disk, but
+> > what about a piece of ram? What about a crazy kernel that write in that
+> > area for a bug? Do you remember for example the e1000e bug? It's not
 > 
-> You can find it in a recent git tree from Linus.
-> 
-> On the original question: builtin-record.c is unaffected by this 
-> patch as this exact field will only be parsed if the mapping is 
-> executable.
+> I believe you need both journaling *and* write protection. How do you
+> handle power fault while writing data?
 
-A stack can be executable too. It is not common, but possible.
+I think this is basically right.
 
-	Ingo
+write protection for the crazy kernels, and journalling for
+powerfail/crash during updates.
+
+Journalling can be extremely simple.  It can be just one memory block
+at a fixed location, double-buffering all writes.
+
+Pramfs already has checksums, which makes that easier.  You just write
+to the buffer area first, with checksum, then write to the final area.
+Mount looks at the buffer area, and if the checksum is fine, copies
+the contents to the destination block.
+
+That's all it takes to be resistant against power failures and crashes
+during writes.  Probably <100 lines of code.
+
+-- Jamie
