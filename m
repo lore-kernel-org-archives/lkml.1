@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761121AbZFXRXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZFXR1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761121AbZFXRXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbZFXRX1
+	id S1756107AbZFXR1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZFXR1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:23:27 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:33653 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755295AbZFXRX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:23:26 -0400
-Date: Wed, 24 Jun 2009 10:23:26 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@infradead.org>,
-       Pierre-Marc Fournier <pierre-marc.fournier@polymtl.ca>,
-       Tom Zanussi <tzanussi@gmail.com>, karim@opersys.com,
-       Michel Dagenais <michel.dagenais@polymtl.ca>,
-       ltt-dev@lists.casi.polymtl.ca, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Robert Wisniewski <bob@watson.ibm.com>
-Subject: Re: Dual-licensing LTTng, marker and tracepoints under
-	GPLv2+/LGPLv2.1+
-Message-ID: <20090624172326.GJ6779@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A412702.80707@polymtl.ca> <20090623191128.GA19010@Krystal> <20090623191513.GA20253@Krystal> <20090624004356.GB28911@Krystal> <20090624083334.GB16850@elte.hu> <20090624141438.GA15420@Krystal> <y0mprctzj5v.fsf@fche.csb> <20090624164909.GA20653@Krystal>
+	Wed, 24 Jun 2009 13:27:42 -0400
+Received: from mail-yx0-f194.google.com ([209.85.210.194]:39073 "EHLO
+	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753091AbZFXR1k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 13:27:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=ctQOCUkmJNbQaJBmNzQ/0EFscqiJWEn3VG4AEvPiPtVWVChXrb3GGgfj4SbV6G+tWd
+         EbWk0bCxIH9Vt4xMTWRzzQSb7B4uzHZ0gpBPVzkoevP8CbjSrdKc7Xj2tlJCF+NhscVY
+         JCTyqIGPjfSymFYL2PVYNFje4Xlck69P4Cd8A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624164909.GA20653@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Date: Wed, 24 Jun 2009 10:27:42 -0700
+Message-ID: <dd18b0c30906241027u152274b1kd4c854ada4de33dd@mail.gmail.com>
+Subject: pci 0000:01:00.0: BAR 6: no parent found for of device 
+	[0xfffe0000-0xffffffff]
+From: Justin Mattock <justinmattock@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 12:49:09PM -0400, Mathieu Desnoyers wrote:
-> * Frank Ch. Eigler (fche@redhat.com) wrote:
-> > Mathieu Desnoyers <compudj@krystal.dyndns.org> writes:
-> > 
-> > > [...]  The goal we pursue by dual-licensing with GPLv2/LGPLv2.1 is
-> > > to permit instrumented applications to be themselves distributed
-> > > under other license than GPL. [...]
-> > 
-> > Is there some reason you can't just fork/copy off some earlier version
-> > of these files over which you had sole authorship (if any)?
-> > 
-> 
-> Actually, for LTTng, I own the copyright of almost everything we need.
-> Most files written by others are mainly the debugfs interfaces done by
-> Fujitsu. There is some derived work from RelayFS in
-> ltt/ltt-relay-alloc.c and include/linux/ltt-relay.h, where getting IBM's
-> approval would be good, but I think in the end this will end up being
-> only a few tens of lines.
+(just pulled the latest git)
+And am seeing this:
 
-It is going to be a -lot- easier and faster to simply rewrite a few tens
-of lines than to get any kind of approval.  ;-)
 
-I cannot reasonably argue that the prior approval for RCU covers tracing,
-sad to say.  So unless there is something very special about the few
-tens of lines, could you please look at just clean-room rewriting them?
+[    0.696001] pci 0000:01:00.0: BAR 6: no parent found for of device
+[0xfffe0000-0xffffffff]
+[    0.696010] pci 0000:02:00.0: BAR 6: no parent found for of device
+[0xfffe0000-0xffffffff]
+[    0.696069] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
+[    0.696074] pci 0000:00:01.0:   IO window: 0x3000-0x3fff
+[    0.696081] pci 0000:00:01.0:   MEM window: 0x50300000-0x503fffff
+[    0.696087] pci 0000:00:01.0:   PREFETCH window:
+0x00000040000000-0x00000047ffffff
+[    0.696096] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:02
+[    0.696102] pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
+[    0.696111] pci 0000:00:1c.0:   MEM window: 0x50200000-0x502fffff
+[    0.696118] pci 0000:00:1c.0:   PREFETCH window: 0x50500000-0x505fffff
+[    0.696126] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:03
+[    0.696130] pci 0000:00:1c.1:   IO window: disabled
+[    0.696138] pci 0000:00:1c.1:   MEM window: 0x50100000-0x501fffff
+[    0.696145] pci 0000:00:1c.1:   PREFETCH window: disabled
+[    0.696152] pci 0000:00:1c.2: PCI bridge, secondary bus 0000:04
+[    0.696158] pci 0000:00:1c.2:   IO window: 0x1000-0x1fff
+[    0.696167] pci 0000:00:1c.2:   MEM window: 0x4c100000-0x500fffff
+[    0.696174] pci 0000:00:1c.2:   PREFETCH window:
+0x00000048000000-0x0000004bffffff
+[    0.696186] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:0c
+[    0.696190] pci 0000:00:1e.0:   IO window: disabled
+[    0.696198] pci 0000:00:1e.0:   MEM window: 0x4c000000-0x4c0fffff
+[    0.696205] pci 0000:00:1e.0:   PREFETCH window: disabled
+[    0.696219] pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    0.696225] pci 0000:00:01.0: setting latency timer to 64
+[    0.696235] pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+[    0.696243] pci 0000:00:1c.0: setting latency timer to 64
+[    0.696254] pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
+[    0.696261] pci 0000:00:1c.1: setting latency timer to 64
+[    0.696273] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
+[    0.696280] pci 0000:00:1c.2: setting latency timer to 64
+[    0.696437] pci 0000:00:1e.0: power state changed by ACPI to D0
+[    0.696446] pci 0000:00:1e.0: setting latency timer to 64
 
-							Thanx, Paul
 
-> > > [...]The goal is to permit this library, which includes the
-> > > tracepoints, markers and LTTng features, to be used by userspace
-> > > applications and libraries so they can add static instrumentation
-> > > (as we currently do in the kernel). [...]
-> > 
-> > Just in case you're not aware, some API prior art for this is the
-> > dtrace sdt.h widget (already supported by systemtap), and of course
-> > it has no similarity to the various kernel tracing APIs.
-> 
-> Yep, we're aware of this. However, last time I checked, dtrace SDT used
-> a breakpoint even for their userspace tracing, which has a way too large
-> performance overhead for our needs.
-> 
-> Moreover, they support only very, very limited typing (0 to 5 u32). In
-> this respect, tracepoints and markers are much more flexible.
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> > 
-> > - FChE
-> > 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Is this good or bad?
+(BAR 6: no parent found for of device)
+
+-- 
+Justin P. Mattock
