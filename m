@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbZFXS6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZFXTGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760860AbZFXS6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbZFXS6G
+	id S1758155AbZFXTGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753002AbZFXTGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:58:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36279 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752202AbZFXS6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:58:05 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jun 2009 15:06:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47494 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752710AbZFXTGi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 15:06:38 -0400
+Date: Wed, 24 Jun 2009 12:06:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-Id: <20090624120617.1e6799b5.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain>
+References: <20090624080753.4f677847@infradead.org>
+	<20090624094622.d0b0fd82.akpm@linux-foundation.org>
+	<84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
+	<20090624105517.904f93da.akpm@linux-foundation.org>
+	<4A426825.80905@cs.helsinki.fi>
+	<20090624113037.7d72ed59.akpm@linux-foundation.org>
+	<alpine.LFD.2.01.0906241134510.3240@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Ratan Nalumasu <rnalumasu@gmail.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
-	wakeup
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 24 June 2009 17:21:43 +0200 <20090624152143.GB23848@redhat.com>
-References: <20090622170437.GA4906@redhat.com>
-	<20090624091316.73D0F4059B@magilla.sf.frob.com>
-	<20090624152143.GB23848@redhat.com>
-X-Zippy-Says: Well, I'm a classic ANAL RETENTIVE!!  And I'm looking for a way to
-    VICARIOUSLY experience some reason to LIVE!!
-Message-Id: <20090624185701.AA74C4059B@magilla.sf.frob.com>
-Date: Wed, 24 Jun 2009 11:57:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think the check below is orthogonal to eligible_child(). 
+On Wed, 24 Jun 2009 11:42:33 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Yes.
-
-> Not sure
-> eligible_child() can really help, but otoh it is cheap and doesn't hurt.
-> But perhaps we can kill it later.
-
-No, it's a very good check to have.  It is ideal for waitpid(ONE_PID,...)
-uses, which are also probably quite common.
-
-> > (and ->parent is perhaps
-> > not right in all cases there).
+> So I'd suggest just doing this..
 > 
-> I think this is right... Except I'd like to avoid using ->parent.
-
-Agreed.  The not-right case I had in mind was do_notify_parent_cldstop
-where maybe it could be ->real_parent of the untraced group_leader.
-
-> > Your two patches as they are look safe and useful to me and I hope they can
-> > go in soon.
+> 			Linus
+> ---
+>  mm/page_alloc.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> Thanks.
-> 
-> Yes I think these 2 patches should be applied first, even if eligible_child()
-> itself doesn't buy much. It will be cleaner if we add "real" checks on top.
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index aecc9cd..5d714f8 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1153,10 +1153,10 @@ again:
+>  			 * properly detect and handle allocation failures.
+>  			 *
+>  			 * We most definitely don't want callers attempting to
+> -			 * allocate greater than single-page units with
+> +			 * allocate greater than order-1 page units with
+>  			 * __GFP_NOFAIL.
+>  			 */
+> -			WARN_ON_ONCE(order > 0);
+> +			WARN_ON_ONCE(order > 1);
+>  		}
+>  		spin_lock_irqsave(&zone->lock, flags);
+>  		page = __rmqueue(zone, order, migratetype);
 
-Agreed.
+Well.  What is our overall objective here?
+
+My original patch was motiviated by the horror at discovering that
+we're using this thing (which was _never_ supposed to have new users)
+for order>0 allocations.  We've gone backwards.
+
+Ideally, we'd fix all callers to handle allocation faliures then remove
+__GFP_NOFAIL.  But I don't know how to fix JBD.
+
+So perhaps we should just revert that WARN_ON altogether, and I can go
+on a little grep-empowered rampage, see if we can remove some of these
+callsites.
+
+It's not a huge problem, btw.  I don't think I've ever seen a report of
+a machine getting stuck in a __GFP_NOFAIL allocation attempt.  But from
+a design perspective it's Just Wrong.
 
 
-Thanks,
-Roland
