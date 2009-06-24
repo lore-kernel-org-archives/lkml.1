@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbZFXUtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZFXUvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbZFXUtS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZFXUtF
+	id S1752929AbZFXUvj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZFXUvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:49:05 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:43259 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZFXUtD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:49:03 -0400
-Date: Wed, 24 Jun 2009 21:49:06 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Build failure latest git. (acl related)
-Message-ID: <20090624204906.GV8633@ZenIV.linux.org.uk>
-References: <20090624200941.GA30531@phenom2.trippelsdorf.de> <20090624202852.GA31192@phenom2.trippelsdorf.de> <20090624203330.GS8633@ZenIV.linux.org.uk> <20090624204658.GB31192@phenom2.trippelsdorf.de>
+	Wed, 24 Jun 2009 16:51:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44589 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751515AbZFXUvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:51:31 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624204658.GB31192@phenom2.trippelsdorf.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Ratan Nalumasu <rnalumasu@gmail.com>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
+	wakeup
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 24 June 2009 19:13:57 +0200 <20090624171357.GA30435@redhat.com>
+References: <20090622170437.GA4906@redhat.com>
+	<20090624091316.73D0F4059B@magilla.sf.frob.com>
+	<20090624152143.GB23848@redhat.com>
+	<20090624185701.AA74C4059B@magilla.sf.frob.com>
+	<20090624161111.GA27890@redhat.com>
+	<20090624194239.A29174059B@magilla.sf.frob.com>
+	<20090624171357.GA30435@redhat.com>
+Emacs: the only text editor known to get indigestion.
+Message-Id: <20090624205112.3EA944059B@magilla.sf.frob.com>
+Date: Wed, 24 Jun 2009 13:51:12 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 10:46:58PM +0200, Markus Trippelsdorf wrote:
+> > an untraced thread calls do_notify_parent_cldstop() but its group_leader
+> > is ptrace_reparented().  Then waitee->group_leader->real_parent is who
+> > gets the wakeup, but __wake_up_parent->child_wait_wakeup would check
+> > only waiter == waitee->group_leader->parent.
+> 
+> ... and in this case we do not wake up ->group_leader->real_parent.
+> 
+> But this is fine? It doesn't make sense to wake up, wait_consider_task()
+> will notice task_ptrace() and do nothing?
 
-> diff --git a/fs/btrfs/inode.c b/fs/btrfs/inode.c
-> index 78ad38d..1f7aa6c 100644
-> --- a/fs/btrfs/inode.c
-> +++ b/fs/btrfs/inode.c
-> @@ -2122,10 +2122,12 @@ static void btrfs_read_locked_inode(struct inode *inode)
->  	 * any xattrs or acls
->  	 */
->  	maybe_acls = acls_after_inode_item(leaf, path->slots[0], inode->i_ino);
-> +#ifdef CONFIG_FS_POSIX_ACL
->  	if (!maybe_acls) {
->  		inode->i_acl = NULL;
->  		inode->i_default_acl = NULL;
->  	}
-> +#endif
+Right.  I knew it needed more thought (that's why I said "maybe wrong" to
+begin with ;-).
 
-Actually, I disagree with that one - it begs for a helper function instead
-of ifdef.  Give me a few...
+> I really need to think with a fresh head, but it seems to me we could add
+> BUG_ON(p->parent != parent) into wait_consider_task() after "if (ptrace...)"
+> check.
+> 
+> And this "proves" your check in child_wait_callback() is correct, with
+> __WNOTHREAD do_wait_thread(parent) is always called with parent ==
+> sleeper, the caller of do_wait().
+> 
+> No?
+
+Yes, I think that's right.
+
+> Btw, this reminds me that wait_consider_task() doesn't need the "parent"
+> argument. I noticed this after adding wait_opts, but forgot to send a
+> patch.
+
+With the wq.private now in wait_opts, yes.
+
+
+Thanks,
+Roland
