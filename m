@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZFXJgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbZFXJga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZFXJgQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbZFXJf7
+	id S1756512AbZFXJga (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758340AbZFXJgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:35:59 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:50359 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758161AbZFXJf5 (ORCPT
+	Wed, 24 Jun 2009 05:36:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48651
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758285AbZFXJgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:35:57 -0400
-Subject: Re: kmemleak: Early log buffer exceeded
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20090623212648.GA9502@localdomain.by>
-References: <20090623212648.GA9502@localdomain.by>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 24 Jun 2009 10:35:05 +0100
-Message-Id: <1245836105.16283.13.camel@pc1117.cambridge.arm.com>
+	Wed, 24 Jun 2009 05:36:18 -0400
+Date: Wed, 24 Jun 2009 02:36:22 -0700 (PDT)
+Message-Id: <20090624.023622.26554425.davem@davemloft.net>
+To: alan@lxorguk.ukuu.org.uk
+Cc: bzolnier@gmail.com, elendil@planet.nl, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cs5520: add missing IRQ setup for the second port
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090624102200.7debd041@lxorguk.ukuu.org.uk>
+References: <20090623163324.715421f5@lxorguk.ukuu.org.uk>
+	<20090623.164429.179899088.davem@davemloft.net>
+	<20090624102200.7debd041@lxorguk.ukuu.org.uk>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2009 09:35:06.0835 (UTC) FILETIME=[0F34EA30:01C9F4AF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 22:26 +0100, Sergey Senozhatsky wrote:
-> I can see on my both machines
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Date: Wed, 24 Jun 2009 10:22:00 +0100
+
+>> What should we do?  I guess "do nothing and wait until we see a bug
+>> report from an actual user" is a valid response...
 > 
-> [    0.000135] kmemleak: Early log buffer exceeded
-[...]
-> mm/kmemleak.c
-> static struct early_log early_log[200];
+> I doubt you ever will.
 > 
-> static void log_early(int op_type, const void *ptr, size_t size,
->                       int min_count, unsigned long offset, size_t length)
-> {
-> ...
->         if (crt_early_log >= ARRAY_SIZE(early_log)) {
->                 print  Early log buffer exceeded;
->                 call dump_stack, etc.
-> 
-> So, my questions are:
-> 1. Is 200 really enough? Why 200 not 512, 1024 (for example)?
+> The docs don't say so I'd assume its hard coded 14/15 as if it was ISA
+> (its not an IDE storage class device so doesn't have the PCI config bits
+> to switch between legacy and native modes).
 
-It seems that in your case it isn't. It is fine on the machines I tested
-it on but choosing this figure wasn't too scientific.
+Ok, that makes sense.  I'll set the second port's IRQ to 15.
 
-I initially had it bigger and marked with the __init attribute to free
-it after initialisation but this was causing (harmless) section mismatch
-warnings.
-
-What kind of hardware do you have?
-
-> 2. When (crt_early_log >= ARRAY_SIZE(early_log)) == 1 we just can see stack.
-> Since we have "full" early_log maybe it'll be helpfull to see it?
-
-I recall allocating this dynamically didn't work properly but I'll give
-it another try. Otherwise, I can make it configurable and print a better
-message (probably without the stack dump).
-
--- 
-Catalin
-
+Thanks!
