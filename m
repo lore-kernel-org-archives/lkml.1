@@ -1,79 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbZFXR1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbZFXR3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbZFXR1v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZFXR1m
+	id S1761053AbZFXR3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZFXR3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:27:42 -0400
-Received: from mail-yx0-f194.google.com ([209.85.210.194]:39073 "EHLO
-	mail-yx0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbZFXR1k (ORCPT
+	Wed, 24 Jun 2009 13:29:18 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:55113 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbZFXR3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:27:40 -0400
+	Wed, 24 Jun 2009 13:29:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=ctQOCUkmJNbQaJBmNzQ/0EFscqiJWEn3VG4AEvPiPtVWVChXrb3GGgfj4SbV6G+tWd
-         EbWk0bCxIH9Vt4xMTWRzzQSb7B4uzHZ0gpBPVzkoevP8CbjSrdKc7Xj2tlJCF+NhscVY
-         JCTyqIGPjfSymFYL2PVYNFje4Xlck69P4Cd8A=
+        h=date:from:to:cc:subject:message-id:mail-followup-to:mime-version
+         :content-type:content-disposition:user-agent;
+        b=JHJREr51qy0uD736dCMOKmrcRIQ0CU0XBSE16BLzOzNnK0kyb+J2n+ifLa2fQoMojB
+         hSApnyqNioheNboTCJZkQ4TNWYTs7qKB6OO2cZj1muks0TC5uncaNrPVnL6B2wII1DIN
+         +v9L7c/CZiKNvdPRoch4ugbIki1U0wnuhFdIk=
+Date: Wed, 24 Jun 2009 13:29:12 -0400
+From: Ben Gamari <bgamari.foss@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Stone, Joshua I" <joshua.i.stone@intel.com>,
+       Rober Richter <robert.richter@amd.com>, anil.s.keshavamurthy@intel.com,
+       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com
+Cc: SystemTap <systemtap@sources.redhat.com>, Eric Anholt <eric@anholt.net>,
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       intel-gfx@lists.freedesktop.org
+Subject: Infrastructure for tracking driver performance events
+Message-ID: <20090624172912.GB5565@ben-laptop>
+Mail-Followup-To: Steven Rostedt <rostedt@goodmis.org>,
+	linux-kernel@vger.kernel.org,
+	"Stone, Joshua I" <joshua.i.stone@intel.com>,
+	Rober Richter <robert.richter@amd.com>,
+	anil.s.keshavamurthy@intel.com, ananth@in.ibm.com,
+	davem@davemloft.net, mhiramat@redhat.com,
+	SystemTap <systemtap@sources.redhat.com>,
+	Eric Anholt <eric@anholt.net>,
+	Chris Wilson <chris@chris-wilson.co.uk>,
+	intel-gfx@lists.freedesktop.org
 MIME-Version: 1.0
-Date: Wed, 24 Jun 2009 10:27:42 -0700
-Message-ID: <dd18b0c30906241027u152274b1kd4c854ada4de33dd@mail.gmail.com>
-Subject: pci 0000:01:00.0: BAR 6: no parent found for of device 
-	[0xfffe0000-0xffffffff]
-From: Justin Mattock <justinmattock@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(just pulled the latest git)
-And am seeing this:
+[I apologize profusely to those of you who recieve this twice. Sorry about that]
 
 
-[    0.696001] pci 0000:01:00.0: BAR 6: no parent found for of device
-[0xfffe0000-0xffffffff]
-[    0.696010] pci 0000:02:00.0: BAR 6: no parent found for of device
-[0xfffe0000-0xffffffff]
-[    0.696069] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-[    0.696074] pci 0000:00:01.0:   IO window: 0x3000-0x3fff
-[    0.696081] pci 0000:00:01.0:   MEM window: 0x50300000-0x503fffff
-[    0.696087] pci 0000:00:01.0:   PREFETCH window:
-0x00000040000000-0x00000047ffffff
-[    0.696096] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:02
-[    0.696102] pci 0000:00:1c.0:   IO window: 0x2000-0x2fff
-[    0.696111] pci 0000:00:1c.0:   MEM window: 0x50200000-0x502fffff
-[    0.696118] pci 0000:00:1c.0:   PREFETCH window: 0x50500000-0x505fffff
-[    0.696126] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:03
-[    0.696130] pci 0000:00:1c.1:   IO window: disabled
-[    0.696138] pci 0000:00:1c.1:   MEM window: 0x50100000-0x501fffff
-[    0.696145] pci 0000:00:1c.1:   PREFETCH window: disabled
-[    0.696152] pci 0000:00:1c.2: PCI bridge, secondary bus 0000:04
-[    0.696158] pci 0000:00:1c.2:   IO window: 0x1000-0x1fff
-[    0.696167] pci 0000:00:1c.2:   MEM window: 0x4c100000-0x500fffff
-[    0.696174] pci 0000:00:1c.2:   PREFETCH window:
-0x00000048000000-0x0000004bffffff
-[    0.696186] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:0c
-[    0.696190] pci 0000:00:1e.0:   IO window: disabled
-[    0.696198] pci 0000:00:1e.0:   MEM window: 0x4c000000-0x4c0fffff
-[    0.696205] pci 0000:00:1e.0:   PREFETCH window: disabled
-[    0.696219] pci 0000:00:01.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[    0.696225] pci 0000:00:01.0: setting latency timer to 64
-[    0.696235] pci 0000:00:1c.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-[    0.696243] pci 0000:00:1c.0: setting latency timer to 64
-[    0.696254] pci 0000:00:1c.1: PCI INT B -> GSI 16 (level, low) -> IRQ 16
-[    0.696261] pci 0000:00:1c.1: setting latency timer to 64
-[    0.696273] pci 0000:00:1c.2: PCI INT C -> GSI 18 (level, low) -> IRQ 18
-[    0.696280] pci 0000:00:1c.2: setting latency timer to 64
-[    0.696437] pci 0000:00:1e.0: power state changed by ACPI to D0
-[    0.696446] pci 0000:00:1e.0: setting latency timer to 64
+Hey all,
+
+Now since GEM has been implemented and is beginning to stabilize for the
+Intel graphics driver, work has begun on trying to optimize the driver
+and its usage of the hardware. While finding cpu-bound operations can be
+easily done with a profiler, identifying GPU stalls has been
+substantially more difficult.
+
+One class of GPU stalls that can be easily identified occurs when the
+driver needs to wait for the GPU to complete some work before proceeding
+(waiting for the chip to free a hardware resource --- e.g. a fence
+register for configuring tiling --- or complete some other type of
+transaction --- e.g. flush caches). In order to debug these stalls, it is
+useful to know both what is causing the stall (i.e. call path) and why
+the driver had to wait (e.g. waiting for GEM domain change, waiting for
+fence, waiting for cache flush, etc.)
+
+I recently wrote a very simple patch to add accounting for these types
+of stalls to the i915 driver[1], exposing a list of wait-event counts to
+userspace through debugfs. While this is useful for giving a general
+overview of the drivers' performance, it does very little to expose
+individual bottlenecks in the driver or userland components. It has been
+suggested[2] that this wait-event tracking functionality would be far more
+useful if we could provide stack backtraces all the way into user space
+for each wait event.
+
+I am investigating how this might be accomplished with existing kernel
+infrastructure. At first, ftrace looked like a promising option, as the
+sysprof profiler is driven by ftrace and provides exactly the type of
+full system backtraces we need. We could probably even accomplish an
+approximation of our desired result by calling a function when we begin
+and another when we end waiting and using a script to look for these
+events. I haven't looked into how we could get a usermode trace with
+this approach, but it seems possible as sysprof already does it.
+
+While this approach would work, it has a few shortcomings:
+1) Function graph tracing must be enabled on the entire machine to debug
+   stalls
+2) It is difficult to extract the kernel mode callgraph with no natural
+   way to capture the usermode callgraph
+3) A large amount of usermode support is necessary (which will likely be
+   the case for any option; listed here for completeness)
+
+Another option seems to be systemtap. It has already been documented[3]
+that this option could provide both user-mode and kernel-mode
+backtraces. The driver could provide a kernel marker at every potential
+wait point (or a single marker in a function called at each wait point,
+for that matter) which would be picked up by systemtap and processed in
+usermode, calling ptrace to acquire a usermode backtrace. This approach
+seems slightly cleaner as it doesn't require the tracing on the entire
+machine to catch what should be reasonably rare events (hopefully).
+
+Unfortunately, the systemtap approach described in [3] requires that
+each process have an associated "driver" process to get a usermode
+backtrace. It would be nice to avoid this requirement as there are
+generally far more gpu clients than just the X server (i.e. direct
+rendering clients) and tracking them all could get tricky.
+
+These are the two options I have seen thusfar. It seems like getting
+this sort of information will be increasingly important as more and more
+drivers move into kernel-space and it is likely that the intel
+implementation will be a model for future drivers, so it would be nice
+to implement it correctly the first time. Does anyone see an option
+which I have missed?  Are there any thoughts on any new generic services
+that the kernel might provide that might make this task easier? Any
+comments, questions, or complaints would be greatly appreciated.
+
+Thanks,
+
+- Ben
 
 
-Is this good or bad?
-(BAR 6: no parent found for of device)
+[1] http://lists.freedesktop.org/archives/intel-gfx/2009-June/002938.html
+[2] http://lists.freedesktop.org/archives/intel-gfx/2009-June/002979.html
+[3] http://sourceware.org/ml/systemtap/2006-q4/msg00198.html
 
--- 
-Justin P. Mattock
