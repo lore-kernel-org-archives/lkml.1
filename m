@@ -1,90 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZFXIsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZFXIti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbZFXIsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 04:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZFXIsm
+	id S1754653AbZFXIti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 04:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZFXIt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 04:48:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55128 "EHLO mx3.mail.elte.hu"
+	Wed, 24 Jun 2009 04:49:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36621 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbZFXIsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 04:48:40 -0400
-Date: Wed, 24 Jun 2009 10:48:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2 -tip] perf_counter: parse-events.c introduce alias
-	member in event_symbol
-Message-ID: <20090624084825.GB18713@elte.hu>
-References: <1245669194.17153.6.camel@localhost.localdomain> <1245669268.17153.8.camel@localhost.localdomain> <20090622113256.GA22479@elte.hu> <1245675657.7537.3.camel@localhost.localdomain> <20090622141009.GB6486@elte.hu> <1245700551.6167.5.camel@localhost.localdomain> <20090623082411.GC11181@elte.hu> <1245765732.3776.17.camel@localhost.localdomain>
+	id S1752362AbZFXIt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 04:49:28 -0400
+Date: Wed, 24 Jun 2009 11:49:01 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+Message-ID: <20090624084901.GB22865@redhat.com>
+References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245765732.3776.17.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+In-Reply-To: <4A4184C3.6060503@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> On Tue, 2009-06-23 at 10:24 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > > 
-> > > perf test also need some command to execute otherwise it will also 
-> > > show long list of <inactive>
-> > 
-> > I think what it should do is to execute test-cases _internally_. Not 
-> > just execute some random command on the system and hope for events.
+On Tue, Jun 23, 2009 at 09:43:31PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > Remove in_range from kvm_io_device and ask read/write callbacks, if
+> > supplied, to perform range checks internally. This allows aliasing
+> > (mostly for in-kernel virtio), as well as better error handling by
+> > making it possible to pass errors up to userspace. And it's enough to
+> > look at the diffstat to see that it's a better API anyway.
+> >
+> > While we are at it, document locking rules for kvm_io_device.
+> >   
 > 
-> Can you suggest some good test cases where we can get numbers for 
-> almost all the events on each and every run.
-
-the testcases should be specific to the counter type. Some counters 
-are easy (such as cycles or instructions - you in fact cannot even 
-get zero out of them even if you tried) - some are harder - such as 
-migrations, or cache-misses or page-faults.
-
-Small functions that trigger them for sure would do the trick. For 
-example, to provoke a minor page fault:
-
-static void trigger_minor_page_fault(void)
-{
-	void *page;
-
-	page = mmap(0, PAGE_SIZE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS, -1, 0);
-
-	/* Clearing the page will trigger a minor fault: */
-	memset(page, 0, PAGE_SIZE);
-
-	munmap(page, PAGE_SIZE);
-}
-
-These small test-functions should be attached to the event array as 
-function pointers - hence the generic testing code would just do a 
-->event.trigger_event() callback, it wouldnt need to know much about 
-the event itself.
-
-> > >  context-switches                                         7956
-> > >  CPU-migrations                                              7
-> > 
-> > this needs to be provoked intentionally via sched_setaffinity(): 
-> > first migrate to cpu0, then to cpu1.
+> Hi Michael,
 > 
-> There should be some option from user or we test it each time.
+> I just tried to apply this to kvm.git/master, and it blew up really
+> badly.  What tree should I be using?
 
-If this is builtin-test.c - then yes, testing it all the time would 
-be a good default. (there might be other aspects of testing that 
-would require options to this command in the future.)
+Ugh, this is against 2.6.30. I'll post kvm.git version soon.
 
-	Ingo
