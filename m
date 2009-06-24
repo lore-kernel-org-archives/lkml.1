@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZFXKpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbZFXKrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbZFXKpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbZFXKpk
+	id S1757097AbZFXKrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZFXKrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:45:40 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:2802 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbZFXKpj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:45:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=bZFQjlbs3/GTZgx6GdIS84HEqTG/+P5zqwZDuKYTBOQbHQDZjJDuewfQnUIgF5V1ep
-         jwbhvhsS14OikfjV3WpHSTfPvBToJzVYKRHtXZ3gs9jQ9amWXV/DP5dC3YAoSFw2ASXW
-         XlsYpq6pfM/U2HAWTdIu6aTsbg/jCORjkv/CI=
+	Wed, 24 Jun 2009 06:47:24 -0400
+Received: from tundra.namei.org ([65.99.196.166]:38108 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZFXKrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:47:24 -0400
+Date: Wed, 24 Jun 2009 20:46:50 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Joseph Cihula <joseph.cihula@intel.com>
+cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
+       shane.wang@intel.com
+Subject: Re: [RFC v5][PATCH 2/4] intel_txt: Intel(R) TXT reboot/halt shutdown
+ support
+In-Reply-To: <4A4024BE.5090206@intel.com>
+Message-ID: <alpine.LRH.2.00.0906242045290.18503@tundra.namei.org>
+References: <4A4024BE.5090206@intel.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <abe8a1fd0906240341h2ed015a2pf83785efed8de1b5@mail.gmail.com>
-References: <abe8a1fd0906240341h2ed015a2pf83785efed8de1b5@mail.gmail.com>
-Date: Wed, 24 Jun 2009 16:15:41 +0530
-Message-ID: <abe8a1fd0906240345y3e50e8bck59e7c8682c81713e@mail.gmail.com>
-Subject: linux PowerPC 85xx Address space query
-From: kernel mailz <kernelmailz@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 22 Jun 2009, Joseph Cihula wrote:
 
-I am a newbie, trying to learn but have a few queries, nice if you could respond
-For linux on 85xx systems...
+> Support for graceful handling of kernel reboots after an Intel(R) TXT launch.
+> 
+> Without this patch, attempting to reboot or halt the system will cause the
+> TXT hardware to lock memory upon system restart because the secrets-in-memory
+> flag that was set on launch was never cleared.  This will in turn cause BIOS
+> to execute a TXT Authenticated Code Module (ACM) that will scrub all of memory
+> and then unlock it.  Depending on the amount of memory in the system and its type,
+> this may take some time.
+> 
 
-(a) Kernel code runs in PR=0 AS=0 and PID=0, which user space
-application run in PR=1 AS=0 and PID 1-255.
-Is this correct.
+Does this mean that after a power failure, the system will perform this 
+memory scrub on the next boot?  How long does it take per MB on a typical 
+system?
 
-(b) I am writing a small program where the application code opens
-invokes a ioctl call and passes a buffer pointer ( say 0x10000 in user
-space)
-Now the driver code is using copy_from_user.
-How this works internally ?
 
-1. User code executes ioctl
-2. interrupt goes to the kernel
-3. ioctl handler in driver gets invoked
-The buffer pointer still contains 0x10000.
-
-How kernel code running in PR=0 accesses it and does the copy. I am
-not able to see a address space switch in the asm code of
-copy_tofrom_user.
-
-Please respond
-
--TRX
+-- 
+James Morris
+<jmorris@namei.org>
