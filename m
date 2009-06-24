@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZFXJz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZFXJ4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZFXJz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZFXJzP
+	id S1754892AbZFXJ4R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZFXJ4B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:55:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50803
+	Wed, 24 Jun 2009 05:56:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50806
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751666AbZFXJzO (ORCPT
+	by vger.kernel.org with ESMTP id S1752320AbZFXJ4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:55:14 -0400
-Date: Wed, 24 Jun 2009 02:55:18 -0700 (PDT)
-Message-Id: <20090624.025518.75726622.davem@davemloft.net>
+	Wed, 24 Jun 2009 05:56:00 -0400
+Date: Wed, 24 Jun 2009 02:56:04 -0700 (PDT)
+Message-Id: <20090624.025604.162446127.davem@davemloft.net>
 To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the
- IRQ context
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       petkovbb@gmail.com, htejun@gmail.com
+Subject: Re: [patch 3/6] ide: always kill the whole request on error
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906241151.16506.bzolnier@gmail.com>
-References: <200906240336.25263.bzolnier@gmail.com>
-	<20090623.213535.52208572.davem@davemloft.net>
-	<200906241151.16506.bzolnier@gmail.com>
+In-Reply-To: <200906241138.00687.bzolnier@gmail.com>
+References: <200906240249.33505.bzolnier@gmail.com>
+	<20090623.234948.121450964.davem@davemloft.net>
+	<200906241138.00687.bzolnier@gmail.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,42 +30,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Wed, 24 Jun 2009 11:51:16 +0200
+Date: Wed, 24 Jun 2009 11:38:00 +0200
 
-> You've put less than 2h (because that was the time since my post till your
-> reply) into analysis of the bug, the related problems and the solution.
+> On Wednesday 24 June 2009 08:49:48 David Miller wrote:
+>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>> Date: Wed, 24 Jun 2009 02:49:32 +0200
+>> 
+>> The previous patch is a prerequesite for this one.  So we should
+>> discuss them as a whole.  Because if we can't remove the "ide/floppy
+>> RQ error 0 instead of -EIO" bit, then we don't make these further
+>> consolidations either.
 > 
-> It could be that if you had put a bit more time into it and/or asked detailed
-> technical questions related to the solution (i.e. "Why x needs to be there
-> and we can't do y?") instead of keeping the technical discussion on the very
-> vague level (which sounded like "can't we use block layer to process block
-> requests because drive commands are block requests and raw commands are drive
-> commands so we should use block layer") you would come to very different
-> conclusions than you did initially.
+> Untrue, we can easily redo the patch #3 to not be dependent on patch #2.
 
-I'm investigating alternative ways to this problem, less because
-of the time I put into the investigation, but moreso because I'm
-able to put fresh eyes onto the problem.
+Good point.
 
-And also I don't know the IDE code as well as you do, which is
-an advantage insofar as not falling into "oh I know how this
-stuff works, therefore we can't..." kinds of mental traps.
+> Do you prefer such version instead?
 
-Back to the technical side, ignoring the interrupt-or-not uglies,
-there are two other reasons why using synchronization is better
-here:
-
-1) You want the device to be quiescent anyways when you do this
-   SET_XFER command.  What better way than to plug the queue
-   and make sure all currently outstanding requests complete?
-
-   And as already discussed, we even already have logic to support
-   this kind of thing for the sake of power-management.
-
-2) All commands going into the device do so from a context from
-   which we could take a sleeping lock such as a mutex.  It's
-   therefore the most natural way to synchonize things.
-
-I know you're busy, so I'll try to draft something up myself.
-
-Thanks.
+Let's wait until we come to some conclusion about patch #2.
