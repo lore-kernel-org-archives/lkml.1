@@ -1,62 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZFXGdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752456AbZFXGiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbZFXGdA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 02:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZFXGcu
+	id S1752456AbZFXGiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 02:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZFXGhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 02:32:50 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:48564 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbZFXGct convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jun 2009 02:37:51 -0400
+Received: from queueout01-winn.ispmail.ntl.com ([81.103.221.31]:47918 "EHLO
+	queueout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751566AbZFXGht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 02:32:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=L72dw4c2RxQ9GQAa4S/GcCejObaQq9Xw2hFCehnN1cmljSBIGK3nYUlxxmlDxUfHzX
-         eHFQLLfS3emsuFV2Rh4MhWAsXxM2eDLobaCTqIM+UnkLfw+jF061jc5hqoR7UY64BhnQ
-         UPogJWvaAguFsWErHiz6kkwIeCbVul6/1F+Ps=
+	Wed, 24 Jun 2009 02:37:49 -0400
+X-Greylist: delayed 818 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 02:37:47 EDT
+Message-ID: <4A41C67E.8070301@googlemail.com>
+Date: Wed, 24 Jun 2009 07:23:58 +0100
+From: Chrissie Caulfield <christine.caulfield@googlemail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <200906232355.34134.arnd@arndb.de>
-References: <4A33A7EC.6070008@gmail.com> <20090623192648.GB23119@logfs.org>
-	 <1245791743.25547.3517.camel@macbook.infradead.org>
-	 <200906232355.34134.arnd@arndb.de>
-Date: Wed, 24 Jun 2009 08:32:50 +0200
-Message-ID: <2ea1731b0906232332n2488d452p27419eac7edab7e4@mail.gmail.com>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-From: Marco Stornelli <marco.stornelli@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@lazybastard.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Bird <tim.bird@am.sony.com>,
-       Chris Simmonds <chris@2net.co.uk>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+CC: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       Patrick McHardy <kaber@trash.net>, Trond.Myklebust@netapp.com,
+       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+References: <20090623150330.22490.87327.stgit@localhost> <20090623150429.22490.15113.stgit@localhost>
+In-Reply-To: <20090623150429.22490.15113.stgit@localhost>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=MGslJ2IUW1kA:10 a=EoO-GzfZIkeum8JohREA:9 a=l_xPdvUM9SM14cHvEXkA:7 a=f5OaHui_6FyRV7di8bwjkZUQ0gQA:4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/23 Arnd Bergmann <arnd@arndb.de>:
-> On Tuesday 23 June 2009, David Woodhouse wrote:
->> And dd on /dev/mem would work, surely?
->
-> Actually, reading from /dev/mem is only valid on real RAM. If the nvram
-> is part of an IO memory mapping, you have to do mmap()+memcpy() rather
-> than read(). So dd won't do it, but it's still easy to read from user
-> space.
+Jesper Dangaard Brouer wrote:
+> The decnet module unloading as been disabled with a '#if 0' statement,
+> because it have had issues.  Perhaps using rcu_barrier() will fix
+> these issues?
+> 
+> Any maintainers with input?
+> 
+> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> ---
+> 
+>  net/decnet/af_decnet.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+> index d351b8d..bff12da 100644
+> --- a/net/decnet/af_decnet.c
+> +++ b/net/decnet/af_decnet.c
+> @@ -2393,6 +2393,10 @@ module_init(decnet_init);
+>   * Prevent DECnet module unloading until its fixed properly.
+>   * Requires an audit of the code to check for memory leaks and
+>   * initialisation problems etc.
+> + *
+> + * hawk@comx.dk 2009-06-19:
+> + *  I have added a rcu_barrier() which should plug some of your
+> + *  module unload issues.  Maintainers please try it out...
+>   */
+>  #if 0
+>  static void __exit decnet_exit(void)
+> @@ -2413,6 +2417,8 @@ static void __exit decnet_exit(void)
+>  	proc_net_remove(&init_net, "decnet");
+>  
+>  	proto_unregister(&dn_proto);
+> +
+> +	rcu_barrier_bh(); /* Wait for completion of call_rcu_bh()'s */
+>  }
+>  module_exit(decnet_exit);
+>  #endif
+> 
 
-For "security" reasons pram reserve the region of memory with
-reserve_mem_region_exclusive().....
+The issues with DECnet module unloading are a little more than just an
+RCU leak I think!
 
->
->> I'd definitely recommend making it fixed-endian. Not doing so for JFFS2
->> was a mistake I frequently regretted.
->
-> Right.
->
->        Arnd <><
->
+Though that area does need reviewing ... when I get some time.
+
+-- 
+
+Chrissie
