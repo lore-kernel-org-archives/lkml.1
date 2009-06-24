@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762026AbZFXUJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZFXUOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762026AbZFXUJY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZFXUJR
+	id S1755357AbZFXUOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZFXUOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:09:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56086 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbZFXUJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:09:16 -0400
-Subject: [PATCH] audit: inode watches depend on CONFIG_AUDIT not
- CONFIG_AUDIT_SYSCALL
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-audit@redhat.com
-Cc: viro@ZenIV.linux.org.uk
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 16:09:01 -0400
-Message-Id: <1245874141.11046.11.camel@dhcp235-23.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 16:14:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34731 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751306AbZFXUOP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:14:15 -0400
+Date: Wed, 24 Jun 2009 13:13:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <20090624130121.99321cca.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain>
+References: <20090624080753.4f677847@infradead.org> <20090624094622.d0b0fd82.akpm@linux-foundation.org> <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com> <20090624105517.904f93da.akpm@linux-foundation.org> <4A426825.80905@cs.helsinki.fi>
+ <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org>
+ <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Even though one cannot make use of the audit watch code without
-CONFIG_AUDIT_SYSCALL the spaghetti nature of the audit code means that
-the audit rule filtering requires that it at least be compiled.
 
-Thus build the audit_watch code when we build auditfilter like it was
-before cfcad62c74abfef83762dc05a556d21bdf3980a2
 
-Clearly this is a point of potential future cleanup..
+On Wed, 24 Jun 2009, Andrew Morton wrote:
+> 
+> If the caller gets oom-killed, the allocation attempt fails.  Callers need
+> to handle that.
 
-Reported-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
- kernel/Makefile |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+I actually disagree. I think we should just admit that we can always free 
+up enough space to get a few pages, in order to then oom-kill things.
 
-diff --git a/kernel/Makefile b/kernel/Makefile
-index da75001..780c8dc 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -69,8 +69,8 @@ obj-$(CONFIG_IKCONFIG) += configs.o
- obj-$(CONFIG_RESOURCE_COUNTERS) += res_counter.o
- obj-$(CONFIG_STOP_MACHINE) += stop_machine.o
- obj-$(CONFIG_KPROBES_SANITY_TEST) += test_kprobes.o
--obj-$(CONFIG_AUDIT) += audit.o auditfilter.o
--obj-$(CONFIG_AUDITSYSCALL) += auditsc.o audit_watch.o
-+obj-$(CONFIG_AUDIT) += audit.o auditfilter.o audit_watch.o
-+obj-$(CONFIG_AUDITSYSCALL) += auditsc.o
- obj-$(CONFIG_GCOV_KERNEL) += gcov/
- obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
- obj-$(CONFIG_KPROBES) += kprobes.o
+This is not a new concept. oom has never been "immediately kill".
 
+			Linus
