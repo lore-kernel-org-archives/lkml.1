@@ -1,67 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZFXV4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZFXV52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZFXV4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 17:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZFXVz6
+	id S1754031AbZFXV52 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 17:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZFXV5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 17:55:58 -0400
-Received: from fed1rmmtao104.cox.net ([68.230.241.42]:65245 "EHLO
-	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbZFXVz5 (ORCPT
+	Wed, 24 Jun 2009 17:57:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36096 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751333AbZFXV5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 17:55:57 -0400
-X-VR-Score: -100.00
-X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=pGLkceISAAAA:8
- a=tW5YD1WfPYsZa-yfGNkA:9 a=9NHhnpXBFkgtjR8gaL0A:7
- a=2h2WSfJHheX7L_Xill1dpOuUT6EA:4 a=MSl-tDqOz04A:10
-X-CM-Score: 0.00
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Johannes Schindelin <Johannes.Schindelin@gmx.de>,
-       Junio C Hamano <gitster@pobox.com>,
-       =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>,
-       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fread does not return negative on error
-References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
-	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
-	<4A3FB479.2090902@lsrfire.ath.cx>
-	<7vhby64i8f.fsf@alter.siamese.dyndns.org>
-	<20090624081819.GA10436@elte.hu>
-	<alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de>
-	<7vws71wquf.fsf@alter.siamese.dyndns.org>
-	<alpine.DEB.1.00.0906241835240.7946@intel-tinevez-2-302>
-	<20090624175940.GC7576@elte.hu>
-	<81b0412b0906241419q3bdef822laf9a879ce790d8f@mail.gmail.com>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 24 Jun 2009 14:55:59 -0700
-In-Reply-To: <81b0412b0906241419q3bdef822laf9a879ce790d8f@mail.gmail.com> (Alex Riesen's message of "Wed\, 24 Jun 2009 23\:19\:54 +0200")
-Message-ID: <7veit9qosw.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jun 2009 17:57:20 -0400
+Date: Wed, 24 Jun 2009 14:56:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de,
+       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-Id: <20090624145615.2ff9e56e.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain>
+References: <20090624080753.4f677847@infradead.org>
+	<20090624094622.d0b0fd82.akpm@linux-foundation.org>
+	<84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
+	<20090624105517.904f93da.akpm@linux-foundation.org>
+	<4A426825.80905@cs.helsinki.fi>
+	<20090624113037.7d72ed59.akpm@linux-foundation.org>
+	<alpine.LFD.2.01.0906241134510.3240@localhost.localdomain>
+	<20090624120617.1e6799b5.akpm@linux-foundation.org>
+	<alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
+	<20090624123624.26c93459.akpm@linux-foundation.org>
+	<alpine.LFD.2.01.0906241240360.3154@localhost.localdomain>
+	<20090624130121.99321cca.akpm@linux-foundation.org>
+	<alpine.LFD.2.01.0906241312090.3154@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Riesen <raa.lkml@gmail.com> writes:
+On Wed, 24 Jun 2009 13:13:48 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> On Wed, 24 Jun 2009, Andrew Morton wrote:
+> > 
+> > If the caller gets oom-killed, the allocation attempt fails.  Callers need
+> > to handle that.
+> 
+> I actually disagree. I think we should just admit that we can always free 
+> up enough space to get a few pages, in order to then oom-kill things.
 
-> 2009/6/24 Ingo Molnar <mingo@elte.hu>:
->> +Here is an (incomplete!) list of main contributors to those files
->> +in util/* and elsewhere:
->> +
->> + Alex Riesen
->
-> Wow. But I actually think it may be more fair to sort the list after
-> any kind of rating (even something as dumb as commit count).
->
-> As everyone one the list knows, I am nowhere near a "major contributor"
-> to the project, as the first place may imply to a casual reader.
+I'm unclear on precisely what you're proposing here?
 
-Heh, it was kind of obvious to a casual reader that the list was sorted
-alphabetically by the first name (unusual, eh?).
+> This is not a new concept. oom has never been "immediately kill".
 
-And no, you are indeed a valuable contributor to the git project.
+Well, it has been immediate for a long time.  A couple of reasons which
+I can recall:
 
-Thanks.
+- A page-allocating process will oom-kill another process in the
+  expectation that the killing will free up some memory.  If the
+  oom-killed process remains stuck in the page allocator, that doesn't
+  work.
+
+- The oom-killed process might be holding locks (typically fs locks).
+  This can cause an arbitrary number of other processes to be blocked.
+  So to get the system unstuck we need the oom-killed process to
+  immediately exit the page allocator, to handle the NULL return and to
+  drop those locks.
+
+There may be other reasons - it was all a long time ago, and I've never
+personally hacked on the oom-killer much and I never get oom-killed. 
+But given the amount of development work which goes on in there, some
+people must be getting massacred.
+
+
+A long time ago, the Suse kernel shipped with a largely (or
+completely?) disabled oom-killer.  It removed the
+retry-small-allocations-for-ever logic and simply returned NULL to the
+caller.  I never really understood what problem/thinking led Andrea to
+do that.
+
+
+But it's all a bit moot at present, as we seem to have removed the
+return-NULL-if-TIF_MEMDIE logic in Mel's post-2.6.30 merges.  I think
+that was an accident:
+
+-	/* This allocation should allow future memory freeing. */
+-
+ rebalance:
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-			&& !in_interrupt()) {
+-		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+-nofail_alloc:
+-			/* go through the zonelist yet again, ignoring mins */
+-			page = get_page_from_freelist(gfp_mask, nodemask, order,
+-				zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
+-			if (page)
+-				goto got_pg;
+-			if (gfp_mask & __GFP_NOFAIL) {
+-				congestion_wait(WRITE, HZ/50);
+-				goto nofail_alloc;
+-			}
+-		}
+-		goto nopage;
++	/* Allocate without watermarks if the context allows */
++	if (alloc_flags & ALLOC_NO_WATERMARKS) {
++		page = __alloc_pages_high_priority(gfp_mask, order,
++				zonelist, high_zoneidx, nodemask,
++				preferred_zone, migratetype);
++		if (page)
++			goto got_pg;
+ 	}
+
+Offending commit 341ce06 handled the PF_MEMALLOC case but forgot about
+the TIF_MEMDIE case.
+
+Mel is having a bit of downtime at present.
