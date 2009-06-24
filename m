@@ -1,70 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZFXBnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZFXBoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbZFXBnx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 21:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZFXBnp
+	id S1753063AbZFXBoi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 21:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFXBoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 21:43:45 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58615 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbZFXBno (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 21:43:44 -0400
-Message-ID: <4A4184C3.6060503@novell.com>
-Date: Tue, 23 Jun 2009 21:43:31 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 23 Jun 2009 21:44:24 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:36734 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751321AbZFXBoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 21:44:21 -0400
+Date: Tue, 23 Jun 2009 18:44:21 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
+       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
+       johannes@sipsolutions.net, yoshfuji@linux-ipv6.org,
+       shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
+       tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 00/10] We must use rcu_barrier() on module unload
+Message-ID: <20090624014421.GN6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090623150330.22490.87327.stgit@localhost>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
-References: <20090623150008.GA21059@redhat.com>
-In-Reply-To: <20090623150008.GA21059@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA03B4605AE98452441E3A8E6"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA03B4605AE98452441E3A8E6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jun 23, 2009 at 05:03:53PM +0200, Jesper Dangaard Brouer wrote:
+> This patch series is an attempt to cleanup the entire tree, for
+> potential oops'es during module unload, due to outstanding RCU
+> callbacks. (My last rcu_barrier patch series only addressed net/).
+> 
+> If an unloadable module uses RCU callbacks, it need to use
+> rcu_barrier() so that the module may be safely unloaded.
+> 
+> For documentation see:
+> 
+>  Paul E. McKenney's Blog
+>  http://paulmck.livejournal.com/7314.html
+> 
+>  http://lwn.net/Articles/217484/
+> 
+>  Documentation/RCU/rcubarrier.txt
+> 
+> 
+> Looking through the Linux kernel for call_rcu() users and unloadable
+> modules I found 10 modules that didn't behave correctly.
 
-Michael S. Tsirkin wrote:
-> Remove in_range from kvm_io_device and ask read/write callbacks, if
-> supplied, to perform range checks internally. This allows aliasing
-> (mostly for in-kernel virtio), as well as better error handling by
-> making it possible to pass errors up to userspace. And it's enough to
-> look at the diffstat to see that it's a better API anyway.
->
-> While we are at it, document locking rules for kvm_io_device.
->  =20
+These look good from an RCU viewpoint, but I am in no better position
+than is Jesper to analyze the individual modules.  From an RCU
+viewpoint:
 
-Hi Michael,
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-I just tried to apply this to kvm.git/master, and it blew up really
-badly.  What tree should I be using?
-
--Greg
-
-
-
---------------enigA03B4605AE98452441E3A8E6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpBhMQACgkQlOSOBdgZUxnoFwCfRpPI0T2154qXstuSDF1XtWRd
-+G0AnApL7cAmbe3BXkTT39ez1mWuIg1e
-=aQvv
------END PGP SIGNATURE-----
-
---------------enigA03B4605AE98452441E3A8E6--
+> Please: MAINTAINERS needs to verify that the module exit code prevent
+> any new RCU callbacks from being posted (before rcu_barrier() is
+> called). (I have tried to do this verification, but most of these
+> module are simply too large and complex for me to verify this within
+> reasonable time)
+> 
+> [Overview description, following patch ordering]
+> 
+> The modules ext4, bridge, mac80211, sunrpc, nfs and ipv6 are fairly
+> straight forward (maintainers still needs to check for prevent of new
+> RCU callbacks).
+> 
+> The module decnet, has disabled its module_exit() (since ^1da177e) but
+> it still seems relevant to keep the code updated.
+> 
+> The modules edac_core and cfq-iosched, has implemented their own
+> open-coded wait_for_completion() scheme, in order to wait for
+> call_rcu() calls.  Maintainers needs to look into removing this code
+> and using rcu_barrier() instead.
+> 
+> The module nf_conntrack, has embedded some comments that I would like
+> Patrick McHardy to look at.  As I'm not sure which is are most optimal
+> place to call rcu_barrier().  The patch probably calls rcu_barrier()
+> too much, but its a better safe than sorry approach.
+> 
+> 
+> I have made a patch for each individual module, so objections can be
+> made on a per module basis.  I have Cc'ed all of the patches to the
+> maintainers of each module (according to the MAINTAINERS file).
+> 
+> 
+> The patchset is made on top of Linus Torvalds tree (starting on top of
+> commit f234012f52a3).
+> 
+> Who wants to pickup these patches? (I usually go through DaveM, but
+> this also touches subsystems that are not (yet?) under DaveM's
+> maintainer ship)
+> 
+> 
+> ---
+> Jesper Dangaard Brouer (10):
+>       nf_conntrack: Use rcu_barrier().
+>       cfq-iosched: Uses its own open-coded rcu_barrier.
+>       edac_core: Uses call_rcu() and its own wait_for_completion scheme.
+>       decnet: Use rcu_barrier() on module unload.
+>       ipv6: Use rcu_barrier() on module unload.
+>       nfs: Use rcu_barrier() on module unload.
+>       sunrpc: Use rcu_barrier() on unload.
+>       mac80211: Use rcu_barrier() on unload.
+>       bridge: Use rcu_barrier() instead of syncronize_net() on unload.
+>       ext4: Use rcu_barrier() on module unload.
+> 
+> 
+>  block/cfq-iosched.c                     |    6 ++++++
+>  drivers/edac/edac_device.c              |    5 +++++
+>  drivers/edac/edac_mc.c                  |    5 +++++
+>  drivers/edac/edac_pci.c                 |    5 +++++
+>  fs/ext4/mballoc.c                       |    4 +++-
+>  fs/nfs/inode.c                          |    1 +
+>  net/bridge/br.c                         |    2 +-
+>  net/decnet/af_decnet.c                  |    6 ++++++
+>  net/ipv6/af_inet6.c                     |    2 ++
+>  net/mac80211/main.c                     |    2 ++
+>  net/netfilter/nf_conntrack_core.c       |    5 +++++
+>  net/netfilter/nf_conntrack_standalone.c |    2 ++
+>  net/sunrpc/sunrpc_syms.c                |    1 +
+>  13 files changed, 44 insertions(+), 2 deletions(-)
+> 
+> 
+> --
+> Best regards,
+>   Jesper Brouer
+>   ComX Networks A/S
+>   Linux Network developer
+>   Cand. Scient Datalog / MSc.
+>   Author of http://adsl-optimizer.dk
+>   LinkedIn: http://www.linkedin.com/in/brouer
+> 
