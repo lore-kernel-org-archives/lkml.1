@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZFXUvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbZFXUvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZFXUvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 16:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZFXUvb
+	id S1753418AbZFXUvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 16:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZFXUvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 16:51:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44589 "EHLO mx1.redhat.com"
+	Wed, 24 Jun 2009 16:51:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34803 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751515AbZFXUvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 16:51:31 -0400
+	id S1752773AbZFXUvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 16:51:38 -0400
+Date: Wed, 24 Jun 2009 16:50:42 -0400
+From: Dave Jones <davej@redhat.com>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Joseph Cihula <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+	Technology support for Linux - Details
+Message-ID: <20090624205042.GA8664@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Joseph Cihula <joseph.cihula@intel.com>,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, hpa@zytor.com,
+	andi@firstfloor.org, chrisw@sous-sol.org, jmorris@namei.org,
+	jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
+	shane.wang@intel.com
+References: <4A4024B6.2060600@intel.com> <20090624201415.GA18291@redhat.com> <4A428E9D.7080509@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Ratan Nalumasu <rnalumasu@gmail.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
-	wakeup
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 24 June 2009 19:13:57 +0200 <20090624171357.GA30435@redhat.com>
-References: <20090622170437.GA4906@redhat.com>
-	<20090624091316.73D0F4059B@magilla.sf.frob.com>
-	<20090624152143.GB23848@redhat.com>
-	<20090624185701.AA74C4059B@magilla.sf.frob.com>
-	<20090624161111.GA27890@redhat.com>
-	<20090624194239.A29174059B@magilla.sf.frob.com>
-	<20090624171357.GA30435@redhat.com>
-Emacs: the only text editor known to get indigestion.
-Message-Id: <20090624205112.3EA944059B@magilla.sf.frob.com>
-Date: Wed, 24 Jun 2009 13:51:12 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <4A428E9D.7080509@linux.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > an untraced thread calls do_notify_parent_cldstop() but its group_leader
-> > is ptrace_reparented().  Then waitee->group_leader->real_parent is who
-> > gets the wakeup, but __wake_up_parent->child_wait_wakeup would check
-> > only waiter == waitee->group_leader->parent.
-> 
-> ... and in this case we do not wake up ->group_leader->real_parent.
-> 
-> But this is fine? It doesn't make sense to wake up, wait_consider_task()
-> will notice task_ptrace() and do nothing?
+On Wed, Jun 24, 2009 at 01:37:49PM -0700, Arjan van de Ven wrote:
+ > Dave Jones wrote:
+ > > On Mon, Jun 22, 2009 at 05:41:26PM -0700, Joseph Cihula wrote:
+ > >  
+ > >  > The Q35_SINIT_17.BIN file is what Intel TXT refers to as an
+ > >  > Authenticated Code Module.  It is specific to the chipset in the system
+ > >  > and can also be found on the Trusted Boot site.  It is a firmware module
+ > >  > digitally signed by Intel that is used as part of the DRTM process to
+ > >  > verify and configure the system.  
+ > > 
+ > > This seems a little disingenious.  Firmware isn't typically loaded by grub
+ > > into main memory and executed by the host processor.
+ > > 
+ > > so, is this all worthless without the binary blob ?
+ > > 
+ > > "trust us, it's signed by intel" doesn't make me feel more secure.
+ > 
+ > how's that different from your normal bios ?
 
-Right.  I knew it needed more thought (that's why I said "maybe wrong" to
-begin with ;-).
+well..
 
-> I really need to think with a fresh head, but it seems to me we could add
-> BUG_ON(p->parent != parent) into wait_consider_task() after "if (ptrace...)"
-> check.
-> 
-> And this "proves" your check in child_wait_callback() is correct, with
-> __WNOTHREAD do_wait_thread(parent) is always called with parent ==
-> sleeper, the caller of do_wait().
-> 
-> No?
+AFAICS, this code exists solely to enable a binary blob. We don't do that
+for the BIOS.  Even for blobs like ACPI, we at least have documentation on
+the opcodes/data structures.
 
-Yes, I think that's right.
+Also, if they're the same as you claim, why isn't the blob just included as
+part of the BIOS ?
 
-> Btw, this reminds me that wait_consider_task() doesn't need the "parent"
-> argument. I noticed this after adding wait_opts, but forgot to send a
-> patch.
+	Dave
 
-With the wq.private now in wait_opts, yes.
-
-
-Thanks,
-Roland
