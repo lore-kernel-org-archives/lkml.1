@@ -1,78 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761986AbZFXTpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbZFXTqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761986AbZFXTpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761789AbZFXTp3
+	id S1762133AbZFXTqe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762016AbZFXTqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:45:29 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:11871 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761858AbZFXTp2 (ORCPT
+	Wed, 24 Jun 2009 15:46:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48632 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761788AbZFXTqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:45:28 -0400
-Date: Wed, 24 Jun 2009 21:45:10 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: avorontsov@ru.mvista.com
-Cc: Ryan Mallon <ryan@bluewatersys.com>,
-       linux kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] ds2782 battery gas gauge driver
-Message-ID: <20090624214510.27233eb1@hyperion.delvare>
-In-Reply-To: <20090624141834.GA9035@oksana.dev.rtsoft.ru>
-References: <4A371CDF.3070407@bluewatersys.com>
-	<20090617110908.17b47a18@hyperion.delvare>
-	<20090624141834.GA9035@oksana.dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 15:46:24 -0400
+Date: Wed, 24 Jun 2009 12:46:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <20090624123624.26c93459.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain>
+References: <20090624080753.4f677847@infradead.org> <20090624094622.d0b0fd82.akpm@linux-foundation.org> <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com> <20090624105517.904f93da.akpm@linux-foundation.org> <4A426825.80905@cs.helsinki.fi>
+ <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
+ <20090624123624.26c93459.akpm@linux-foundation.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 18:18:34 +0400, Anton Vorontsov wrote:
-> On Wed, Jun 17, 2009 at 11:09:08AM +0200, Jean Delvare wrote:
-> > Hi Ryan,
-> > 
-> > On Tue, 16 Jun 2009 16:17:35 +1200, Ryan Mallon wrote:
-> > > Add support for the the ds2782 standalone I2C gas-gauge.
-> > > 
-> > > Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
-> > 
-> > I suggest you send this patch to the maintainers of the power supply
-> > subsystem for review: Anton Vorontsov and David Woodhouse (Cc'd.)
+
+
+On Wed, 24 Jun 2009, Andrew Morton wrote:
+
+> On Wed, 24 Jun 2009 12:16:20 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Thanks for Cc'ing and for the review, Jean.
-
-You're welcome.
-
-> [...]
-> > > +static int ds2782_get_temp(struct ds2782_info *info)
-> > > +{
-> > > +	u16 raw;
-> > > +	s16 temp;
-> > > +
-> > > +	/* Temperature is measured in units of 0.125 degrees celcius */
-> > > +	raw = ds2782_read_reg16(info, DS2782_REG_TEMP_MSB);
-> > > +	temp = (raw >> 5) & 0x7ff;
-> > > +	if (raw & (1 << 15))
-> > > +		temp |= 0xf800;
-> > > +	return (temp * 125) / 100;
-> > > +}
+> > Lookie here. This is 2.6.0:mm/page_alloc.c:
 > > 
-> > I don't know if the power supply class has a standard to reporting
-> > temperature values, but the hwmon class does, and it says that
-> > temperatures should be reported in millidegrees C. That's not what you
-> > do here AFAICS. It might be convenient to register a hwmon class device
-> > and export the temperature there, so that libsensors picks it.
+> >         do_retry = 0;
+> >         if (!(gfp_mask & __GFP_NORETRY)) {
+> >                 if ((order <= 3) || (gfp_mask & __GFP_REPEAT))
+> >                         do_retry = 1;
+> >                 if (gfp_mask & __GFP_NOFAIL)
+> >                         do_retry = 1;
+> >         }
+> >         if (do_retry) {
+> >                 blk_congestion_wait(WRITE, HZ/50);
+> >                 goto rebalance;
+> >         }
 > 
-> Hwmon feels like a good idea. But no, drivers should not bother
-> with registering hwmon classes. Instead, some day we might want to
-> create power_supply_hwmon.c interface (like _sysfs.c that we have
-> already), the interface would register all needed stuff. And all
-> drivers will benefit right away without any modifications.
+> rebalance:
+> 	if ((p->flags & (PF_MEMALLOC | PF_MEMDIE)) && !in_interrupt()) {
+> 		/* go through the zonelist yet again, ignoring mins */
+> 		for (i = 0; zones[i] != NULL; i++) {
+> 			struct zone *z = zones[i];
+> 
+> 			page = buffered_rmqueue(z, order, cold);
+> 			if (page)
+> 				goto got_pg;
+> 		}
+> 		goto nopage;
+> 	}
 
-Sounds like a very good plan indeed.
+Your point?
 
--- 
-Jean Delvare
+That's the recursive allocation or oom case. Not the normal case at all.
+
+The _normal_ case is to do the whole "try_to_free_pages()" case and try 
+and try again. Forever.
+
+IOW, we have traditionally never failed small kernel allocations. It makes 
+perfect sense that people _depend_ on that.
+
+Now, we have since relaxed that (a lot). And in answer to that, people 
+have added more __GFP_NOFAIL flags, I bet. It's all very natural. Claiming 
+that this is some "new error" and that we should warn about NOFAIL 
+allocations with big orders is just silly and simply not true.
+
+		Linus
+
+
