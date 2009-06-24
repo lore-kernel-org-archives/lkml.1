@@ -1,87 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZFXOv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757197AbZFXOxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbZFXOv0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZFXOvR
+	id S1757197AbZFXOxe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZFXOx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:51:17 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38047 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751240AbZFXOvR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:51:17 -0400
-Date: Wed, 24 Jun 2009 10:51:17 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM
- of I/O devices
-In-Reply-To: <200906240217.39608.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906241014170.3199-100000@iolanthe.rowland.org>
+	Wed, 24 Jun 2009 10:53:26 -0400
+Received: from www.tglx.de ([62.245.132.106]:54769 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753364AbZFXOxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 10:53:25 -0400
+Date: Wed, 24 Jun 2009 16:51:48 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+In-Reply-To: <1245845787.3093.3.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
+References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
-
-> > One question still remains: If the counter is 0 at the end of a
-> > successful pm_runtime_resume, should the core then call pm_notify_idle?  
-> > Or should we make the driver responsible for that too?
+On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
+> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/pci/acpi.c |   16 ++++++++++------
+>  1 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> Good question. :-)
-> 
-> I think the core may call pm_notify_idle() in that case, but not necessarily in
-> the synchronous case.
+> diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+> index 16c3fda..0bc015f 100644
+> --- a/arch/x86/pci/acpi.c
+> +++ b/arch/x86/pci/acpi.c
+> @@ -69,6 +69,9 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+>  	struct resource *root;
+>  	int max_root_bus_resources = PCI_BUS_NUM_RESOURCES;
+>  
+> +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
+> +		return AE_OK;
+> +
+>  	status = resource_to_addr(acpi_res, &addr);
+>  	if (!ACPI_SUCCESS(status))
+>  		return AE_OK;
+> @@ -94,17 +97,18 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+>  	if (bus_has_transparent_bridge(info->bus))
+>  		max_root_bus_resources -= 3;
+>  	if (info->res_num >= max_root_bus_resources) {
+> -		printk(KERN_WARNING "PCI: Failed to allocate 0x%lx-0x%lx "
+> -			"from %s for %s due to _CRS returning more than "
+> -			"%d resource descriptors\n", (unsigned long) res->start,
+> -			(unsigned long) res->end, root->name, info->name,
+> -			max_root_bus_resources);
+> +		pr_warning("PCI: Failed to allocate 0x%lx-0x%lx "
+> +			   "from %s for %s due to _CRS returning more than "
+> +			   "%d resource descriptors\n",
+> +			   (unsigned long)res->start, (unsigned long)res->end,
+> +			   root->name, info->name, max_root_bus_resources);
 
-I'm not sure; we may want to do it even for synchronous resumes.  
-Otherwise the callers would be forced to do it.
+Can you please avoid mixing cleanup patches with bug fixes ? I almost
+did not see the line below.
 
-There's also the other side of the coin.  What if the counter is 0 at
-the end of a failed pm_runtime_suspend?
+> +		info->bus->resource[info->res_num] = res;
 
-For example, suppose the driver's runtime_suspend method decides that
-the device hasn't been idle for long enough, so it wants to fail the
-suspend attempt with -EBUSY and queue a new delayed autosuspend
-request.  But at this point the status is RPM_SUSPENDING, so new
-suspend requests won't be accepted (N.B., the test for this in the most
-recent patch doesn't look right).
+Storing the resource in defeats the purpose of the original patch,
+which makes sure that we do _NOT_ use the last 3 slots of the resource
+array for a root bus with a transparent bridge.
 
-Even with a queued notification, there's no guarantee that the
-notification won't be sent before the status changes from
-RPM_SUSPENDING to RPM_ACTIVE.  So we really do need the notification to
-be sent by pm_runtime_suspend, after it has updated the status and
-dropped the lock.
+>  		info->res_num++;
 
+This is the real bug. info->res_num should not be incremented when we
+run out of resources already.
 
-There's another totally separate issue worth discussing here.  This 
-will affect the USB implementation of the new runtime PM framework.
+>  		return AE_OK;
 
-The difficulty is that some USB interface drivers require remote wakeup
-to be enabled while their interfaces are suspended.  But remote wakeup
-is a global setting; it doesn't take effect until the entire physical
-device is suspended.  (To put it another way, USB has no notion of
-suspending interfaces.)  This means we must not allow these interfaces
-to be suspended before the whole device is.  But the whole device is
-the parent of the interfaces -- if we can't suspend the children before
-suspending the parent then we're stuck.
+Thanks,
 
-Clearly this is something the USB stack has to deal with; it shouldn't
-affect the general PM framework.  However the only solution I can think
-of involves subverting the framework, which isn't very nice.  The idea
-is to ignore runtime_suspend callbacks for these interface drivers;
-allow them to keep on running even though the PM core thinks they are
-suspended.  Then suspend and resume them as part of the callbacks for
-the entire device.  (For interface drivers that don't require remote
-wakeup there is no problem; it doesn't matter when they get suspended.)
-
-This will work, but it's a hack.  Does anybody have a better idea?
-
-Alan Stern
-
+	tglx
