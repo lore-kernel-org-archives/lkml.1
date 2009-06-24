@@ -1,198 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZFXWxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZFXWzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZFXWxh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 18:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbZFXWx1
+	id S1755506AbZFXWzg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 18:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZFXWz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 18:53:27 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:60716 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbZFXWx0 (ORCPT
+	Wed, 24 Jun 2009 18:55:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45025 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752138AbZFXWz1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 18:53:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=PRjP5PMAPHzzcNf1x3X4kc3etufmvq+g21byBPVKcJKgoeEZWVWUxhI3DqLh1IyWPq
-         geRXB6JWf/o34+lorbczhLD6TeuJd1gOwe3ZsP8N+SjfWpOfZkVl2xfSJrMuUFylW7rO
-         dcLvMU72fCVwT7wXtDCcqTYhgEfCfoqJL1K1o=
-MIME-Version: 1.0
-In-Reply-To: <86802c440906241511i3d534723u4dfdef9448b54bb9@mail.gmail.com>
-References: <1245845787.3093.3.camel@localhost.localdomain>
-	 <20090624112849.55b38fff@jbarnes-g45>
-	 <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>
-	 <20090624194839.GG7239@us.ibm.com> <4A4286F8.9020501@lwfinger.net>
-	 <86802c440906241432l6d601f76sf2a413d6e19079e6@mail.gmail.com>
-	 <4A429DAA.3010303@lwfinger.net>
-	 <86802c440906241444g1aabcc5rb2d189dca0965e36@mail.gmail.com>
-	 <4A42A2FD.1060401@lwfinger.net>
-	 <86802c440906241511i3d534723u4dfdef9448b54bb9@mail.gmail.com>
-Date: Wed, 24 Jun 2009 15:53:28 -0700
-Message-ID: <86802c440906241553j11c84adm45ef6e6e8f1fe10e@mail.gmail.com>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Gary Hade <garyhade@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: multipart/mixed; boundary=001b24be25d0bbf1ee046d1ff915
+	Wed, 24 Jun 2009 18:55:27 -0400
+Date: Wed, 24 Jun 2009 23:55:48 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, kevin.huang@rdc.com.tw, greg@kroah.com,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] pata_rdc: driver for RDC ATA devices
+Message-ID: <20090624235548.681b8992@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A42800D.6020202@garzik.org>
+References: <20090624172930.24354.80799.stgit@t61.ukuu.org.uk>
+	<4A42800D.6020202@garzik.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001b24be25d0bbf1ee046d1ff915
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+> Seems fine and fairly straightforward to me.  My lone comment -- go 
+> through and replace magic numbers with named constants, for e.g. the PCI 
+> config registers that program timings...
 
-On Wed, Jun 24, 2009 at 3:11 PM, Yinghai Lu<yhlu.kernel@gmail.com> wrote:
-> On Wed, Jun 24, 2009 at 3:04 PM, Larry Finger<Larry.Finger@lwfinger.net> wrote:
->> Yinghai Lu wrote:
->> node 0 link 0: mmio [a0000, bffff]
->> node 0 link 0: mmio [c0000000, dfffffff]
->> node 0 link 0: mmio [e0000000, efffffff]
->> node 0 link 0: mmio [f0000000, fe0bffff]
->> bus: [00,ff] on node 0 link 0
->> bus: 00 index 0 io port: [0, ffff]
->> bus: 00 index 1 mmio: [a0000, bffff]
->> bus: 00 index 2 mmio: [c0000000, fcffffffff]
->
-> that is read from pci config.
->
-> and only one HT chain is there. so there is no point to use _CRS for them.
->
-> please let me check if we could could have patch to deselect that.
->
-
-please try the attached patches.
-
-applying sequence:
-fix_crs.patch
-use_pci_crs_early.patch
-
-only_one.patch
-
-YH
-
---001b24be25d0bbf1ee046d1ff915
-Content-Type: text/x-diff; charset=US-ASCII; name="fix_crs.patch"
-Content-Disposition: attachment; filename="fix_crs.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fwcn2n800
-
-W1BBVENIXSB4ODYvcGNpOiBmaXggYm91bmRhcnkgY2hlY2tpbmcKCmRvbid0IHRvdWNoIGluZm8t
-PnJlc19udW0gaWYgd2UgYXJlIG91dCBvZiBzcGFjZQoKU2lnbmVkLW9mZi1ieTogWWluZ2hhaSBM
-dSA8eWluZ2hhaUBrZXJuZWwub3JnPgoKLS0tCiBhcmNoL3g4Ni9wY2kvYWNwaS5jIHwgICAyNyAr
-KysrKysrKysrKysrKystLS0tLS0tLS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25z
-KCspLCAxMiBkZWxldGlvbnMoLSkKCkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYvcGNpL2FjcGku
-Ywo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9wY2kvYWNwaS5jCisrKyBs
-aW51eC0yLjYvYXJjaC94ODYvcGNpL2FjcGkuYwpAQCAtNjgsNiArNjgsMTAgQEAgc2V0dXBfcmVz
-b3VyY2Uoc3RydWN0IGFjcGlfcmVzb3VyY2UgKmFjcAogCXVuc2lnbmVkIGxvbmcgZmxhZ3M7CiAJ
-c3RydWN0IHJlc291cmNlICpyb290OwogCWludCBtYXhfcm9vdF9idXNfcmVzb3VyY2VzID0gUENJ
-X0JVU19OVU1fUkVTT1VSQ0VTOworCXU2NCBzdGFydCwgZW5kOworCisJaWYgKGJ1c19oYXNfdHJh
-bnNwYXJlbnRfYnJpZGdlKGluZm8tPmJ1cykpCisJCW1heF9yb290X2J1c19yZXNvdXJjZXMgLT0g
-MzsKIAogCXN0YXR1cyA9IHJlc291cmNlX3RvX2FkZHIoYWNwaV9yZXMsICZhZGRyKTsKIAlpZiAo
-IUFDUElfU1VDQ0VTUyhzdGF0dXMpKQpAQCAtODQsMjUgKzg4LDI0IEBAIHNldHVwX3Jlc291cmNl
-KHN0cnVjdCBhY3BpX3Jlc291cmNlICphY3AKIAl9IGVsc2UKIAkJcmV0dXJuIEFFX09LOwogCi0J
-cmVzID0gJmluZm8tPnJlc1tpbmZvLT5yZXNfbnVtXTsKLQlyZXMtPm5hbWUgPSBpbmZvLT5uYW1l
-OwotCXJlcy0+ZmxhZ3MgPSBmbGFnczsKLQlyZXMtPnN0YXJ0ID0gYWRkci5taW5pbXVtICsgYWRk
-ci50cmFuc2xhdGlvbl9vZmZzZXQ7Ci0JcmVzLT5lbmQgPSByZXMtPnN0YXJ0ICsgYWRkci5hZGRy
-ZXNzX2xlbmd0aCAtIDE7Ci0JcmVzLT5jaGlsZCA9IE5VTEw7Ci0KLQlpZiAoYnVzX2hhc190cmFu
-c3BhcmVudF9icmlkZ2UoaW5mby0+YnVzKSkKLQkJbWF4X3Jvb3RfYnVzX3Jlc291cmNlcyAtPSAz
-OworCXN0YXJ0ID0gYWRkci5taW5pbXVtICsgYWRkci50cmFuc2xhdGlvbl9vZmZzZXQ7CisJZW5k
-ID0gc3RhcnQgKyBhZGRyLmFkZHJlc3NfbGVuZ3RoIC0gMTsKIAlpZiAoaW5mby0+cmVzX251bSA+
-PSBtYXhfcm9vdF9idXNfcmVzb3VyY2VzKSB7CiAJCXByaW50ayhLRVJOX1dBUk5JTkcgIlBDSTog
-RmFpbGVkIHRvIGFsbG9jYXRlIDB4JWx4LTB4JWx4ICIKIAkJCSJmcm9tICVzIGZvciAlcyBkdWUg
-dG8gX0NSUyByZXR1cm5pbmcgbW9yZSB0aGFuICIKLQkJCSIlZCByZXNvdXJjZSBkZXNjcmlwdG9y
-c1xuIiwgKHVuc2lnbmVkIGxvbmcpIHJlcy0+c3RhcnQsCi0JCQkodW5zaWduZWQgbG9uZykgcmVz
-LT5lbmQsIHJvb3QtPm5hbWUsIGluZm8tPm5hbWUsCisJCQkiJWQgcmVzb3VyY2UgZGVzY3JpcHRv
-cnNcbiIsICh1bnNpZ25lZCBsb25nKSBzdGFydCwKKwkJCSh1bnNpZ25lZCBsb25nKSBlbmQsIHJv
-b3QtPm5hbWUsIGluZm8tPm5hbWUsCiAJCQltYXhfcm9vdF9idXNfcmVzb3VyY2VzKTsKLQkJaW5m
-by0+cmVzX251bSsrOwogCQlyZXR1cm4gQUVfT0s7CiAJfQogCisJcmVzID0gJmluZm8tPnJlc1tp
-bmZvLT5yZXNfbnVtXTsKKwlyZXMtPm5hbWUgPSBpbmZvLT5uYW1lOworCXJlcy0+ZmxhZ3MgPSBm
-bGFnczsKKwlyZXMtPnN0YXJ0ID0gc3RhcnQ7CisJcmVzLT5lbmQgPSBlbmQ7CisJcmVzLT5jaGls
-ZCA9IE5VTEw7CisKIAlpZiAoaW5zZXJ0X3Jlc291cmNlKHJvb3QsIHJlcykpIHsKIAkJcHJpbnRr
-KEtFUk5fRVJSICJQQ0k6IEZhaWxlZCB0byBhbGxvY2F0ZSAweCVseC0weCVseCAiCiAJCQkiZnJv
-bSAlcyBmb3IgJXNcbiIsICh1bnNpZ25lZCBsb25nKSByZXMtPnN0YXJ0LAo=
---001b24be25d0bbf1ee046d1ff915
-Content-Type: text/x-diff; charset=US-ASCII; name="use_pci_crs_early.patch"
-Content-Disposition: attachment; filename="use_pci_crs_early.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fwcn33t61
-
-W1BBVENIXSB4ODYvcGNpOiBnZXQgcm9vdCBDUlMgYmVmb3JlIHNjYW4gY2hpbGRzIC12MgoKc28g
-d2UgY291bGQgcmVtb3ZlIGFkanVzdF90cmFuc3BhcmVudF9icmlkZ2VfcmVzb3VyY2VzLi4KCmFu
-ZCBnaXZlIHg4Nl9wY2lfcm9vdF9idXNfcmVzX3F1aXJrcyBjaGFuY2Ugd2hlbiBfQ1JTIGlzIG5v
-dCB1c2VkIG9yCm5vdCB0aGVyZS4KCnYyOiBhZGQgcHJpbnQgb3V0IGlmIHBjaSBjb25mIHJlYWRp
-bmcgZm9yIHJlcyBpcyB1c2VkIGZvciByb290CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5
-aW5naGFpQGtlcm5lbC5vcmc+CgotLS0KIGFyY2gveDg2L3BjaS9hY3BpLmMgICAgfCAgIDMyICsr
-KysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiBhcmNoL3g4Ni9wY2kvYW1kX2J1cy5jIHwg
-ICAgOCArKysrKystLQogMiBmaWxlcyBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCAyNSBkZWxl
-dGlvbnMoLSkKCkluZGV4OiBsaW51eC0yLjYvYXJjaC94ODYvcGNpL2FjcGkuYwo9PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4Ni9wY2kvYWNwaS5jCisrKyBsaW51eC0yLjYvYXJj
-aC94ODYvcGNpL2FjcGkuYwpAQCAtMTE4LDIzICsxMTgsNiBAQCBzZXR1cF9yZXNvdXJjZShzdHJ1
-Y3QgYWNwaV9yZXNvdXJjZSAqYWNwCiB9CiAKIHN0YXRpYyB2b2lkCi1hZGp1c3RfdHJhbnNwYXJl
-bnRfYnJpZGdlX3Jlc291cmNlcyhzdHJ1Y3QgcGNpX2J1cyAqYnVzKQotewotCXN0cnVjdCBwY2lf
-ZGV2ICpkZXY7Ci0KLQlsaXN0X2Zvcl9lYWNoX2VudHJ5KGRldiwgJmJ1cy0+ZGV2aWNlcywgYnVz
-X2xpc3QpIHsKLQkJaW50IGk7Ci0JCXUxNiBjbGFzcyA9IGRldi0+Y2xhc3MgPj4gODsKLQotCQlp
-ZiAoY2xhc3MgPT0gUENJX0NMQVNTX0JSSURHRV9QQ0kgJiYgZGV2LT50cmFuc3BhcmVudCkgewot
-CQkJZm9yKGkgPSAzOyBpIDwgUENJX0JVU19OVU1fUkVTT1VSQ0VTOyBpKyspCi0JCQkJZGV2LT5z
-dWJvcmRpbmF0ZS0+cmVzb3VyY2VbaV0gPQotCQkJCQkJZGV2LT5idXMtPnJlc291cmNlW2kgLSAz
-XTsKLQkJfQotCX0KLX0KLQotc3RhdGljIHZvaWQKIGdldF9jdXJyZW50X3Jlc291cmNlcyhzdHJ1
-Y3QgYWNwaV9kZXZpY2UgKmRldmljZSwgaW50IGJ1c251bSwKIAkJCWludCBkb21haW4sIHN0cnVj
-dCBwY2lfYnVzICpidXMpCiB7CkBAIC0xNjEsOCArMTQ0LDYgQEAgZ2V0X2N1cnJlbnRfcmVzb3Vy
-Y2VzKHN0cnVjdCBhY3BpX2RldmljZQogCWluZm8ucmVzX251bSA9IDA7CiAJYWNwaV93YWxrX3Jl
-c291cmNlcyhkZXZpY2UtPmhhbmRsZSwgTUVUSE9EX05BTUVfX0NSUywgc2V0dXBfcmVzb3VyY2Us
-CiAJCQkJJmluZm8pOwotCWlmIChpbmZvLnJlc19udW0pCi0JCWFkanVzdF90cmFuc3BhcmVudF9i
-cmlkZ2VfcmVzb3VyY2VzKGJ1cyk7CiAKIAlyZXR1cm47CiAKQEAgLTIyNSw4ICsyMDYsMTUgQEAg
-c3RydWN0IHBjaV9idXMgKiBfX2RldmluaXQgcGNpX2FjcGlfc2NhbgogCQkgKi8KIAkJbWVtY3B5
-KGJ1cy0+c3lzZGF0YSwgc2QsIHNpemVvZigqc2QpKTsKIAkJa2ZyZWUoc2QpOwotCX0gZWxzZQot
-CQlidXMgPSBwY2lfc2Nhbl9idXNfcGFyZW50ZWQoTlVMTCwgYnVzbnVtLCAmcGNpX3Jvb3Rfb3Bz
-LCBzZCk7CisJfSBlbHNlIHsKKwkJYnVzID0gcGNpX2NyZWF0ZV9idXMoTlVMTCwgYnVzbnVtLCAm
-cGNpX3Jvb3Rfb3BzLCBzZCk7CisJCWlmIChidXMpIHsKKwkJCWlmICghKHBjaV9wcm9iZSAmIFBD
-SV9OT19ST09UX0NSUykpCisJCQkJZ2V0X2N1cnJlbnRfcmVzb3VyY2VzKGRldmljZSwgYnVzbnVt
-LCBkb21haW4sCisJCQkJCQkJYnVzKTsKKwkJCWJ1cy0+c3Vib3JkaW5hdGUgPSBwY2lfc2Nhbl9j
-aGlsZF9idXMoYnVzKTsKKwkJfQorCX0KIAogCWlmICghYnVzKQogCQlrZnJlZShzZCk7CkBAIC0y
-NDEsOCArMjI5LDYgQEAgc3RydWN0IHBjaV9idXMgKiBfX2RldmluaXQgcGNpX2FjcGlfc2Nhbgog
-I2VuZGlmCiAJfQogCi0JaWYgKGJ1cyAmJiAhKHBjaV9wcm9iZSAmIFBDSV9OT19ST09UX0NSUykp
-Ci0JCWdldF9jdXJyZW50X3Jlc291cmNlcyhkZXZpY2UsIGJ1c251bSwgZG9tYWluLCBidXMpOwog
-CXJldHVybiBidXM7CiB9CiAKSW5kZXg6IGxpbnV4LTIuNi9hcmNoL3g4Ni9wY2kvYW1kX2J1cy5j
-Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L3BjaS9hbWRfYnVzLmMKKysr
-IGxpbnV4LTIuNi9hcmNoL3g4Ni9wY2kvYW1kX2J1cy5jCkBAIC0xMDAsOCArMTAwLDkgQEAgdm9p
-ZCB4ODZfcGNpX3Jvb3RfYnVzX3Jlc19xdWlya3Moc3RydWN0CiAJaW50IGo7CiAJc3RydWN0IHBj
-aV9yb290X2luZm8gKmluZm87CiAKLQkvKiBkb24ndCBnbyBmb3IgaXQgaWYgX0NSUyBpcyB1c2Vk
-ICovCi0JaWYgKCEocGNpX3Byb2JlICYgUENJX05PX1JPT1RfQ1JTKSkKKyAgICAgICAvKiBkb24n
-dCBnbyBmb3IgaXQgaWYgX0NSUyBpcyB1c2VkIGFscmVhZHkgKi8KKwlpZiAoYi0+cmVzb3VyY2Vb
-MF0gIT0gJmlvcG9ydF9yZXNvdXJjZSB8fAorCSAgICBiLT5yZXNvdXJjZVsxXSAhPSAmaW9tZW1f
-cmVzb3VyY2UpCiAJCXJldHVybjsKIAogCS8qIGlmIG9ubHkgb25lIHJvb3QgYnVzLCBkb24ndCBu
-ZWVkIHRvIGFueXRoaW5nICovCkBAIC0xMTYsNiArMTE3LDkgQEAgdm9pZCB4ODZfcGNpX3Jvb3Rf
-YnVzX3Jlc19xdWlya3Moc3RydWN0CiAJaWYgKGkgPT0gcGNpX3Jvb3RfbnVtKQogCQlyZXR1cm47
-CiAKKwlwcmludGsoS0VSTl9ERUJVRyAiUENJOiBwZWVyIHJvb3QgYnVzICUwMnggcmVzIHVwZGF0
-ZWQgZnJvbSBwY2kgY29uZlxuIiwKKwkJCWItPm51bWJlcik7CisKIAlpbmZvID0gJnBjaV9yb290
-X2luZm9baV07CiAJZm9yIChqID0gMDsgaiA8IGluZm8tPnJlc19udW07IGorKykgewogCQlzdHJ1
-Y3QgcmVzb3VyY2UgKnJlczsK
---001b24be25d0bbf1ee046d1ff915
-Content-Type: text/x-diff; charset=US-ASCII; name="only_one.patch"
-Content-Disposition: attachment; filename="only_one.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fwcn4uih2
-
-W1BBVENIXSB4ODYvcGNpOiBkb24ndCB1c2UgY3JzIGZvciByb290IGlmIHdlIG9ubHkgaGF2ZSBv
-bmUgcm9vdCBidXMKCmZvciBBTUQgc3lzdGVtLCB3aGVuIG9ubHkgb25lIFBDSSByb290LCBqdXN0
-IHNldCBQQ0lfTk9fUk9PVF9DUlMgZm9yIGl0CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5
-aW5naGFpQGtlcm5lbC5vcmc+CgotLS0KIGFyY2gveDg2L3BjaS9hbWRfYnVzLmMgfCAgICA0ICsr
-KysKIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKykKCkluZGV4OiBsaW51eC0yLjYvYXJj
-aC94ODYvcGNpL2FtZF9idXMuYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYub3JpZy9hcmNoL3g4
-Ni9wY2kvYW1kX2J1cy5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYvcGNpL2FtZF9idXMuYwpAQCAt
-NTYxLDYgKzU2MSwxMCBAQCBzdGF0aWMgaW50IF9faW5pdCBlYXJseV9maWxsX21wX2J1c19pbmZv
-CiAJCX0KIAl9CiAKKwkvKiBkb24ndCB1c2UgX0NSUyBpZiB3ZSBvbmx5IGhhdmUgb25lIHJvb3Qg
-Ki8KKwlpZiAocGNpX3Jvb3RfbnVtIDw9IDEpCisJCXBjaV9wcm9iZSB8PSBQQ0lfTk9fUk9PVF9D
-UlM7CisKIAlyZXR1cm4gMDsKIH0KIAo=
---001b24be25d0bbf1ee046d1ff915--
+Its based on your ata_piix driver. Feel free to update that and I'll pull
+names and things across to match.
