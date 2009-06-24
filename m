@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773AbZFXHV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755128AbZFXHWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752773AbZFXHV4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 03:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZFXHVr
+	id S1755128AbZFXHWm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 03:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZFXHWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 03:21:47 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:15630 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbZFXHVq convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jun 2009 03:22:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:38840 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751915AbZFXHWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 03:21:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=SWlxaNaLrcxhadf+x7LNgfXPHDj5/G/mIgqRCby3zAof0wfrNZMdFeMjtzI22eiz4J
-         fcFzsJl+MAmKO+tEvxw79WG9wlk7sHSvidVGU89p8AKtU+4xk+i9St7r42AqiAXyZxPK
-         dH7eapBcvjTD4WXdC5Do98inmaamHX9hhENO0=
+	Wed, 24 Jun 2009 03:22:36 -0400
+To: David Thomas <davidleothomas@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Magic Security Dust: Appropriating SECCOMP
+From: Andi Kleen <andi@firstfloor.org>
+References: <3a8893170906232205x18417861v446a2905a4ccf21@mail.gmail.com>
+Date: Wed, 24 Jun 2009 09:22:38 +0200
+In-Reply-To: <3a8893170906232205x18417861v446a2905a4ccf21@mail.gmail.com> (David Thomas's message of "Wed, 24 Jun 2009 01:05:30 -0400")
+Message-ID: <874ou6kse9.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <241b8f7b0906230627v12f8a48ft46fcbb98986e80c7@mail.gmail.com>
-References: <241b8f7b0906230627v12f8a48ft46fcbb98986e80c7@mail.gmail.com>
-Date: Wed, 24 Jun 2009 12:51:48 +0530
-Message-ID: <241b8f7b0906240021p55d1721bt3fc74f2af7734e66@mail.gmail.com>
-Subject: Re: Not able to read USB speed and descriptor
-From: Prabhu Chawandi <prabhu.chavandi@gmail.com>
-To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the devio.c,
+David Thomas <davidleothomas@gmail.com> writes:
 
-  I have added  a case to return the speed and other descriptors,
+Normally it's better if you post example patches, even
+if they're unclean. 
 
-call :
- ret = usb_control_msg(pRootHub, usb_sndctrlpipe(pRootHub, 0),
-               USB_REQ_CLEAR_FEATURE, USB_RT_PORT, USB_PORT_FEAT_POWER,
-               port_num + 1, NULL, 0, HZ);
+> Moving the checks from the audit/trace code out to the
+> individual syscalls means that each syscall we're doing one
 
-The above call is returning err : -32 EPIPE.
+Not sure that's a good idea. It would be lot of code churn
+all over the tree and risk of not covering some new syscalls.
 
-The above call is working file for the rear port while the same is not
-working for the fromt port.
+What I would do if I wanted a more flexible seccomp is to have a
+"one bit for each syscall" bitmap (or rather two one for compat
+another for non compat) that is checked by the audit code
+and then just check all syscalls against that big bitmap.
+Then have some way to configure that bitmap for groups
+of processes.
+
+-Andi
 
 
-Anythig am I missing ? I am testing it for mass stoage device...
-
-
-Any inputs ? ,,,,,
-
-On Tue, Jun 23, 2009 at 6:57 PM, Prabhu
-Chawandi<prabhu.chavandi@gmail.com> wrote:
-> Hi all,
->
->   I ma not able to read the USB descriptor and speeed, while I can
-> read and write into the storage device..
->
-> What might be the reason for that ?
->
-> regards,
-> Prabhu
->
+-- 
+ak@linux.intel.com -- Speaking for myself only.
