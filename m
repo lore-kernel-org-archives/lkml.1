@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762159AbZFXTsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762176AbZFXTue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762159AbZFXTsz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 15:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761733AbZFXTsm
+	id S1762176AbZFXTue (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 15:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZFXTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 15:48:42 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52502 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762063AbZFXTsl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 15:48:41 -0400
-Date: Wed, 24 Jun 2009 12:48:39 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Gary Hade <garyhade@us.ibm.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-Message-ID: <20090624194839.GG7239@us.ibm.com>
-References: <1245845787.3093.3.camel@localhost.localdomain> <4A423686.8050905@lwfinger.net> <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain> <1245859068.3216.5.camel@localhost.localdomain> <20090624161306.GC7239@us.ibm.com> <1245861219.3216.15.camel@localhost.localdomain> <20090624094411.08fc66e6@jbarnes-g45> <20090624175513.GE7239@us.ibm.com> <20090624112849.55b38fff@jbarnes-g45> <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>
+	Wed, 24 Jun 2009 15:50:25 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:54772 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZFXTuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 15:50:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=n06lKrDZJtnxKa4SVGZH4Ba2FdLZcRatGzBL71NooRHBkSp2GHpWIKsILTtnw5ey3P
+         R0pLhBSWw0SrMi2Hn4qO6I5weuvsDym0v/7INZyNnFcGCt31tOujU2NL+14+u1Gulb7B
+         IXV22/6NZ37qBgj3RuCuLhAvXfsbn6ATGnYs4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
+Date: Wed, 24 Jun 2009 21:55:56 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200906240336.25263.bzolnier@gmail.com> <200906241304.14926.bzolnier@gmail.com> <4A427EE0.8050901@garzik.org>
+In-Reply-To: <4A427EE0.8050901@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200906242155.56769.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 08:45:31PM +0200, Thomas Gleixner wrote:
-> On Wed, 24 Jun 2009, Jesse Barnes wrote:
-> > > I was thinking 32 but 64 would be better if there aren't any
-> > > downsides elsewhere of making the array that big.
+On Wednesday 24 June 2009 21:30:40 Jeff Garzik wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > On Wednesday 24 June 2009 12:48:20 Bartlomiej Zolnierkiewicz wrote:
 > > 
-> > Just chatting with Len about this; apparently the PNPACPI layer ran
-> > into something similar awhile back, and they had to go to a variable
-> > sized list of resources, due to weird machines with huge numbers of
-> > resources.  Matthew says he's got an idea about how to fix this up; if
-> > that doesn't work out I'll see about making the bus resource array into
-> > a list instead.
+> >>> 1) You want the device to be quiescent anyways when you do this
+> >>>    SET_XFER command.  What better way than to plug the queue
+> >>>    and make sure all currently outstanding requests complete?
+> >>>
+> >>>    And as already discussed, we even already have logic to support
+> >>>    this kind of thing for the sake of power-management.
+> >> Power management requests are kind of special and need block layer support.
+> >>
+> >> Please take a look at REQ_DEVSET_EXEC special requests from ide-devsets.c
+> >> instead if you would like to investigate possibility of a cleaner (although
+> >> more invasive) solution.
+> >>
+> >>> 2) All commands going into the device do so from a context from
+> >>>    which we could take a sleeping lock such as a mutex.  It's
+> >>>    therefore the most natural way to synchonize things.
+> >> The fact is that we need to synchronize against all commands going into
+> >> the device and they are synchronized using block queue (which is protected
+> >> with spinlock by block layer). Adding an extra mutex (even if possible)
+> > 
+> > We need to also take the synchronization between block queues of all devices
+> > on the port and the serialized ports into account..  This is quite complex
+> > and fragile code (vide cmd64x screaming IRQ issue ;)..
+> > 
+> > I would personally try going with 1) and avoid 2) at all costs..
 > 
-> Can we just bring the limit check back and increase the number for now
-> until folks come up with a better solution ?
+> FWIW, on Promise chipsets, SETFEATURES_XFER requires synchronization 
+> across all ports on the controller, otherwise SETFEATURES_XFER on port M 
+> can potentially cause data corruption on unrelated port N.
+> 
+> This has to do with the snooping of ATA commands performed by the 
+> Promise PATA and SATA chips.  The chip sees SETFEATURES_XFER, and does a 
+> bit of internal programming.
+> 
+> Silicon Image (siimage or sata_sil) also snoops ATA commands such as 
+> SETFEATURES_XFER; ditto a few other chipsets.
+> 
+> SETFEATURES_XFER has always required very, very careful, often 
+> chipset-specific handling.
 
-Another possible option is leaving in the limit check (still valid
-IMO for correct behavior of previous 'pci=use_crs') and reverting
- http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=9e9f46c44e487af0a82eb61b624553e2f7118f5b
-until the better solution for the fixed size array issue is
-available.
+Thanks for the reminder.
 
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+David, we should probably disallow user-space requested transfer mode
+changes on some chipsets (especially Promise ones) in IDE until somebody
+provides the needed synchronization infrastructure for handling such
+special cases (libata avoids the issue by not allowing any user-space
+requested transfer mode changes).  However since this is an independent
+issue from IRQ handler vs user context races it would be best done in
+the separate patch.
