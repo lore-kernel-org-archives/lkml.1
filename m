@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZFXOp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZFXOq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZFXOp7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZFXOpv
+	id S1756193AbZFXOq6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZFXOqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:45:51 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:50141 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752969AbZFXOpv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:45:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=nTMPhqxgaFElTmDgJG2FEzAQzlSjHZBdO087pIzLrIoVB2dYeWUtyWk4AEUHJfO4Ng
-         SACmElu2rGwvFrobk8tpLOQdblhcuXDDrzRLaMzmT2ukSRO9L0gdqJWFfnkxgAeU+o1Y
-         LO7C36aLVfAW+d3l56Iw+Z+K391rPkq27/sc4=
+	Wed, 24 Jun 2009 10:46:51 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:44510 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751240AbZFXOqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 10:46:50 -0400
+Date: Wed, 24 Jun 2009 07:46:46 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Gary Hade <garyhade@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       x86 maintainers <x86@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+Message-ID: <20090624144646.GA7239@us.ibm.com>
+References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <20090624122209.GC20564@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <200906241614.02615.arnd@arndb.de>
-References: <1245850289-6673-1-git-send-email-vapier@gentoo.org> 
-	<200906241614.02615.arnd@arndb.de>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 24 Jun 2009 10:45:33 -0400
-Message-ID: <8bd0f97a0906240745t3a11329fg3ffc6dfb0aa3dec5@mail.gmail.com>
-Subject: Re: [PATCH] add checksum selftest
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624122209.GC20564@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 10:14, Arnd Bergmann wrote:
-> On Wednesday 24 June 2009, Mike Frysinger wrote:
->> +/*
->> + * The do_csum() interface is "internal" to the generic checksum code.
->> + * Do not require it if the arch has not switched over.
->> + */
->> +extern unsigned short do_csum(const unsigned char *buff, int len);
->
-> Just nitpicking: this prototype should to into asm-generic/checksum.h,
-> extern declarations have no place in .c files.
+On Wed, Jun 24, 2009 at 02:22:09PM +0200, Ingo Molnar wrote:
+> 
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
+> > > My latest pull from Linus's tree fails to boot. Bisection leads to the
+> > > commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
+> > > resources and warn if exceeded" with hash
+> > > f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
+> > > capture the first error message as it scrolls off the screen, but the
+> > > second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
+> > > ahci_enable_ahci() because HOST_AHCI_EN is not set.
+> > > 
+> > 
+> > This patch fixes boot failure on my AMD 64 laptop, can you please test
+> > this patch:
+> > 
+> > [PATCH] x86: fix _CRS resources return handling
+> > 
+> > We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
+> > 
+> > Also set info->bus->resource[info->res_num] for _CRS resources return handling
+> > 
+> > Fixed boot failure on some machine.
+> > 
+> > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/pci/acpi.c |   16 ++++++++++------
+> >  1 files changed, 10 insertions(+), 6 deletions(-)
+> 
+> Ah, nice! I suspect it was this upstream commit causing it:
+> 
+> f9cde5f: x86/ACPI: Correct maximum allowed _CRS returned resources and warn if exceeded
+> 
+> right?
 
-yeah, i meant to move that after the last discussion, but forgot
+This change was made in conjunction with the previous
+"PCI: use ACPI _CRS data by default" 9e9f46c44e487af0a82eb61b624553e2f7118f5b
+change to help expose systems that might be incompatible with
+that change.  See http://marc.info/?l=linux-pci&m=124345331521386&w=2
+for more discussion on this. 
 
->> +static unsigned char __initdata do_csum_data1[] = {
->> +     0x20,
->> +};
->> +static unsigned char __initdata do_csum_data2[] = {
->> +     0x0d, 0x0a,
->> +};
->> +static unsigned char __initdata do_csum_data3[] = {
->> +     0xff, 0xfb, 0x01,
->> +};
->
-> You define separate test vectors for each of the three
-> cases, which looks like it could be optimized by reusing
-> the same test vectors for each case.
+Gary
 
-i'm not really familiar with the interfaces to figure out how to do
-this ... i just added some printks to dump arguments/buffers and then
-copied & pasted ones that looked pretty different
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
->> +static struct csum_partial_data __initdata csum_partial_data[] = {
->> +     CSUM_PARTIAL_DATA(1,  0x00000074, 0x0),
->> +     CSUM_PARTIAL_DATA(2,  0x00000a0d, 0x0),
->> +     CSUM_PARTIAL_DATA(3,  0x0000fe00, 0x0),
->> +     CSUM_PARTIAL_DATA(5,  0x00005084, 0x0),
->> +     CSUM_PARTIAL_DATA(8,  0x1101eefe, 0x11016a80),
->> +     CSUM_PARTIAL_DATA(8b, 0x00008781, 0x847e),
->> +     CSUM_PARTIAL_DATA(9,  0x1101eefe, 0x11016b80),
->> +};
->
-> For partial checksums, the result has to be folded into a 16-bit
-> number using csum_fold(), because csum_partial and other functions
-> return a 32-bit __wsum that can take many equivalent values taht
-> are all correct.
-
-i hear your words, but i understand them not ;)
-
->> +static int __init csum_tcpudp_nofold_selftest(void)
->> +{
->> +     int i, ret;
->> +     unsigned short tret, eret;
->> +
->> +     ret = 0;
->> +     for (i = 0; i < ARRAY_SIZE(csum_tcpudp_nofold_data); ++i) {
->> +             eret = le16_to_cpu(csum_tcpudp_nofold_data[i].ret);
->> +             tret = csum_tcpudp_nofold(
->> +                     csum_tcpudp_nofold_data[i].saddr,
->> +                     csum_tcpudp_nofold_data[i].daddr,
->> +                     csum_tcpudp_nofold_data[i].len,
->> +                     csum_tcpudp_nofold_data[i].proto,
->> +                     csum_tcpudp_nofold_data[i].sum);
->> +             if (tret != eret) {
->> +                     pr_err("%s: test %i: %#x != %#x: FAIL\n",
->> +                             __func__, i, tret, eret);
->> +                     ret = 1;
->> +             }
->> +     }
->> +
->> +     return ret;
->> +}
->
-> same here, but you can easily use csum_tcpudp_magic() instead of
-> csum_tcpudp_nofold here.
-
-this introduces redirection that would be annoying for people who
-implement just csum_tcpudp_nofold() (like the Blackfin arch).  i dont
-have a problem extending the test to also cover csum_tcpudp_magic(),
-but i'd like to keep the csum_tcpudp_nofold() invocation as well.
--mike
