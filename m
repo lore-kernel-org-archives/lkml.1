@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbZFXJod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZFXJpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753913AbZFXJod (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZFXJoZ
+	id S1755299AbZFXJpk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZFXJpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:44:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50184
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750818AbZFXJoY (ORCPT
+	Wed, 24 Jun 2009 05:45:30 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:64227 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZFXJp3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:44:24 -0400
-Date: Wed, 24 Jun 2009 02:44:28 -0700 (PDT)
-Message-Id: <20090624.024428.215194313.davem@davemloft.net>
-To: andi@firstfloor.org
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: NMI watchdog + NOHZ question
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090624075342.GL6760@one.firstfloor.org>
-References: <20090624071555.GK6760@one.firstfloor.org>
-	<20090624.001729.155964457.davem@davemloft.net>
-	<20090624075342.GL6760@one.firstfloor.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 24 Jun 2009 05:45:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=L5biozny8EpuVZ4xnlrJiznVIeOcoHNDIeVeRgVkfJEZ07Q7ALUVMQjNA3LiVhLen1
+         o4L0cTWedHuZM+oRY0yCBaCtXcA+0tO0bfOEsppGd3WNcw/X5xW50yfBkaCtPzIYkTq/
+         UVg7NjdsrL+x6udNZeRRlV5NP4e7SBkLVKC+Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [patch 3/6] ide: always kill the whole request on error
+Date: Wed, 24 Jun 2009 11:38:00 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       petkovbb@gmail.com, htejun@gmail.com
+References: <200906232327.27610.bzolnier@gmail.com> <200906240249.33505.bzolnier@gmail.com> <20090623.234948.121450964.davem@davemloft.net>
+In-Reply-To: <20090623.234948.121450964.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906241138.00687.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Date: Wed, 24 Jun 2009 09:53:42 +0200
-
->> > Ah you have a one shot timer and it gets rescheduled in the softirq?
->> > If yes why not in doing that directly in the hardirq handler?
->> 
->> Then what's the point of the generic timer code supporting one-shot
->> clock sources? :-)
+On Wednesday 24 June 2009 08:49:48 David Miller wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Date: Wed, 24 Jun 2009 02:49:32 +0200
 > 
-> Well it would avoid that problem at least (I think based on your
-> description). Somehow you need to reschedule the timer before the softirq.
+> > On Wednesday 24 June 2009 01:19:04 David Miller wrote:
+> >> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >> Date: Tue, 23 Jun 2009 23:27:27 +0200
+> >> 
+> >> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >> > Subject: [PATCH] ide: always kill the whole request on error
+> >> > 
+> >> > * Use blk_rq_bytes() instead of obsolete ide_rq_bytes() in ide_kill_rq()
+> >> >   and ide_floppy_do_request() for failed requests.
+> >> >   [ bugfix part ]
+> >> > 
+> >> > * Use blk_rq_bytes() instead of obsolete ide_rq_bytes() in ide_do_devset()
+> >> >   and ide_complete_drive_reset().  Then remove ide_rq_bytes().
+> >> >   [ cleanup part ]
+> >> > 
+> >> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >> > ---
+> >> > 'cleanup part' tested, limited testing with 'bugfix part'
+> >> > (using simulated failures of disk fs requests)
+> >> 
+> >> Considering this alongsize patch #2, it even more begs the
+> >> question as to why special requests on floppy and tape were
+> >> handled differently.  And that 'error <= 0' test, strange.
+> > 
+> > TBH I fail to see how it relates to changes present in _this_ patch
+> > as no change in _this_ patch affects special tape/floppy requests..
 > 
-> I guess you could have a generic function that is callable from hardirq
-> directly?
+> The previous patch is a prerequesite for this one.  So we should
+> discuss them as a whole.  Because if we can't remove the "ide/floppy
+> RQ error 0 instead of -EIO" bit, then we don't make these further
+> consolidations either.
 
-Thinking about this some more, the issue I'm hitting has nothing to
-do with how the timer fires.
+Untrue, we can easily redo the patch #3 to not be dependent on patch #2.
 
-The problem occurs when the cpu goes into NOHZ mode, and the timer
-is not firing.  And I suspect x86 would hit this problem too as
-currently coded.
-
-Using sparc64 first as a concrete example, the idle loop is essentially:
-
-	while(1) {
-		tick_nohz_stop_sched_tick(1);
-
-		while (!need_resched() && !cpu_is_offline(cpu))
-			sparc64_yield(cpu);
-
-		tick_nohz_restart_sched_tick();
-
-		preempt_enable_no_resched();
- ...
-		schedule();
-		preempt_disable();
-	}
-
-And on this particular CPU type sparc64_yield() is simply
-
-	touch_nmi_watchdog();
-
-since this cpu doesn't support yielding.
-
-So if we get that 5+ second qla2xxx interrupt storm during the
-"while (!need_resched() ..." loop, no matter what we do the NMI
-watchdog is going to trigger on us once the qla2xxx firmware
-upload is complete.
-
-X86 32-bit's cpu_idle() looks roughly like this:
-
-	while (1) {
-		tick_nohz_stop_sched_tick(1);
-		while (!need_resched()) {
-
-			check_pgt_cache();
-			rmb();
-
-			if (cpu_is_offline(cpu))
-				play_dead();
-
-			local_irq_disable();
-			/* Don't trace irqs off for idle */
-			stop_critical_timings();
-			pm_idle();
-			start_critical_timings();
-		}
-		tick_nohz_restart_sched_tick();
-		preempt_enable_no_resched();
-		schedule();
-		preempt_disable();
-	}
-
-And similarly to sparc64, if that 5+ second qla2xxx interrupt
-sequence happens after the tick_nohz_stop_sched_tick() call
-we can run into the same situation.
-
-Because the timer interrupt count is not incrementing, and it won't do
-so for at least "5 * nmi_hz".
+Do you prefer such version instead?
