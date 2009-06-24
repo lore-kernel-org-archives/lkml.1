@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZF0LSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZF0L0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbZF0LSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 07:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZF0LSc
+	id S1753291AbZF0L0x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 07:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZF0L0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 07:18:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:38363 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751216AbZF0LSc (ORCPT
+	Sat, 27 Jun 2009 07:26:42 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41947 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZF0L0l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 07:18:32 -0400
-Date: Sat, 27 Jun 2009 19:18:32 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Sergei Trofimovich <slyich@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Oops] 2.6.31-rc1: tun
-Message-ID: <20090627111832.GA22621@gondor.apana.org.au>
+	Sat, 27 Jun 2009 07:26:41 -0400
+Date: Wed, 24 Jun 2009 17:02:17 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Alessandro Suardi <alessandro.suardi@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [2.6.31-rc1] oops in acpi_get_pci_dev
+Message-ID: <20090624150217.GD1512@ucw.cz>
+References: <5a4c581d0906250325q1dd9ca67na9a8c7ecbffe4897@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090625235335.42ba26be@mosly.slynet.org>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel
+In-Reply-To: <5a4c581d0906250325q1dd9ca67na9a8c7ecbffe4897@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Trofimovich <slyich@gmail.com> wrote:
-> 
-> Updated from 2.6.30 to 2.6.31-rc1
-> 
-> $ uname -a
-> Linux mosly 2.6.31-rc1 #16 SMP PREEMPT Thu Jun 25 22:14:24 EEST 2009 x86_64 Intel(R) Core(TM)2 Duo CPU U7600 @ 1.20GHz GenuineIntel GNU/Linux
-> 
-> All my tun interfaces stopped working. ICMP works but IP(TCP/UDP) does not.
-> Machine started to hang. I tried to reproduce in linux console. You see the .png result.
-> .config attached
+Hi!
 
-This patch should help (already merged by davem).
+I had similar oops here, too, on thinkpad x60. It is interesting: most
+breakage seems to happen just before -rc1...
 
-diff --git a/net/ipv4/ip_input.c b/net/ipv4/ip_input.c
-index 490ce20..db46b4b 100644
---- a/net/ipv4/ip_input.c
-+++ b/net/ipv4/ip_input.c
-@@ -440,6 +440,9 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt,
- 	/* Remove any debris in the socket control block */
- 	memset(IPCB(skb), 0, sizeof(struct inet_skb_parm));
- 
-+	/* Must drop socket now because of tproxy. */
-+	skb_orphan(skb);
-+
- 	return NF_HOOK(PF_INET, NF_INET_PRE_ROUTING, skb, dev, NULL,
- 		       ip_rcv_finish);
- 
-diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
-index c3a07d7..6d6a427 100644
---- a/net/ipv6/ip6_input.c
-+++ b/net/ipv6/ip6_input.c
-@@ -139,6 +139,9 @@ int ipv6_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt
- 
- 	rcu_read_unlock();
- 
-+	/* Must drop socket now because of tproxy. */
-+	skb_orphan(skb);
-+
- 	return NF_HOOK(PF_INET6, NF_INET_PRE_ROUTING, skb, dev, NULL,
- 		       ip6_rcv_finish);
- err:
+Will configuring out acpi_video help?
 
-Cheers,
+									Pavel
+
+> kernel: [<ffffffff8121ef98>] find_video+0x62/0xa2
+> kernel: [<ffffffff81233240>] acpi_ns_walk_namespace+0xc4/0x14d
+> kernel: [<ffffffff8121ef36>] ? find_video+0x0/0xa2
+> kernel: [<ffffffff8121ef36>] ? find_video+0x0/0xa2
+> kernel: [<ffffffff81230b0a>] acpi_walk_namespace+0x82/0xd0
+> kernel: [<ffffffff8121ecdd>] acpi_video_get_capabilities+0x61/0xe2
+> kernel: [<ffffffffa000a060>] ? dell_send_request+0x60/0x82 [dell_laptop]
+> kernel: [<ffffffff8121ede9>] acpi_video_backlight_support+0x27/0x64
+
+								Pavel
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
