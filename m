@@ -1,141 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZFXBoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbZFXBs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753063AbZFXBoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 21:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbZFXBoY
+	id S1752337AbZFXBs2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 21:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZFXBsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 21:44:24 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:36734 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZFXBoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 21:44:21 -0400
-Date: Tue, 23 Jun 2009 18:44:21 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jesper Dangaard Brouer <hawk@comx.dk>
-Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
-       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
-       johannes@sipsolutions.net, yoshfuji@linux-ipv6.org,
-       shemminger@linux-foundation.org, linux-nfs@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-ext4@vger.kernel.org,
-       tytso@mit.edu, adilger@sun.com, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 00/10] We must use rcu_barrier() on module unload
-Message-ID: <20090624014421.GN6748@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090623150330.22490.87327.stgit@localhost>
+	Tue, 23 Jun 2009 21:48:21 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:58045 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbZFXBsU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 21:48:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=PH9MTCn2rWs/XYDley+URZZpiQS4EZyqWRB2SBDuUyiYcJbSMm8O/1Y3dNI0dAmZTv
+         sYF7wYLNSjCgfvpcp8kr3KfkIS6yUxZmZ7dl5iMHQfHE5zKBEkCb+7bJbERYTaXf/8Bi
+         izrpKHxx+jcvN1j6IOTi74mvVMozMm1eLsFEI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623150330.22490.87327.stgit@localhost>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090623154022.61e83c33.akpm@linux-foundation.org>
+References: <1245255744-21039-1-git-send-email-vapier@gentoo.org> 
+	<20090623154022.61e83c33.akpm@linux-foundation.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 23 Jun 2009 21:48:03 -0400
+Message-ID: <8bd0f97a0906231848u61d07a3j803f51cb26b72dab@mail.gmail.com>
+Subject: Re: [PATCH 1/4] asm/sections: add text/data checking functions for 
+	arches to override
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, rgetz@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 05:03:53PM +0200, Jesper Dangaard Brouer wrote:
-> This patch series is an attempt to cleanup the entire tree, for
-> potential oops'es during module unload, due to outstanding RCU
-> callbacks. (My last rcu_barrier patch series only addressed net/).
-> 
-> If an unloadable module uses RCU callbacks, it need to use
-> rcu_barrier() so that the module may be safely unloaded.
-> 
-> For documentation see:
-> 
->  Paul E. McKenney's Blog
->  http://paulmck.livejournal.com/7314.html
-> 
->  http://lwn.net/Articles/217484/
-> 
->  Documentation/RCU/rcubarrier.txt
-> 
-> 
-> Looking through the Linux kernel for call_rcu() users and unloadable
-> modules I found 10 modules that didn't behave correctly.
+On Tue, Jun 23, 2009 at 18:40, Andrew Morton wrote:
+> On Wed, 17 Jun 2009 12:22:21 -0400 Mike Frysinger wrote:
+>> Some ports (like the Blackfin arch) have a discontiguous memory map which
+>> means there may be text or data that falls outside of the standard range
+>> of the start/end text/data symbols.  Creating some helper functions allows
+>> these non-standard ports to declare these regions without adversely
+>> affecting anyone else.
+>
+> The patches look OK to me.
+>
+> I assumed they're for 2.6.32.
 
-These look good from an RCU viewpoint, but I am in no better position
-than is Jesper to analyze the individual modules.  From an RCU
-viewpoint:
+it's for whatever is easiest to merge
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+>> index 4ce48e8..ee19462 100644
+>> --- a/include/asm-generic/sections.h
+>> +++ b/include/asm-generic/sections.h
+>> @@ -20,4 +20,20 @@ extern char __start_rodata[], __end_rodata[];
+>>  #define dereference_function_descriptor(p) (p)
+>>  #endif
+>>
+>> +/* random extra sections (if any).  Override
+>> + * in asm/sections.h */
+>> +#ifndef arch_is_kernel_text
+>> +static inline int arch_is_kernel_text(unsigned long addr)
+>> +{
+>> +     return 0;
+>> +}
+>> +#endif
+>> +
+>> +#ifndef arch_is_kernel_data
+>> +static inline int arch_is_kernel_data(unsigned long addr)
+>> +{
+>> +     return 0;
+>> +}
+>> +#endif
+>
+> I suppose that for completeness and consistency etc really we should have
+>
+> #define arch_is_kernel_text arch_is_kernel_text
+> #define arch_is_kernel_data arch_is_kernel_data
+>
+> in here.
 
-> Please: MAINTAINERS needs to verify that the module exit code prevent
-> any new RCU callbacks from being posted (before rcu_barrier() is
-> called). (I have tried to do this verification, but most of these
-> module are simply too large and complex for me to verify this within
-> reasonable time)
-> 
-> [Overview description, following patch ordering]
-> 
-> The modules ext4, bridge, mac80211, sunrpc, nfs and ipv6 are fairly
-> straight forward (maintainers still needs to check for prevent of new
-> RCU callbacks).
-> 
-> The module decnet, has disabled its module_exit() (since ^1da177e) but
-> it still seems relevant to keep the code updated.
-> 
-> The modules edac_core and cfq-iosched, has implemented their own
-> open-coded wait_for_completion() scheme, in order to wait for
-> call_rcu() calls.  Maintainers needs to look into removing this code
-> and using rcu_barrier() instead.
-> 
-> The module nf_conntrack, has embedded some comments that I would like
-> Patrick McHardy to look at.  As I'm not sure which is are most optimal
-> place to call rcu_barrier().  The patch probably calls rcu_barrier()
-> too much, but its a better safe than sorry approach.
-> 
-> 
-> I have made a patch for each individual module, so objections can be
-> made on a per module basis.  I have Cc'ed all of the patches to the
-> maintainers of each module (according to the MAINTAINERS file).
-> 
-> 
-> The patchset is made on top of Linus Torvalds tree (starting on top of
-> commit f234012f52a3).
-> 
-> Who wants to pickup these patches? (I usually go through DaveM, but
-> this also touches subsystems that are not (yet?) under DaveM's
-> maintainer ship)
-> 
-> 
-> ---
-> Jesper Dangaard Brouer (10):
->       nf_conntrack: Use rcu_barrier().
->       cfq-iosched: Uses its own open-coded rcu_barrier.
->       edac_core: Uses call_rcu() and its own wait_for_completion scheme.
->       decnet: Use rcu_barrier() on module unload.
->       ipv6: Use rcu_barrier() on module unload.
->       nfs: Use rcu_barrier() on module unload.
->       sunrpc: Use rcu_barrier() on unload.
->       mac80211: Use rcu_barrier() on unload.
->       bridge: Use rcu_barrier() instead of syncronize_net() on unload.
->       ext4: Use rcu_barrier() on module unload.
-> 
-> 
->  block/cfq-iosched.c                     |    6 ++++++
->  drivers/edac/edac_device.c              |    5 +++++
->  drivers/edac/edac_mc.c                  |    5 +++++
->  drivers/edac/edac_pci.c                 |    5 +++++
->  fs/ext4/mballoc.c                       |    4 +++-
->  fs/nfs/inode.c                          |    1 +
->  net/bridge/br.c                         |    2 +-
->  net/decnet/af_decnet.c                  |    6 ++++++
->  net/ipv6/af_inet6.c                     |    2 ++
->  net/mac80211/main.c                     |    2 ++
->  net/netfilter/nf_conntrack_core.c       |    5 +++++
->  net/netfilter/nf_conntrack_standalone.c |    2 ++
->  net/sunrpc/sunrpc_syms.c                |    1 +
->  13 files changed, 44 insertions(+), 2 deletions(-)
-> 
-> 
-> --
-> Best regards,
->   Jesper Brouer
->   ComX Networks A/S
->   Linux Network developer
->   Cand. Scient Datalog / MSc.
->   Author of http://adsl-optimizer.dk
->   LinkedIn: http://www.linkedin.com/in/brouer
-> 
+*shrug* other places that use this style dont include these defines
+for completeness as the define muck is for the header to know about
+(arches providing their own version), not any source code -- they
+shouldnt know anything about the ifdef stuff.  i dont care much either
+way.
+-mike
