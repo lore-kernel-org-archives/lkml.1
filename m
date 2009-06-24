@@ -1,124 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZFXJ22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZFXJ3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757290AbZFXJ22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZFXJ2S
+	id S1755333AbZFXJ3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZFXJ3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:28:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43407 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbZFXJ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:28:17 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Wed, 24 Jun 2009 19:28:55 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jun 2009 05:29:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42451 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752999AbZFXJ3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:29:05 -0400
+Date: Wed, 24 Jun 2009 10:29:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Miroslav Lichvar <mlichvar@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [GIT pull] ntp updates for 2.6.31
+Message-ID: <20090624102915.4df3fa85@lxorguk.ukuu.org.uk>
+In-Reply-To: <1245793316.3305.5.camel@localhost>
+References: <1f1b08da0906151316s7d25f8ceraa1bc967a8abe172@mail.gmail.com>
+	<1f1b08da0906151641u4cd964e6vf1a61afe50cc1d90@mail.gmail.com>
+	<20090616090647.GD13771@elte.hu>
+	<20090616125248.GA23541@localhost>
+	<1245253102.6067.94.camel@jstultz-laptop>
+	<20090617172325.GA32332@localhost>
+	<20090617172601.GA3493@elte.hu>
+	<20090618121320.GA13025@localhost>
+	<20090623095745.GC30634@elte.hu>
+	<20090623131628.GA11827@localhost>
+	<20090623133625.GA3026@elte.hu>
+	<1245793316.3305.5.camel@localhost>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <19009.61911.914777.973086@notabene.brown>
-Cc: Ken Milmore <ken.milmore@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: Write barriers on MD RAID1
-In-Reply-To: message from Jens Axboe on Wednesday June 24
-References: <4A188CAD.1080009@googlemail.com>
-	<0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name>
-	<4A3E3C49.7010907@googlemail.com>
-	<19009.41191.662901.179565@notabene.brown>
-	<20090624073849.GG31415@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday June 24, jens.axboe@oracle.com wrote:
-> On Wed, Jun 24 2009, Neil Brown wrote:
-> > On Sunday June 21, ken.milmore@googlemail.com wrote:
-> > > I thought I had better bump my previous post as this regression is still 
-> > > present in 2.6.29.5.
-> > 
-> > Thanks Ken.
-> > 
-> > > 
-> > > To recap, commit cec0707e40ae25794b5a2de7b7f03c51961f80d9 has broken 
-> > > write barriers on md raid1 block devices in 2.6.29 and later kernels. 
-> > > Reversing this commit appears to fix the problem.
-> > > 
-> > > Please let me know if I'm harassing the wrong maintainers here!
-> > 
-> > Jens,
-> >   have you had a chance to look at this?
+> On Tue, 2009-06-23 at 15:36 +0200, Ingo Molnar wrote:
+> > The PPS patches i've seen just export IRQ timestamps to user-space.
+
+Correct. They improve the sampling information quality and help cut down
+on jitter between the IRQ sampling and using the timestamp. The jitter is
+what matters most here and NTP can figure out constant latencies rather
+well.
+
+> At some point that stops being NTP. NTP has quite a bit of userland
+> policy for filtering and managing a number of different network clocks
+> (other ntp servers, PPS sources, etc).
 > 
-> Yeah, I think it's the right way to go. I'll queue it up for .31 and we
-> should put in in -stable as well.
+> >From what you're describing (direct offset from a hardware time device
+> used to steer the clock directly in kernel), you might want to look at
+> the STP code in s390 (stp_sync_clock).
 
-Great, thanks.
+And also hardware distributed timing systems like those that distribute a
+clock with ethernet signals.
 
-NeilBrown
-
-
-> 
-> > 
-> > I think the following patch is appropriate and should go in to
-> > -stable.
-> > 
-> > Thanks,
-> > NeilBrown
-> > 
-> > 
-> > From addd8b129835a63d6df9a38eae20caaa15de5988 Mon Sep 17 00:00:00 2001
-> > From: NeilBrown <neilb@suse.de>
-> > Date: Wed, 24 Jun 2009 13:39:15 +1000
-> > Subject: [PATCH] Restore barrier support for md and probably other virtual devices.
-> > 
-> > The next_ordered flag is only meaningful for devices that use __make_request.
-> > So move the test against next_ordered out of generic code and in to
-> > __make_request
-> > 
-> > Since this test was added, barriers have not worked on md, and (I
-> > think) dm and similar devices that don't use __make_request and so
-> > don't bother to set next_ordered.
-> > 
-> > Cc: stable@kernel.org
-> > Cc: Ken Milmore <ken.milmore@googlemail.com>
-> > Signed-off-by: NeilBrown <neilb@suse.de>
-> > ---
-> >  block/blk-core.c |   10 +++++-----
-> >  1 files changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/block/blk-core.c b/block/blk-core.c
-> > index b06cf5c..fc221aa 100644
-> > --- a/block/blk-core.c
-> > +++ b/block/blk-core.c
-> > @@ -1172,6 +1172,11 @@ static int __make_request(struct request_queue *q, struct bio *bio)
-> >  	const int unplug = bio_unplug(bio);
-> >  	int rw_flags;
-> >  
-> > +	if (bio_barrier(bio) && bio_has_data(bio) &&
-> > +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> > +		bio_endio(bio, -EOPNOTSUPP)
-> > +			return 0;
-> > +	}
-> >  	/*
-> >  	 * low level driver can indicate that it wants pages above a
-> >  	 * certain limit bounced to low memory (ie for highmem, or even
-> > @@ -1472,11 +1477,6 @@ static inline void __generic_make_request(struct bio *bio)
-> >  			err = -EOPNOTSUPP;
-> >  			goto end_io;
-> >  		}
-> > -		if (bio_barrier(bio) && bio_has_data(bio) &&
-> > -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> > -			err = -EOPNOTSUPP;
-> > -			goto end_io;
-> > -		}
-> >  
-> >  		ret = q->make_request_fn(q, bio);
-> >  	} while (ret);
-> > -- 
-> > 1.6.3.1
-> > 
-> 
-> -- 
-> Jens Axboe
+Alan
