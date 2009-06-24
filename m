@@ -1,94 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZFXXsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZFXXtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbZFXXsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 19:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZFXXsW
+	id S1755267AbZFXXtV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 19:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZFXXtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 19:48:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58954 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755303AbZFXXsW (ORCPT
+	Wed, 24 Jun 2009 19:49:12 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:37059 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZFXXtM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 19:48:22 -0400
-Date: Wed, 24 Jun 2009 16:44:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Larry Finger <Larry.Finger@lwfinger.net>
-cc: Yinghai Lu <yhlu.kernel@gmail.com>, Gary Hade <garyhade@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-In-Reply-To: <4A42B7BC.2000402@lwfinger.net>
-Message-ID: <alpine.LFD.2.01.0906241639030.3605@localhost.localdomain>
-References: <1245845787.3093.3.camel@localhost.localdomain>  <20090624112849.55b38fff@jbarnes-g45>  <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>  <20090624194839.GG7239@us.ibm.com> <4A4286F8.9020501@lwfinger.net> 
- <86802c440906241432l6d601f76sf2a413d6e19079e6@mail.gmail.com>  <4A429DAA.3010303@lwfinger.net>  <86802c440906241444g1aabcc5rb2d189dca0965e36@mail.gmail.com>  <4A42A2FD.1060401@lwfinger.net>  <86802c440906241511i3d534723u4dfdef9448b54bb9@mail.gmail.com>
- <86802c440906241553j11c84adm45ef6e6e8f1fe10e@mail.gmail.com> <4A42B7BC.2000402@lwfinger.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 24 Jun 2009 19:49:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Fh5rUBo6Xs9mNIQkdavgVzzBsr3NajnxE+NgKl8UlPkxBkOJxQ6PjW3jQPVX5YDd6z
+         xISHw0Sm1WhhcG/dzylfPszWkzwKhprdqxLwFxST8f4E9EerXDW0XhwER0VdepqQ9Yl9
+         Zdzj8Hix7Sb7R1DcTfSrDrSmLwcBQ5lfMTU5k=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090624162125.a3a9b2c4.akpm@linux-foundation.org>
+References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com>
+	 <20090624162125.a3a9b2c4.akpm@linux-foundation.org>
+Date: Thu, 25 Jun 2009 01:49:13 +0200
+Message-ID: <1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
+Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not 
+	mounted
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, vapier@gentoo.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 25, 2009 at 1:21 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> On Thu, 25 Jun 2009 01:00:56 +0200
+> Denys Vlasenko <vda.linux@googlemail.com> wrote:
+>> In some circumstances running process needs to re-execute
+>> its image.
+...
+>> More elegant way is to execute /proc/self/exe.
+>> This works just fine as long as /proc is mounted.
+>>
+>> But it breaks if /proc isn't mounted, and this can happen in real-world
+>> usage. For example, when shell invoked very early in initrd/initramfs.
+>
+> Why can't userspace mount /proc before doing the daemonization?
+
+Some people want to unset CONFIG_PROC_FS, and still have
+working POSIX compatible shell. Coincidentally, NOMMU
+machines, ones which *require* re-execution of the shell to support that,
+tent to be the most memory starved machines too (thus most likely
+to be those where people desire to unset CONFIG_PROC_FS).
+
+> Oh geeze.  Hard-coded "/proc/self/exec" it the middle of the core exec
+> code?  You're a brave man.
+
+There are other alternatives. This looked to be the least ugly
+to me.
+
+We can special-case execve(NULL, ...).
+But I feared people would say this will change previously-buggy
+userspace code into one acting weirdly; in come cases
+leading to infinite execve loops. Do you think it's better
+than "/proc/self/exe"?
+
+Then I thought about using a special name to mean "re-execute me",
+like "", or "/./self" or whatever. Whatever I though about,
+it was either risking a collision with a real file, or was too ugly,
+or both.
+
+Then it occurred to me that "/proc/self/exe" _already is_
+such a name. It is _already used_ for this purpose, so the userspace
+does not need to be changed.
+
+For the extra non-intrusiveness, the hack kicks in only if
+/proc/self/exe does not exist.
 
 
-On Wed, 24 Jun 2009, Larry Finger wrote:
-> 
-> From what I read in Linus's mails, it may be a moot point; however, my
-> system boots with these 3, and only these 3, patches applied.
+[code style notes skipped. I will re-write it in whatever form
+ you like it most, when/if it will be agreed on in principle ]
 
-Well, it's definitely not moot. We want "use_crs" to work, whether it's 
-the default or not. I just doubt it should be the default (necessarily 
-ever).
+> But don't do any of that yet.  This will be an unpopular patch and I
+> fear for its future ;)
 
-The resources listed in the _CRS table may well be useful to make 
-decisions on (minimally: "is this a root bridge", but possibly also 
-scanning decisions). But I seriously doubt it makes any sense to insert 
-the _CRS resources into the bus resource list. 
-
-It might, for example, make sense to add them to the resource tree (after 
-scanning), the same way we add the e820 resources to the resource tree. 
-
-But judging from your dmesg:
-
-	pci_bus 0000:00: resource 0 io:  [0x00-0xcf7]
-	pci_bus 0000:00: resource 1 io:  [0xd00-0xffff]
-	pci_bus 0000:00: resource 2 mem: [0x0a0000-0x0bffff]
-	pci_bus 0000:00: resource 3 mem: [0x0c0000-0x0c3fff]
-	pci_bus 0000:00: resource 4 mem: [0x0c4000-0x0c7fff]
-	pci_bus 0000:00: resource 5 mem: [0x0c8000-0x0cbfff]
-	pci_bus 0000:00: resource 6 mem: [0x0cc000-0x0cffff]
-	pci_bus 0000:00: resource 7 mem: [0x0d4000-0x0d7fff]
-	pci_bus 0000:00: resource 8 mem: [0x0d8000-0x0dbfff]
-	pci_bus 0000:00: resource 9 mem: [0x0dc000-0x0dffff]
-	pci_bus 0000:00: resource 10 mem: [0x0e0000-0x0e3fff]
-	pci_bus 0000:00: resource 11 mem: [0x0e4000-0x0e7fff]
-	pci_bus 0000:00: resource 12 mem: [0x0e8000-0x0ebfff]
-	pci_bus 0000:00: resource 13 mem: [0x0ec000-0x0effff]
-	pci_bus 0000:00: resource 14 mem: [0x0f0000-0x0fffff]
-	pci_bus 0000:00: resource 15 mem: [0xc0000000-0xfebfffff]
-	pci_bus 0000:01: resource 1 mem: [0xfc100000-0xfc1fffff]
-	pci_bus 0000:01: resource 3 io:  [0x00-0xcf7]
-	pci_bus 0000:01: resource 4 io:  [0xd00-0xffff]
-	pci_bus 0000:01: resource 5 mem: [0x0a0000-0x0bffff]
-	pci_bus 0000:01: resource 6 mem: [0x0c0000-0x0c3fff]
-	pci_bus 0000:01: resource 7 mem: [0x0c4000-0x0c7fff]
-	pci_bus 0000:01: resource 8 mem: [0x0c8000-0x0cbfff]
-	pci_bus 0000:01: resource 9 mem: [0x0cc000-0x0cffff]
-	pci_bus 0000:01: resource 10 mem: [0x0d4000-0x0d7fff]
-	pci_bus 0000:01: resource 11 mem: [0x0d8000-0x0dbfff]
-	pci_bus 0000:01: resource 12 mem: [0x0dc000-0x0dffff]
-	pci_bus 0000:01: resource 13 mem: [0x0e0000-0x0e3fff]
-	pci_bus 0000:01: resource 14 mem: [0x0e4000-0x0e7fff]
-	pci_bus 0000:01: resource 15 mem: [0x0e8000-0x0ebfff]
-	pci_bus 0000:01: resource 16 mem: [0x0ec000-0x0effff]
-	pci_bus 0000:01: resource 17 mem: [0x0f0000-0x0fffff]
-	pci_bus 0000:01: resource 18 mem: [0xc0000000-0xfebfffff]
-
-none of those look in any way like sensible "resources" to be put in the 
-device. Quite frankly, they look like total garbage to me.
-
-			Linus
+Propose some other way to make it possible to re-execute a binary
+without /proc.
+--
+vda
