@@ -1,62 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761575AbZFXQx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbZFXQza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761575AbZFXQx6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761518AbZFXQxs
+	id S1760905AbZFXQza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZFXQzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:53:48 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:41855 "EHLO
+	Wed, 24 Jun 2009 12:55:23 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:35174 "EHLO
 	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761326AbZFXQxr (ORCPT
+	with ESMTP id S1753002AbZFXQzW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:53:47 -0400
+	Wed, 24 Jun 2009 12:55:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=I5D/HcwaLLNncKwWAbzybCodBbZXcrQdPhsrL4PfAmBRjiuF5RQZo8bihR6YWesaOP
-         hWTVlZSfHX4t4Ua/s2QpTy3aoig2can2dNCOn0J8YWsSR54VhehIrlJhRAPMEMCjscba
-         XfUegj2i6T++ecweCT5VN5rURnfHsob2dHLaI=
-Message-ID: <4A425925.7000601@gmail.com>
-Date: Wed, 24 Jun 2009 18:49:41 +0200
-From: Marco <marco.stornelli@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=nR6czT9MuBOqKbAjzqamXwyjeY7b7Ter5LiDmv6vQF+yf9UkvRzLTyOVakryjVOPQo
+         qgjF9zXa6+uHx3ouG2U5tWqEFqzET0iItqunJJeSvjIzWHjSY1tyAAGbMWiVii2O77AU
+         ktjfjfZOsI0fItePen8uvzhE++ErSt7zYdLG4=
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: David Woodhouse <dwmw2@infradead.org>,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@lazybastard.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Tim Bird <tim.bird@am.sony.com>,
-       Chris Simmonds <chris@2net.co.uk>,
-       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
-       Linux Embedded <linux-embedded@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 06/14] Pramfs: Include files
-References: <4A33A7EC.6070008@gmail.com> <200906232355.34134.arnd@arndb.de> <2ea1731b0906232332n2488d452p27419eac7edab7e4@mail.gmail.com> <200906241730.37151.arnd@arndb.de>
-In-Reply-To: <200906241730.37151.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090624094622.d0b0fd82.akpm@linux-foundation.org>
+References: <20090624080753.4f677847@infradead.org>
+	 <20090624094622.d0b0fd82.akpm@linux-foundation.org>
+Date: Wed, 24 Jun 2009 19:55:24 +0300
+X-Google-Sender-Auth: 2c60b86d9630a3f1
+Message-ID: <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 24 June 2009, Marco Stornelli wrote:
->>> Actually, reading from /dev/mem is only valid on real RAM. If the nvram
->>> is part of an IO memory mapping, you have to do mmap()+memcpy() rather
->>> than read(). So dd won't do it, but it's still easy to read from user
->>> space.
->> For "security" reasons pram reserve the region of memory with
->> reserve_mem_region_exclusive().....
-> 
-> That will only prevent other device drivers from stepping on it,
-> /dev/mem does not care about mem_region reservations.
-> 
-> 	Arnd <><
-> 
+Hi Andrew,
 
-Userland may not map this resource, so /dev/mem and the sysfs MMIO
-access will not be allowed. This restriction depends on STRICT_DEVMEM
-option. It's true that currently is only implemented in the x86 world.
+On Wed, 24 Jun 2009 08:07:53 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
+>> a new item is coming up fast in the kerneloops.org stats, and it's new
+>> in 2.6.31-rc;
+>>
+>> http://www.kerneloops.org/searchweek.php?search=get_page_from_freelist
+>>
+>> it's this warning in mm/page_alloc.c:
+>>
+>>                         * __GFP_NOFAIL is not to be used in new code.
+>>                          *
+>>                          * All __GFP_NOFAIL callers should be fixed so that they
+>>                          * properly detect and handle allocation failures.
+>>                          *
+>>                          * We most definitely don't want callers attempting to
+>>                          * allocate greater than single-page units with
+>>                          * __GFP_NOFAIL.
+>>                          */
+>>                         WARN_ON_ONCE(order > 0);
+>>
+>>
+>> typical backtraces look like
+>>
+>> get_page_from_freelist
+>> __alloc_pages_nodemask
+>> alloc_pages_current
+>> alloc_slab_page
+>> new_slab
+>> __slab_alloc
+>> kmem_cache_alloc_notrace
+>> start_this_handle
+>> jbd2_journal_start
+>>
+>> and
+>>
+>> get_page_from_freelist
+>> __alloc_pages_nodemask
+>> alloc_pages_current
+>> alloc_slab_page
+>> new_slab
+>> __slab_alloc
+>> kmem_cache_alloc_notrace
+>> start_this_handle
+>> journal_start
+>> ext3_journal_start_sb
+>> ext3_journal_start
+>> ext3_dirty_inode
+>>
+>> but there are some other ones as well at the url above.
+>>
+>>
+>> git blame shows that
+>>
+>> commit dab48dab37d2770824420d1e01730a107fade1aa
+>> Author: Andrew Morton <akpm@linux-foundation.org>
+>> Date:   Tue Jun 16 15:32:37 2009 -0700
+>>
+>> introduced this WARN_ON.....
 
-Marco
+On Wed, Jun 24, 2009 at 7:46 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> Well yes.  Using GFP_NOFAIL on a higher-order allocation is bad.  This
+> patch is there to find, name, shame, blame and hopefully fix callers.
+>
+> A fix for cxgb3 is in the works.  slub's design is a big problem.
+>
+> But we'll probably have to revert it for 2.6.31 :(
 
+How is SLUB's design a problem here? Can't we just clear GFP_NOFAIL
+from the higher order allocation and thus force GFP_NOFAIL allocations
+to use the minimum required order?
+
+                              Pekka
