@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbZFXRob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760977AbZFXRoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbZFXRob (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759611AbZFXRoS
+	id S1760977AbZFXRoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZFXRoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:44:18 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:34230 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760863AbZFXRoP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:44:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=VLh36DfUoURWAlMuHMDo9t03f+7U2+nZvInf6xLhVsoCDaY78LXAqn6H3SYVXm5EL4
-         ssK5PWFms7exzTUmUnGGYDlePOJMi6pCelTm8Knmi8z5fTx+YHzGA+D+gJ36KVA6/Ik3
-         DG1ggfVJa+IXR6x+6pJNS0dYrYZs+JxI3jc7E=
-Date: Wed, 24 Jun 2009 19:44:11 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: David Miller <davem@davemloft.net>
-Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 2/6] ide: fix ide_kill_rq() for special
-	ide-{floppy,tape} driver requests
-Message-ID: <20090624174411.GA5729@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	David Miller <davem@davemloft.net>, bzolnier@gmail.com,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-	htejun@gmail.com
-References: <200906232326.06830.bzolnier@gmail.com> <20090623.234929.32348223.davem@davemloft.net> <200906241209.53891.bzolnier@gmail.com> <20090624.033909.147195176.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 24 Jun 2009 13:44:05 -0400
+Received: from cmpxchg.org ([85.214.51.133]:60784 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756193AbZFXRoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 13:44:04 -0400
+Date: Wed, 24 Jun 2009 19:40:25 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 2/2] procfs: provide stack information for threads V0.10
+Message-ID: <20090624174025.GA13170@cmpxchg.org>
+References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org> <1245824444.22613.3.camel@wall-e> <20090623233247.7ed661b7.akpm@linux-foundation.org> <1245825903.23818.4.camel@wall-e> <20090624001302.18de9e21.akpm@linux-foundation.org> <m1my7ykrs7.fsf@fess.ebiederm.org> <1245854033.10579.4.camel@wall-e> <20090624152019.GD15037@elte.hu> <1245858590.13531.2.camel@wall-e>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090624.033909.147195176.davem@davemloft.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1245858590.13531.2.camel@wall-e>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 03:39:09AM -0700, David Miller wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Wed, 24 Jun 2009 12:09:53 +0200
-> 
-> > The obscure reasons is just the fact that both ide-floppy and ide-tape
-> > had a they own duplicated/buggy request completion routines.
+On Wed, Jun 24, 2009 at 05:49:50PM +0200, Stefani Seibold wrote:
+> Am Mittwoch, den 24.06.2009, 17:20 +0200 schrieb Ingo Molnar:
+> > * Stefani Seibold <stefani@seibold.net> wrote:
 > > 
-> > While they were being unified the whole bunch of similar class of bugs
-> > were fixed so I agree that there may still be more issues to deal with
-> > there.
+> > > Hi,
+> > > 
+> > > this is the newest version of the formaly named "detailed stack info"
+> > > patch which give you a better overview of the userland application stack
+> > > usage, especially for embedded linux.
+> > > 
+> > > Currently you are only able to dump the main process/thread stack usage
+> > > which is showed in /proc/pid/status by the "VmStk" Value. But you get no
+> > > information about the consumed stack memory of the the threads.
+> > > 
+> > > There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
+> > > marks the vm mapping where the thread stack pointer reside with "[thread
+> > > stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
+> > > value information, because libpthread doesn't set the start of the stack
+> > > to the top of the mapped area, depending of the pthread usage.
+> > > 
+> > > A sample output of /proc/<pid>/task/<tid>/maps looks like:
+> > > 
+> > > 08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
+> > > 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
+> > > 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
+> > > a7d12000-a7d13000 ---p 00000000 00:00 0 
+> > > a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
+> > 
+> > I have the same question as before: have you checked the use of that 
+> > field in tools/perf/builtin-record.c, and how your change will 
+> > impact that?
+> > 
 > 
-> I see, the ->pc_callback() of these things set rq->errors and then
-> ide_pc_intr() happily overrides whatever was set there, either on it's
-> own or via ide_complete_rq().
-> 
-> I'll look over this some more while I wait for the testing results
-> from Borislav.
+> Good question... i have another one: What is tools/perf/builtin-record.c
+> and where can i find it? Then i could check it.
 
-Ok, let's see now, I did some testing but can't seem to hit that
-particular path because it is taken relatively rarely - it can be
-reached from start_request() and ide_atapi_error() via ide_error for
-ide-floppy and ide-tape.
+You can find it in a recent git tree from Linus.
 
-If my code staring doesn't mislead me, the start_request()-one has to
-happen during an IDE reset operation, while we're polling for reset
-completion _and_ when drive->failures has reached drive->max_failures
-since this is the only site the drive->failures counter is increased.
-
-The ide_atapi_error() cannot happen because (!blk_fs_request(rq))
-requests are being completed in ide_error() with the respective error
-status.
-
-It is possible that I've missed something so feel free to correct me
-and/or suggest a different testing approach.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
+On the original question: builtin-record.c is unaffected by this patch
+as this exact field will only be parsed if the mapping is executable.
