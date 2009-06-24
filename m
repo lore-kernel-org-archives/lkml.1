@@ -1,112 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZFXQeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbZFXQfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760913AbZFXQeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbZFXQeR
+	id S1760875AbZFXQfe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbZFXQf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:34:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48744 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZFXQeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:34:17 -0400
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090624161306.GC7239@us.ibm.com>
-References: <4A418254.9050607@lwfinger.net>
-	 <1245845787.3093.3.camel@localhost.localdomain>
-	 <4A423686.8050905@lwfinger.net>
-	 <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain>
-	 <1245859068.3216.5.camel@localhost.localdomain>
-	 <20090624161306.GC7239@us.ibm.com>
-Content-Type: text/plain
-Date: Wed, 24 Jun 2009 22:03:39 +0530
-Message-Id: <1245861219.3216.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 12:35:26 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:45961 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZFXQfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 12:35:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SyEYNQvzZL2y0JRA0hJ8rF5tsdK2Y1EIWk5at3TRySexN2DnlOxwyWNUvdWMwqjgEW
+         qHFgzqBbmBMYaT0BPHVl76L8Snb9JJ+vXg+7n2irYniDUR00NdF/7FfL0DtFd+kSM0K0
+         W5bumZKMKS5k36toPcUKtCjqQQvJl5HpzSgqc=
+Date: Wed, 24 Jun 2009 18:35:22 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Joel Becker <Joel.Becker@oracle.com>, Len Brown <lenb@kernel.org>,
+       Avi Kivity <avi@qumranet.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Richard Purdie <rpurdie@rpsys.net>, Boaz Harrosh <bharrosh@panasas.com>,
+       Jon Masters <jonathan@jonmasters.org>, Greg KH <greg@kroah.com>
+Subject: Re: Main things left in linux-next
+Message-ID: <20090624163521.GA5996@nowhere>
+References: <20090624164617.b7c49974.sfr@canb.auug.org.au> <20090624172735.9b500674.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624172735.9b500674.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 09:13 -0700, Gary Hade wrote:
-> On Wed, Jun 24, 2009 at 09:27:48PM +0530, Jaswinder Singh Rajput wrote:
-> > On Wed, 2009-06-24 at 17:19 +0200, Thomas Gleixner wrote:
-> > > Larry,
-> > > 
-> > > On Wed, 24 Jun 2009, Larry Finger wrote:
-> > > > For the record, the printout from the patch results in the following:
-> > > > 
-> > > > PCI: Failed to allocate 0xd0000-0xd3fff from PCI mem for PCI Bus 0000:00
-> > > > PCI: Failed to allocate 0xec000-0xeffff from PCI mem for PCI Bus
-> > > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > > > PCI: Failed to allocate 0xf0000-0xfffff from PCI mem for PCI Bus
-> > > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > > > PCI: Failed to allocate 0xc0000000-0xfebfffff from PCI mem for PCI Bus
-> > > > 0000:00 due to _CRS returning more than 13 resource descriptors
-> > > 
-> > > can you please the patch below instead of the other one ?
-> > > 
-> > > Thanks,
-> > > 
-> > > 	tglx
-> > > ---
-> > > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
-> > > index 16c3fda..39a0cce 100644
-> > > --- a/arch/x86/pci/acpi.c
-> > > +++ b/arch/x86/pci/acpi.c
-> > > @@ -99,7 +99,6 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
-> > >  			"%d resource descriptors\n", (unsigned long) res->start,
-> > >  			(unsigned long) res->end, root->name, info->name,
-> > >  			max_root_bus_resources);
-> > > -		info->res_num++;
-> > >  		return AE_OK;
-> > >  	}
-> > >  
-> > 
-> > This fails and system does not boot, I already tested this patch 8 hours
-> > ago.
+On Wed, Jun 24, 2009 at 05:27:35PM +1000, Stephen Rothwell wrote:
+> Hi All,
 > 
-> I think the resource array needs to be larger.  Can you try
-> the below patch?
+> $ git diff --shortstat -M stable..HEAD^
+>  587 files changed, 27313 insertions(+), 12317 deletions(-)
 > 
-> Gary
+> We seem to be going backwards :-( Yesterday's was:
+>  556 files changed, 27596 insertions(+), 7123 deletions(-)
 > 
-> --- linux-2.6.30-rc8/include/linux/pci.h.ORIG	2009-06-24 09:03:41.000000000 -0700
-> +++ linux-2.6.30-rc8/include/linux/pci.h	2009-06-24 09:06:50.000000000 -0700
-> @@ -319,7 +319,7 @@ static inline void pci_add_saved_cap(str
->  }
->  
->  #ifndef PCI_BUS_NUM_RESOURCES
-> -#define PCI_BUS_NUM_RESOURCES	16
-> +#define PCI_BUS_NUM_RESOURCES	20
->  #endif
->  
->  #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of resource flags tell us the PCI region flags */
+> $ git diff --dirstat -M stable..HEAD^
+>    4.9% Documentation/powerpc/dts-bindings/
+>    5.1% Documentation/powerpc/
+>    3.0% Documentation/vm/
+>    3.9% arch/sparc/
+>    3.9% arch/x86/kvm/
+>    4.4% arch/x86/
+>    6.9% drivers/md/
+>    4.7% drivers/misc/
+>    9.8% drivers/staging/et131x/
+>    4.3% drivers/staging/
+>    6.6% drivers/usb/otg/
+>   14.5% drivers/
+>    5.5% include/linux/
+>   12.6% mm/
+> 
+> The main obvious things left are:
+> 
+> SLQB from the slab tree
+> an m68k update
+> an ocfs2 update
+> the reiserfs kill-the-bkl effort
 
 
-Larry already suggested PCI_BUS_NUM_RESOURCES to 24 in his patch (check
-first reply from him).
 
-Then what is the point of removing last 3 and then adding 3 or more
-resources, so patch f9cde5f lost its purpose, best case will be to
-revert f9cde5f as it also removed :
+Yeah, this one is not enough ready. I have yet
+some cases in which performances are a bit less than
+with the bkl, for example with only one thread writer.
 
-if (info->res_num >= PCI_BUS_NUM_RESOURCES)
-                return AE_OK;
+So there is still a bit of work, I plan it for .32
+You can remove it from next since it is based on a .30-rc
+release. I will soon provide a rebased tree once -rc1 is released.
 
-which is required in any case.
 
-Thanks,
---
-JSR
+Thanks.
 
+
+
+> an acpi update
+> a kvm update
+> some more cpumask work from the rr tree
+> the writeback changes form the block tree
+> a device-mapper update
+> a battery tree update
+> a leds tree update
+> osdblk from the osd tree
+> the new hwlat tree
+> devtmpfs from the driver-core tree (hmmm?)
+> 
+> Please do not shoot the messenger. :-)
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
 
 
 
