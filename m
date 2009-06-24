@@ -1,138 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZFXJdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbZFXJdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbZFXJdf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757813AbZFXJdM
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:33:12 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:59653 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757713AbZFXJdI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1757745AbZFXJdI (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 24 Jun 2009 05:33:08 -0400
-X-Greylist: delayed 1850 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 05:33:07 EDT
-Subject: Re: [PATCH 10/10] nf_conntrack: Use rcu_barrier().
-From: Jesper Dangaard Brouer <hawk@comx.dk>
-To: Patrick McHardy <kaber@trash.net>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
-       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-In-Reply-To: <4A410185.3090706@trash.net>
-References: <20090623150330.22490.87327.stgit@localhost>
-	 <20090623150444.22490.27931.stgit@localhost>  <4A410185.3090706@trash.net>
-Content-Type: text/plain
-Organization: ComX Networks A/S
-Date: Wed, 24 Jun 2009 11:02:19 +0200
-Message-Id: <1245834139.6695.31.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jun 2009 09:02:19.0786 (UTC) FILETIME=[7AC10EA0:01C9F4AA]
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757454AbZFXJcu
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 24 Jun 2009 05:32:50 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:43378 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757341AbZFXJcs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:32:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=IsRKLDanttsbut0Z/2arCr3jkhcS4CJGeEbrOvOVMHwfsKeRZ+6jnWXdQzuk2TPytk
+         4rbxfLXANT634kUYOxPVSOExsU3oql+PD6g1AF6lGpR84BrIABZXICKJTuxHheKAsuq9
+         oPDo+rIXX36PaSNDqAxCXeda9DWpPPvVD8NRI=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, pavel@ucw.cz, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp,
+       linux-usb@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>,
+       rjw@sisk.pl, stern@rowland.harvard.edu, ben-linux@fluff.org,
+       linux-pm@lists.linux-foundation.org, linux-omap@vger.kernel.org,
+       akpm@linux-foundation.org, felipe.balbi@nokia.com
+Date: Wed, 24 Jun 2009 18:23:24 +0900
+Message-Id: <20090624092324.14276.5263.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-23 at 18:23 +0200, Patrick McHardy wrote:
-> Jesper Dangaard Brouer wrote:
-> > I'm not sure which is are most optimal place to call rcu_barrier().
-> > The patch probably calls rcu_barrier() too much, but its a better
-> > safe than sorry approach.
-> > 
-> > There is embedded some comments that I would like Patrick McHardy
-> > to look at.
-> > 
-> > diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-> > index 5f72b94..cea4537 100644
-> > --- a/net/netfilter/nf_conntrack_core.c
-> > +++ b/net/netfilter/nf_conntrack_core.c
-> > @@ -1084,6 +1084,8 @@ static void nf_conntrack_cleanup_init_net(void)
-> >  {
-> >  	nf_conntrack_helper_fini();
-> >  	nf_conntrack_proto_fini();
-> > +	rcu_barrier();
-> > +	/* Need to wait for call_rcu() before dealloc the kmem_cache */
-> >  	kmem_cache_destroy(nf_conntrack_cachep);
-> 
-> Which call_rcu() is this referring to? 
+From: Magnus Damm <damm@igel.co.jp>
 
-It is the call_rcu() in nf_conntrack_expect.c (which is linked into
-nf_conntrack.ko).  But that also means that it should have been the slab
-cache called "nf_ct_expect_cachep" we should have waited for... (and I
-also notice that "nf_ct_expect_cachep" is missing the
-SLAB_DESTROY_BY_RCU flag, and the SLAB_DESTROY_BY_RCU flag should be
-removed from "nf_conntrack_cachep")
+This patch reworks platform driver power management code
+for dw_dmac from legacy late/early callbacks to dev_pm_ops.
 
-> If its the conntrack destruction,
-> that one is gone in the current kernel and I think destruction is
-> handled properly by the sl*b-allocators (SLAB_DESTROY_BY_RCU).
+The callbacks are converted for CONFIG_SUSPEND like this:
+  suspend_late() -> suspend_noirq()
+  resume_early() -> resume_noirq()
 
-Just dived into the slab.c code and noticed that it also is flawed,
-ARGH!.  When the SLAB_DESTROY_BY_RCU flags is set, it only calls
-synchronize_rcu() and not rcu_barrier() as it should!
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-I'll fix that up in another patch series... 
+ Untested and not test compiled due to lack of cross compiler.
 
-Looking into slub and slob at the moment, and it seems that they
-schedule another call_rcu callback for freeing when the
-SLAB_DESTROY_BY_RCU flags is set.  That seems racy to me... Paul?
+ drivers/dma/dw_dmac.c |   15 ++++++++++-----
+ 1 file changed, 10 insertions(+), 5 deletions(-)
 
-
-> > @@ -1118,6 +1120,9 @@ void nf_conntrack_cleanup(struct net *net)
-> >  	/* This makes sure all current packets have passed through
-> >  	   netfilter framework.  Roll on, two-stage module
-> >  	   delete... */
-> > +	/* hawk@comx.dk 2009-06-20: Think this should be replaced by a
-> > +          rcu_barrier() ???
-> > +	*/
-> >  	synchronize_net();
-> 
-> AFAICT this one is used to make sure the old value of the ip_ct_attach
-> hook is not visible anymore before beginning cleanup and is not needed
-> for anything else.
-
-Fine!
-
-> >  	nf_conntrack_cleanup_net(net);
-> > diff --git a/net/netfilter/nf_conntrack_standalone.c b/net/netfilter/nf_conntrack_standalone.c
-> > index 1935153..29c6cd0 100644
-> > --- a/net/netfilter/nf_conntrack_standalone.c
-> > +++ b/net/netfilter/nf_conntrack_standalone.c
-> > @@ -500,6 +500,8 @@ static void nf_conntrack_net_exit(struct net *net)
-> >  	nf_conntrack_standalone_fini_sysctl(net);
-> >  	nf_conntrack_standalone_fini_proc(net);
-> >  	nf_conntrack_cleanup(net);
-> > +	/* hawk@comx.dk: Think rcu_barrier() should to be called earlier? */
-> > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
-> >  }
-> 
-> Which call_rcu() is this referring to? We should place them in
-> the cleanup sub-functions to make this clearly visible.
-
-This call_rcu() is the one done in nf_conntrack_extend.c:114  (notice
-"_extend" NOT "_expect"), which calls __nf_ct_ext_free_rcu().
-
-Guess this rcu_barrier() should then be move to
-nf_ct_extend_unregister() right? (it already invokes a
-synchronize_rcu() that should be replaced by rcu_barrier()).
-Although this means the nf_ct_extend_unregister() will be called three
-times in nf_conntrack_cleanup_net() when unregistering ecache, acct and
-expect.
-
-
-Thank you for your feedback :-) ... I'll post a new v2 patch...
--- 
-Med venlig hilsen / Best regards
-  Jesper Brouer
-  ComX Networks A/S
-  Linux Network developer
-  Cand. Scient Datalog / MSc.
-  Author of http://adsl-optimizer.dk
-  LinkedIn: http://www.linkedin.com/in/brouer
-
+--- 0001/drivers/dma/dw_dmac.c
++++ work/drivers/dma/dw_dmac.c	2009-06-01 16:31:34.000000000 +0900
+@@ -1399,8 +1399,9 @@ static void dw_shutdown(struct platform_
+ 	clk_disable(dw->clk);
+ }
+ 
+-static int dw_suspend_late(struct platform_device *pdev, pm_message_t mesg)
++static int dw_suspend_noirq(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_dma	*dw = platform_get_drvdata(pdev);
+ 
+ 	dw_dma_off(platform_get_drvdata(pdev));
+@@ -1408,23 +1409,27 @@ static int dw_suspend_late(struct platfo
+ 	return 0;
+ }
+ 
+-static int dw_resume_early(struct platform_device *pdev)
++static int dw_resume_noirq(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_dma	*dw = platform_get_drvdata(pdev);
+ 
+ 	clk_enable(dw->clk);
+ 	dma_writel(dw, CFG, DW_CFG_DMA_EN);
+ 	return 0;
+-
+ }
+ 
++static struct dev_pm_ops dw_dev_pm_ops = {
++	.suspend_noirq = dw_suspend_noirq,
++	.resume_noirq = dw_resume_noirq,
++};
++
+ static struct platform_driver dw_driver = {
+ 	.remove		= __exit_p(dw_remove),
+ 	.shutdown	= dw_shutdown,
+-	.suspend_late	= dw_suspend_late,
+-	.resume_early	= dw_resume_early,
+ 	.driver = {
+ 		.name	= "dw_dmac",
++		.pm	= &dw_dev_pm_ops,
+ 	},
+ };
+ 
