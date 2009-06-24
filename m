@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761602AbZFXRsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbZFXRw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761602AbZFXRsY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 13:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760889AbZFXRsO
+	id S1760606AbZFXRw1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 13:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZFXRwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 13:48:14 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:38848 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761253AbZFXRsL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 13:48:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=VelBthn9R3ZF9zgHDP3VCp+eJbqKDhS6Ug+z23+ov0eqiX/y7KVxrG9AAiEE7wLmFz
-         kgrgnhNJqufinC627z81Xqis0kgH6YiMp7l++avuObJL9MooN3EJCLQOtUdr/6hqEMbQ
-         612NIXQJLZS/xMtPwGva0KQBC7xa5XMSkxgB4=
-Message-ID: <4A4266CC.5000005@gmail.com>
-Date: Wed, 24 Jun 2009 19:47:56 +0200
-From: rubenatch <rubenatch@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 24 Jun 2009 13:52:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48506 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752546AbZFXRwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 13:52:20 -0400
+Date: Wed, 24 Jun 2009 16:37:06 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, James Morris <jmorris@namei.org>,
+       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm_for_maps: simplify, use ptrace_may_access()
+Message-ID: <20090624143706.GC18662@redhat.com>
+References: <20090507090459.GE19133@elte.hu> <20090507092009.GC3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905071951530.29219@tundra.namei.org> <20090507102015.GB8901@elte.hu> <alpine.LRH.2.00.0905072135580.29806@tundra.namei.org> <20090623141451.GA8133@redhat.com> <20090623174918.GA24430@infradead.org> <20090623192451.GA27853@redhat.com> <20090623192532.GB27853@redhat.com> <20090624092547.D6B684059B@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: jkosina@suse.cz
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] HID: Supporting rumble in another Thrustmaster gamepad
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624092547.D6B684059B@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rubén Aós Garralda
+On 06/24, Roland McGrath wrote:
+>
+> > Also, we do not need to take ->mmap_sem in advance. In fact I think
+> > mm_for_maps() should not play with ->mmap_sem at all, the caller should
+> > take this lock.
+>
+> Agreed.  It has only one caller (though two forks of it) in
+> fs/proc/task_{no,}mmu.c and it looks easy to change.
+>
+> > With or without this patch, without ->cred_guard_mutex held we can race
+> > with exec() and get the new ->mm but check old creds.
+>
+> It looks safe and proper for mm_for_maps() to take that mutex around its
+> check.  Your patch looks good to me as it is, and taking cred_guard_mutex
+> can be another security fix patch on top.
 
-This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads
-(both PC and PS3 modes). It only informs hid-tmff.c the USB IDs and
-force feedback modes for that gamepad, and puts the gamepad in the
-"forbidden" list in hid-core.c
+Agreed, will do.
 
-Signed-off-by: Rubén Aós Garralda <rubenatch@gmail.com>
-
----
-
-diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c
-linux-source-test/drivers/hid/hid-core.c
---- linux-source-2.6.30/drivers/hid/hid-core.c  2009-06-10
-05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-core.c    2009-06-24
-18:39:41.000000000 +0200
-@@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
-        { HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS,
-USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
-+       { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
-+        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
-        { HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED,
-USB_DEVICE_ID_TOPSEED_CYBERLINK) },
-diff -uprN linux-source-2.6.30/drivers/hid/hid-tmff.c
-linux-source-test/drivers/hid/hid-tmff.c
---- linux-source-2.6.30/drivers/hid/hid-tmff.c  2009-06-10
-05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-tmff.c    2009-06-24
-18:41:04.000000000 +0200
-@@ -238,6 +238,10 @@ static const struct hid_device_id tm_dev
-                .driver_data = (unsigned long)ff_rumble },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),
-                .driver_data = (unsigned long)ff_rumble },
-+       { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323),   /* Dual
-Trigger 3-in-1 (PC Mode) */
-+                .driver_data = (unsigned long)ff_rumble },
-+        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324),   /* Dual
-Trigger 3-in-1 (PS3 Mode) */
-+                .driver_data = (unsigned long)ff_rumble },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),   /* FGT
-Rumble Force Wheel */
-                .driver_data = (unsigned long)ff_rumble },
-        { HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654),   /* FGT
-Force Feedback Wheel */
+Oleg.
 
