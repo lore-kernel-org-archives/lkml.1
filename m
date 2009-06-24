@@ -1,260 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZFXGsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZFXGtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbZFXGsJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 02:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZFXGqY
+	id S1756238AbZFXGtP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 02:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZFXGs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 02:46:24 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50520 "EHLO smtps.tip.net.au"
+	Wed, 24 Jun 2009 02:48:59 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40003 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754021AbZFXGqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 02:46:20 -0400
-Date: Wed, 24 Jun 2009 16:46:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 24
-Message-Id: <20090624164617.b7c49974.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__24_Jun_2009_16_46_17_+1000_U1B65gOf/_12z/Lk"
+	id S1753249AbZFXGs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 02:48:58 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix error handling in add_disk
+Date: Wed, 24 Jun 2009 12:18:13 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+References: <200906171231.10438.knikanth@suse.de> <20090623142357.b2050c14.akpm@linux-foundation.org>
+In-Reply-To: <20090623142357.b2050c14.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906241218.13538.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__24_Jun_2009_16_46_17_+1000_U1B65gOf/_12z/Lk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wednesday 24 June 2009 02:53:57 Andrew Morton wrote:
+> On Wed, 17 Jun 2009 12:31:10 +0530
+>
+> Nikanth Karthikesan <knikanth@suse.de> wrote:
+> > Fix error handling in add_disk. Also add WARN_ON()'s in case
+> > of error, which can be removed once the callers handle the error.
+>
+> I have a vague ancestral memory that some of the unchecked errors which
+> you're now checking for actually do happen in practice, and that this
+> "fix" will end up breaking currently-working setups.
+>
+> Or maybe I'm thinking of a similar but different piece of code (maybe
+> it was the partition code?).
+>
+> Still, I think it would be prudent to initially make this patch
+> continue to ignore the errors.  So add the warnings, but don't change
+> the response to errors.  Then we can get the change distributed for a
+> bit of testing and if that all looks good then we can add the control
+> flow changes later.
+>
 
-Hi all,
+add_disk and blk_register_region are functions returning void masking the
+error, which this patch changes. So no caller check for it's return value! And
+hence errors are ignored, and nothing breaks.
 
-Changes since 20090623:
+> >  	retval = blk_alloc_devt(&disk->part0, &devt);
+> >  	if (retval) {
+> >  		WARN_ON(1);
+> > -		return;
+> > +		goto err_out;
+> >  	}
+> > ...
+> > +	if (retval) {
+> > +		WARN_ON(1);
+> > +		goto err_free_devt;
+> > +	}
+> > ...
+> > +	if (retval) {
+> > +		WARN_ON(1);
+> > +		goto err_free_region;
+> > +	}
+> > ...
+> > -	WARN_ON(retval);
+> > +	if (retval) {
+> > +		WARN_ON(1);
+> > +		goto err_free_queue;
+> > +	}
+>
+> These all can be coded as
+>
+> 	if (WARN_ON(retval))
+> 		goto foo;
 
-My fixes tree contains these two commits:
+done.
 
-	fbdev: work around old compiler bug
-	UML: Fix some apparent bitrot (I am hoping to add some UML builds)
+Thanks
+Nikanth
 
-This tree fails to build for powerpc allyesconfig.
 
-The rr tree gained a conflict against Linus' tree and a build failure for
-which I reverted a commit.
+Fix error handling in add_disk. Also add WARN_ON()'s in case
+of error, which can be removed once the callers handle the error.
 
-The dwmw2-iommu lost its conflicts.
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
-----------------------------------------------------------------------------
+---
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+diff --git a/block/genhd.c b/block/genhd.c
+index fe7ccc0..ae48a89 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -472,11 +472,11 @@ static char *bdevt_str(dev_t devt, char *buf)
+  * range must be nonzero
+  * The hash chain is sorted on range, so that subranges can override.
+  */
+-void blk_register_region(dev_t devt, unsigned long range, struct module *module,
++int blk_register_region(dev_t devt, unsigned long range, struct module *module,
+ 			 struct kobject *(*probe)(dev_t, int *, void *),
+ 			 int (*lock)(dev_t, void *), void *data)
+ {
+-	kobj_map(bdev_map, devt, range, module, probe, lock, data);
++	return kobj_map(bdev_map, devt, range, module, probe, lock, data);
+ }
+ 
+ EXPORT_SYMBOL(blk_register_region);
+@@ -511,9 +511,9 @@ static int exact_lock(dev_t devt, void *data)
+  * This function registers the partitioning information in @disk
+  * with the kernel.
+  *
+- * FIXME: error handling
++ * TODO: Remove WARN_ON()'s when all the callers handle the error.
+  */
+-void add_disk(struct gendisk *disk)
++int add_disk(struct gendisk *disk)
+ {
+ 	struct backing_dev_info *bdi;
+ 	dev_t devt;
+@@ -529,10 +529,9 @@ void add_disk(struct gendisk *disk)
+ 	disk->flags |= GENHD_FL_UP;
+ 
+ 	retval = blk_alloc_devt(&disk->part0, &devt);
+-	if (retval) {
+-		WARN_ON(1);
+-		return;
+-	}
++	if (WARN_ON(retval))
++		goto err_out;
++
+ 	disk_to_dev(disk)->devt = devt;
+ 
+ 	/* ->major and ->first_minor aren't supposed to be
+@@ -541,16 +540,34 @@ void add_disk(struct gendisk *disk)
+ 	disk->major = MAJOR(devt);
+ 	disk->first_minor = MINOR(devt);
+ 
+-	blk_register_region(disk_devt(disk), disk->minors, NULL,
++	retval = blk_register_region(disk_devt(disk), disk->minors, NULL,
+ 			    exact_match, exact_lock, disk);
++	if (WARN_ON(retval))
++		goto err_free_devt;
++
+ 	register_disk(disk);
+-	blk_register_queue(disk);
++
++	retval = blk_register_queue(disk);
++	if (WARN_ON(retval))
++		goto err_free_region;
+ 
+ 	bdi = &disk->queue->backing_dev_info;
+ 	bdi_register_dev(bdi, disk_devt(disk));
+ 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
+ 				   "bdi");
+-	WARN_ON(retval);
++	if (WARN_ON(retval))
++		goto err_free_queue;
++
++	return 0;
++
++err_free_queue:
++	blk_unregister_queue(disk);
++err_free_region:
++	blk_unregister_region(disk_devt(disk), disk->minors);
++err_free_devt:
++	blk_free_devt(disk_devt(disk));
++err_out:
++	return retval;
+ }
+ 
+ EXPORT_SYMBOL(add_disk);
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 149fda2..df3344a 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -339,7 +339,7 @@ static inline void part_dec_in_flight(struct hd_struct *part)
+ extern void part_round_stats(int cpu, struct hd_struct *part);
+ 
+ /* block/genhd.c */
+-extern void add_disk(struct gendisk *disk);
++extern int add_disk(struct gendisk *disk);
+ extern void del_gendisk(struct gendisk *gp);
+ extern void unlink_gendisk(struct gendisk *gp);
+ extern struct gendisk *get_gendisk(dev_t dev, int *partno);
+@@ -534,7 +534,7 @@ extern struct gendisk *alloc_disk_node(int minors, int node_id);
+ extern struct gendisk *alloc_disk(int minors);
+ extern struct kobject *get_disk(struct gendisk *disk);
+ extern void put_disk(struct gendisk *disk);
+-extern void blk_register_region(dev_t devt, unsigned long range,
++extern int blk_register_region(dev_t devt, unsigned long range,
+ 			struct module *module,
+ 			struct kobject *(*probe)(dev_t, int *, void *),
+ 			int (*lock)(dev_t, void *),
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 130 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-CONFLICT (content): Merge conflict in drivers/input/evdev.c
-CONFLICT (content): Merge conflict in drivers/platform/x86/eeepc-laptop.c
-CONFLICT (content): Merge conflict in drivers/staging/Kconfig
-CONFLICT (content): Merge conflict in drivers/staging/Makefile
-CONFLICT (add/add): Merge conflict in drivers/staging/serqt_usb2/serqt_usb2=
-.c
-CONFLICT (content): Merge conflict in include/linux/rfkill.h
-CONFLICT (content): Merge conflict in kernel/cpu.c
-$ git reset --hard HEAD^
-Merging refs/next/20090619/microblaze
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-CONFLICT (content): Merge conflict in drivers/platform/x86/eeepc-laptop.c
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in kernel/cpu.c
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-Merging asm-generic/next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: UML: Fix some apparent bitrot
-[master f968612] Revert "cpumask:use-mm_cpumask-arm"
-
---Signature=_Wed__24_Jun_2009_16_46_17_+1000_U1B65gOf/_12z/Lk
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpBy7kACgkQjjKRsyhoI8zPAwCdE5noKnOKwa/pMml/tqdcD6np
-1lUAmgO5NGkx4DFLz+ijGC1GJ/OTTyV5
-=1oxV
------END PGP SIGNATURE-----
-
---Signature=_Wed__24_Jun_2009_16_46_17_+1000_U1B65gOf/_12z/Lk--
