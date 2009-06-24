@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZFXShI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZFXSl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbZFXShI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZFXSg6
+	id S1753440AbZFXSl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZFXSlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:36:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39959 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZFXSg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:36:57 -0400
-Date: Wed, 24 Jun 2009 17:21:43 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Ratan Nalumasu <rnalumasu@gmail.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
-	wakeup
-Message-ID: <20090624152143.GB23848@redhat.com>
-References: <20090622170437.GA4906@redhat.com> <20090624091316.73D0F4059B@magilla.sf.frob.com>
+	Wed, 24 Jun 2009 14:41:18 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:42990 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbZFXSlS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:41:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=cijrjQAY/o/ucKDUXzAP/tUvQqbzeBFO7U2ELzIENB0ckV8eMaqxD8AAWCrDzOEihZ
+         2DSJdQgzVFOAEJ8MUQ12NPjKCxDzKIY7eCuKzHQYmoaNJWHRJpcS7ZQrBirQypSRSIHn
+         D+zg3P0WiZAzl0dtz83km95qW3uqtLNweWiT4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624091316.73D0F4059B@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <E1MJWrI-0002Bm-Bk@pomaz-ex.szeredi.hu>
+References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <a36005b50906241002g7a116d17n52e6af2ff9891f87@mail.gmail.com> 
+	<E1MJWrI-0002Bm-Bk@pomaz-ex.szeredi.hu>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Wed, 24 Jun 2009 11:34:01 -0700
+Message-ID: <a36005b50906241134x2f403213lb89e23d4c319a635@mail.gmail.com>
+Subject: Re: [RFC] O_NOACC: open without any access
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
+       dhowells@redhat.com, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/24, Roland McGrath wrote:
->
-> Looks good, I'm glad to see this revived.
->
-> I note that even simpler than eligible_child() is just:
+On Wed, Jun 24, 2009 at 11:06, Miklos Szeredi<miklos@szeredi.hu> wrote:
+> Is it available online somewhere?  If not, could you please post the
+> relevant parts?
 
-I think the check below is orthogonal to eligible_child(). Not sure
-eligible_child() can really help, but otoh it is cheap and doesn't hurt.
-But perhaps we can kill it later.
+The OpenGroup publishes the man pages.  Here is what google finds:
+
+http://www.opengroup.org/onlinepubs/9699919799/functions/open.html
 
 
-> 	if ((wo->wo_flags & __WNOTHREAD) && wo->child_wait.private != p->parent)
-> 		return 0;
->
-> IIRC that is the test that Ratan's original patch used to address the
-> particular application usage that first troubled him.
 
-Aha, now I see what was the problem with Ratan's workload.
+> I suspect they are not quite what we want (both of them requring
+> MAY_EXEC on file, no?)
 
-> But probably this
-> is already what you meant by "more clever later"
-
-I didn't mean this particular optimization, but it looks good to me.
-
-> (and ->parent is perhaps
-> not right in all cases there).
-
-I think this is right... Except I'd like to avoid using ->parent.
-
-> Your two patches as they are look safe and useful to me and I hope they can
-> go in soon.
-
-Thanks.
-
-Yes I think these 2 patches should be applied first, even if eligible_child()
-itself doesn't buy much. It will be cleaner if we add "real" checks on top.
-
-Oleg.
-
+No that's the differences between O_EXEC and O_SEARCH.  We
+deliberately introduced two different names even though some OSes
+might implement it using the same flag and even though in both cases
+irritatingly the x permission bit is used.
