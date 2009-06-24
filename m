@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbZFXOXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760199AbZFXOXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759927AbZFXOXJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZFXOXD
+	id S1760199AbZFXOXn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758215AbZFXOXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:23:03 -0400
-Received: from tundra.namei.org ([65.99.196.166]:53157 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752456AbZFXOXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:23:01 -0400
-Date: Thu, 25 Jun 2009 00:21:57 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 1/1] mm_for_maps: simplify, use ptrace_may_access()
-In-Reply-To: <20090624030627.GA6459@us.ibm.com>
-Message-ID: <alpine.LRH.2.00.0906250021460.20443@tundra.namei.org>
-References: <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu> <20090507092009.GC3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905071951530.29219@tundra.namei.org> <20090507102015.GB8901@elte.hu> <alpine.LRH.2.00.0905072135580.29806@tundra.namei.org>
- <20090623141451.GA8133@redhat.com> <20090623174918.GA24430@infradead.org> <20090623192451.GA27853@redhat.com> <20090623192532.GB27853@redhat.com> <20090624030627.GA6459@us.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 24 Jun 2009 10:23:36 -0400
+Received: from fbr02.csee.onr.siteprotect.com ([64.26.60.146]:59830 "EHLO
+	fbr02.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758030AbZFXOXf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 10:23:35 -0400
+X-Greylist: delayed 2061 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 10:23:35 EDT
+Date: Wed, 24 Jun 2009 09:59:54 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: linux-kernel@vger.kernel.org
+Subject: performance counter 20% error finding retired instruction count
+Message-ID: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Serge E. Hallyn wrote:
+Hello
 
-> Quoting Oleg Nesterov (oleg@redhat.com):
-> > It would be nice to kill __ptrace_may_access(). It requires task_lock(),
-> > but this lock is only needed to read mm->flags in the middle.
-> > 
-> > Convert mm_for_maps() to use ptrace_may_access(), this also simplifies
-> > the code a little bit.
-> > 
-> > Also, we do not need to take ->mmap_sem in advance. In fact I think
-> > mm_for_maps() should not play with ->mmap_sem at all, the caller should
-> > take this lock.
-> 
-> Yeah I think that makes sense.
-> 
-> > With or without this patch, without ->cred_guard_mutex held we can race
-> > with exec() and get the new ->mm but check old creds.
-> > 
-> > Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-> 
-> reasoning on the security check also makes sense.
-> 
-> Reviewed-by: Serge Hallyn <serue@us.ibm.com>
+As an aside, is it time to set up a dedicated Performance Counters
+for Linux mailing list?   (Hereafter referred to as p10c7l to avoid
+confusion with the other implementations that have already taken
+all the good abbreviated forms of the concept).  If/when the 
+infrastructure appears in a released kernel, there's going to be a lot of 
+chatter by people who use performance counters and suddenly find they are 
+stuck with a huge step backwards in functionality.  And asking Fortran 
+programmers to provide kernel patches probably won't be a productive 
+response.  But I digress.
 
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+I was trying to get an exact retired instruction count from p10c7l.
+I am using the test million.s, available here
+  ( http://www.csl.cornell.edu/~vince/projects/perf_counter/million.s )
+It should count exactly one million instructions.
+
+Tests with valgrind and qemu show that it does.
+
+Using perfmon2 on Pentium Pro, PII, PIII, P4, Athlon32, and Phenom
+all give the proper result:
+
+tobler:~% pfmon -e retired_instructions ./million
+1000002 RETIRED_INSTRUCTIONS
+
+    ( it is 1,000,002 +/-2 because on most x86 architectures retired
+      instruction count includes any hardware interrupts that might
+      happen at the time.  It woud be a great feature if p10c7l
+      could add some way of gathering the per-process hardware
+      instruction count statistic to help quantify that).
+
+Yet with perf on the same Athlon32 machine (using
+kernel 2.6.30-03984-g45e3e19) gives:
+
+tobler:~%perf stat ./million
+
+  Performance counter stats for './million':
+
+        1.519366  task-clock-ticks     #       0.835 CPU utilization factor
+               3  context-switches     #       0.002 M/sec
+               0  CPU-migrations       #       0.000 M/sec
+              53  page-faults          #       0.035 M/sec
+         2483822  cycles               #    1634.775 M/sec
+         1240849  instructions         #     816.689 M/sec # 0.500 per cycle
+          612685  cache-references     #     403.250 M/sec
+            3564  cache-misses         #       2.346 M/sec
+
+  Wall-clock time elapsed:     1.819226 msecs
+
+Running multiple times gives:
+    1240849
+    1257312
+    1242313
+
+Which is a varying error of at least 20% which isn't even 
+consistent.  Is this because of sampling?  The documentation doesn't 
+really warn about this as far as I can tell.
+
+Thanks for any help resolving this problem
+
+Vince
 
 
--- 
-James Morris
-<jmorris@namei.org>
