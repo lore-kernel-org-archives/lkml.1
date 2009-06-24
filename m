@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758496AbZFXART@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbZFXARj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758496AbZFXART (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 23 Jun 2009 20:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZFXARI
+	id S1760104AbZFXARj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 23 Jun 2009 20:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbZFXARc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 23 Jun 2009 20:17:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40067 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZFXARG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 23 Jun 2009 20:17:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update 3] PM: Introduce core framework for run-time PM of I/O devices
-Date: Wed, 24 Jun 2009 02:17:38 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-References: <Pine.LNX.4.44L0.0906231408370.3209-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906231408370.3209-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 23 Jun 2009 20:17:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56277
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752429AbZFXARb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 23 Jun 2009 20:17:31 -0400
+Date: Tue, 23 Jun 2009 17:17:35 -0700 (PDT)
+Message-Id: <20090623.171735.154729801.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: NMI watchdog + NOHZ question
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090622.022752.219499742.davem@davemloft.net>
+References: <20090622.002722.53993293.davem@davemloft.net>
+	<87bpog3clx.fsf@basil.nowhere.org>
+	<20090622.022752.219499742.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906240217.39608.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 23 June 2009, Alan Stern wrote:
-> On Tue, 23 Jun 2009, Rafael J. Wysocki wrote:
-> 
-> > In short, I think suspending (or queuing a suspend request) should fail if the
-> > usage counter is nonzero, but the resuming (or queuing up a resume request)
-> > should be possible regardless of its value.  The reason is that multiple
-> > threads may in theory attempt to resume the device at the same time.
-> 
-> Agreed.  Suspends and resumes aren't symmetrical -- a single resume 
-> request must outweigh numerous suspend requests.
-> 
-> > However, I'm not sure if the core should manipulate the usage counter by
-> > itself, because it's sort of problematic (there's no good approach to decide
-> > when to decrement the counter).
-> 
-> Yes.  The idea behind my previous message was that it's not really so
-> easy for the core to decide when to _increment_ the counter either.
-> 
-> > So, I'd let the callers use pm_runtime_get() to increment the counter
-> > and pm_runtime_put() to decrement it, possibly queuing up an idle notification
-> > if the counter happens to reach 0.  Also, I'm not sure if unbalanced
-> > pm_runtime_put() should be regarded as a bug.
-> 
-> It should be.  Once the counter is messed up, runtime PM wouldn't be
-> able to work properly.  But maybe you should add a pm_set_counter call
-> so that drivers can recover from imbalances.
-> 
-> One question still remains: If the counter is 0 at the end of a
-> successful pm_runtime_resume, should the core then call pm_notify_idle?  
-> Or should we make the driver responsible for that too?
+From: David Miller <davem@davemloft.net>
+Date: Mon, 22 Jun 2009 02:27:52 -0700 (PDT)
 
-Good question. :-)
-
-I think the core may call pm_notify_idle() in that case, but not necessarily in
-the synchronous case.
-
-> > At the same time, I'd like the core to use runtime_status and the other
-> > fields in dev_pm_info, except for the usage counter, to ensure that all
-> > operations are only carried out when it makes sense.
+> I think something else is afoot, because while using "nohz=off" makes
+> the problem go away, simply adding a NMI watchdog touch after the
+> schedule() call in cpu_idle() does not make the problem go away.
 > 
-> Yes.  In fact, I'd say that when the counter is positive it doesn't
-> make sense to allow a runtime suspend -- so you don't need that
-> exception in your statement above.  :-)
+> Also, the cpu that gets the NMI watchdog is different from the cpu
+> running the qla2xxx driver init.   That basically destroys the bulk
+> of my theory :-)
 
-Well, you're right.
+Ok, I think I know what's happening now.
 
-Best,
-Rafael
+CPU 0 is in the driver init and looping submitting mailbox
+commands to load the firmware, then waiting for completion.
+
+CPU 1 is receiving the device interrupts.  CPU 1 is where the
+NMI watchdog triggers.
+
+CPU 0 is submitting mailbox commands fast enough that by the
+time CPU 1 returns from the device interrupt handler, a new
+one is pending.  This sequence runs for more than 5 seconds.
+
+The problematic case is CPU 1's timer interrupt running when
+the barrage of device interrupts begin.  Then we have:
+
+	timer interrupt
+	return for softirq checking
+	pending, thus enable interrupts
+
+		 qla2xxx interrupt
+		 return
+		 qla2xxx interrupt
+		 return
+		 ... 5+ seconds pass
+		 final qla2xxx interrupt for fw load
+		 return
+
+	run timer softirq
+	return
+
+At some point in the multi-second qla2xxx interrupt storm we trigger
+the NMI watchdog on CPU 1 from the NMI interrupt handler.
+
+The timer softirq, once we get back to running it, is smart enough to
+run the timer work enough times to make up for the missed timer
+interrupts.
+
+However, the NMI watchdogs (both x86 and sparc) use the timer
+interrupt count to notice the cpu is wedged.  But in the above
+scenerio we'll receive only one such timer interrupt even if we
+last all the way back to running the timer softirq.
+
+I'm not exactly sure what to do about this.
