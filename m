@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbZFXSrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbZFXSsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760358AbZFXSrS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZFXSrJ
+	id S1760825AbZFXSsb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZFXSsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:47:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:36783 "EHLO www.tglx.de"
+	Wed, 24 Jun 2009 14:48:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46293 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZFXSrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:47:08 -0400
-Date: Wed, 24 Jun 2009 20:45:31 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: Gary Hade <garyhade@us.ibm.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-In-Reply-To: <20090624112849.55b38fff@jbarnes-g45>
-Message-ID: <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain> <4A423686.8050905@lwfinger.net> <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain> <1245859068.3216.5.camel@localhost.localdomain> <20090624161306.GC7239@us.ibm.com>
- <1245861219.3216.15.camel@localhost.localdomain> <20090624094411.08fc66e6@jbarnes-g45> <20090624175513.GE7239@us.ibm.com> <20090624112849.55b38fff@jbarnes-g45>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751969AbZFXSsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:48:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Magnus Damm <magnus.damm@gmail.com>, gregkh@suse.de
+Subject: Re: [PATCH 00/07] pm: remove late/early platform driver pm callbacks V2
+Date: Wed, 24 Jun 2009 20:48:39 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, pavel@ucw.cz, hskinnemoen@atmel.com,
+       anemo@mba.ocn.ne.jp, linux-usb@vger.kernel.org,
+       akpm@linux-foundation.org, stern@rowland.harvard.edu,
+       ben-linux@fluff.org, linux-omap@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906242048.40956.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009, Jesse Barnes wrote:
-> > I was thinking 32 but 64 would be better if there aren't any
-> > downsides elsewhere of making the array that big.
+On Wednesday 24 June 2009, Magnus Damm wrote:
+> pm: remove late/early platform driver pm callbacks V2
 > 
-> Just chatting with Len about this; apparently the PNPACPI layer ran
-> into something similar awhile back, and they had to go to a variable
-> sized list of resources, due to weird machines with huge numbers of
-> resources.  Matthew says he's got an idea about how to fix this up; if
-> that doesn't work out I'll see about making the bus resource array into
-> a list instead.
+> [PATCH 01/07] arm: rework omap suspend_late()/resume_early()
+> [PATCH 02/07] dma: rework dw_dmac suspend_late()/resume_early()
+> [PATCH 03/07] dma: rework txx9dmac suspend_late()/resume_early()
+> [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+> [PATCH 05/07] i2c: rework i2c-s3c2410 suspend_late()/resume() V2
+> [PATCH 06/07] usb: rework musb suspend()/resume_early()
+> [PATCH 07/07] pm: remove platform device suspend_late()/resume_early() V2
+> 
+> These patches simply remove ->suspend_late() and ->resume_early()
+> from struct platform_driver. Drivers are converted to dev_pm_ops
+> with CONFIG_SUSPEND in mind. Untested.
+> 
+> All patches except [02/07] are known to compile.
+> 
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
 
-Can we just bring the limit check back and increase the number for now
-until folks come up with a better solution ?
+If no one objects, I'd like to take this series into the suspend-2.6 tree as
+2.6.32 material.  Greg?
 
-Thanks,
+Pavel, is your ACK for the entire series?
 
-	tglx
+Best,
+Rafael
+
+> ---
+> 
+>  Changes since V1:
+>  - resolved conflicts in [05/07], rediffed [07/07]
+>  - include lkml, linux-usb and akpm
+> 
+>  arch/arm/plat-omap/debug-leds.c  |   11 +++++++----
+>  arch/arm/plat-omap/gpio.c        |   14 ++++++++++----
+>  drivers/base/platform.c          |   36 ------------------------------------
+>  drivers/dma/dw_dmac.c            |   15 ++++++++++-----
+>  drivers/dma/txx9dmac.c           |   15 ++++++++++-----
+>  drivers/i2c/busses/i2c-pxa.c     |   25 +++++++++++++++++--------
+>  drivers/i2c/busses/i2c-s3c2410.c |   25 ++++++++++++++++---------
+>  drivers/usb/musb/musb_core.c     |   18 ++++++++++++------
+>  include/linux/platform_device.h  |    2 --
+>  9 files changed, 82 insertions(+), 79 deletions(-)
