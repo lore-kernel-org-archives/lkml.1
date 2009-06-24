@@ -1,125 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZFXJU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZFXJYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbZFXJU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZFXJUq
+	id S1754724AbZFXJYt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZFXJYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:20:46 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61906 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbZFXJUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:20:44 -0400
-Message-ID: <4A41EFE1.5050101@cn.fujitsu.com>
-Date: Wed, 24 Jun 2009 17:20:33 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 24 Jun 2009 05:24:42 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:43301 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbZFXJYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:24:42 -0400
+Date: Wed, 24 Jun 2009 11:24:43 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       Andrea Paterniani <a.paterniani@swapp-eng.it>
+Subject: Re: [PATCH 1/2] remove i.MX SPI driver
+Message-ID: <20090624092443.GW31396@pengutronix.de>
+References: <1245308072-14392-1-git-send-email-s.hauer@pengutronix.de> <1245308072-14392-2-git-send-email-s.hauer@pengutronix.de> <20090623155840.c750b70b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: Preempt a non-rt queue if a rt ioq is
- present in ancestor or sibling groups
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com> <4A3F3648.7080007@cn.fujitsu.com> <20090622172123.GE15600@redhat.com> <4A4079B8.4020402@cn.fujitsu.com> <20090623140250.GA4262@redhat.com>
-In-Reply-To: <20090623140250.GA4262@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090623155840.c750b70b.akpm@linux-foundation.org>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 11:10:22 up 43 days, 23:34, 37 users,  load average: 0.04, 0.09,
+	0.04
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Tue, Jun 23, 2009 at 02:44:08PM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> On Mon, Jun 22, 2009 at 03:44:08PM +0800, Gui Jianfeng wrote:
->>>> Preempt the ongoing non-rt ioq if there are rt ioqs waiting for dispatching
->>>> in ancestor or sibling groups. It will give other group's rt ioq an chance 
->>>> to dispatch ASAP.
->>>>
->>> Hi Gui,
->>>
->>> Will new preempton logic of traversing up the hiearchy so that both new
->>> queue and old queue are at same level to take a preemption decision not
->>> take care of above scenario?
->> Hi Vivek,
->>
->> Would you explain a bit what do you mean about "both new queue and old queue 
->> are at same level to take a preemption decision". I don't understand it well.
->>
+On Tue, Jun 23, 2009 at 03:58:40PM -0700, Andrew Morton wrote:
+> On Thu, 18 Jun 2009 08:54:31 +0200
+> Sascha Hauer <s.hauer@pengutronix.de> wrote:
 > 
-> Consider following hierarchy.
+> > This driver is in a non working state at the moment and will
+> > be replaced by a bitbang driver which can also handle the
+> > newer i.MX variants
 > 
-> 			root
-> 			/ | 
-> 		       A  1   
-> 		       | 
-> 		       2 
-> In the above diagram, A is the group and "1" and "2" are two io queues 
-> associated with tasks.
+> hum.  How did it get into a non-working state?
 > 
-> Now assume that queue "1" is being served and queue "2" gets backlogged.
-> Should queue 2 preempt queue 1 now?
-> 
-> To take that decision, we need to do the comparision between type of
-> entity of group A and queue 1 (That is at the same level or IOW, the
-> entities in question have the same parent). If group A is of class RT and
-> queue 1 is of type BE then queue 2 should preempt queue 1 otherwise not.
-> 
-> Hence in hierarchical setups to take a preemption decision, comparison
-> should be done at same level.
+> From the logs, it looks like it was working OK for Andrea Paterniani
+> when he patched it in April last year.
 
-  So what bfq_find_matching_entity has done is going to figure out the same
-  level entities， in turn, taking the decision.
+The driver was written for arch-imx which is superseeded by arch-mxc
+now. It depends on the i.MX DMA API which changed while moving from
+arch-imx to arch-mxc.
+A reason to keep the old driver is that it has DMA support, but Andrea
+agrees that it's better to add DMA support to the new driver than to fix
+it in the old driver.
 
 > 
->>> Please have a look at bfq_find_matching_entity().
->>>
->>> At the same time we probably don't want to preempt the non-rt queue
->>> with an RT queue in sibling group until and unless sibling group is an
->>> RT group.
->>>
->>> 		root
->>> 		/  \
->>> 	   BEgrpA  BEgrpB
->>> 	      |     |	
->>> 	  BEioq1   RTioq2
->>>
->>> Above we got two BE group A and B and assume ioq in group A is being
->>> served and then an RT request in group B comes. Because group B is an
->>> BE class group, we should not preempt the queue in group A.
->>   Yes, i also have this concern. So, it does not allow non-rt group preempts
->>   another group. I'll check whether there is a way to address this issue.
->>
+> Ordinarily I'd be asking whether this replacement of one driver with
+> another is a 100% seamless change.  But I guess that the audience for
+> SPI drivers are sufficiently technical to be able to handle the odd
+> Kconfig changes, module parameter changes, module name changes, etc.
 > 
-> So here also assume ioq1 is being served and ioq2 gets backlogged. To
-> decide whether ioq2 should preempt ioq1 or not, one needs to go up the 
-> hiearchy till two paths share the parent. That means one needs to go up
-> at the BEgrpA and BEgrpB level where they have common parent "root". Now
-> both the groups are of class BE hence ioq2 should not preempt ioq1.
+> But I do think that if there are any such user-visible changes, they
+> should be described in the changelog.  And I think there are such
+> changes - the module name at least?
 > 
-> Hope it helps.
+> 
+> Is it possible and desirable to retain both drivers for a while?  Would
+> that ease the transition?  It also gives people a fallback driver to
+> use, if your new driver doesn't work for them.  Just like eepro100.c,
+> which lived for five years ;)
 
-  Thanks, it's very helpful.
-
-  I have a thought now. Whether we can maintain a rt ioq list in efqd, and 
-  elv_fq_select_ioq() travels this list to take preemtion decision for each
-  available rt ioqs at the same level(by using bfq_find_matching_entity).
-  I'd like to try it out.
+I rather try to avoid that. Note that this is a platform driver which
+had zero inkernel users till now.
 
 > 
-> Thanks
-> Vivek
-> 
-> 
-> 
+> But it's really hard to make any decisions about this because the
+> changelog failed to provide any details about the "non working state".
+>
+
+I'll add notes about this to the patch which removes the driver.
+
+Sascha
+
 
 -- 
-Regards
-Gui Jianfeng
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
