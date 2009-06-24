@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZFXSnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZFXSof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbZFXSnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760190AbZFXSnB
+	id S1759487AbZFXSof (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbZFXSoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:43:01 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:47927 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760672AbZFXSm7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:42:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=bMs6jICWFhKBJprYQdwCW1/GvzlgX0P9cClgjCUmIvBGE876Y/jEXjyvt+AGHdP6TC
-         AjMVnorJBpSCXZ5F5bqEflUxIvFTMgV0eXgJ5w3U+lSZGb/pZHEmh/y848+Xwh843nXe
-         HWWs1Qfmq88xpXDgzR0Zp2qQP6GtKjVPoj/Yc=
+	Wed, 24 Jun 2009 14:44:24 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:48291 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbZFXSoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:44:23 -0400
+Date: Wed, 24 Jun 2009 11:44:23 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
+       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
+       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
+       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH -tip 0/3] expedited "big hammer" RCU grace periods
+Message-ID: <20090624184423.GK6779@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090624164535.GA13334@linux.vnet.ibm.com> <20090624180303.GE7576@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090624113037.7d72ed59.akpm@linux-foundation.org>
-References: <20090624080753.4f677847@infradead.org>
-	 <20090624094622.d0b0fd82.akpm@linux-foundation.org>
-	 <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
-	 <20090624105517.904f93da.akpm@linux-foundation.org>
-	 <4A426825.80905@cs.helsinki.fi>
-	 <20090624113037.7d72ed59.akpm@linux-foundation.org>
-Date: Wed, 24 Jun 2009 21:43:01 +0300
-X-Google-Sender-Auth: a82d286030e8c389
-Message-ID: <84144f020906241143w76f57031u1cc185bd81d6caf7@mail.gmail.com>
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, cl@linux-foundation.org, npiggin@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624180303.GE7576@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 9:30 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> What's the expected value of s->min in allocate_slab()?  In what
-> situations would it be >0?
+On Wed, Jun 24, 2009 at 08:03:03PM +0200, Ingo Molnar wrote:
+> 
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> >  include/linux/rcuclassic.h    |   15 ++-
+> 
+> heh, we dont have this file anymore ... as of today, right? :)
 
-When object size in the cache doesn't fit on a single page. See the
-get_order() at the end of calculate_sizes() for details.
+Ah, I was assuming that expedited RCU would happen before removal of
+Classic RCU.
+
+I will respin the expedited RCU patch.  ;-)
+
+							Thanx, Paul
