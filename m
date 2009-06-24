@@ -1,105 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZFXJ1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZFXJ22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757027AbZFXJ1r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbZFXJ1e
+	id S1757290AbZFXJ22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZFXJ2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:27:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:4082 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbZFXJ1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:27:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=gndPnaVjUpouztR0cbwhwYBSX29CgkXlTWU1+rpEghVmtxcCIIUpN/IsAQG+6blIIy
-         rb3sHej9rlluBQg4X8VgWvGjyZSQfF5sO+zqF4Si+RY3RuzRcqxdgwSPWhEv3pS/NMmu
-         xFRinDDHYHqz+zobeBEH55S/76sRSP8QNTO/U=
-From: Magnus Damm <magnus.damm@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, pavel@ucw.cz, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp,
-       linux-usb@vger.kernel.org, akpm@linux-foundation.org, rjw@sisk.pl,
-       stern@rowland.harvard.edu, ben-linux@fluff.org,
-       Magnus Damm <magnus.damm@gmail.com>, linux-omap@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
-Date: Wed, 24 Jun 2009 18:24:00 +0900
-Message-Id: <20090624092400.14276.94490.sendpatchset@rx1.opensource.se>
-In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 06/07] usb: rework musb suspend()/resume_early()
+	Wed, 24 Jun 2009 05:28:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43407 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751602AbZFXJ2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:28:17 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Wed, 24 Jun 2009 19:28:55 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19009.61911.914777.973086@notabene.brown>
+Cc: Ken Milmore <ken.milmore@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: Write barriers on MD RAID1
+In-Reply-To: message from Jens Axboe on Wednesday June 24
+References: <4A188CAD.1080009@googlemail.com>
+	<0fa4b1e19d3edb12931e0d641ce2c7d7.squirrel@neil.brown.name>
+	<4A3E3C49.7010907@googlemail.com>
+	<19009.41191.662901.179565@notabene.brown>
+	<20090624073849.GG31415@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Magnus Damm <damm@igel.co.jp>
+On Wednesday June 24, jens.axboe@oracle.com wrote:
+> On Wed, Jun 24 2009, Neil Brown wrote:
+> > On Sunday June 21, ken.milmore@googlemail.com wrote:
+> > > I thought I had better bump my previous post as this regression is still 
+> > > present in 2.6.29.5.
+> > 
+> > Thanks Ken.
+> > 
+> > > 
+> > > To recap, commit cec0707e40ae25794b5a2de7b7f03c51961f80d9 has broken 
+> > > write barriers on md raid1 block devices in 2.6.29 and later kernels. 
+> > > Reversing this commit appears to fix the problem.
+> > > 
+> > > Please let me know if I'm harassing the wrong maintainers here!
+> > 
+> > Jens,
+> >   have you had a chance to look at this?
+> 
+> Yeah, I think it's the right way to go. I'll queue it up for .31 and we
+> should put in in -stable as well.
 
-This patch reworks platform driver power management code
-for musb from legacy callbacks to dev_pm_ops.
+Great, thanks.
 
-The callbacks are converted for CONFIG_SUSPEND like this:
-  suspend() -> suspend()
-  resume_early() -> resume_noirq()
+NeilBrown
 
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
----
 
- Untested but compiles fine.
-
- drivers/i2c/busses/i2c-pxa.c |   25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
-
---- 0001/drivers/usb/musb/musb_core.c
-+++ work/drivers/usb/musb/musb_core.c	2009-06-01 15:27:12.000000000 +0900
-@@ -2168,8 +2168,9 @@ static int __devexit musb_remove(struct 
- 
- #ifdef	CONFIG_PM
- 
--static int musb_suspend(struct platform_device *pdev, pm_message_t message)
-+static int musb_suspend(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	unsigned long	flags;
- 	struct musb	*musb = dev_to_musb(&pdev->dev);
- 
-@@ -2196,8 +2197,9 @@ static int musb_suspend(struct platform_
- 	return 0;
- }
- 
--static int musb_resume_early(struct platform_device *pdev)
-+static int musb_resume_noirq(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct musb	*musb = dev_to_musb(&pdev->dev);
- 
- 	if (!musb->clock)
-@@ -2215,9 +2217,14 @@ static int musb_resume_early(struct plat
- 	return 0;
- }
- 
-+static struct dev_pm_ops musb_dev_pm_ops = {
-+	.suspend	= musb_suspend,
-+	.resume_noirq	= musb_resume_noirq,
-+};
-+
-+#define MUSB_DEV_PM_OPS (&musb_dev_pm_ops)
- #else
--#define	musb_suspend	NULL
--#define	musb_resume_early	NULL
-+#define	MUSB_DEV_PM_OPS	NULL
- #endif
- 
- static struct platform_driver musb_driver = {
-@@ -2225,11 +2232,10 @@ static struct platform_driver musb_drive
- 		.name		= (char *)musb_driver_name,
- 		.bus		= &platform_bus_type,
- 		.owner		= THIS_MODULE,
-+		.pm		= MUSB_DEV_PM_OPS,
- 	},
- 	.remove		= __devexit_p(musb_remove),
- 	.shutdown	= musb_shutdown,
--	.suspend	= musb_suspend,
--	.resume_early	= musb_resume_early,
- };
- 
- /*-------------------------------------------------------------------------*/
+> 
+> > 
+> > I think the following patch is appropriate and should go in to
+> > -stable.
+> > 
+> > Thanks,
+> > NeilBrown
+> > 
+> > 
+> > From addd8b129835a63d6df9a38eae20caaa15de5988 Mon Sep 17 00:00:00 2001
+> > From: NeilBrown <neilb@suse.de>
+> > Date: Wed, 24 Jun 2009 13:39:15 +1000
+> > Subject: [PATCH] Restore barrier support for md and probably other virtual devices.
+> > 
+> > The next_ordered flag is only meaningful for devices that use __make_request.
+> > So move the test against next_ordered out of generic code and in to
+> > __make_request
+> > 
+> > Since this test was added, barriers have not worked on md, and (I
+> > think) dm and similar devices that don't use __make_request and so
+> > don't bother to set next_ordered.
+> > 
+> > Cc: stable@kernel.org
+> > Cc: Ken Milmore <ken.milmore@googlemail.com>
+> > Signed-off-by: NeilBrown <neilb@suse.de>
+> > ---
+> >  block/blk-core.c |   10 +++++-----
+> >  1 files changed, 5 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/block/blk-core.c b/block/blk-core.c
+> > index b06cf5c..fc221aa 100644
+> > --- a/block/blk-core.c
+> > +++ b/block/blk-core.c
+> > @@ -1172,6 +1172,11 @@ static int __make_request(struct request_queue *q, struct bio *bio)
+> >  	const int unplug = bio_unplug(bio);
+> >  	int rw_flags;
+> >  
+> > +	if (bio_barrier(bio) && bio_has_data(bio) &&
+> > +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> > +		bio_endio(bio, -EOPNOTSUPP)
+> > +			return 0;
+> > +	}
+> >  	/*
+> >  	 * low level driver can indicate that it wants pages above a
+> >  	 * certain limit bounced to low memory (ie for highmem, or even
+> > @@ -1472,11 +1477,6 @@ static inline void __generic_make_request(struct bio *bio)
+> >  			err = -EOPNOTSUPP;
+> >  			goto end_io;
+> >  		}
+> > -		if (bio_barrier(bio) && bio_has_data(bio) &&
+> > -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> > -			err = -EOPNOTSUPP;
+> > -			goto end_io;
+> > -		}
+> >  
+> >  		ret = q->make_request_fn(q, bio);
+> >  	} while (ret);
+> > -- 
+> > 1.6.3.1
+> > 
+> 
+> -- 
+> Jens Axboe
