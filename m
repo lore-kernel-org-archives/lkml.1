@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZFXSDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbZFXSGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbZFXSDk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZFXSDa
+	id S1761314AbZFXSGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZFXSGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:03:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49752 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbZFXSD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:03:29 -0400
-Date: Wed, 24 Jun 2009 20:03:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH -tip 0/3] expedited "big hammer" RCU grace periods
-Message-ID: <20090624180303.GE7576@elte.hu>
-References: <20090624164535.GA13334@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624164535.GA13334@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 24 Jun 2009 14:06:17 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34638 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751523AbZFXSGQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 14:06:16 -0400
+To: drepper@gmail.com
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       viro@zeniv.linux.org.uk, adilger@sun.com, dhowells@redhat.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org
+In-reply-to: <a36005b50906241002g7a116d17n52e6af2ff9891f87@mail.gmail.com>
+	(message from Ulrich Drepper on Wed, 24 Jun 2009 10:02:04 -0700)
+Subject: Re: [RFC] O_NOACC: open without any access
+References: <E1MHBX7-0001Mv-Li@pomaz-ex.szeredi.hu> <a36005b50906241002g7a116d17n52e6af2ff9891f87@mail.gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1MJWrI-0002Bm-Bk@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 24 Jun 2009 20:06:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 24 Jun 2009, Ulrich Drepper wrote:
+> On Wed, Jun 17, 2009 at 23:55, Miklos Szeredi<miklos@szeredi.hu> wrote:
+> > The sole purpose is to help race free "userspace lookup" type
+> > operations.  So fstat, fch*, *at work but nothing else.  Filesystem's
+> > ->open() is not called and f_op is set to NULL.
+> 
+> Before adding something like this, please look at the 2009 POSIX spec.
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Is it available online somewhere?  If not, could you please post the
+relevant parts?
 
->  include/linux/rcuclassic.h    |   15 ++-
+>  There are two new open() flags which have to be implemented: O_EXEC
+> and O_SEARCH.  These might already suffice for what you want.
 
-heh, we dont have this file anymore ... as of today, right? :)
+I suspect they are not quite what we want (both of them requring
+MAY_EXEC on file, no?)
 
-	Ingo
+Thanks,
+Miklos
