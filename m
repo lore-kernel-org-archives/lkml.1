@@ -1,97 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZFXKEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZFXKGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbZFXKEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 06:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbZFXKEO
+	id S1756118AbZFXKGY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 06:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZFXKGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 06:04:14 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59018 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753764AbZFXKEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 06:04:12 -0400
-Date: Wed, 24 Jun 2009 12:04:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org
-Subject: Re: merging the per-bdi writeback patchset
-Message-ID: <20090624100414.GJ31415@kernel.dk>
-References: <20090623081156.GT31415@kernel.dk> <20090623014835.1fc8fb14.akpm@linux-foundation.org> <20090623085505.GU31415@kernel.dk> <20090623080137.33cdc45c.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090623080137.33cdc45c.akpm@linux-foundation.org>
+	Wed, 24 Jun 2009 06:06:06 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:55898 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751560AbZFXKGE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 06:06:04 -0400
+Subject: Re: [PATCH 03/10] mac80211: Use rcu_barrier() on unload.
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
+       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
+       Patrick McHardy <kaber@trash.net>, christine.caulfield@googlemail.com,
+       Trond.Myklebust@netapp.com, linux-wireless@vger.kernel.org,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+In-Reply-To: <1245770155.21314.38.camel@johannes.local>
+References: <20090623150330.22490.87327.stgit@localhost>
+	 <20090623150409.22490.99106.stgit@localhost>
+	 <1245770155.21314.38.camel@johannes.local>
+Content-Type: text/plain
+Organization: ComX Networks A/S
+Date: Wed, 24 Jun 2009 12:06:05 +0200
+Message-Id: <1245837965.6695.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 10:06:05.0688 (UTC) FILETIME=[632B5F80:01C9F4B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23 2009, Andrew Morton wrote:
-> On Tue, 23 Jun 2009 10:55:05 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Tue, Jun 23 2009, Andrew Morton wrote:
-> > > On Tue, 23 Jun 2009 10:11:56 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > Things are looking good for this patchset and it's been in -next for
-> > > > almost a week without any reports of problems. So I'd like to merge it
-> > > > for 2.6.31 if at all possible. Any objections?
-> > > 
-> > > erk.  I was rather expecting I'd have time to have a look at it all.
+On Tue, 2009-06-23 at 17:15 +0200, Johannes Berg wrote:
+> On Tue, 2009-06-23 at 17:04 +0200, Jesper Dangaard Brouer wrote:
+> > The mac80211 module uses rcu_call() thus it should use rcu_barrier()
+> > on module unload.
 > > 
-> > OK, we can wait if we have to, just trying to avoid having to keep this
-> > fresh for one full cycle. I have posted this patchset 11 times though
-> > over months, so it's not like it's a new piece of work :-)
-> 
-> Yeah, sorry.  
-> 
-> > > It's unclear to me actually _why_ the performance changes which were
-> > > observed have actually occurred.  In fact it's a bit unclear (to me)
-> > > why the patchset was written and what it sets out to achieve :(
+> > I'm having a hardtime verifying that no more call_rcu() callbacks can
+> > be schedules in the module unload path.  Could a maintainer please
+> > look into this?
 > > 
-> > It started out trying to get rid of the pdflush uneven writeout. If you
-> > look at various pdflush intensive workloads, even on a single disk you
-> > often have 5 or more pdflush threads working the same device. It's just
-> > not optimal.
-> 
-> That's a bug, isn't it?  This
-> 
-> 		/* Is another pdflush already flushing this queue? */
-> 		if (current_is_pdflush() && !writeback_acquire(bdi))
-> 			break;
-> 
-> isn't working.
-
-But that's on a per-inode basis. I didn't look further into the problem
-to be honest, just noticed that you very quickly get a handful of
-pdflush threads ticking along.
-
-> > Another issue was starvation with request allocation. Given
-> > that pdflush does non-blocking writes (it has to, by design), pdflush
-> > can potentially be starved if someone else is working the device.
-> 
-> hm, true.  100% starved, or just "slowed down"?  The latter I trust -
-> otherwise there are still failure modes?
-
-Just slowed down, I'm suspecting this is where the lumpiness comes from
-as well. At least in the cases I have seen, in theory you could starve
-the pdflush thread indefinitely.
-
-> > > A long time ago the XFS guys (Dave Chinner iirc) said that XFS needs
-> > > more than one thread per device to keep the device saturated.  Did that
-> > > get addressed?
+> > Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> > ---
 > > 
-> > It supports up to 32-threads per device, but Chinner et all have been
-> > silent. So the support is there and there's a
-> > super_operations->inode_get_wb() to map a dirty inode to a writeback
-> > device. Nobody is doing that yet though.
+> >  net/mac80211/main.c |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/net/mac80211/main.c b/net/mac80211/main.c
+> > index 092a017..e9f70ce 100644
+> > --- a/net/mac80211/main.c
+> > +++ b/net/mac80211/main.c
+> > @@ -1100,6 +1100,8 @@ static void __exit ieee80211_exit(void)
+> >  		ieee80211s_stop();
+> >  
+> >  	ieee80211_debugfs_netdev_exit();
+> > +
+> > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+> >  }
 > 
-> OK.
-> 
-> How many kernel threads do the 1000-spindle people end up with?
+> I don't think this is correct at all -- note that call_rcu() is done in
+> some of the mesh code, so I would think you need to do this in
+> ieee80211_stop() since the call_rcu() code requires the interface to
+> still be around. And when it's stopped everything should be idle.
 
-If all 1000 spindles are exposed and flushing dirty data, you get 1000
-threads. Realistically, you'll likely use some sort of dm/md frontend
-though. And then you only get 1 thread per dm/md device.
+Should it then not be in mesh.c ieee80211_stop_mesh().  We can replace
+the synchronize_rcu() in this function with a rcu_barrier().
+
+> I can fix it later, but I'm deep in some other stuff right now.
+
+Yes, I noticed you seem quite active :-)
+I can also do a repost... what about the patch below?
 
 -- 
-Jens Axboe
+Med venlig hilsen / Best regards
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
+
+
+[PATCH v2 03/10] mac80211: Use rcu_barrier() on unload.
+
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+
+The mac80211 module uses rcu_call() thus it should use rcu_barrier()
+on module unload.
+
+The rcu_barrier() is placed in mech.c ieee80211_stop_mesh() which is
+invoked from ieee80211_stop() in case vif.type == NL80211_IFTYPE_MESH_POINT.
+
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+---
+
+ net/mac80211/mesh.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+diff --git a/net/mac80211/mesh.c b/net/mac80211/mesh.c
+index fc712e6..11cf45b 100644
+--- a/net/mac80211/mesh.c
++++ b/net/mac80211/mesh.c
+@@ -494,7 +494,7 @@ void ieee80211_stop_mesh(struct ieee80211_sub_if_data *sdata)
+ 	 * should it be using the interface and enqueuing
+ 	 * frames at this very time on another CPU.
+ 	 */
+-	synchronize_rcu();
++	rcu_barrier(); /* Wait for RX path and call_rcu()'s */
+ 	skb_queue_purge(&sdata->u.mesh.skb_queue);
+ }
+ 
+
 
