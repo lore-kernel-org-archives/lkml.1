@@ -1,103 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZFXWHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbZFXWLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbZFXWHg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 18:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZFXWH1
+	id S1754850AbZFXWLT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 18:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbZFXWLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 18:07:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751663AbZFXWH1 (ORCPT
+	Wed, 24 Jun 2009 18:11:09 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:58243 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbZFXWLI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 18:07:27 -0400
-Date: Wed, 24 Jun 2009 15:07:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-Id: <20090624150714.c7264768.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain>
-References: <20090624080753.4f677847@infradead.org>
-	<20090624094622.d0b0fd82.akpm@linux-foundation.org>
-	<84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
-	<20090624105517.904f93da.akpm@linux-foundation.org>
-	<4A426825.80905@cs.helsinki.fi>
-	<20090624113037.7d72ed59.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241134510.3240@localhost.localdomain>
-	<20090624120617.1e6799b5.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
-	<20090624123624.26c93459.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241240360.3154@localhost.localdomain>
-	<20090624130121.99321cca.akpm@linux-foundation.org>
-	<alpine.LFD.2.01.0906241312090.3154@localhost.localdomain>
-	<alpine.LFD.2.01.0906241334260.3154@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 24 Jun 2009 18:11:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=r821wEsuQiUeJnVGXdM4/RivDMOLQGSvgudYvsaxZ4NwHEY0cs2fVCap6NPMrhSsLT
+         axffp/DFGZjTWB0Q8qoeRWtf1gdw0NiGcF6nVGO7nYjYSwTxNibZPSiGzvigAGwhg1c0
+         IthuyQjTzr64H6frCsyRywxlhGLY+743cTlGg=
+MIME-Version: 1.0
+In-Reply-To: <4A42A2FD.1060401@lwfinger.net>
+References: <1245845787.3093.3.camel@localhost.localdomain>
+	 <20090624175513.GE7239@us.ibm.com>
+	 <20090624112849.55b38fff@jbarnes-g45>
+	 <alpine.LFD.2.00.0906242043230.2767@localhost.localdomain>
+	 <20090624194839.GG7239@us.ibm.com> <4A4286F8.9020501@lwfinger.net>
+	 <86802c440906241432l6d601f76sf2a413d6e19079e6@mail.gmail.com>
+	 <4A429DAA.3010303@lwfinger.net>
+	 <86802c440906241444g1aabcc5rb2d189dca0965e36@mail.gmail.com>
+	 <4A42A2FD.1060401@lwfinger.net>
+Date: Wed, 24 Jun 2009 15:11:08 -0700
+Message-ID: <86802c440906241511i3d534723u4dfdef9448b54bb9@mail.gmail.com>
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Gary Hade <garyhade@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 13:40:11 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Wed, Jun 24, 2009 at 3:04 PM, Larry Finger<Larry.Finger@lwfinger.net> wrote:
+> Yinghai Lu wrote:
+> node 0 link 0: mmio [a0000, bffff]
+> node 0 link 0: mmio [c0000000, dfffffff]
+> node 0 link 0: mmio [e0000000, efffffff]
+> node 0 link 0: mmio [f0000000, fe0bffff]
+> bus: [00,ff] on node 0 link 0
+> bus: 00 index 0 io port: [0, ffff]
+> bus: 00 index 1 mmio: [a0000, bffff]
+> bus: 00 index 2 mmio: [c0000000, fcffffffff]
 
-> 
-> 
-> On Wed, 24 Jun 2009, Linus Torvalds wrote:
-> > On Wed, 24 Jun 2009, Andrew Morton wrote:
-> > > 
-> > > If the caller gets oom-killed, the allocation attempt fails.  Callers need
-> > > to handle that.
-> > 
-> > I actually disagree. I think we should just admit that we can always free 
-> > up enough space to get a few pages, in order to then oom-kill things.
-> 
-> Btw, if you want to change the WARN_ON() to warn when you're in the 
-> "allocate in order to free memory" recursive case, then I'd have no issues 
-> with that.
-> 
-> In fact, in that case it probably shouldn't even be conditional on the 
-> order. 
-> 
-> So a
-> 
-> 	WARN_ON_ONCE((p->flags & PF_MEMALLOC) && (gfpmask & __GFP_NOFAIL));
-> 
-> actually makes tons of sense. 
+that is read from pci config.
 
-I suspect that warning will trigger.
+and only one HT chain is there. so there is no point to use _CRS for them.
 
-alloc_pages
--> ...
-  -> pageout
-    -> ...
-      -> get_request
-        -> blk_alloc_request
-          -> elv_set_request
-            -> cfq_set_request
-              -> cfq_get_queue
-                -> cfq_find_alloc_queue
-                  -> kmem_cache_alloc_node(__GFP_NOFAIL)
-                    -> Jens
+please let me check if we could could have patch to deselect that.
 
-How much this can happen in practice I don't know, but it looks bad.
-
-> There are other cases where __GFP_NOFAIL doesn't make sense too, and that 
-> could be warned about. The __GFP_NORETRY thing was already mentioned. 
-> Similarly, !__GFP_WAIT doesn't work with __GFP_NOFAIL - because the nofail 
-> obviously relies on being able to do something about the failure case.
-> 
-> We might want to also have rules like "in order to have NOFAIL, you need 
-> to allow IO and FS accesses". 
-
-Sure, that's sane.
-
-fs/jbd/journal.c:       new_bh = alloc_buffer_head(GFP_NOFS|__GFP_NOFAIL);
-
-But that isn't :(
-
-> So I don't mind warnings with __GFP_NOFAIL. I just think they should be 
-> relevant, and make sense. The "order > 0" one is neither.
-
+YH
