@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZFXJ11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZFXJ1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZFXJ11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFXJ1S
+	id S1757027AbZFXJ1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbZFXJ1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:27:18 -0400
+	Wed, 24 Jun 2009 05:27:34 -0400
 Received: from wa-out-1112.google.com ([209.85.146.182]:4082 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZFXJ1Q (ORCPT
+	with ESMTP id S1752688AbZFXJ1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:27:16 -0400
+	Wed, 24 Jun 2009 05:27:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Bkri88bZ/H3PilFDq86vduGL3LpsC9miPao+dH99nc5rGRA2pbY0ji7aA4iKBFEYTj
-         wjjb6wiJUiOxeC3nD4Qpjx30C2ruLSNb2p5Sy5s+VFG4SX+qdohF3pijXWPDF3w0OYN9
-         GaoCR/SFAave2Xfz/AHwfSWT10hD9pkx8/k68=
+        b=gndPnaVjUpouztR0cbwhwYBSX29CgkXlTWU1+rpEghVmtxcCIIUpN/IsAQG+6blIIy
+         rb3sHej9rlluBQg4X8VgWvGjyZSQfF5sO+zqF4Si+RY3RuzRcqxdgwSPWhEv3pS/NMmu
+         xFRinDDHYHqz+zobeBEH55S/76sRSP8QNTO/U=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: gregkh@suse.de, pavel@ucw.cz, hskinnemoen@atmel.com, anemo@mba.ocn.ne.jp,
-       linux-usb@vger.kernel.org, rjw@sisk.pl, stern@rowland.harvard.edu,
-       ben-linux@fluff.org, linux-pm@lists.linux-foundation.org,
-       akpm@linux-foundation.org, linux-omap@vger.kernel.org,
-       Magnus Damm <magnus.damm@gmail.com>, felipe.balbi@nokia.com
-Date: Wed, 24 Jun 2009 18:23:42 +0900
-Message-Id: <20090624092342.14276.2946.sendpatchset@rx1.opensource.se>
+       linux-usb@vger.kernel.org, akpm@linux-foundation.org, rjw@sisk.pl,
+       stern@rowland.harvard.edu, ben-linux@fluff.org,
+       Magnus Damm <magnus.damm@gmail.com>, linux-omap@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, felipe.balbi@nokia.com
+Date: Wed, 24 Jun 2009 18:24:00 +0900
+Message-Id: <20090624092400.14276.94490.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
 References: <20090624092306.14276.127.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 04/07] i2c: rework i2c-pxa suspend_late()/resume_early()
+Subject: [PATCH 06/07] usb: rework musb suspend()/resume_early()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +35,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Magnus Damm <damm@igel.co.jp>
 
 This patch reworks platform driver power management code
-for i2c-pxa from legacy late/early callbacks to dev_pm_ops.
+for musb from legacy callbacks to dev_pm_ops.
 
 The callbacks are converted for CONFIG_SUSPEND like this:
-  suspend_late() -> suspend_noirq()
+  suspend() -> suspend()
   resume_early() -> resume_noirq()
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
@@ -49,58 +49,57 @@ Signed-off-by: Magnus Damm <damm@igel.co.jp>
  drivers/i2c/busses/i2c-pxa.c |   25 +++++++++++++++++--------
  1 file changed, 17 insertions(+), 8 deletions(-)
 
---- 0001/drivers/i2c/busses/i2c-pxa.c
-+++ work/drivers/i2c/busses/i2c-pxa.c	2009-06-01 15:26:06.000000000 +0900
-@@ -1135,35 +1135,44 @@ static int __exit i2c_pxa_remove(struct 
- }
+--- 0001/drivers/usb/musb/musb_core.c
++++ work/drivers/usb/musb/musb_core.c	2009-06-01 15:27:12.000000000 +0900
+@@ -2168,8 +2168,9 @@ static int __devexit musb_remove(struct 
  
- #ifdef CONFIG_PM
--static int i2c_pxa_suspend_late(struct platform_device *dev, pm_message_t state)
-+static int i2c_pxa_suspend_noirq(struct device *dev)
+ #ifdef	CONFIG_PM
+ 
+-static int musb_suspend(struct platform_device *pdev, pm_message_t message)
++static int musb_suspend(struct device *dev)
  {
--	struct pxa_i2c *i2c = platform_get_drvdata(dev);
 +	struct platform_device *pdev = to_platform_device(dev);
-+	struct pxa_i2c *i2c = platform_get_drvdata(pdev);
-+
- 	clk_disable(i2c->clk);
-+
+ 	unsigned long	flags;
+ 	struct musb	*musb = dev_to_musb(&pdev->dev);
+ 
+@@ -2196,8 +2197,9 @@ static int musb_suspend(struct platform_
  	return 0;
  }
  
--static int i2c_pxa_resume_early(struct platform_device *dev)
-+static int i2c_pxa_resume_noirq(struct device *dev)
+-static int musb_resume_early(struct platform_device *pdev)
++static int musb_resume_noirq(struct device *dev)
  {
--	struct pxa_i2c *i2c = platform_get_drvdata(dev);
 +	struct platform_device *pdev = to_platform_device(dev);
-+	struct pxa_i2c *i2c = platform_get_drvdata(pdev);
+ 	struct musb	*musb = dev_to_musb(&pdev->dev);
  
- 	clk_enable(i2c->clk);
- 	i2c_pxa_reset(i2c);
- 
+ 	if (!musb->clock)
+@@ -2215,9 +2217,14 @@ static int musb_resume_early(struct plat
  	return 0;
  }
-+
-+static struct dev_pm_ops i2c_pxa_dev_pm_ops = {
-+	.suspend_noirq = i2c_pxa_suspend_noirq,
-+	.resume_noirq = i2c_pxa_resume_noirq,
+ 
++static struct dev_pm_ops musb_dev_pm_ops = {
++	.suspend	= musb_suspend,
++	.resume_noirq	= musb_resume_noirq,
 +};
 +
-+#define I2C_PXA_DEV_PM_OPS (&i2c_pxa_dev_pm_ops)
++#define MUSB_DEV_PM_OPS (&musb_dev_pm_ops)
  #else
--#define i2c_pxa_suspend_late NULL
--#define i2c_pxa_resume_early NULL
-+#define I2C_PXA_DEV_PM_OPS NULL
+-#define	musb_suspend	NULL
+-#define	musb_resume_early	NULL
++#define	MUSB_DEV_PM_OPS	NULL
  #endif
  
- static struct platform_driver i2c_pxa_driver = {
- 	.probe		= i2c_pxa_probe,
- 	.remove		= __exit_p(i2c_pxa_remove),
--	.suspend_late	= i2c_pxa_suspend_late,
--	.resume_early	= i2c_pxa_resume_early,
- 	.driver		= {
- 		.name	= "pxa2xx-i2c",
- 		.owner	= THIS_MODULE,
-+		.pm	= I2C_PXA_DEV_PM_OPS,
+ static struct platform_driver musb_driver = {
+@@ -2225,11 +2232,10 @@ static struct platform_driver musb_drive
+ 		.name		= (char *)musb_driver_name,
+ 		.bus		= &platform_bus_type,
+ 		.owner		= THIS_MODULE,
++		.pm		= MUSB_DEV_PM_OPS,
  	},
- 	.id_table	= i2c_pxa_id_table,
+ 	.remove		= __devexit_p(musb_remove),
+ 	.shutdown	= musb_shutdown,
+-	.suspend	= musb_suspend,
+-	.resume_early	= musb_resume_early,
  };
+ 
+ /*-------------------------------------------------------------------------*/
