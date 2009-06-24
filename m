@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbZFXOWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759927AbZFXOXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760031AbZFXOWB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 10:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZFXOVx
+	id S1759927AbZFXOXJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 10:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZFXOXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 10:21:53 -0400
-Received: from fmailhost05.isp.att.net ([207.115.11.55]:42799 "EHLO
-	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752154AbZFXOVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 10:21:53 -0400
-X-Originating-IP: [65.28.94.183]
-Message-ID: <4A423686.8050905@lwfinger.net>
-Date: Wed, 24 Jun 2009 09:21:58 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 24 Jun 2009 10:23:03 -0400
+Received: from tundra.namei.org ([65.99.196.166]:53157 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752456AbZFXOXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 10:23:01 -0400
+Date: Thu, 25 Jun 2009 00:21:57 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/1] mm_for_maps: simplify, use ptrace_may_access()
+In-Reply-To: <20090624030627.GA6459@us.ibm.com>
+Message-ID: <alpine.LRH.2.00.0906250021460.20443@tundra.namei.org>
+References: <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu> <20090507092009.GC3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905071951530.29219@tundra.namei.org> <20090507102015.GB8901@elte.hu> <alpine.LRH.2.00.0905072135580.29806@tundra.namei.org>
+ <20090623141451.GA8133@redhat.com> <20090623174918.GA24430@infradead.org> <20090623192451.GA27853@redhat.com> <20090623192532.GB27853@redhat.com> <20090624030627.GA6459@us.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Gary Hade <garyhade@us.ibm.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
-References: <4A418254.9050607@lwfinger.net> <1245845787.3093.3.camel@localhost.localdomain>
-In-Reply-To: <1245845787.3093.3.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> On Tue, 2009-06-23 at 20:33 -0500, Larry Finger wrote:
->> My latest pull from Linus's tree fails to boot. Bisection leads to the
->> commit entitled "x86/ACPI: Correct maximum allowed _CRS returned
->> resources and warn if exceeded" with hash
->> f9cde5ffed17bf74f6bef042d99edb0622f58576. I have been unable to
->> capture the first error message as it scrolls off the screen, but the
->> second hits the WARN_ON at drivers/ata/ahci.c:695 in routine
->> ahci_enable_ahci() because HOST_AHCI_EN is not set.
->>
-> 
-> This patch fixes boot failure on my AMD 64 laptop, can you please test
-> this patch:
-> 
-> [PATCH] x86: fix _CRS resources return handling
-> 
-> We need to check for info->res_num and only handle for < PCI_BUS_NUM_RESOURCES
-> 
-> Also set info->bus->resource[info->res_num] for _CRS resources return handling
-> 
-> Fixed boot failure on some machine.
-> 
-> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/pci/acpi.c |   16 ++++++++++------
->  1 files changed, 10 insertions(+), 6 deletions(-)
+On Tue, 23 Jun 2009, Serge E. Hallyn wrote:
 
-Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Quoting Oleg Nesterov (oleg@redhat.com):
+> > It would be nice to kill __ptrace_may_access(). It requires task_lock(),
+> > but this lock is only needed to read mm->flags in the middle.
+> > 
+> > Convert mm_for_maps() to use ptrace_may_access(), this also simplifies
+> > the code a little bit.
+> > 
+> > Also, we do not need to take ->mmap_sem in advance. In fact I think
+> > mm_for_maps() should not play with ->mmap_sem at all, the caller should
+> > take this lock.
+> 
+> Yeah I think that makes sense.
+> 
+> > With or without this patch, without ->cred_guard_mutex held we can race
+> > with exec() and get the new ->mm but check old creds.
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> 
+> reasoning on the security check also makes sense.
+> 
+> Reviewed-by: Serge Hallyn <serue@us.ibm.com>
 
-Thanks for the patch. With it, my machine boots with the latest
-2.6.30-gitX.
 
-For the record, the printout from the patch results in the following:
+Applied to
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-PCI: Failed to allocate 0xd0000-0xd3fff from PCI mem for PCI Bus 0000:00
-PCI: Failed to allocate 0xec000-0xeffff from PCI mem for PCI Bus
-0000:00 due to _CRS returning more than 13 resource descriptors
-PCI: Failed to allocate 0xf0000-0xfffff from PCI mem for PCI Bus
-0000:00 due to _CRS returning more than 13 resource descriptors
-PCI: Failed to allocate 0xc0000000-0xfebfffff from PCI mem for PCI Bus
-0000:00 due to _CRS returning more than 13 resource descriptors
 
-Larry
+-- 
+James Morris
+<jmorris@namei.org>
