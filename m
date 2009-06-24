@@ -1,150 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbZFXM7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbZFXNAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbZFXM7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 08:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756588AbZFXM6w
+	id S1757440AbZFXNAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 09:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752130AbZFXNAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 08:58:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58793 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbZFXM6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 08:58:51 -0400
-Date: Wed, 24 Jun 2009 12:57:58 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1245847774.2681.2.camel@ht.satnam>
-References: <1245847774.2681.2.camel@ht.satnam>
-Subject: [tip:perfcounters/urgent] perf stat: Remove dead code
-Message-ID: <tip-3d63259583278262d9153316094e315f73ebfcb5@git.kernel.org>
-Git-Commit-ID: 3d63259583278262d9153316094e315f73ebfcb5
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 12:58:12 +0000 (UTC)
+	Wed, 24 Jun 2009 09:00:09 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:54494 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750720AbZFXNAH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 09:00:07 -0400
+Subject: Re: BUS_ID_SIZE is going away
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Takashi Iwai <tiwai@suse.de>, "David S. Miller" <davem@davemloft.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org, Russell King <rmk+lkml@arm.linux.org.uk>
+In-Reply-To: <1245842095.25547.5380.camel@macbook.infradead.org>
+References: <1245527124.30962.14.camel@yio.site>
+	 <1245675383.25547.50.camel@macbook.infradead.org>
+	 <1245832038.2483.3.camel@yio.site>
+	 <1245842095.25547.5380.camel@macbook.infradead.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 24 Jun 2009 13:59:16 +0100
+Message-Id: <1245848356.32629.14.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jun 2009 12:59:17.0928 (UTC) FILETIME=[956D5A80:01C9F4CB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3d63259583278262d9153316094e315f73ebfcb5
-Gitweb:     http://git.kernel.org/tip/3d63259583278262d9153316094e315f73ebfcb5
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Wed, 24 Jun 2009 18:19:34 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 24 Jun 2009 14:55:45 +0200
+On Wed, 2009-06-24 at 12:14 +0100, David Woodhouse wrote:
+> On Wed, 2009-06-24 at 10:27 +0200, Kay Sievers wrote:
+> > On Mon, 2009-06-22 at 13:56 +0100, David Woodhouse wrote:
+> > > I have this queued for 2.6.31 but have been on jury duty for the last 2
+> > > weeks so I'm hoping to get the pull request to Linus today now that I'm
+> > > free.
+> > 
+> > The old one is gone, but seems you merged a new one with BUS_ID_SIZE :)
+> > 
+> >   ./drivers/mtd/maps/integrator-flash.c:#define SUBDEV_NAME_SIZE	(BUS_ID_SIZE + 2)
+> 
+> Hm, true :)
+> 
+> Catalin, can you test the following? 
 
-perf stat: Remove dead code
+Yes, it still works (with some remarks below).
 
-Remove dead code and do some code alignment.
+> Btw, I'm unconvinced by the existing error handling -- if
+> armflash_subdev_probe() fails, it doesn't look like _that_ subdev
+> actually gets cleaned up in the loop at 'subdev_err:'. So we don't
+> release the memory region (and neither do we free the newly-kmalloced
+> name).
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-LKML-Reference: <1245847774.2681.2.camel@ht.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+If armflash_subdev_probe() fails, it cleans up after itself so there is
+no need to handle it in the subdev_err loop. With your patch, however,
+this should be done explicitly if the subdev probing fails. Something
+like below:
 
-
----
- tools/perf/builtin-stat.c |   44 +++++++++++++-------------------------------
- 1 files changed, 13 insertions(+), 31 deletions(-)
-
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 5e04fcc..8420ec5 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -59,42 +59,27 @@ static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
+diff --git a/drivers/mtd/maps/integrator-flash.c b/drivers/mtd/maps/integrator-flash.c
+index b9fac5b..2aac41b 100644
+--- a/drivers/mtd/maps/integrator-flash.c
++++ b/drivers/mtd/maps/integrator-flash.c
+@@ -188,8 +188,11 @@ static int armflash_probe(struct platform_device *dev)
+ 		subdev->plat = plat;
  
+ 		err = armflash_subdev_probe(subdev, res);
+-		if (err)
++		if (err) {
++			kfree(subdev->name);
++			subdev->name = NULL;
+ 			break;
++		}
+ 	}
+ 	info->nr_subdev = i;
+ 
+
+> In fact, do we still need a separate platform device and driver for ARM
+> systems? What does it provide that the physmap driver does (and can)
+> not?
+
+(I cc'ed Russell as well since he wrote the integrator-flash driver and
+may have comments)
+
+I gave physmap a quick try on RealView boards and it seems to work fine
+with the patch below. The only difference is the AFS partition parsing
+probes string, though this is no longer used on ARM Ltd platforms (some
+old ones still use it).
+
+I'll test it a bit more and, if there are no other comments, I'll push a
+patch to convert the ARM Ltd platforms to physmap (but that's for the
+next merging window as I don't think I have time to test it well enough
+now).
+
+
+RealView: Convert the platform code to use the physmap flash driver
+
+From: Catalin Marinas <catalin.marinas@arm.com>
+
+This platform was still using the integrator-flash driver but this
+pretty much duplicates the physmap one.
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ arch/arm/mach-realview/core.c |   31 ++++---------------------------
+ 1 files changed, 4 insertions(+), 27 deletions(-)
+
+diff --git a/arch/arm/mach-realview/core.c b/arch/arm/mach-realview/core.c
+index 0cc6f42..ef33872 100644
+--- a/arch/arm/mach-realview/core.c
++++ b/arch/arm/mach-realview/core.c
+@@ -30,6 +30,7 @@
+ #include <linux/io.h>
+ #include <linux/smsc911x.h>
+ #include <linux/ata_platform.h>
++#include <linux/mtd/physmap.h>
+ 
+ #include <asm/clkdev.h>
+ #include <asm/system.h>
+@@ -41,7 +42,6 @@
+ #include <asm/hardware/icst307.h>
+ 
+ #include <asm/mach/arch.h>
+-#include <asm/mach/flash.h>
+ #include <asm/mach/irq.h>
+ #include <asm/mach/map.h>
+ #include <asm/mach/mmc.h>
+@@ -76,27 +76,7 @@ unsigned long long sched_clock(void)
+ 
+ #define REALVIEW_FLASHCTRL    (__io_address(REALVIEW_SYS_BASE) + REALVIEW_SYS_FLASH_OFFSET)
+ 
+-static int realview_flash_init(void)
+-{
+-	u32 val;
+-
+-	val = __raw_readl(REALVIEW_FLASHCTRL);
+-	val &= ~REALVIEW_FLASHPROG_FLVPPEN;
+-	__raw_writel(val, REALVIEW_FLASHCTRL);
+-
+-	return 0;
+-}
+-
+-static void realview_flash_exit(void)
+-{
+-	u32 val;
+-
+-	val = __raw_readl(REALVIEW_FLASHCTRL);
+-	val &= ~REALVIEW_FLASHPROG_FLVPPEN;
+-	__raw_writel(val, REALVIEW_FLASHCTRL);
+-}
+-
+-static void realview_flash_set_vpp(int on)
++static void realview_flash_set_vpp(struct map_info *map, int on)
+ {
+ 	u32 val;
+ 
+@@ -108,16 +88,13 @@ static void realview_flash_set_vpp(int on)
+ 	__raw_writel(val, REALVIEW_FLASHCTRL);
+ }
+ 
+-static struct flash_platform_data realview_flash_data = {
+-	.map_name		= "cfi_probe",
++static struct physmap_flash_data realview_flash_data = {
+ 	.width			= 4,
+-	.init			= realview_flash_init,
+-	.exit			= realview_flash_exit,
+ 	.set_vpp		= realview_flash_set_vpp,
  };
  
-+#define MAX_RUN			100
-+
- static int			system_wide			=  0;
--static int			inherit				=  1;
- static int			verbose				=  0;
--
--static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
--
--static int			target_pid			= -1;
- static int			nr_cpus				=  0;
--static unsigned int		page_size;
-+static int			run_idx				=  0;
- 
-+static int			run_count			=  1;
-+static int			inherit				=  1;
- static int			scale				=  1;
-+static int			target_pid			= -1;
- 
--static const unsigned int default_count[] = {
--	1000000,
--	1000000,
--	  10000,
--	  10000,
--	1000000,
--	  10000,
--};
--
--#define MAX_RUN 100
--
--static int			run_count		=  1;
--static int			run_idx			=  0;
--
--static u64			event_res[MAX_RUN][MAX_COUNTERS][3];
--static u64			event_scaled[MAX_RUN][MAX_COUNTERS];
--
--//static u64			event_hist[MAX_RUN][MAX_COUNTERS][3];
--
-+static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
- static u64			runtime_nsecs[MAX_RUN];
- static u64			walltime_nsecs[MAX_RUN];
- static u64			runtime_cycles[MAX_RUN];
- 
-+static u64			event_res[MAX_RUN][MAX_COUNTERS][3];
-+static u64			event_scaled[MAX_RUN][MAX_COUNTERS];
-+
- static u64			event_res_avg[MAX_COUNTERS][3];
- static u64			event_res_noise[MAX_COUNTERS][3];
- 
-@@ -109,7 +94,6 @@ static u64			walltime_nsecs_noise;
- static u64			runtime_cycles_avg;
- static u64			runtime_cycles_noise;
- 
--
- #define ERR_PERF_OPEN \
- "Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
- 
-@@ -470,9 +454,9 @@ static const struct option options[] = {
- 	OPT_INTEGER('p', "pid", &target_pid,
- 		    "stat events on existing pid"),
- 	OPT_BOOLEAN('a', "all-cpus", &system_wide,
--			    "system-wide collection from all CPUs"),
-+		    "system-wide collection from all CPUs"),
- 	OPT_BOOLEAN('S', "scale", &scale,
--			    "scale/normalize counters"),
-+		    "scale/normalize counters"),
- 	OPT_BOOLEAN('v', "verbose", &verbose,
- 		    "be more verbose (show counter open errors, etc)"),
- 	OPT_INTEGER('r', "repeat", &run_count,
-@@ -484,8 +468,6 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- {
- 	int status;
- 
--	page_size = sysconf(_SC_PAGE_SIZE);
--
- 	memcpy(attrs, default_attrs, sizeof(attrs));
- 
- 	argc = parse_options(argc, argv, options, stat_usage, 0);
-@@ -515,7 +497,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- 	status = 0;
- 	for (run_idx = 0; run_idx < run_count; run_idx++) {
- 		if (run_count != 1 && verbose)
--			fprintf(stderr, "[ perf stat: executing run #%d ... ]\n", run_idx+1);
-+			fprintf(stderr, "[ perf stat: executing run #%d ... ]\n", run_idx + 1);
- 		status = run_perf_stat(argc, argv);
- 	}
- 
+ struct platform_device realview_flash_device = {
+-	.name			= "armflash",
++	.name			= "physmap-flash",
+ 	.id			= 0,
+ 	.dev			= {
+ 		.platform_data	= &realview_flash_data,
+
+
+-- 
+Catalin
+
