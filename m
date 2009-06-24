@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZFXP6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZFXP63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbZFXP6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 11:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765AbZFXP6E
+	id S1759629AbZFXP63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 11:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760371AbZFXP6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 11:58:04 -0400
-Received: from www84.your-server.de ([213.133.104.84]:54132 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbZFXP6E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 11:58:04 -0400
-Subject: Re: [merged]
- proctxt-update-kernel-filesystem-proctxt-documentation.patch removed from
- -mm tree
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090624083032.2d250488.akpm@linux-foundation.org>
-References: <200906182243.n5IMhwuV003008@imap1.linux-foundation.org>
-	 <1245824444.22613.3.camel@wall-e>
-	 <20090623233247.7ed661b7.akpm@linux-foundation.org>
-	 <1245825903.23818.4.camel@wall-e>
-	 <20090624001302.18de9e21.akpm@linux-foundation.org>
-	 <m1my7ykrs7.fsf@fess.ebiederm.org> <1245836005.32678.36.camel@wall-e>
-	 <20090624083032.2d250488.akpm@linux-foundation.org>
+	Wed, 24 Jun 2009 11:58:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54540 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759439AbZFXP6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 11:58:15 -0400
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, Gary Hade <garyhade@us.ibm.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain>
+References: <4A418254.9050607@lwfinger.net>
+	 <1245845787.3093.3.camel@localhost.localdomain>
+	 <4A423686.8050905@lwfinger.net>
+	 <alpine.LFD.2.00.0906241715500.2767@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 24 Jun 2009 17:57:48 +0200
-Message-Id: <1245859068.13531.10.camel@wall-e>
+Date: Wed, 24 Jun 2009 21:27:48 +0530
+Message-Id: <1245859068.3216.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, den 24.06.2009, 08:30 -0700 schrieb Andrew Morton:
-> On Wed, 24 Jun 2009 11:33:25 +0200 Stefani Seibold <stefani@seibold.net> wrote:
+On Wed, 2009-06-24 at 17:19 +0200, Thomas Gleixner wrote:
+> Larry,
 > 
-> > > > Alexey's point is that follow_page() will return NULL if it hits a
-> > > > swapped-out stack page and the loop will exit, leading to an incorrect
-> > > > (ie: short) return value from get_stack_usage_in_bytes().
-> > > >
-> > > > Is this claim wrong?
-> > > 
+> On Wed, 24 Jun 2009, Larry Finger wrote:
+> > For the record, the printout from the patch results in the following:
 > > 
-> > No.
-> > 
-> > I digged in the kernel source and the only solution i found is to use
-> > the walk_page_range() like show_smap() in proc/fs/task_mmu.c.
-> > 
-> > Maybe there is an easier way, but i dont know.
-> > 
-> > So i would implement a similar function like smaps_pte_range() in
-> > proc/fs/task_mmu.c to detected the high water usage.
+> > PCI: Failed to allocate 0xd0000-0xd3fff from PCI mem for PCI Bus 0000:00
+> > PCI: Failed to allocate 0xec000-0xeffff from PCI mem for PCI Bus
+> > 0000:00 due to _CRS returning more than 13 resource descriptors
+> > PCI: Failed to allocate 0xf0000-0xfffff from PCI mem for PCI Bus
+> > 0000:00 due to _CRS returning more than 13 resource descriptors
+> > PCI: Failed to allocate 0xc0000000-0xfebfffff from PCI mem for PCI Bus
+> > 0000:00 due to _CRS returning more than 13 resource descriptors
 > 
-> Perhaps we could enhance follow_page() so that it can tell the caller
-> when the target page is "virtually there", but swapped out.  Add a new
-> FOLL_SWAP, I guess.
+> can you please the patch below instead of the other one ?
 > 
-
-I currently fixed it by using walk_page_range(). I think this is a quiet
-good solution. But if you like i can do it in a future version.
-
-> How to communicate this back to the caller?  Perhaps add another
-> argument to follow_page(), perhaps return some magic value such as
+> Thanks,
 > 
-> #define FOLLOW_PAGE_SWAPPED_PAGE ((struct page *)1)
-> 
-> Adding the additional argument would be nicer.
+> 	tglx
+> ---
+> diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+> index 16c3fda..39a0cce 100644
+> --- a/arch/x86/pci/acpi.c
+> +++ b/arch/x86/pci/acpi.c
+> @@ -99,7 +99,6 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+>  			"%d resource descriptors\n", (unsigned long) res->start,
+>  			(unsigned long) res->end, root->name, info->name,
+>  			max_root_bus_resources);
+> -		info->res_num++;
+>  		return AE_OK;
+>  	}
+>  
 
-IMHO i think it would be the best to add a new FOLL_NOTIFY_SWAP flag and
-if the page is swapped out return the FOLLOW_PAGE_SWAPPED_PAGE magic if
-this flag is passed.
+This fails and system does not boot, I already tested this patch 8 hours
+ago.
 
+Thanks,
+--
+JSR
 
