@@ -1,196 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721AbZFXEJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZFXEfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721AbZFXEJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 00:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbZFXEJl
+	id S1752844AbZFXEfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 00:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZFXEfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 00:09:41 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:53738 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbZFXEJk (ORCPT
+	Wed, 24 Jun 2009 00:35:31 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37117
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751140AbZFXEfb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 00:09:40 -0400
-Date: Wed, 24 Jun 2009 13:05:12 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] memcg: cgroup fix rmdir hang
-Message-Id: <20090624130512.9e4550c4.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 24 Jun 2009 00:35:31 -0400
+Date: Tue, 23 Jun 2009 21:35:35 -0700 (PDT)
+Message-Id: <20090623.213535.52208572.davem@davemloft.net>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the
+ IRQ context
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200906240336.25263.bzolnier@gmail.com>
+References: <200906232329.11648.bzolnier@gmail.com>
+	<20090623.162256.190152758.davem@davemloft.net>
+	<200906240336.25263.bzolnier@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 16:08:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> Now, cgroup has a logic to wait until ready-to-rmdir for avoiding
-> frequent -EBUSY at rmdir.
->  (See Commit ec64f51545fffbc4cb968f0cea56341a4b07e85a
->   cgroup: fix frequent -EBUSY at rmdir.
-> 
-> Nishimura-san reported bad case for waiting and This is a fix to
-> make it reliable. A thread waiting for thread cannot be waken up
-> when a refcnt gotten by css_tryget() isn't put immediately.
-> (Original code assumed css_put() will be called soon.)
-> 
-> memcg has this case and this is a fix for the problem. This adds
-> retry_rmdir() callback to subsys and check we can sleep or not.
-> 
-> Note: another solution will be adding "rmdir state" to subsys.
-> But it will be much complicated than this do-enough-check solution.
-> 
-> Changelog v1 -> v2:
->  - splitted into 2 patches. This just includes retry_rmdir() modification.
-> 
-> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date: Wed, 24 Jun 2009 03:36:24 +0200
 
-Looks good to me.
+> IOW if there are really some technical issues left to be addressed with
+> these patches I'll be happy to address them but I'm not doing any more
+> new IDE stuff.
 
-	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Discussing alternative approaches to fixing the problem is a technical
+issue.
 
-I've been testing with [2/2] applied (because both of these patches are
-necessary to fix this problem completely), and it works fine so far.
-But I want to test in more test cases.
+If you just want to dump your pending fixes and have no interest in
+anything other than minor fixups and typo cures, then it's likely most
+of these patches will be used only as guides for others rather than
+being applied.
 
+Specifically in this case I really think this is a very unclean way to
+solve this problem, which is why I suggested alternative
+implementations in the first place.
 
-Thanks,
-Daisuke Nishimura.
+Anything that requires a set of if() blocks checking "in interrupt
+context" or not is a big red flag in my book.
 
-> ---
->  Documentation/cgroups/cgroups.txt |   11 +++++++++++
->  include/linux/cgroup.h            |    1 +
->  kernel/cgroup.c                   |   20 +++++++++++++++++++-
->  mm/memcontrol.c                   |   14 ++++++++++++--
->  4 files changed, 43 insertions(+), 3 deletions(-)
-> 
-> Index: fix-rmdir-cgroup/include/linux/cgroup.h
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/include/linux/cgroup.h
-> +++ fix-rmdir-cgroup/include/linux/cgroup.h
-> @@ -374,6 +374,7 @@ struct cgroup_subsys {
->  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
->  						  struct cgroup *cgrp);
->  	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +	int (*retry_rmdir)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	int (*can_attach)(struct cgroup_subsys *ss,
->  			  struct cgroup *cgrp, struct task_struct *tsk);
-> Index: fix-rmdir-cgroup/kernel/cgroup.c
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/kernel/cgroup.c
-> +++ fix-rmdir-cgroup/kernel/cgroup.c
-> @@ -636,6 +636,23 @@ static int cgroup_call_pre_destroy(struc
->  		}
->  	return ret;
->  }
-> +/*
-> + * Call subsys's retry_rmdir() handler. If this returns non-Zero, we retry
-> + * rmdir immediately and call pre_destroy again.
-> + */
-> +static int cgroup_check_retry_rmdir(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	int ret = 0;
-> +
-> +	for_each_subsys(cgrp->root, ss)
-> +		if (ss->pre_destroy) {
-> +			ret = ss->retry_rmdir(ss, cgrp);
-> +			if (ret)
-> +				break;
-> +		}
-> +	return ret;
-> +}
->  
->  static void free_cgroup_rcu(struct rcu_head *obj)
->  {
-> @@ -2722,7 +2739,8 @@ again:
->  
->  	if (!cgroup_clear_css_refs(cgrp)) {
->  		mutex_unlock(&cgroup_mutex);
-> -		schedule();
-> +		if (!cgroup_check_retry_rmdir(cgrp))
-> +			schedule();
->  		finish_wait(&cgroup_rmdir_waitq, &wait);
->  		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->  		if (signal_pending(current))
-> Index: fix-rmdir-cgroup/mm/memcontrol.c
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/mm/memcontrol.c
-> +++ fix-rmdir-cgroup/mm/memcontrol.c
-> @@ -1457,8 +1457,6 @@ __mem_cgroup_commit_charge_swapin(struct
->  		}
->  		rcu_read_unlock();
->  	}
-> -	/* add this page(page_cgroup) to the LRU we want. */
-> -
->  }
->  
->  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
-> @@ -2571,6 +2569,17 @@ static int mem_cgroup_pre_destroy(struct
->  	return mem_cgroup_force_empty(mem, false);
->  }
->  
-> +static int mem_cgroup_retry_rmdir(struct cgroup_subsys *ss,
-> +				  struct cgroup *cont)
-> +{
-> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> +
-> +	if (res_counter_read_u64(&mem->res, RES_USAGE))
-> +		return 1;
-> +	return 0;
-> +}
-> +
-> +
->  static void mem_cgroup_destroy(struct cgroup_subsys *ss,
->  				struct cgroup *cont)
->  {
-> @@ -2610,6 +2619,7 @@ struct cgroup_subsys mem_cgroup_subsys =
->  	.subsys_id = mem_cgroup_subsys_id,
->  	.create = mem_cgroup_create,
->  	.pre_destroy = mem_cgroup_pre_destroy,
-> +	.retry_rmdir = mem_cgroup_retry_rmdir,
->  	.destroy = mem_cgroup_destroy,
->  	.populate = mem_cgroup_populate,
->  	.attach = mem_cgroup_move_task,
-> Index: fix-rmdir-cgroup/Documentation/cgroups/cgroups.txt
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/Documentation/cgroups/cgroups.txt
-> +++ fix-rmdir-cgroup/Documentation/cgroups/cgroups.txt
-> @@ -500,6 +500,17 @@ there are not tasks in the cgroup. If pr
->  rmdir() will fail with it. From this behavior, pre_destroy() can be
->  called multiple times against a cgroup.
->  
-> +int retry_rmdir(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +
-> +Called at rmdir right after the kernel finds there are remaining refcnt on
-> +subsystems after pre_destroy(). When retry_rmdir() returns 0, the caller enter
-> +sleep and wakes up when css's refcnt goes down to 0 by css_put().
-> +When this returns 1, the caller doesn't sleep and retry rmdir immediately.
-> +This is useful when the subsys knows remaining css's refcnt is not temporal
-> +and to calling pre_destroy() again is proper way to remove that.
-> +(or proper way to retrun -EBUSY.)
-> +
-> +
->  int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
->  	       struct task_struct *task)
->  (cgroup_mutex held by caller)
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+But I understand now that you're not willing to work on such things,
+which I'll happily respect.
