@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZFXGqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZFXGql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbZFXGqZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 02:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZFXGqG
+	id S1754476AbZFXGql (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 02:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZFXGqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 02:46:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57012 "EHLO hera.kernel.org"
+	Wed, 24 Jun 2009 02:46:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57030 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbZFXGqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753302AbZFXGqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 24 Jun 2009 02:46:04 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
@@ -15,63 +15,183 @@ To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
        Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
        paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
        torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 03/10] CRIS: Change DEFINE_PER_CPU of current_pgd to be non volatile.
-Date: Wed, 24 Jun 2009 15:45:17 +0900
-Message-Id: <1245825924-30412-4-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Richard Henderson <rth@twiddle.net>
+Subject: [PATCH 09/10] alpha: switch to dynamic percpu allocator
+Date: Wed, 24 Jun 2009 15:45:23 +0900
+Message-Id: <1245825924-30412-10-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1245825924-30412-1-git-send-email-tj@kernel.org>
 References: <1245825924-30412-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 06:45:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 24 Jun 2009 06:45:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Nilsson <jesper.nilsson@axis.com>
+Alpha implements custom SHIFT_PERCPU_PTR for modules because percpu
+area can be located far away from the 4G area where the module text is
+located.  The custom SHIFT_PERCPU_PTR forces GOT usage using ldq
+instruction with literal relocation; however, the relocation can't be
+used with dynamically allocated percpu variables.  Fortunately,
+similar result can be achieved by using weak percpu variable
+definitions.
 
-The DEFINE_PER_CPU of current_pgd was on CRIS defined using volatile,
-which is not needed. Remove volatile.
+This patch makes alpha use weak definitions and switch to dynamic
+percpu allocator.
 
-Tested on an ARTPEC-3 (CRISv32) board.
+asm/tlbflush.h was getting linux/sched.h via asm/percpu.h which no
+longer needs it.  Include linux/sched.h directly in asm/tlbflush.h.
 
-tj: extern DEFINE_PER_CPU() replaced with DECLARE_PER_CPU()
+Compile tested.  Generation of litereal relocation verified.
 
-[ Impact: code cleanup ]
+This patch is based on Ivan Kokshaysky's alpha percpu patch.
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+[ Impact: use dynamic percpu allocator ]
+
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Richard Henderson <rth@twiddle.net>
 ---
- arch/cris/include/asm/mmu_context.h |    3 ++-
- arch/cris/mm/fault.c                |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/alpha/Kconfig                |    3 -
+ arch/alpha/include/asm/percpu.h   |   95 +++---------------------------------
+ arch/alpha/include/asm/tlbflush.h |    1 +
+ 3 files changed, 9 insertions(+), 90 deletions(-)
 
-diff --git a/arch/cris/include/asm/mmu_context.h b/arch/cris/include/asm/mmu_context.h
-index 72ba08d..1d45fd6 100644
---- a/arch/cris/include/asm/mmu_context.h
-+++ b/arch/cris/include/asm/mmu_context.h
-@@ -17,7 +17,8 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
-  * registers like cr3 on the i386
-  */
+diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+index 05d8640..9fb8aae 100644
+--- a/arch/alpha/Kconfig
++++ b/arch/alpha/Kconfig
+@@ -70,9 +70,6 @@ config AUTO_IRQ_AFFINITY
+ 	depends on SMP
+ 	default y
  
--extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
-+/* defined in arch/cris/mm/fault.c */
-+DECLARE_PER_CPU(pgd_t *, current_pgd);
+-config HAVE_LEGACY_PER_CPU_AREA
+-	def_bool y
+-
+ source "init/Kconfig"
+ source "kernel/Kconfig.freezer"
  
- static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
- {
-diff --git a/arch/cris/mm/fault.c b/arch/cris/mm/fault.c
-index f925115..4a7cdd9 100644
---- a/arch/cris/mm/fault.c
-+++ b/arch/cris/mm/fault.c
-@@ -29,7 +29,7 @@ extern void die_if_kernel(const char *, struct pt_regs *, long);
+diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
+index 7f0a9c4..2c12378 100644
+--- a/arch/alpha/include/asm/percpu.h
++++ b/arch/alpha/include/asm/percpu.h
+@@ -1,97 +1,18 @@
+ #ifndef __ALPHA_PERCPU_H
+ #define __ALPHA_PERCPU_H
  
- /* current active page directory */
- 
--volatile DEFINE_PER_CPU(pgd_t *,current_pgd);
-+DEFINE_PER_CPU(pgd_t *, current_pgd);
- unsigned long cris_signal_return_page;
- 
+-#include <linux/compiler.h>
+-#include <linux/threads.h>
+-#include <linux/percpu-defs.h>
+-
  /*
+- * Determine the real variable name from the name visible in the
+- * kernel sources.
+- */
+-#define per_cpu_var(var) per_cpu__##var
+-
+-#ifdef CONFIG_SMP
+-
+-/*
+- * per_cpu_offset() is the offset that has to be added to a
+- * percpu variable to get to the instance for a certain processor.
+- */
+-extern unsigned long __per_cpu_offset[NR_CPUS];
+-
+-#define per_cpu_offset(x) (__per_cpu_offset[x])
+-
+-#define __my_cpu_offset per_cpu_offset(raw_smp_processor_id())
+-#ifdef CONFIG_DEBUG_PREEMPT
+-#define my_cpu_offset per_cpu_offset(smp_processor_id())
+-#else
+-#define my_cpu_offset __my_cpu_offset
+-#endif
+-
+-#ifndef MODULE
+-#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+-#else
+-/*
+- * To calculate addresses of locally defined variables, GCC uses 32-bit
+- * displacement from the GP. Which doesn't work for per cpu variables in
+- * modules, as an offset to the kernel per cpu area is way above 4G.
++ * To calculate addresses of locally defined variables, GCC uses
++ * 32-bit displacement from the GP. Which doesn't work for per cpu
++ * variables in modules, as an offset to the kernel per cpu area is
++ * way above 4G.
+  *
+- * This forces allocation of a GOT entry for per cpu variable using
+- * ldq instruction with a 'literal' relocation.
+- */
+-#define SHIFT_PERCPU_PTR(var, offset) ({		\
+-	extern int simple_identifier_##var(void);	\
+-	unsigned long __ptr, tmp_gp;			\
+-	asm (  "br	%1, 1f		  	      \n\
+-	1:	ldgp	%1, 0(%1)	    	      \n\
+-		ldq %0, per_cpu__" #var"(%1)\t!literal"		\
+-		: "=&r"(__ptr), "=&r"(tmp_gp));		\
+-	(typeof(&per_cpu_var(var)))(__ptr + (offset)); })
+-
+-#endif /* MODULE */
+-
+-/*
+- * A percpu variable may point to a discarded regions. The following are
+- * established ways to produce a usable pointer from the percpu variable
+- * offset.
++ * Always use weak definitions for percpu variables in modules.
+  */
+-#define per_cpu(var, cpu) \
+-	(*SHIFT_PERCPU_PTR(var, per_cpu_offset(cpu)))
+-#define __get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, my_cpu_offset))
+-#define __raw_get_cpu_var(var) \
+-	(*SHIFT_PERCPU_PTR(var, __my_cpu_offset))
+-
+-#else /* ! SMP */
+-
+-#define per_cpu(var, cpu)		(*((void)(cpu), &per_cpu_var(var)))
+-#define __get_cpu_var(var)		per_cpu_var(var)
+-#define __raw_get_cpu_var(var)		per_cpu_var(var)
+-
+-#endif /* SMP */
+-
+-#ifdef CONFIG_SMP
+-#define PER_CPU_BASE_SECTION ".data.percpu"
+-#else
+-#define PER_CPU_BASE_SECTION ".data"
+-#endif
+-
+-#ifdef CONFIG_SMP
+-
+-#ifdef MODULE
+-#define PER_CPU_SHARED_ALIGNED_SECTION ""
+-#else
+-#define PER_CPU_SHARED_ALIGNED_SECTION ".shared_aligned"
+-#endif
+-#define PER_CPU_FIRST_SECTION ".first"
+-
+-#else
+-
+-#define PER_CPU_SHARED_ALIGNED_SECTION ""
+-#define PER_CPU_FIRST_SECTION ""
+-
++#if defined(MODULE) && defined(CONFIG_SMP)
++#define ARCH_NEEDS_WEAK_PER_CPU
+ #endif
+ 
+-#define PER_CPU_ATTRIBUTES
++#include <asm-generic/percpu.h>
+ 
+ #endif /* __ALPHA_PERCPU_H */
+diff --git a/arch/alpha/include/asm/tlbflush.h b/arch/alpha/include/asm/tlbflush.h
+index 9d87aaa..e89e0c2 100644
+--- a/arch/alpha/include/asm/tlbflush.h
++++ b/arch/alpha/include/asm/tlbflush.h
+@@ -2,6 +2,7 @@
+ #define _ALPHA_TLBFLUSH_H
+ 
+ #include <linux/mm.h>
++#include <linux/sched.h>
+ #include <asm/compiler.h>
+ #include <asm/pgalloc.h>
+ 
 -- 
 1.6.0.2
 
