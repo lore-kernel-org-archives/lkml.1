@@ -1,92 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZFXQPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbZFXQQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbZFXQPb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 12:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZFXQPU
+	id S1759937AbZFXQQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 12:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZFXQQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 12:15:20 -0400
-Received: from fed1rmmtao104.cox.net ([68.230.241.42]:62603 "EHLO
-	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbZFXQPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 12:15:19 -0400
-X-VR-Score: -100.00
-X-Authority-Analysis: v=1.0 c=1 a=F_o4wktclTQA:10 a=gA5Y4G7fYRxiLLm0FjAA:9
- a=9tMDMil1Dg2kv_TpEFYsQ9AIYZwA:4 a=_RhRFcbxBZMA:10
-X-CM-Score: 0.00
-To: Johannes Schindelin <Johannes.Schindelin@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?utf-8?Q?Ren=C3=A9?= Scharfe <rene.scharfe@lsrfire.ath.cx>,
-       roel kluin <roel.kluin@gmail.com>, git@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fread does not return negative on error
-References: <4A3FB09D.9050903@gmail.com> <20090622153431.GA18466@elte.hu>
-	<25e057c00906220847t15425f38maf486c291d1d2468@mail.gmail.com>
-	<4A3FB479.2090902@lsrfire.ath.cx>
-	<7vhby64i8f.fsf@alter.siamese.dyndns.org>
-	<20090624081819.GA10436@elte.hu>
-	<alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 24 Jun 2009 09:15:20 -0700
-In-Reply-To: <alpine.DEB.1.00.0906241201040.4773@pacific.mpi-cbg.de> (Johannes Schindelin's message of "Wed\, 24 Jun 2009 12\:03\:29 +0200 \(CEST\)")
-Message-ID: <7vws71wquf.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 24 Jun 2009 12:16:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38438 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751238AbZFXQQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 12:16:19 -0400
+Subject: Re: Regression with commit f9cde5f in 2.6.30-gitX
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090624155632.GB7239@us.ibm.com>
+References: <4A418254.9050607@lwfinger.net>
+	 <1245845787.3093.3.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0906241643510.2767@localhost.localdomain>
+	 <20090624155632.GB7239@us.ibm.com>
+Content-Type: text/plain
+Date: Wed, 24 Jun 2009 21:45:00 +0530
+Message-Id: <1245860100.3216.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Schindelin <Johannes.Schindelin@gmx.de> writes:
+On Wed, 2009-06-24 at 08:56 -0700, Gary Hade wrote:
+> On Wed, Jun 24, 2009 at 04:51:48PM +0200, Thomas Gleixner wrote:
+> > On Wed, 24 Jun 2009, Jaswinder Singh Rajput wrote:
+> > > Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  arch/x86/pci/acpi.c |   16 ++++++++++------
+> > >  1 files changed, 10 insertions(+), 6 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+> > > index 16c3fda..0bc015f 100644
+> > > --- a/arch/x86/pci/acpi.c
+> > > +++ b/arch/x86/pci/acpi.c
+> > > @@ -69,6 +69,9 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+> > >  	struct resource *root;
+> > >  	int max_root_bus_resources = PCI_BUS_NUM_RESOURCES;
+> > >  
+> > > +	if (info->res_num >= PCI_BUS_NUM_RESOURCES)
+> > > +		return AE_OK;
+> > > +
+> > >  	status = resource_to_addr(acpi_res, &addr);
+> > >  	if (!ACPI_SUCCESS(status))
+> > >  		return AE_OK;
+> > > @@ -94,17 +97,18 @@ setup_resource(struct acpi_resource *acpi_res, void *data)
+> > >  	if (bus_has_transparent_bridge(info->bus))
+> > >  		max_root_bus_resources -= 3;
+> > >  	if (info->res_num >= max_root_bus_resources) {
+> > > -		printk(KERN_WARNING "PCI: Failed to allocate 0x%lx-0x%lx "
+> > > -			"from %s for %s due to _CRS returning more than "
+> > > -			"%d resource descriptors\n", (unsigned long) res->start,
+> > > -			(unsigned long) res->end, root->name, info->name,
+> > > -			max_root_bus_resources);
+> > > +		pr_warning("PCI: Failed to allocate 0x%lx-0x%lx "
+> > > +			   "from %s for %s due to _CRS returning more than "
+> > > +			   "%d resource descriptors\n",
+> > > +			   (unsigned long)res->start, (unsigned long)res->end,
+> > > +			   root->name, info->name, max_root_bus_resources);
+> > 
+> > Can you please avoid mixing cleanup patches with bug fixes ? I almost
+> > did not see the line below.
+> > 
+> > > +		info->bus->resource[info->res_num] = res;
+> > 
+> > Storing the resource in defeats the purpose of the original patch,
+> > which makes sure that we do _NOT_ use the last 3 slots of the resource
+> > array for a root bus with a transparent bridge.
+> > 
+> > >  		info->res_num++;
+> > 
+> > This is the real bug. info->res_num should not be incremented when we
+> > run out of resources already.
+> 
+> This probably isn't needed but I don't think it is the cause of
+> the problem.  It is just counting the number of _CRS returned
+> resources and I believe subsequent visits to setup_resource()
+> for additional returned resources will generate the same warning
+> as it also would if the instruction were removed and no longer
+> being used to keep an accurate count.
+> 
 
-> This here script:
->
-> -- snip --
-> for file in abspath.c alias.c cache.h color.c color.h config.c ctype.c \
-> 	environment.c exec_cmd.c exec_cmd.h help.c help.h levenshtein.c \
-> 	levenshtein.h pager.c parse-options.c parse-options.h path.c \
-> 	quote.c quote.h run-command.c run-command.h sigchain.c sigchain.h \
-> 	strbuf.c strbuf.h string.c string.h symbol.c symbol.h usage.c \
-> 	util.h wrapper.c
-> do
-> 	echo $file
-> 	git shortlog -n -s $file | head -n 2
-> done
+Yes, this count is needed to avoid PCI failure.
 
-I have thought about suggesting this myself, and your output for many of
-the files matched my intuition, but some were grossly off, so I checked.
+Thanks,
+--
+JSR
 
-The above procedure counts commits, and a one liner "s/char \*/const &/"
-weighs as heavily as the patch that implemented the whole thing, for a
-file that was done in one commit almost perfectly except that it needed a
-small constness fix.  Summarizing output from "blame" for each file may
-give you a more meaningful results:
-
-    # timestamp
-    ts='[12][0-9][0-9][0-9]-[0-9][0-9]-[0-3][0-9] ..:..:.. [-+]....'
-    # linenum
-    lno='[1-9][0-9]*'
-    git blame "$file" |
-    sed -e 's/^[^ ]*  *(\([^)]*[^ ]\)  *'"$ts  *$lno"').*/\1/' |
-    sort |
-    uniq -c |
-    sort -r -n
-
-For example, I do not think it is fair to credit me for abspath.c more
-than Dmitry like this:
-
-> outputs this (note that a few files you mentioned are not in git.git):
->
-> abspath.c
->      2	Junio C Hamano
->      1	Dmitry Potapov
-
-Initially Dmitry introduced this file with 5b8e6f8 (shrink git-shell by
-avoiding redundant dependencies, 2008-06-28) at 68 lines.  J6t added 36
-lines for add_path() with 10c4c88 (Allow add_path() to add non-existent
-directories to the path, 2008-07-21), I added 12 lines to add a new
-function with 90b4a71 (is_directory(): a generic helper function,
-2008-09-09) and then added a two-liner out-of-bounds-then-die check in
-737e31a (make_absolute_path(): check bounds when seeing an overlong
-symlink, 2008-12-17).
