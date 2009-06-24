@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZFXJEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZFXJGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbZFXJEQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 05:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZFXJEE
+	id S1755603AbZFXJGq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 05:06:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZFXJGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 05:04:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40521 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853AbZFXJED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 05:04:03 -0400
-Date: Wed, 24 Jun 2009 11:03:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Liming Wang <liming.wang@windriver.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/7] tracing: seqfile fixes, take 2
-Message-ID: <20090624090358.GA25212@elte.hu>
-References: <4A4186C6.9090706@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4186C6.9090706@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 24 Jun 2009 05:06:38 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49216 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbZFXJGh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 05:06:37 -0400
+From: Amit Kucheria <amit.kucheria@verdurent.com>
+To: linux-kernel@vger.kernel.org
+Cc: sameo@linux.intel.com, dbrownell@users.sourceforge.net,
+       linux-omap@vger.kernel.org
+Subject: [PATCH 0/3] TWL4030: Add support for dynamic power switching
+Date: Wed, 24 Jun 2009 12:06:30 +0300
+Message-Id: <1245834390-7904-1-git-send-email-amit.kucheria@verdurent.com>
+X-Mailer: git-send-email 1.6.3.1
+X-OriginalArrivalTime: 24 Jun 2009 09:06:32.0498 (UTC) FILETIME=[1161D920:01C9F4AB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The TWL4030/5030 family of multifunction devices allow dynamic power
+switching based on board-specific applications through power 'scripts'.
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+Add board-independent core support for this feature and add support for
+the RX51 board based on OMAP3.
 
-> While testing syscall tracepoints proposed by Jason, I found some
-> entries were missing when reading available_events.
-> 
-> It turned out there's bug in seqfile handling. The bug is, it's
-> wrong to increment @pos in seq start().
-> 
-> The bug exists in some other places. I also fixed some other different
-> bugs.
-> 
-> All the patches have been reviewed and tested.
-> 
-> Thanks Liming Wang for the review.
-> 
-> [PATCH 1/7] tracing/events: don't increment @pos in s_start()
-> [PATCH 2/7] tracing_bprintk: don't increment @pos in t_start()
-> [PATCH 3/7] trace_stat: don't increment @pos in seq start()
-> [PATCH 4/7] tracing: reset iterator in t_start()
-> [PATCH 5/7] ftrace: don't increment @pos in g_start()
-> [PATCH 6/7] ftrace: don't manipulate @pos in t_start()
-> [PATCH 7/7] ftrace: fix t_hash_start()
-> ---
->  kernel/trace/ftrace.c       |   52 ++++++++++++++++++++++++-------------------
->  kernel/trace/trace.c        |   18 +++-----------
->  kernel/trace/trace_events.c |   28 ++++++++++++++++++-----
->  kernel/trace/trace_printk.c |   26 +++++----------------
->  kernel/trace/trace_stat.c   |    6 +----
->  5 files changed, 62 insertions(+), 68 deletions(-)
+Amit Kucheria (3):
+  TWL4030: power: Add support for TWL4030/5030 dynamic power switching
+  TWL4030: power: print warning for out-of-order script loading
+  TWL4030: power: OMAP: Board-specifc DPS scripts for RX51 board
 
-Applied to tip:tracing/urgent, thanks a lot!
+ arch/arm/mach-omap2/board-rx51-peripherals.c |  120 ++++++++-
+ drivers/mfd/Kconfig                          |   13 +
+ drivers/mfd/Makefile                         |    1 +
+ drivers/mfd/twl4030-core.c                   |   26 ++
+ drivers/mfd/twl4030-power.c                  |  396 ++++++++++++++++++++++++++
+ include/linux/i2c/twl4030.h                  |   91 ++++++-
+ 6 files changed, 636 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/mfd/twl4030-power.c
 
-	Ingo
