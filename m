@@ -1,78 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZFXV6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753087AbZFXWCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbZFXV6p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 17:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbZFXV6g
+	id S1753087AbZFXWCR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 18:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZFXWCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 17:58:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46187 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751515AbZFXV6g (ORCPT
+	Wed, 24 Jun 2009 18:02:02 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:49393 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbZFXWCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 17:58:36 -0400
-Date: Wed, 24 Jun 2009 14:58:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: hpa@zytor.com, ray-lk@madrabbit.org, renton@renton.name,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-Message-Id: <20090624145822.72aaaff6.akpm@linux-foundation.org>
-In-Reply-To: <20090624200108.GR8633@ZenIV.linux.org.uk>
-References: <20090603142801.GC21646@beaver.vrungel.ru>
-	<4A26EB18.6060907@zytor.com>
-	<20090609161945.811cc01f.akpm@linux-foundation.org>
-	<2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com>
-	<20090609165304.add1a872.akpm@linux-foundation.org>
-	<4A301CCD.7070707@zytor.com>
-	<20090624200108.GR8633@ZenIV.linux.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 18:02:01 -0400
+Message-ID: <4A42A259.9000306@novell.com>
+Date: Wed, 24 Jun 2009 18:02:01 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] slow-work: add (module*)work->owner to fix races
+ with module clients
+References: <4A427F83.8010404@novell.com> <7230.1245878582@redhat.com>
+In-Reply-To: <7230.1245878582@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig9728147D334CA575F82474AB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 21:01:08 +0100
-Al Viro <viro@ZenIV.linux.org.uk> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig9728147D334CA575F82474AB
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> On Wed, Jun 10, 2009 at 01:51:25PM -0700, H. Peter Anvin wrote:
-> > Andrew Morton wrote:
-> > > 
-> > > hm, OK.
-> > > 
-> > > I've now mounted 15000 devpts's and still no slowdown is evident.
-> > 
-> > I ran my test script, mounting ramfs, with n=100000, and well, gave up
-> > since it hadn't gotten any further than 57000 or so overnight.  At that
-> > time each individual mount was taking several seconds.
-> > 
-> > Graphing the delays seem to indicate O(n^2) behavior.
-> > 
-> > umounts do not appear affected; each umount still take negible time.
-> 
-> I think I know what's going on.  /sbin/mount is linked against libselinux
-> /sbin/umount is not.  And FPOS in question blows if you
-> 	* do not have selinuxfs mounted (e.g. because selinux is not enabled)
-> 	* have a lot of mounts.
-> 
-> What happens is that this piece of crap checks for presence of selinuxfs
-> on /selinux; then, if the thing isn't there, we go and scan the entire
-> /proc/mounts in search of selinuxfs mounts.
-> 
-> If akpm has selinux enabled on his testbox and you don't have it on yours,
-> we have all observations explained.
+David Howells wrote:
+> Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>  =20
+>>   I found this while working on KVM.  I actually posted this patch wit=
+h
+>> a KVM
+>> series yesterday and standalone earlier today, but neither seems to ha=
+ve
+>> made it to the lists.  I suspect there is an issue with git-mail/postf=
+ix
+>> on my system.
+>>    =20
+>
+> Also, your mail client has damaged the whitespace in the patch.
+>  =20
 
-CONFIG_SECURITY_SELINUX=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM=y
-CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=1
-CONFIG_SECURITY_SELINUX_DISABLE=y
-CONFIG_SECURITY_SELINUX_DEVELOP=y
-CONFIG_SECURITY_SELINUX_AVC_STATS=y
-CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
-# CONFIG_SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT is not set
-# CONFIG_SECURITY_SELINUX_POLICYDB_VERSION_MAX is not set
+Yeah, sorry about that.  When git-mail was failing I cut-n-pasted into
+thunderbird and it munged it a bit.  v2 should be better as it came out
+of git directly after I fixed the postfix misconfig.
 
->  I'd expect similar slowdown from
-> ls on an empty directory, BTW - /bin/ls is linked against the same thing,
-> so it gets hit as well.  Before it even gets to main().
+>  =20
+>>  struct slow_work {
+>> +    struct module          *owner;
+>>    =20
+>
+> Can you add it to slow_work_ops instead?
+>  =20
+
+Yeah, that makes sense.
+>  =20
+>>      work->ops->put_ref(work);
+>> +    barrier(); /* ensure that put_ref is not re-ordered with module_p=
+ut =3D
+>> */
+>> +    module_put(work->owner);
+>>    =20
+>
+> Ummm...  Can it be?  module_put() and put_ref() are both out of line - =
+surely
+> the compiler isn't allowed to reorder them?  If it's the CPU doing it t=
+hen
+> barrier() isn't going to save you.
+>  =20
+
+Good point.  I added that at the last minute without engaging my brain.
+:) Will remove.
+
+> Note, however, that work may not be dereferenced like this after put_re=
+f() is
+> called, unless you're sure that there's still a reference outstanding.
+>
+>  =20
+Yeah, I noticed that too immediately after sending.  It should be better
+in v2 (which should be in your inbox already)
+
+>> +            if (!try_module_get(work->owner))
+>> +                goto cant_get_mod;
+>>    =20
+>
+> Note that this may result in a module getting stuck in unloading.  It m=
+ay need
+> to do some work to complete the unload, and this will prevent that.
+>  =20
+
+Can we set the stake in the ground that you can only call
+slow_work_enqueue() from a module if you know that there is at least one
+reference to the module being held?  This seems like a core requirement
+anyway.
+
+The follow up question would be: if so, should we use __module_get()
+instead ot try_module_get() to annotate that (in addition to a comment,
+of course).
+
+> A better way might be to have put_ref() return, say, a pointer to a com=
+pletion
+> struct, and if not NULL, have the caller of put_ref() call complete() o=
+n it.
+> That way you don't need to touch the module count, but can have somethi=
+ng in
+> put_ref() keep track of when the last object is released and have its c=
+aller
+> invoke a completion to celebrate this fact.
+>  =20
+
+That sounds interesting, but I am not sure if we would get into a
+similar conundrum or be awkward to manage.  I am in a conf-call ATM so I
+can't think clear enough to tell for sure. ;) Let me give it some
+thought and get back to you, though.
+
+Thanks David!
+-Greg
+
+
+
+--------------enig9728147D334CA575F82474AB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpColkACgkQlOSOBdgZUxlymgCeJxTryZNlH6Jlc0YcyE8+QPCG
+b3YAnjYvtWQ1PJcLtTC17/szOzj6jSCZ
+=d41C
+-----END PGP SIGNATURE-----
+
+--------------enig9728147D334CA575F82474AB--
