@@ -1,33 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752071AbZFXEjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZFXE6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752071AbZFXEjb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 00:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZFXEjY
+	id S1752864AbZFXE6L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 00:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751140AbZFXE57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 00:39:24 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52785 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbZFXEjY (ORCPT
+	Wed, 24 Jun 2009 00:57:59 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:47334 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbZFXE57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 00:39:24 -0400
-Date: Wed, 24 Jun 2009 05:39:26 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu, akpm@linux-foundation.org, npiggin@suse.de
-Subject: Re: [PATCH 1/4] fdtable: export alloc_fd()
-Message-ID: <20090624043926.GN8633@ZenIV.linux.org.uk>
-References: <1245317073-24000-1-git-send-email-tj@kernel.org> <1245317073-24000-2-git-send-email-tj@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245317073-24000-2-git-send-email-tj@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 24 Jun 2009 00:57:59 -0400
+Date: Wed, 24 Jun 2009 00:57:30 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Peter Feuerer <peter@piie.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andreas Mohr <andi@lisas.de>
+Subject: Re: [PATCH] Merge window inclusion request - Acer Aspire One fan
+ control
+In-reply-to: <20090621185303.a598b3a9.peter@piie.net>
+Message-id: <alpine.LFD.2.00.0906240057220.32742@localhost.localdomain>
+References: <20090621185303.a598b3a9.peter@piie.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 06:24:30PM +0900, Tejun Heo wrote:
-> Export alloc_fd().  Will be used by FUSE.
+applied
 
-Where and how?
+thanks,
+Len Brown, Intel Open Source Technology Center
+
