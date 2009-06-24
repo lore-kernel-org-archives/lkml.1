@@ -1,79 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbZFXSa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZFXScU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757839AbZFXSa7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 14:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZFXSaw
+	id S1758220AbZFXScU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 14:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZFXScN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 14:30:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41440 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752551AbZFXSav (ORCPT
+	Wed, 24 Jun 2009 14:32:13 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:47641 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbZFXScN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 14:30:51 -0400
-Date: Wed, 24 Jun 2009 11:30:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-Id: <20090624113037.7d72ed59.akpm@linux-foundation.org>
-In-Reply-To: <4A426825.80905@cs.helsinki.fi>
-References: <20090624080753.4f677847@infradead.org>
-	<20090624094622.d0b0fd82.akpm@linux-foundation.org>
-	<84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com>
-	<20090624105517.904f93da.akpm@linux-foundation.org>
-	<4A426825.80905@cs.helsinki.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 24 Jun 2009 14:32:13 -0400
+Date: Wed, 24 Jun 2009 20:32:12 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, hjk@linutronix.de
+Subject: Re: [PATCH 2/2] UIO: remove 'default n' from Kconfig
+Message-ID: <20090624183212.GZ29236@buzzloop.caiaq.de>
+References: <1245857425-25389-1-git-send-email-daniel@caiaq.de> <1245857425-25389-2-git-send-email-daniel@caiaq.de> <1245857425-25389-3-git-send-email-daniel@caiaq.de> <20090624163456.GC26409@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624163456.GC26409@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 20:53:41 +0300
-Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-
-> Hi Andrew,
+On Wed, Jun 24, 2009 at 09:34:56AM -0700, Greg KH wrote:
+> On Wed, Jun 24, 2009 at 05:30:25PM +0200, Daniel Mack wrote:
+> > 'default n' is the default, there is no need for these lines.
 > 
-> Andrew Morton wrote:
-> > On Wed, 24 Jun 2009 19:55:24 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> >> On Wed, Jun 24, 2009 at 7:46 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> >>> Well yes. __Using GFP_NOFAIL on a higher-order allocation is bad. __This
-> >>> patch is there to find, name, shame, blame and hopefully fix callers.
-> >>>
-> >>> A fix for cxgb3 is in the works. __slub's design is a big problem.
-> >>>
-> >>> But we'll probably have to revert it for 2.6.31 :(
-> >> How is SLUB's design a problem here? Can't we just clear GFP_NOFAIL
-> >> from the higher order allocation and thus force GFP_NOFAIL allocations
-> >> to use the minimum required order?
-> > 
-> > That could then lead to the __GFP_NOFAIL allocation attempt returning
-> > NULL.  But the callers cannot handle that and probably don't even test
-> > for it - this is why they used __GFP_NOFAIL.
-> 
-> No, the fallback allocation would still use __GFP_NOFAIL so the 
-> semantics are preserved.
-> 
+> Why, because 'n' is the generic default?
+> If so, it really can't hurt, right?  :)
 
-<looks>
+Well, it's a cleanup. In it's purest manner. :)
 
-hm, I didn't know that slub could fall back to lower-order allocations
-like that.  Neat.
+Daniel
 
-Yes, it looks like that change would improve things.  We have had
-reports before of machines which oomed over an order-1 attempt when
-there were order-0 pages available.  If that were to happen in
-allocate_slab(__GFP_NOFAIL), things would get ugly and the patch would
-help.
-
-What's the expected value of s->min in allocate_slab()?  In what
-situations would it be >0?
-
-
-btw, gcc has in the past made a mess of handling small copy-by-value
-structs like 'struct kmem_cache_order_objects'.  Probably it's improved
-in recent years, but it'd be worth checking to see if
-s/struct kmem_cache_order_objects/unsigned long/ generates better code.
