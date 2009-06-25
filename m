@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZFYLcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZFYLmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbZFYLcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 07:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZFYLcr
+	id S1753209AbZFYLmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZFYLmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 07:32:47 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39218 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750984AbZFYLcq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 07:32:46 -0400
-Date: Thu, 25 Jun 2009 12:34:02 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Dianne Hackborn <hackbod@android.com>, Daniel Walker <dwalker@fifo99.com>,
-       Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>,
-       Brian Swetland <swetland@google.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
- usage
-Message-ID: <20090625123402.1fac5aba@lxorguk.ukuu.org.uk>
-In-Reply-To: <1245924848.12994.26.camel@localhost.localdomain>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
-	<4A390B9A.40806@goop.org>
-	<1245254936.5982.261.camel@desktop>
-	<4A391A54.7000109@goop.org>
-	<d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
-	<1245274308.5982.268.camel@desktop>
-	<a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
-	<1245451983.32124.25.camel@desktop>
-	<d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-	<1245458940.32124.45.camel@desktop>
-	<26b7c7380906242109id89b490m2c148ec0ac9b3696@mail.gmail.com>
-	<1245924848.12994.26.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Jun 2009 07:42:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:47511 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbZFYLmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 07:42:24 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Davide Libenzi <davidel@xmailserver.org>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier race conditions
+Date: Thu, 25 Jun 2009 21:12:24 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Gregory Haskins <ghaskins@novell.com>, mst@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906252112.24730.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> To me it seems everything that you want from Binder is already possible
-> with D-Bus. Seems the only missing piece is to create dbus-daemon as a
-> kernel subsystem so it is available for all userspace processes from the
-> beginning (including init/upstart).
+On Thu, 25 Jun 2009 08:15:11 am Davide Libenzi wrote:
+> On Wed, 24 Jun 2009, Rusty Russell wrote:
+> > On Tue, 23 Jun 2009 03:33:22 am Davide Libenzi wrote:
+> > > What you're doing there, is setting up a kernel-to-kernel (since
+> > > userspace only role is to create the eventfd) communication, using a
+> > > file* as accessory. That IMO is plain wrong.
+> >
+> > The most sensible is that userspace can use these fds; an in-kernel
+> > variant is possible too, but not primary IMHO.
+> >
+> > It's nice that userspace create the fds; it can then use the same fd for
+> > multiple event sources.
+> >
+> > But I didn't see anything wrong with the way eventfd used to work: you
+> > have a kvm ioctl to say "attach this eventfd to this guest notification"
+> > and that does the eventfd_fget.  A detach ioctl does the fput (as does
+> > release of the kvm fd).
+> >
+> > If they close the eventfd and don't do the detach ioctl, it's their
+> > problem.
+>
+> Some components would like to know if userspace dropped the fd, and take
+> proper action accordingly (release resources, drop module instances,
+> etc...).
 
-You don't even need that - you can start dbus immediately as part of init
-if it makes you happy.
+Like to know?  Possibly.  Need to know?  Not anything I've seen so far.
 
+If userspace creates the fd, component grab a ref and if userspace wants that 
+fd completely freed must close the fd *and* tell component.  Simple, race free 
+and explicit.  All wins.
+
+As this discussion shows, doing some kind of implies non-reference is hard, 
+complex and racy.
+
+> Another thing that comes in my mind (that for some components might not
+> matter) is considering the effect of userspace doing things like:
+>
+> 	for (;;) {
+> 		fd = eventfd(...);
+> 		ioctl(xfd, XXX_ADD, fd);
+> 		close(fd);
+> 	}
+>
+> That might lead to unprivileged users drawing kernel memory w/out any
+> userspace accountability, if not properly handled.
+
+No, fget_eventfd covers this exactly as expected.  Don't doubt your ability to 
+design sane kernel interfaces; eventfd is nice!  All lguest needed was a 
+couple of EXPORT_SYMBOLS and it fitted in beautifully.
+
+Thanks,
+Rusty.
