@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757198AbZFYDFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757996AbZFYDGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757198AbZFYDFD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 23:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZFYDEy
+	id S1757996AbZFYDGN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 23:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZFYDF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 23:04:54 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:46146
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751548AbZFYDEx (ORCPT
+	Wed, 24 Jun 2009 23:05:58 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:38134 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZFYDF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 23:04:53 -0400
-Message-ID: <4A42E9E5.60802@bluewatersys.com>
-Date: Thu, 25 Jun 2009 15:07:17 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 24 Jun 2009 23:05:57 -0400
+In-Reply-To: <20090624070708.GI6760@one.firstfloor.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       linux-arch@vger.kernel.org, linux-arch-owner@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linus Walleij <linus.ml.walleij@gmail.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] SST25L (non JEDEC) SPI Flash driver
-References: <4A42BDF3.10901@bluewatersys.com> <20090624194005.2f9574ce.akpm@linux-foundation.org>
-In-Reply-To: <20090624194005.2f9574ce.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: S+core architecture (arch/score/) support files
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OFBE328A69.2A153130-ON482575E0.000D6758-482575E0.0010F631@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Thu, 25 Jun 2009 11:00:22 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/25 ?? 11:00:23,
+	Serialize complete at 2009/06/25 ?? 11:00:23
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5P36p54009897
 
-Andrew Morton wrote:
-> On Thu, 25 Jun 2009 11:59:47 +1200 Ryan Mallon <ryan@bluewatersys.com> wrote:
->
->   
->> Add support for the non JEDEC SST25L SPI Flash devices.
->>
->> Signed-off-by: Andre Renaud <andre@bluewatersys.com>
->> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
->> Acked-by: Linus Walleij <linus.walleij@stericsson.com>
->>     
->
-> It looks OK to my inexperienced eye.
->
->   
-Cool, thanks for picking this up. The patch below fixes the two issues
-you pointed out. It will apply on top of
-mtd-sst25l-non-jedec-spi-flash-driver-update.patch
+linux-arch-owner@vger.kernel.org Ğ´ÓÚ 2009-06-24 15:07:08:
 
-----
-Fix two issues in the SSTL25 driver:
-- Replace min() plus u32 cast with min_t
-- Fix memory leak on failed add_mtd_device
+> The problem is just that if the code is not tested in its
+> current configuration it will most likely not work (unless you're a 
+perfect 
+> coder, but most of us are not). And merging code that doesn't work 
+doesn't
+> make sense.
+> 
+> The need for a full retest after the changes inspired by review
+> feedback is somewhat annoying -- I agree -- but there's really
+> no way around it that I know.
+> 
+> BTW I'm not saying that LTP is the perfect user test (it's definitely
+> not), but it's a relatively useful basic sanity check and you
+> should pass something like this at least. Other real user testing would
+> be still needed too of course then.
 
-Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
-----
+Thanks Andi,
 
-diff --git a/drivers/mtd/devices/sst25l.c b/drivers/mtd/devices/sst25l.c
-index 777fadf..d235067 100644
---- a/drivers/mtd/devices/sst25l.c
-+++ b/drivers/mtd/devices/sst25l.c
-@@ -298,7 +298,7 @@ static int sst25l_write(struct mtd_info *mtd, loff_t to, size_t len,
- 		 * Write the remaining bytes using auto address
- 		 * increment mode
- 		 */
--		bytes = min(mtd->writesize, (u32)(len - i));
-+		bytes = min_t(u32, mtd->writesize, len - i);
- 		for (j = 1; j < bytes; j++, copied++) {
- 			ret = sst25l_wait_till_ready(flash);
- 			if (ret)
-@@ -367,7 +367,7 @@ static int __init sst25l_probe(struct spi_device *spi)
- 	struct flash_info *flash_info;
- 	struct sst25l_flash *flash;
- 	struct flash_platform_data *data;
--	int i;
-+	int ret, i;
- 
- 	flash_info = sst25l_match_device(spi);
- 	if (!flash_info)
-@@ -457,7 +457,14 @@ static int __init sst25l_probe(struct spi_device *spi)
- 			 data->nr_parts, data->name);
- 	}
- 
--	return add_mtd_device(&flash->mtd) == 1 ? -ENODEV : 0;
-+	ret = add_mtd_device(&flash->mtd);
-+	if (ret == 1) {
-+		kfree(flash);
-+		dev_set_drvdata(&spi->dev, NULL);
-+		return -ENODEV;
-+	}
-+	
-+	return 0;
- }
- 
- static int __exit sst25l_remove(struct spi_device *spi)
+In fact, what I worry about is leaving score outside upstream,
+Few person will pay attation to asm-generic/score patches.
+When score kernel/glibc finish its update and passed LTP,
+We still could not catch up people's suggestion.
 
+Best Regards
+Liqin
+
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
