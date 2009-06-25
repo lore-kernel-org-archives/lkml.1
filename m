@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbZFYFRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbZFYFQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760098AbZFYFRA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbZFYFOA
+	id S1760042AbZFYFQr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbZFYFNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:14:00 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51139 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992AbZFYFN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:13:58 -0400
-Date: Thu, 25 Jun 2009 07:13:59 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Kennedy <richard@rsk.demon.co.uk>, a.p.zijlstra@chello.nl,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-Message-ID: <20090625051359.GB31415@kernel.dk>
-References: <1245839904.3210.85.camel@localhost.localdomain> <20090624152732.d6352f4f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624152732.d6352f4f.akpm@linux-foundation.org>
+	Thu, 25 Jun 2009 01:13:55 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1452 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755656AbZFYFNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 01:13:50 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Reinette Chatre <reinette.chatre@intel.com>,
+       James Ketrenos <jketreno@linux.intel.com>, Zhu Yi <yi.zhu@intel.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       ipw2100-devel@lists.sourceforge.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH 11/19] drivers/net/wireless: Use PCI_VDEVICE
+Date: Wed, 24 Jun 2009 22:13:27 -0700
+Message-Id: <10b896c1a1e1f65a4a342ee5aa3452ab8cb43dfb.1245906152.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
+In-Reply-To: <cover.1245906151.git.joe@perches.com>
+References: <cover.1245906151.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24 2009, Andrew Morton wrote:
-> On Wed, 24 Jun 2009 11:38:24 +0100
-> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> 
-> > When writing to 2 (or more) devices at the same time, stop
-> > balance_dirty_pages moving dirty pages to writeback when it has reached
-> > the bdi threshold. This prevents balance_dirty_pages overshooting its
-> > limits and moving all dirty pages to writeback.     
-> > 
-> >     
-> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> > ---
-> > balance_dirty_pages can overreact and move all of the dirty pages to
-> > writeback unnecessarily.
-> > 
-> > balance_dirty_pages makes its decision to throttle based on the number
-> > of dirty plus writeback pages that are over the calculated limit,so it
-> > will continue to move pages even when there are plenty of pages in
-> > writeback and less than the threshold still dirty.
-> > 
-> > This allows it to overshoot its limits and move all the dirty pages to
-> > writeback while waiting for the drives to catch up and empty the
-> > writeback list. 
-> > 
-> > A simple fio test easily demonstrates this problem.  
-> > 
-> > fio --name=f1 --directory=/disk1 --size=2G -rw=write
-> > 	--name=f2 --directory=/disk2 --size=1G --rw=write 		--startdelay=10
-> > 
-> > The attached graph before.png shows how all pages are moved to writeback
-> > as the second write starts and the throttling kicks in.
-> > 
-> > after.png is the same test with the patch applied, which clearly shows
-> > that it keeps dirty_background_ratio dirty pages in the buffer.
-> > The values and timings of the graphs are only approximate but are good
-> > enough to show the behaviour.  
-> > 
-> > This is the simplest fix I could find, but I'm not entirely sure that it
-> > alone will be enough for all cases. But it certainly is an improvement
-> > on my desktop machine writing to 2 disks.
-> > 
-> > Do we need something more for machines with large arrays where
-> > bdi_threshold * number_of_drives is greater than the dirty_ratio ?
-> > 
-> 
-> um.  Interesting find.  Jens, was any of your performance testing using
-> multiple devices?  If so, it looks like the results just got invalidated :)
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/net/wireless/ipw2x00/ipw2200.c        |   10 +++++-----
+ drivers/net/wireless/prism54/islpci_hotplug.c |    4 +---
+ 2 files changed, 6 insertions(+), 8 deletions(-)
 
-"invalidated" is a bit too much I think, skewed is more like it. But
-most of my testing has been on a single spindle, only the very first
-patches used 10 disks as a test base.
-
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 7b0dcea..7687879 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -541,8 +541,11 @@ static void balance_dirty_pages(struct address_space *mapping)
-> >  		 * filesystems (i.e. NFS) in which data may have been
-> >  		 * written to the server's write cache, but has not yet
-> >  		 * been flushed to permanent storage.
-> > +		 * Only move pages to writeback if this bdi is over its
-> > +		 * threshold otherwise wait until the disk writes catch
-> > +		 * up.
-> >  		 */
-> > -		if (bdi_nr_reclaimable) {
-> > +		if (bdi_nr_reclaimable > bdi_thresh) {
-> >  			writeback_inodes(&wbc);
-> >  			pages_written += write_chunk - wbc.nr_to_write;
-> >  			get_dirty_limits(&background_thresh, &dirty_thresh,
-> 
-> yup, we need to think about the effect with zillions of disks.  Peter,
-> could you please take a look?
-> 
-> Also...  get_dirty_limits() is rather hard to grok.  The callers of
-> get_dirty_limits() treat its three return values as "thresholds", but
-> they're not named as thresholds within get_dirty_limits() itself, which
-> is a bit confusing.  And the meaning of each of those return values is
-> pretty obscure from the code - could we document them please?
-
-This is indeed a pretty interesting find!
-
+diff --git a/drivers/net/wireless/ipw2x00/ipw2200.c b/drivers/net/wireless/ipw2x00/ipw2200.c
+index 44c29b3..d726b3c 100644
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -11436,11 +11436,11 @@ static struct pci_device_id card_ids[] = {
+ 	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2754, 0, 0, 0},
+ 	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2761, 0, 0, 0},
+ 	{PCI_VENDOR_ID_INTEL, 0x1043, 0x8086, 0x2762, 0, 0, 0},
+-	{PCI_VENDOR_ID_INTEL, 0x104f, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_INTEL, 0x4220, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},	/* BG */
+-	{PCI_VENDOR_ID_INTEL, 0x4221, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},	/* BG */
+-	{PCI_VENDOR_ID_INTEL, 0x4223, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},	/* ABG */
+-	{PCI_VENDOR_ID_INTEL, 0x4224, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},	/* ABG */
++	{PCI_VDEVICE(INTEL, 0x104f), 0},
++	{PCI_VDEVICE(INTEL, 0x4220), 0},	/* BG */
++	{PCI_VDEVICE(INTEL, 0x4221), 0},	/* BG */
++	{PCI_VDEVICE(INTEL, 0x4223), 0},	/* ABG */
++	{PCI_VDEVICE(INTEL, 0x4224), 0},	/* ABG */
+ 
+ 	/* required last entry */
+ 	{0,}
+diff --git a/drivers/net/wireless/prism54/islpci_hotplug.c b/drivers/net/wireless/prism54/islpci_hotplug.c
+index 3087672..83d3662 100644
+--- a/drivers/net/wireless/prism54/islpci_hotplug.c
++++ b/drivers/net/wireless/prism54/islpci_hotplug.c
+@@ -49,9 +49,7 @@ static const struct pci_device_id prism54_id_tbl[] = {
+ 
+ 	/* 3COM 3CRWE154G72 Wireless LAN adapter */
+ 	{
+-	 0x10b7, 0x6001,
+-	 PCI_ANY_ID, PCI_ANY_ID,
+-	 0, 0, 0
++	 PCI_VDEVICE(3COM, 0x6001), 0
+ 	},
+ 
+ 	/* Intersil PRISM Indigo Wireless LAN adapter */
 -- 
-Jens Axboe
+1.6.3.1.10.g659a0.dirty
 
