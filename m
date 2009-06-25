@@ -1,72 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZFYK3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZFYK3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbZFYK3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZFYK3Y
+	id S1756063AbZFYK3r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbZFYK32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:29:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:36536 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752683AbZFYK3X convert rfc822-to-8bit (ORCPT
+	Thu, 25 Jun 2009 06:29:28 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:47683 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752685AbZFYK3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:29:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=By0NLwsDBKVtftdc8PVFzPkaFQZT68R3U750qXr8lDMhP/pM7H9326EbP/zBigGUrI
-         xCBd6bb3+FSeE+Yy4qlPgB6/mCur/XUVx2Re/BxVsb5R3ijES+vYTtpeDdAluH1xazuK
-         dFeD544tbs5j7ZMWsWfxhbmqjwOcttkBgiSHg=
+	Thu, 25 Jun 2009 06:29:24 -0400
+Message-ID: <4A435162.90109@gmail.com>
+Date: Thu, 25 Jun 2009 12:28:50 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
-References: <20090608152420.0e76c302@dxy.sh.intel.com>
-	 <5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
-Date: Thu, 25 Jun 2009 13:29:25 +0300
-X-Google-Sender-Auth: 8694a29486bfed25
-Message-ID: <359ed6810906250329x70cf380cy278f23e3ebc6a829@mail.gmail.com>
-Subject: Re: [PATCH]input: Change timer function to workqueue for gpio_keys 
-	driver
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-To: LKML <linux-kernel@vger.kernel.org>, Alek Du <alek.du@intel.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, ben-linux@fluff.org
+To: Jiri Olsa <jolsa@redhat.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com
+Subject: Re: [RFC] tcp: race in receive part
+References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com> <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com> <4A40AF2A.3050509@gmail.com> <20090624102038.GA5409@jolsa.lab.eng.brq.redhat.com> <4A42082D.9060402@gmail.com> <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
+In-Reply-To: <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 25 Jun 2009 12:29:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 8:40 PM, Trilok Soni<soni.trilok@gmail.com> wrote:
->>  static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
->>  {
->>        struct gpio_button_data *bdata = dev_id;
->> @@ -62,10 +61,10 @@ static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
->>        BUG_ON(irq != gpio_to_irq(button->gpio));
->>
->>        if (button->debounce_interval)
->> -               mod_timer(&bdata->timer,
->> -                       jiffies + msecs_to_jiffies(button->debounce_interval));
->> +               schedule_delayed_work(&bdata->work,
->> +                       msecs_to_jiffies(button->debounce_interval));
->>        else
->> -               gpio_keys_report_event(bdata);
->> +               schedule_work(&bdata->work.work);
->>
->>        return IRQ_HANDLED;
->>  }
+Jiri Olsa a écrit :
+> 
+> I made the modification, plz check the attached diff.
+> 
+> I found some places where the read_lock is not ahead of the check:
+>   "if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))"
+> 
+> I'm not sure we dont want to address those as well; located in following
+> files:
+>         drivers/net/tun.c
+>         net/core/stream.c
+>         net/sctp/socket.c
+>         net/sunrpc/svcsock.c
 
-Correct me if I'm wrong, but as far as I can tell,
-schedule_delayed_work doesn't modify the timer if the work was already
-pending. The result is not the same as with the timer. This breaks the
-debouncing.
+We'll take care of them later :)
 
-It looks like a slightly modified version of this patch has already
-been committed [1], but it has the same problem.
+> 
+> 
+> thanks,
+> jirka
+> 
 
-[1] 0b346838c5862bfe911432956a106d602535d030 Input: gpio-keys - change
-timer to workqueue
+This patch is OK with me, please submit a new formal patch with
+fresh ChangeLog so that we can all agree and Signed-off-by/Acked-by
 
+Oleg, I think your comment can be addressed in a followup patch ?
 
-BR,
-Jani.
+Thanks to all
+
+> 
+> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> index b7e5db8..570c0ff 100644
+> --- a/arch/x86/include/asm/spinlock.h
+> +++ b/arch/x86/include/asm/spinlock.h
+> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+>  #define _raw_read_relax(lock)	cpu_relax()
+>  #define _raw_write_relax(lock)	cpu_relax()
+>  
+> +/* The read_lock() on x86 is a full memory barrier. */
+> +#define smp_mb__after_read_lock() barrier()
+> +
+>  #endif /* _ASM_X86_SPINLOCK_H */
+> diff --git a/fs/select.c b/fs/select.c
+> index d870237..cf5d80b 100644
+> --- a/fs/select.c
+> +++ b/fs/select.c
+> @@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
+>  	init_waitqueue_func_entry(&entry->wait, pollwake);
+>  	entry->wait.private = pwq;
+>  	add_wait_queue(wait_address, &entry->wait);
+> +
+> +	/* This memory barrier is paired with the smp_mb__after_read_lock
+> +	 * in the sk_has_sleeper. */
+> +	smp_mb();
+>  }
+>  
+>  int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
+> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+> index 252b245..dd28726 100644
+> --- a/include/linux/spinlock.h
+> +++ b/include/linux/spinlock.h
+> @@ -132,6 +132,11 @@ do {								\
+>  #endif /*__raw_spin_is_contended*/
+>  #endif
+>  
+> +/* The read_lock does not imply full memory barrier. */
+> +#ifndef smp_mb__after_read_lock
+> +#define smp_mb__after_read_lock() smp_mb()
+> +#endif
+> +
+>  /**
+>   * spin_unlock_wait - wait until the spinlock gets unlocked
+>   * @lock: the spinlock in question.
+> diff --git a/include/net/sock.h b/include/net/sock.h
+> index 07133c5..a02a956 100644
+> --- a/include/net/sock.h
+> +++ b/include/net/sock.h
+> @@ -1241,6 +1241,24 @@ static inline int sk_has_allocations(const struct sock *sk)
+>  	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
+>  }
+>  
+> +/**
+> + * sk_has_sleeper - check if there are any waiting processes
+> + * @sk: socket
+> + *
+> + * Returns true if socket has waiting processes
+> + */
+> +static inline int sk_has_sleeper(struct sock *sk)
+> +{
+> +	/*
+> +	 * We need to be sure we are in sync with the
+> +	 * add_wait_queue modifications to the wait queue.
+> +	 *
+> +	 * This memory barrier is paired in the __pollwait.
+> +	 */
+> +	smp_mb__after_read_lock();
+> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> +}
+> +
+>  /*
+>   * 	Queue a received datagram if it will fit. Stream and sequenced
+>   *	protocols can't normally use this as they need to fit buffers in
+> diff --git a/net/atm/common.c b/net/atm/common.c
+> index c1c9793..67a8642 100644
+> --- a/net/atm/common.c
+> +++ b/net/atm/common.c
+> @@ -92,7 +92,7 @@ static void vcc_sock_destruct(struct sock *sk)
+>  static void vcc_def_wakeup(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up(sk->sk_sleep);
+>  	read_unlock(&sk->sk_callback_lock);
+>  }
+> @@ -110,7 +110,7 @@ static void vcc_write_space(struct sock *sk)
+>  	read_lock(&sk->sk_callback_lock);
+>  
+>  	if (vcc_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible(sk->sk_sleep);
+>  
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+> diff --git a/net/core/sock.c b/net/core/sock.c
+> index b0ba569..6354863 100644
+> --- a/net/core/sock.c
+> +++ b/net/core/sock.c
+> @@ -1715,7 +1715,7 @@ EXPORT_SYMBOL(sock_no_sendpage);
+>  static void sock_def_wakeup(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_all(sk->sk_sleep);
+>  	read_unlock(&sk->sk_callback_lock);
+>  }
+> @@ -1723,7 +1723,7 @@ static void sock_def_wakeup(struct sock *sk)
+>  static void sock_def_error_report(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_poll(sk->sk_sleep, POLLERR);
+>  	sk_wake_async(sk, SOCK_WAKE_IO, POLL_ERR);
+>  	read_unlock(&sk->sk_callback_lock);
+> @@ -1732,7 +1732,7 @@ static void sock_def_error_report(struct sock *sk)
+>  static void sock_def_readable(struct sock *sk, int len)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLIN |
+>  						POLLRDNORM | POLLRDBAND);
+>  	sk_wake_async(sk, SOCK_WAKE_WAITD, POLL_IN);
+> @@ -1747,7 +1747,7 @@ static void sock_def_write_space(struct sock *sk)
+>  	 * progress.  --DaveM
+>  	 */
+>  	if ((atomic_read(&sk->sk_wmem_alloc) << 1) <= sk->sk_sndbuf) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
+>  						POLLWRNORM | POLLWRBAND);
+>  
+> diff --git a/net/dccp/output.c b/net/dccp/output.c
+> index c0e88c1..c96119f 100644
+> --- a/net/dccp/output.c
+> +++ b/net/dccp/output.c
+> @@ -196,7 +196,7 @@ void dccp_write_space(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+>  
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible(sk->sk_sleep);
+>  	/* Should agree with poll, otherwise some programs break */
+>  	if (sock_writeable(sk))
+> diff --git a/net/iucv/af_iucv.c b/net/iucv/af_iucv.c
+> index 6be5f92..ba0149d 100644
+> --- a/net/iucv/af_iucv.c
+> +++ b/net/iucv/af_iucv.c
+> @@ -306,7 +306,7 @@ static inline int iucv_below_msglim(struct sock *sk)
+>  static void iucv_sock_wake_msglim(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_all(sk->sk_sleep);
+>  	sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	read_unlock(&sk->sk_callback_lock);
+> diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
+> index eac5e7b..60e0e38 100644
+> --- a/net/rxrpc/af_rxrpc.c
+> +++ b/net/rxrpc/af_rxrpc.c
+> @@ -63,7 +63,7 @@ static void rxrpc_write_space(struct sock *sk)
+>  	_enter("%p", sk);
+>  	read_lock(&sk->sk_callback_lock);
+>  	if (rxrpc_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible(sk->sk_sleep);
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	}
+> diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
+> index 36d4e44..143143a 100644
+> --- a/net/unix/af_unix.c
+> +++ b/net/unix/af_unix.c
+> @@ -315,7 +315,7 @@ static void unix_write_space(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+>  	if (unix_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible_sync(sk->sk_sleep);
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	}
+> 
+
