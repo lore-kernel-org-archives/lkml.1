@@ -1,146 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbZFYLqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753311AbZFYLqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674AbZFYLqM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 07:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZFYLqA
+	id S1753311AbZFYLqv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZFYLqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 07:46:00 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:48912 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZFYLp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 07:45:59 -0400
-Message-ID: <461dbc08f8573008440a03b9618bce94.squirrel@www.hardeman.nu>
-In-Reply-To: <20090624151335.0f73907c@jbarnes-g45>
-References: <20090624213645.GA18843@hardeman.nu>
-    <20090624151335.0f73907c@jbarnes-g45>
-Date: Thu, 25 Jun 2009 13:46:01 +0200 (CEST)
-Subject: Re: [RFC/PATCH] Winbond CIR driver for the WPCD376I chip (ACPI/PNP 
-     id WEC1022)
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: "Jesse Barnes" <jesse.barnes@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 25 Jun 2009 07:46:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34111 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbZFYLqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 07:46:43 -0400
+Subject: [PATCH -tip] perf_counter tools: check for valid cache operations
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 17:16:07 +0530
+Message-Id: <1245930367.5308.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, June 25, 2009 00:13, Jesse Barnes wrote:
-> On Wed, 24 Jun 2009 14:36:45 -0700
-> David Härdeman <david@hardeman.nu> wrote:
->
->> I've written a driver for the
-...
->> Winbond WPCD376I chipset
->
-> Yay, glad I could get these released for you.  I just did a quick scan
-> of the driver (notes below)
 
-Two more things that Intel could provide:
+Made new table for cache operartion stat 'hw_cache_stat' as :
+ L1I : Read and prefetch only
+ ITLB and BPU : Read-only
 
-a) Publish the datasheet (I know you mentioned doing this but
-   I can't find it on the Intel website)
+introduce is_cache_op_valid() for cache operation validity
 
-b) Make the hardware needed to actually use the CIR functionality
-   available for purchase. http://www.easy-cir.com seems to be more
-   or less dead (which is curious since an ad for the website
-   seems to be included with every CIR-enabled Intel motherboard).
-   I had to solder my own IR receiver in order to write the driver.
+And checks for valid cache operations.
 
->> I'd appreciate having the driver reviewed...and in addition I have
->> some questions for the list:
->>
->>    1) SuperI/O concurrency
->> ...
->
-> Yeah, often multifunction devices like this have higher level "bus
-> drivers" that take care of managing the global parts, and drivers that
-> attach to it to manage individual functions.  If you were feeling
-> really ambitious you could do that for the superio chip and port any
-> sub-drivers... :)
+Reported-by : Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ tools/perf/util/parse-events.c |   33 +++++++++++++++++++++++++++++++++
+ 1 files changed, 33 insertions(+), 0 deletions(-)
 
-My ambitions are more directed towards some kind of IR-subsystem into the
-kernel at the moment :) Besides, the Intel mainboards doesn't actually
-seem to use any of the other logical devices (which are mostly supported
-by existing drivers anyway).
-
->> Where should this driver go in the tree? drivers/platform/x86/?
->
-> drivers/char is probably fine.
-
-I'm leaning towards drivers/input/misc now...
-
->> #define dprintk(fmt, arg...)                                    \
->> do {                                                            \
->>         if (debug)                                              \
->>                 printk(KERN_DEBUG DRVNAME fmt , ## arg);        \
->> } while (0)
->
-> Maybe you could use the generic debug functions instead (pr_debug iirc)?
-
-Yes
-
-> ...
-> There are a few magic numbers above here you could possibly make into
-> #defines just to make things more readable.
-
-I'll try
-
-> The key up/down timeout handling seems like a pretty general problem,
-> maybe the input layer has some helpers for it?  Dunno.
-
-drivers/media/common/ir-functions.c is the closest thing I could find
-while writing the driver. The functions there aren't usable because they
-do not properly implement the toggle/repeat handling and it forces the use
-of a small, fixed-size keymap. The same problem existed when I improved
-the IR functionality in drivers/media/dvb/ttpci/budget-ci.c by the way, so
-a generic version could probably be added to ir-functions in the future.
-
->> static ssize_t
->> wbcir_show_last_scancode(struct device *dev,
->>                             struct device_attribute *attr, char *buf)
->> {
->>         struct acpi_device *device = container_of(dev, struct
->> acpi_device, dev); struct wbcir_data *data = acpi_driver_data(device);
->>         return sprintf(buf, "0x%08X\n", data->last_scancode);
->> }
->>
->> static struct device_attribute dev_attr_last_scancode = {
->>         .attr = {
->>                 .name = "last_scancode",
->>                 .mode = 0444,
->>         },
->>         .show = wbcir_show_last_scancode,
->>         .store = NULL,
->>
->> };
->>
->> static struct attribute *wbcir_attributes[] = {
->>         &dev_attr_last_scancode.attr,
->>         NULL,
->> };
->>
->> static struct attribute_group wbcir_attribute_group = {
->>         .attrs = wbcir_attributes,
->> };
->
-> Are these just for debugging?  If so, you could put them in debugfs
-> instead...
-
-No, they are there to help the user when generating a keymap for an
-unknown remote. Press key on remote, read value from
-/sys/.../last_scancode, add line saying "0x12345678 = KEY_EXPLODE" to
-keymap file, repeat...there aren't any user-friendly tools for this yet
-though.
-
-(Dropped Terry from the CC, I just saw that he had requested a driver for
-this chip earlier but I'm not sure he's that interested in the rest of the
-discussion)
-
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 06af2fa..7939a21 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -90,6 +90,34 @@ static char *hw_cache_result[][MAX_ALIASES] = {
+ 	{ "Miss"							},
+ };
+ 
++#define C(x)		PERF_COUNT_HW_CACHE_##x
++#define CACHE_READ	(1 << C(OP_READ))
++#define CACHE_WRITE	(1 << C(OP_WRITE))
++#define CACHE_PREFETCH	(1 << C(OP_PREFETCH))
++#define COP(x)		(1 << x)
++
++/*
++ * cache operartion stat
++ * L1I : Read and prefetch only
++ * ITLB and BPU : Read-only
++ */
++static unsigned long hw_cache_stat[C(MAX)] = {
++ [C(L1D)]	= (CACHE_READ | CACHE_WRITE | CACHE_PREFETCH),
++ [C(L1I)]	= (CACHE_READ | CACHE_PREFETCH),
++ [C(LL)]	= (CACHE_READ | CACHE_WRITE | CACHE_PREFETCH),
++ [C(DTLB)]	= (CACHE_READ | CACHE_WRITE | CACHE_PREFETCH),
++ [C(ITLB)]	= (CACHE_READ),
++ [C(BPU)]	= (CACHE_READ),
++};
++
++static int is_cache_op_valid(u8 cache_type, u8 cache_op)
++{
++	if (hw_cache_stat[cache_type] & COP(cache_op))
++		return 1;	/* valid */
++	else
++		return 0;	/* invalid */
++}
++
+ char *event_name(int counter)
+ {
+ 	u64 config = attrs[counter].config;
+@@ -123,6 +151,8 @@ char *event_name(int counter)
+ 		if (cache_result > PERF_COUNT_HW_CACHE_RESULT_MAX)
+ 			return "unknown-ext-hardware-cache-result";
+ 
++		if (!is_cache_op_valid(cache_type, cache_op))
++			return "invalid-cache";
+ 		sprintf(name, "%s-Cache-%s-%ses",
+ 			hw_cache[cache_type][0],
+ 			hw_cache_op[cache_op][0],
+@@ -179,6 +209,9 @@ parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
+ 	if (cache_op == -1)
+ 		cache_op = PERF_COUNT_HW_CACHE_OP_READ;
+ 
++	if (!is_cache_op_valid(cache_type, cache_op))
++		return -EINVAL;
++
+ 	cache_result = parse_aliases(str, hw_cache_result,
+ 					PERF_COUNT_HW_CACHE_RESULT_MAX);
+ 	/*
 -- 
-David Härdeman
+1.6.0.6
+
+
 
