@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZFYPlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZFYPmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbZFYPlc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 11:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbZFYPlZ
+	id S1759280AbZFYPmd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZFYPmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 11:41:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46034 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755193AbZFYPlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 11:41:24 -0400
-Date: Thu, 25 Jun 2009 11:41:20 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       martin.petersen@oracle.com
-Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
-Message-ID: <20090625154120.GA22616@redhat.com>
-References: <200906250904.57149.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906250904.57149.elendil@planet.nl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 25 Jun 2009 11:42:25 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49524 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754747AbZFYPmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 11:42:24 -0400
+Subject: Re: [PATCH]input: Change timer function to workqueue for gpio_keys
+	driver
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+To: ext Alek Du <alek.du@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Trilok Soni <soni.trilok@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "ben-linux@fluff.org" <ben-linux@fluff.org>
+In-Reply-To: <20090625230949.53beda65@dxy.sh.intel.com>
+References: <20090608152420.0e76c302@dxy.sh.intel.com>
+	 <5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
+	 <359ed6810906250329x70cf380cy278f23e3ebc6a829@mail.gmail.com>
+	 <20090625210642.432e08a5@dxy.sh.intel.com>
+	 <1245936693.20530.107.camel@jani-desktop>
+	 <20090625220826.1fa7413e@dxy.sh.intel.com>
+	 <1245941565.20530.134.camel@jani-desktop>
+	 <1245942355.20530.141.camel@jani-desktop>
+	 <20090625230949.53beda65@dxy.sh.intel.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 18:42:08 +0300
+Message-Id: <1245944528.20530.145.camel@jani-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Jun 2009 15:42:13.0923 (UTC) FILETIME=[82C98F30:01C9F5AB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25 2009 at  3:04am -0400,
-Frans Pop <elendil@planet.nl> wrote:
+On Thu, 2009-06-25 at 17:09 +0200, ext Alek Du wrote:
+> On Thu, 25 Jun 2009 23:05:55 +0800
+> Jani Nikula <ext-jani.1.nikula@nokia.com> wrote:
+> > Actually scrap that, the input layer already ignores events with no
+> > state changes, right?
+> > 
+> Yes, correct. I just want to reply your previous mail, but seems you find that. :-)
 
-> During boot of 2.6.31-rc1 on an arm EABI system I got the following errors:
-> 
-> device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: dm-devel@redhat.com
-> device-mapper: table: 254:0: target device sda6 is misaligned
-> device-mapper: table: 254:0: target device sda6 is misaligned
-> device-mapper: table: 254:1: target device sda6 is misaligned
-> device-mapper: table: 254:1: target device sda6 is misaligned
-> 
-> The boot did complete successfully. A boot with 2.6.30 just previously was
-> clean, and when I reboot back into 2.6.30 the messages are gone again.
-> 
-> The system has a single volume group with two logical volumes.
-> 
-> Please advise and let me know what additional info is needed.
+The point about your patch breaking debouncing is still valid, though.
 
-Even though the messages don't contain "warning", and probably should,
-they are printed via DMWARN().
 
-These warnings are a function of device-mapper now being
-topology-aware.  This means that your LVs are likely misaligned relative
-to the underlying hardware.  Given that you're using partitions I'd
-wager they are the source of the misalignment.  But there could be a bug
-lurking somewhere.
+BR,
+Jani.
 
-Please provide the output from the following commands:
 
-pvs -o +pe_start
-
-cat /sys/block/sda/sda6/alignment_offset
-cat /sys/block/sda/queue/physical_block_size
-cat /sys/block/sda/queue/logical_block_size
-
-If you could also provide the same info for all other PVs that are in
-the VG that would be appreciated.
-
-Mike
