@@ -1,267 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZFYM0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZFYM2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752388AbZFYM0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZFYMZt
+	id S1753629AbZFYM2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZFYM2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:25:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45046 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbZFYMZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:25:48 -0400
-Date: Thu, 25 Jun 2009 14:25:45 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: [PATCH] net: fix race in the receive/select
-Message-ID: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com>
+	Thu, 25 Jun 2009 08:28:14 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:45141 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751861AbZFYM2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:28:13 -0400
+Message-ID: <55ca74318001aae803805a7bccfaca36.squirrel@www.hardeman.nu>
+In-Reply-To: <20090624234501.3d35642f@lxorguk.ukuu.org.uk>
+References: <20090624213645.GA18843@hardeman.nu>
+    <20090624234501.3d35642f@lxorguk.ukuu.org.uk>
+Date: Thu, 25 Jun 2009 14:28:14 +0200 (CEST)
+Subject: Re: [RFC/PATCH] Winbond CIR driver for the WPCD376I chip (ACPI/PNP 
+     id WEC1022)
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, jesse.barnes@intel.com
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding memory barrier to the __pollwait function paired with 
-receive callbacks.  The smp_mb__after_lock define is added, 
-since {read|write|spin}_lock() on x86 are full memory barriers.
+On Thu, June 25, 2009 00:45, Alan Cox wrote:
+>> Lots of drivers support one or more logical devices provided by
+>> different SuperI/O chips, but there seems to be no synchronisation
+>> between the different drivers? Since my driver gets all info from ACPI,
+>> it's no real problem here, but I'm curious...shouldn't there be some
+>> kind of synchronisation between SuperI/O drivers which might all be
+>> changing global registers, such as the logical device select register?
+>
+> I'm looking at a similar case (clash between super I/O config for serial
+> and watchdog) at the moment that affects a proposed driver for some
+> serial port save/restore config stuff. We can request_region to avoid
+> collisions but there is no wait mechanism for super I/O devices which
+> probably wants fixing with a simple list of super I/O ports and a helper
+> lib. I was thinking something like
+>
+> 	handle = superio_request(name, dev, start, len);
+>
+> 	EBUSY - someone else has the I/O space registered other than
+> 	super I/O. The super I/O lib would then request the I/O space and
+> 	hog it.
+>
+> 	superio_claim(handle, block)
+>
+> 	Claim the super I/O providing another person isn't using it,
+> 	optionally wait if so
+>
+> 	superio_release(handle);
+>
+> 	Give back the claim
+>
+> 	superio_free(handle)
+>
+> 	Free allocation
 
-The race fires, when following code paths meet, and the tp->rcv_nxt and
-__add_wait_queue updates stay in CPU caches.
+How would it work in conjunction with ACPI? When I looked at the ACPI
+dumps for my motherboard, the AML code seemed happy to fiddle with global
+SuperI/O registers (protected using an internal mutex).
 
+>>    2) Location of driver
+>>
+>> Where should this driver go in the tree? drivers/platform/x86/?
+>
+> Not if the device is not x86 specific - eg a generic super I/O device
 
-CPU1                         CPU2
+I think the SuperI/O device itself can only be found on Intel motherboards
+at the moment (Winbond told me that the WPCD376I was an Intel-specific
+design), but perhaps drivers/input/misc is a better fit?
 
-sys_select                   receive packet
-  ...                        ...
-  __add_wait_queue           update tp->rcv_nxt
-  ...                        ...
-  tp->rcv_nxt check          sock_def_readable
-  ...                        {
-  schedule                      ...
-                                if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-                                        wake_up_interruptible(sk->sk_sleep)
-                                ...
-                             }
+>> The serial port which the WPCD376I uses for IR TX/RX is only useful for
+>> Consumer IR, but it looks enough like a "normal" uart for the serial
+>> driver to claim the port. I currently have to boot with
+>> "8250.nr_uarts=1" to stop the serial driver from using the IR uart
+>> (there is one "real" serial port in the chip). However, that's not a
+>> very elegant or user-friendly option. Is there a way to blacklist the
+>> port in the serial driver and/or to reclaim the port from the serial
+>> driver when the CIR driver is loaded?
+>
+> How similar is it to a normal UART and if it looks like a normal UART why
+> not drive it as one ?
 
-If there was no cache the code would work ok, since the wait_queue and
-rcv_nxt are opposit to each other.
+(Sorry this is a brain-dump, not intended to be a rant, hopefully you can
+follow my line of reasoning and provide some feedback)
 
-Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-passed the tp->rcv_nxt check and sleeps, or will get the new value for
-tp->rcv_nxt and will return with new data mask.  
-In both cases the process (CPU1) is being added to the wait queue, so the
-waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
+I'm not that familiar with UART's in general, but the fact that I could
+write a working driver using a datasheet for a 10 year older SuperI/O chip
+from a different manufacturer suggests that the register layout is fairly
+standard :)
 
-The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-endup calling schedule and sleep forever if there are no more data on the
-socket.
+There are some differences, for example, the Wake-On-IR (a separate
+logical device with two sets of registers on its own) registers control
+the input (there is one long-range command input and a short-range,
+wide-band learning input) and output (there are 4 different IR blaster
+pins which output can be directed to) as well as the baud clock generator
+(24/48Mhz) for the serial port.
 
-wbr, 
-jirka
+Considering that it's IR-only hardware, some of the uart registers and
+operations (such as the modem control register, modem status interrupts,
+break signals, termios and timeouts) make no sense. Baud rates can be set
+freely but there is little point in doing so.
 
+The UART detects IR activity and then continues sampling data to the RX
+fifo until told to stop doing so (that's what the
+how-many-0xff-bytes-in-a-row check in the irq handler does).
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+Also, some special handling (like disabling RX while doing TX) might be
+necessary in order not to receive the sent IR commands.
 
----
- arch/x86/include/asm/spinlock.h |    3 +++
- fs/select.c                     |    4 ++++
- include/linux/spinlock.h        |    5 +++++
- include/net/sock.h              |   18 ++++++++++++++++++
- net/atm/common.c                |    4 ++--
- net/core/sock.c                 |    8 ++++----
- net/dccp/output.c               |    2 +-
- net/iucv/af_iucv.c              |    2 +-
- net/rxrpc/af_rxrpc.c            |    2 +-
- net/unix/af_unix.c              |    2 +-
- 10 files changed, 40 insertions(+), 10 deletions(-)
+Also, I don't think it's very user-friendly to have a IR device show up as
+/dev/tty...how would userspace be able to find out that it's actually an
+IR transceiver?
 
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index b7e5db8..39ecc5f 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-+#define smp_mb__after_lock() do { } while (0)
-+
- #endif /* _ASM_X86_SPINLOCK_H */
-diff --git a/fs/select.c b/fs/select.c
-index d870237..c4bd5f0 100644
---- a/fs/select.c
-+++ b/fs/select.c
-@@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
- 	init_waitqueue_func_entry(&entry->wait, pollwake);
- 	entry->wait.private = pwq;
- 	add_wait_queue(wait_address, &entry->wait);
-+
-+	/* This memory barrier is paired with the smp_mb__after_lock
-+	 * in the sk_has_sleeper. */
-+	smp_mb();
- }
- 
- int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 252b245..ae053bd 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -132,6 +132,11 @@ do {								\
- #endif /*__raw_spin_is_contended*/
- #endif
- 
-+/* The lock does not imply full memory barrier. */
-+#ifndef smp_mb__after_lock
-+#define smp_mb__after_lock() smp_mb()
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 352f06b..7fbb143 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1241,6 +1241,24 @@ static inline int sk_has_allocations(const struct sock *sk)
- 	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
- }
- 
-+/**
-+ * sk_has_sleeper - check if there are any waiting processes
-+ * @sk: socket
-+ *
-+ * Returns true if socket has waiting processes
-+ */
-+static inline int sk_has_sleeper(struct sock *sk)
-+{
-+	/*
-+	 * We need to be sure we are in sync with the
-+	 * add_wait_queue modifications to the wait queue.
-+	 *
-+	 * This memory barrier is paired in the __pollwait.
-+	 */
-+	smp_mb__after_lock();
-+	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-+}
-+
- /*
-  * 	Queue a received datagram if it will fit. Stream and sequenced
-  *	protocols can't normally use this as they need to fit buffers in
-diff --git a/net/atm/common.c b/net/atm/common.c
-index c1c9793..67a8642 100644
---- a/net/atm/common.c
-+++ b/net/atm/common.c
-@@ -92,7 +92,7 @@ static void vcc_sock_destruct(struct sock *sk)
- static void vcc_def_wakeup(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up(sk->sk_sleep);
- 	read_unlock(&sk->sk_callback_lock);
- }
-@@ -110,7 +110,7 @@ static void vcc_write_space(struct sock *sk)
- 	read_lock(&sk->sk_callback_lock);
- 
- 	if (vcc_writable(sk)) {
--		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+		if (sk_has_sleeper(sk))
- 			wake_up_interruptible(sk->sk_sleep);
- 
- 		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index b0ba569..6354863 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1715,7 +1715,7 @@ EXPORT_SYMBOL(sock_no_sendpage);
- static void sock_def_wakeup(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up_interruptible_all(sk->sk_sleep);
- 	read_unlock(&sk->sk_callback_lock);
- }
-@@ -1723,7 +1723,7 @@ static void sock_def_wakeup(struct sock *sk)
- static void sock_def_error_report(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up_interruptible_poll(sk->sk_sleep, POLLERR);
- 	sk_wake_async(sk, SOCK_WAKE_IO, POLL_ERR);
- 	read_unlock(&sk->sk_callback_lock);
-@@ -1732,7 +1732,7 @@ static void sock_def_error_report(struct sock *sk)
- static void sock_def_readable(struct sock *sk, int len)
- {
- 	read_lock(&sk->sk_callback_lock);
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLIN |
- 						POLLRDNORM | POLLRDBAND);
- 	sk_wake_async(sk, SOCK_WAKE_WAITD, POLL_IN);
-@@ -1747,7 +1747,7 @@ static void sock_def_write_space(struct sock *sk)
- 	 * progress.  --DaveM
- 	 */
- 	if ((atomic_read(&sk->sk_wmem_alloc) << 1) <= sk->sk_sndbuf) {
--		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+		if (sk_has_sleeper(sk))
- 			wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
- 						POLLWRNORM | POLLWRBAND);
- 
-diff --git a/net/dccp/output.c b/net/dccp/output.c
-index c0e88c1..c96119f 100644
---- a/net/dccp/output.c
-+++ b/net/dccp/output.c
-@@ -196,7 +196,7 @@ void dccp_write_space(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
- 
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up_interruptible(sk->sk_sleep);
- 	/* Should agree with poll, otherwise some programs break */
- 	if (sock_writeable(sk))
-diff --git a/net/iucv/af_iucv.c b/net/iucv/af_iucv.c
-index 6be5f92..ba0149d 100644
---- a/net/iucv/af_iucv.c
-+++ b/net/iucv/af_iucv.c
-@@ -306,7 +306,7 @@ static inline int iucv_below_msglim(struct sock *sk)
- static void iucv_sock_wake_msglim(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
--	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+	if (sk_has_sleeper(sk))
- 		wake_up_interruptible_all(sk->sk_sleep);
- 	sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
- 	read_unlock(&sk->sk_callback_lock);
-diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
-index eac5e7b..60e0e38 100644
---- a/net/rxrpc/af_rxrpc.c
-+++ b/net/rxrpc/af_rxrpc.c
-@@ -63,7 +63,7 @@ static void rxrpc_write_space(struct sock *sk)
- 	_enter("%p", sk);
- 	read_lock(&sk->sk_callback_lock);
- 	if (rxrpc_writable(sk)) {
--		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+		if (sk_has_sleeper(sk))
- 			wake_up_interruptible(sk->sk_sleep);
- 		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
- 	}
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index 36d4e44..143143a 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -315,7 +315,7 @@ static void unix_write_space(struct sock *sk)
- {
- 	read_lock(&sk->sk_callback_lock);
- 	if (unix_writable(sk)) {
--		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-+		if (sk_has_sleeper(sk))
- 			wake_up_interruptible_sync(sk->sk_sleep);
- 		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
- 	}
+If the driver supported all of the capabilities of the hardware, there
+would need to be a way to select the TX output (1-4) and RX input
+(learn/command) as well as some other minor things (like getting a report
+on which of the 4 TX outputs that are actually connected). These are
+functionalities which are supported in Vista by using a number of
+CIR-specific ioctls (and by creating a CIR-specific driver class).
+
+The WPCD376I hardware matches the requirements Microsoft has made for
+Vista MCE IR receivers (and is therefore identical, feature-wise to other
+alternatives such as the SIO1049 chip, as they all want that Vista
+MCE-compatible badge), so I imagine that future IR hardware will have the
+same capability.
+
+I'm not saying that the Linux kernel should replicate Vista, but some kind
+of CIR-specific ioctl's or other solution will have to be defined anyway,
+and the same ioctl's (or whatever) will also need to work for e.g. a
+USB-based CIR transceiver or other hardware which doesn't happen to
+include an UART.
+
+Therefore I still think it's better to model the driver as an input
+device, and ultimately to teach the input subsystem some specifics of CIR
+devices, similar to how force-feedback devices are handled today.
+
+-- 
+David Härdeman
+
