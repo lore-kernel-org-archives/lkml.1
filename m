@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbZFYH1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZFYH2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759610AbZFYH1V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:27:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZFYH1O
+	id S1759945AbZFYH2X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZFYH2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:27:14 -0400
-Received: from stz-softwaretechnik.de ([217.160.223.211]:2998 "EHLO
+	Thu, 25 Jun 2009 03:28:15 -0400
+Received: from stz-softwaretechnik.de ([217.160.223.211]:3005 "EHLO
 	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752916AbZFYH1O (ORCPT
+	by vger.kernel.org with ESMTP id S1752449AbZFYH2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:27:14 -0400
-Date: Thu, 25 Jun 2009 09:26:41 +0200
-From: Ralf Gross <Ralf-Lists@ralfgross.de>
+	Thu, 25 Jun 2009 03:28:15 -0400
+Date: Thu, 25 Jun 2009 09:27:54 +0200
+From: Ralf Gross <rg@stz-softwaretechnik.com>
 To: Al Boldi <a1426z@gawab.com>
 Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com
 Subject: Re: io-scheduler tuning for better read/write ratio
-Message-ID: <20090625072641.GB16642@p15145560.pureserver.info>
+Message-ID: <20090625072754.GC16642@p15145560.pureserver.info>
 References: <4A37CB2A.6010209@davidnewall.com> <x49iqinys2k.fsf@segfault.boston.devel.redhat.com> <20090624072554.GA16642@p15145560.pureserver.info> <200906241057.41227.a1426z@gawab.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
