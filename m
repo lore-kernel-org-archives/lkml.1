@@ -1,50 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758580AbZFYQHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZFYQHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758580AbZFYQHm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZFYQHW
+	id S1758768AbZFYQHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbZFYQH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:07:22 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:32411 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbZFYQHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:07:21 -0400
-To: device-mapper development <dm-devel@redhat.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <200906250904.57149.elendil@planet.nl>
-	<yq1tz24qqaj.fsf@sermon.lab.mkp.net>
-	<200906251748.45475.elendil@planet.nl>
-Date: Thu, 25 Jun 2009 12:05:47 -0400
-In-Reply-To: <200906251748.45475.elendil@planet.nl> (Frans Pop's message of
-	"Thu, 25 Jun 2009 17:48:44 +0200")
-Message-ID: <yq1prcsqox0.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 25 Jun 2009 12:07:27 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37995 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757045AbZFYQHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 12:07:24 -0400
+Date: Thu, 25 Jun 2009 09:07:06 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Cc: mingo@elte.hu, akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
+       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
+       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org,
+       mathieu.desnoyers@polymtl.ca
+Subject: [PATCH -tip 0/3] expedited "big hammer" RCU grace periods
+Message-ID: <20090625160706.GA9467@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt010.oracle.com [141.146.116.19]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A43A05E.0037:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Frans" == Frans Pop <elendil@planet.nl> writes:
+Respin of http://lkml.org/lkml/2009/6/24/350 to allow for the removal
+of Classic RCU (in favor of Hierarchical RCU) from the -tip tree.
 
-Frans> I've just also tested rc1 in the Hercules s390 emulator, and I
-Frans> get exactly the same there on a virtual dasd disk:
+This patch set implements the "big hammer" expedited RCU grace periods.
+This leverages the existing per-CPU migration kthreads, as suggested
+by Ingo.  These are awakened in a loop, and waited for in a second loop.
+Not fully scalable, but removing the extra hop through smp_call_function
+reduces latency on systems with moderate numbers of CPUs.  The
+synchronize_rcu_expedited() and synchronize_bh_expedited() primitives
+invoke synchronize_sched_expedited(), except for CONFIG_PREEMPT_RCU,
+where they instead invoke synchronize_rcu() and synchronize_rcu_bh(),
+respectively.  This will be fixed in the future, after preemptable RCU
+is folded into the rcutree implementation.
 
-Frans> dasd-eckd 0.0.0121: New DASD 3390/02 (CU 3990/02) with 1113
-Frans> cylinders, 15 heads, 224 sectors dasd-eckd 0.0.0121: DASD with 4
-Frans> KB/block, 801360 KB total size, 48 KB/track, compatible disk
+As before, this does nothing to expedite callbacks already registered
+with call_rcu() or call_rcu_bh(), but there is no need to.
 
-DASD uses 4KB blocks so that makes more sense.
+Passes many hours of rcutorture testing in parallel with a script
+that randomly offlines and onlines CPUs in a number of configurations.
+Grace periods take about 40 microseconds on an 8-CPU Power machine, which
+I believe is good enough from a performance viewpoint for the near future.
+This represents some slowdown from v7, which was unfortunately necessary
+to fix some bugs.
 
-The SATA thing is weird.
+This is finally ready for inclusion.  ;-)
 
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Shortcomings:
+
+o	Does not address preemptable RCU (though synchronize_sched_expedited()
+	is in fact expedited in this configuration).
+
+o	Probably not helpful on systems with thousands of CPUs, but likely
+	quite helpful even on systems with a few hundred CPUs.
+
+Changes since v7:
+
+o	Fixed several embarrassing bugs turned up by tests on multiple
+	configurations.
+
+Changes since v6:
+
+o	Moved to using the migration threads, as suggested by Ingo.
+
+Changes since v5:
+
+o	Fixed several embarrassing locking bugs, including those
+	noted by Ingo and Lai.
+
+o	Added a missing set of braces.
+
+o	Cut out the extra kthread, so that synchronize_sched_expedited()
+	directly calls smp_call_function() and waits for the quiescent
+	states.
+
+o	Removed some debug code, but promoted one to production.
+
+o	Fix a compiler warning.
+
+Changes since v4:
+
+o	Use per-CPU kthreads to force the quiescent states in parallel.
+
+Changes since v3:
+
+o	Use a kthread that schedules itself on each CPU in turn to
+	force a grace period.  The synchronize_rcu() primitive
+	wakes up the kthread in order to avoid messing with affinity
+	masks on user tasks.
+
+o	Tried a number of additional variations on the v3 approach, none
+	of which helped much.
+
+Changes since v2:
+
+o	Use reschedule IPIs rather than a softirq.
+
+Changes since v1:
+
+o	Added rcutorture support, and added exports required by
+	rcutorture.
+
+o	Added comment stating that smp_call_function() implies a
+	memory barrier, suggested by Mathieu.
+
+o	Added #include for delay.h.
+
+ Documentation/RCU/RTFP.txt       |   77 ++++++++++++++
+ Documentation/RCU/UP.txt         |   34 ++++--
+ Documentation/RCU/checklist.txt  |   20 ++-
+ Documentation/RCU/rcubarrier.txt |    7 +
+ Documentation/RCU/torture.txt    |   23 ++++
+ Documentation/RCU/whatisRCU.txt  |   15 ++
+ include/linux/rcupdate.h         |   25 ++--
+ include/linux/rcupreempt.h       |   10 +
+ include/linux/rcutree.h          |   12 ++
+ kernel/rcupdate.c                |   25 ++++
+ kernel/rcutorture.c              |  203 +++++++++++++++++++++------------------
+ kernel/sched.c                   |  130 ++++++++++++++++++++++++
+ 12 files changed, 452 insertions(+), 129 deletions(-)
