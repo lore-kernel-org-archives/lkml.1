@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZFYNZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbZFYNZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155AbZFYNZN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZFYNZC
+	id S1756423AbZFYNZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbZFYNZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:25:02 -0400
-Received: from fifo99.com ([67.223.236.141]:45667 "EHLO fifo99.com"
+	Thu, 25 Jun 2009 09:25:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60026 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbZFYNZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:25:00 -0400
-Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
-	usage
-From: Daniel Walker <dwalker@fifo99.com>
-To: Dianne Hackborn <hackbod@android.com>
-Cc: Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Brian Swetland <swetland@google.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <26b7c7380906242109id89b490m2c148ec0ac9b3696@mail.gmail.com>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
-	 <4A390B9A.40806@goop.org> <1245254936.5982.261.camel@desktop>
-	 <4A391A54.7000109@goop.org>
-	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
-	 <1245274308.5982.268.camel@desktop>
-	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
-	 <1245451983.32124.25.camel@desktop>
-	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-	 <1245458940.32124.45.camel@desktop>
-	 <26b7c7380906242109id89b490m2c148ec0ac9b3696@mail.gmail.com>
+	id S1753667AbZFYNZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 09:25:08 -0400
+Subject: Re: Infrastructure for tracking driver performance events
+From: Mark Wielaard <mjw@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ben Gamari <bgamari.foss@gmail.com>, linux-kernel@vger.kernel.org,
+       "Stone, Joshua I" <joshua.i.stone@intel.com>,
+       Rober Richter <robert.richter@amd.com>, anil.s.keshavamurthy@intel.com,
+       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com,
+       SystemTap <systemtap@sources.redhat.com>, Eric Anholt <eric@anholt.net>,
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       intel-gfx@lists.freedesktop.org
+In-Reply-To: <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
+References: <20090624172912.GB5565@ben-laptop>
+	 <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
 Content-Type: text/plain
-Date: Thu, 25 Jun 2009 06:24:59 -0700
-Message-Id: <1245936299.32124.299.camel@desktop>
+Date: Thu, 25 Jun 2009 15:24:39 +0200
+Message-Id: <1245936279.2677.11.camel@hermans.wildebeest.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 21:09 -0700, Dianne Hackborn wrote:
-> 2009/6/19 Daniel Walker <dwalker@fifo99.com>
-> > Most of these questions related to the fact that I don't think an
-> > interface like this just slips into the kernel as a driver. Since it's
-> > IPC, it's totally generic, and it's not part of a standard (i.e. POSIX),
-> > we need to have some better and more specific information about it (or
-> > atleast I do).
+Hi,
+
+On Thu, 2009-06-25 at 08:55 -0400, Steven Rostedt wrote:
+> On Wed, 24 Jun 2009, Ben Gamari wrote:
+> > 3) A large amount of usermode support is necessary (which will likely be
+> >    the case for any option; listed here for completeness)
+> > 
+> > Another option seems to be systemtap. It has already been documented[3]
+> > that this option could provide both user-mode and kernel-mode
+> > backtraces. The driver could provide a kernel marker at every potential
+> > wait point (or a single marker in a function called at each wait point,
+> > for that matter) which would be picked up by systemtap and processed in
+> > usermode, calling ptrace to acquire a usermode backtrace. This approach
+> > seems slightly cleaner as it doesn't require the tracing on the entire
+> > machine to catch what should be reasonably rare events (hopefully).
 > 
-> Hi, sorry I have been slow to respond.  I can give a summary of how
-> binder is used in the Android platform and the associated feature set.
->  I won't try to address other options, especially D-Bus, because
-> honestly I haven't been following it for the last 3 or so years so
-> don't really know its current state of art.
+> Enabling the userstacktrace will give userspace stack traces at event
+> trace points. The thing is that the userspace utility must be built with 
+> frame pointers.
 
-Thank your for the extensive response. I'm sure it will be helpful in
-educating us as to the usage of the interface..
+This isn't true for Systemtap. It can unwind through anything since it
+contains a dwarf-unwinder that can do backtraces as long as unwind
+tables are available for the modules (executables, vdso, shared
+libraries, etc.) one wants to unwind through. Systemtap currently gets
+these in its "translation" phase and you do need to list them explicitly
+atm. There is work underway to make this more flexible and automatic.
+Also cross kernel-user-space backtraces need some work (systemtap can
+use the dwarf unwinder also in-kernel, but some kernel parts are missing
+unwind tables).
 
-Was dbus initially investigated by the Android project as something that
-could be used for IPC? Which other mechanisms had been investigated for
-IPC beyond binder?
+Some systemtap bugs to track if you are interested in extending this
+functionality:
 
-> I'm not sure what the relevance is of Java or C++ people liking it.
-> Does this mean that the important thing is that C people love it and
-> other languages don't matter? :)  Anyway whether or not you "love" it
-> I don't think is a matter of programming language but just design
-> style, personal preference, and who knows what else.  It has been
-> extremely useful in our implementation of Android, as can be seen in
-> just how much of the system sits on top of it, but that's all.
+= Prerequirements for more ubiquitous backtracing
+sw#6961 backtrace from non-pt_regs probe context
+http://sourceware.org/bugzilla/show_bug.cgi?id=6961
+sw#10080 track vdso for process symbols/backtrace
+http://sourceware.org/bugzilla/show_bug.cgi?id=10080
+sw#10208 Support probing glibc synthesized syscall wrappers
+http://sourceware.org/bugzilla/show_bug.cgi?id=10208
 
-The important thing is that it's in the kernel for a better reason than
-simply satisfying a certain language group ..
+NOTE: the above still won't make cross kernel-to-userspace backtracing
+fully work since we cannot easily unwind through the kernel-entry/exit
+assembly code that doesn't have dwarf unwind tables.
 
-I think the biggest issue I have with the binder implementation is that
-it's doing far too much in the kernel, it's not just IPC. It's also
-thread management, memory management, and lots of other stuff that I
-haven't figured out yet .. A lot of it can already be done in userspace.
+= Make user backtraces more convenient
+sw#10228 Add more vma-tracking for user space symbol/backtraces
+http://sourceware.org/bugzilla/show_bug.cgi?id=10228
+sw#6580 revamp backtrace-related tapset functions
+http://sourceware.org/bugzilla/show_bug.cgi?id=6580
 
-Daniel
+Cheers,
+
+Mark
 
