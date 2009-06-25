@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbZFYCQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZFYCTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757006AbZFYCQY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 22:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFYCQP
+	id S1754768AbZFYCTs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 22:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFYCTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 22:16:15 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36873 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752094AbZFYCQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 22:16:15 -0400
-Message-ID: <4A42DDDF.2000403@jp.fujitsu.com>
-Date: Thu, 25 Jun 2009 11:15:59 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 24 Jun 2009 22:19:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57065 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752583AbZFYCTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 22:19:39 -0400
+Message-ID: <4A42DEE9.5020905@cn.fujitsu.com>
+Date: Thu, 25 Jun 2009 10:20:25 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       kexec@lists.infradead.org
-Subject: Re: [PATCH 1/7] ia64, kdump: Mask MCA/INIT on freezing cpus
-References: <4A39E247.4030908@jp.fujitsu.com> <4A39E2CF.80901@jp.fujitsu.com> <20090622134557.GC7084@sgi.com> <4A4022EA.1020506@jp.fujitsu.com> <20090623055536.GE6865@sgi.com> <4A408D32.9010500@jp.fujitsu.com> <20090624111415.GA6878@sgi.com>
-In-Reply-To: <20090624111415.GA6878@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 0/7] V2 add syscall tracepoints
+References: <cover.1245770664.git.jbaron@redhat.com>
+In-Reply-To: <cover.1245770664.git.jbaron@redhat.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt wrote:
-> The concern is that any time we prevent SAL from receiving control during
-> an MCA/INIT, we reduce the maintainability of the machine.  Having them
-> masked at any time results in the NMI/INIT not recording the PROM record
-> which we use to diagnose where the hang is.
+Jason Baron wrote:
+> hi,
+> 
+> The following is an implementation of Frederic's syscall tracer on top of
+> tracepoints. It adds the ability to toggle the entry/exit of each syscall
+> via the standard events/syscalls/syscall_blah/enable interface. The
+> implementation is done by adding 2 tracepoints. One on entry and one for exit.
+> 
+> I've tried to address all of the comments from the last posting...updates include:
+> -2/7: make arch_init_ftrace_syscalls static, removed locking, make patch bi-sectable
+> -3/7: rename DECLARE_TRACE_REG as DECLARE_TRACE_WITH_CALLBACK
+> -4/7: make mutex and counter static
+> -7/7: add event tracing for syscalls that take no args
+> 
 
-Think about servers which have no such PROM record features... Please?
+The whole patchset:
 
-The original problem here, which I wrote these patches for, is that the
-INIT can block retrieving crashdump via kdump.  The crashdump is the only
-record which we can use to diagnose where the hang is, if the PROM record
-like SGI servers have is not supported.
-(I guess the even the PROM record is supported, the crashdump is better,
- more important resource for the trouble shooting.)
-
-My patches will mask MCA/INIT on all CPUs once kdump is invoked (via
-panic or INIT), and soon unmask one of them who is going to jump in 2nd
-kernel (=kdump kernel) after registering a do-nothing handler.
-
-If there was a pending INIT, it will be received on the cpu as soon as
-it is unmasked.  Then the PROM will make a record on it, pass the control
-to OS_INIT which does nothing, and return to interrupted context to
-continue processing the kdump.
-
-What time point are you concerning?
-
-
-> In other patches, you implemented a do-nothing handler.  Could that
-> be used?
-
-... How?  Maybe I could not catch your point.
-
-It would be useful, but it is only available from the beginning of 2nd
-kernel (to be exact, from the end of 1st kernel), until new INIT handlers
-for 2nd kernel is registered.
-
-
-> Alternatively, when the machine is first booted, the handler is defined
-> by SAL as a SAL routine.  Could you record that during kernel boot and
-> then just set the handler back to the SAL provided one prior to starting
-> the kexec kernel boot?  At that point, the machine is more like the
-> first boot.  Now that I think about this, this alternative seems fairly
-> attractive.
-
-I think it is definitely wrong thing if SAL provides the initial handler
-as OS_INIT which can be removed/replaced by OS.
-
-Since INIT event processes PAL_INIT -> SAL_INIT -> OS_INIT(if available),
-SAL should keep the entry point of its initial handler and should use it
-from SAL_INIT when OS_INIT is not registered.  Ditto to OS_MCA.
-
-
-Thanks,
-H.Seto
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
