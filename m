@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZFYFXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbZFYFhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758740AbZFYFXl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZFYFXe
+	id S1758851AbZFYFhQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZFYFhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:23:34 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:49107 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZFYFXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:23:33 -0400
-Message-ID: <4A4309B0.7020400@mellanox.co.il>
-Date: Thu, 25 Jun 2009 08:22:56 +0300
-From: Tziporet Koren <tziporet@dev.mellanox.co.il>
-Reply-To: tziporet@dev.mellanox.co.il
-Organization: Mellanox Technologies
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: [ofa-general] [GIT PULL] please pull infiniband.git
-References: <adad48uq26w.fsf@cisco.com>
-In-Reply-To: <adad48uq26w.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Jun 2009 01:37:05 -0400
+Received: from waste.org ([66.93.16.53]:52437 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbZFYFhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 01:37:04 -0400
+Subject: Re: [PATCH 04/19] drivers/char/hw_random: Use PCI_VDEVICE
+From: Matt Mackall <mpm@selenic.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <6498b0c571fd010583c911cabc346c26ce8f25a7.1245906152.git.joe@perches.com>
+References: <cover.1245906151.git.joe@perches.com>
+	 <6498b0c571fd010583c911cabc346c26ce8f25a7.1245906152.git.joe@perches.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 00:36:18 -0500
+Message-Id: <1245908178.21085.303.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Linus, please pull from
->
->     master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
->
-> This tree is also available from kernel.org mirrors at:
->
->     git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
->
-> This has a few more fixes for 2.6.31-rc1; however everything here
-> should be a fix appropriate for -rc2 as well, so if this misses the
-> end of the merge window then I think it should still be OK to pull.
->
->   
+On Wed, 2009-06-24 at 22:13 -0700, Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/char/hw_random/amd-rng.c   |    4 ++--
+>  drivers/char/hw_random/geode-rng.c |    3 +--
+>  2 files changed, 3 insertions(+), 4 deletions(-)
 
-Roland
-What about the patches from Yevgeny supporting our new ConnextX HW 
-coming soon?
+Acked-by: Matt Mackall <mpm@selenic.com>
 
-I talk about:
-http://lists.openfabrics.org/pipermail/general/2009-June/060225.html
-http://lists.openfabrics.org/pipermail/general/2009-June/060226.html
+> diff --git a/drivers/char/hw_random/amd-rng.c b/drivers/char/hw_random/amd-rng.c
+> index cd0ba51..0d8c578 100644
+> --- a/drivers/char/hw_random/amd-rng.c
+> +++ b/drivers/char/hw_random/amd-rng.c
+> @@ -44,8 +44,8 @@
+>   * want to register another driver on the same PCI id.
+>   */
+>  static const struct pci_device_id pci_tbl[] = {
+> -	{ 0x1022, 0x7443, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0, },
+> -	{ 0x1022, 0x746b, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0, },
+> +	{ PCI_VDEVICE(AMD, 0x7443), 0, },
+> +	{ PCI_VDEVICE(AMD, 0x746b), 0, },
+>  	{ 0, },	/* terminate list */
+>  };
+>  MODULE_DEVICE_TABLE(pci, pci_tbl);
+> diff --git a/drivers/char/hw_random/geode-rng.c b/drivers/char/hw_random/geode-rng.c
+> index 64d513f..4c4d4e1 100644
+> --- a/drivers/char/hw_random/geode-rng.c
+> +++ b/drivers/char/hw_random/geode-rng.c
+> @@ -46,8 +46,7 @@
+>   * want to register another driver on the same PCI id.
+>   */
+>  static const struct pci_device_id pci_tbl[] = {
+> -	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_LX_AES,
+> -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0, },
+> +	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_LX_AES), 0, },
+>  	{ 0, },	/* terminate list */
+>  };
+>  MODULE_DEVICE_TABLE(pci, pci_tbl);
 
-Since device ID is already in pci.ids I think it is important to have 
-this code too, otherwise the driver will not load :-(
-
-Thanks
-Tziporet
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
 
