@@ -1,95 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbZFYSHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZFYSPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbZFYSHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 14:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZFYSHY
+	id S1753537AbZFYSPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 14:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZFYSPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 14:07:24 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:3394 "EHLO mms1.broadcom.com"
+	Thu, 25 Jun 2009 14:15:42 -0400
+Received: from www.tglx.de ([62.245.132.106]:60227 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbZFYSHX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 14:07:23 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-From: "Leo (Hao) Chen" <leochen@broadcom.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "linux-arm@lists.arm.linux.org.uk" <linux-arm@lists.arm.linux.org.uk>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Date: Thu, 25 Jun 2009 11:07:18 -0700
-Subject: BogoMIPS drops to 2/3 when CONFIG_MODULES is not set for an
- ARMv6 SoC platform
-Thread-Topic: BogoMIPS drops to 2/3 when CONFIG_MODULES is not set for
- an ARMv6 SoC platform
-Thread-Index: AQHJ9b/HUn4LCXAm/EKCZasLwNdjeg==
-Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB259D8717@SJEXCHCCR02.corp.ad.broadcom.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	id S1751304AbZFYSPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 14:15:41 -0400
+Date: Thu, 25 Jun 2009 20:15:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhltc@us.ibm.com>
+Subject: [GIT pull] final futex fixes for 2.6.31
+In-Reply-To: <20090625100413.GD29980@elte.hu>
+Message-ID: <alpine.LFD.2.00.0906251940570.2767@localhost.localdomain>
+References: <alpine.LFD.2.00.0906241629590.2767@localhost.localdomain> <alpine.LFD.2.01.0906240946000.3240@localhost.localdomain> <alpine.LFD.2.00.0906242146500.2767@localhost.localdomain> <1245897826.2560.421.camel@ymzhang> <alpine.LFD.2.00.0906251151400.2767@localhost.localdomain>
+ <20090625100413.GD29980@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-X-WSS-ID: 665D635D0EG4609485-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Linus,
 
-I encountered an interesting problem when I was porting the latest Linux kernel to our ARM11 based SoC.
+I'm truly embarrassed to ask you to pull the latest futexes-for-linus
+git tree from:
 
-I turned off the CONFIG_MODULES configuration option and the BogoMIPS drop to only 2/3 of the original number.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git futexes-for-linus
 
-With the same kernel source code, when CONFIG_MODULES is turned on.
------------------------
-# cat /proc/cpuinfo 
-Processor       : ARMv6-compatible processor rev 7 (v6l)
-BogoMIPS        : 499.71
-Features        : swp half thumb fastmult edsp java 
-CPU implementer : 0x41
-CPU architecture: 7
-CPU variant     : 0x0
-CPU part        : 0xb76
-CPU revision    : 7
+I did not just copy your suggestion blindly, I even wondered and
+looked up the prototype in mm.h which has the 4th argument "int len"
+and said to myself "hey, Linus is right as usual" while in reality
+"len" is number of pages.
 
-when CONFIG_MODULES is turned off.
-# cat /proc/cpuinfo 
-Processor       : ARMv6-compatible processor rev 7 (v6l)
-BogoMIPS        : 332.59
-Features        : swp half thumb fastmult edsp java 
-CPU implementer : 0x41
-CPU architecture: 7
-CPU variant     : 0x0
-CPU part        : 0xb76
-CPU revision    : 7
-
-The only difference between my two builds is the CONFIG_MODULES option.
---- .config.old 2009-06-24 16:32:21.000000000 -0700
-+++ .config     2009-06-25 10:59:26.000000000 -0700
-@@ -100,12 +99,7 @@
- CONFIG_HAVE_GENERIC_DMA_COHERENT=y
- CONFIG_RT_MUTEXES=y
- CONFIG_BASE_SMALL=0
--CONFIG_MODULES=y
--# CONFIG_MODULE_FORCE_LOAD is not set
--CONFIG_MODULE_UNLOAD=y
--# CONFIG_MODULE_FORCE_UNLOAD is not set
--# CONFIG_MODVERSIONS is not set
--# CONFIG_MODULE_SRCVERSION_ALL is not set
-+# CONFIG_MODULES is not set
- CONFIG_BLOCK=y
- CONFIG_LBDAF=y
- # CONFIG_BLK_DEV_BSG is not set
-
-Both the 2.6.30 and 2.6.27.18 kernel present the same problem.
-
-Does anyone notice this interesting problem?  If yes, what's the explanation?  Why the BogoMIPS drops so much with just one configuration option.
+As I'm running out of brown paperbags I'm declaring all futex bugs
+fixed by definition. Futex bugs which will be discovered from now on
+are going to be automatically converted to documented features.
 
 Thanks,
 
-Leo Chen
-Software Engineer
-Broadcom Canada
+	tglx
+
+------------------>
+Thomas Gleixner (1):
+      futex: request only one page from get_user_pages()
+
+
+ kernel/futex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 1c33711..794c862 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -299,7 +299,7 @@ void put_futex_key(int fshared, union futex_key *key)
+ static int fault_in_user_writeable(u32 __user *uaddr)
+ {
+ 	int ret = get_user_pages(current, current->mm, (unsigned long)uaddr,
+-				 sizeof(*uaddr), 1, 0, NULL, NULL);
++				 1, 1, 0, NULL, NULL);
+ 	return ret < 0 ? ret : 0;
+ }
+ 
