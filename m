@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZFYHNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760331AbZFYHNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZFYHNM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZFYHM5
+	id S1760331AbZFYHNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZFYHNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:12:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43661 "EHLO hera.kernel.org"
+	Thu, 25 Jun 2009 03:13:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43683 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753349AbZFYHMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:12:55 -0400
-Message-ID: <4A43234D.9050608@kernel.org>
-Date: Thu, 25 Jun 2009 16:12:13 +0900
+	id S1755347AbZFYHNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 03:13:21 -0400
+Message-ID: <4A432370.7050907@kernel.org>
+Date: Thu, 25 Jun 2009 16:12:48 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -25,204 +25,173 @@ To: Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [RFC PATCH 1/2] pci: determine CLS more intelligently
+Subject: [RFC PATCH 2/2] pccard: configure CLS on attach
+References: <4A43234D.9050608@kernel.org>
+In-Reply-To: <4A43234D.9050608@kernel.org>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 07:12:19 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 07:12:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Till now, CLS has been determined either by arch code or as
-L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 doesn't
-always get it right.  On most configurations, the chance is that
-firmware configures the correct value during boot.
+For non hotplug PCI devices, the system firmware usually configures
+CLS correctly.  For pccard devices system firmware can't do it and
+Linux PCI layer doesn't do it either.  Unfortunately this leads to
+poor performance for certain devices (sata_sil).  Unless MWI, which
+requires separate configuration, is to be used, CLS doesn't affect
+correctness, so the configuration should be harmless.
 
-This patch makes pci_init() determine CLS by looking at what firmware
-has configured.  It scans all devices and if all non-zero values
-agree, the value is used.  If none is configured or there is a
-disagreement, pci_dfl_cache_line_size is used.  arch can set the dfl
-value (via PCI_CACHE_LINE_BYTES or pci_dfl_cache_line_size) or
-override the actual one.
+This patch makes pci_set_cacheline_size() always built and export it
+and make pccard call it during attach.
 
-ia64, x86 and sparc64 updated to set the default cls instead of the
-actual one.  sparc64 is currently the only one using
-PCI_CACHE_LINE_BYTES.  It would be nice to update it to set the
-default variable instead.
+Please note that some other PCI hotplug drivers (shpchp and pciehp)
+also configure CLS on hotplug.
 
-RFC PATCH, PLEASE DON'T APPLY YET.
-Cc: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: David Miller <davem@davemloft.net>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Daniel Ritz <daniel.ritz@gmx.ch>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Greg KH <greg@kroah.com>
+Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Axel Birndt <towerlexa@gmx.de>
 ---
-These two patches are refreshed version of the following patch.
+ drivers/pci/pci.c        |   39 +++++++++++++++++++--------------------
+ drivers/pcmcia/cardbus.c |   23 +++++++++++++++--------
+ include/linux/pci.h      |    1 +
+ 3 files changed, 35 insertions(+), 28 deletions(-)
 
- http://thread.gmane.org/gmane.linux.kernel.pci/4418/focus=4431
-
-This patch improves how CLS is determined and was written mainly
-because the original code didn't get it right on my laptop (lenovo
-x61s, the determined value was 32 but the value bios used for other
-devices was 64).  For x86, maybe we can remove the arch specific
-configuration codes in the long run?
-
-Seems to work fine on my test machine and laptop.  Also builds fine
-for powerpc64 and sparc64.
-
-Axel, to test, you'll need to build a vanialla kernel with the patches
-applied.  There are pretty good docs about doing that on the web.
-
-Thanks.
-
- arch/ia64/pci/pci.c   |    8 ++++----
- arch/x86/pci/common.c |    8 ++++----
- drivers/pci/pci.c     |   49 +++++++++++++++++++++++++++++++++++++++++--------
- 3 files changed, 49 insertions(+), 16 deletions(-)
-
-Index: work/arch/ia64/pci/pci.c
+Index: work/drivers/pcmcia/cardbus.c
 ===================================================================
---- work.orig/arch/ia64/pci/pci.c
-+++ work/arch/ia64/pci/pci.c
-@@ -716,7 +716,7 @@ int ia64_pci_legacy_write(struct pci_bus
- }
+--- work.orig/drivers/pcmcia/cardbus.c
++++ work/drivers/pcmcia/cardbus.c
+@@ -184,26 +184,33 @@ fail:
+     
+ =====================================================================*/
  
- /* It's defined in drivers/pci/pci.c */
--extern u8 pci_cache_line_size;
-+extern u8 pci_dfl_cache_line_size;
- 
- /**
-  * set_pci_cacheline_size - determine cacheline size for PCI devices
-@@ -726,7 +726,7 @@ extern u8 pci_cache_line_size;
-  *
-  * Code mostly taken from arch/ia64/kernel/palinfo.c:cache_info().
-  */
--static void __init set_pci_cacheline_size(void)
-+static void __init set_pci_dfl_cacheline_size(void)
+-/*
+- * Since there is only one interrupt available to CardBus
+- * devices, all devices downstream of this device must
+- * be using this IRQ.
+- */
+-static void cardbus_assign_irqs(struct pci_bus *bus, int irq)
++static void cardbus_config_irq_and_cls(struct pci_bus *bus, int irq)
  {
- 	unsigned long levels, unique_caches;
- 	long status;
-@@ -746,7 +746,7 @@ static void __init set_pci_cacheline_siz
- 			"(status=%ld)\n", __func__, status);
- 		return;
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		u8 irq_pin;
+ 
++		/*
++		 * Since there is only one interrupt available to
++		 * CardBus devices, all devices downstream of this
++		 * device must be using this IRQ.
++		 */
+ 		pci_read_config_byte(dev, PCI_INTERRUPT_PIN, &irq_pin);
+ 		if (irq_pin) {
+ 			dev->irq = irq;
+ 			pci_write_config_byte(dev, PCI_INTERRUPT_LINE, dev->irq);
+ 		}
+ 
++		/*
++		 * Some controllers transfer very slowly with 0 CLS.
++		 * Configure it.  This may fail as CLS configuration
++		 * is mandatory only for MWI.
++		 */
++		pci_set_cacheline_size(dev);
++
+ 		if (dev->subordinate)
+-			cardbus_assign_irqs(dev->subordinate, irq);
++			cardbus_config_irq_and_cls(dev->subordinate, irq);
  	}
--	pci_cache_line_size = (1 << cci.pcci_line_size) / 4;
-+	pci_dfl_cache_line_size = (1 << cci.pcci_line_size) / 4;
  }
  
- u64 ia64_dma_get_required_mask(struct device *dev)
-@@ -777,7 +777,7 @@ EXPORT_SYMBOL_GPL(dma_get_required_mask)
- 
- static int __init pcibios_init(void)
- {
--	set_pci_cacheline_size();
-+	set_pci_dfl_cacheline_size();
- 	return 0;
- }
- 
-Index: work/arch/x86/pci/common.c
-===================================================================
---- work.orig/arch/x86/pci/common.c
-+++ work/arch/x86/pci/common.c
-@@ -410,7 +410,7 @@ struct pci_bus * __devinit pcibios_scan_
- 	return bus;
- }
- 
--extern u8 pci_cache_line_size;
-+extern u8 pci_dfl_cache_line_size;
- 
- int __init pcibios_init(void)
- {
-@@ -426,11 +426,11 @@ int __init pcibios_init(void)
- 	 * and P4. It's also good for 386/486s (which actually have 16)
- 	 * as quite a few PCI devices do not support smaller values.
+@@ -228,7 +235,7 @@ int __ref cb_alloc(struct pcmcia_socket
  	 */
--	pci_cache_line_size = 32 >> 2;
-+	pci_dfl_cache_line_size = 32 >> 2;
- 	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
--		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
-+		pci_dfl_cache_line_size = 64 >> 2;	/* K7 & K8 */
- 	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
--		pci_cache_line_size = 128 >> 2;	/* P4 */
-+		pci_dfl_cache_line_size = 128 >> 2;	/* P4 */
+ 	pci_bus_size_bridges(bus);
+ 	pci_bus_assign_resources(bus);
+-	cardbus_assign_irqs(bus, s->pci_irq);
++	cardbus_config_irq_and_cls(bus, s->pci_irq);
  
- 	pcibios_resource_survey();
- 
+ 	/* socket specific tune function */
+ 	if (s->tune_bridge)
 Index: work/drivers/pci/pci.c
 ===================================================================
 --- work.orig/drivers/pci/pci.c
 +++ work/drivers/pci/pci.c
-@@ -41,6 +41,19 @@ int pci_domains_supported = 1;
- unsigned long pci_cardbus_io_size = DEFAULT_CARDBUS_IO_SIZE;
- unsigned long pci_cardbus_mem_size = DEFAULT_CARDBUS_MEM_SIZE;
+@@ -1844,23 +1844,6 @@ void pci_clear_master(struct pci_dev *de
+ 	__pci_set_master(dev, false);
+ }
  
-+#ifndef PCI_CACHE_LINE_BYTES
-+#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
-+#endif
-+
-+/*
-+ * The default CLS is used if arch didn't set CLS explicitly and not
-+ * all pci devices agree on the same value.  Arch can override either
-+ * the dfl or actual value as it sees fit.  Don't forget this is
-+ * measured in 32-bit words, not bytes.
-+ */
-+u8 pci_dfl_cache_line_size __initdata = PCI_CACHE_LINE_BYTES >> 2;
-+u8 pci_cache_line_size;
-+
- /**
-  * pci_bus_max_busnr - returns maximum PCI bus number of given bus' children
-  * @bus: pointer to PCI bus structure to search
-@@ -1848,14 +1861,6 @@ void pci_clear_mwi(struct pci_dev *dev)
- 
- #else
- 
--#ifndef PCI_CACHE_LINE_BYTES
--#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
--#endif
+-#ifdef PCI_DISABLE_MWI
+-int pci_set_mwi(struct pci_dev *dev)
+-{
+-	return 0;
+-}
 -
--/* This can be overridden by arch code. */
--/* Don't forget this is measured in 32-bit words, not bytes */
--u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
+-int pci_try_set_mwi(struct pci_dev *dev)
+-{
+-	return 0;
+-}
+-
+-void pci_clear_mwi(struct pci_dev *dev)
+-{
+-}
+-
+-#else
 -
  /**
   * pci_set_cacheline_size - ensure the CACHE_LINE_SIZE register is programmed
   * @dev: the PCI device for which MWI is to be enabled
-@@ -2631,9 +2636,37 @@ int __attribute__ ((weak)) pci_ext_cfg_a
- static int __devinit pci_init(void)
+@@ -1871,13 +1854,12 @@ void pci_clear_mwi(struct pci_dev *dev)
+  *
+  * RETURNS: An appropriate -ERRNO error value on error, or zero for success.
+  */
+-static int
+-pci_set_cacheline_size(struct pci_dev *dev)
++int pci_set_cacheline_size(struct pci_dev *dev)
  {
- 	struct pci_dev *dev = NULL;
-+	u8 cls = 0;
-+	u8 tmp;
-+
-+	if (pci_cache_line_size)
-+		printk(KERN_DEBUG "PCI: CLS %u bytes\n",
-+		       pci_cache_line_size << 2);
+ 	u8 cacheline_size;
  
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		pci_fixup_device(pci_fixup_final, dev);
-+		/*
-+		 * If arch hasn't set it explicitly yet, use the CLS
-+		 * value shared by all PCI devices.  If there's a
-+		 * mismatch, fall back to the default value.
-+		 */
-+		if (!pci_cache_line_size) {
-+			pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
-+			if (!cls)
-+				cls = tmp;
-+			if (!tmp || cls == tmp)
-+				continue;
-+
-+			printk(KERN_DEBUG "PCI: CLS mismatch (%u != %u), "
-+			       "using %u bytes\n", cls << 2, tmp << 2,
-+			       pci_dfl_cache_line_size << 2);
-+			pci_cache_line_size = pci_dfl_cache_line_size;
-+		}
-+	}
-+	if (!pci_cache_line_size) {
-+		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
-+		       cls << 2, pci_dfl_cache_line_size << 2);
-+		pci_cache_line_size = cls;
- 	}
+ 	if (!pci_cache_line_size)
+-		return -EINVAL;		/* The system doesn't support MWI. */
++		return -EINVAL;
  
- 	return 0;
+ 	/* Validate current setting: the PCI_CACHE_LINE_SIZE must be
+ 	   equal to or multiple of the right value. */
+@@ -1899,6 +1881,23 @@ pci_set_cacheline_size(struct pci_dev *d
+ 	return -EINVAL;
+ }
+ 
++#ifdef PCI_DISABLE_MWI
++int pci_set_mwi(struct pci_dev *dev)
++{
++	return 0;
++}
++
++int pci_try_set_mwi(struct pci_dev *dev)
++{
++	return 0;
++}
++
++void pci_clear_mwi(struct pci_dev *dev)
++{
++}
++
++#else
++
+ /**
+  * pci_set_mwi - enables memory-write-invalidate PCI transaction
+  * @dev: the PCI device for which MWI is enabled
+Index: work/include/linux/pci.h
+===================================================================
+--- work.orig/include/linux/pci.h
++++ work/include/linux/pci.h
+@@ -697,6 +697,7 @@ void pci_disable_device(struct pci_dev *
+ void pci_set_master(struct pci_dev *dev);
+ void pci_clear_master(struct pci_dev *dev);
+ int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
++int pci_set_cacheline_size(struct pci_dev *dev);
+ #define HAVE_PCI_SET_MWI
+ int __must_check pci_set_mwi(struct pci_dev *dev);
+ int pci_try_set_mwi(struct pci_dev *dev);
