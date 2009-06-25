@@ -1,72 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZFYHiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZFYHmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZFYHiR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZFYHiF
+	id S1754397AbZFYHmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZFYHmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:38:05 -0400
-Received: from woodchuck.wormnet.eu ([77.75.105.223]:60494 "EHLO
-	woodchuck.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbZFYHiF (ORCPT
+	Thu, 25 Jun 2009 03:42:12 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:44087 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752449AbZFYHmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:38:05 -0400
-Date: Thu, 25 Jun 2009 08:38:05 +0100
-From: Alexander Clouter <alex@digriz.org.uk>
-To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: When does Linux drop UDP packets?
-Message-ID: <20090625073805.GB2014@woodchuck>
-References: <20090625050052.GA30594@gondor.apana.org.au> <alpine.DEB.1.10.0906242236400.28437@asgard.lang.hm> <20090625061348.GA31407@gondor.apana.org.au>
+	Thu, 25 Jun 2009 03:42:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pDZjpsW+r6eOt5PfsJ+cxs05geOmpXtSRi59fSQxIJMTMmE714FPzfwiGlzOJ8Ghta
+         5VNUtl1YpsMLcSggp46NM81iLDUdOZksIjD0BWtv7ilGkD22Z8Qv3TrXINDoMevX9jbc
+         e+9pGIKTgcfMoj8LiDQ5UN2Tj571qhnTa3aes=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090625061348.GA31407@gondor.apana.org.au>
-Organization: diGriz
-X-URL: http://www.digriz.org.uk/
-X-JabberID: alex@digriz.org.uk
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Thu, 25 Jun 2009 09:42:12 +0200
+Message-ID: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
+Subject: Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
+From: Yegor Yefremov <yegorslists@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: dwmw2@infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
 
-* Herbert Xu <herbert@gondor.apana.org.au> [2009-06-25 14:13:48+0800]:
-> 
-> On Wed, Jun 24, 2009 at 10:37:14PM -0700, david@lang.hm wrote:
-> >
-> > please explain more? how do they differ?
-> 
-> An IGMP-snooping switch will only forward multicast traffic to
-> ports that have subscribed to that group.  Broadcast traffic
-> on the otherhand is forwarded to all ports.
->
-[directing over to David...]
+- extend struct amd_flash_info to enable 8 erase regions for 8Mb flash chips
+- change erase block command to 0x50 due to the differences between
+39VF6401/02 and 39VF6401B/02B chips
 
-The more intelligent switches actually peek at L3/L4 (even if it's just 
-a L2 switch, like a Cisco 2950) to decode IGMP packets as they come out 
-from the hosts.  The switch uses that to build up an Ethernet multicast 
-routing table, in addition to it's usual unicast based one.
+Signed-off-by: Yegor Yefremov <yegorslists@googlemail.com>
 
-If you bought a managed switch in the past five years (ours from 8 years 
-ago that we have just binned also supported it) it should support 
-IGMP snooping.  Any one buying switches now needs to make sure they 
-support IPv6 and MLD snooping...bearing in mind you are going to be 
-lumbered with those switches for at least five years.
+Index: linus/drivers/mtd/chips/cfi_cmdset_0002.c
+===================================================================
+--- linus.orig/drivers/mtd/chips/cfi_cmdset_0002.c
++++ linus/drivers/mtd/chips/cfi_cmdset_0002.c
+@@ -50,6 +50,8 @@
+ #define SST49LF004B	        0x0060
+ #define SST49LF040B	        0x0050
+ #define SST49LF008A		0x005a
++#define SST39VF6401B		0x236D
++#define SST39VF6402B		0x236C
+ #define AT49BV6416		0x00d6
 
-In addition and mentioned before, the NIC in hardware will also filter 
-any multicast traffic that is un-needed if you are using el-cheapo 
-switches; crime and punishment.  Broadcast traffic *always* spans the 
-whole VLAN and *always* gets passed up to the OS to make decisions on 
-whether to process the packet or not.
+ static int cfi_amdstd_read (struct mtd_info *, loff_t, size_t, size_t
+*, u_char *);
+@@ -1629,7 +1631,11 @@ static int __xipram do_erase_oneblock(st
+ 	cfi_send_gen_cmd(0x80, cfi->addr_unlock1, chip->start, map, cfi,
+cfi->device_type, NULL);
+ 	cfi_send_gen_cmd(0xAA, cfi->addr_unlock1, chip->start, map, cfi,
+cfi->device_type, NULL);
+ 	cfi_send_gen_cmd(0x55, cfi->addr_unlock2, chip->start, map, cfi,
+cfi->device_type, NULL);
+-	map_write(map, CMD(0x30), adr);
++
++	if (cfi->mfr == MANUFACTURER_SST && (cfi->id == SST39VF6401B ||
+cfi->id == SST39VF6402B))
++		map_write(map, CMD(0x50), adr);
++	else
++		map_write(map, CMD(0x30), adr);
 
-Now, when you roll back in the 'automaticness' of service discovery and 
-other such things on the network...multicast is a very powerful tool.  
-Just because it can be many<->many or one<->many does not mean it cannot 
-be just as efficiently used to bootstrap one<->one communications.
-
-Cheers
-
--- 
-Alexander Clouter
-.sigmonster says: Don't take life seriously, you'll never get out alive.
+ 	chip->state = FL_ERASING;
+ 	chip->erase_suspended = 0;
+Index: linus/drivers/mtd/chips/jedec_probe.c
+===================================================================
+--- linus.orig/drivers/mtd/chips/jedec_probe.c
++++ linus/drivers/mtd/chips/jedec_probe.c
+@@ -160,6 +160,9 @@
+ #define SST39LF160	0x2782
+ #define SST39VF1601	0x234b
+ #define SST39VF3201	0x235b
++#define SST39VF3202	0x235a
++#define SST39VF6401B	0x236D
++#define SST39VF6402B	0x236C
+ #define SST39LF512	0x00D4
+ #define SST39LF010	0x00D5
+ #define SST39LF020	0x00D6
+@@ -273,7 +276,7 @@ struct amd_flash_info {
+ 	const uint8_t dev_size;
+ 	const uint8_t nr_regions;
+ 	const uint16_t cmd_set;
+-	const uint32_t regions[6];
++	const uint32_t regions[8];
+ 	const uint8_t devtypes;		/* Bitmask for x8, x16 etc. */
+ 	const uint8_t uaddr;		/* unlock addrs for 8, 16, 32, 64 */
+ };
+@@ -1519,6 +1522,59 @@ static const struct amd_flash_info jedec
+ 			ERASEINFO(0x1000,256)
+ 		}
+ 	}, {
++		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
++		.dev_id		= SST39VF3202,
++		.name		= "SST 39VF3202",
++		.devtypes	= CFI_DEVICETYPE_X16,
++		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
++		.dev_size	= SIZE_4MiB,
++		.cmd_set	= P_ID_AMD_STD,
++		.nr_regions	= 4,
++		.regions	= {
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256)
++		}
++	}, {
++		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
++		.dev_id		= SST39VF6401B,
++		.name		= "SST 39VF6401B",
++		.devtypes	= CFI_DEVICETYPE_X16,
++		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
++		.dev_size	= SIZE_8MiB,
++		.cmd_set	= P_ID_AMD_STD,
++		.nr_regions	= 8,
++		.regions	= {
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++		}
++	}, {
++		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
++		.dev_id		= SST39VF6402B,
++		.name		= "SST 39VF6402B",
++		.devtypes	= CFI_DEVICETYPE_X16,
++		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
++		.dev_size	= SIZE_8MiB,
++		.cmd_set	= P_ID_AMD_STD,
++		.nr_regions	= 8,
++		.regions	= {
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++			ERASEINFO(0x1000,256),
++		}
++	}, {
+ 		.mfr_id		= MANUFACTURER_SST,
+ 		.dev_id		= SST36VF3203,
+ 		.name		= "SST 36VF3203",
