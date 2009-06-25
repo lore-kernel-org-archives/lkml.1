@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZFYTyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZFYTzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbZFYTyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZFYTyI
+	id S1757139AbZFYTzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZFYTzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:54:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36291 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752872AbZFYTyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:54:08 -0400
-Date: Thu, 25 Jun 2009 21:54:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       cl@linux-foundation.org
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
-Message-ID: <20090625195408.GW6760@one.firstfloor.org>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <20090625000202.GR6760@one.firstfloor.org> <4A42C131.6040007@zytor.com> <20090625091939.GS6760@one.firstfloor.org> <4A43871F.9030507@zytor.com>
-Mime-Version: 1.0
+	Thu, 25 Jun 2009 15:55:36 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40357 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752600AbZFYTzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 15:55:35 -0400
+Date: Thu, 25 Jun 2009 21:55:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090625195538.GC31415@kernel.dk>
+References: <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain> <20090624150714.c7264768.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A43871F.9030507@zytor.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090624150714.c7264768.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 07:18:07AM -0700, H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> >>>
-> >> *Ahem* virtual machines *ahem*...
-> > 
-> > And? Even there's not that big typically. 
-> > 
-> > The traditional problem was just for 128 NR_CPUs kernel were nothing
-> > was sized based on machine capacity.
-> > 
-> > Also on large systems the VMs shouldn't be sized for full capacity.
-> > 
+On Wed, Jun 24 2009, Andrew Morton wrote:
+> On Wed, 24 Jun 2009 13:40:11 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> We have already have cases where the "possible" CPUs have eaten up the
-> entire vmalloc area on 32 bits.  In real use.  It's a real problem.
+> > 
+> > 
+> > On Wed, 24 Jun 2009, Linus Torvalds wrote:
+> > > On Wed, 24 Jun 2009, Andrew Morton wrote:
+> > > > 
+> > > > If the caller gets oom-killed, the allocation attempt fails.  Callers need
+> > > > to handle that.
+> > > 
+> > > I actually disagree. I think we should just admit that we can always free 
+> > > up enough space to get a few pages, in order to then oom-kill things.
+> > 
+> > Btw, if you want to change the WARN_ON() to warn when you're in the 
+> > "allocate in order to free memory" recursive case, then I'd have no issues 
+> > with that.
+> > 
+> > In fact, in that case it probably shouldn't even be conditional on the 
+> > order. 
+> > 
+> > So a
+> > 
+> > 	WARN_ON_ONCE((p->flags & PF_MEMALLOC) && (gfpmask & __GFP_NOFAIL));
+> > 
+> > actually makes tons of sense. 
+> 
+> I suspect that warning will trigger.
+> 
+> alloc_pages
+> -> ...
+>   -> pageout
+>     -> ...
+>       -> get_request
+>         -> blk_alloc_request
+>           -> elv_set_request
+>             -> cfq_set_request
+>               -> cfq_get_queue
+>                 -> cfq_find_alloc_queue
+>                   -> kmem_cache_alloc_node(__GFP_NOFAIL)
+>                     -> Jens
+> 
+> How much this can happen in practice I don't know, but it looks bad.
 
-That's hard to believe or a serious bug/misconfiguration somewhere. 
+Yeah it sucks, but I don't think it's that bad to fixup.
 
-Each per CPU data should be <100k (let's say 200k with some slack for modules), 
-so to fill vmalloc you would need hundreds of CPUs, which a 32bit
-kernel doesn't really support anyways because it doesn't support
-enough memory for that many CPUs.
+The request allocation can fail, if we just return NULL in
+cfq_find_alloc_queue() and let that error propagate back up to
+get_request_wait(), it would simply io_schedule() and wait for a request
+to be freed. The only issue here is that if we have no requests going
+for this queue already, we would be stuck since there's noone to wake us
+up eventually. So if we did this, we'd have to make the io_schedule()
+dependent on whether there are allocations out already. Use global
+congestion wait in that case, or just io_schedule_timeout() for
+retrying.
 
-Perhaps you had firmware/hypervisor who passed a gigantic impossible
-value here? If yes thy
+The other option is to retry in cfq_find_alloc_queue() without the
+NOFAIL and do the congestion wait logic in there.
 
--Andi
+Yet another option would be to have a dummy queue that is allocated when
+the queue io scheduler is initialized. If cfq_find_alloc_queue() fails,
+just punt the IO to that dummy queue. That would allow progress even
+under extreme failure conditions.
+
+With all that said, the likely hood of ever hitting this path is about
+0%. Those failures are the ones that really suck when it's hit in the
+field eventually, though :-)
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jens Axboe
+
