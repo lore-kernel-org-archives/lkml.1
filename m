@@ -1,175 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZFYIWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZFYIcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755545AbZFYIWD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZFYIVq
+	id S1754019AbZFYIcV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZFYIcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:21:46 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:2180 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbZFYIVo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:21:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=nX42vZ+1h1c9W6ErhibZVKXBy8OfD2wHFpafzRgwWVXWsEVyqgaxWSDTQtni5Y3ni
-	cNdnqa87Wimmj9/MKLe/Q==
-Date: Thu, 25 Jun 2009 01:21:36 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <20090624145615.2ff9e56e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0906250043150.29330@chino.kir.corp.google.com>
-References: <20090624080753.4f677847@infradead.org> <20090624094622.d0b0fd82.akpm@linux-foundation.org> <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com> <20090624105517.904f93da.akpm@linux-foundation.org> <4A426825.80905@cs.helsinki.fi>
- <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org>
- <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 25 Jun 2009 04:32:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59524 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128AbZFYIcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 04:32:07 -0400
+Date: Thu, 25 Jun 2009 08:31:22 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A4313A7.7030105@cn.fujitsu.com>
+References: <4A4313A7.7030105@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] ftrace: Remove duplicate newline
+Message-ID: <tip-00e54d087afb3867b0b461aef6c1ff433d0df564@git.kernel.org>
+Git-Commit-ID: 00e54d087afb3867b0b461aef6c1ff433d0df564
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 08:31:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009, Andrew Morton wrote:
+Commit-ID:  00e54d087afb3867b0b461aef6c1ff433d0df564
+Gitweb:     http://git.kernel.org/tip/00e54d087afb3867b0b461aef6c1ff433d0df564
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Thu, 25 Jun 2009 14:05:27 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 25 Jun 2009 10:28:36 +0200
 
-> On Wed, 24 Jun 2009 13:13:48 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > 
-> > On Wed, 24 Jun 2009, Andrew Morton wrote:
-> > > 
-> > > If the caller gets oom-killed, the allocation attempt fails.  Callers need
-> > > to handle that.
-> > 
-> > I actually disagree. I think we should just admit that we can always free 
-> > up enough space to get a few pages, in order to then oom-kill things.
-> 
-> I'm unclear on precisely what you're proposing here?
-> 
+ftrace: Remove duplicate newline
 
-It's a justification for the looping for small-order allocations.
+Before:
+  # echo 'sys_open:traceon:' > set_ftrace_filter
+  # echo 'sys_close:traceoff:5' > set_ftrace_filter
+  # cat set_ftrace_filter
+  #### all functions enabled ####
+  sys_open:traceon:unlimited
 
-We shouldn't actually need to free any pages to oom kill tasks since 
-TIF_MEMDIE allows its allocations to ignore each zone's watermarks (and it 
-also allows allocations to happen anywhere regardless of cpuset 
-restrictions just like GFP_ATOMIC), which will provide more than a "few 
-pages" that are already available for the oom killed task to use if each 
-zone's min watermark is sanely defined by min_free_kbytes, and that will 
-always still be above SWAP_CLUSTER_MAX for highmem.
+  sys_close:traceoff:count=0
 
-Those memory reserves are also available for reclaimers, but PF_MEMALLOC 
-tasks will never loop in the page allocator because __GFP_NOFAIL is 
-ignored in the reclaim path (and understandably so).
+After:
+  # cat set_ftrace_filter
+  #### all functions enabled ####
+  sys_open:traceon:unlimited
+  sys_close:traceoff:count=0
 
-> > This is not a new concept. oom has never been "immediately kill".
-> 
-> Well, it has been immediate for a long time.  A couple of reasons which
-> I can recall:
-> 
-> - A page-allocating process will oom-kill another process in the
->   expectation that the killing will free up some memory.  If the
->   oom-killed process remains stuck in the page allocator, that doesn't
->   work.
-> 
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4A4313A7.7030105@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-This would cause the oom killed task to repeatedly call the oom killer to 
-free more memory, and it would refuse to act because a task (current) is 
-found to have TIF_MEMDIE set in the tasklist scan.  So this would be a 
-livelock when there is no memory left (and nothing can be reclaimed), but 
-that shouldn't occur with sane watermarks.  The oom killed task will 
-immediately enter buffered_rmqueue() for each zone in the zonelist to 
-satisy the allocation; it would require this to return NULL every time for 
-it to loop endlessly.  As you mentioned, this behavior has changed 
-recently so that TIF_MEMDIE threads loop endlessly instead of fail the 
-allocation attempt when get_page_from_freelist() fails with no watermarks.  
-The old behavior needs to be reinstated.
 
-> - The oom-killed process might be holding locks (typically fs locks).
->   This can cause an arbitrary number of other processes to be blocked.
->   So to get the system unstuck we need the oom-killed process to
->   immediately exit the page allocator, to handle the NULL return and to
->   drop those locks.
-> 
+---
+ kernel/trace/trace_functions.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-There's no advantage to that over allowing the allocation to succeed since 
-current now has TIF_MEMDIE, and this is a better result than returning 
-NULL for ~__GFP_FS.  When the old behavior of failing allocations when 
-ALLOC_NO_WATERMARKS has failed is restored, as you mentioned, this 
-livelock will be closed.
-
-> A long time ago, the Suse kernel shipped with a largely (or
-> completely?) disabled oom-killer.  It removed the
-> retry-small-allocations-for-ever logic and simply returned NULL to the
-> caller.  I never really understood what problem/thinking led Andrea to
-> do that.
-> 
-
-If you disable retries for allocations at or under 
-PAGE_ALLOC_COSTLY_ORDER, then the oom killer would have to be disabled 
-for ~__GFP_NOFAIL and ~__GFP_REPEAT as well, otherwise it would serve no 
-purpose for the benefit of the current context.
-
-If the order is under PAGE_ALLOC_COSTLY_ORDER and try_to_free_pages() 
-returned something positive, there's a probability that we'll succeed in 
-the subsequent allocation attempts.  If reclaim failed to free anything, 
-the oom killer was called (only if the order is at or under 
-PAGE_ALLOC_COSTLY_ORDER, the same condition we automatically loop in, and 
-there's again a probability that we'll succeed in subsequent allocation 
-attempts when that memory is freed as the result of the chosen task 
-exiting.
-
-In other words, the only time we wouldn't want to loop in such a case is 
-when the oom killer fails to kill any task, which happens when:
-
- - another task has already been oom killed and hasn't yet exited (if
-   this persists, it's an indication of the problem you mentioned earlier
-   which should be solved by the min watermark), or
-
- - there are no eligible tasks left to kill, in which case the machine
-   panics (there are only kthreads or everything else is set to
-   OOM_DISABLE).
+diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
+index 90f1347..7402144 100644
+--- a/kernel/trace/trace_functions.c
++++ b/kernel/trace/trace_functions.c
+@@ -302,8 +302,7 @@ ftrace_trace_onoff_print(struct seq_file *m, unsigned long ip,
+ 	if (count == -1)
+ 		seq_printf(m, ":unlimited\n");
+ 	else
+-		seq_printf(m, ":count=%ld", count);
+-	seq_putc(m, '\n');
++		seq_printf(m, ":count=%ld\n", count);
  
-> But it's all a bit moot at present, as we seem to have removed the
-> return-NULL-if-TIF_MEMDIE logic in Mel's post-2.6.30 merges.  I think
-> that was an accident:
-> 
-> -	/* This allocation should allow future memory freeing. */
-> -
->  rebalance:
-> -	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
-> -			&& !in_interrupt()) {
-> -		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-> -nofail_alloc:
-> -			/* go through the zonelist yet again, ignoring mins */
-> -			page = get_page_from_freelist(gfp_mask, nodemask, order,
-> -				zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
-> -			if (page)
-> -				goto got_pg;
-> -			if (gfp_mask & __GFP_NOFAIL) {
-> -				congestion_wait(WRITE, HZ/50);
-> -				goto nofail_alloc;
-> -			}
-> -		}
-> -		goto nopage;
-> +	/* Allocate without watermarks if the context allows */
-> +	if (alloc_flags & ALLOC_NO_WATERMARKS) {
-> +		page = __alloc_pages_high_priority(gfp_mask, order,
-> +				zonelist, high_zoneidx, nodemask,
-> +				preferred_zone, migratetype);
-> +		if (page)
-> +			goto got_pg;
->  	}
-> 
-> Offending commit 341ce06 handled the PF_MEMALLOC case but forgot about
-> the TIF_MEMDIE case.
-> 
-
-Right, the allocation should fail if test_thread_flag(TIF_MEMDIE) and 
-__alloc_pages_high_priority() has failed.  There's no need to enter 
-reclaim since it has already failed to free memory (the only reason it was 
-oom killed to begin with) and memory reserves have been fully depleted.
+ 	return 0;
+ }
