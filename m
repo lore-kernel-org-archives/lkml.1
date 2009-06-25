@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZFYGK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZFYGLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbZFYGK0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 02:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZFYGKP
+	id S1757324AbZFYGLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 02:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFYGL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 02:10:15 -0400
-Received: from kazi.fit.vutbr.cz ([147.229.8.12]:56890 "EHLO kazi.fit.vutbr.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbZFYGKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 02:10:14 -0400
-X-Greylist: delayed 878 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jun 2009 02:10:13 EDT
-Date: Thu, 25 Jun 2009 07:55:32 +0200
-From: Kasparek Tomas <kasparek@fit.vutbr.cz>
-To: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Trond.Myklebust@netapp.com
-Subject: Re: NFS client packet storm on 2.6.27.x
-Message-ID: <20090625055532.GC50277@fit.vutbr.cz>
-References: <1231809446.7322.17.camel@heimdal.trondhjem.org> <20090113152201.GD47559@fit.vutbr.cz> <20090116104802.GF47559@fit.vutbr.cz> <20090118130835.GH47559@fit.vutbr.cz> <20090120150301.GG47559@fit.vutbr.cz> <1232465547.7055.3.camel@heimdal.trondhjem.org> <20090303120848.GV89843@fit.vutbr.cz> <1236089767.9631.4.camel@heimdal.trondhjem.org> <20090418051739.GL64731@fit.vutbr.cz> <20090422172707.GC57877@fit.vutbr.cz>
+	Thu, 25 Jun 2009 02:11:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59196 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750731AbZFYGL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 02:11:28 -0400
+Message-ID: <4A43154A.2010407@cn.fujitsu.com>
+Date: Thu, 25 Jun 2009 14:12:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090422172707.GC57877@fit.vutbr.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Nikanth Karthikesan <knikanth@suse.de>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH][resend] cpusets: document adding/removing cpus to cpuset
+ elaborately
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 22, 2009 at 07:27:07PM +0200, Kasparek Tomas wrote:
-> I got another client lockup today. It was a desktop so I have some more
-> dmesg warnings about soft lockup caused probably by network cable unplug
-> (but hopefully still showing what happens in rpciod) on
-> 
-> http://merlin.fit.vutbr.cz/tmp/nfs/pckas-dmesg
-> 
-> I can check with top, that rpciod was using 100% cpu. I limited the flow
-> from client to server with firewall so I was able to save the server and
-> get some tcpdump -s0 data (actually RPC null with ERR response from server)
-> 
-> Just to remind, the client is 2.6.27.21 (i386), the server is 2.6.16.62
-> (x86_64).
+Writing a pid to the file, tasks adds that task to that cgroup/cpuset. But to
+add a cpu/mem to a cpuset, the new list of cpus should be written to the
+cpuset.mems file which would replace the old list of cpus. Make this clearer
+in the documentation.
 
-Hi, I was playing with patches from
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Acked-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Paul Menage <menage@google.com>
+---
+ Documentation/cgroups/cpusets.txt |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
+diff --git a/Documentation/cgroups/cpusets.txt b/Documentation/cgroups/cpusets.txt
+index f9ca389..1d7e978 100644
+--- a/Documentation/cgroups/cpusets.txt
++++ b/Documentation/cgroups/cpusets.txt
+@@ -777,6 +777,18 @@ in cpuset directories:
+ # /bin/echo 1-4 > cpus		-> set cpus list to cpus 1,2,3,4
+ # /bin/echo 1,2,3,4 > cpus	-> set cpus list to cpus 1,2,3,4
+ 
++To add a CPU to a cpuset, write the new list of CPUs including the
++CPU to be added. To add 6 to the above cpuset:
++
++# /bin/echo 1-4,6 > cpus	-> set cpus list to cpus 1,2,3,4,6
++
++Similarly to remove a CPU from a cpuset, write the new list of CPUs
++without the CPU to be removed.
++
++To remove all the CPUs:
++
++# /bin/echo "" > cpus		-> clear cpus list
++
+ 2.3 Setting flags
+ -----------------
+ 
 
-and find, that 
 
-.../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
-.../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
 
-change the locking behaviour from long to endless lock to 1-2sec locks and
-it seems there are fewer situations when it locks.
-
-The packet storms does not repeat once I switched to 2.6.27.24 (and .25)
-kernels so far, so it may be solved by some other patch inside .24 too.
-
-Together with tcp_linger patch it seems to improve the situation a lot to
-state when it is possible for me to use 2.6.27.x kernels.
-
-Trond, will it be possible to get tcp_linger and the upper twho patches to
-2.6.27.x stable queue so others get these fixes?
-
-Big thanks for your help to all.
-
---   
-
-  Tomas Kasparek, PhD student  E-mail: kasparek@fit.vutbr.cz
-  CVT FIT VUT Brno, L127       Web:    http://www.fit.vutbr.cz/~kasparek
-  Bozetechova 1, 612 66        Fax:    +420 54114-1270
-  Brno, Czech Republic         Phone:  +420 54114-1220
-
-  jabber: tomas.kasparek@jabber.cz
-  GPG: 2F1E 1AAF FD3B CFA3 1537  63BD DCBE 18FF A035 53BC
 
