@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbZFYNQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZFYNRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756627AbZFYNQm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbZFYNQc
+	id S1756773AbZFYNRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZFYNRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:16:32 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:60414 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756279AbZFYNQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:16:30 -0400
-Date: Thu, 25 Jun 2009 14:16:25 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org,
-       Mike Rapoport <mike@compulab.co.il>
-Message-ID: <20090625131625.GC17690@sirena.org.uk>
-References: <1245257799-29752-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <4A437792.6040009@gmail.com>
+	Thu, 25 Jun 2009 09:17:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54305 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751607AbZFYNRC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 09:17:02 -0400
+Date: Thu, 25 Jun 2009 16:16:33 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+Message-ID: <20090625131633.GA7221@redhat.com>
+References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com> <4A435F28.3000301@novell.com> <20090625115403.GA7079@redhat.com> <4A4368A4.8030401@novell.com> <20090625123757.GA7121@redhat.com> <4A437564.6060308@novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A437792.6040009@gmail.com>
-X-Cookie: Beware of Bigfoot!
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] regulator: Allow consumer supplies to be set up with
- dev_name()
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+In-Reply-To: <4A437564.6060308@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 01:11:46PM +0000, Jonathan Cameron wrote:
+On Thu, Jun 25, 2009 at 09:02:28AM -0400, Gregory Haskins wrote:
+> > Here's what I have in mind:
+> > kvm does
+> > 	lock
+> > 	dev = find
+> > 	unlock
+> >
+> > 	<---------- at this point group device is removed
+> >
+> > 	write access to device that has been removed
+> >
+> >
+> >   
+> 
+> Hmm...you are right.  This looks like it was introduced with that recent
+> locking patch you cited.  Well, I can still fix it now easily by putting
+> an rcu-read-lock around the access.  Longer term we should move to
+> srcu.  Thoughts?
+> 
+> -Greg
+> 
 
-> I just wonder if we need to suggest subsystem maintainers make sure that
-> their
-> device names are suitably unique and identifiable?  For example, i2c device
-> tend to have names like 0-0032.  Perhaps we need something to identify
-> that they
-> are indeed i2c devices?
 
-Either that or if it becomes a problem we add the ability to match on
-bus type as well - since bus type already exists it'd probably be better
-to go down that road rather than cause userspace-visible changes.  I've
-not looked in sufficient detail to confirm that this would cover
-everything but I believe it should.
+Some callbacks take kvm mutex lock. So it seems rcu won't work,
+we need srcu.
 
-> For that matter, is there anything other than blind luck preventing two
-> regulator
-> consumers having the same dev_name?
+-- 
+MST
 
-Due to sysfs requirements I think we should be safe with the addition of
-bus type matching but like I say I may be missing something.
