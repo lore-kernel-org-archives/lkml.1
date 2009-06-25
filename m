@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbZFYSv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZFYSwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755613AbZFYSv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 14:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZFYSvr
+	id S1755377AbZFYSwz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 14:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZFYSws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 14:51:47 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10403 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752005AbZFYSvq (ORCPT
+	Thu, 25 Jun 2009 14:52:48 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:57255 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752005AbZFYSws (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 14:51:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=c+Ajde5Gd84Vyqs8zv9iRMhAK6n1N1b5ImwVc4ndS9+pZMQrnC3sF1s7QXC0zykKp
-	kP0aAYEy0UEL4Q2QxR/3Q==
-Date: Thu, 25 Jun 2009 11:51:40 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <20090625132544.GB9995@mit.edu>
-Message-ID: <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com>
-References: <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
- <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain>
- <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 25 Jun 2009 14:52:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
+Date: Thu, 25 Jun 2009 20:52:49 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       martin.petersen@oracle.com
+References: <200906250904.57149.elendil@planet.nl> <200906251953.34253.elendil@planet.nl> <20090625182302.GA23113@redhat.com>
+In-Reply-To: <20090625182302.GA23113@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906252052.50364.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Jun 2009 18:52:51.0098 (UTC) FILETIME=[23DFF7A0:01C9F5C6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Theodore Tso wrote:
+On Thursday 25 June 2009, Mike Snitzer wrote:
+> OK, I found a really stupid bug.  I was passing the data start offset
+> (pe_start) through to blk_stack_limits() in terms of sectors rather
+> than bytes.  The following should silence your warnings:
 
-> On Wed, Jun 24, 2009 at 03:07:14PM -0700, Andrew Morton wrote:
-> > 
-> > fs/jbd/journal.c:       new_bh = alloc_buffer_head(GFP_NOFS|__GFP_NOFAIL);
-> > 
-> > But that isn't :(
-> 
-> Well, we could recode it to do what journal_alloc_head() does, which
-> is call the allocator in a loop:
-> 
-> 	ret = kmem_cache_alloc(journal_head_cache, GFP_NOFS);
-> 	if (ret == NULL) {
-> 		jbd_debug(1, "out of memory for journal_head\n");
-> 		if (time_after(jiffies, last_warning + 5*HZ)) {
-> 			printk(KERN_NOTICE "ENOMEM in %s, retrying.\n",
-> 			       __func__);
-> 			last_warning = jiffies;
-> 		}
-> 		while (ret == NULL) {
-> 			yield();
-> 			ret = kmem_cache_alloc(journal_head_cache, GFP_NOFS);
-> 		}
-> 	}
-> 
-> Like journal_write_metadata_buffer(), which you quoted, it's called
-> out of the commit code, where about the only choice we have other than
-> looping or using GFP_NOFAIL is to abort the filesystem and remount it
-> read-only or panic.  It's not at all clear to me that looping
-> repeatedly is helpful; for example, the allocator doesn't know that it
-> should try really hard, and perhaps fall back to an order 0 allocation
-> of an order 1 allocation won't work.
-> 
+Yes, all clear again. So not broken userspace after all ;-)
 
-Since it's using kmem_cache_alloc(), the order fallback is the 
-responsibility of the slab allocator when a new slab allocation fails and 
-a single object could fit in an order 0 page, so it's not a concern for 
-this particular allocation.
+Reported-by: Frans Pop <elendil@planet.nl>
+Tested-by: Frans Pop <elendil@planet.nl>
 
-There's no way to indicate that the page allocator should "try really 
-hard" because the VM implementation should already do that for every 
-allocation before failure.  A subsequent attempt after the first failure 
-could try GFP_ATOMIC, though, which allows allocation beyond the minimum 
-watermark and is more likely to succeed than GFP_NOFS.  Such an 
-allocation should be short-lived and not rely on additional memory to free 
-to avoid depleting most of the memory reserves available to atomic 
-allocations, direct reclaim, and oom killed tasks.
+Thanks,
+FJP
 
-> Hmm.... it may be possible to do the memory allocation in advance,
-> before we get to the commit, and make it be easier to fail and return
-> ENOMEM to userspace --- which I bet most applications won't handle
-> gracefully, either (a) not checking error codes and losing data, or
-> (b) dieing on the spot, so it would be effectively be an OOM kill.
+> diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
+> index 4899ebe..2cba557 100644
+> --- a/drivers/md/dm-table.c
+> +++ b/drivers/md/dm-table.c
+> @@ -495,7 +495,7 @@ int dm_set_device_limits(struct dm_target *ti,
+> struct dm_dev *dev, return 0;
+>  	}
+>
+> -	if (blk_stack_limits(limits, &q->limits, start) < 0)
+> +	if (blk_stack_limits(limits, &q->limits, start << 9) < 0)
+>  		DMWARN("%s: target device %s is misaligned",
+>  		       dm_device_name(ti->table->md), bdevname(bdev, b));
 
-If this would still be a GFP_NOFS allocation, the oom killer will not be 
-triggered (it only gets called when __GFP_FS is set to avoid killing tasks 
-when reclaim was not possible).
