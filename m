@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758465AbZFYDaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZFYDmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758465AbZFYDaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 23:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFYDaI
+	id S1753885AbZFYDmD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 23:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZFYDlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 23:30:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46437 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752636AbZFYDaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 23:30:07 -0400
-Date: Thu, 25 Jun 2009 13:30:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alasdair G Kergon <agk@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: linux-next: manual merge of the block tree with Linus' tree
-Message-Id: <20090625133005.9f521529.sfr@canb.auug.org.au>
-In-Reply-To: <20090625131517.d9adc935.sfr@canb.auug.org.au>
-References: <20090625131517.d9adc935.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__25_Jun_2009_13_30_05_+1000_LSTCjNN2rYr/x1lH"
+	Wed, 24 Jun 2009 23:41:53 -0400
+Received: from mail-yx0-f186.google.com ([209.85.210.186]:62899 "EHLO
+	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbZFYDlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 23:41:53 -0400
+X-Greylist: delayed 497 seconds by postgrey-1.27 at vger.kernel.org; Wed, 24 Jun 2009 23:41:53 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=v1Tw7PhV8Q5BuLUsaMO1LVGlq0SWXQwbBZeKOK6SAzleGGTihbTX7Th2wskaThxkXM
+         wrzDslO4rzwXf2PVTcChbt5mEbiL7tXhdjYYoVotkrDWKo1/vWVGP4sclQuyq4uH2c7n
+         MXI0cO0KJlcdyr2C8AzDacVUfvbgDToqzE/0A=
+MIME-Version: 1.0
+Date: Thu, 25 Jun 2009 11:33:38 +0800
+Message-ID: <113d36d80906242033p134edf27t12bda1d0359c4134@mail.gmail.com>
+Subject: question on A2DP sink suspend/resume
+From: lan zhu <zhu.lan.cn@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__25_Jun_2009_13_30_05_+1000_LSTCjNN2rYr/x1lH
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If we want to create SCO link when A2DP is in streaming state, we
+shall suspend A2DP first and then establish SCO link. Conversely, we
+shall resume A2DP link when we drop SCO link. The entire description
+can be found in the Simultaneous use of HFP, A2DP, and AVRCP Profiles
+Whitepaper on bluetooth org web site.
+(https://www.bluetooth.org/Technical/Specifications/whitepapers.htm).
 
-On Thu, 25 Jun 2009 13:15:17 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> I can't see how to easily fix this up, so I have dropped the block tree
-> for today (since it only contained 2.6.32 material, right?).
+My question is,  I found there is no such sink_suspend or sink_resume
+method in D-BUS API while these functions are all implemented in Bluez
+audio module. I would like to know why don't put them to D-BUS API?
+If we need to call these functions we have to expand the D-BUS API.
 
-I also dropped the device-mapper tree for today as it was based on the
-block tree (and dragged in what I had just dropped) and, in any case, all
-its patches have been merged upstream.
+One more question is, is there a formal way to test SCO/A2DP
+simultaneous case? we can't find a proper headset to test it because
+those headsets are all well implemented with the simultaneous logic,
+so there is no way to enter ourselves' code that handle this logic.
+Can we test it by configurating some test tool such as PTS?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Thu__25_Jun_2009_13_30_05_+1000_LSTCjNN2rYr/x1lH
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpC7z0ACgkQjjKRsyhoI8wFJwCfdyEMEUILSsMEbp1cPfQeg9Qk
-uzIAn18GSkpT36l2LHHs+SdLdTnSbbfs
-=S3tf
------END PGP SIGNATURE-----
-
---Signature=_Thu__25_Jun_2009_13_30_05_+1000_LSTCjNN2rYr/x1lH--
+ Thanks,
+ Zhu Lan
