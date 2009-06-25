@@ -1,98 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZFYTZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZFYTZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbZFYTZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZFYTZR
+	id S1758105AbZFYTZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZFYTZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:25:17 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:41023 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbZFYTZP (ORCPT
+	Thu, 25 Jun 2009 15:25:33 -0400
+Received: from mga01.intel.com ([192.55.52.88]:25766 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756593AbZFYTZc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:25:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=NaiU5A+gHLpHDGyft/gBf09WaJnWG656367N5nfIku4ZPEsXtAQu2Ne7tsrXv+d3jC
-         3oKI1Z6eWYZ9sBDMRq/WihLfKS5vagM9DjXCT/AEaIVrmftG3Bb+I9YuSfi7BEudLnqi
-         MZuz/c3XzVFYXxBaNGJ/OGqX8FkYC5Ut/zsf8=
-Message-ID: <4A43CF18.9020908@gmail.com>
-Date: Thu, 25 Jun 2009 15:25:12 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Thu, 25 Jun 2009 15:25:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,292,1243839600"; 
+   d="scan'208";a="702540024"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@linux.intel.com>
+CC: Dave Jones <davej@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
+Date: Thu, 25 Jun 2009 12:25:33 -0700
+Subject: RE: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+ Technology support for Linux - Details
+Thread-Topic: [RFC v5][PATCH 0b/4] intel_txt: Intel(R) Trusted Execution
+ Technology support for Linux - Details
+Thread-Index: Acn1He1/uebvzuTaTLG3CyoNxh7GiQAqEX9w
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D9A2AAD63B@orsmsx506.amr.corp.intel.com>
+References: <4A4024B6.2060600@intel.com>	<20090624201415.GA18291@redhat.com>
+	<4A428E9D.7080509@linux.intel.com>
+ <20090624235000.1e9f4502@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090624235000.1e9f4502@lxorguk.ukuu.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCH] kvm: pass value to in_range callback
-References: <20090625125333.GB7166@redhat.com> <4A438E8F.4080008@gmail.com> <20090625192329.GB3239@redhat.com>
-In-Reply-To: <20090625192329.GB3239@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC2EAB0110F7AFC7CAF5E8D53"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC2EAB0110F7AFC7CAF5E8D53
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Let me try to unify and respond to the couple of branches of this thread:
 
-Michael S. Tsirkin wrote:
-> On Thu, Jun 25, 2009 at 10:49:51AM -0400, Gregory Haskins wrote:
->  =20
->> Michael S. Tsirkin wrote:
->>    =20
->>> For write transactions, pass the value written to in_range checks so
->>> that we can make each iosignalfd a separate device on kvm bus.
->>>
->>> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
->>> ---
->>>
->>> Reposting with a subject now. Sorry.
->>>
->>> Avi, can you please merge this patch in kvm.git so that
->>> Gregory can use it for iosignalfd? Once bus has RCU
->>> we'll be able to remove in_range completely, but
->>> let's do it step by step.
->>>  =20
->>>      =20
->> I think this patch will just make more churn for me, not less.  You ha=
-ve
->> now convinced me that your io_range-less approach is better.  ;)
->>
->> Lets just fix the RCU thing and do it right.  Patch is under developme=
-nt
->> as we speak.
->>
->> -Greg
->>    =20
+> From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
+> Sent: Wednesday, June 24, 2009 3:50 PM
 >
-> So - let's go ahead with this one?
+> > > "trust us, it's signed by intel" doesn't make me feel more secure.
+> >
+> > how's that different from your normal bios ?
 >
->  =20
+> I've yet to see grub load my bios 8)
 
-Whatever you think is best and/or gets us to the end goal the fastest ;)
+and
 
--Greg
+> From: Dave Jones [mailto:davej@redhat.com]
+> Sent: Wednesday, June 24, 2009 1:51 PM
+>
+> On Wed, Jun 24, 2009 at 01:37:49PM -0700, Arjan van de Ven wrote:
+>  > Dave Jones wrote:
+>  > > On Mon, Jun 22, 2009 at 05:41:26PM -0700, Joseph Cihula wrote:
+>  > >
+>  > >  > The Q35_SINIT_17.BIN file is what Intel TXT refers to as an
+>  > >  > Authenticated Code Module.  It is specific to the chipset in the system
+>  > >  > and can also be found on the Trusted Boot site.  It is a firmware module
+>  > >  > digitally signed by Intel that is used as part of the DRTM process to
+>  > >  > verify and configure the system.
+>  > >
+>  > > This seems a little disingenious.  Firmware isn't typically loaded by grub
+>  > > into main memory and executed by the host processor.
+>  > >
+>  > > so, is this all worthless without the binary blob ?
+>  > >
+>  > > "trust us, it's signed by intel" doesn't make me feel more secure.
+>  >
+>  > how's that different from your normal bios ?
+>
+> well..
+>
+> AFAICS, this code exists solely to enable a binary blob. We don't do that
+> for the BIOS.  Even for blobs like ACPI, we at least have documentation on
+> the opcodes/data structures.
+>
+> Also, if they're the same as you claim, why isn't the blob just included as
+> part of the BIOS ?
 
+I would actually liken the SINIT AC module more to microcode than to BIOS.  If you look at the Intel(R) TXT measured launch flow (e.g. see http://www.xen.org/files/summit_3/Xen_support_for_LaGrande_Technology.pdf), SINIT is executed by the SENTER microcode and the software that executed the SENTER instruction doesn't get control again until after SINIT finishes executing (and SINIT is executing in a special CPU mode that only microcode can create).
 
---------------enigC2EAB0110F7AFC7CAF5E8D53
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Microcode patches, while not loaded by a bootloader, *are* contained in most OSes (as well as the BIOS).  And the TXT architecture allows for an OEM to include SINIT in the BIOS flash (or a special HDD partition, etc.), but desktop BIOS flash space is usually very constrained and none of the OEMs have chosen to do this.  But even if they had, just like most BIOSes include a microcode patch, there is still value in system software being able to provide an updated version so that users don't have to re-flash their BIOS just to get the new module.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpDzxgACgkQP5K2CMvXmqEBLACfaIjzd+R9D3gaUDX9xczYLxrk
-LX0An3Nzt8mt2p6P/IkbN9Up73YxcJ89
-=irpY
------END PGP SIGNATURE-----
-
---------------enigC2EAB0110F7AFC7CAF5E8D53--
+Joe
