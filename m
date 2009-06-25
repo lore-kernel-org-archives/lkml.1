@@ -1,122 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbZFYWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZFYW0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbZFYWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbZFYWZl
+	id S1756935AbZFYW0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 18:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbZFYW0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 18:25:41 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:39117 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756082AbZFYWZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 18:25:39 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=ZHRZIKnYacCfeih1j7Xu9Nyw+ICDLwPyiCjOg3vsZ7o8KsSBFgs7UwcPquq7GC5cj
-	tnDi8VBMczetSZPtBoB5Q==
-Date: Thu, 25 Jun 2009 15:25:32 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, arjan@infradead.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <alpine.LFD.2.01.0906251339190.3605@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0906251501110.9974@chino.kir.corp.google.com>
-References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org>
- <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain> <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com>
- <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.LFD.2.01.0906251259430.3605@localhost.localdomain> <alpine.LFD.2.01.0906251317570.3605@localhost.localdomain> <alpine.DEB.2.00.0906251332060.3086@chino.kir.corp.google.com>
- <alpine.LFD.2.01.0906251339190.3605@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 25 Jun 2009 18:26:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42690 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754713AbZFYW0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 18:26:03 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand and conservative governors
+Date: Fri, 26 Jun 2009 00:26:20 +0200
+User-Agent: KMail/1.9.10
+Cc: kernel@stable.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rjw@sisk.pl, hidave.darkstar@gmail.com,
+       penberg@cs.helsinki.fi, kernel-testers@vger.kernel.org,
+       davej@redhat.com, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <20090623193215.GA31374@elte.hu> <20090625142552.GA18000@Krystal> <200906260017.10730.trenn@suse.de>
+In-Reply-To: <200906260017.10730.trenn@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906260026.21394.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Linus Torvalds wrote:
+On Friday 26 June 2009 12:17:09 am Thomas Renninger wrote:
+> On Thursday 25 June 2009 04:25:52 pm Mathieu Desnoyers wrote:
+> > * Thomas Renninger (trenn@suse.de) wrote:
+> > > Comment from Venkatesh:
+> > > ...
+> > > This mutex is just serializing the changes to those variables. I
+> > > could't think of any functionality issues of not having the lock as
+> > > such.
+> > >
+> > > -> rip it out.
+> > >
+> > > CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > > ---
+> > >  drivers/cpufreq/cpufreq_conservative.c |   61
+> > > +++----------------------------- drivers/cpufreq/cpufreq_ondemand.c    
+> > > | 48 +++---------------------- 2 files changed, 10 insertions(+), 99
+> > > deletions(-)
+> > >
+> > > diff --git a/drivers/cpufreq/cpufreq_conservative.c
+> > > b/drivers/cpufreq/cpufreq_conservative.c index 7a74d17..6303379 100644
+> > > --- a/drivers/cpufreq/cpufreq_conservative.c
+> > > +++ b/drivers/cpufreq/cpufreq_conservative.c
+> > > @@ -18,7 +18,6 @@
+> > >  #include <linux/cpu.h>
+> > >  #include <linux/jiffies.h>
+> > >  #include <linux/kernel_stat.h>
+> > > -#include <linux/mutex.h>
+> > >  #include <linux/hrtimer.h>
+> > >  #include <linux/tick.h>
+> > >  #include <linux/ktime.h>
+> > > @@ -84,19 +83,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
+> > > cpu_dbs_info);
+> > >
+> > >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+> > >
+> > > -/*
+> > > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> > > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> > > - * dbs_mutex. If any function that can potentially take cpu_hotplug
+> > > lock - * (like __cpufreq_driver_target()) is being called with
+> > > dbs_mutex taken, then - * cpu_hotplug lock should be taken before that.
+> > > Note that cpu_hotplug lock - * is recursive for the same process.
+> > > -Venki - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the
+> > > dbs_mutex, because it - * would deadlock with
+> > > cancel_delayed_work_sync(), which is needed for proper - * raceless
+> > > workqueue teardown.
+> > > - */
+> > > -static DEFINE_MUTEX(dbs_mutex);
+> > > -
+> > >  static struct workqueue_struct	*kconservative_wq;
+> > >
+> > >  static struct dbs_tuners {
+> > > @@ -236,10 +222,7 @@ static ssize_t store_sampling_down_factor(struct
+> > > cpufreq_policy *unused, if (ret != 1 || input >
+> > > MAX_SAMPLING_DOWN_FACTOR
+> > >
+> > > || input < 1) return -EINVAL;
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	dbs_tuners_ins.sampling_down_factor = input;
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -253,10 +236,7 @@ static ssize_t store_sampling_rate(struct
+> > > cpufreq_policy *unused, if (ret != 1)
+> > >  		return -EINVAL;
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -267,16 +247,11 @@ static ssize_t store_up_threshold(struct
+> > > cpufreq_policy *unused, int ret;
+> > >  	ret = sscanf(buf, "%u", &input);
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	if (ret != 1 || input > 100 ||
+> > > -			input <= dbs_tuners_ins.down_threshold) {
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +			input <= dbs_tuners_ins.down_threshold)
+> > >  		return -EINVAL;
+> > > -	}
+> > >
+> > >  	dbs_tuners_ins.up_threshold = input;
+> > > -	mutex_unlock(&dbs_mutex);
+> >
+> > Here, for instance, there might be a problem if down_threshold is
+> > changed concurrently with a store_up_threshold() call. See that there is
+> > a test before the modification, and we need the mutex there for it to be
+> > consistent.
+>
+> Thanks, I was rather quick with the conservative changes..., but
+> it should still be ok.
+>
+> It should be assured that if userspace is doing:
+> echo x > down_threshold
+> echo y > up_threshold
+> that the first one will be served/finished first?
+>
+> If userspace is writing different values for each core to the global
+> conservative/ondemand tunables, or you have concurent userspace tools
+> trying to configure ondemand/conservative, it's a userspace bug.
+> It's confusing that ondemand/conservative allows per core reads/writes to
+> global variables and I hope to be able to provide something to change that
+> in some days, maybe weeks.
+>
+> If you still can think of a possible issue, a userspace scenario would
+> help.
+>
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -287,17 +262,12 @@ static ssize_t store_down_threshold(struct
+> > > cpufreq_policy *unused, int ret;
+> > >  	ret = sscanf(buf, "%u", &input);
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	/* cannot be lower than 11 otherwise freq will not fall */
+> > >  	if (ret != 1 || input < 11 || input > 100 ||
+> > > -			input >= dbs_tuners_ins.up_threshold) {
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +			input >= dbs_tuners_ins.up_threshold)
+> > >  		return -EINVAL;
+> > > -	}
+> > >
+> > >  	dbs_tuners_ins.down_threshold = input;
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -316,11 +286,9 @@ static ssize_t store_ignore_nice_load(struct
+> > > cpufreq_policy *policy, if (input > 1)
+> > >  		input = 1;
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+> > >  		return count;
+> > > -	}
+> > > +
+> > >  	dbs_tuners_ins.ignore_nice = input;
+> > >
+> > >  	/* we need to re-evaluate prev_cpu_idle */
+> > > @@ -332,8 +300,6 @@ static ssize_t store_ignore_nice_load(struct
+> > > cpufreq_policy *policy, if (dbs_tuners_ins.ignore_nice)
+> > >  			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+> > >  	}
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -352,10 +318,7 @@ static ssize_t store_freq_step(struct
+> > > cpufreq_policy *policy,
+> > >
+> > >  	/* no need to test here if freq_step is zero as the user might
+> > > actually * want this, they would be crazy though :) */
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	dbs_tuners_ins.freq_step = input;
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -566,13 +529,9 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy,
+> >
+> > Hrm, this is where we want the mutexes removed, but I fear this is
+> > creating a race between sysfs_create_group (sysfs file creation) and
+> > policy initialization...
+>
+> This can be solved by moving this_dbs_info->enable incremenation
+> after sysfs_create_group.
+Forget this sentence, don't think about it, it's crap.
+I better go to bed now...
 
-> So the reason I tend to like the kind of "incrementally try harder" 
-> approaches is two-fold:
-> 
->  - it works well for balancing different choices against each other (like 
->    on the freeing path, trying to see which kind of memory is most easily 
->    freed by trying them all first in a "don't try very hard" mode)
-> 
+       Thomas
 
-If we passed alloc_flags into direct reclaim, we'd be able to know that 
-priority in increasing severity: ALLOC_HARDER, ALLOC_HIGH, 
-ALLOC_NO_WATERMARKS.  We already know if reclaim should be targeted only 
-to the set of allowable nodes with the gfp_mask, so ALLOC_CPUSET is 
-already implicitly handled.
+> But yes, I forgot that in my patch, thanks!
+>
+> > I'm not convinced this mutex is not needed.
+>
+> I am. Maybe it still takes some more thinking or step by step rework.
+> Finding an unintrusive, riskless short term solution for .30 is a
+> challenge, though.
+>
+>     Thomas
+>
+> > Mathieu
+> >
+> > >  		if (this_dbs_info->enable) /* Already enabled */
+> > >  			break;
+> > >
+> > > -		mutex_lock(&dbs_mutex);
+> > > -
+> > >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
+> > > -		if (rc) {
+> > > -			mutex_unlock(&dbs_mutex);
+> > > +		if (rc)
+> > >  			return rc;
+> > > -		}
+> > >
+> > >  		for_each_cpu(j, policy->cpus) {
+> > >  			struct cpu_dbs_info_s *j_dbs_info;
+> > > @@ -612,13 +571,9 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy, CPUFREQ_TRANSITION_NOTIFIER);
+> > >  		}
+> > >  		dbs_timer_init(this_dbs_info);
+> > > -
+> > > -		mutex_unlock(&dbs_mutex);
+> > > -
+> > >  		break;
+> > >
+> > >  	case CPUFREQ_GOV_STOP:
+> > > -		mutex_lock(&dbs_mutex);
+> > >  		dbs_timer_exit(this_dbs_info);
+> > >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+> > >  		dbs_enable--;
+> > > @@ -631,13 +586,9 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy, cpufreq_unregister_notifier(
+> > >  					&dbs_cpufreq_notifier_block,
+> > >  					CPUFREQ_TRANSITION_NOTIFIER);
+> > > -
+> > > -		mutex_unlock(&dbs_mutex);
+> > > -
+> > >  		break;
+> > >
+> > >  	case CPUFREQ_GOV_LIMITS:
+> > > -		mutex_lock(&dbs_mutex);
+> > >  		if (policy->max < this_dbs_info->cur_policy->cur)
+> > >  			__cpufreq_driver_target(
+> > >  					this_dbs_info->cur_policy,
+> > > @@ -646,8 +597,6 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy, __cpufreq_driver_target(
+> > >  					this_dbs_info->cur_policy,
+> > >  					policy->min, CPUFREQ_RELATION_L);
+> > > -		mutex_unlock(&dbs_mutex);
+> > > -
+> > >  		break;
+> > >  	}
+> > >  	return 0;
+> > > diff --git a/drivers/cpufreq/cpufreq_ondemand.c
+> > > b/drivers/cpufreq/cpufreq_ondemand.c index e741c33..d080a48 100644
+> > > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > > @@ -17,7 +17,6 @@
+> > >  #include <linux/cpu.h>
+> > >  #include <linux/jiffies.h>
+> > >  #include <linux/kernel_stat.h>
+> > > -#include <linux/mutex.h>
+> > >  #include <linux/hrtimer.h>
+> > >  #include <linux/tick.h>
+> > >  #include <linux/ktime.h>
+> > > @@ -91,19 +90,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
+> > > cpu_dbs_info);
+> > >
+> > >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+> > >
+> > > -/*
+> > > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> > > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> > > - * dbs_mutex. If any function that can potentially take cpu_hotplug
+> > > lock - * (like __cpufreq_driver_target()) is being called with
+> > > dbs_mutex taken, then - * cpu_hotplug lock should be taken before that.
+> > > Note that cpu_hotplug lock - * is recursive for the same process.
+> > > -Venki - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the
+> > > dbs_mutex, because it - * would deadlock with
+> > > cancel_delayed_work_sync(), which is needed for proper - * raceless
+> > > workqueue teardown.
+> > > - */
+> > > -static DEFINE_MUTEX(dbs_mutex);
+> > > -
+> > >  static struct workqueue_struct	*kondemand_wq;
+> > >
+> > >  static struct dbs_tuners {
+> > > @@ -269,14 +255,10 @@ static ssize_t store_sampling_rate(struct
+> > > cpufreq_policy *unused, int ret;
+> > >  	ret = sscanf(buf, "%u", &input);
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > > -	if (ret != 1) {
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +	if (ret != 1)
+> > >  		return -EINVAL;
+> > > -	}
+> > > -	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> > > -	mutex_unlock(&dbs_mutex);
+> > >
+> > > +	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -287,16 +269,11 @@ static ssize_t store_up_threshold(struct
+> > > cpufreq_policy *unused, int ret;
+> > >  	ret = sscanf(buf, "%u", &input);
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
+> > > -			input < MIN_FREQUENCY_UP_THRESHOLD) {
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +			input < MIN_FREQUENCY_UP_THRESHOLD)
+> > >  		return -EINVAL;
+> > > -	}
+> > >
+> > >  	dbs_tuners_ins.up_threshold = input;
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -315,11 +292,9 @@ static ssize_t store_ignore_nice_load(struct
+> > > cpufreq_policy *policy, if (input > 1)
+> > >  		input = 1;
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+> > > -		mutex_unlock(&dbs_mutex);
+> > > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+> > >  		return count;
+> > > -	}
+> > > +
+> > >  	dbs_tuners_ins.ignore_nice = input;
+> > >
+> > >  	/* we need to re-evaluate prev_cpu_idle */
+> > > @@ -332,8 +307,6 @@ static ssize_t store_ignore_nice_load(struct
+> > > cpufreq_policy *policy, dbs_info->prev_cpu_nice =
+> > > kstat_cpu(j).cpustat.nice;
+> > >
+> > >  	}
+> > > -	mutex_unlock(&dbs_mutex);
+> > > -
+> > >  	return count;
+> > >  }
+> > >
+> > > @@ -350,10 +323,8 @@ static ssize_t store_powersave_bias(struct
+> > > cpufreq_policy *unused, if (input > 1000)
+> > >  		input = 1000;
+> > >
+> > > -	mutex_lock(&dbs_mutex);
+> > >  	dbs_tuners_ins.powersave_bias = input;
+> > >  	ondemand_powersave_bias_init();
+> > > -	mutex_unlock(&dbs_mutex);
+> > >
+> > >  	return count;
+> > >  }
+> > > @@ -586,13 +557,11 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy, if (this_dbs_info->enable) /* Already enabled
+> > > */ break;
+> > >
+> > > -		mutex_lock(&dbs_mutex);
+> > >  		dbs_enable++;
+> > >
+> > >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
+> > >  		if (rc) {
+> > >  			dbs_enable--;
+> > > -			mutex_unlock(&dbs_mutex);
+> > >  			return rc;
+> > >  		}
+> > >
+> > > @@ -627,28 +596,21 @@ static int cpufreq_governor_dbs(struct
+> > > cpufreq_policy *policy, dbs_tuners_ins.sampling_rate =
+> > > def_sampling_rate; }
+> > >  		dbs_timer_init(this_dbs_info);
+> > > -
+> > > -		mutex_unlock(&dbs_mutex);
+> > >  		break;
+> > >
+> > >  	case CPUFREQ_GOV_STOP:
+> > > -		mutex_lock(&dbs_mutex);
+> > >  		dbs_timer_exit(this_dbs_info);
+> > >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+> > >  		dbs_enable--;
+> > > -		mutex_unlock(&dbs_mutex);
+> > > -
+> > >  		break;
+> > >
+> > >  	case CPUFREQ_GOV_LIMITS:
+> > > -		mutex_lock(&dbs_mutex);
+> > >  		if (policy->max < this_dbs_info->cur_policy->cur)
+> > >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
+> > >  				policy->max, CPUFREQ_RELATION_H);
+> > >  		else if (policy->min > this_dbs_info->cur_policy->cur)
+> > >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
+> > >  				policy->min, CPUFREQ_RELATION_L);
+> > > -		mutex_unlock(&dbs_mutex);
+> > >  		break;
+> > >  	}
+> > >  	return 0;
+> > > --
+> > > 1.6.0.2
 
-The problem with such an approach is that if we were to, as suggested, set 
-ALLOC_HARDER for __GFP_WAIT when looping is that we'd soon deplete memory 
-reserves for potentially long-lived allocations and each zone's min 
-watermark would simply become min / 2.
 
-Setting ALLOC_HARDER when __GFP_WAIT loops would imply that we'd also 
-defer the oom killer until we've tried with the lower watermark and that 
-would result in less memory being available for the TIF_MEMDIE thread when 
-subsequent allocations still fail.
-
->  - it's great for forcing _everybody_ to do part of the work (ie when some 
->    new thread comes in and tries to allocate, the new thread starts off 
->    with the lower priority, and as such won't steal a page that an older 
->    allocator just freed)
-> 
-
-So you're seeing the space between the zone's min watermark, min, and min 
-/ 4 (ALLOC_HARDER) as the pool of memory available to older allocators 
-that have already done reclaim?  It wouldn't necessarily prevent rt tasks 
-from stealing the memory freed by the older allocators, but would stop all 
-others.
-
-> And I think that second case is true even for the oom killer case, and 
-> even for __GFP_FS.
-> 
-
-The oom killer is serialized only on the zonelist and right before it's 
-called, we try an allocation with the high watermark to catch parallel oom 
-killings.  The oom killer's heuristic for killing preference is one that 
-should satisfy all concurrent page allocations on that zonelist, so we 
-probably don't need to worry about it.
-
-> So if people worry about oom, I would suggest that we should not think so 
-> hard about the GFP_NOFAIL cases (which are relatively small and rare),
-
-If __GFP_NOFAIL is used in the reclaim path, it will loop forever for 
-~__GFP_NOMEMALLOC allocations (and the same goes for oom killed tasks).
-
-> or 
-> about things like the above "try harder" when repeating model, but instead 
-> think about what actually happens during oom: the most common allocations 
-> will remain to the page allocations for user faults and/or page cache. In 
-> fact, they get *more* common as you near OOM situation, because you get 
-> into the whole swap/filemap thrashing situation where you have to re-read 
-> the same pages over and over again.
-> 
-> So don't worry about NOFS. Instead, look at what GFP_USER and GFP_HIGHUSER 
-> do. They set the __GFP_HARDWALL bit, and they _always_ check the end 
-> result and fail gracefully and quickly when the allocation fails.
-> 
-
-Yeah, and the oom killer prefers to kill tasks that share a set of 
-allowable __GFP_HARDWALL nodes with current.
-
-> End result? Realistically, I suspect the _best_ thing we can do is to just 
-> couple that bit with "we're out of memory", and just do something like
-> 
-> 	if (!did_some_progress && (gfp_flags & __GFP_HARDWALL))
-> 		goto nopage;
-> 
-> rather than anything else. And I suspect that if we do this, we can then 
-> afford to retry very aggressively for the allocation cases that aren't 
-> GFP_USER - and that may well be needed in order to make progress.
-> 
-
-Agreed.
