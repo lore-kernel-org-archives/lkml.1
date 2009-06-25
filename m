@@ -1,107 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755713AbZFYKDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZFYKDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755713AbZFYKDJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZFYKC7
+	id S1754689AbZFYKDs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZFYKDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:02:59 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:53085 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZFYKC5 (ORCPT
+	Thu, 25 Jun 2009 06:03:40 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57892
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752218AbZFYKDj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:02:57 -0400
-Subject: [PATCH v3 10/10] nf_conntrack: Use rcu_barrier()
-From: Jesper Dangaard Brouer <jdb@comx.dk>
-Reply-To: jdb@comx.dk
-To: Patrick McHardy <kaber@trash.net>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       bluesmoke-devel@lists.sourceforge.net, axboe@kernel.dk,
-       christine.caulfield@googlemail.com, Trond.Myklebust@netapp.com,
-       linux-wireless@vger.kernel.org, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-In-Reply-To: <1245922153.24921.56.camel@localhost.localdomain>
-References: <20090623150330.22490.87327.stgit@localhost>
-	 <20090623150444.22490.27931.stgit@localhost>  <4A410185.3090706@trash.net>
-	 <1245834139.6695.31.camel@localhost.localdomain>
-	 <1245836409.6695.35.camel@localhost.localdomain> <4A423108.60109@trash.net>
-	 <1245922153.24921.56.camel@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: ComX Networks A/S
-Date: Thu, 25 Jun 2009 12:02:58 +0200
-Message-Id: <1245924178.24921.61.camel@localhost.localdomain>
+	Thu, 25 Jun 2009 06:03:39 -0400
+Date: Thu, 25 Jun 2009 03:03:43 -0700 (PDT)
+Message-Id: <20090625.030343.140417558.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: IDE fixes
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 11:29 +0200, Jesper Dangaard Brouer wrote:
-> Should I make two different patchs?
 
-Here is the single patch... Patrick tell me if you want it split up?
+1) Fix regressions wrt. unexpected IRQs during early device
+   probe and startup.  From Bart.
 
+2) Because the ID block bits were busted at the time of the
+   call, until that was fixed the DMA info validity checker
+   was always checking garbage.  Usually zeros.
 
-[PATCH v3 10/10] nf_conntrack: Use rcu_barrier()
+   Now that it isn't checking garbage, it's triggering for
+   all kinds of devices.  Those devices always functioned
+   properly so the warning checks are just noise.
 
-From: Jesper Dangaard Brouer <hawk@comx.dk>
+   So we simply remove them.  Fix from Bart.
 
-RCU barriers, rcu_barrier(), is inserted two places.
+3) cs5520's second port IRQ wasn't being setup properly.  With
+   help from Bart and Alan Cox.
 
- In nf_conntrack_expect.c nf_conntrack_expect_fini() before the
- kmem_cache_destroy().  Firstly to make sure the callback to the
- nf_ct_expect_free_rcu() code is still around.  Secondly because I'm
- unsure about the consequence of having in flight
- nf_ct_expect_free_rcu/kmem_cache_free() calls while doing a
- kmem_cache_destroy() slab destroy.
+4) ide-cd had some warnings added when the CDROM advertises a
+   strange block size.  But this check is overzealous, and since
+   the code does correct the value it's only valuable to print
+   this warning once instead of spamming your kernel log file
+   every time your some daemon checks the CDROM for a present
+   disc.
 
- And in nf_conntrack_extend.c nf_ct_extend_unregister(), inorder to
- wait for completion of callbacks to __nf_ct_ext_free_rcu(), which is
- invoked by __nf_ct_ext_add().  It might be more efficient to call
- rcu_barrier() in nf_conntrack_core.c nf_conntrack_cleanup_net(), but
- thats make it more difficult to read the code (as the callback code
- in located in nf_conntrack_extend.c).
+   From Frans Pop and your's truly.
 
-Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
----
+5) Quantum fireball with APL.090 firmware needs ivb_list[] cable
+   detection workaround.  From Bart.
 
- net/netfilter/nf_conntrack_expect.c |    4 +++-
- net/netfilter/nf_conntrack_extend.c |    2 +-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+6) Power management handling of requests isn't air tight.  Fix
+   from Bart.
 
+Please pull, thanks!
 
-diff --git a/net/netfilter/nf_conntrack_expect.c b/net/netfilter/nf_conntrack_expect.c
-index afde8f9..2032dfe 100644
---- a/net/netfilter/nf_conntrack_expect.c
-+++ b/net/netfilter/nf_conntrack_expect.c
-@@ -617,8 +617,10 @@ err1:
- void nf_conntrack_expect_fini(struct net *net)
- {
- 	exp_proc_remove(net);
--	if (net_eq(net, &init_net))
-+	if (net_eq(net, &init_net)) {
-+		rcu_barrier(); /* Wait for call_rcu() before destroy */
- 		kmem_cache_destroy(nf_ct_expect_cachep);
-+	}
- 	nf_ct_free_hashtable(net->ct.expect_hash, net->ct.expect_vmalloc,
- 			     nf_ct_expect_hsize);
- }
-diff --git a/net/netfilter/nf_conntrack_extend.c b/net/netfilter/nf_conntrack_extend.c
-index 4b2c769..fef95be 100644
---- a/net/netfilter/nf_conntrack_extend.c
-+++ b/net/netfilter/nf_conntrack_extend.c
-@@ -186,6 +186,6 @@ void nf_ct_extend_unregister(struct nf_ct_ext_type *type)
- 	rcu_assign_pointer(nf_ct_ext_types[type->id], NULL);
- 	update_alloc_size(type);
- 	mutex_unlock(&nf_ct_ext_type_mutex);
--	synchronize_rcu();
-+	rcu_barrier(); /* Wait for completion of call_rcu()'s */
- }
- EXPORT_SYMBOL_GPL(nf_ct_extend_unregister);
+The following changes since commit 4e8a2372f9255a1464ef488ed925455f53fbdaa1:
+  Mikael Pettersson (1):
+        nvidiafb: fix boot-time printk string
 
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
+
+Bartlomiej Zolnierkiewicz (4):
+      ide: fix handling of unexpected IRQs vs request_irq()
+      ide: relax DMA info validity checking
+      ide: add QUANTUM FIREBALLct20 30 with firmware APL.090 to ivb_list[]
+      ide: improve handling of Power Management requests
+
+David S. Miller (2):
+      ide-cd: Don't warn on bogus block size unless it actually matters.
+      ide cs5520: Initialize second port's interrupt number.
+
+Frans Pop (1):
+      ide-cd: Improve "weird block size" error message
+
+ drivers/ide/cs5520.c    |    1 +
+ drivers/ide/ide-cd.c    |   10 +++++---
+ drivers/ide/ide-dma.c   |   21 ------------------
+ drivers/ide/ide-io.c    |   54 +++++++++++++++++++---------------------------
+ drivers/ide/ide-iops.c  |    4 +--
+ drivers/ide/ide-probe.c |   23 +++++++++++++++++--
+ include/linux/ide.h     |    2 -
+ 7 files changed, 50 insertions(+), 65 deletions(-)
