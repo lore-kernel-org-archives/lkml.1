@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZFYToC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbZFYToW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZFYToC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:44:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759235AbZFYTnd
+	id S1759386AbZFYToW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759249AbZFYTnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:43:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45304 "EHLO hera.kernel.org"
+	Thu, 25 Jun 2009 15:43:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45319 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759544AbZFYTnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:43:31 -0400
-Date: Thu, 25 Jun 2009 19:43:10 GMT
+	id S1759750AbZFYTnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 15:43:47 -0400
+Date: Thu, 25 Jun 2009 19:43:22 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,29 +18,34 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/urgent] perf_counter, x86: Add mmap counter read support
-Message-ID: <tip-194002b274e9169a04beb1b23dcc132159bb566c@git.kernel.org>
-Git-Commit-ID: 194002b274e9169a04beb1b23dcc132159bb566c
+Subject: [tip:perfcounters/urgent] perf_counter: Add PERF_EVENT_READ
+Message-ID: <tip-38b200d67636a30cb8dc1508137908e7a649b5c9@git.kernel.org>
+Git-Commit-ID: 38b200d67636a30cb8dc1508137908e7a649b5c9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 19:43:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 19:43:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  194002b274e9169a04beb1b23dcc132159bb566c
-Gitweb:     http://git.kernel.org/tip/194002b274e9169a04beb1b23dcc132159bb566c
+Commit-ID:  38b200d67636a30cb8dc1508137908e7a649b5c9
+Gitweb:     http://git.kernel.org/tip/38b200d67636a30cb8dc1508137908e7a649b5c9
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 22 Jun 2009 16:35:24 +0200
+AuthorDate: Tue, 23 Jun 2009 20:13:11 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Jun 2009 21:39:06 +0200
+CommitDate: Thu, 25 Jun 2009 21:39:07 +0200
 
-perf_counter, x86: Add mmap counter read support
+perf_counter: Add PERF_EVENT_READ
 
-Update the mmap control page with the needed information to
-use the userspace RDPMC instruction for self monitoring.
+Provide a read() like event which can be used to log the
+counter value at specific sites such as child->parent
+folding on exit.
+
+In order to be useful, we log the counter parent ID, not the
+actual counter ID, since userspace can only relate parent
+IDs to perf_counter_attr constructs.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
@@ -48,95 +53,144 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/powerpc/include/asm/perf_counter.h |    2 ++
- arch/x86/include/asm/perf_counter.h     |    3 +++
- arch/x86/kernel/cpu/perf_counter.c      |    6 ++++++
- kernel/perf_counter.c                   |   10 +++++++++-
- 4 files changed, 20 insertions(+), 1 deletions(-)
+ include/linux/perf_counter.h |   12 +++++++
+ kernel/perf_counter.c        |   72 +++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 80 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
-index 8ccd4e1..0ea0639 100644
---- a/arch/powerpc/include/asm/perf_counter.h
-+++ b/arch/powerpc/include/asm/perf_counter.h
-@@ -61,6 +61,8 @@ struct pt_regs;
- extern unsigned long perf_misc_flags(struct pt_regs *regs);
- extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index bcbf1c4..6a384f0 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -335,6 +335,18 @@ enum perf_event_type {
+ 	PERF_EVENT_FORK			= 7,
  
-+#define PERF_COUNTER_INDEX_OFFSET	1
+ 	/*
++	 * struct {
++	 * 	struct perf_event_header	header;
++	 * 	u32				pid, tid;
++	 * 	u64				value;
++	 * 	{ u64		time_enabled; 	} && PERF_FORMAT_ENABLED
++	 * 	{ u64		time_running; 	} && PERF_FORMAT_RUNNING
++	 * 	{ u64		parent_id;	} && PERF_FORMAT_ID
++	 * };
++	 */
++	PERF_EVENT_READ			= 8,
 +
- /*
-  * Only override the default definitions in include/linux/perf_counter.h
-  * if we have hardware PMU support.
-diff --git a/arch/x86/include/asm/perf_counter.h b/arch/x86/include/asm/perf_counter.h
-index 5fb33e1..fa64e40 100644
---- a/arch/x86/include/asm/perf_counter.h
-+++ b/arch/x86/include/asm/perf_counter.h
-@@ -87,6 +87,9 @@ union cpuid10_edx {
- #ifdef CONFIG_PERF_COUNTERS
- extern void init_hw_perf_counters(void);
- extern void perf_counters_lapic_init(void);
-+
-+#define PERF_COUNTER_INDEX_OFFSET			0
-+
- #else
- static inline void init_hw_perf_counters(void)		{ }
- static inline void perf_counters_lapic_init(void)	{ }
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index a310d19..b83474b 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -912,6 +912,8 @@ x86_perf_counter_set_period(struct perf_counter *counter,
- 	err = checking_wrmsrl(hwc->counter_base + idx,
- 			     (u64)(-left) & x86_pmu.counter_mask);
- 
-+	perf_counter_update_userpage(counter);
-+
- 	return ret;
- }
- 
-@@ -1034,6 +1036,8 @@ try_generic:
- 	x86_perf_counter_set_period(counter, hwc, idx);
- 	x86_pmu.enable(hwc, idx);
- 
-+	perf_counter_update_userpage(counter);
-+
- 	return 0;
- }
- 
-@@ -1126,6 +1130,8 @@ static void x86_pmu_disable(struct perf_counter *counter)
- 	x86_perf_counter_update(counter, hwc, idx);
- 	cpuc->counters[idx] = NULL;
- 	clear_bit(idx, cpuc->used_mask);
-+
-+	perf_counter_update_userpage(counter);
- }
- 
- /*
++	/*
+ 	 * When header.misc & PERF_EVENT_MISC_OVERFLOW the event_type field
+ 	 * will be PERF_SAMPLE_*
+ 	 *
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 23614ad..02994a7 100644
+index 02994a7..a72c20e 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -1753,6 +1753,14 @@ int perf_counter_task_disable(void)
- 	return 0;
+@@ -2624,6 +2624,66 @@ static void perf_counter_output(struct perf_counter *counter, int nmi,
  }
  
-+static int perf_counter_index(struct perf_counter *counter)
-+{
-+	if (counter->state != PERF_COUNTER_STATE_ACTIVE)
-+		return 0;
+ /*
++ * read event
++ */
 +
-+	return counter->hw.idx + 1 - PERF_COUNTER_INDEX_OFFSET;
++struct perf_read_event {
++	struct perf_event_header	header;
++
++	u32				pid;
++	u32				tid;
++	u64				value;
++	u64				format[3];
++};
++
++static void
++perf_counter_read_event(struct perf_counter *counter,
++			struct task_struct *task)
++{
++	struct perf_output_handle handle;
++	struct perf_read_event event = {
++		.header = {
++			.type = PERF_EVENT_READ,
++			.misc = 0,
++			.size = sizeof(event) - sizeof(event.format),
++		},
++		.pid = perf_counter_pid(counter, task),
++		.tid = perf_counter_tid(counter, task),
++		.value = atomic64_read(&counter->count),
++	};
++	int ret, i = 0;
++
++	if (counter->attr.read_format & PERF_FORMAT_TOTAL_TIME_ENABLED) {
++		event.header.size += sizeof(u64);
++		event.format[i++] = counter->total_time_enabled;
++	}
++
++	if (counter->attr.read_format & PERF_FORMAT_TOTAL_TIME_RUNNING) {
++		event.header.size += sizeof(u64);
++		event.format[i++] = counter->total_time_running;
++	}
++
++	if (counter->attr.read_format & PERF_FORMAT_ID) {
++		u64 id;
++
++		event.header.size += sizeof(u64);
++		if (counter->parent)
++			id = counter->parent->id;
++		else
++			id = counter->id;
++
++		event.format[i++] = id;
++	}
++
++	ret = perf_output_begin(&handle, counter, event.header.size, 0, 0);
++	if (ret)
++		return;
++
++	perf_output_copy(&handle, &event, event.header.size);
++	perf_output_end(&handle);
 +}
 +
- /*
-  * Callers need to ensure there can be no nesting of this function, otherwise
-  * the seqlock logic goes bad. We can not serialize this because the arch
-@@ -1777,7 +1785,7 @@ void perf_counter_update_userpage(struct perf_counter *counter)
- 	preempt_disable();
- 	++userpg->lock;
- 	barrier();
--	userpg->index = counter->hw.idx;
-+	userpg->index = perf_counter_index(counter);
- 	userpg->offset = atomic64_read(&counter->count);
- 	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
- 		userpg->offset -= atomic64_read(&counter->hw.prev_count);
++/*
+  * fork tracking
+  */
+ 
+@@ -3985,10 +4045,13 @@ static int inherit_group(struct perf_counter *parent_counter,
+ }
+ 
+ static void sync_child_counter(struct perf_counter *child_counter,
+-			       struct perf_counter *parent_counter)
++			       struct task_struct *child)
+ {
++	struct perf_counter *parent_counter = child_counter->parent;
+ 	u64 child_val;
+ 
++	perf_counter_read_event(child_counter, child);
++
+ 	child_val = atomic64_read(&child_counter->count);
+ 
+ 	/*
+@@ -4017,7 +4080,8 @@ static void sync_child_counter(struct perf_counter *child_counter,
+ 
+ static void
+ __perf_counter_exit_task(struct perf_counter *child_counter,
+-			 struct perf_counter_context *child_ctx)
++			 struct perf_counter_context *child_ctx,
++			 struct task_struct *child)
+ {
+ 	struct perf_counter *parent_counter;
+ 
+@@ -4031,7 +4095,7 @@ __perf_counter_exit_task(struct perf_counter *child_counter,
+ 	 * counters need to be zapped - but otherwise linger.
+ 	 */
+ 	if (parent_counter) {
+-		sync_child_counter(child_counter, parent_counter);
++		sync_child_counter(child_counter, child);
+ 		free_counter(child_counter);
+ 	}
+ }
+@@ -4093,7 +4157,7 @@ void perf_counter_exit_task(struct task_struct *child)
+ again:
+ 	list_for_each_entry_safe(child_counter, tmp, &child_ctx->counter_list,
+ 				 list_entry)
+-		__perf_counter_exit_task(child_counter, child_ctx);
++		__perf_counter_exit_task(child_counter, child_ctx, child);
+ 
+ 	/*
+ 	 * If the last counter was a group counter, it will have appended all
