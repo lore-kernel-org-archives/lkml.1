@@ -1,93 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZFYNTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZFYNYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736AbZFYNTs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZFYNTi
+	id S1754542AbZFYNYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZFYNYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:19:38 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:36785 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZFYNTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:19:37 -0400
-Message-ID: <4A43795D.1080501@novell.com>
-Date: Thu, 25 Jun 2009 09:19:25 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
-References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com> <4A435F28.3000301@novell.com> <20090625115403.GA7079@redhat.com> <4A4368A4.8030401@novell.com> <20090625123757.GA7121@redhat.com> <4A437564.6060308@novell.com> <20090625131633.GA7221@redhat.com>
-In-Reply-To: <20090625131633.GA7221@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3E9AC9D57ACF7783ECDD3563"
+	Thu, 25 Jun 2009 09:24:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752670AbZFYNYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 09:24:09 -0400
+Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0906251445200.2767@localhost.localdomain>
+References: <1245760130.3776.6.camel@localhost.localdomain>
+	 <20090623195656.GC8777@elte.hu>
+	 <1245876060.3038.7.camel@localhost.localdomain>
+	 <alpine.LFD.2.00.0906242253270.2767@localhost.localdomain>
+	 <20090625092409.GC23547@elte.hu>
+	 <alpine.LFD.2.00.0906251445200.2767@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 18:53:36 +0530
+Message-Id: <1245936216.5308.43.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3E9AC9D57ACF7783ECDD3563
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-06-25 at 14:48 +0200, Thomas Gleixner wrote:
+> On Thu, 25 Jun 2009, Ingo Molnar wrote:
+> 
+> > 
+> > * Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > On Thu, 25 Jun 2009, Jaswinder Singh Rajput wrote:
+> > > > On Tue, 2009-06-23 at 21:56 +0200, Ingo Molnar wrote:
+> > > > 
+> > > >       248064467  L1-data-Cache-Load-Referencees  (scaled from 23.27%)
+> > > >       283542921  dL1-loads             (scaled from 23.28%)
+> > > 
+> > > Where is the point of this? dL1-loads is a completely non 
+> > > intuitive artificial abbreviation.
+> > 
+> > blame me :)
+> > 
+> > I found L1-data-Cache-Load-References way too long and i asked for 
+> > suggestions and came up with my list of abbreviations.
+> > 
+> > I found 'dL1' intuitive because we use 'dTLB' and 'iTLB' as well.
+> 
+> :)
+>  
+> > How about L1-data-loads ?
+> 
+> Yeah, something like that would be nice. The ones Roland
+> suggested are fine as well.
+> 
 
-Michael S. Tsirkin wrote:
-> On Thu, Jun 25, 2009 at 09:02:28AM -0400, Gregory Haskins wrote:
->  =20
->>> Here's what I have in mind:
->>> kvm does
->>> 	lock
->>> 	dev =3D find
->>> 	unlock
->>>
->>> 	<---------- at this point group device is removed
->>>
->>> 	write access to device that has been removed
->>>
->>>
->>>  =20
->>>      =20
->> Hmm...you are right.  This looks like it was introduced with that rece=
-nt
->> locking patch you cited.  Well, I can still fix it now easily by putti=
-ng
->> an rcu-read-lock around the access.  Longer term we should move to
->> srcu.  Thoughts?
->>
->> -Greg
->>
->>    =20
->
->
-> Some callbacks take kvm mutex lock. So it seems rcu won't work,
-> we need srcu.
->
->  =20
+This still looks ugly and lines are again long check for
+'L1-dcache-prefetch-misses' and does not solve the purpose :
 
-Indeed.  I will put something together.
+ Performance counter stats for 'ls -lR /usr/include/':
+ 
+      254259235  L1-dcache-loads       (scaled from 22.69%)
+        1129360  L1-dcache-load-misses  (scaled from 23.05%)
+         151929  L1-dcache-stores      (scaled from 22.94%)
+         395089  L1-dcache-prefetches  (scaled from 23.30%)
+         273699  L1-dcache-prefetch-misses  (scaled from 23.19%)
+      253780608  L1-icache-loads       (scaled from 23.07%)
+        4014781  L1-icache-load-misses  (scaled from 23.16%)
+          94336  L1-icache-prefetches  (scaled from 23.66%)
+        5553717  LLC-loads             (scaled from 23.70%)
+         533195  LLC-load-misses       (scaled from 23.68%)
+        5534185  LLC-stores            (scaled from 23.92%)
+      252786406  dTLB-loads            (scaled from 23.86%)
+        5058100  dTLB-load-misses      (scaled from 24.17%)
+      248308183  iTLB-loads            (scaled from 24.55%)
+           4627  iTLB-load-misses      (scaled from 24.10%)
+      106942084  branches              (scaled from 23.93%)
+        5280013  branch-misses         (scaled from 23.06%)
 
-We should consider merging the io_bus cleanup I have for deregister
-support ASAP as well.
+Please check my patch which I send few minutes ago.
 
--Greg
+Thanks,
+--
+JSR
 
-
---------------enig3E9AC9D57ACF7783ECDD3563
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpDeV0ACgkQlOSOBdgZUxl8vQCfataqWJS2pHo62psffad0vmQM
-6NQAn0+9fnfmgBylO9nPfbwFWXsfkOEQ
-=Lta8
------END PGP SIGNATURE-----
-
---------------enig3E9AC9D57ACF7783ECDD3563--
