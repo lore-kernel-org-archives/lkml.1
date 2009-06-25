@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZFYEej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbZFYEe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757678AbZFYEej (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 00:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbZFYEec
+	id S1758293AbZFYEe6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 00:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZFYEet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 00:34:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59682 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751018AbZFYEeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 00:34:31 -0400
-Date: Thu, 25 Jun 2009 06:34:32 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
-Message-ID: <20090625043432.GA23949@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090619145913.GA1389@ucw.cz> <1245450449.16880.10.camel@pasglop> <20090619232336.GA2442@elf.ucw.cz> <1245455409.16880.15.camel@pasglop> <20090620002817.GA2524@elf.ucw.cz> <1245463809.16880.18.camel@pasglop> <20090621061847.GB1474@ucw.cz> <1245576665.16880.24.camel@pasglop>
-Mime-Version: 1.0
+	Thu, 25 Jun 2009 00:34:49 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:17744 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752678AbZFYEes (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 00:34:48 -0400
+X-IronPort-AV: E=Sophos;i="4.42,288,1243814400"; 
+   d="scan'208";a="180174324"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
+References: <1245760130.3776.6.camel@localhost.localdomain>
+	<20090623195656.GC8777@elte.hu>
+	<1245876060.3038.7.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0906242253270.2767@localhost.localdomain>
+	<1245904175.3022.4.camel@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 24 Jun 2009 21:34:50 -0700
+In-Reply-To: <1245904175.3022.4.camel@localhost.localdomain> (Jaswinder Singh
+	Rajput's message of "Thu, 25 Jun 2009 09:59:35 +0530")
+Message-ID: <ada7hz1lymt.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245576665.16880.24.camel@pasglop>
-User-Agent: Mutt/1.5.9i
+X-OriginalArrivalTime: 25 Jun 2009 04:34:50.0345 (UTC) FILETIME=[46F47590:01C9F54E]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 21, 2009 at 07:31:05PM +1000, Benjamin Herrenschmidt wrote:
-> 
-> > > Right, that might be something to look into, though we haven't yet
-> > > applied the technique for suspend & resume. My main issue with it at the
-> > > moment is how do I synchronize with allocations that are already
-> > > sleeping when changing the gfp flag mask without bloating the normal
-> > 
-> > Well, but the problem already exists, no? If someone is already
-> > sleeping due to __GFP_WAIT, he'll probably sleep till the resume.
-> 
-> Yes. In fact, without the masking, a driver that hasn't been suspended
-> yet could well start sleeping in GFP_KERNEL after the disk driver has
-> suspended. It may do so while holding a mutex or similar, which might
-> deadlock its own suspend() callback. It's not something that drivers can
-> trivially address by having a pre-suspend hook, and avoid allocations,
-> since allocations may be done by subsystems on behalf of the driver or
-> such. It's a can of worms, which is why I believe the only sane approach
-> is to stop allocators from doing IOs once we start suspend.
 
-Maybe so. Masking off __GFP_WAIT up in slab and page allocator
-isn't really needed though (or necessarily a good idea to throw
-out that information far from where it is used).
+ >   L1-data-Cache-Load-Reference                  [Hardware cache event]
+ >   L1-instruction-Cache-Load-Reference           [Hardware cache event]
 
-Checking for suspend active and avoiding writeout from reclaim
-for example might be a better idea.
+obvious place to start is to change "data-Cache" and "instruction-Cache"
+to "dcache" and "icache" which are still easy to figure out without
+needing to look anything up.  And "Reference" can become "ref" with
+minimal loss of clarity too.  So we could get down to
 
- 
-> So yes, just applying the mask would help, but wouldn't completely fix
-> it unless we also find a way to synchronize.
+    L1-icache-load
+    L1-icache-load-miss
+    L1-icache-store-miss
+    L1-icache-prefetch
+    L1-icache-prefetch-miss
 
-You could potentially use srcu or something like that in page
-reclaim in order to have a way to be able to kick everyone
-out. page reclaim entry/exit from the page allocator isn't such
-a fastpath though, so even a simple mutex or something may be
-possible.
+and so on.
 
+ >   Data-TLB-Cache-Load-Reference                 [Hardware cache event]
+
+Could become
+
+    dTLB-load
+    dTLB-load-miss
+    iTLB-load
+
+etc.
