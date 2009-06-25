@@ -1,214 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZFYKYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZFYKZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754367AbZFYKYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZFYKYK
+	id S1753646AbZFYKZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZFYKZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:24:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64388 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160AbZFYKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:24:09 -0400
-Message-ID: <4A435038.60406@cn.fujitsu.com>
-Date: Thu, 25 Jun 2009 18:23:52 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 25 Jun 2009 06:25:06 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:48818 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160AbZFYKZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 06:25:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=lN/+iUT0pd4N3CietQEZEPr4xbkin/IDozXXR0AW2C61xQBoEZIua8NktlycNWdmGA
+         q6vnh9dhHm1CayulMxbgtS2LByZM/GMbMkGxWir5yURLq1+P4nWYwhYMYzrALAzbDA9K
+         A8FIPCs/6rnNWCEAqVKxEa5LAZ9YCe8yerZRg=
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>, Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: [PATCH] io-controller: do some changes of io.policy interface
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>	 <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
-In-Reply-To: <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Date: Thu, 25 Jun 2009 12:25:05 +0200
+Message-ID: <5a4c581d0906250325q1dd9ca67na9a8c7ecbffe4897@mail.gmail.com>
+Subject: [2.6.31-rc1] oops in acpi_get_pci_dev
+From: Alessandro Suardi <alessandro.suardi@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
->> You can use the following format to play with the new interface.
->> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
->> weight=0 means removing the policy for DEV.
->>
->> Examples:
->> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
->> # echo /dev/hdb:300:2 > io.policy
->> # cat io.policy
->> dev weight class
->> /dev/hdb 300 2
-> 
-> I think that the read and write should be consistent. Can you just use
-> white-space separation for both, rather than colon-separation for
-> writes and white-space separation for reads?
-> 
-> Also, storing device inode paths statically as strings into the
-> io_policy structure seems wrong, since it's quite possible for the
-> device node that was used originally to be gone by the time that
-> someone reads the io.policy file, or renamed, or even replaced with an
-> inode that refers to to a different block device
-> 
-> My preferred alternatives would be:
-> 
-> - read/write the value as a device number rather than a name
-> - read/write the block device's actual name (e.g. hda or sda) rather
-> than a path to the inode
-> 
+On boot:
 
-Hi Paul, Vivek
+[snip]
 
-Here is a patch to fix the issue Paul raised.
-
-This patch achives the following goals
-1 According to Paul's comment, Modifing io.policy interface to
-  use device number for read/write directly. 
-2 Just use white-space separation for both, rather than colon-
-  separation for writes and white-space separation for reads.
-3 Do more strict checking for inputting.
-
-old interface:
-Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-# echo "/dev/hdb:300:2" > io.policy
-# cat io.policy
-dev weight class
-/dev/hdb 300 2
-
-new interface:
-Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-# echo "3:64 300 2" > io.policy
-# cat io.policy
-dev     weight  class
-3:64    300     2
-
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |   59 ++++++++++++++++++++++++++++++++++----------------
- block/elevator-fq.h |    1 -
- 2 files changed, 40 insertions(+), 20 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index d779282..83c831b 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1895,12 +1895,12 @@ static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
- 	if (list_empty(&iocg->policy_list))
- 		goto out;
- 
--	seq_printf(m, "dev weight class\n");
-+	seq_printf(m, "dev\tweight\tclass\n");
- 
- 	spin_lock_irq(&iocg->lock);
- 	list_for_each_entry(pn, &iocg->policy_list, node) {
--		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
--			   pn->weight, pn->ioprio_class);
-+		seq_printf(m, "%u:%u\t%lu\t%lu\n", MAJOR(pn->dev),
-+			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
- 	}
- 	spin_unlock_irq(&iocg->lock);
- out:
-@@ -1936,44 +1936,65 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
- 	return NULL;
- }
- 
--static int devname_to_devnum(const char *buf, dev_t *dev)
-+static int check_dev_num(dev_t dev)
- {
--	struct block_device *bdev;
-+	int part = 0;
- 	struct gendisk *disk;
--	int part;
- 
--	bdev = lookup_bdev(buf);
--	if (IS_ERR(bdev))
-+	disk = get_gendisk(dev, &part);
-+	if (!disk || part)
- 		return -ENODEV;
- 
--	disk = get_gendisk(bdev->bd_dev, &part);
--	if (part)
--		return -EINVAL;
--
--	*dev = MKDEV(disk->major, disk->first_minor);
--	bdput(bdev);
--
- 	return 0;
- }
- 
- static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
- {
--	char *s[3], *p;
-+	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
- 	int ret;
-+	unsigned long major, minor;
- 	int i = 0;
-+	dev_t dev;
- 
- 	memset(s, 0, sizeof(s));
--	while ((p = strsep(&buf, ":")) != NULL) {
-+	while ((p = strsep(&buf, " ")) != NULL) {
- 		if (!*p)
- 			continue;
- 		s[i++] = p;
-+
-+		/* Prevent from inputing too many things */
-+		if (i == 4)
-+			break;
- 	}
- 
--	ret = devname_to_devnum(s[0], &newpn->dev);
-+	if (i != 3)
-+		return -EINVAL;
-+
-+	p = strsep(&s[0], ":");
-+	if (p != NULL)
-+		major_s = p;
-+	else
-+		return -EINVAL;
-+
-+	minor_s = s[0];
-+	if (!minor_s)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(major_s, 10, &major);
-+	if (ret)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(minor_s, 10, &minor);
-+	if (ret)
-+		return -EINVAL;
-+
-+	dev = MKDEV(major, minor);
-+
-+	ret = check_dev_num(dev);
- 	if (ret)
- 		return ret;
- 
--	strcpy(newpn->dev_name, s[0]);
-+	newpn->dev = dev;
- 
- 	if (s[1] == NULL)
- 		return -EINVAL;
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index b3193f8..7722ebe 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -286,7 +286,6 @@ struct io_group {
- 
- struct io_policy_node {
- 	struct list_head node;
--	char dev_name[32];
- 	dev_t dev;
- 	unsigned long weight;
- 	unsigned long ioprio_class;
--- 
-1.5.4.rc3
+kernel: ricoh-mmc: Controller is now disabled.
+kernel: firewire_ohci 0000:03:01.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+kernel: BUG: unable to handle kernel NULL pointer dereference at
+0000000000000018
+kernel: IP: [<ffffffff8121b556>] acpi_get_pci_dev+0x113/0x179
+kernel: PGD 11b0f1067 PUD 11b0e5067 PMD 0
+kernel: Oops: 0000 [#1] SMP
+kernel: last sysfs file: /sys/devices/virtual/misc/rfkill/dev
+kernel: CPU 0
+kernel: Modules linked in: dell_laptop(+) snd firewire_ohci(+)
+ricoh_mmc firewire_core soundcore sdhci_pci snd_page_alloc rfkill
+i2c_i801 sdhci pcspkr mmc_core joydev dcdbas i2c_core video output
+crc_itu_t battery ac [last unloaded: scsi_wait_scan]
+kernel: Pid: 1258, comm: modprobe Not tainted 2.6.31-rc1 #1 Latitude
+E6400
+kernel: RIP: 0010:[<ffffffff8121b556>]  [<ffffffff8121b556>]
+acpi_get_pci_dev+0x113/0x179
+kernel: RSP: 0018:ffff88011b0f3bf8  EFLAGS: 00010287
+kernel: RAX: 0000000000000000 RBX: 0000000000000000 RCX: 00000000824bb959
+kernel: RDX: 0000000000000000 RSI: 0000000000000246 RDI: ffffffff815a0f74
+kernel: RBP: ffff88011b0f3c68 R08: ffff88011b7396f0 R09: 0000000000000000
+kernel: R10: 0000000000000052 R11: ffff88011b176338 R12: ffff88011b427560
+kernel: R13: ffff88011f9a4000 R14: ffff88011f814d60 R15: ffff88011f814d20
+kernel: FS:  00007f715ffc06f0(0000) GS:ffff88002801f000(0000)
+knlGS:0000000000000000
+kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+kernel: CR2: 0000000000000018 CR3: 000000011b0e6000 CR4: 00000000000006f0
+kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+kernel: Process modprobe (pid: 1258, threadinfo ffff88011b0f2000, task
+ffff88011b7396f0)
+kernel: Stack:
+kernel: ffff88011b0f3c38 ffff88011b0f3c08 ffff88011b427560 ffff88011b427e60
+kernel: <0> ffff88011b0f3c68 ffff88011f812020 0000000000010000 00000000824bb959
+kernel: <0> ffff88011b0f3c68 ffff88011f814d60 ffff88011b0f3de8 ffff88011f814d20
+kernel: Call Trace:
+kernel: [<ffffffff8121ef98>] find_video+0x62/0xa2
+kernel: [<ffffffff81233240>] acpi_ns_walk_namespace+0xc4/0x14d
+kernel: [<ffffffff8121ef36>] ? find_video+0x0/0xa2
+kernel: [<ffffffff8121ef36>] ? find_video+0x0/0xa2
+kernel: [<ffffffff81230b0a>] acpi_walk_namespace+0x82/0xd0
+kernel: [<ffffffff8121ecdd>] acpi_video_get_capabilities+0x61/0xe2
+kernel: [<ffffffffa000a060>] ? dell_send_request+0x60/0x82 [dell_laptop]
+kernel: [<ffffffff8121ede9>] acpi_video_backlight_support+0x27/0x64
+kernel: [<ffffffffa001c1db>] dell_init+0x1db/0x329 [dell_laptop]
+kernel: [<ffffffff811d9db9>] ? __up_read+0x9c/0xbb
+kernel: [<ffffffffa001c000>] ? dell_init+0x0/0x329 [dell_laptop]
+kernel: [<ffffffff81009092>] do_one_initcall+0x65/0x153
+kernel: [<ffffffff8106cf69>] ? __blocking_notifier_call_chain+0x63/0x83
+kernel: [<ffffffff8107ed7e>] sys_init_module+0xe0/0x22e
+kernel: [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
+kernel: Code: 75 4a 48 8b 45 c0 4c 89 ef 48 89 c6 83 e0 07 48 c1 ee 10
+c1 e6 03 81 e6 f8 00 00 00 09 c6 e8 29 3e fd ff 4d 39 f7 48 89 c3 74
+21 <4c> 8b 68 18 48 89 c7 e8 d0 34 fd ff 4d 8b 24 24 49 8b 04 24 4c
+kernel: RIP  [<ffffffff8121b556>] acpi_get_pci_dev+0x113/0x179
+kernel: RSP <ffff88011b0f3bf8>
+kernel: CR2: 0000000000000018
+kernel: ---[ end trace 96ab648bd362f7da ]---
 
 
+Dell Latitude E6400 x86_64 SMP with Fedora 11 userspace.
+
+Box continues working after Oops, but locks up when exiting X session.
+
+2.6.30-git22 works fine (probably because acpi_get_pci_dev is
+introduced in -rc1)
+
+
+Thanks,
+
+--alessandro
+
+ "And if a God will lay to rest anywhere we want to go
+  In your house I long to be, room by room, patiently"
+
+   (Audioslave, "Like A Stone")
