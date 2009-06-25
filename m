@@ -1,81 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZFYU4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZFYVDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZFYU4g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 16:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZFYU42
+	id S1754442AbZFYVDZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 17:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZFYVDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 16:56:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:33824 "EHLO mga02.intel.com"
+	Thu, 25 Jun 2009 17:03:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53968 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751839AbZFYU41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 16:56:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,292,1243839600"; 
-   d="scan'208";a="527871289"
-Subject: Re: [patch 2/3] cpufreq: Define dbs_mutex purpose and cleanup its
- usage
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Renninger <trenn@suse.de>
-In-Reply-To: <20090625194648.GA24657@Krystal>
-References: <20090625183354.491259000@intel.com>
-	 <20090625183601.493904000@intel.com>  <20090625194648.GA24657@Krystal>
+	id S1751225AbZFYVDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 17:03:16 -0400
+Subject: [PATCH -tip] perf_counter tools: add support to set of multiple
+ events in one short
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Thu, 25 Jun 2009 13:54:45 -0700
-Message-Id: <1245963285.4534.20542.camel@localhost.localdomain>
+Date: Fri, 26 Jun 2009 02:32:44 +0530
+Message-Id: <1245963764.10962.2.camel@hpdv5.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 12:46 -0700, Mathieu Desnoyers wrote:
-> * venkatesh.pallipadi@intel.com (venkatesh.pallipadi@intel.com) wrote:
-> > Commit b14893a62c73af0eca414cfed505b8c09efc613c although it was very
-> > much needed to cleanup ondemand timer cleanly, openup a can of worms
-> > related to locking dependencies in cpufreq.
-> > 
-> > Patch here defines the need for dbs_mutex and cleans up its usage in
-> > ondemand governor. This also resolves the lockdep warnings reported here
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/01925.html
-> > 
 
-> > @@ -598,14 +593,16 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> >  				max(min_sampling_rate,
-> >  				    latency * LATENCY_MULTIPLIER);
-> >  		}
-> > +		mutex_unlock(&dbs_mutex);
-> > +
-> >  		dbs_timer_init(this_dbs_info);
-> >  
-> > -		mutex_unlock(&dbs_mutex);
-> >  		break;
-> >  
-> >  	case CPUFREQ_GOV_STOP:
-> > -		mutex_lock(&dbs_mutex);
-> >  		dbs_timer_exit(this_dbs_info);
-> 
-> Hrm, so.. how do we protect against concurrent :
-> 
-> CPUFREQ_GOV_START/CPUFREQ_GOV_STOP now ?
+Add support for HARDWARE and SOFTWARE events :
+ perf stat -e all-sw-events
+ perf stat -e sw-events
+ perf stat -e all-hw-events
+ perf stat -e hw-events
 
-concurrent _START _STOP across CPUs does not matter for timer_init and
-timer_exit. On same CPU, there cannot be two concurrent _START as upper
-level cpufreq will have policy_rwsem in write mode. I cannot think of a
-flow where _START and _STOP on same CPU is possible.
+On AMD box :
 
-However two concurrent _STOP for same CPU is still possible, as we are
-releasing the rwsem lock before STOP callback. "Back to drawing board"
-time to figure this all out..
+./perf stat -e hw-events -e all-sw-events -- ls -lR > /dev/null
 
-Thanks,
-Venki
+ Performance counter stats for 'ls -lR':
+
+        9977353  cycles               #    557.193 M/sec  (scaled from 21.81%)
+        4244800  instructions         #      0.425 IPC    (scaled from 27.51%)
+        2953188  cache-references     #    164.923 M/sec  (scaled from 89.10%)
+          72469  cache-misses         #      4.047 M/sec  (scaled from 89.13%)
+         775760  branches             #     43.323 M/sec  (scaled from 89.10%)
+          57814  branch-misses        #      3.229 M/sec  (scaled from 83.34%)
+  <not counted>  bus-cycles
+      17.970985  cpu-clock-msecs
+      17.906460  task-clock-msecs     #      0.955 CPUs
+            386  page-faults          #      0.022 M/sec
+            386  minor-faults         #      0.022 M/sec
+              0  major-faults         #      0.000 M/sec
+              4  context-switches     #      0.000 M/sec
+              1  CPU-migrations       #      0.000 M/sec
+
+    0.018750671  seconds time elapsed.
+
+Reported-by : Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ tools/perf/util/parse-events.c |   66 ++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 64 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 430f060..85d8021 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -40,6 +40,16 @@ static struct event_symbol event_symbols[] = {
+   { CSW(CPU_MIGRATIONS),	"cpu-migrations",	"migrations"	},
+ };
+ 
++struct event_type_symbol {
++	char	*symbol;
++	char	*alias;
++};
++
++static struct event_type_symbol event_type_symbols[] = {
++ [PERF_TYPE_HARDWARE] = { "hw-events",		"all-hw-events",	},
++ [PERF_TYPE_SOFTWARE] = { "sw-events",		"all-sw-events",	},
++};
++
+ #define __PERF_COUNTER_FIELD(config, name) \
+ 	((config & PERF_COUNTER_##name##_MASK) >> PERF_COUNTER_##name##_SHIFT)
+ 
+@@ -237,6 +247,49 @@ parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
+ 	return 0;
+ }
+ 
++static int set_multiple_events(unsigned int type)
++{
++	struct perf_counter_attr attr;
++	int i;
++
++	switch (type) {
++	case PERF_TYPE_HARDWARE:
++	case PERF_TYPE_SOFTWARE:
++		for (i = 0; i < ARRAY_SIZE(event_symbols); i++) {
++			if (event_symbols[i].type == type) {
++				memset(&attr, 0, sizeof(attr));
++				attr.type = event_symbols[i].type;
++				attr.config = event_symbols[i].config;
++				attrs[nr_counters] = attr;
++				nr_counters++;
++			}
++		}
++
++		break;
++	default:
++		return -1;
++	}
++
++	/*
++	 * parse_events() is assuming that only single event will be set,
++	 * but we are setting multiple events so we need to return magical 1
++	 */
++	return 1;
++}
++
++static int check_type_events(const char *str, unsigned int i)
++{
++	if (!strncmp(str, event_type_symbols[i].symbol,
++		     strlen(event_type_symbols[i].symbol)))
++		return 1;
++
++	if (strlen(event_type_symbols[i].alias))
++		if (!strncmp(str, event_type_symbols[i].alias,
++			     strlen(event_type_symbols[i].alias)))
++			return 1;
++	return 0;
++}
++
+ static int check_events(const char *str, unsigned int i)
+ {
+ 	if (!strncmp(str, event_symbols[i].symbol,
+@@ -288,6 +341,12 @@ static int parse_event_symbols(const char *str, struct perf_counter_attr *attr)
+ 		return 0;
+ 	}
+ 
++	for (i = 0; i < ARRAY_SIZE(event_type_symbols); i++) {
++		if (check_type_events(str, i)) {
++			return set_multiple_events(i);
++		}
++	}
++
+ 	for (i = 0; i < ARRAY_SIZE(event_symbols); i++) {
+ 		if (check_events(str, i)) {
+ 			attr->type = event_symbols[i].type;
+@@ -314,8 +373,11 @@ again:
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	attrs[nr_counters] = attr;
+-	nr_counters++;
++	/* No need to set attrs and increment counter when already set */
++	if (ret == 0) {
++		attrs[nr_counters] = attr;
++		nr_counters++;
++	}
+ 
+ 	str = strstr(str, ",");
+ 	if (str) {
+-- 
+1.6.0.6
+
+
 
