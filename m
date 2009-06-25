@@ -1,162 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZFYJRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZFYJRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbZFYJRP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 05:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZFYJRI
+	id S1753926AbZFYJRb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 05:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZFYJRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 05:17:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57994 "EHLO hera.kernel.org"
+	Thu, 25 Jun 2009 05:17:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57998 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751561AbZFYJRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 05:17:06 -0400
-Date: Thu, 25 Jun 2009 09:16:35 GMT
-From: tip-bot for Kurt Garloff <garloff@suse.de>
+	id S1751036AbZFYJRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 05:17:21 -0400
+Date: Thu, 25 Jun 2009 09:16:22 GMT
+From: tip-bot for Paul Mundt <lethal@linux-sh.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gregkh@suse.de, tglx@linutronix.de, robertangelino@gmail.com,
-       garloff@suse.de, mingo@elte.hu
+       rostedt@goodmis.org, jcm@jonmasters.org, lethal@linux-sh.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gregkh@suse.de, tglx@linutronix.de, robertangelino@gmail.com,
-       garloff@suse.de, mingo@elte.hu
-In-Reply-To: <20090624213211.GA11291@kroah.com>
-References: <20090624213211.GA11291@kroah.com>
-Subject: [tip:x86/urgent] x86: Add sysctl to allow panic on IOCK NMI error
-Message-ID: <tip-246982af230e52c0d83701b292790a0283362c9a@git.kernel.org>
-Git-Commit-ID: 246982af230e52c0d83701b292790a0283362c9a
+       rostedt@goodmis.org, jcm@jonmasters.org, tglx@linutronix.de,
+       lethal@linux-sh.org, mingo@elte.hu
+In-Reply-To: <20090625053012.GB19944@linux-sh.org>
+References: <20090625053012.GB19944@linux-sh.org>
+Subject: [tip:tracing/urgent] ring-buffer: Make it generally available
+Message-ID: <tip-1155de47cd66d0c496d5a6fb2223e980ef1285b2@git.kernel.org>
+Git-Commit-ID: 1155de47cd66d0c496d5a6fb2223e980ef1285b2
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 09:16:36 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 09:16:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  246982af230e52c0d83701b292790a0283362c9a
-Gitweb:     http://git.kernel.org/tip/246982af230e52c0d83701b292790a0283362c9a
-Author:     Kurt Garloff <garloff@suse.de>
-AuthorDate: Wed, 24 Jun 2009 14:32:11 -0700
+Commit-ID:  1155de47cd66d0c496d5a6fb2223e980ef1285b2
+Gitweb:     http://git.kernel.org/tip/1155de47cd66d0c496d5a6fb2223e980ef1285b2
+Author:     Paul Mundt <lethal@linux-sh.org>
+AuthorDate: Thu, 25 Jun 2009 14:30:12 +0900
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Jun 2009 11:13:02 +0200
+CommitDate: Thu, 25 Jun 2009 10:31:30 +0200
 
-x86: Add sysctl to allow panic on IOCK NMI error
+ring-buffer: Make it generally available
 
-This patch introduces a new sysctl:
+In hunting down the cause for the hwlat_detector ring buffer spew in
+my failed -next builds it became obvious that folks are now treating
+ring_buffer as something that is generic independent of tracing and thus,
+suitable for public driver consumption.
 
-    /proc/sys/kernel/panic_on_io_nmi
+Given that there are only a few minor areas in ring_buffer that have any
+reliance on CONFIG_TRACING or CONFIG_FUNCTION_TRACER, provide stubs for
+those and make it generally available.
 
-which defaults to 0 (off).
-
-When enabled, the kernel panics when the kernel receives an NMI
-caused by an IO error.
-
-The IO error triggered NMI indicates a serious system
-condition, which could result in IO data corruption. Rather
-than contiuing, panicing and dumping might be a better choice,
-so one can figure out what's causing the IO error.
-
-This could be especially important to companies running IO
-intensive applications where corruption must be avoided, e.g. a
-bank's databases.
-
-[ SuSE has been shipping it for a while, it was done at the
-  request of a large database vendor, for their users. ]
-
-Signed-off-by: Kurt Garloff <garloff@suse.de>
-Signed-off-by: Roberto Angelino <robertangelino@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Kurt Garloff <garloff@suse.de>
-LKML-Reference: <20090624213211.GA11291@kroah.com>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Cc: Jon Masters <jcm@jonmasters.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20090625053012.GB19944@linux-sh.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/dumpstack.c |    1 +
- arch/x86/kernel/traps.c     |    3 +++
- include/linux/kernel.h      |    1 +
- include/linux/sysctl.h      |    1 +
- kernel/sysctl.c             |    8 ++++++++
- kernel/sysctl_check.c       |    1 +
- 6 files changed, 15 insertions(+), 0 deletions(-)
+ kernel/Makefile            |    1 +
+ kernel/trace/ring_buffer.c |   11 +++++++++++
+ kernel/trace/trace.h       |    7 +++++++
+ 3 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
-index 95ea5fa..c840571 100644
---- a/arch/x86/kernel/dumpstack.c
-+++ b/arch/x86/kernel/dumpstack.c
-@@ -22,6 +22,7 @@
- #include "dumpstack.h"
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 0a32cb2..0630e29 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -96,6 +96,7 @@ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace/
+ obj-$(CONFIG_TRACING) += trace/
+ obj-$(CONFIG_X86_DS) += trace/
++obj-$(CONFIG_RING_BUFFER) += trace/
+ obj-$(CONFIG_SMP) += sched_cpupri.o
+ obj-$(CONFIG_SLOW_WORK) += slow-work.o
+ obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 04dac26..bf27bb7 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1563,6 +1563,8 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
+ 	return NULL;
+ }
  
- int panic_on_unrecovered_nmi;
-+int panic_on_io_nmi;
- unsigned int code_bytes = 64;
- int kstack_depth_to_print = 3 * STACKSLOTS_PER_LINE;
- static int die_counter;
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index a0f48f5..5204332 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -346,6 +346,9 @@ io_check_error(unsigned char reason, struct pt_regs *regs)
- 	printk(KERN_EMERG "NMI: IOCK error (debug interrupt?)\n");
- 	show_registers(regs);
- 
-+	if (panic_on_io_nmi)
-+		panic("NMI IOCK error: Not continuing");
++#ifdef CONFIG_TRACING
 +
- 	/* Re-enable the IOCK line, wait for a few seconds */
- 	reason = (reason & 0xf) | 8;
- 	outb(reason, 0x61);
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index fac104e..d6320a3 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -303,6 +303,7 @@ extern int oops_in_progress;		/* If set, an oops, panic(), BUG() or die() is in
- extern int panic_timeout;
- extern int panic_on_oops;
- extern int panic_on_unrecovered_nmi;
-+extern int panic_on_io_nmi;
- extern const char *print_tainted(void);
- extern void add_taint(unsigned flag);
- extern int test_taint(unsigned flag);
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index e76d3b2..56766b9 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -163,6 +163,7 @@ enum
- 	KERN_MAX_LOCK_DEPTH=74,
- 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
- 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
-+	KERN_PANIC_ON_IO_NMI=77, /* int: whether we will panic on an io NMI */
- };
+ #define TRACE_RECURSIVE_DEPTH 16
  
+ static int trace_recursive_lock(void)
+@@ -1593,6 +1595,13 @@ static void trace_recursive_unlock(void)
+ 	current->trace_recursion--;
+ }
  
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 62e4ff9..d44e8c3 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -744,6 +744,14 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- 	{
-+		.ctl_name	= KERN_PANIC_ON_IO_NMI,
-+		.procname	= "panic_on_io_nmi",
-+		.data		= &panic_on_io_nmi,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= KERN_BOOTLOADER_TYPE,
- 		.procname	= "bootloader_type",
- 		.data		= &bootloader_type,
-diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-index b38423c..e1d8e0f 100644
---- a/kernel/sysctl_check.c
-+++ b/kernel/sysctl_check.c
-@@ -104,6 +104,7 @@ static const struct trans_ctl_table trans_kern_table[] = {
- 	{ KERN_MAX_LOCK_DEPTH,		"max_lock_depth" },
- 	{ KERN_NMI_WATCHDOG,		"nmi_watchdog" },
- 	{ KERN_PANIC_ON_NMI,		"panic_on_unrecovered_nmi" },
-+	{ KERN_PANIC_ON_IO_NMI,		"panic_on_io_nmi" },
- 	{}
- };
++#else
++
++#define trace_recursive_lock()		(0)
++#define trace_recursive_unlock()	do { } while (0)
++
++#endif
++
+ static DEFINE_PER_CPU(int, rb_need_resched);
  
+ /**
+@@ -3104,6 +3113,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ }
+ EXPORT_SYMBOL_GPL(ring_buffer_read_page);
+ 
++#ifdef CONFIG_TRACING
+ static ssize_t
+ rb_simple_read(struct file *filp, char __user *ubuf,
+ 	       size_t cnt, loff_t *ppos)
+@@ -3171,6 +3181,7 @@ static __init int rb_init_debugfs(void)
+ }
+ 
+ fs_initcall(rb_init_debugfs);
++#endif
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ static int rb_cpu_notify(struct notifier_block *self,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 6e735d4..3548ae5 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -597,6 +597,7 @@ print_graph_function(struct trace_iterator *iter)
+ 
+ extern struct pid *ftrace_pid_trace;
+ 
++#ifdef CONFIG_FUNCTION_TRACER
+ static inline int ftrace_trace_task(struct task_struct *task)
+ {
+ 	if (!ftrace_pid_trace)
+@@ -604,6 +605,12 @@ static inline int ftrace_trace_task(struct task_struct *task)
+ 
+ 	return test_tsk_trace_trace(task);
+ }
++#else
++static inline int ftrace_trace_task(struct task_struct *task)
++{
++	return 1;
++}
++#endif
+ 
+ /*
+  * trace_iterator_flags is an enumeration that defines bit
