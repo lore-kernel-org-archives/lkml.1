@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZFYJEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbZFYJE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061AbZFYJEK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 05:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZFYJD5
+	id S1759834AbZFYJE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 05:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZFYJER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 05:03:57 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:58694 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751486AbZFYJD4 (ORCPT
+	Thu, 25 Jun 2009 05:04:17 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:39901 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759552AbZFYJEP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 05:03:56 -0400
-Message-ID: <4A433D7C.20002@shipmail.org>
-Date: Thu, 25 Jun 2009 11:03:56 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 25 Jun 2009 05:04:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=UbnjR42eJz1VcznbdTok8mfa85JnCk4b7SQrjDk/kBJ9phsMnS5/25FRtdXbwvrLfT
+         lZqDH+aCez81wp0Lx9/H0dX2aXUYHpMRz26SVI53cJJiqSyyfH2DmpMzsndlYNaenlQw
+         Mt+3BlUTwreHGX9+FSCMfERdSgDew8W3sAJno=
+From: Florian Fainelli <florian@openwrt.org>
+To: Mike Rapoport <mike@compulab.co.il>
+Subject: Re: Status of bzip2 and lzma kernel compression for ARM?
+Date: Thu, 25 Jun 2009 11:04:01 +0200
+User-Agent: KMail/1.9.9
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       Alain Knaff <alain@knaff.lu>,
+       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-embedded mailing list <linux-embedded@vger.kernel.org>
+References: <4A428AFF.20307@free-electrons.com> <4A433BCD.2030506@compulab.co.il>
+In-Reply-To: <4A433BCD.2030506@compulab.co.il>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Jerome Glisse <glisse@freedesktop.org>, Nick Piggin <npiggin@suse.de>,
-       Jerome Glisse <jglisse@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [PATCH] radeon: preallocate memory for command stream parsing
-References: <1245786367-2773-1-git-send-email-jglisse@redhat.com>	<84144f020906231252u5131ffbdk74f06f8a0f692cf9@mail.gmail.com>	<1245832141.2408.4.camel@localhost> <1245913447.2018.18.camel@penberg-laptop>
-In-Reply-To: <1245913447.2018.18.camel@penberg-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906251104.02830.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg skrev:
-> Hi Jerome,
+Hi Michael, Mike
+
+Le Thursday 25 June 2009 10:56:45 Mike Rapoport, vous avez écrit :
+> Hi Michael,
 >
-> On Tue, 2009-06-23 at 22:52 +0300, Pekka Enberg wrote:
->   
->>> On Tue, Jun 23, 2009 at 10:46 PM, Jerome Glisse<jglisse@redhat.com> wrote:
->>>       
->>>> Command stream parsing is the most common operation and can
->>>> happen hundred of times per second, we don't want to allocate/free
->>>> memory each time this ioctl is call. This rework the ioctl
->>>> to avoid doing so by allocating temporary memory along the
->>>> ib pool.
->>>>
->>>> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
->>>>         
->>> So how much does this help (i.e. where are the numbers)? I am bit
->>> surprised "hundred of times per second" is an issue for our slab
->>> allocators. Hmm?
->>>       
+> Michael Opdenacker wrote:
+> > Hi Alain,
+> >
+> > I would like to test bzip2 and lzma compression on ARM.
+> >
+> > Would you mind telling me what the status of your patches on ARM is, now
+> > that the x86  and architecture independent code has been merged? Have
+> > you or has anyone already updated them for 2.6.30, or shall I update
+> > them by myself?
 >
-> On Wed, 2009-06-24 at 10:29 +0200, Jerome Glisse wrote:
->   
->> I didn't have real number but the vmap path was really slower,
->> quake3 fps goes from ~20 to ~40 on average when going from vmap
->> to preallocated. When using kmalloc i don't thing there was so
->> much performance hit. But i think the biggest hit was that in
->> previous code i asked for zeroed memory so i am pretty sure kernel
->> spend a bit of time clearing page. I reworked the code to avoid
->> needing cleared memory and so avoid memset, this is likely why
->> we get a performance boost.
->>     
->
-> OK. If kmalloc() (without memset) really was too slow for your case, I'd
-> be interested in looking at it in more detail. I'm not completely
-> convinced the memory pool is needed here but I'm not a DRM expert so I'm
-> not NAK'ing this either...
->
-> 			Pekka
->
->   
-Hi!
- From previous experience with other drivers kmalloc() is just fine 
-performance-wise.
-I've also never seen memsetting pages turn up on the profile. It would 
-be interesting to see an oprofile timing of this to try and pinpoint 
-what's happening.
+> I'm not sure what exactly do you mean by "test bzip2 and lzma compression
+> on ARM", but if you refer to internal initramfs compression, I can tell
+> that I've used lzma compression on PXA270 and it works fine.
 
-However, in this case, I believe Jerome was forced to use vmalloc to 
-guarantee that the allocation would succeed, and frequent vmallocs seem 
-to be a performance killer.
+I think Michael refers to the lzma decompressor which allows you to use a 
+lzma-compressed kernel as a (b)zImage with its architecture specific 
+decompressor piggy-backed in the (b)zImage.
 
-One should also be careful about frame-rates. Tuning memory manager / 
-command submission operation is usually a matter of how much CPU is 
-consumed for a given framerate. If one compares framerates one must make 
-sure that the CPU is at nearly 100% while benchmarking.
-
-/Thomas
-
-
-
-> ------------------------------------------------------------------------------
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
->   
-
+Such thing would also be very useful on MIPS and PowerPC as well.
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
