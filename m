@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbZFYRNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZFYRRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754947AbZFYRNl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 13:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZFYRNb
+	id S1753760AbZFYRRE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 13:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZFYRQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 13:13:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49342 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752452AbZFYRNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 13:13:30 -0400
-Message-ID: <4A43B060.30904@garzik.org>
-Date: Thu, 25 Jun 2009 13:14:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 25 Jun 2009 13:16:54 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:39432 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZFYRQx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 13:16:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KFOC2i8CJZ4ur/H7k/olIF7YIvLBbzuOmWnJDMcQP5gBGVjSGifUiPRgb3B48W55Kj
+         XOs/EAJt4ot9hjKub8uCRe1wu+RWZC2fIrAxYpO6zgkSHYiA2YCJpCugN2xNIytAWOwK
+         2Knux0taP5pS5aLTd3Mu88ZB0yQtneOU9WzXU=
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ion Badulescu <ionut@badula.org>, NetDev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: STARFIRE/DURALAN update
-References: <1245946630.395.37.camel@Joe-Laptop.home>
-In-Reply-To: <1245946630.395.37.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <4A438BA7.9010800@tuffmail.co.uk>
+References: <4A438BA7.9010800@tuffmail.co.uk>
+Date: Thu, 25 Jun 2009 19:16:53 +0200
+Message-ID: <8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
+Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index fa2a16d..218126a 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -5533,8 +5533,8 @@ F:	drivers/staging/
->  
->  STARFIRE/DURALAN NETWORK DRIVER
->  P:	Ion Badulescu
-> -M:	ionut@cs.columbia.edu
-> -S:	Maintained
-> +M:	ionut@badula.org
-> +S:	Odd Fixes
->  F:	drivers/net/starfire*
->  
->  STARMODE RADIO IP (STRIP) PROTOCOL DRIVER
+2009/6/25 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+> The synaptics touchpad on my EeePC 701 dies on hibernation.  2.6.30 was
+> fine, and it doesn't happen on suspend to ram either.  There are no
+> obvious error messages, but maybe this boot message is relevant:
+>
+> Platform driver 'i8042' needs updating, please use dev_pm_ops
+>
 
-This change needs a better explanation, and should be CC'd to netdev 
-since it relates to network drivers.
+Similar on s2disk, HP/Compaq notebook. Try reload psmouse module. I
+reported it, but nobody answer.
 
-	Jeff
-
-
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
