@@ -1,146 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbZFYFQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbZFYFRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759841AbZFYFQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbZFYFNu
+	id S1760098AbZFYFRA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758615AbZFYFOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:13:50 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1451 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZFYFNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:13:49 -0400
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Kevin Curtis <kevin.curtis@farsite.co.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>, netdev@vger.kernel.org
-Subject: [PATCH 10/19] drivers/net/wan: Use PCI_VDEVICE
-Date: Wed, 24 Jun 2009 22:13:26 -0700
-Message-Id: <f333b1dcffc974f1df83e8d005f61a710604b8b6.1245906152.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1245906151.git.joe@perches.com>
-References: <cover.1245906151.git.joe@perches.com>
+	Thu, 25 Jun 2009 01:14:00 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51139 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757992AbZFYFN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 01:13:58 -0400
+Date: Thu, 25 Jun 2009 07:13:59 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Kennedy <richard@rsk.demon.co.uk>, a.p.zijlstra@chello.nl,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Message-ID: <20090625051359.GB31415@kernel.dk>
+References: <1245839904.3210.85.camel@localhost.localdomain> <20090624152732.d6352f4f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624152732.d6352f4f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/net/wan/farsync.c   |   21 +++++++--------------
- drivers/net/wan/pc300_drv.c |   12 ++++++------
- drivers/net/wan/pc300too.c  |   12 ++++--------
- drivers/net/wan/wanxl.c     |    9 +++------
- 4 files changed, 20 insertions(+), 34 deletions(-)
+On Wed, Jun 24 2009, Andrew Morton wrote:
+> On Wed, 24 Jun 2009 11:38:24 +0100
+> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> 
+> > When writing to 2 (or more) devices at the same time, stop
+> > balance_dirty_pages moving dirty pages to writeback when it has reached
+> > the bdi threshold. This prevents balance_dirty_pages overshooting its
+> > limits and moving all dirty pages to writeback.     
+> > 
+> >     
+> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > ---
+> > balance_dirty_pages can overreact and move all of the dirty pages to
+> > writeback unnecessarily.
+> > 
+> > balance_dirty_pages makes its decision to throttle based on the number
+> > of dirty plus writeback pages that are over the calculated limit,so it
+> > will continue to move pages even when there are plenty of pages in
+> > writeback and less than the threshold still dirty.
+> > 
+> > This allows it to overshoot its limits and move all the dirty pages to
+> > writeback while waiting for the drives to catch up and empty the
+> > writeback list. 
+> > 
+> > A simple fio test easily demonstrates this problem.  
+> > 
+> > fio --name=f1 --directory=/disk1 --size=2G -rw=write
+> > 	--name=f2 --directory=/disk2 --size=1G --rw=write 		--startdelay=10
+> > 
+> > The attached graph before.png shows how all pages are moved to writeback
+> > as the second write starts and the throttling kicks in.
+> > 
+> > after.png is the same test with the patch applied, which clearly shows
+> > that it keeps dirty_background_ratio dirty pages in the buffer.
+> > The values and timings of the graphs are only approximate but are good
+> > enough to show the behaviour.  
+> > 
+> > This is the simplest fix I could find, but I'm not entirely sure that it
+> > alone will be enough for all cases. But it certainly is an improvement
+> > on my desktop machine writing to 2 disks.
+> > 
+> > Do we need something more for machines with large arrays where
+> > bdi_threshold * number_of_drives is greater than the dirty_ratio ?
+> > 
+> 
+> um.  Interesting find.  Jens, was any of your performance testing using
+> multiple devices?  If so, it looks like the results just got invalidated :)
 
-diff --git a/drivers/net/wan/farsync.c b/drivers/net/wan/farsync.c
-index 25c9ef6..8e9272a 100644
---- a/drivers/net/wan/farsync.c
-+++ b/drivers/net/wan/farsync.c
-@@ -528,26 +528,19 @@ static int fst_debug_mask = { FST_DEBUG };
-  *      PCI ID lookup table
-  */
- static struct pci_device_id fst_pci_dev_id[] __devinitdata = {
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T2P, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T2P},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T2P), FST_TYPE_T2P},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T4P, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T4P},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T4P), FST_TYPE_T4P},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T1U, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T1U},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T1U), FST_TYPE_T1U},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T2U, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T2U},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T2U), FST_TYPE_T2U},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_T4U, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_T4U},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_T4U), FST_TYPE_T4U},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_TE1, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_TE1},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_TE1), FST_TYPE_TE1},
- 
--	{PCI_VENDOR_ID_FARSITE, PCI_DEVICE_ID_FARSITE_TE1C, PCI_ANY_ID, 
--	 PCI_ANY_ID, 0, 0, FST_TYPE_TE1},
-+	{PCI_VDEVICE(FARSITE, PCI_DEVICE_ID_FARSITE_TE1C), FST_TYPE_TE1},
- 	{0,}			/* End */
- };
- 
-diff --git a/drivers/net/wan/pc300_drv.c b/drivers/net/wan/pc300_drv.c
-index 79dabc5..d035e8b 100644
---- a/drivers/net/wan/pc300_drv.c
-+++ b/drivers/net/wan/pc300_drv.c
-@@ -253,17 +253,17 @@ static char rcsid[] =
- 
- static struct pci_device_id cpc_pci_dev_id[] __devinitdata = {
- 	/* PC300/RSV or PC300/X21, 2 chan */
--	{0x120e, 0x300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x300},
-+	{PCI_VDEVICE(CYCLADES, 0x300), 0x300},
- 	/* PC300/RSV or PC300/X21, 1 chan */
--	{0x120e, 0x301, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x301},
-+	{PCI_VDEVICE(CYCLADES, 0x301), 0x301},
- 	/* PC300/TE, 2 chan */
--	{0x120e, 0x310, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x310},
-+	{PCI_VDEVICE(CYCLADES, 0x310), 0x310},
- 	/* PC300/TE, 1 chan */
--	{0x120e, 0x311, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x311},
-+	{PCI_VDEVICE(CYCLADES, 0x311), 0x311},
- 	/* PC300/TE-M, 2 chan */
--	{0x120e, 0x320, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x320},
-+	{PCI_VDEVICE(CYCLADES, 0x320), 0x320},
- 	/* PC300/TE-M, 1 chan */
--	{0x120e, 0x321, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0x321},
-+	{PCI_VDEVICE(CYCLADES, 0x321), 0x321},
- 	/* End of table */
- 	{0,},
- };
-diff --git a/drivers/net/wan/pc300too.c b/drivers/net/wan/pc300too.c
-index 60ece54..c57f168 100644
---- a/drivers/net/wan/pc300too.c
-+++ b/drivers/net/wan/pc300too.c
-@@ -482,14 +482,10 @@ static int __devinit pc300_pci_init_one(struct pci_dev *pdev,
- 
- 
- static struct pci_device_id pc300_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_RX_1, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_RX_2, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_TE_1, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_CYCLADES, PCI_DEVICE_ID_PC300_TE_2, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_RX_1), 0 },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_RX_2), 0 },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_TE_1), 0 },
-+	{ PCI_VDEVICE(CYCLADES, PCI_DEVICE_ID_PC300_TE_2), 0 },
- 	{ 0, }
- };
- 
-diff --git a/drivers/net/wan/wanxl.c b/drivers/net/wan/wanxl.c
-index e4ad7b6..3bde117 100644
---- a/drivers/net/wan/wanxl.c
-+++ b/drivers/net/wan/wanxl.c
-@@ -815,12 +815,9 @@ static int __devinit wanxl_pci_init_one(struct pci_dev *pdev,
- }
- 
- static struct pci_device_id wanxl_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL100, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL200, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
--	{ PCI_VENDOR_ID_SBE, PCI_DEVICE_ID_SBE_WANXL400, PCI_ANY_ID,
--	  PCI_ANY_ID, 0, 0, 0 },
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL100), 0 },
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL200), 0 },
-+	{ PCI_VDEVICE(SBE, PCI_DEVICE_ID_SBE_WANXL400), 0 },
- 	{ 0, }
- };
- 
+"invalidated" is a bit too much I think, skewed is more like it. But
+most of my testing has been on a single spindle, only the very first
+patches used 10 disks as a test base.
+
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index 7b0dcea..7687879 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -541,8 +541,11 @@ static void balance_dirty_pages(struct address_space *mapping)
+> >  		 * filesystems (i.e. NFS) in which data may have been
+> >  		 * written to the server's write cache, but has not yet
+> >  		 * been flushed to permanent storage.
+> > +		 * Only move pages to writeback if this bdi is over its
+> > +		 * threshold otherwise wait until the disk writes catch
+> > +		 * up.
+> >  		 */
+> > -		if (bdi_nr_reclaimable) {
+> > +		if (bdi_nr_reclaimable > bdi_thresh) {
+> >  			writeback_inodes(&wbc);
+> >  			pages_written += write_chunk - wbc.nr_to_write;
+> >  			get_dirty_limits(&background_thresh, &dirty_thresh,
+> 
+> yup, we need to think about the effect with zillions of disks.  Peter,
+> could you please take a look?
+> 
+> Also...  get_dirty_limits() is rather hard to grok.  The callers of
+> get_dirty_limits() treat its three return values as "thresholds", but
+> they're not named as thresholds within get_dirty_limits() itself, which
+> is a bit confusing.  And the meaning of each of those return values is
+> pretty obscure from the code - could we document them please?
+
+This is indeed a pretty interesting find!
+
 -- 
-1.6.3.1.10.g659a0.dirty
+Jens Axboe
 
