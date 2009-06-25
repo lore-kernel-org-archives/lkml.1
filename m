@@ -1,173 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbZFYD6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZFYD7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbZFYD6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 23:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZFYD6E
+	id S1754353AbZFYD7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 23:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZFYD7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 23:58:04 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44005 "EHLO mx1.suse.de"
+	Wed, 24 Jun 2009 23:59:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41129 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZFYD6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 23:58:01 -0400
-From: Neil Brown <neilb@suse.de>
-To: Mike Snitzer <snitzer@redhat.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, jens.axboe@oracle.com
-Date: Thu, 25 Jun 2009 13:58:31 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19010.62951.886231.96622@notabene.brown>
-Cc: dm-devel@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: REQUEST for new 'topology' metrics to be moved out of the 'queue' sysfs directory.
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1752044AbZFYD7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 23:59:10 -0400
+Date: Thu, 25 Jun 2009 13:59:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
+       jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+Message-Id: <20090625135901.a028512d.sfr@canb.auug.org.au>
+In-Reply-To: <4A3F4448.30502@panasas.com>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+	<4A3F4448.30502@panasas.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__25_Jun_2009_13_59_01_+1000_2hiOkjakO_iCy08C"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__25_Jun_2009_13_59_01_+1000_2hiOkjakO_iCy08C
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
- I have (belatedly, I admit) been looking at the new 'topology'
- metrics that were introduced for 2.6.31.
- I have a few questions about them which I have been discussing with
- Martin, but there is one issue that I feel fairly strongly about and
- would like to see changed before it gets into a -final release.
- Hence this email to try to garner understanding and consensus.
+Hi all,
 
- The various topology metrics are exposed to user-space through sysfs
- attributes in the 'queue' subdirectory of the block device
- (e.g. .../sda/queue).
- I think this is a poor choice and would like to find a better
- choice.
+I applied the following patch to yesterday's linux-next and the i386 uml
+defconfig build succeeded.
 
- To explain why, it probably helps to review the current situation.
- Before 2.6.30, 'queue' contains:
-   hw_sector_size	max_hw_sectors_kb  nr_requests	  rq_affinity
-   iosched/		max_sectors_kb	   read_ahead_kb  scheduler
-   iostats		nomerges	   rotational
+The last hunk of this patch (arch/um/include/asm/mmu_context.h) needs to
+be notified to Rusty Russell (cc'd) since that only applied after merging
+his tree.
 
- Of these:
+The rest appears to apply ok to Linus' tree.
 
-   max_hw_sectors_kb, nr_requests, rq_affinity, iosched/,
-   max_sectors_kb scheduler nomerges rotational
+Please split this and send it to the appropriate people and cc me.
 
- are really only relevant to the elevator code and those devices that
- used that code (ide, scsi, etc).
- They are not relevant for dm or md (md has it's own separate 'md'
- directory, and before 2.6.30, the '/queue' subdirectory did not even
- appear in dm or md devices).
+On Mon, 22 Jun 2009 11:43:52 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
+e:
+>
+> On 06/20/2009 03:55 AM, Paul Menage wrote:
+> > UML: Fix some apparent bitrot
+> >=20
+> > - migration of net_device methods into net_device_ops
+> > - dma_sync_single() changes
+> > - cpumask_clear() -> cpumask_clear_cpu()
+> >=20
+> > Signed-off-by: Paul Menage <menage@google.com>
+> >=20
+> > --
+> >=20
+> > Fixes the following compile errors:
+> >=20
+> > include/linux/dma-mapping.h:113: error: redefinition of 'dma_sync_singl=
+e'
+> > arch/um/include/asm/dma-mapping.h:84: error: previous definition of 'dm=
+a_sync_single' was here
+> > include/linux/dma-mapping.h: In function 'dma_sync_single':
+> > include/linux/dma-mapping.h:117: error: implicit declaration of functio=
+n 'dma_sync_single_for_cpu'
+> > include/linux/dma-mapping.h: At top level:
+> > include/linux/dma-mapping.h:120: error: redefinition of 'dma_sync_sg'
+> > arch/um/include/asm/dma-mapping.h:91: error: previous definition of 'dm=
+a_sync_sg' was here
+> > include/linux/dma-mapping.h: In function 'dma_sync_sg':
+> > include/linux/dma-mapping.h:124: error: implicit declaration of functio=
+n 'dma_sync_sg_for_cpu'
+> >=20
+> >=20
+> > arch/um/drivers/slirp_kern.c: In function 'slirp_init':
+> > arch/um/drivers/slirp_kern.c:35: error: 'struct net_device' has no memb=
+er named 'init'
+> >=20
+> >=20
+> > arch/um/include/asm/mmu_context.h: In function 'switch_mm':
+> > arch/um/include/asm/mmu_context.h:38: warning: passing argument 1 of 'c=
+pumask_clear' makes pointer from integer without
+> > a cast
+> > arch/um/include/asm/mmu_context.h:38: error: too many arguments to func=
+tion 'cpumask_clear'
+> >=20
+> > ---
+>=20
+> Stephan hi.
+>=20
+> The above breakage is the usual stuff we get every merge window. With peo=
+ple doing
+> cross arch work and neglecting UML.
+>=20
+> Who is the person or people responsible for the large linux-next compilat=
+ion rig?
+> Is it possible to also add a UML traget, at least for the x86_64/x86_32 s=
+ub-arch?
+>=20
+> Thanks
+> Boaz
+>=20
+> >=20
+> >  arch/um/drivers/slip_kern.c       |    1 -
+> >  arch/um/drivers/slirp_kern.c      |    1 -
+> >  arch/um/include/asm/dma-mapping.h |    4 ++--
+> >  arch/um/include/asm/mmu_context.h |    2 +-
+> >  4 files changed, 3 insertions(+), 5 deletions(-)
+> >=20
+> > diff --git a/arch/um/drivers/slip_kern.c b/arch/um/drivers/slip_kern.c
+> > index 5ec1756..dd2aadc 100644
+> > --- a/arch/um/drivers/slip_kern.c
+> > +++ b/arch/um/drivers/slip_kern.c
+> > @@ -30,7 +30,6 @@ static void slip_init(struct net_device *dev, void *d=
+ata)
+> > =20
+> >  	slip_proto_init(&spri->slip);
+> > =20
+> > -	dev->init =3D NULL;
+> >  	dev->hard_header_len =3D 0;
+> >  	dev->header_ops =3D NULL;
+> >  	dev->addr_len =3D 0;
+> > diff --git a/arch/um/drivers/slirp_kern.c b/arch/um/drivers/slirp_kern.c
+> > index f15a6e7..e376284 100644
+> > --- a/arch/um/drivers/slirp_kern.c
+> > +++ b/arch/um/drivers/slirp_kern.c
+> > @@ -32,7 +32,6 @@ void slirp_init(struct net_device *dev, void *data)
+> > =20
+> >  	slip_proto_init(&spri->slip);
+> > =20
+> > -	dev->init =3D NULL;
+> >  	dev->hard_header_len =3D 0;
+> >  	dev->header_ops =3D NULL;
+> >  	dev->addr_len =3D 0;
+> > diff --git a/arch/um/include/asm/dma-mapping.h b/arch/um/include/asm/dm=
+a-mapping.h
+> > index 90fc708..378de4b 100644
+> > --- a/arch/um/include/asm/dma-mapping.h
+> > +++ b/arch/um/include/asm/dma-mapping.h
+> > @@ -79,14 +79,14 @@ dma_unmap_sg(struct device *dev, struct scatterlist=
+ *sg, int nhwentries,
+> >  }
+> > =20
+> >  static inline void
+> > -dma_sync_single(struct device *dev, dma_addr_t dma_handle, size_t size,
+> > +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, siz=
+e_t size,
+> >  		enum dma_data_direction direction)
+> >  {
+> >  	BUG();
+> >  }
+> > =20
+> >  static inline void
+> > -dma_sync_sg(struct device *dev, struct scatterlist *sg, int nelems,
+> > +dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int ne=
+lems,
+> >  	    enum dma_data_direction direction)
+> >  {
+> >  	BUG();
+> > diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mm=
+u_context.h
+> > index edd719e..34d8130 100644
+> > --- a/arch/um/include/asm/mmu_context.h
+> > +++ b/arch/um/include/asm/mmu_context.h
+> > @@ -35,7 +35,7 @@ static inline void switch_mm(struct mm_struct *prev, =
+struct mm_struct *next,
+> >  	unsigned cpu =3D smp_processor_id();
+> > =20
+> >  	if(prev !=3D next){
+> > -		cpumask_clear(cpu, mm_cpumask(prev));
+> > +		cpumask_clear_cpu(cpu, mm_cpumask(prev));
+> >  		cpumask_set_cpu(cpu, mm_cpumask(next));
+> >  		if(next !=3D &init_mm)
+> >  			__switch_mm(&next->context.id);
+> >=20
 
- Of the others:
-   hw_sector_size   - is applicable to all block devices, and could
-                      reasonably be placed one level up in the device
-                      directory (along side 'size').
-   read_ahead_kb    - a duplicate of bdi/read_ahead_kb
-   iostats          - is a switch to enable or disable accounting of
-                      statistics that are reported in the 'stat'
-                      file (one level up)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- So most of '/queue' is specific to one class of devices (admittedly a
- very large class).  The others could be argued to be aberrations.
+--Signature=_Thu__25_Jun_2009_13_59_01_+1000_2hiOkjakO_iCy08C
+Content-Type: application/pgp-signature
 
- Adding a number of extra fields such as minimum_io_size,
- optimal_io_size etc to '/queue' seems to increase the number of
- aberrations and enforces md and dm device to have a /queue which is
- largely irrelevant.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- One approach that we could take would be to hide all those fields
- in 'queue' that are not relevant to the current device, and let
- 'queue' be a 'dumping ground' for each block device to place whatever
- sysfs attributes they want (thus md would move all of md/* to
- queue/*, and leave 'md' as a symlink to 'queue').
+iEYEARECAAYFAkpC9gUACgkQjjKRsyhoI8w3xACcCUxvcBwtYGvIELG/4OPQsq2x
+3qEAn1aD/XraFsA0DK3Vd7sJHOIVLYKs
+=e+Mv
+-----END PGP SIGNATURE-----
 
- I don't like this approach because it does not make best use of the
- name space.  If 'md' and 'queue' have different directories, they are
- each free to create new attributes without risk of collision between
- different drivers - not that the collision would be a technical
- problem but it could be confusing to users.
-
- So, where to put these new fields?
-
-   They could go in the device directory, along side 'size' and 'ro'.
-   Like those fields, the new ones give guidance to filesystems on how
-   to use the device.  Whether or not this is a good thing depends a
-   bit on how many fields we are talking about.  One or two might be
-   OK.  4 or more might look messy.
-   There are currently 4 fields: logical_block_size,
-   physical_block_size, minimum_io_size, optimal_io_size.
-   I have suggested to Martin that 2 are enough.  While I don't
-   particularly want to debate that in this thread, it could be
-   relevant so I'll outline my idea below.
-
-   They could go in 'bdi' along with read_ahead_kb.  read_ahead_kb
-   gives guidance on optimal read sizes.  The topology fields give
-   guidance on optimal write sizes.  There is a synergy there.  And
-   these fields are undeniably info about a backing device.
-   NFS has it's own per-filesystem bdi so we would not want to impose
-   fields on NFS that weren't at all relevant.  NFS has 'rsize' and
-   'wsize' which are somewhat related.  So I feel somewhat positive
-   about this possibility.  My only concern is that 'read_ahead_kb' is
-   more about reading *files*, where as the *_block_size and *_io_size
-   are about writing to the *device*.  I'm not sure how important a
-   difference this is.
-
-   They could go in a new subdirectory of the block device, just like
-   the integrity fields. e.g 'topology/'. or 'metrics/'.  This would
-   be my preferred approach if there do turn out to be the full 4
-   fields.
-
-Thanks for your attention.  Comments most welcome.
-
-NeilBrown
-
-----------------------
-Alternate implementation with only two fields.
-According to Documentation/ABI/testing/sysfs-block, both
-physical_block_size and minimum_io_size are the smallest unit of IO
-that doesn't require read-modify-write.  The first is thought to
-relate to drives with 4K blocks.  The second to RAID5 arrays.
-But that doesn't make sense as it stands: you cannot have two things
-that are both the smallest.
-
-Also, minimum_io_size and optimal_io_size are both described as a
-"preferred" for IO - presumably writes, not reads.  Again, we cannot
-have two values that are both preferred.  There is again some
-suggestion that one is for disks and the other is for RAID, but I
-cannot see how a mkfs would choose between them.
-
-My conclusion is that there are two issues of importance.
-1/ avoiding read-modify-write as that can affect correctness (When a
-  write error happens, you can lose unrelated data).
-2/ throughput.
-
-For each of these issues, there are a number of sizes that are
-relevant.
-e.g as you increase the request size, the performance can increase,
-but there a key points where a small increase in size can give a big
-increase in performance.  These sizes might include block size, chunk
-size, stripe size, and cache size.
-
-So I suggested two fields, each of which can store multiple values:
-
-safe_write_size:  512 4096 327680
-preferred_write_size: 4096 65536 327680 10485760
-
-The guidance for using these is simple:
- When choosing a size where atomicity of writes is important, choose
- the largest size from safe_write_size which is practical (or a
- multiple there-of).
-
- When choosing a size which doesn't require atomicity, but where
- throughput is important, choose a multiple of the largest size from
- preferred_write_size which is practical.
-
-The smallest safe_write_size would be taken as the logical_block_size.
-
-If we just have these two fields, I would put them in the top level
-directory for the block device.
+--Signature=_Thu__25_Jun_2009_13_59_01_+1000_2hiOkjakO_iCy08C--
