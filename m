@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZFYOTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbZFYOVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZFYOTv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZFYOTo
+	id S1755493AbZFYOVh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZFYOVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:19:44 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51995 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750964AbZFYOTn (ORCPT
+	Thu, 25 Jun 2009 10:21:30 -0400
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:56022 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbZFYOV3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:19:43 -0400
-Subject: Re: More odd kmemleak traces.
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090625003451.GA23387@redhat.com>
-References: <20090625003451.GA23387@redhat.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 25 Jun 2009 15:19:30 +0100
-Message-Id: <1245939570.26218.59.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2009 14:19:31.0529 (UTC) FILETIME=[F4F85390:01C9F59F]
+	Thu, 25 Jun 2009 10:21:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=DYGD4jv/1AiZJONHSnvz8hFvo+01TH/hxB8lWMIseVzxXOLbbyld9c2NcNRwVURS3q
+         Jik8nh5gJ0CMANhi6w3nMzfLQbDwcNcK6nDqLMxhICtotU3LnV4pOd0PJEUlqO1zqqod
+         9CWEuZT7Nj8/iMgGmsvlhsiC8BKazPZvt/htU=
+MIME-Version: 1.0
+In-Reply-To: <20090625183616.23b55b24.minchan.kim@barrios-desktop>
+References: <20090625183616.23b55b24.minchan.kim@barrios-desktop>
+Date: Thu, 25 Jun 2009 23:14:45 +0900
+X-Google-Sender-Auth: 37a2f6b4a3ff1758
+Message-ID: <2f11576a0906250714o5d77db11wd32c1c7139753cb5@mail.gmail.com>
+Subject: Re: [PATCH] prevent to reclaim anon page of lumpy reclaim for no swap 
+	space
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 20:34 -0400, Dave Jones wrote:
-> I see a bunch of kmemleak traces on one of my machines.
-> These traces all seem to be early allocations during boot up,
-> and I don't see anything obvious from the traces to figure out what
-> we're leaking.  False positives?
-> 
-> Lots of these...
-> 
-> kmemleak: unreferenced object 0xdb9fde70 (size 40):
-> kmemleak:   comm "swapper", pid 1, jiffies 4294668061
-> kmemleak:   backtrace:
-> kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
-> kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
-> kmemleak:     [<c066c901>] acpi_ut_allocate_object_desc_dbg+0x46/0x89
-[...]
+> This patch prevent to reclaim anon page in case of no swap space.
+> VM already prevent to reclaim anon page in various place.
+> But it doesnt't prevent it for lumpy reclaim.
+>
+> It shuffles lru list unnecessary so that it is pointless.
 
-As I said in the previous e-mail, could you enable stack scanning with
+NAK.
 
-echo "stack=on" > /sys/kernel/debug/kmemleak
+1. if system have no swap, add_to_swap() never get swap entry.
+   eary check don't improve performance so much.
+2. __isolate_lru_page() is not only called lumpy reclaim case, but
+also be called
+    normal reclaim.
+3. if system have no swap, anon pages shuffuling doesn't cause any matter.
 
-and then cat /sys/kernel/debug/kmemleak? This should reduce the false
-positives quite a lot (but with the risk of more false negatives). The
-leaked objects may also be found at a subsequent scan and then kmemleak
-reports "referenced object ...".
+Then, I don't think this patch's benefit is bigger than side effect.
 
-IIRC, there were some leaks in ACPI code in the past as well but the
-code is too complex to be able to check whether they are real or not.
 
-If an object is consistently reported as unreferenced in the
-debug/kmemleak file, it means that it wasn't freed and it's pointer
-cannot be found. The debug method I use is to try to find where the
-pointer is stored in the call path and whether it is still there or not.
-Usually one leak in the top part could trigger subsequent reports so
-only the first ones may need to be investigated (they are always
-reported in the order they were allocated).
 
-> And a few of these in pnp..
-> 
-> kmemleak: unreferenced object 0xd9d0db40 (size 16):
-> kmemleak:   comm "swapper", pid 1, jiffies 4294674288
-> kmemleak:   backtrace:
-> kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
-> kmemleak:     [<c04f5c89>] kmem_cache_alloc_notrace+0x121/0x13d
-> kmemleak:     [<c067b9da>] reserve_range+0x4a/0x177
-> kmemleak:     [<c067bba5>] system_pnp_probe+0x9e/0xcd
-> kmemleak:     [<c0676c30>] pnp_device_probe+0x91/0xc1
-[...]
-> kmemleak: unreferenced object 0xd9d8c9a0 (size 64):
-> kmemleak:   comm "swapper", pid 1, jiffies 4294674288
-> kmemleak:   backtrace:
-> kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
-> kmemleak:     [<c04f5c89>] kmem_cache_alloc_notrace+0x121/0x13d
-> kmemleak:     [<c0453d29>] __request_region+0x49/0x175
-> kmemleak:     [<c067ba8c>] reserve_range+0xfc/0x177
-> kmemleak:     [<c067bba5>] system_pnp_probe+0x9e/0xcd
-> kmemleak:     [<c0676c30>] pnp_device_probe+0x91/0xc1
-
-Here, the first object is the kmalloc'ed regionid whose pointer is
-stored in the next unreferenced object (res->name in __request_region).
-So only the struct resource allocated in __request_region needs to be
-investigated.
-
-But, as above, could you try the debug/kmemleak file? It is possible
-that it is just transient (if that's the case, I could enable stack
-scanning by default to avoid such reports).
-
-Thanks.
-
--- 
-Catalin
-
+> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> ---
+>  mm/vmscan.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+>
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 026f452..fb401fe 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -830,7 +830,13 @@ int __isolate_lru_page(struct page *page, int mode, int file)
+>         * When this function is being called for lumpy reclaim, we
+>         * initially look into all LRU pages, active, inactive and
+>         * unevictable; only give shrink_page_list evictable pages.
+> +
+> +        * If we don't have enough swap space, reclaiming of anon page
+> +        * is pointless.
+>         */
+> +       if (nr_swap_pages <= 0 && PageAnon(page))
+> +               return ret;
+> +
+>        if (PageUnevictable(page))
+>                return ret;
+>
+> --
+> 1.5.4.3
+>
+>
+>
+>
+> --
+> Kinds Regards
+> Minchan Kim
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
