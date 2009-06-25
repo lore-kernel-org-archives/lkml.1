@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZFYAAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZFYABT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZFYAAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 20:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZFYAAI
+	id S1757786AbZFYABT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 20:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZFYABG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 20:00:08 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57596 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbZFYAAH (ORCPT
+	Wed, 24 Jun 2009 20:01:06 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:37717 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753590AbZFYABF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 20:00:07 -0400
-Date: Wed, 24 Jun 2009 17:00:05 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH] x86/pci: don't use crs for root if we only have one
-	root bus
-Message-ID: <20090625000005.GD12934@us.ibm.com>
-References: <20090624122433.GA24781@elte.hu> <20090624145119.GA12664@elte.hu> <4A429EBB.5010209@kernel.org> <4A42AFAC.6000300@kernel.org> <alpine.LFD.2.01.0906241607100.18460@localhost.localdomain>
+	Wed, 24 Jun 2009 20:01:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PZubtTQ/d8isGTUfE15j8/Q0tGZpnawGcmrC7uWvwOrdDFv0dNfdxhJU0vcRnkOM7S
+         iUuy9wc19/01bFv6FOoHeac4EHBYqIsx5Zo1ZqBWn5MbM8mx6Kzc3XZbA98PHRp0rFWY
+         TjWxyzLT4NQjKfGEmGoZUW/+rFbe6IMxHRJ2Y=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906241607100.18460@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <a55d774e0906241514w761f86fva294784583cdd8a4@mail.gmail.com>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+	 <1245254936.5982.261.camel@desktop> <4A391A54.7000109@goop.org>
+	 <d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
+	 <1245274308.5982.268.camel@desktop>
+	 <a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
+	 <1245451983.32124.25.camel@desktop>
+	 <d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+	 <1245849223.32124.112.camel@desktop>
+	 <a55d774e0906241514w761f86fva294784583cdd8a4@mail.gmail.com>
+Date: Thu, 25 Jun 2009 02:01:06 +0200
+Message-ID: <63386a3d0906241701o720fa667t662b9e3d4f080397@mail.gmail.com>
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny && usage
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Daniel Walker <dwalker@fifo99.com>,
+       =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       hackbod@android.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 04:09:36PM -0700, Linus Torvalds wrote:
-> 
-> Should we not just revert 9e9f46c44e487af0a82eb61b624553e2f7118f5b?
-> 
-> The thing says:
-> 
->  "At this point, it seems to solve more problems than it causes, so let's 
->   try using it by default.  It's an easy revert if it ends up causing 
->   trouble."
-> 
-> and it clearly does _not_ solve more problems than it causes, and the 
-> whole message in that commit implies we should revert it.
-> 
-> I'm happy to apply various patches to fix it up, but regardless, I thinkwe 
-> should revert that commit as bogus. We can try making it the default again 
-> next round, when maybe it will be true that it doesn't cause issues.
-> 
-> What did it even ever help with?
+2009/6/25 Brian Swetland <swetland@google.com>:
+> 2009/6/24 Daniel Walker <dwalker@fifo99.com>:
+>> On Fri, 2009-06-19 at 17:13 -0700, Arve Hjønnevåg wrote:
+>>>
+>>> These are mostly questions for the framework team. The binder driver
+>>> is there to support our user space code. At some point we used the
+>>> driver from www.open-binder.org, but we ran into, and fixed, a lot of
+>>> bugs (especially when processes died), so we determined it would be
+>>> faster to rewrite the driver from scratch.
+>>
+>> Is there someone in your framework team that would be willing to respond
+>> to these questions ? (I know you added hackbod to the CC, but they
+>> aren't responding..)
+>
+> I guess it depends on the questions -- for good or ill, it's what is
+> in use and replacing it with a different mechanism would be a pretty
+> huge effort that there's unlikely to be time for in the near future.
+> Quite a bit of the userspace framework depends on the binder handling
+> the remote reference counting, object lifespan, etc, stuff and it's
+> subtle and hairy to debug.  Moving to a different transport is
+> possible (it's just software, as they say), but there's a lot of code
+> that depends on the behavior that exists today.
 
-In our case it is needed on some of our systems for PCI hotplug to
-avoid MCKs due to a device under one root bus getting a resource
-during hotplug that can only be used by devices under a different
-root bus.  If the user does not intend to use PCI hotplug, the
-function isn't needed (i.e. 'pci=use_crs' can be omitted) because
-resources are properly directed to the installed cards via BIOS
-pre-assignment.
+What is nice about binder is that is steps in an fills the gap for rapid
+buffer-passing IPC, is it really not possible to find common ground
+with a D-Bus in-kernel IPC driver now that you're anyway using both
+mechanisms and benefiting to both ends?
 
-Gary
+What I really want to know, is how this relates to the vmsplice() and
+other zero-copy buffer passing schemes already in the kernel. I was
+sort of dreaming that D-Bus and other IPC could be accelerated on
+top of that.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+Yours,
+Linus Walleij
