@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZFYQf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZFYQj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbZFYQf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZFYQfR
+	id S1755106AbZFYQj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZFYQjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:35:17 -0400
-Received: from outbound-mail-13.bluehost.com ([69.89.18.113]:34381 "HELO
-	outbound-mail-13.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753055AbZFYQfP (ORCPT
+	Thu, 25 Jun 2009 12:39:18 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:56128 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbZFYQjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:35:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=iStzZzn9IFEOyLCTx5KTdSKzn0QPblgHO5deUavT+C5wrZvMGRzUfbbGi9F9dlfftpIXb6Tb8VJrj0PWdRIpFQ4WrM1OfbUKr/mP9G/FKqcnZg2Ohk2YSLwa4aqOTb6s;
-Date: Thu, 25 Jun 2009 09:28:35 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, Gary Hade <garyhade@us.ibm.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH] x86/pci: don't use crs for root if we only have one
- root bus
-Message-ID: <20090625092835.77fbd732@jbarnes-g45>
-In-Reply-To: <20090625070347.GB2676@elte.hu>
-References: <20090624122433.GA24781@elte.hu>
-	<20090624145119.GA12664@elte.hu>
-	<4A429EBB.5010209@kernel.org>
-	<4A42AFAC.6000300@kernel.org>
-	<alpine.LFD.2.01.0906241607100.18460@localhost.localdomain>
-	<alpine.LFD.2.01.0906241615160.18460@localhost.localdomain>
-	<20090624163705.0389c8f0@jbarnes-g45>
-	<alpine.LFD.2.01.0906241645300.3605@localhost.localdomain>
-	<20090624170114.385322df@jbarnes-g45>
-	<20090625070347.GB2676@elte.hu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 25 Jun 2009 12:39:17 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 25 Jun 2009 09:34:31 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Gregory Haskins <ghaskins@novell.com>, mst@redhat.com, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
+ notifier race conditions
+In-Reply-To: <200906252112.24730.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.1.10.0906250922530.9517@makko.or.mcafeemobile.com>
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com> <200906252112.24730.rusty@rustcorp.com.au>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009 09:03:47 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, 25 Jun 2009, Rusty Russell wrote:
 
+> On Thu, 25 Jun 2009 08:15:11 am Davide Libenzi wrote:
+> >
+> > Some components would like to know if userspace dropped the fd, and take
+> > proper action accordingly (release resources, drop module instances,
+> > etc...).
 > 
-> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> Like to know?  Possibly.  Need to know?  Not anything I've seen so far.
 > 
-> > > [ There's a difference between "we're supposed to find and fix
-> > > bugs in the -rc series", and "I release known-buggy -rc1's since
-> > > we're supposed to fix it later". For similar reasons, I hate
-> > > pulling known-buggy stuff during the merge window - it's ok if it
-> > > shows itself to be buggy _later_, but if people send me stuff
-> > > that they know is buggy as they send it to me, then that's a
-> > > problem. ]
-> > 
-> > Yeah, 100% agreed.  I didn't hear any reports until after people 
-> > started using your tree, so I think this case was handled 
-> > correctly: push something that *seems* ok upstream, but with eyes 
-> > wide open for the possibility we'd need to revert.
+> If userspace creates the fd, component grab a ref and if userspace wants that 
+> fd completely freed must close the fd *and* tell component.  Simple, race free 
+> and explicit.  All wins.
 > 
-> There's only one small gripe i have with the handling of it: the 
-> timing. "9e9f46c: PCI: use ACPI _CRS data by default" was written 
-> and committed on June 11th, two days _after_ the merge window 
-> opened.
-> 
-> That's way too late for maybe-broken changes to x86 lowlevel details 
-> (especially if it touches hw-environmental interaction - which is 
-> very hard to test with meaningful coverage), and it's also pretty 
-> much the worst moment to solicit testing from people who are busy 
-> getting their stuff to Linus and who are busy testing out any of the 
-> unexpected interactions and bugs.
+> As this discussion shows, doing some kind of implies non-reference is hard, 
+> complex and racy.
 
-True, the patch had been around long before that and I definitely
-should have committed it sooner.
+Easier, we agree. Not doing anything is always easier, provided the 
+userspace interface allows for it.
+Cleaner, I'm not sure. Again, it depends from the userspace interface, but 
+usually when you close(2) something, you expect the kernel to react 
+accordingly, and not on relying on userspace issuing extra calls in order 
+to proper cleanup the kernel context.
+This is even more true when the eventfd is the sole handle to the visisble 
+userspace interface.
+In such cases, not taking proper action on close(2) and requiring extra 
+calls, would lead to designing interface with the close-no-really-i-mean-it
+patterns.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
+
+- Davide
+
+
