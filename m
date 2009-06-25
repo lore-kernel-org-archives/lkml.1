@@ -1,222 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZFYKPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZFYKYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbZFYKPu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFYKPi
+	id S1754367AbZFYKYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZFYKYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:15:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51245 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZFYKPh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:15:37 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix error handling in add_disk
-Date: Thu, 25 Jun 2009 15:47:01 +0530
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-References: <200906171231.10438.knikanth@suse.de> <200906241218.13538.knikanth@suse.de> <20090624201154.7e89cbee.akpm@linux-foundation.org>
-In-Reply-To: <20090624201154.7e89cbee.akpm@linux-foundation.org>
+	Thu, 25 Jun 2009 06:24:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64388 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbZFYKYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 06:24:09 -0400
+Message-ID: <4A435038.60406@cn.fujitsu.com>
+Date: Thu, 25 Jun 2009 18:23:52 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Paul Menage <menage@google.com>, Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: [PATCH] io-controller: do some changes of io.policy interface
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com>	 <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
+In-Reply-To: <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906251547.01349.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009 08:41:54 Andrew Morton wrote:
-> On Wed, 24 Jun 2009 12:18:13 +0530 Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > On Wednesday 24 June 2009 02:53:57 Andrew Morton wrote:
-> > > On Wed, 17 Jun 2009 12:31:10 +0530
-> > >
-> > > Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > > > Fix error handling in add_disk. Also add WARN_ON()'s in case
-> > > > of error, which can be removed once the callers handle the error.
-> > >
-> > > I have a vague ancestral memory that some of the unchecked errors which
-> > > you're now checking for actually do happen in practice, and that this
-> > > "fix" will end up breaking currently-working setups.
-> > >
-> > > Or maybe I'm thinking of a similar but different piece of code (maybe
-> > > it was the partition code?).
-> > >
-> > > Still, I think it would be prudent to initially make this patch
-> > > continue to ignore the errors.  So add the warnings, but don't change
-> > > the response to errors.  Then we can get the change distributed for a
-> > > bit of testing and if that all looks good then we can add the control
-> > > flow changes later.
-> >
-> > add_disk and blk_register_region are functions returning void masking the
-> > error
->
-> ugh, we're bad.
->
-> > which this patch changes. So no caller check for it's return value! And
-> > hence errors are ignored, and nothing breaks.
->
-> It _does_ change behaviour.  add_disk() can now bale out if, for
-> example, sysfs_create_link() failed.  As it commonly does, due to
-> various screwups.
->
+Paul Menage wrote:
+> On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+>> You can use the following format to play with the new interface.
+>> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+>> weight=0 means removing the policy for DEV.
+>>
+>> Examples:
+>> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+>> # echo /dev/hdb:300:2 > io.policy
+>> # cat io.policy
+>> dev weight class
+>> /dev/hdb 300 2
+> 
+> I think that the read and write should be consistent. Can you just use
+> white-space separation for both, rather than colon-separation for
+> writes and white-space separation for reads?
+> 
+> Also, storing device inode paths statically as strings into the
+> io_policy structure seems wrong, since it's quite possible for the
+> device node that was used originally to be gone by the time that
+> someone reads the io.policy file, or renamed, or even replaced with an
+> inode that refers to to a different block device
+> 
+> My preferred alternatives would be:
+> 
+> - read/write the value as a device number rather than a name
+> - read/write the block device's actual name (e.g. hda or sda) rather
+> than a path to the inode
+> 
 
-ah, yes. This patch does mofiy behaviour. :(
+Hi Paul, Vivek
 
-> > > >  	retval = blk_alloc_devt(&disk->part0, &devt);
-> > > >  	if (retval) {
-> > > >  		WARN_ON(1);
-> > > > -		return;
-> > > > +		goto err_out;
-> > > >  	}
-> > > > ...
-> > > > +	if (retval) {
-> > > > +		WARN_ON(1);
-> > > > +		goto err_free_devt;
-> > > > +	}
-> > > > ...
-> > > > +	if (retval) {
-> > > > +		WARN_ON(1);
-> > > > +		goto err_free_region;
-> > > > +	}
-> > > > ...
-> > > > -	WARN_ON(retval);
-> > > > +	if (retval) {
-> > > > +		WARN_ON(1);
-> > > > +		goto err_free_queue;
-> > > > +	}
-> > >
-> > > These all can be coded as
-> > >
-> > > 	if (WARN_ON(retval))
-> > > 		goto foo;
-> >
-> > done.
-> >
-> > Thanks
-> > Nikanth
-> >
-> >
-> > Fix error handling in add_disk. Also add WARN_ON()'s in case
-> > of error, which can be removed once the callers handle the error.
->
-> The changelog hasn't been updated to reflect this discussion.  There's
-> information missing here.
->
->
-> Also, why was this patch written?  Have you observed some behaviour
-> which this patch improved or corrected?
->
+Here is a patch to fix the issue Paul raised.
 
-No. I am just trying to cleanup.
+This patch achives the following goals
+1 According to Paul's comment, Modifing io.policy interface to
+  use device number for read/write directly. 
+2 Just use white-space separation for both, rather than colon-
+  separation for writes and white-space separation for reads.
+3 Do more strict checking for inputting.
 
-> I applaud the effort, but it's obviously incomplete.  Do you intend to
-> add further error checking and handling in this area?
+old interface:
+Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+# echo "/dev/hdb:300:2" > io.policy
+# cat io.policy
+dev weight class
+/dev/hdb 300 2
 
-I was intending to fix the callers one by one. But it seems to be better to do
-it in one go. I would work on it and send complete patches. Till then could we
-add few more WARN_ON's and return error code for the case where add_disk fails
-completely?
+new interface:
+Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+# echo "3:64 300 2" > io.policy
+# cat io.policy
+dev     weight  class
+3:64    300     2
 
-Thanks
-Nikanth
-
-Add WARN_ON's in case of errors during add_disk. Also return error code when
-add_disk fails completely. As akpm suggested, in case of partial failure, dont
-change the current behaviour and return success.
-
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 ---
+ block/elevator-fq.c |   59 ++++++++++++++++++++++++++++++++++----------------
+ block/elevator-fq.h |    1 -
+ 2 files changed, 40 insertions(+), 20 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index fe7ccc0..077bf63 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -472,11 +472,11 @@ static char *bdevt_str(dev_t devt, char *buf)
-  * range must be nonzero
-  * The hash chain is sorted on range, so that subranges can override.
-  */
--void blk_register_region(dev_t devt, unsigned long range, struct module *module,
-+int blk_register_region(dev_t devt, unsigned long range, struct module *module,
- 			 struct kobject *(*probe)(dev_t, int *, void *),
- 			 int (*lock)(dev_t, void *), void *data)
- {
--	kobj_map(bdev_map, devt, range, module, probe, lock, data);
-+	return kobj_map(bdev_map, devt, range, module, probe, lock, data);
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index d779282..83c831b 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1895,12 +1895,12 @@ static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
+ 	if (list_empty(&iocg->policy_list))
+ 		goto out;
+ 
+-	seq_printf(m, "dev weight class\n");
++	seq_printf(m, "dev\tweight\tclass\n");
+ 
+ 	spin_lock_irq(&iocg->lock);
+ 	list_for_each_entry(pn, &iocg->policy_list, node) {
+-		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
+-			   pn->weight, pn->ioprio_class);
++		seq_printf(m, "%u:%u\t%lu\t%lu\n", MAJOR(pn->dev),
++			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
+ 	}
+ 	spin_unlock_irq(&iocg->lock);
+ out:
+@@ -1936,44 +1936,65 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
+ 	return NULL;
  }
  
- EXPORT_SYMBOL(blk_register_region);
-@@ -513,7 +513,7 @@ static int exact_lock(dev_t devt, void *data)
-  *
-  * FIXME: error handling
-  */
--void add_disk(struct gendisk *disk)
-+int add_disk(struct gendisk *disk)
+-static int devname_to_devnum(const char *buf, dev_t *dev)
++static int check_dev_num(dev_t dev)
  {
- 	struct backing_dev_info *bdi;
- 	dev_t devt;
-@@ -529,10 +529,9 @@ void add_disk(struct gendisk *disk)
- 	disk->flags |= GENHD_FL_UP;
+-	struct block_device *bdev;
++	int part = 0;
+ 	struct gendisk *disk;
+-	int part;
  
- 	retval = blk_alloc_devt(&disk->part0, &devt);
--	if (retval) {
--		WARN_ON(1);
--		return;
--	}
-+	if (WARN_ON(retval))
-+		return retval;
-+
- 	disk_to_dev(disk)->devt = devt;
+-	bdev = lookup_bdev(buf);
+-	if (IS_ERR(bdev))
++	disk = get_gendisk(dev, &part);
++	if (!disk || part)
+ 		return -ENODEV;
  
- 	/* ->major and ->first_minor aren't supposed to be
-@@ -541,16 +540,22 @@ void add_disk(struct gendisk *disk)
- 	disk->major = MAJOR(devt);
- 	disk->first_minor = MINOR(devt);
- 
--	blk_register_region(disk_devt(disk), disk->minors, NULL,
-+	retval = blk_register_region(disk_devt(disk), disk->minors, NULL,
- 			    exact_match, exact_lock, disk);
-+	WARN_ON(retval);
-+
- 	register_disk(disk);
--	blk_register_queue(disk);
-+
-+	retval = blk_register_queue(disk);
-+	WARN_ON(retval);
- 
- 	bdi = &disk->queue->backing_dev_info;
- 	bdi_register_dev(bdi, disk_devt(disk));
- 	retval = sysfs_create_link(&disk_to_dev(disk)->kobj, &bdi->dev->kobj,
- 				   "bdi");
- 	WARN_ON(retval);
-+
-+	return 0;
+-	disk = get_gendisk(bdev->bd_dev, &part);
+-	if (part)
+-		return -EINVAL;
+-
+-	*dev = MKDEV(disk->major, disk->first_minor);
+-	bdput(bdev);
+-
+ 	return 0;
  }
  
- EXPORT_SYMBOL(add_disk);
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 149fda2..df3344a 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -339,7 +339,7 @@ static inline void part_dec_in_flight(struct hd_struct *part)
- extern void part_round_stats(int cpu, struct hd_struct *part);
+ static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
+ {
+-	char *s[3], *p;
++	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
+ 	int ret;
++	unsigned long major, minor;
+ 	int i = 0;
++	dev_t dev;
  
- /* block/genhd.c */
--extern void add_disk(struct gendisk *disk);
-+extern int add_disk(struct gendisk *disk);
- extern void del_gendisk(struct gendisk *gp);
- extern void unlink_gendisk(struct gendisk *gp);
- extern struct gendisk *get_gendisk(dev_t dev, int *partno);
-@@ -534,7 +534,7 @@ extern struct gendisk *alloc_disk_node(int minors, int node_id);
- extern struct gendisk *alloc_disk(int minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
--extern void blk_register_region(dev_t devt, unsigned long range,
-+extern int blk_register_region(dev_t devt, unsigned long range,
- 			struct module *module,
- 			struct kobject *(*probe)(dev_t, int *, void *),
- 			int (*lock)(dev_t, void *),
+ 	memset(s, 0, sizeof(s));
+-	while ((p = strsep(&buf, ":")) != NULL) {
++	while ((p = strsep(&buf, " ")) != NULL) {
+ 		if (!*p)
+ 			continue;
+ 		s[i++] = p;
++
++		/* Prevent from inputing too many things */
++		if (i == 4)
++			break;
+ 	}
+ 
+-	ret = devname_to_devnum(s[0], &newpn->dev);
++	if (i != 3)
++		return -EINVAL;
++
++	p = strsep(&s[0], ":");
++	if (p != NULL)
++		major_s = p;
++	else
++		return -EINVAL;
++
++	minor_s = s[0];
++	if (!minor_s)
++		return -EINVAL;
++
++	ret = strict_strtoul(major_s, 10, &major);
++	if (ret)
++		return -EINVAL;
++
++	ret = strict_strtoul(minor_s, 10, &minor);
++	if (ret)
++		return -EINVAL;
++
++	dev = MKDEV(major, minor);
++
++	ret = check_dev_num(dev);
+ 	if (ret)
+ 		return ret;
+ 
+-	strcpy(newpn->dev_name, s[0]);
++	newpn->dev = dev;
+ 
+ 	if (s[1] == NULL)
+ 		return -EINVAL;
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index b3193f8..7722ebe 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -286,7 +286,6 @@ struct io_group {
+ 
+ struct io_policy_node {
+ 	struct list_head node;
+-	char dev_name[32];
+ 	dev_t dev;
+ 	unsigned long weight;
+ 	unsigned long ioprio_class;
+-- 
+1.5.4.rc3
+
 
