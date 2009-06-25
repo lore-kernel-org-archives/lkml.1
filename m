@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZFYIGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZFYIGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905AbZFYIGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZFYIFo
+	id S1754326AbZFYIGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZFYIGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:05:44 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56554 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbZFYIFl (ORCPT
+	Thu, 25 Jun 2009 04:06:11 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35825 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753205AbZFYIGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:05:41 -0400
-Date: Thu, 25 Jun 2009 10:05:42 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       linux-mtd@lists.infradead.org, linux@maxim.org.za,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 2/2] Fix typo s/parititions/partitions/
-Message-ID: <20090625080542.GB2995@pengutronix.de>
-References: <1245879646-10338-1-git-send-email-cascardo@holoscopio.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1245879646-10338-1-git-send-email-cascardo@holoscopio.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 25 Jun 2009 04:06:06 -0400
+Subject: Re: Add support for the SST 39VF3202, 39VF6401B and 39VF6402B
+ flash chips
+From: David Woodhouse <dwmw2@infradead.org>
+To: Yegor Yefremov <yegorslists@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
+References: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 09:06:07 +0100
+Message-Id: <1245917167.17089.102.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 2009-06-25 at 09:42 +0200, Yegor Yefremov wrote:
+> Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
+> 
+> - extend struct amd_flash_info to enable 8 erase regions for 8Mb flash chips
 
-On Wed, Jun 24, 2009 at 06:40:46PM -0300, Thadeu Lima de Souza Cascardo wrote:
-> -		printk(KERN_ERR "atmel_nand: No parititions defined, or unsupported device.\n");
-> +		printk(KERN_ERR "atmel_nand: No partitions defined, or unsupported device.\n");
-It's a nice idea to Cc: trivial@kernel.org for such patches.
+If you didn't mean 8,000,000 bits, don't say it. Did you mean 8MiB?
 
-Best regards
-Uwe
+> - change erase block command to 0x50 due to the differences between
+> 39VF6401/02 and 39VF6401B/02B chips
+
+Hm, can you elucidate? And should that be done as a quirk instead?
 
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
