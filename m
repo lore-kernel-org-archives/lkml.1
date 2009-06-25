@@ -1,113 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZFYPD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbZFYPEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbZFYPD2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 11:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZFYPDV
+	id S1756977AbZFYPEI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZFYPD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 11:03:21 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:16492 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZFYPDU convert rfc822-to-8bit (ORCPT
+	Thu, 25 Jun 2009 11:03:57 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:7111 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbZFYPD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 11:03:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=g337ll0U2bpvkL6vqB/ntjQ75yqfT3TzZnTdaeoV/2fEjwRb67jPyws9DiVEUODnNf
-         z8OTmFYwt1O9FDOtOZS9F7125sIg4nFQWZTOS6EwbHkMGObXSzZ6eohzE7mtb+aYLo4t
-         dx6D7hReh41IDJfi3FgcoTZxSRtegAer9mrNw=
+	Thu, 25 Jun 2009 11:03:56 -0400
+X-IronPort-AV: E=Sophos;i="4.42,290,1243814400"; 
+   d="scan'208";a="205574488"
+From: Roland Dreier <rdreier@cisco.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
+References: <1245760130.3776.6.camel@localhost.localdomain>
+	<20090623195656.GC8777@elte.hu>
+	<1245876060.3038.7.camel@localhost.localdomain>
+	<alpine.LFD.2.00.0906242253270.2767@localhost.localdomain>
+	<20090625092409.GC23547@elte.hu>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 25 Jun 2009 08:03:59 -0700
+In-Reply-To: <20090625092409.GC23547@elte.hu> (Ingo Molnar's message of "Thu,
+	25 Jun 2009 11:24:09 +0200")
+Message-ID: <adabpocl5i8.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1245941665.6459.18.camel@lts-notebook>
-References: <20090625183616.23b55b24.minchan.kim@barrios-desktop>
-	 <2f11576a0906250714o5d77db11wd32c1c7139753cb5@mail.gmail.com>
-	 <28c262360906250744h5bf9f0a0w265d8c35e7d69335@mail.gmail.com>
-	 <1245941665.6459.18.camel@lts-notebook>
-Date: Fri, 26 Jun 2009 00:03:22 +0900
-Message-ID: <28c262360906250803p31e72a2at73ff1af823615260@mail.gmail.com>
-Subject: Re: [PATCH] prevent to reclaim anon page of lumpy reclaim for no swap 
-	space
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Jun 2009 15:03:59.0571 (UTC) FILETIME=[2B3F3A30:01C9F5A6]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Lee.
 
-On Thu, Jun 25, 2009 at 11:54 PM, Lee
-Schermerhorn<Lee.Schermerhorn@hp.com> wrote:
-> On Thu, 2009-06-25 at 23:44 +0900, Minchan Kim wrote:
->> On Thu, Jun 25, 2009 at 11:14 PM, KOSAKI
->> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> >> This patch prevent to reclaim anon page in case of no swap space.
->> >> VM already prevent to reclaim anon page in various place.
->> >> But it doesnt't prevent it for lumpy reclaim.
->> >>
->> >> It shuffles lru list unnecessary so that it is pointless.
->> >
->> > NAK.
->> >
->> > 1. if system have no swap, add_to_swap() never get swap entry.
->> >   eary check don't improve performance so much.
->>
->> Hmm. I mean no swap space but not no swap device.
->> add_to_swap ? You mean Rik pointed me out ?
->> If system have swap device, Rik's pointing is right.
->> I will update his suggestion.
->>
->> > 2. __isolate_lru_page() is not only called lumpy reclaim case, but
->> > also be called
->> >    normal reclaim.
->>
->> You mean about performance degradation ?
->> I think most case have enough swap space and then one condition
->> variable(nr_swap_page) check is trivial. I think.
->> We can also use [un]likely but I am not sure it help us.
->>
->>
->> > 3. if system have no swap, anon pages shuffuling doesn't cause any matter.
->>
->> Again, I mean no swap space but no swap device system.
->> And I have a plan to remove anon_vma in no swap device system.
->>
->> As you point me out, it's pointless in no swap device system.
->> I don't like unnecessary structure memory footprint and locking overhead.
->> I think no swap device system is problem in server environment as well
->> as embedded. but I am not sure when I will do. :)
->>
->
-> How will we walk the reverse map for try_to_unmap() for page migration
-> or try_to_munlock() w/o anon_vma?  Perhaps one can remove anon_vma when
-> there is no swap device and migration and the unevictable lru are not
-> configured--e.g., for embedded systems.
+ > > Where is the point of this? dL1-loads is a completely non 
+ > > intuitive artificial abbreviation.
+ > 
+ > blame me :)
+ > 
+ > I found L1-data-Cache-Load-References way too long and i asked for 
+ > suggestions and came up with my list of abbreviations.
+ > 
+ > I found 'dL1' intuitive because we use 'dTLB' and 'iTLB' as well.
+ > 
+ > How about L1-data-loads ?
 
-You're right. In addition, there are HWPoison and maybe KSM.
-Also, unevictable lru list isn't option any more even embedded system.
+I think L1-dcache is a good compromise between length and ease of
+understanding (at least for me).
 
-Actually I considered it in embedded system as you said.
-I think above enumerated cases are not needed in embedded system.
-Memory footprint and unnecessary locking is more important in embedded
-since small memory and realtime.
-
-Anyway, I think it's not easy so now it's just plan.
-Welcome to any comment to prevent my vain effort. :)
-
-Thanks for valuable comment. Lee. :)
-
-> Lee
->
->
-
-
-
--- 
-Kinds regards,
-Minchan Kim
+ - R.
