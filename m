@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZFYI45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbZFYI7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756227AbZFYI45 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFYI4s
+	id S1757219AbZFYI7q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZFYI7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:56:48 -0400
-Received: from legaljet.webserversystems.com ([67.18.134.218]:52488 "EHLO
-	compulab.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbZFYI4r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:56:47 -0400
-Message-ID: <4A433BCD.2030506@compulab.co.il>
-Date: Thu, 25 Jun 2009 11:56:45 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
-MIME-Version: 1.0
-To: Michael Opdenacker <michael-lists@free-electrons.com>
-CC: Alain Knaff <alain@knaff.lu>,
-       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-embedded mailing list <linux-embedded@vger.kernel.org>
-Subject: Re: Status of bzip2 and lzma kernel compression for ARM?
-References: <4A428AFF.20307@free-electrons.com>
-In-Reply-To: <4A428AFF.20307@free-electrons.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - compulab.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 25 Jun 2009 04:59:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35274 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbZFYI7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 04:59:39 -0400
+Date: Thu, 25 Jun 2009 04:59:34 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, eteo@redhat.com,
+       Amerigo Wang <amwang@redhat.com>, viro@zeniv.linux.org.uk,
+       esandeen@redhat.com
+Message-Id: <20090625090146.6616.9720.sendpatchset@localhost.localdomain>
+Subject: [Patch] allow file truncations when both suid and write permissions set
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
 
-Michael Opdenacker wrote:
-> Hi Alain,
-> 
-> I would like to test bzip2 and lzma compression on ARM.
-> 
-> Would you mind telling me what the status of your patches on ARM is, now
-> that the x86  and architecture independent code has been merged? Have
-> you or has anyone already updated them for 2.6.30, or shall I update
-> them by myself?
+When suid is set and the non-owner user has write permission,
+any writing into this file should be allowed and suid should be
+removed after that.
 
-I'm not sure what exactly do you mean by "test bzip2 and lzma compression on
-ARM", but if you refer to internal initramfs compression, I can tell that I've
-used lzma compression on PXA270 and it works fine.
+However, current kernel only allows writing without truncations,
+when we do truncations on that file, we get EPERM. This is a bug.
 
-> Thank you in advance,
-> 
-> Cheers,
-> 
-> Michael.
-> 
+Steps to reproduce this bug:
 
--- 
-Sincerely yours,
-Mike.
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h > rootdir/file1
+zsh: operation not permitted: rootdir/file1
+% ls -l rootdir/file1
+-rwsrwsrwx 1 root root 3 Jun 25 15:42 rootdir/file1
+% echo h >> rootdir/file1
+% ls -l rootdir/file1
+-rwxrwxrwx 1 root root 5 Jun 25 16:34 rootdir/file1
 
+This patch fixes it.
+
+(Need to Cc stable?)
+
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Eric Sandeen <esandeen@redhat.com>
+Cc: Eugene Teo <eteo@redhat.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+
+---
+diff --git a/fs/open.c b/fs/open.c
+index dd98e80..ebf6d8d 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -199,7 +199,7 @@ out:
+ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+ 	struct file *filp)
+ {
+-	int err;
++	int ret;
+ 	struct iattr newattrs;
+ 
+ 	/* Not pretty: "inode->i_size" shouldn't really be signed. But it is. */
+@@ -214,12 +214,15 @@ int do_truncate(struct dentry *dentry, loff_t length, unsigned int time_attrs,
+ 	}
+ 
+ 	/* Remove suid/sgid on truncate too */
+-	newattrs.ia_valid |= should_remove_suid(dentry);
++	ret = should_remove_suid(dentry);
++	newattrs.ia_valid |=  ret;
++	if (ret)
++		newattrs.ia_valid |= ATTR_FORCE;
+ 
+ 	mutex_lock(&dentry->d_inode->i_mutex);
+-	err = notify_change(dentry, &newattrs);
++	ret = notify_change(dentry, &newattrs);
+ 	mutex_unlock(&dentry->d_inode->i_mutex);
+-	return err;
++	return ret;
+ }
+ 
+ static long do_sys_truncate(const char __user *pathname, loff_t length)
