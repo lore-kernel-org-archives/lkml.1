@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZFYTBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbZFYTLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbZFYTBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZFYTBL
+	id S1756447AbZFYTLX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYTLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:01:11 -0400
-Received: from ns1.limegroup.com ([64.48.93.2]:52025 "EHLO ns1.limegroup.com"
+	Thu, 25 Jun 2009 15:11:14 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:57888 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752210AbZFYTBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:01:10 -0400
-X-Greylist: delayed 370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jun 2009 15:01:10 EDT
-Date: Thu, 25 Jun 2009 14:54:00 -0400 (EDT)
-From: Ion Badulescu <ionut@badula.org>
-To: Joe Perches <joe@perches.com>
-cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: STARFIRE/DURALAN update
-In-Reply-To: <1245951074.395.78.camel@Joe-Laptop.home>
-Message-ID: <alpine.LFD.2.00.0906251452250.16864@moisil.badula.org>
-References: <1245946630.395.37.camel@Joe-Laptop.home>  <4A43B060.30904@garzik.org> <1245951074.395.78.camel@Joe-Laptop.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752265AbZFYTLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 15:11:14 -0400
+Message-ID: <4A43CBB9.7040903@ti.com>
+Date: Thu, 25 Jun 2009 14:10:49 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Content-Disposition: inline
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: john stultz <johnstul@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
+ idle
+References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain> <4A1EF244.5040108@ti.com> <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain> <4A1EFDBD.8040007@ti.com> <4A208538.3040406@ti.com> <4A282089.5020103@ti.com>
+In-Reply-To: <4A282089.5020103@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Joe Perches wrote:
 
-> On Thu, 2009-06-25 at 13:14 -0400, Jeff Garzik wrote:
->> Joe Perches wrote:
+Jon Hunter wrote:
+> Jon Hunter wrote:
+>> Jon Hunter wrote:
+>>> +		 * Calculate the time delta for the next timer event.
+>>> +		 * If the time delta exceeds the maximum time delta
+>>> +		 * permitted by the current clocksource then adjust
+>>> +		 * the time delta accordingly to ensure the
+>>> +		 * clocksource does not wrap.
+>>> +		 */
+>>> +		time_delta = tick_period.tv64 * delta_jiffies;
+>> Thinking about this more, although it is very unlikely, for 64-bit 
+>> machines there is a chance that the above multiply could overflow if 
+>> delta_jiffies is very large.
+>>
+>> tick_period.tv64 should always be less than NSEC_PER_SEC and so you 
+>> would need delta_jiffies to be greater than 2^32 to cause overflow. On a 
+>> 32-bit machine an unsigned long will not be greater than 2^32 as it is 
+>> only 32-bits but this would be possible on a 64-bit machines.
+>>
+>> So to be safe we should make sure that delta_jiffies is not greater than 
+>>   NEXT_TIMER_MAX_DELTA (2^30 - 1) before doing the multiply. If you 
+>> think that this is a valid concern, then I can re-work and re-post. 
+>> Sorry for not catching this before.
+> 
+> With regard to the above, to ensure that there are no overflows with the 
+> above calculation, I re-worked this patch a little. The below should be 
+> equivalent to the current code, just re-organised a little. Let me know 
+> if this would be acceptable or not.
 
->>>  STARFIRE/DURALAN NETWORK DRIVER
->>>  P:	Ion Badulescu
->>> -M:	ionut@cs.columbia.edu
->>> -S:	Maintained
->>> +M:	ionut@badula.org
->>> +S:	Odd Fixes
->>>  F:	drivers/net/starfire*
->>>
->> This change needs a better explanation, and should be CC'd to netdev
->> since it relates to network drivers.
->
-> His old email address is invalid.
->
-> I looked up his name in git log
-> and found a single commit, emailed him
-> and asked.
->
-> His new email is on the cc list.
+Hi Thomas, John,
 
-Yeah, it's fine. The old email was a forward and it looks like it got 
-disabled.
+Did you guys have chance to review this? Let me know if you have any 
+further comments/feedback.
 
-Thanks,
--Ion
+Cheers
+Jon
