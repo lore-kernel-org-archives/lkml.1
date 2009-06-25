@@ -1,88 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbZFYNZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZFYN0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbZFYNZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbZFYNZK
+	id S1756893AbZFYN0g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZFYN03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:25:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60026 "EHLO mx2.redhat.com"
+	Thu, 25 Jun 2009 09:26:29 -0400
+Received: from THUNK.ORG ([69.25.196.29]:57597 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbZFYNZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:25:08 -0400
-Subject: Re: Infrastructure for tracking driver performance events
-From: Mark Wielaard <mjw@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ben Gamari <bgamari.foss@gmail.com>, linux-kernel@vger.kernel.org,
-       "Stone, Joshua I" <joshua.i.stone@intel.com>,
-       Rober Richter <robert.richter@amd.com>, anil.s.keshavamurthy@intel.com,
-       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com,
-       SystemTap <systemtap@sources.redhat.com>, Eric Anholt <eric@anholt.net>,
-       Chris Wilson <chris@chris-wilson.co.uk>,
-       intel-gfx@lists.freedesktop.org
-In-Reply-To: <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
-References: <20090624172912.GB5565@ben-laptop>
-	 <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 15:24:39 +0200
-Message-Id: <1245936279.2677.11.camel@hermans.wildebeest.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1753982AbZFYN02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 09:26:28 -0400
+Date: Thu, 25 Jun 2009 09:25:44 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090625132544.GB9995@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	penberg@cs.helsinki.fi, arjan@infradead.org,
+	linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+	npiggin@suse.de
+References: <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain> <20090624150714.c7264768.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624150714.c7264768.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Thu, 2009-06-25 at 08:55 -0400, Steven Rostedt wrote:
-> On Wed, 24 Jun 2009, Ben Gamari wrote:
-> > 3) A large amount of usermode support is necessary (which will likely be
-> >    the case for any option; listed here for completeness)
-> > 
-> > Another option seems to be systemtap. It has already been documented[3]
-> > that this option could provide both user-mode and kernel-mode
-> > backtraces. The driver could provide a kernel marker at every potential
-> > wait point (or a single marker in a function called at each wait point,
-> > for that matter) which would be picked up by systemtap and processed in
-> > usermode, calling ptrace to acquire a usermode backtrace. This approach
-> > seems slightly cleaner as it doesn't require the tracing on the entire
-> > machine to catch what should be reasonably rare events (hopefully).
+On Wed, Jun 24, 2009 at 03:07:14PM -0700, Andrew Morton wrote:
 > 
-> Enabling the userstacktrace will give userspace stack traces at event
-> trace points. The thing is that the userspace utility must be built with 
-> frame pointers.
+> fs/jbd/journal.c:       new_bh = alloc_buffer_head(GFP_NOFS|__GFP_NOFAIL);
+> 
+> But that isn't :(
 
-This isn't true for Systemtap. It can unwind through anything since it
-contains a dwarf-unwinder that can do backtraces as long as unwind
-tables are available for the modules (executables, vdso, shared
-libraries, etc.) one wants to unwind through. Systemtap currently gets
-these in its "translation" phase and you do need to list them explicitly
-atm. There is work underway to make this more flexible and automatic.
-Also cross kernel-user-space backtraces need some work (systemtap can
-use the dwarf unwinder also in-kernel, but some kernel parts are missing
-unwind tables).
+Well, we could recode it to do what journal_alloc_head() does, which
+is call the allocator in a loop:
 
-Some systemtap bugs to track if you are interested in extending this
-functionality:
+	ret = kmem_cache_alloc(journal_head_cache, GFP_NOFS);
+	if (ret == NULL) {
+		jbd_debug(1, "out of memory for journal_head\n");
+		if (time_after(jiffies, last_warning + 5*HZ)) {
+			printk(KERN_NOTICE "ENOMEM in %s, retrying.\n",
+			       __func__);
+			last_warning = jiffies;
+		}
+		while (ret == NULL) {
+			yield();
+			ret = kmem_cache_alloc(journal_head_cache, GFP_NOFS);
+		}
+	}
 
-= Prerequirements for more ubiquitous backtracing
-sw#6961 backtrace from non-pt_regs probe context
-http://sourceware.org/bugzilla/show_bug.cgi?id=6961
-sw#10080 track vdso for process symbols/backtrace
-http://sourceware.org/bugzilla/show_bug.cgi?id=10080
-sw#10208 Support probing glibc synthesized syscall wrappers
-http://sourceware.org/bugzilla/show_bug.cgi?id=10208
+Like journal_write_metadata_buffer(), which you quoted, it's called
+out of the commit code, where about the only choice we have other than
+looping or using GFP_NOFAIL is to abort the filesystem and remount it
+read-only or panic.  It's not at all clear to me that looping
+repeatedly is helpful; for example, the allocator doesn't know that it
+should try really hard, and perhaps fall back to an order 0 allocation
+of an order 1 allocation won't work.
 
-NOTE: the above still won't make cross kernel-to-userspace backtracing
-fully work since we cannot easily unwind through the kernel-entry/exit
-assembly code that doesn't have dwarf unwind tables.
+Hmm.... it may be possible to do the memory allocation in advance,
+before we get to the commit, and make it be easier to fail and return
+ENOMEM to userspace --- which I bet most applications won't handle
+gracefully, either (a) not checking error codes and losing data, or
+(b) dieing on the spot, so it would be effectively be an OOM kill.
+And in some cases, we're calling journal_get_write_access() out of a
+kernel daemon like pdflush, where the error recovery paths may get
+rather interesting.
 
-= Make user backtraces more convenient
-sw#10228 Add more vma-tracking for user space symbol/backtraces
-http://sourceware.org/bugzilla/show_bug.cgi?id=10228
-sw#6580 revamp backtrace-related tapset functions
-http://sourceware.org/bugzilla/show_bug.cgi?id=6580
+The question then is what is the right strategy?  Use GFP_NOFAIL, and
+let the memory allocator loop; let the allocating kernel code loop;
+remount filesystems read/only and/or panic; pass a "try _really_ hard"
+flag to the allocator and fall back to a ro-remount/panic if the
+allocator still wasn't successful?  None of the alternatives seem
+particularly appealing to me....
 
-Cheers,
-
-Mark
-
+							- Ted
