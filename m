@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756799AbZFYAdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZFYAdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756799AbZFYAdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 20:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZFYAdc
+	id S1757631AbZFYAdw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 20:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZFYAdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 20:33:32 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:43820 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753400AbZFYAdb (ORCPT
+	Wed, 24 Jun 2009 20:33:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47151 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756799AbZFYAdh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 20:33:31 -0400
-Message-ID: <4A42C5DC.1040103@snapgear.com>
-Date: Thu, 25 Jun 2009 10:33:32 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: uClinux development list <uclinux-dev@uclinux.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [uClinux-dev] [PATCH] m68k: restore lost coldfire CLOCK_TICK_RATE
-References: <20090620201147.GA14095@frolo.macqel>	<4A3EF81F.1060300@snapgear.com> <20090624211144.GA13167@frolo.macqel>
-In-Reply-To: <20090624211144.GA13167@frolo.macqel>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 24 Jun 2009 20:33:37 -0400
+Date: Wed, 24 Jun 2009 17:33:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com, kvm@vger.kernel.org,
+       ghaskins@novell.com, rusty@rustcorp.com.au, bcrl@kvack.org
+Subject: Re: [patch] eventfd - revised interface and cleanups (2nd rev)
+Message-Id: <20090624173316.a129672d.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0906241636060.30928@makko.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0906230936280.17001@makko.or.mcafeemobile.com>
+	<alpine.DEB.1.10.0906231219450.17001@makko.or.mcafeemobile.com>
+	<20090623131239.711d9f83.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231355130.17001@makko.or.mcafeemobile.com>
+	<20090623142511.c9068655.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231423490.17001@makko.or.mcafeemobile.com>
+	<20090623144416.04c34268.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906231538280.17001@makko.or.mcafeemobile.com>
+	<20090623161852.660cab78.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906241546380.30928@makko.or.mcafeemobile.com>
+	<20090624161240.3efdbbfa.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906241636060.30928@makko.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Philippe,
+On Wed, 24 Jun 2009 16:52:06 -0700 (PDT)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Philippe De Muyter wrote:
-> Hi Greg,
+> > umm, yes please, I believe the patches should be split.  And I'm still
+> > not seeing the justification for forcing CONFIG_EVENTFD onto all
+> > CONFIG_AIO users!
 > 
-> On Mon, Jun 22, 2009 at 01:18:55PM +1000, Greg Ungerer wrote:
->> HI Philippe,
->>
->> Philippe De Muyter wrote:
->>> Hello list,
->>> The good definition of CLOCK_TICK_RATE for coldfires has been lost in the
->>> merge of m68k and m68knommu include files.  Restore it.  Culprit :
->>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ebafc17468d58bd903c886175ca84a4edc69ae1d;hp=34055b806a6334624e7e8af6eefc3aee42372a85
->>> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
->> Is it needed?
->> What is broken with the existing value?
-> 
-> I am no ntp expert, but IIRC kernel/time/ntp.c needs to know the remainder
-> of CLOCK_TICK_RATE / HZ to obtain a good stability of the time.  That's
-> probably only needed when you have ntpd running.
+> Eventfd notifications became part of the AIO API (it's not even delivered 
+> through a new syscall, from the AIO side - same existing aiocb struct and 
+> io_submit syscall) once we merged it,
 
-I thought it did that based on gettimeofday()?  And that ends up
-going through the underlying timer code, which for both of
-the ColdFire timer types doesn't use CLOCK_TICK_RATE. They directly
-use the MCF_CLK definition.
+That was a regression for existing embedded AIO users ;)
 
-Regards
-Greg
+> so IMHO (AIO && !EVENTFD) would be 
+> similar to split AIO in AIO_READ and AIO_WRITE and have (AIO && !AIO_WRITE).
+> Considering that the kernel config, once you unleash the CONFIG_EMBEDDED 
+> pandora box, allows you to select (AIO && !EVENTFD) w/out even a warning 
+> about possible userspace breakages, this makes it rather a confusing 
+> configuration if you ask me.
+
+Sure.  But we do assume that one someone sets CONFIG_EMBEDDED, they
+know what they're doing.  We prefer to give them maximum flexibility
+and foot-shooting ability.  As long as the maintenance cost of doing so
+in each case is reasonable, of course.
+
+> It's not a biggie from the kernel side, just a few ugly errors wrappers 
+> around functions. For me AIO (or whatever userspace visible kernel 
+> subsystem) should select all the components that are part of the userspace 
+> API, but my argument ends here.
+
+Sure, it's not a biggie either way.  Doubtful if many tiny systems are
+using AIO anyway.  Heck, lots of them are running 2.4.18...
+
+But from the general this-is-the-way-we-do-things POV, it's preferred
+that the two features be separable under CONFIG_EMBEDDED if poss.
 
 
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
