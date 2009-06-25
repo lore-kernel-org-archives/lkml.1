@@ -1,156 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZFYIAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZFYIC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZFYIAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZFYIA1
+	id S1755460AbZFYIC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZFYIB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:00:27 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:15256 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZFYIA0 (ORCPT
+	Thu, 25 Jun 2009 04:01:57 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:52927 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbZFYIBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:00:26 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <20090624152732.d6352f4f.akpm@linux-foundation.org>
-References: <1245839904.3210.85.camel@localhost.localdomain>
-	 <20090624152732.d6352f4f.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 10:00:33 +0200
-Message-Id: <1245916833.31755.78.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 04:01:55 -0400
+To: NeilBrown <neilb@suse.de>
+Cc: Mike Snitzer <snitzer@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out of the 'queue' sysfs directory.
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <19010.62951.886231.96622@notabene.brown>
+Date: Thu, 25 Jun 2009 04:00:51 -0400
+In-Reply-To: <19010.62951.886231.96622@notabene.brown> (Neil Brown's message
+	of "Thu, 25 Jun 2009 13:58:31 +1000")
+Message-ID: <yq11vp8spxo.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4A432EB8.0234:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
-> On Wed, 24 Jun 2009 11:38:24 +0100
-> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> 
-> > When writing to 2 (or more) devices at the same time, stop
-> > balance_dirty_pages moving dirty pages to writeback when it has reached
-> > the bdi threshold. This prevents balance_dirty_pages overshooting its
-> > limits and moving all dirty pages to writeback.     
-> > 
-> >     
-> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> > ---
+>>>>> "Neil" == Neil Brown <neilb@suse.de> writes:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Neil,
 
+Neil>  Of these:
 
-[ moved explanation below ]
+Neil>    max_hw_sectors_kb, nr_requests, rq_affinity, iosched/,
+Neil>    max_sectors_kb scheduler nomerges rotational
 
-> > 
-> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> > index 7b0dcea..7687879 100644
-> > --- a/mm/page-writeback.c
-> > +++ b/mm/page-writeback.c
-> > @@ -541,8 +541,11 @@ static void balance_dirty_pages(struct address_space *mapping)
-> >  		 * filesystems (i.e. NFS) in which data may have been
-> >  		 * written to the server's write cache, but has not yet
-> >  		 * been flushed to permanent storage.
-> > +		 * Only move pages to writeback if this bdi is over its
-> > +		 * threshold otherwise wait until the disk writes catch
-> > +		 * up.
-> >  		 */
-> > -		if (bdi_nr_reclaimable) {
-> > +		if (bdi_nr_reclaimable > bdi_thresh) {
-> >  			writeback_inodes(&wbc);
-> >  			pages_written += write_chunk - wbc.nr_to_write;
-> >  			get_dirty_limits(&background_thresh, &dirty_thresh,
-> 
-> yup, we need to think about the effect with zillions of disks.  Peter,
-> could you please take a look?
+Neil>  are really only relevant to the elevator code and those devices
+Neil>  that used that code (ide, scsi, etc).
 
-Looks to have been in that form forever (immediate git history).
-
-When reading the code I read it like:
-
-		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-			break;
-
-		if (nr_reclaimable + nr_writeback <
-				(background_thresh + dirty_thresh) / 2)
-			break;
-
-		if (bdi_nr_reclaimable) {
-			writeback_inodes(&wbc);
-
-Which to me reads:
-
-  - if there's not enough to do, drop out
-  - see if background write-out can catch up, drop out
-  - is there anything to do, yay! work.
-
-/me goes read the changelog, maybe there's a clue in there :-)
-
-> > balance_dirty_pages can overreact and move all of the dirty pages to
-> > writeback unnecessarily.
-> > 
-> > balance_dirty_pages makes its decision to throttle based on the number
-> > of dirty plus writeback pages that are over the calculated limit,so it
-> > will continue to move pages even when there are plenty of pages in
-> > writeback and less than the threshold still dirty.
-> > 
-> > This allows it to overshoot its limits and move all the dirty pages to
-> > writeback while waiting for the drives to catch up and empty the
-> > writeback list. 
-
-Ahhh, indeed, how silly of me not to notice that before!
- 
-> > This is the simplest fix I could find, but I'm not entirely sure that it
-> > alone will be enough for all cases. But it certainly is an improvement
-> > on my desktop machine writing to 2 disks.
-
-Seems good to me.
-
-> > Do we need something more for machines with large arrays where
-> > bdi_threshold * number_of_drives is greater than the dirty_ratio ?
-
-[ I assumed s/dirty_ratio/dirty_thresh/, since dirty_ratio is a ratio
-  and bdi_threshold is an actual value, therefore the inequality above
-  doesn't make sense ]
-
-That cannot actually happen (aside from small numerical glitches).
-
-bdi_threshold = P_i * dirty_thresh, where \Sum P_i = 1
-
-The proportion is relative to the recent writeout speed of the device.
+I'm not sure I completely agree with putting rotational in that bucket.
+It affects the choice of allocation policy in btrfs, for instance.
 
 
-On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
-> Also...  get_dirty_limits() is rather hard to grok.  The callers of
-> get_dirty_limits() treat its three return values as "thresholds", but
-> they're not named as thresholds within get_dirty_limits() itself, which
-> is a bit confusing.  And the meaning of each of those return values is
-> pretty obscure from the code - could we document them please?
 
-Does something like this help?
+Neil>  Of the others:
+Neil>    hw_sector_size - is applicable to all block devices, and could
+Neil>                       reasonably be placed one level up in the
+Neil>                       device directory (along side 'size').
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 7b0dcea..dc2cee1 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -426,6 +426,13 @@ unsigned long determine_dirtyable_memory(void)
- 	return x + 1;	/* Ensure that we never return 0 */
- }
- 
-+/*
-+ * get_dirty_limits() - compute the various dirty limits
-+ *
-+ * @pbackground - dirty limit at which we want to start background write-out
-+ * @pdirty	- total dirty limit, we should not have more dirty than this
-+ * @pdbi_dirty	- the share of @pdirty available to @bdi
-+ */
- void
- get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
- 		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
+hw_sector_size is deprecated.  It's now split into logical and
+physical_block_size.
 
 
+Neil>  Adding a number of extra fields such as minimum_io_size,
+Neil>  optimal_io_size etc to '/queue' seems to increase the number of
+Neil>  aberrations and enforces md and dm device to have a /queue which
+Neil>  is largely irrelevant.
+
+You seem to be hung up on the fact that you don't queue things.  I think
+that's beside the point.  You *do* have a request_queue thanks to
+calling blk_queue_make_request() in md.c.  And there is more to
+request_queue than the values you brought up.  Like the callback
+functions.  I'm not saying that all the values in request_queue apply to
+MD, but I really don't understand what all the fuss is about.  Other
+than the presence of the string "queue" in the choice of naming.
+
+Anyway.  If you look at the request_queue in the current tree you'll see
+that the very limits we are discussing are contained in a separate
+struct.  We can easily move that somewhere else at a later date if that
+is deemed the right thing to do.
+
+
+Neil>    I have suggested to Martin that 2 are enough.  
+
+I think I have covered this in a separate mail.  You are mixing up
+hardware limitations and I/O hints on the grounds that they went in as
+part of the same patch set and live in the same place.
+
+fdisk/mdadm/dmsetup need to use physical_block_size and alignment_offset
+to prevent us from misaligning when setting up partitions and virtual
+block devices.  Also, when stacking devices I need to know these values
+to ensure that the I/O hints set by MD/DM don't conflict with the
+underlying hardware limitations.  There are also special cases like
+shared disk setups and filesystem journal padding that may need to know
+details of the hardware atomicity.
+
+mkfs.* can leverage minimum_io_size and optimal_io_size hints to choose
+block sizes and to lay out data structures on stripe boundaries.  Just
+like we're doing today except using a common interface for all block
+devices instead of poking at MD and LVM internals.
+
+
+logical_block_size, physical_block_size and alignment_offset are
+hardware limits that need to be honored when creating a (virtual) block
+device or partition.
+
+The minimum/optimal write sizes are hints to the *user* of the block
+device about how to lay out things.  If you look at my MD patch you'll
+see that I only set the I/O hints.  The hardware settings are off limits
+for MD.
+
+
+I don't particularly care whether we store the values in queue/,
+topology/, metrics/, limits/ or in the device root.  Nor whether we call
+it minimum_write_size instead of minimum_io_size.  I'll be happy to roll
+up a renaming patch...
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
