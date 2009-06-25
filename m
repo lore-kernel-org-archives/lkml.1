@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZFYNxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZFYNzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbZFYNxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZFYNxK
+	id S1754019AbZFYNzs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFYNzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:53:10 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:43204 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbZFYNxJ (ORCPT
+	Thu, 25 Jun 2009 09:55:41 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36957 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134AbZFYNzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:53:09 -0400
-From: Jens Osterkamp <jens@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 12/19] drivers/net: Use PCI_VDEVICE
-Date: Thu, 25 Jun 2009 15:52:55 +0200
-User-Agent: KMail/1.10.4 (Linux/2.6.27-14-generic; KDE/4.1.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Steffen Klassert <klassert@mathematik.tu-chemnitz.de>,
-       Michael Chan <mchan@broadcom.com>,
-       Eilon Greenstein <eilong@broadcom.com>, Divy Le Ray <divy@chelsio.com>,
-       Samuel Ortiz <samuel@sortiz.org>, Tim Hockin <thockin@hockin.org>,
-       Daniele Venzano <venza@brownhat.org>, Jens Osterkamp <jens@de.ibm.com>,
-       Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
-       Ion Badulescu <ionut@cs.columbia.edu>,
-       Andy Gospodarek <andy@greyhouse.net>,
-       Alexander Indenbaum <baum@tehutinetworks.net>,
-       Samuel Chessman <chessman@tux.org>, Kyle McMartin <kyle@mcmartin.ca>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       David Dillow <dave@thedillows.org>, netdev@vger.kernel.org
-References: <cover.1245906151.git.joe@perches.com>  <f746d5c571120f930fb6bb50d8303766573f927d.1245906152.git.joe@perches.com>
-In-Reply-To: <f746d5c571120f930fb6bb50d8303766573f927d.1245906152.git.joe@perches.com>
+	Thu, 25 Jun 2009 09:55:41 -0400
+Date: Thu, 25 Jun 2009 14:55:32 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream
+	device
+Message-ID: <20090625135532.GB11875@n2100.arm.linux.org.uk>
+References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com> <1245033557-10968-4-git-send-email-swetland@google.com> <20090615132248.GB14555@elf.ucw.cz> <a55d774e0906151125h36ee7c36yb9ecf5fb3fb8e41b@mail.gmail.com> <20090615182850.GA10490@elf.ucw.cz> <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com> <20090624205618.GD9149@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906251552.56458.jens@linux.vnet.ibm.com>
+In-Reply-To: <20090624205618.GD9149@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009, Joe Perches wrote:
+On Wed, Jun 24, 2009 at 10:56:19PM +0200, Pavel Machek wrote:
+> Are there any issues that prevent this from being merged? Russell, can
+> you take those patches?
 
-> drivers/net/spider_net.c          |    3 +-
+I thought Alan's preference was for me to be out of the loop on machine
+specific stuff, and for platform maintainers to push their stuff directly
+into linux-next and to Linus.
 
-spider_net bits look fine.
+If people do want to push stuff via me, that's fine, but they're going to
+have to explicitly ask for it.  If they don't, that's also fine.  (There
+are those who clearly stated that they want my continued involvement and
+review.)
 
-Acked-by: Jens Osterkamp <jens@linux.vnet.ibm.com>
-
-Thanks,
-
-Jens
+In any case, patch 1 looks like it's entirely related to serial stuff, and
+it looks like Alan has some outstanding issues there.  I think that at
+least needs Alan's ack or Alan to deal with it.  The other two look fine
+to me.
