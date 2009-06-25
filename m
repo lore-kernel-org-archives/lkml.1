@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756779AbZFYXFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbZFYXKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756779AbZFYXFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 19:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZFYXFd
+	id S1756417AbZFYXKz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 19:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZFYXKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 19:05:33 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:36467 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbZFYXFc (ORCPT
+	Thu, 25 Jun 2009 19:10:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55640
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752782AbZFYXKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 19:05:32 -0400
-Date: Thu, 25 Jun 2009 17:05:35 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: lenb@kernel.org, twmoure@szypr.net, alessandro.suardi@gmail.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Renninger <trenn@suse.de>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH v3 11/12] ACPI: video: convert to acpi_get_pci_dev
-Message-ID: <20090625230535.GE1723@ldl.fc.hp.com>
-References: <20090610194714.28982.51363.stgit@bob.kio> <20090610195600.28982.3404.stgit@bob.kio> <81b0412b0906251538j2614bf91ya2edbaf120796dfc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <81b0412b0906251538j2614bf91ya2edbaf120796dfc@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 25 Jun 2009 19:10:42 -0400
+Date: Thu, 25 Jun 2009 16:10:46 -0700 (PDT)
+Message-Id: <20090625.161046.19938291.davem@davemloft.net>
+To: jdb@comx.dk
+Cc: christine.caulfield@googlemail.com, paulmck@linux.vnet.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dougthompson@xmission.com, axboe@kernel.dk, kaber@trash.net,
+       Trond.Myklebust@netapp.com, johannes@sipsolutions.net,
+       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
+       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
+       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1245930729.24921.67.camel@localhost.localdomain>
+References: <1245845367.24921.3.camel@localhost.localdomain>
+	<5A680E0A-EFEB-44EA-9F06-F338E6CBD6D1@googlemail.com>
+	<1245930729.24921.67.camel@localhost.localdomain>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+From: Jesper Dangaard Brouer <jdb@comx.dk>
+Date: Thu, 25 Jun 2009 13:52:09 +0200
 
-Thanks for the bug report and sorry for the troubles.
+> On Wed, 2009-06-24 at 14:50 +0100, Chrissie Caulfield wrote:
+>> I don't have any objection to the patch at all, 
+> 
+> Thus assuming an:
+> 
+> Acked-by: Chrissie Caulfield <christine.caulfield@googlemail.com>
+> 
+> (wondering if patchworks picks this up...)
 
-I've already got a debug patch here:
+It usually does.
 
-	http://thread.gmane.org/gmane.linux.kernel/857228/focus=857468
+However, could you formally resubmit just the networking bits
+as that would make life a lot easier for me.
 
-Perhaps you can try it too?
-
-Len, in the mean time, can you please apply this as an emergency,
-"let's not crash anyone else's machine" while I try and figure
-out why the ACPI video driver breaks my assumptions?
-
-Troy, I applied your S-o-B, but maybe that was not a good
-assumption on my part? To be sure, could you please respond with
-your S-o-B?
-
-Thanks.
-
-/ac, wearing a brown paper bag
-
-From: Troy Moure <twmoure@szypr.net>
-
-ACPI: prevent NULL deref in acpi_get_pci_dev()
-
-When the ACPI video driver initializes, it does a namespace walk
-looking for for supported devices. When we find an appropriate
-handle, we walk up the ACPI tree looking for a PCI root bus, and
-then walk back down the PCI bus, assuming that every device
-inbetween is a P2P bridge.
-
-This assumption is not correct, and is reported broken on at
-least:
-
-	Dell Latitude E6400
-	ThinkPad X61
-	Dell XPS M1330
-
-Add a NULL deref check to prevent boot panics.
-
-Reported-by: Alessandro Suardi <alessandro.suardi@gmail.com>
-Signed-off-by: Troy Moure <twmoure@szypr.net>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 8a5bf3b..55b5b90 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -395,7 +395,7 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
- 		fn  = adr & 0xffff;
-
- 		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
--		if (hnd == handle)
-+		if (!pdev || hnd == handle)
- 			break;
-
- 		pbus = pdev->subordinate;
+Thanks a lot Jesper!
