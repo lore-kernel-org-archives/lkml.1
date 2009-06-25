@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZFYUW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZFYUXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZFYUW7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 16:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZFYUWu
+	id S1755318AbZFYUXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 16:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZFYUW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 16:22:50 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34009 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751916AbZFYUWt (ORCPT
+	Thu, 25 Jun 2009 16:22:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45017 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754422AbZFYUW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 16:22:49 -0400
-Date: Thu, 25 Jun 2009 16:20:48 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: tglx@linutronix.de, mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] X86:  Typo fix:  "CONFIG_x86_64" -> "CONFIG_X86_64"
-Message-ID: <alpine.LFD.2.00.0906251618430.14400@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 25 Jun 2009 16:22:57 -0400
+Date: Thu, 25 Jun 2009 13:22:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <alpine.LFD.2.01.0906251259430.3605@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906251317570.3605@localhost.localdomain>
+References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org>
+ <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain> <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com>
+ <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.LFD.2.01.0906251259430.3605@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
----
+On Thu, 25 Jun 2009, Linus Torvalds wrote:
+> 
+> Whether these are important to you or not, I dunno. I actually suspect 
+> that we might want a combination of "high priority + allow memory 
+> freeing", which would be
+> 
+> 	#define GFP_CRITICAL (__GFP_HIGH | __GFP_WAIT)
 
-  i'm assuming this is sufficient.
+Actually, that doesn't work quite the way I intended.
 
-diff --git a/arch/x86/include/asm/boot.h b/arch/x86/include/asm/boot.h
-index 418e632..6f02b9a 100644
---- a/arch/x86/include/asm/boot.h
-+++ b/arch/x86/include/asm/boot.h
-@@ -16,7 +16,7 @@
- 				& ~(CONFIG_PHYSICAL_ALIGN - 1))
+The current page allocator screws up, and doesn't allow us to do this 
+(well, you _can_ combine the flags, but they don't mean what they mean on 
+their own). If you have the WAIT flag set, the page allocator will not set 
+the ALLOC_HARDER bit, so it turns out that GFP_ATOMIC (__GFP_HIGH on its 
+own) sometimes actually allows more allocations than the above 
+GFP_CRITICAL would.
 
- /* Minimum kernel alignment, as a power of two */
--#ifdef CONFIG_x86_64
-+#ifdef CONFIG_X86_64
- #define MIN_KERNEL_ALIGN_LG2	PMD_SHIFT
- #else
- #define MIN_KERNEL_ALIGN_LG2	(PAGE_SHIFT+1)
+It might make more sense to make a __GFP_WAIT allocation set the 
+ALLOC_HARDER bit _if_ it repeats. The problem with doing a loop of 
+allocations outside of the page allocator is that you then miss the 
+subtlety of "try increasingly harder" that the page allocator internally 
+does (well, right now, the "increasingly harder" only exists for the 
+try-to-free path, but we could certainly have it for the try-to-allocate 
+side too)
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+			Linus
