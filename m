@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbZFYQ2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZFYQf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757682AbZFYQ2w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZFYQ2o
+	id S1755868AbZFYQf1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZFYQfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:28:44 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7975 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752678AbZFYQ2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:28:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,291,1243839600"; 
-   d="scan'208";a="425328249"
-Date: Fri, 26 Jun 2009 00:23:45 +0800
-From: Alek Du <alek.du@intel.com>
-To: "ext-phil.2.carmody@nokia.com" <ext-phil.2.carmody@nokia.com>
-CC: "Nikula Jani.1 (EXT-Nixu/Helsinki)" <ext-jani.1.nikula@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Trilok Soni <soni.trilok@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "ben-linux@fluff.org" <ben-linux@fluff.org>
-Subject: Re: [PATCH]input: Change timer function to workqueue for gpio_keys
- driver
-Message-ID: <20090626002345.07928230@dxy.sh.intel.com>
-In-Reply-To: <1245946154.9103.742.camel@pcarmody-desktop>
-References: <20090608152420.0e76c302@dxy.sh.intel.com>
-	<5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
-	<359ed6810906250329x70cf380cy278f23e3ebc6a829@mail.gmail.com>
-	<20090625210642.432e08a5@dxy.sh.intel.com>
-	<1245936693.20530.107.camel@jani-desktop>
-	<20090625220826.1fa7413e@dxy.sh.intel.com>
-	<1245941565.20530.134.camel@jani-desktop>
-	<1245942355.20530.141.camel@jani-desktop>
-	<20090625230949.53beda65@dxy.sh.intel.com>
-	<1245944528.20530.145.camel@jani-desktop>
-	<20090625234846.1b987069@dxy.sh.intel.com>
-	<1245946154.9103.742.camel@pcarmody-desktop>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 25 Jun 2009 12:35:17 -0400
+Received: from outbound-mail-13.bluehost.com ([69.89.18.113]:34381 "HELO
+	outbound-mail-13.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753055AbZFYQfP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 12:35:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=iStzZzn9IFEOyLCTx5KTdSKzn0QPblgHO5deUavT+C5wrZvMGRzUfbbGi9F9dlfftpIXb6Tb8VJrj0PWdRIpFQ4WrM1OfbUKr/mP9G/FKqcnZg2Ohk2YSLwa4aqOTb6s;
+Date: Thu, 25 Jun 2009 09:28:35 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Gary Hade <garyhade@us.ibm.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [PATCH] x86/pci: don't use crs for root if we only have one
+ root bus
+Message-ID: <20090625092835.77fbd732@jbarnes-g45>
+In-Reply-To: <20090625070347.GB2676@elte.hu>
+References: <20090624122433.GA24781@elte.hu>
+	<20090624145119.GA12664@elte.hu>
+	<4A429EBB.5010209@kernel.org>
+	<4A42AFAC.6000300@kernel.org>
+	<alpine.LFD.2.01.0906241607100.18460@localhost.localdomain>
+	<alpine.LFD.2.01.0906241615160.18460@localhost.localdomain>
+	<20090624163705.0389c8f0@jbarnes-g45>
+	<alpine.LFD.2.01.0906241645300.3605@localhost.localdomain>
+	<20090624170114.385322df@jbarnes-g45>
+	<20090625070347.GB2676@elte.hu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009 00:09:14 +0800
-Phil Carmody <ext-phil.2.carmody@nokia.com> wrote:
+On Thu, 25 Jun 2009 09:03:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> If you stopped calling the delay after the first transition "debouncing
-> time" and simply called it a "delay" you might more easily see that it
-> does *no* debouncing at all. Imagine putting noise on the line
-> constantly - the original code's timer would never expire. Your timer
-> will expire after a delay, and while the line is still toggling
-> frantically - you've not debounced.
-
-I don't know if it is really meaningful if you want to handle such pool signal... 
-Ok, if you want to handle this ultimate case, will this patch work?
-
-        BUG_ON(irq != gpio_to_irq(button->gpio));
-
-+       cancel_delayed_work_sync(&bdata->work);
-        delay = button->debounce_interval ?
-                        msecs_to_jiffies(button->debounce_interval) : 0;
-        schedule_delayed_work(&bdata->work, delay);
-
-Alek
-> Please investigate the meaning and implications of "debouncing" before
-> claiming your code does it.
 > 
-> Phil
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
+> > > [ There's a difference between "we're supposed to find and fix
+> > > bugs in the -rc series", and "I release known-buggy -rc1's since
+> > > we're supposed to fix it later". For similar reasons, I hate
+> > > pulling known-buggy stuff during the merge window - it's ok if it
+> > > shows itself to be buggy _later_, but if people send me stuff
+> > > that they know is buggy as they send it to me, then that's a
+> > > problem. ]
+> > 
+> > Yeah, 100% agreed.  I didn't hear any reports until after people 
+> > started using your tree, so I think this case was handled 
+> > correctly: push something that *seems* ok upstream, but with eyes 
+> > wide open for the possibility we'd need to revert.
+> 
+> There's only one small gripe i have with the handling of it: the 
+> timing. "9e9f46c: PCI: use ACPI _CRS data by default" was written 
+> and committed on June 11th, two days _after_ the merge window 
+> opened.
+> 
+> That's way too late for maybe-broken changes to x86 lowlevel details 
+> (especially if it touches hw-environmental interaction - which is 
+> very hard to test with meaningful coverage), and it's also pretty 
+> much the worst moment to solicit testing from people who are busy 
+> getting their stuff to Linus and who are busy testing out any of the 
+> unexpected interactions and bugs.
+
+True, the patch had been around long before that and I definitely
+should have committed it sooner.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
