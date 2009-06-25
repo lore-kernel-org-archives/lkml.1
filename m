@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZFYKLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZFYKLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754876AbZFYKLI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZFYKK4
+	id S1756061AbZFYKLx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZFYKLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:10:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42635 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZFYKKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:10:55 -0400
-Date: Thu, 25 Jun 2009 10:09:54 GMT
-From: tip-bot for Johannes Weiner <hannes@cmpxchg.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       stefani@seibold.net, a.p.zijlstra@chello.nl, hannes@cmpxchg.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu, adobriyan@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stefani@seibold.net, a.p.zijlstra@chello.nl, hannes@cmpxchg.org,
-       ebiederm@xmission.com, akpm@linux-foundation.org, tglx@linutronix.de,
-       adobriyan@gmail.com, mingo@elte.hu
-In-Reply-To: <20090624190835.GA25548@cmpxchg.org>
-References: <20090624190835.GA25548@cmpxchg.org>
-Subject: [tip:perfcounters/urgent] perf record: Fix filemap pathname parsing in /proc/pid/maps
-Message-ID: <tip-76c64c5e4c47b6d28deb3cae8dfa07a93c2229dc@git.kernel.org>
-Git-Commit-ID: 76c64c5e4c47b6d28deb3cae8dfa07a93c2229dc
-X-Mailer: tip-git-log-daemon
+	Thu, 25 Jun 2009 06:11:46 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:41352 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbZFYKLp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 06:11:45 -0400
+Date: Thu, 25 Jun 2009 12:11:47 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] gcov: fix __ctors_start alignment
+Message-ID: <20090625101147.GB5051@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 10:09:56 +0000 (UTC)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  76c64c5e4c47b6d28deb3cae8dfa07a93c2229dc
-Gitweb:     http://git.kernel.org/tip/76c64c5e4c47b6d28deb3cae8dfa07a93c2229dc
-Author:     Johannes Weiner <hannes@cmpxchg.org>
-AuthorDate: Wed, 24 Jun 2009 21:08:36 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Jun 2009 11:35:58 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-perf record: Fix filemap pathname parsing in /proc/pid/maps
+The ctors section for each object file is eight byte aligned (on 64 bit).
+However the __ctors_start symbol starts at an arbitrary address dependent
+on the size of the previous sections.
+Therefore the linker may add some zeroes after __ctors_start to make sure
+the ctors contents are properly aligned. However the extra zeroes at the
+beginning aren't expected by the code. When walking the functions pointers
+contained in there and extra zeroes are added this may result in random
+jumps.
+So make sure that the __ctors_start symbol is always aligned as well.
 
-Looking backward for the first space from the end of a line in
-/proc/pid/maps does not find the start of the pathname of the mapped
-file if it contains a space.
+Fixes this crash on an allyesconfig on s390:
 
-Since the only slashes we have in this file occur in the (absolute!)
-pathname column of file mappings, looking for the first slash in a
-line is a safe method to find the name.
+[    0.582482] Kernel BUG at 0000000000000012 [verbose debug info unavailable] 
+[    0.582489] illegal operation: 0001 [#1] SMP DEBUG_PAGEALLOC 
+[    0.582496] Modules linked in: 
+[    0.582501] CPU: 0 Tainted: G        W  2.6.31-rc1-dirty #273 
+[    0.582506] Process swapper (pid: 1, task: 000000003f218000, ksp: 000000003f2238e8) 
+[    0.582510] Krnl PSW : 0704200180000000 0000000000000012 (0x12) 
+[    0.582518]            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:0 CC:2 PM:0 EA:3 
+[    0.582524] Krnl GPRS: 0000000000036727 0000000000000010 0000000000000001 0000000000000001 
+[    0.582529]            00000000001dfefa 0000000000000000 0000000000000000 0000000000000040 
+[    0.582534]            0000000001fff0f0 0000000001790628 0000000002296048 0000000002296048 
+[    0.582540]            00000000020c438e 0000000001786000 0000000002014a66 000000003f223e60 
+[    0.582553] Krnl Code:>0000000000000012: 0000                unknown 
+[    0.582559]            0000000000000014: 0000                unknown 
+[    0.582564]            0000000000000016: 0000                unknown 
+[    0.582570]            0000000000000018: 0000                unknown 
+[    0.582575]            000000000000001a: 0000                unknown 
+[    0.582580]            000000000000001c: 0000                unknown 
+[    0.582585]            000000000000001e: 0000                unknown 
+[    0.582591]            0000000000000020: 0000                unknown 
+[    0.582596] Call Trace: 
+[    0.582599] ([<0000000002014a46>] kernel_init+0x622/0x7a0) 
+[    0.582607]  [<0000000000113e22>] kernel_thread_starter+0x6/0xc 
+[    0.582615]  [<0000000000113e1c>] kernel_thread_starter+0x0/0xc 
+[    0.582621] INFO: lockdep is turned off. 
+[    0.582624] Last Breaking-Event-Address: 
+[    0.582627]  [<0000000002014a64>] kernel_init+0x640/0x7a0 
 
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Stefani Seibold <stefani@seibold.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090624190835.GA25548@cmpxchg.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Cc: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
- tools/perf/builtin-record.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ include/asm-generic/vmlinux.lds.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index d7ebbd7..9b899ba 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -306,12 +306,11 @@ static void pid_synthesize_mmap_samples(pid_t pid)
- 			continue;
- 		pbf += n + 3;
- 		if (*pbf == 'x') { /* vm_exec */
--			char *execname = strrchr(bf, ' ');
-+			char *execname = strchr(bf, '/');
+Index: linux-2.6/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6/include/asm-generic/vmlinux.lds.h
+@@ -441,7 +441,8 @@
+ 	}
  
--			if (execname == NULL || execname[1] != '/')
-+			if (execname == NULL)
- 				continue;
- 
--			execname += 1;
- 			size = strlen(execname);
- 			execname[size - 1] = '\0'; /* Remove \n */
- 			memcpy(mmap_ev.filename, execname, size);
+ #ifdef CONFIG_CONSTRUCTORS
+-#define KERNEL_CTORS()	VMLINUX_SYMBOL(__ctors_start) = .; \
++#define KERNEL_CTORS()	. = ALIGN(8);			   \
++			VMLINUX_SYMBOL(__ctors_start) = .; \
+ 			*(.ctors)			   \
+ 			VMLINUX_SYMBOL(__ctors_end) = .;
+ #else
