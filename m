@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756447AbZFYTLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZFYTWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756447AbZFYTLX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYTLO
+	id S1756055AbZFYTWF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFYTVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:11:14 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:57888 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbZFYTLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:11:14 -0400
-Message-ID: <4A43CBB9.7040903@ti.com>
-Date: Thu, 25 Jun 2009 14:10:49 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: john stultz <johnstul@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] Dynamic Tick: Prevent clocksource wrapping during
- idle
-References: <4A1D52E3.3040204@ti.com>  <alpine.LFD.2.00.0905271731070.3397@localhost.localdomain> <1243455615.7440.17.camel@localhost.localdomain> <alpine.LFD.2.00.0905272229190.3397@localhost.localdomain> <4A1EF244.5040108@ti.com> <alpine.LFD.2.00.0905282231500.3397@localhost.localdomain> <4A1EFDBD.8040007@ti.com> <4A208538.3040406@ti.com> <4A282089.5020103@ti.com>
-In-Reply-To: <4A282089.5020103@ti.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 15:21:55 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:53911 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751926AbZFYTVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 15:21:54 -0400
+Date: Thu, 25 Jun 2009 21:24:12 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Bug in arch/x86/include/asm/boot.h [Was: next cleanup report:  "bad" references to CONFIG variables]
+Message-ID: <20090625192412.GA15823@uranus.ravnborg.org>
+References: <alpine.LFD.2.00.0906251028270.24694@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0906251028270.24694@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Jon Hunter wrote:
-> Jon Hunter wrote:
->> Jon Hunter wrote:
->>> +		 * Calculate the time delta for the next timer event.
->>> +		 * If the time delta exceeds the maximum time delta
->>> +		 * permitted by the current clocksource then adjust
->>> +		 * the time delta accordingly to ensure the
->>> +		 * clocksource does not wrap.
->>> +		 */
->>> +		time_delta = tick_period.tv64 * delta_jiffies;
->> Thinking about this more, although it is very unlikely, for 64-bit 
->> machines there is a chance that the above multiply could overflow if 
->> delta_jiffies is very large.
->>
->> tick_period.tv64 should always be less than NSEC_PER_SEC and so you 
->> would need delta_jiffies to be greater than 2^32 to cause overflow. On a 
->> 32-bit machine an unsigned long will not be greater than 2^32 as it is 
->> only 32-bits but this would be possible on a 64-bit machines.
->>
->> So to be safe we should make sure that delta_jiffies is not greater than 
->>   NEXT_TIMER_MAX_DELTA (2^30 - 1) before doing the multiply. If you 
->> think that this is a valid concern, then I can re-work and re-post. 
->> Sorry for not catching this before.
+On Thu, Jun 25, 2009 at 10:34:05AM -0400, Robert P. J. Day wrote:
 > 
-> With regard to the above, to ensure that there are no overflows with the 
-> above calculation, I re-worked this patch a little. The below should be 
-> equivalent to the current code, just re-organised a little. Let me know 
-> if this would be acceptable or not.
+>   here's the next cleanup report that's well underway -- "bad"
+> references to CONFIG variables that don't exist in any Kconfig file:
+> 
+>   http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
+> 
+> (currently, only the arch/ and drivers/ directories have been updated
+> -- the rest should be done shortly.)
+> 
+>   in a nutshell, that's a list of references to variables of the form
+> CONFIG_*, where there is no such variable defined anywhere in a
+> Kconfig file.  some possible reasons for that:
+> 
+>   1) leftover historical cruft
+>   2) simple typo
+>   3) someone's added code without adding the Kconfig infrastructure
+>      for it (annoyingly, there appears to be quite a lot of that)
+>   4) someone likes to name their macros with a "CONFIG_" prefix just
+>      to pollute the Kconfig namespace (argh)
+> 
 
-Hi Thomas, John,
+Care to send a patch to fix the one in arch/x86/include/asm/boot.h?
 
-Did you guys have chance to review this? Let me know if you have any 
-further comments/feedback.
+> in any event, it's all there (some of it starting to look awfully
+> familiar as the years go by).
 
-Cheers
-Jon
+>  as always, ignore the false positives.
+If you continue this then please filter the know false positives.
+For once start ignoring defconfigs.
+
+	Sam
