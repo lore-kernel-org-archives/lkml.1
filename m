@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbZFYDMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbZFYDP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbZFYDMP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 23:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZFYDMA
+	id S1758328AbZFYDP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 23:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZFYDPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 23:12:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54346 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848AbZFYDL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 23:11:59 -0400
-Date: Wed, 24 Jun 2009 20:11:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix error handling in add_disk
-Message-Id: <20090624201154.7e89cbee.akpm@linux-foundation.org>
-In-Reply-To: <200906241218.13538.knikanth@suse.de>
-References: <200906171231.10438.knikanth@suse.de>
-	<20090623142357.b2050c14.akpm@linux-foundation.org>
-	<200906241218.13538.knikanth@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 24 Jun 2009 23:15:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36703 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752636AbZFYDPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 23:15:22 -0400
+Date: Thu, 25 Jun 2009 13:15:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>, Al Viro <viro@zeniv.linux.org.uk>
+Subject: linux-next: manual merge of the block tree with Linus' tree
+Message-Id: <20090625131517.d9adc935.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__25_Jun_2009_13_15_17_+1000_unMPI5.OUDdM8Kkc"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 12:18:13 +0530 Nikanth Karthikesan <knikanth@suse.de> wrote:
+--Signature=_Thu__25_Jun_2009_13_15_17_+1000_unMPI5.OUDdM8Kkc
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Wednesday 24 June 2009 02:53:57 Andrew Morton wrote:
-> > On Wed, 17 Jun 2009 12:31:10 +0530
-> >
-> > Nikanth Karthikesan <knikanth@suse.de> wrote:
-> > > Fix error handling in add_disk. Also add WARN_ON()'s in case
-> > > of error, which can be removed once the callers handle the error.
-> >
-> > I have a vague ancestral memory that some of the unchecked errors which
-> > you're now checking for actually do happen in practice, and that this
-> > "fix" will end up breaking currently-working setups.
-> >
-> > Or maybe I'm thinking of a similar but different piece of code (maybe
-> > it was the partition code?).
-> >
-> > Still, I think it would be prudent to initially make this patch
-> > continue to ignore the errors.  So add the warnings, but don't change
-> > the response to errors.  Then we can get the change distributed for a
-> > bit of testing and if that all looks good then we can add the control
-> > flow changes later.
-> >
-> 
-> add_disk and blk_register_region are functions returning void masking the
-> error
+Hi Jens,
 
-ugh, we're bad.
+Today's linux-next merge of the block tree got a conflict in
+fs/fs-writeback.c between commit 01c031945f2755c7afaaf456088543312f2b72ea
+("cleanup __writeback_single_inode") from Linus' tree and commit
+385b54f15a82a85a505e0f5e8579605f5742c648 ("writeback: move dirty inodes
+from super_block to backing_dev_info") from the block tree (and probably
+others).
 
-> which this patch changes. So no caller check for it's return value! And
-> hence errors are ignored, and nothing breaks.
+I can't see how to easily fix this up, so I have dropped the block tree
+for today (since it only contained 2.6.32 material, right?).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-It _does_ change behaviour.  add_disk() can now bale out if, for
-example, sysfs_create_link() failed.  As it commonly does, due to
-various screwups.
+--Signature=_Thu__25_Jun_2009_13_15_17_+1000_unMPI5.OUDdM8Kkc
+Content-Type: application/pgp-signature
 
-> > >  	retval = blk_alloc_devt(&disk->part0, &devt);
-> > >  	if (retval) {
-> > >  		WARN_ON(1);
-> > > -		return;
-> > > +		goto err_out;
-> > >  	}
-> > > ...
-> > > +	if (retval) {
-> > > +		WARN_ON(1);
-> > > +		goto err_free_devt;
-> > > +	}
-> > > ...
-> > > +	if (retval) {
-> > > +		WARN_ON(1);
-> > > +		goto err_free_region;
-> > > +	}
-> > > ...
-> > > -	WARN_ON(retval);
-> > > +	if (retval) {
-> > > +		WARN_ON(1);
-> > > +		goto err_free_queue;
-> > > +	}
-> >
-> > These all can be coded as
-> >
-> > 	if (WARN_ON(retval))
-> > 		goto foo;
-> 
-> done.
-> 
-> Thanks
-> Nikanth
-> 
-> 
-> Fix error handling in add_disk. Also add WARN_ON()'s in case
-> of error, which can be removed once the callers handle the error.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-The changelog hasn't been updated to reflect this discussion.  There's
-information missing here.
+iEYEARECAAYFAkpC68UACgkQjjKRsyhoI8wEiACePOgcCw0dlfbPEbAj9WzNJ1Kr
+Jx4AoJesgSm/an7/PvJrYFaMO5w7DvHp
+=SqwO
+-----END PGP SIGNATURE-----
 
-
-Also, why was this patch written?  Have you observed some behaviour
-which this patch improved or corrected?
-
-I applaud the effort, but it's obviously incomplete.  Do you intend to
-add further error checking and handling in this area?
+--Signature=_Thu__25_Jun_2009_13_15_17_+1000_unMPI5.OUDdM8Kkc--
