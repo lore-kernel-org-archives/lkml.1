@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZFYQlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZFYQmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757392AbZFYQlS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZFYQlH
+	id S1758192AbZFYQmC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:42:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbZFYQly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:41:07 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:29795 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752916AbZFYQlG (ORCPT
+	Thu, 25 Jun 2009 12:41:54 -0400
+Received: from outbound-mail-32.bluehost.com ([69.89.18.152]:51745 "HELO
+	outbound-mail-32.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752133AbZFYQly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:41:06 -0400
-Date: Thu, 25 Jun 2009 10:41:09 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Troy Moure <twmoure@szypr.net>
-Cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.31-rc1] oops in acpi_get_pci_dev
-Message-ID: <20090625164109.GK17633@ldl.fc.hp.com>
-References: <alpine.LFD.2.00.0906251548300.2760@troy-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906251548300.2760@troy-laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 25 Jun 2009 12:41:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=p1ZXv4xBjSIxHEPscR1Qgj6JjcWoXR9TDfpCnCx+s5FsoRui5ddTt8bKGibqQT9nSMw5+yu0ENnG6kgh4eyXDbEj0MfX0FqOAehbTxQqA8GijBMXIAZqlXuqLT2yCqGa;
+Date: Thu, 25 Jun 2009 09:41:52 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andres Freund <andres@anarazel.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@redhat.com>
+Subject: Re: [BUG] GM45 blanks shortly after boot in 2.6.30-git
+Message-ID: <20090625094152.179740c0@jbarnes-g45>
+In-Reply-To: <4A43359F.3030208@anarazel.de>
+References: <4A43359F.3030208@anarazel.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Troy Moure <twmoure@szypr.net>:
-> Alessandro Suardi wrote:
-> > On boot:
-> ...
-> > kernel: BUG: unable to handle kernel NULL pointer dereference at
-> > 0000000000000018
-> > kernel: IP: [<ffffffff8121b556>] acpi_get_pci_dev+0x113/0x17
-> ...
-> > Dell Latitude E6400 x86_64 SMP with Fedora 11 userspace.
-> 
-> > Box continues working after Oops, but locks up when exiting X session.
-> 
-> > 2.6.30-git22 works fine (probably because acpi_get_pci_dev is
-> > introduced in -rc1)
+On Thu, 25 Jun 2009 10:30:23 +0200
+Andres Freund <andres@anarazel.de> wrote:
 
-Sorry about this panic. I was nervous about touching the ACPI
-backlight stuff, and with good reason, it seems.
-
-> I've encountered what seems to be the same issue (a NULL pointer 
-> dereference in acpi_get_pci_dev()).  In my case, it caused a kernel panic 
-> during boot (so I don't have any text logs to attach).
+> Hi,
 > 
-> In my case, pci_get_slot() is returning a NULL pointer that  
-> acpi_get_pci_dev() doesn't check for.  The following patch fixes things 
-> for me.  Does it work for you, Alessandro?
+> Somewhere between:
+> 03347e2592078a90df818670fddf97a33eec70fb (2.6.30 + 5415 commits)
+> and
+> c82e6d450fda56cb2d4f68534173d3cd11b32f9f (2.6.30 + 8722 commits)
+> my Laptop (Lenovo T500) with an Intel GM45 graphics card blanks
+> display during boot (before starting with initramfs) , stops
+> responding to anything (i.e. no caps-lock light) and shows no further
+> activity (i.e. no hdd activity).
 > 
-> (I don't know if it's the "right" fix or not, not being familiar with the 
-> system.  If it is, I can send it in as a proper patch.)
+> Before the blank I did not see any sign of a backtrace or similar,
+> but its hard to say there wasn't any. Unfortunately atm I don't have
+> another computer nearby, so I could not get a network console output
+> yet.
 
-Let me have a think about this.
+So the i915 driver probably loaded and turned off your display, either
+by programming a bad mode or misdetecting something else...
 
-Thanks.
+> Any other information needed?
 
-/ac
+Can you try loading the drm module with debug=1?  That should give us
+some more info about what's going on.
 
-> 
-> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-> index 8a5bf3b..55b5b90 100644
-> --- a/drivers/acpi/pci_root.c
-> +++ b/drivers/acpi/pci_root.c
-> @@ -395,7 +395,7 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
->  		fn  = adr & 0xffff;
->  
->  		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
-> -		if (hnd == handle)
-> +		if (!pdev || hnd == handle)
->  			break;
->  
->  		pbus = pdev->subordinate;
-> 
+A bisect would help too of course...
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
