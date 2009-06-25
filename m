@@ -1,61 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbZFYAYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZFYA0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918AbZFYAYu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 20:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZFYAYl
+	id S1755892AbZFYA0j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 20:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZFYA03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 20:24:41 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:52957 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZFYAYk (ORCPT
+	Wed, 24 Jun 2009 20:26:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47210 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752682AbZFYA02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 20:24:40 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 24 Jun 2009 17:19:25 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Gregory Haskins <ghaskins@novell.com>, mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
- notifier race conditions
-In-Reply-To: <alpine.DEB.1.10.0906230730550.16382@makko.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.1.10.0906241714590.30928@makko.or.mcafeemobile.com>
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <4A3E7E63.1070407@novell.com> <alpine.DEB.1.10.0906211613200.8816@makko.or.mcafeemobile.com> <200906231255.17015.rusty@rustcorp.com.au>
- <alpine.DEB.1.10.0906230730550.16382@makko.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 24 Jun 2009 20:26:28 -0400
+Date: Wed, 24 Jun 2009 17:26:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, vapier@gentoo.org
+Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not
+  mounted
+Message-Id: <20090624172602.f3afd25d.akpm@linux-foundation.org>
+In-Reply-To: <1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
+References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com>
+	<20090624162125.a3a9b2c4.akpm@linux-foundation.org>
+	<1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009, Davide Libenzi wrote:
+On Thu, 25 Jun 2009 01:49:13 +0200
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
 
-> On Tue, 23 Jun 2009, Rusty Russell wrote:
-> 
-> > The first 'struct eventfd_ctx;' line is not required.
-> 
-> Will repost dropping that.
+> Propose some other way to make it possible to re-execute a binary
+> without /proc.
 
-Almost forgot. While fixing lg.h to drop the fwd declaration, I noticed 
-there's another one ;)
+Add a system call to do this?
 
 
-- Davide
-
-
---- a/drivers/lguest/lg.h	2009-06-15 15:35:24.000000000 -0700
-+++ b/drivers/lguest/lg.h	2009-06-24 17:08:26.000000000 -0700
-@@ -38,8 +38,6 @@
- #define CHANGED_GDT_TLS		4 /* Actually a subset of CHANGED_GDT */
- #define CHANGED_ALL	        3
- 
--struct lguest;
--
- struct lg_cpu {
- 	unsigned int id;
- 	struct lguest *lg;
