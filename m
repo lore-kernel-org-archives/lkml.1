@@ -1,105 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZFYBjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZFYBtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZFYBjy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 21:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZFYBjr
+	id S1755199AbZFYBtm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 21:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZFYBtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 21:39:47 -0400
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:60573 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752430AbZFYBjq convert rfc822-to-8bit (ORCPT
+	Wed, 24 Jun 2009 21:49:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53326 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbZFYBtc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 21:39:46 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 24 Jun 2009 21:49:32 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH v3] slow-work: add (module*)work->owner to fix races with
+	module clients
+To: linux-kernel@vger.kernel.org
+Cc: dhowells@redhat.com
+Date: Wed, 24 Jun 2009 21:49:22 -0400
+Message-ID: <20090625014520.449.98923.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [spi-devel-general] [PATCH] SST25L (non JEDEC) SPI Flash driver
-Date: Wed, 24 Jun 2009 21:39:46 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909019BE1CE@mi8nycmail19.Mi8.com>
-In-Reply-To: <4A3F017B.2010409@bluewatersys.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [spi-devel-general] [PATCH] SST25L (non JEDEC) SPI Flash driver
-Thread-Index: Acny7Zc4SWEyo9NCTSOyHEHux5phawCRQZJg
-References: <4A3F017B.2010409@bluewatersys.com>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Ryan Mallon" <ryan@bluewatersys.com>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       <linux-mtd@lists.infradead.org>,
-       <spi-devel-general@lists.sourceforge.net>, <mike@steroidmicros.com>,
-       "linux kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Jun 2009 01:39:47.0617 (UTC) FILETIME=[D2D75910:01C9F535]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, June 21, 2009 8:59 PM, Ryan Mallon wrote:
->
-> Add support for the non JEDEC SST25L SPI Flash devices.
->
-> Signed-off-by: Andre Renaud <andre@bluewatersys.com>
-> Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+(Try 3: applies to Linus' git master:626f380d)
 
-> +struct flash_info {
-> +	const char		*name;
-> +	u16			device_id;
-> +	unsigned		page_size;
-> +	unsigned		nr_pages;
-> +	unsigned		erase_size;
-> +};
-> +
-> +#define to_sst25l_flash(x) container_of(x, struct sst25l_flash, mtd)
-> +
-> +static struct flash_info __devinitdata sst25l_flash_info[] = {
-> +	{"sst25lf020a", 0xbf43, 256, 1024, 32 * 1024},
-> +	{"sst25lf040a",	0xbf44,	256, 2048, 32 * 1024},
-> +};
-> +
+[ Changelog:
 
-Ryan,
+    v3:
+        *) moved (module*)owner to slow_work_ops 
+        *) removed useless barrier()
+	*) updated documentation/comments 
 
-I finally got a chance to test this on my hardware.  Previously
-I was using a hacked version on the m25p80 driver to access the
-SST23LF020A on my board.
+    v2:
+	*) cache "owner" value to prevent invalid access after put_ref
 
-The driver works fine but you are only supporting the block erase,
-SST25L_CMD_BLOCK_ERASE (opcode 0x52).  The SST25L chips also can do a
-sector erase (opcode 0x20) and a full chip erase (opcode 0x60).
+    v1:
+	*) initial release
+]
 
-The full chip erase is not that important but might give a slight
-performance increase on larger devices.  Max block erase time is
-listed as 25ms at 25MHz in the datasheet.  The SST25LF020A contains
-8 blocks so it's "typical" full chip erase time should be around
-200ms.  For comparison, the chip erase time is listed as 100ms.
 
-The sector erase is a bigger deal.  On the EDB93xx boards one of the
-SPI flash uses is used to store the MAC address at offset 0x2000 (4K
-offset).  The board can also be configured to boot from offset 0x0000
-in the SPI flash.  This basically gives the user a three partition
-setup:
+-------------------------
 
-static struct mtd_partition edb93xx_spi_flash_partitions[] = {
-	{
-		.name	= "SPI bootstrap",
-		.offset	= 0,
-		.size	= SZ_4K,
-	}, {
-		.name	= "Bootstrap config",
-		.offset	= MTDPART_OFS_APPEND,
-		.size	= SZ_4K,
-	}, {
-		.name	= "unallocated",
-		.offset	= MTDPART_OFS_APPEND,
-		.size	= MTDPART_SIZ_FULL,
-	},
-};
+slow-work: add (module*)work->owner to fix races with module clients
 
-Without the sector erase this partition setup results in all of the
-partitions being forced read-only.
+The slow_work facility was designed to use reference counting instead of
+barriers for synchronization.  The reference counting mechanism is
+implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
+problematic for module use of the slow_work facility because it is
+impossible to synchronize against the .text installed in the callbacks:
+There is no way to ensure that the slow-work threads have completely
+exited the .text in question and rmmod may yank it out from under the
+slow_work thread.
 
-Just my two cents...
+This patch attempts to address this issue by mapping "struct module* owner"
+to the slow_work_ops item, and maintaining a module reference
+count coincident with the more externally visible reference count.  Since
+the slow_work facility is resident in kernel, it should be a race-free
+location to issue a module_put() call.  This will ensure that modules
+can properly cleanup before exiting.
 
-Regards,
-Hartley
+A module_get()/module_put() pair on slow_work_enqueue() and the subsequent
+dequeue technically adds the overhead of the atomic operations for every
+work item scheduled.  However, slow_work is designed for deferring
+relatively long-running and/or sleepy tasks to begin with, so this
+overhead will hopefully be negligible.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+CC: David Howells <dhowells@redhat.com>
+---
+
+ Documentation/slow-work.txt |    6 +++++-
+ include/linux/slow-work.h   |    3 +++
+ kernel/slow-work.c          |   20 +++++++++++++++++++-
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
+index ebc50f8..2a38878 100644
+--- a/Documentation/slow-work.txt
++++ b/Documentation/slow-work.txt
+@@ -80,6 +80,7 @@ Slow work items may then be set up by:
+  (2) Declaring the operations to be used for this item:
+ 
+ 	struct slow_work_ops myitem_ops = {
++	        .owner   = THIS_MODULE,
+ 		.get_ref = myitem_get_ref,
+ 		.put_ref = myitem_put_ref,
+ 		.execute = myitem_execute,
+@@ -102,7 +103,10 @@ A suitably set up work item can then be enqueued for processing:
+ 	int ret = slow_work_enqueue(&myitem);
+ 
+ This will return a -ve error if the thread pool is unable to gain a reference
+-on the item, 0 otherwise.
++on the item, 0 otherwise.  Loadable modules may only enqueue work if at least
++one reference to the module is known to be held.  The slow-work infrastructure
++will acquire a reference to the module and hold it until after the item's
++reference is dropped, assuring the stability of the callback.
+ 
+ 
+ The items are reference counted, so there ought to be no need for a flush
+diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
+index b65c888..1382918 100644
+--- a/include/linux/slow-work.h
++++ b/include/linux/slow-work.h
+@@ -17,6 +17,7 @@
+ #ifdef CONFIG_SLOW_WORK
+ 
+ #include <linux/sysctl.h>
++#include <linux/module.h>
+ 
+ struct slow_work;
+ 
+@@ -24,6 +25,8 @@ struct slow_work;
+  * The operations used to support slow work items
+  */
+ struct slow_work_ops {
++	struct module *owner;
++
+ 	/* get a ref on a work item
+ 	 * - return 0 if successful, -ve if not
+ 	 */
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 09d7519..18dee34 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -145,6 +145,15 @@ static unsigned slow_work_calc_vsmax(void)
+ 	return min(vsmax, slow_work_max_threads - 1);
+ }
+ 
++static void slow_work_put(struct slow_work *work)
++{
++	/* cache values that are needed during/after pointer invalidation */
++	struct module *owner = work->ops->owner;
++
++	work->ops->put_ref(work);
++	module_put(owner);
++}
++
+ /*
+  * Attempt to execute stuff queued on a slow thread.  Return true if we managed
+  * it, false if there was nothing to do.
+@@ -219,7 +228,7 @@ static bool slow_work_execute(void)
+ 		spin_unlock_irq(&slow_work_queue_lock);
+ 	}
+ 
+-	work->ops->put_ref(work);
++	slow_work_put(work);
+ 	return true;
+ 
+ auto_requeue:
+@@ -299,6 +308,14 @@ int slow_work_enqueue(struct slow_work *work)
+ 		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
+ 			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
+ 		} else {
++			/*
++			 * Callers must ensure that their module has at least
++			 * one reference held while the work is enqueued.  We
++			 * will acquire another reference here and drop it
++			 * once we do the last ops->put_ref()
++			 */
++			__module_get(work->ops->owner);
++
+ 			if (work->ops->get_ref(work) < 0)
+ 				goto cant_get_ref;
+ 			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
+@@ -313,6 +330,7 @@ int slow_work_enqueue(struct slow_work *work)
+ 	return 0;
+ 
+ cant_get_ref:
++	module_put(work->ops->owner);
+ 	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
+ 	return -EAGAIN;
+ }
+
