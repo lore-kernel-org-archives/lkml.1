@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZFYENj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbZFYEO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbZFYENj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 00:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZFYENb
+	id S1755359AbZFYEO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 00:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbZFYEOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 00:13:31 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:46768 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZFYENa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 00:13:30 -0400
-Date: Thu, 25 Jun 2009 13:12:28 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: linux-next: origin tree build failure
-Message-ID: <20090625041228.GD13668@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Baruch Siach <baruch@tkos.co.il>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Linus <torvalds@linux-foundation.org>, linux-next@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ben Dooks <ben-linux@fluff.org>
-References: <20090625111344.35febd82.sfr@canb.auug.org.au> <20090625032407.GO6027@tarshish>
-MIME-Version: 1.0
+	Thu, 25 Jun 2009 00:14:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44209 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbZFYEOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 00:14:19 -0400
+Date: Thu, 25 Jun 2009 06:14:21 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, David Rientjes <rientjes@google.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090625041421.GB15782@wotan.suse.de>
+References: <4A426825.80905@cs.helsinki.fi> <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090625032407.GO6027@tarshish>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090624145615.2ff9e56e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 06:24:08AM +0300, Baruch Siach wrote:
-> Hi Stephen,
+On Wed, Jun 24, 2009 at 02:56:15PM -0700, Andrew Morton wrote:
+> On Wed, 24 Jun 2009 13:13:48 -0700 (PDT)
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > This is not a new concept. oom has never been "immediately kill".
 > 
-> On Thu, Jun 25, 2009 at 11:13:44AM +1000, Stephen Rothwell wrote:
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > ERROR: "clk_enable" [drivers/i2c/busses/i2c-designware.ko] undefined!
-> > ERROR: "clk_disable" [drivers/i2c/busses/i2c-designware.ko] undefined!
-> > ERROR: "clk_put" [drivers/i2c/busses/i2c-designware.ko] undefined!
-> > ERROR: "clk_get_rate" [drivers/i2c/busses/i2c-designware.ko] undefined!
-> > ERROR: "clk_get" [drivers/i2c/busses/i2c-designware.ko] undefined!
-> > 
-> > Caused by commit 1ab52cf910bbbee92861227e6ed77c56b1dc233c ("i2c: driver
-> > for the Synopsys DesignWare I2C controller") from Linus' tree which I
-> > have reverted for today.
+> Well, it has been immediate for a long time.  A couple of reasons which
+> I can recall:
 > 
-> So, what is the right configuration symbol to depend on for the clk API?
+> - A page-allocating process will oom-kill another process in the
+>   expectation that the killing will free up some memory.  If the
+>   oom-killed process remains stuck in the page allocator, that doesn't
+>   work.
 > 
-CONFIG_HAVE_CLK.
+> - The oom-killed process might be holding locks (typically fs locks).
+>   This can cause an arbitrary number of other processes to be blocked.
+>   So to get the system unstuck we need the oom-killed process to
+>   immediately exit the page allocator, to handle the NULL return and to
+>   drop those locks.
+> 
+> There may be other reasons - it was all a long time ago, and I've never
+> personally hacked on the oom-killer much and I never get oom-killed. 
+> But given the amount of development work which goes on in there, some
+> people must be getting massacred.
 
-> A short archives search led to the "provide a dummy implementation of the clk 
-> API" patch from Uwe Kleine-K?nig 
-> (http://lkml.indiana.edu/hypermail/linux/kernel/0804.2/2748.html). Is this the 
-> right solution?
-> 
-Something like this would be better handled in include/linux/clk.h.
+I think you are right Andrew. Any caller can fail. I suspect it is
+*very* rare to ever actually see failures because of the size of
+the reserves we keep, but the theoretical possibility is there. It
+would become rather more common with order->0 allocations too. But
+seeing as those are fairly infrequent in the page reclaim path (sans
+SLUB), then they are probably uncommon too.
 
-One of the things to watch out for is clk_get_rate(), there are
-cases in the kernel where the rate is fetched with clk_get_rate() and
-then subsequently used as a divisor in some other equation.
-clk_get_rate() probably ought to WARN_ON(1) unconditionally, as any
-driver wanting rate information is going to need proper clock
-information.
+But to be completely safe from oopses, we need to annotate with
+GFP_NOFAIL or handle failures in the caller.
+
+
+> A long time ago, the Suse kernel shipped with a largely (or
+> completely?) disabled oom-killer.  It removed the
+> retry-small-allocations-for-ever logic and simply returned NULL to the
+> caller.  I never really understood what problem/thinking led Andrea to
+> do that.
+
+I think all 2.6 based ones are pretty close to upstream logic,
+however we have run into customers reporting OOM deadlocks that
+the OOM killer cannot resolve. I forget the exact details but
+they involve memory reserves being exhausted and killed tasks
+trying to allocate memory holding locks etc.
+
+
+> But it's all a bit moot at present, as we seem to have removed the
+> return-NULL-if-TIF_MEMDIE logic in Mel's post-2.6.30 merges.  I think
+> that was an accident:
+> 
+> -	/* This allocation should allow future memory freeing. */
+> -
+>  rebalance:
+> -	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+> -			&& !in_interrupt()) {
+> -		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+> -nofail_alloc:
+> -			/* go through the zonelist yet again, ignoring mins */
+> -			page = get_page_from_freelist(gfp_mask, nodemask, order,
+> -				zonelist, high_zoneidx, ALLOC_NO_WATERMARKS);
+> -			if (page)
+> -				goto got_pg;
+> -			if (gfp_mask & __GFP_NOFAIL) {
+> -				congestion_wait(WRITE, HZ/50);
+> -				goto nofail_alloc;
+> -			}
+> -		}
+> -		goto nopage;
+> +	/* Allocate without watermarks if the context allows */
+> +	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+> +		page = __alloc_pages_high_priority(gfp_mask, order,
+> +				zonelist, high_zoneidx, nodemask,
+> +				preferred_zone, migratetype);
+> +		if (page)
+> +			goto got_pg;
+>  	}
+> 
+> Offending commit 341ce06 handled the PF_MEMALLOC case but forgot about
+> the TIF_MEMDIE case.
+> 
+> Mel is having a bit of downtime at present.
