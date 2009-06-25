@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759169AbZFYTbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbZFYTcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759169AbZFYTbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754443AbZFYTbg
+	id S1758216AbZFYTcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZFYTcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:31:36 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:43866 "EHLO e9.ny.us.ibm.com"
+	Thu, 25 Jun 2009 15:32:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42942 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbZFYTbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:31:36 -0400
-Date: Thu, 25 Jun 2009 12:31:37 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: cl@linux-foundation.org, penberg@cs.helsinki.fi, mpm@selenic.com,
-       jdb@comx.dk
-Subject: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem in
-	sl[aou]b
-Message-ID: <20090625193137.GA16861@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+	id S1754443AbZFYTcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 15:32:07 -0400
+Date: Thu, 25 Jun 2009 15:31:45 -0400
+From: Dave Jones <davej@redhat.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: kmemleak false positive?
+Message-ID: <20090625193145.GA2600@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20090625001137.GB22755@redhat.com> <1245921918.26218.19.camel@pc1117.cambridge.arm.com> <20090625145600.GA6654@redhat.com> <1245943539.26218.70.camel@pc1117.cambridge.arm.com> <20090625154014.GA7866@redhat.com> <1245949202.26218.88.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1245949202.26218.88.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
-
-Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather
-than rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result
-in RCU callbacks accessing a kmem_cache after it had been destroyed.
-
-The following untested (might not even compile) patch proposes a fix.
-
-Reported-by: Jesper Dangaard Brouer <jdb@comx.dk>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- slab.c |    2 +-
- slob.c |    2 ++
- slub.c |    2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/mm/slab.c b/mm/slab.c
-index e74a16e..5241b65 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2547,7 +2547,7 @@ void kmem_cache_destroy(struct kmem_cache *cachep)
- 	}
+On Thu, Jun 25, 2009 at 06:00:02PM +0100, Catalin Marinas wrote:
+ > On Thu, 2009-06-25 at 11:40 -0400, Dave Jones wrote:
+ > > Here's another case (with stack scanning on btw) which looks odd..
+ > > 
+ > >  kmemleak: unreferenced object 0xd86ba000 (size 16):
+ > >  kmemleak:   comm "init", pid 1, jiffies 4294683556
+ > >  kmemleak:   backtrace:
+ > >  kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
+ > >  kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
+ > >  kmemleak:     [<c05cdfdc>] avtab_insertf+0xd6/0x140
+ > >  kmemleak:     [<c05ce3d7>] avtab_read_item+0x26a/0x284
+ > >  kmemleak:     [<c05ce5a5>] avtab_read+0x82/0xe5
+ > >  kmemleak:     [<c05d0618>] policydb_read+0x40c/0x1028
+ > >  kmemleak:     [<c05d459d>] security_load_policy+0x57/0x37c
+ > >  kmemleak:     [<c05c9995>] sel_write_load+0xb2/0x54a
+ > >  kmemleak:     [<c0500186>] vfs_write+0x9f/0x10f
+ > >  kmemleak:     [<c05002e1>] sys_write+0x58/0x8d
+ > >  kmemleak:     [<c040a8eb>] sysenter_do_call+0x12/0x38
+ > >  kmemleak:     [<ffffffff>] 0xffffffff
+ > > 
+ > > I looked over the SELinux code, and couldn't see an obvious leak.
+ > > Eric Paris came to the same conclusion.
+ > 
+ > How long does a memory scanning take (i.e. time cat debug/kmemleak) on
+ > your platform? Another tweak is to increase MSECS_MIN_AGE to something
+ > like 1 minute or more. Especially on SMP, some newly allocated objects
+ > may be in registers and reported as leaks.
  
- 	if (unlikely(cachep->flags & SLAB_DESTROY_BY_RCU))
--		synchronize_rcu();
-+		rcu_barrier();
+0.00user 16.15system 0:33.38elapsed 48%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+158minor)pagefaults 0swaps
+
+This is a VIA C3 with 512MB of RAM.
+
+	Dave
  
- 	__kmem_cache_destroy(cachep);
- 	mutex_unlock(&cache_chain_mutex);
-diff --git a/mm/slob.c b/mm/slob.c
-index c78742d..9641da3 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -595,6 +595,8 @@ EXPORT_SYMBOL(kmem_cache_create);
- void kmem_cache_destroy(struct kmem_cache *c)
- {
- 	kmemleak_free(c);
-+	if (c->flags & SLAB_DESTROY_BY_RCU)
-+		rcu_barrier();
- 	slob_free(c, sizeof(struct kmem_cache));
- }
- EXPORT_SYMBOL(kmem_cache_destroy);
-diff --git a/mm/slub.c b/mm/slub.c
-index 819f056..a9201d8 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2595,6 +2595,8 @@ static inline int kmem_cache_close(struct kmem_cache *s)
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
- {
-+	if (s->flags & SLAB_DESTROY_BY_RCU)
-+		rcu_barrier();
- 	down_write(&slub_lock);
- 	s->refcount--;
- 	if (!s->refcount) {
