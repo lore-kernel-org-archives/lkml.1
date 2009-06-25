@@ -1,200 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZFYQKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752415AbZFYQL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZFYQKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZFYQKk
+	id S1752415AbZFYQL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZFYQLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:10:40 -0400
-Received: from mail-yx0-f186.google.com ([209.85.210.186]:46123 "EHLO
-	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752191AbZFYQKj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:10:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=hNre9RAvQK+8GIXh2IDVRbtYWjcZzrthbKiDFUx6EwYZzJr1raai+hnv5tLLiIr/Nd
-         UHDewZc4olJAsIAQQGOkYMZO7d58sWsd0usTBA4weAgxSHL7Wcc9f6RKhiPH8qJNrzmh
-         93FA322vCgatqMaBnRAYxt7HVl7hgHi4ou2Gk=
+	Thu, 25 Jun 2009 12:11:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38231 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754039AbZFYQLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 12:11:18 -0400
+Date: Thu, 25 Jun 2009 12:11:15 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
+Message-ID: <20090625161115.GB22616@redhat.com>
+References: <200906250904.57149.elendil@planet.nl> <yq1tz24qqaj.fsf@sermon.lab.mkp.net> <200906251748.45475.elendil@planet.nl>
 MIME-Version: 1.0
-Date: Thu, 25 Jun 2009 18:10:41 +0200
-Message-ID: <6b1460640906250910x5ba98ce2wa990946486edfc0d@mail.gmail.com>
-Subject: [PATCH] trackpoint: enable selection of press-to-select button
-From: Tom Weissmann <tom.weissmann@gmail.com>
-To: rubini@vision.unipv.it
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906251748.45475.elendil@planet.nl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the trackpoint driver supports press-to-select but only left
-button clicks can be generated, although the trackpoint itself can
-generate 3 different button clicks when pressed: left, middle, or
-right.
+On Thu, Jun 25 2009 at 11:48am -0400,
+Frans Pop <elendil@planet.nl> wrote:
 
-With this patch the trackpoint sysfs variable press-to-select can be
-set not only to 0 (off), 1 (left button), but also to 2 (middle
-button) and 3 (right button). This makes the feature more useful for
-left-handed users with no visible changes to the right-handed default
-behaviour.
+> On Thursday 25 June 2009, Martin K. Petersen wrote:
+> > >>>>> "Frans" == Frans Pop <elendil@planet.nl> writes:
+> >
+> > Frans> During boot of 2.6.31-rc1 on an arm EABI system I got the
+> > Frans> following errors: device-mapper: ioctl: 4.15.0-ioctl (2009-04-01)
+> > Frans> initialised: dm-devel@redhat.com device-mapper: table: 254:0:
+> > Frans> target device sda6 is misaligned device-mapper: table: 254:0:
+> > Frans> target device sda6 is misaligned device-mapper: table: 254:1:
+> > Frans> target device sda6 is misaligned device-mapper: table: 254:1:
+> > Frans> target device sda6 is misaligned 
+> >
+> > Frans> Please advise and let me know what additional info is needed.
+> >
+> > What kind of disk is this?
+> 
+> It's a standard SATA disk; the driver is sata_mv:
+> 
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: ATA-7: HDT722516DLA380, V43OA91A, max UDMA/133
+> ata1.00: 321672960 sectors, multi 0: LBA48 NCQ (depth 31/32)
+> ata1.00: configured for UDMA/133
+> scsi 0:0:0:0: Direct-Access     ATA      HDT722516DLA380  V43O PQ: 0 ANSI: 5
+> sd 0:0:0:0: [sda] 321672960 512-byte logical blocks: (164 GB/153 GiB)
+> sd 0:0:0:0: [sda] Write Protect is off
+> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+>  sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
+> 
+> I've just also tested rc1 in the Hercules s390 emulator, and I get exactly
+> the same there on a virtual dasd disk:
+> 
+> dasd-eckd 0.0.0121: New DASD 3390/02 (CU 3990/02) with 1113 cylinders, 15 heads, 224 sectors
+> dasd-eckd 0.0.0121: DASD with 4 KB/block, 801360 KB total size, 48 KB/track, compatible disk layout
+>  dasdb:VOL1/  0X0121: dasdb1 dasdb2
+> [...]
+> device-mapper: table: 254:0: target device dasdb1 is misaligned
+> device-mapper: table: 254:0: target device dasdb2 is misaligned
+> device-mapper: table: 254:0: target device dasdb1 is misaligned
+> device-mapper: table: 254:0: target device dasdb2 is misaligned
 
-Signed-off by: Tom Weissmann <tom.weissmann@gmail.com>
----
+In addition to the other commands I asked for in my previous mail;
+please provide the output from the following commands on both your real
+and emulated configs:
 
---- linux-2.6.30/drivers/input/mouse/trackpoint.h.orig	2009-06-19
-12:16:54.814029216 +0200
-+++ linux-2.6.30/drivers/input/mouse/trackpoint.h	2009-06-19
-12:38:31.151280333 +0200
-@@ -102,6 +102,13 @@
- #define TP_MASK_EXT_TAG			0x04
+dmsetup ls
+dmsetup table
 
-
-+/* Press-to-select button maps */
-+
-+#define TP_BUTTON1_MAP          0x41
-+#define TP_BUTTON2_MAP          0x43
-+#define TP_BUTTON3_MAP          0x42
-+
-+
- /* Power on Self Test Results */
- #define TP_POR_SUCCESS		0x3B
-
-@@ -121,6 +128,8 @@
- #define TP_DEF_Z_TIME		0x26
- #define TP_DEF_JENKS_CURV	0x87
-
-+#define TP_DEF_PTS		0x00
-+
- /* Toggles */
- #define TP_DEF_MB		0x00
- #define TP_DEF_PTSON		0x00
---- linux-2.6.30/drivers/input/mouse/trackpoint.c.orig	2009-06-19
-12:18:57.430029371 +0200
-+++ linux-2.6.30/drivers/input/mouse/trackpoint.c	2009-06-20
-00:13:54.299571377 +0200
-@@ -131,17 +131,69 @@ static ssize_t trackpoint_set_bit_attr(s
- }
-
-
--#define TRACKPOINT_BIT_ATTR(_name, _command, _mask, _inv)				\
--	static struct trackpoint_attr_data trackpoint_attr_##_name = {		\
--		.field_offset	= offsetof(struct trackpoint_data, _name),	\
--		.command	= _command,					\
--		.mask		= _mask,					\
--		.inverted	= _inv,						\
--	};									\
--	PSMOUSE_DEFINE_ATTR(_name, S_IWUSR | S_IRUGO,				\
--			    &trackpoint_attr_##_name,				\
-+#define TRACKPOINT_BIT_ATTR(_name, _command, _mask, _inv)		      \
-+	static struct trackpoint_attr_data trackpoint_attr_##_name = {	      \
-+		.field_offset	= offsetof(struct trackpoint_data, _name),    \
-+		.command	= _command,				      \
-+		.mask		= _mask,				      \
-+		.inverted	= _inv,					      \
-+	};								      \
-+	PSMOUSE_DEFINE_ATTR(_name, S_IWUSR | S_IRUGO,			      \
-+			    &trackpoint_attr_##_name,			      \
- 			    trackpoint_show_int_attr, trackpoint_set_bit_attr)
-
-+
-+#define TRACKPOINT_CUSTOM_WRITE_ATTR(_name, _command, _mask, _inv, _writefn)  \
-+	static struct trackpoint_attr_data trackpoint_attr_##_name = {	      \
-+		.field_offset	= offsetof(struct trackpoint_data, _name),    \
-+		.command	= _command,				      \
-+		.mask		= _mask,				      \
-+		.inverted	= _inv,					      \
-+	};								      \
-+	PSMOUSE_DEFINE_ATTR(_name, S_IWUSR | S_IRUGO,			      \
-+			    &trackpoint_attr_##_name,			      \
-+			    trackpoint_show_int_attr, _writefn)
-+
-+
-+#define TRACKPOINT_SET_PTS_BUTTON(_ps2dev, _value)			      \
-+ do {									      \
-+	trackpoint_write(_ps2dev, TP_BUTTON1_MAP, ((1 == _value) ? 255 : 0)); \
-+	trackpoint_write(_ps2dev, TP_BUTTON2_MAP, ((2 == _value) ? 255 : 0)); \
-+	trackpoint_write(_ps2dev, TP_BUTTON3_MAP, ((3 == _value) ? 255 : 0)); \
-+  } while (0)								      \
-+
-+static ssize_t trackpoint_set_press_to_select(struct psmouse *psmouse,
-+					      void *data,
-+					      const char *buf,
-+					      size_t count)
-+{
-+	struct trackpoint_data *tp = psmouse->private;
-+	struct trackpoint_attr_data *attr = data;
-+	unsigned char *field = (unsigned char *) ((char *)tp +
-+						  attr->field_offset);
-+	unsigned long value;
-+	char *rest;
-+
-+	value = strict_strtoul(buf, &rest, 10);
-+	if (*rest || value > 3)
-+		return -EINVAL;
-+
-+	if (*field != value) {
-+
-+		if (*field == 0 || value == 0)
-+			trackpoint_toggle_bit(&psmouse->ps2dev, attr->command,
-+					      attr->mask);
-+
-+		if (0 < value)
-+			TRACKPOINT_SET_PTS_BUTTON(&psmouse->ps2dev, value);
-+
-+	  *field = value;
-+	}
-+
-+	return count;
-+}
-+
-+
- TRACKPOINT_INT_ATTR(sensitivity, TP_SENS);
- TRACKPOINT_INT_ATTR(speed, TP_SPEED);
- TRACKPOINT_INT_ATTR(inertia, TP_INERTIA);
-@@ -153,10 +205,12 @@ TRACKPOINT_INT_ATTR(upthresh, TP_UP_THRE
- TRACKPOINT_INT_ATTR(ztime, TP_Z_TIME);
- TRACKPOINT_INT_ATTR(jenks, TP_JENKS_CURV);
-
--TRACKPOINT_BIT_ATTR(press_to_select, TP_TOGGLE_PTSON, TP_MASK_PTSON, 0);
- TRACKPOINT_BIT_ATTR(skipback, TP_TOGGLE_SKIPBACK, TP_MASK_SKIPBACK, 0);
- TRACKPOINT_BIT_ATTR(ext_dev, TP_TOGGLE_EXT_DEV, TP_MASK_EXT_DEV, 1);
-
-+TRACKPOINT_CUSTOM_WRITE_ATTR(press_to_select, TP_TOGGLE_PTSON,
-TP_MASK_PTSON, 0,
-+				   trackpoint_set_press_to_select);
-+
- static struct attribute *trackpoint_attrs[] = {
- 	&psmouse_attr_sensitivity.dattr.attr,
- 	&psmouse_attr_speed.dattr.attr,
-@@ -228,8 +282,16 @@ static int trackpoint_sync(struct psmous
- 	trackpoint_write(&psmouse->ps2dev, TP_JENKS_CURV, tp->jenks);
-
- 	trackpoint_read(&psmouse->ps2dev, TP_TOGGLE_PTSON, &toggle);
--	if (((toggle & TP_MASK_PTSON) == TP_MASK_PTSON) != tp->press_to_select)
--		 trackpoint_toggle_bit(&psmouse->ps2dev, TP_TOGGLE_PTSON, TP_MASK_PTSON);
-+
-+	if (((toggle & TP_MASK_PTSON) == TP_MASK_PTSON) !=
-+	    (0 < tp->press_to_select))
-+		trackpoint_toggle_bit(&psmouse->ps2dev,
-+				      TP_TOGGLE_PTSON,
-+				      TP_MASK_PTSON);
-+	}
-+	if (0 < tp->press_to_select)
-+		TRACKPOINT_SET_PTS_BUTTON(&psmouse->ps2dev, tp->press_to_select)
-+
-
- 	trackpoint_read(&psmouse->ps2dev, TP_TOGGLE_SKIPBACK, &toggle);
- 	if (((toggle & TP_MASK_SKIPBACK) == TP_MASK_SKIPBACK) != tp->skipback)
-@@ -244,7 +306,8 @@ static int trackpoint_sync(struct psmous
-
- static void trackpoint_defaults(struct trackpoint_data *tp)
- {
--	tp->press_to_select = TP_DEF_PTSON;
-+	tp->press_to_select = TP_DEF_PTS;
-+
- 	tp->sensitivity = TP_DEF_SENS;
- 	tp->speed = TP_DEF_SPEED;
- 	tp->reach = TP_DEF_REACH;
+Mike
