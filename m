@@ -1,339 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZFYMyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZFYMz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755096AbZFYMyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYMyE
+	id S1755314AbZFYMz6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFYMzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:54:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56349 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbZFYMyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:54:02 -0400
-Date: Thu, 25 Jun 2009 15:53:33 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: [PATCH] kvm: pass value to in_range callback
-Message-ID: <20090625125333.GB7166@redhat.com>
+	Thu, 25 Jun 2009 08:55:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35746 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbZFYMzt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:55:49 -0400
+Date: Thu, 25 Jun 2009 08:55:51 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ben Gamari <bgamari.foss@gmail.com>
+cc: linux-kernel@vger.kernel.org, "Stone, Joshua I" <joshua.i.stone@intel.com>,
+       Rober Richter <robert.richter@amd.com>, anil.s.keshavamurthy@intel.com,
+       ananth@in.ibm.com, davem@davemloft.net, mhiramat@redhat.com,
+       SystemTap <systemtap@sources.redhat.com>, Eric Anholt <eric@anholt.net>,
+       Chris Wilson <chris@chris-wilson.co.uk>,
+       intel-gfx@lists.freedesktop.org
+Subject: Re: Infrastructure for tracking driver performance events
+In-Reply-To: <20090624172912.GB5565@ben-laptop>
+Message-ID: <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
+References: <20090624172912.GB5565@ben-laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For write transactions, pass the value written to in_range checks so
-that we can make each iosignalfd a separate device on kvm bus.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
 
-Reposting with a subject now. Sorry.
+On Wed, 24 Jun 2009, Ben Gamari wrote:
+> 
+> I am investigating how this might be accomplished with existing kernel
+> infrastructure. At first, ftrace looked like a promising option, as the
+> sysprof profiler is driven by ftrace and provides exactly the type of
+> full system backtraces we need. We could probably even accomplish an
+> approximation of our desired result by calling a function when we begin
+> and another when we end waiting and using a script to look for these
+> events. I haven't looked into how we could get a usermode trace with
+> this approach, but it seems possible as sysprof already does it.
+> 
+> While this approach would work, it has a few shortcomings:
+> 1) Function graph tracing must be enabled on the entire machine to debug
+>    stalls
 
-Avi, can you please merge this patch in kvm.git so that
-Gregory can use it for iosignalfd? Once bus has RCU
-we'll be able to remove in_range completely, but
-let's do it step by step.
+You can filter on functions to trace. Or add a list of functions
+in set_graph_function to just graph a specific list.
 
- arch/ia64/kvm/kvm-ia64.c  |    9 ++++--
- arch/x86/kvm/i8254.c      |    2 +-
- arch/x86/kvm/lapic.c      |    2 +-
- arch/x86/kvm/x86.c        |   60 +++++++++++++++++++++++++-------------------
- include/linux/kvm_host.h  |    3 +-
- virt/kvm/coalesced_mmio.c |    3 +-
- virt/kvm/ioapic.c         |    3 +-
- virt/kvm/iodev.h          |    9 +++---
- virt/kvm/kvm_main.c       |    5 ++-
- 9 files changed, 56 insertions(+), 40 deletions(-)
+> 2) It is difficult to extract the kernel mode callgraph with no natural
+>    way to capture the usermode callgraph
 
-diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
-index c1c5cb6..68058c2 100644
---- a/arch/ia64/kvm/kvm-ia64.c
-+++ b/arch/ia64/kvm/kvm-ia64.c
-@@ -211,11 +211,13 @@ int kvm_dev_ioctl_check_extension(long ext)
- }
- 
- static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
--					gpa_t addr, int len, int is_write)
-+					gpa_t addr, int len, int is_write,
-+					void *write_val)
- {
- 	struct kvm_io_device *dev;
- 
--	dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len, is_write);
-+	dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len, is_write,
-+	                          write_val);
- 
- 	return dev;
- }
-@@ -247,7 +249,8 @@ static int handle_mmio(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 	kvm_run->exit_reason = KVM_EXIT_MMIO;
- 	return 0;
- mmio:
--	mmio_dev = vcpu_find_mmio_dev(vcpu, p->addr, p->size, !p->dir);
-+	mmio_dev = vcpu_find_mmio_dev(vcpu, p->addr, p->size,
-+				      !p->dir, &p->data);
- 	if (mmio_dev) {
- 		if (!p->dir)
- 			kvm_iodevice_write(mmio_dev, p->addr, p->size,
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 331705f..6f84cb2 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -495,7 +495,7 @@ static void pit_ioport_read(struct kvm_io_device *this,
- }
- 
- static int pit_in_range(struct kvm_io_device *this, gpa_t addr,
--			int len, int is_write)
-+			int len, int is_write, void *write_val)
- {
- 	return ((addr >= KVM_PIT_BASE_ADDRESS) &&
- 		(addr < KVM_PIT_BASE_ADDRESS + KVM_PIT_MEM_LENGTH));
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 2e02865..3d08b1d 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -747,7 +747,7 @@ static void apic_mmio_write(struct kvm_io_device *this,
- }
- 
- static int apic_mmio_range(struct kvm_io_device *this, gpa_t addr,
--			   int len, int size)
-+			   int len, int is_write, void *write_val)
- {
- 	struct kvm_lapic *apic = to_lapic(this);
- 	int ret = 0;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 5a66bb9..73a56ca 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2265,13 +2265,13 @@ static void kvm_init_msr_list(void)
-  */
- static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vcpu,
- 						gpa_t addr, int len,
--						int is_write)
-+						int is_write, void *write_val)
- {
- 	struct kvm_io_device *dev;
- 
- 	if (vcpu->arch.apic) {
- 		dev = &vcpu->arch.apic->dev;
--		if (kvm_iodevice_in_range(dev, addr, len, is_write))
-+		if (kvm_iodevice_in_range(dev, addr, len, is_write, write_val))
- 			return dev;
- 	}
- 	return NULL;
-@@ -2280,14 +2280,14 @@ static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vcpu,
- 
- static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,
- 						gpa_t addr, int len,
--						int is_write)
-+						int is_write, void *write_val)
- {
- 	struct kvm_io_device *dev;
- 
--	dev = vcpu_find_pervcpu_dev(vcpu, addr, len, is_write);
-+	dev = vcpu_find_pervcpu_dev(vcpu, addr, len, is_write, write_val);
- 	if (dev == NULL)
- 		dev = kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len,
--					  is_write);
-+					  is_write, write_val);
- 	return dev;
- }
- 
-@@ -2383,7 +2383,7 @@ mmio:
- 	 * Is this MMIO handled locally?
- 	 */
- 	mutex_lock(&vcpu->kvm->lock);
--	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 0);
-+	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 0, NULL);
- 	mutex_unlock(&vcpu->kvm->lock);
- 	if (mmio_dev) {
- 		kvm_iodevice_read(mmio_dev, gpa, bytes, val);
-@@ -2437,7 +2437,7 @@ mmio:
- 	 * Is this MMIO handled locally?
- 	 */
- 	mutex_lock(&vcpu->kvm->lock);
--	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 1);
-+	mmio_dev = vcpu_find_mmio_dev(vcpu, gpa, bytes, 1, val);
- 	mutex_unlock(&vcpu->kvm->lock);
- 	if (mmio_dev) {
- 		kvm_iodevice_write(mmio_dev, gpa, bytes, val);
-@@ -2791,9 +2791,10 @@ static void pio_string_write(struct kvm_io_device *pio_dev,
- 
- static struct kvm_io_device *vcpu_find_pio_dev(struct kvm_vcpu *vcpu,
- 					       gpa_t addr, int len,
--					       int is_write)
-+					       int is_write, void *write_val)
- {
--	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr, len, is_write);
-+	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr, len, is_write,
-+	                           write_val);
- }
- 
- int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
-@@ -2820,7 +2821,8 @@ int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- 	memcpy(vcpu->arch.pio_data, &val, 4);
- 
- 	mutex_lock(&vcpu->kvm->lock);
--	pio_dev = vcpu_find_pio_dev(vcpu, port, size, !in);
-+	pio_dev = vcpu_find_pio_dev(vcpu, port, size, !in,
-+				    vcpu->arch.pio_data);
- 	mutex_unlock(&vcpu->kvm->lock);
- 	if (pio_dev) {
- 		kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
-@@ -2837,7 +2839,6 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- {
- 	unsigned now, in_page;
- 	int ret = 0;
--	struct kvm_io_device *pio_dev;
- 
- 	vcpu->run->exit_reason = KVM_EXIT_IO;
- 	vcpu->run->io.direction = in ? KVM_EXIT_IO_IN : KVM_EXIT_IO_OUT;
-@@ -2881,12 +2882,6 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- 
- 	vcpu->arch.pio.guest_gva = address;
- 
--	mutex_lock(&vcpu->kvm->lock);
--	pio_dev = vcpu_find_pio_dev(vcpu, port,
--				    vcpu->arch.pio.cur_count,
--				    !vcpu->arch.pio.in);
--	mutex_unlock(&vcpu->kvm->lock);
--
- 	if (!vcpu->arch.pio.in) {
- 		/* string PIO write */
- 		ret = pio_copy_data(vcpu);
-@@ -2894,16 +2889,29 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- 			kvm_inject_gp(vcpu, 0);
- 			return 1;
- 		}
--		if (ret == 0 && pio_dev) {
--			pio_string_write(pio_dev, vcpu);
--			complete_pio(vcpu);
--			if (vcpu->arch.pio.count == 0)
--				ret = 1;
-+		if (ret == 0) {
-+			struct kvm_io_device *pio_dev;
-+			mutex_lock(&vcpu->kvm->lock);
-+			pio_dev = vcpu_find_pio_dev(vcpu, port,
-+						    vcpu->arch.pio.cur_count,
-+						    1, vcpu->arch.pio_data);
-+			mutex_unlock(&vcpu->kvm->lock);
-+			if (pio_dev) {
-+				pio_string_write(pio_dev, vcpu);
-+				complete_pio(vcpu);
-+				if (vcpu->arch.pio.count == 0)
-+					ret = 1;
-+			}
- 		}
--	} else if (pio_dev)
--		pr_unimpl(vcpu, "no string pio read support yet, "
--		       "port %x size %d count %ld\n",
--			port, size, count);
-+	} else {
-+		mutex_lock(&vcpu->kvm->lock);
-+		if (vcpu_find_pio_dev(vcpu, port, vcpu->arch.pio.cur_count, 0,
-+				     NULL))
-+			pr_unimpl(vcpu, "no string pio read support yet, "
-+				  "port %x size %d count %ld\n",
-+				  port, size, count);
-+		mutex_unlock(&vcpu->kvm->lock);
-+	}
- 
- 	return ret;
- }
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 2451f48..7b2bd9b 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -60,7 +60,8 @@ struct kvm_io_bus {
- void kvm_io_bus_init(struct kvm_io_bus *bus);
- void kvm_io_bus_destroy(struct kvm_io_bus *bus);
- struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
--					  gpa_t addr, int len, int is_write);
-+					  gpa_t addr, int len, int is_write,
-+					  void *write_val);
- void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
- 			     struct kvm_io_device *dev);
- 
-diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
-index 397f419..9561bc2 100644
---- a/virt/kvm/coalesced_mmio.c
-+++ b/virt/kvm/coalesced_mmio.c
-@@ -20,7 +20,8 @@ static inline struct kvm_coalesced_mmio_dev *to_mmio(struct kvm_io_device *dev)
- }
- 
- static int coalesced_mmio_in_range(struct kvm_io_device *this,
--				   gpa_t addr, int len, int is_write)
-+				   gpa_t addr, int len, int is_write,
-+				   void *write_val)
- {
- 	struct kvm_coalesced_mmio_dev *dev = to_mmio(this);
- 	struct kvm_coalesced_mmio_zone *zone;
-diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
-index d8b2eca..fa3f4fb 100644
---- a/virt/kvm/ioapic.c
-+++ b/virt/kvm/ioapic.c
-@@ -228,7 +228,8 @@ static inline struct kvm_ioapic *to_ioapic(struct kvm_io_device *dev)
- }
- 
- static int ioapic_in_range(struct kvm_io_device *this, gpa_t addr,
--			   int len, int is_write)
-+			   int len, int is_write,
-+			   void *write_val)
- {
- 	struct kvm_ioapic *ioapic = to_ioapic(this);
- 
-diff --git a/virt/kvm/iodev.h b/virt/kvm/iodev.h
-index 2c67f5a..d8cf9e2 100644
---- a/virt/kvm/iodev.h
-+++ b/virt/kvm/iodev.h
-@@ -30,7 +30,7 @@ struct kvm_io_device_ops {
- 		      int len,
- 		      const void *val);
- 	int (*in_range)(struct kvm_io_device *this, gpa_t addr, int len,
--			int is_write);
-+			int is_write, void *write_val);
- 	void (*destructor)(struct kvm_io_device *this);
- };
- 
-@@ -61,10 +61,11 @@ static inline void kvm_iodevice_write(struct kvm_io_device *dev,
- 	dev->ops->write(dev, addr, len, val);
- }
- 
--static inline int kvm_iodevice_in_range(struct kvm_io_device *dev,
--					gpa_t addr, int len, int is_write)
-+static inline int kvm_iodevice_inrange(struct kvm_io_device *dev,
-+				       gpa_t addr, int len, int is_write,
-+				       void *write_val)
- {
--	return dev->ops->in_range(dev, addr, len, is_write);
-+	return dev->ops->in_range(dev, addr, len, is_write, write_val);
- }
- 
- static inline void kvm_iodevice_destructor(struct kvm_io_device *dev)
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 58d6bc6..f5dfe02 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -2485,14 +2485,15 @@ void kvm_io_bus_destroy(struct kvm_io_bus *bus)
- }
- 
- struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
--					  gpa_t addr, int len, int is_write)
-+					  gpa_t addr, int len, int is_write,
-+					  void *write_val)
- {
- 	int i;
- 
- 	for (i = 0; i < bus->dev_count; i++) {
- 		struct kvm_io_device *pos = bus->devs[i];
- 
--		if (kvm_iodevice_in_range(pos, addr, len, is_write))
-+		if (kvm_iodevice_in_range(pos, addr, len, is_write, write_val))
- 			return pos;
- 	}
- 
--- 
-1.6.2.2
+Do you just need a backtrace of some point, or a full user mode graph?
+
+> 3) A large amount of usermode support is necessary (which will likely be
+>    the case for any option; listed here for completeness)
+> 
+> Another option seems to be systemtap. It has already been documented[3]
+> that this option could provide both user-mode and kernel-mode
+> backtraces. The driver could provide a kernel marker at every potential
+> wait point (or a single marker in a function called at each wait point,
+> for that matter) which would be picked up by systemtap and processed in
+> usermode, calling ptrace to acquire a usermode backtrace. This approach
+> seems slightly cleaner as it doesn't require the tracing on the entire
+> machine to catch what should be reasonably rare events (hopefully).
+
+Enabling the userstacktrace will give userspace stack traces at event
+trace points. The thing is that the userspace utility must be built with 
+frame pointers.
+
+-- Steve
+
+> 
+> Unfortunately, the systemtap approach described in [3] requires that
+> each process have an associated "driver" process to get a usermode
+> backtrace. It would be nice to avoid this requirement as there are
+> generally far more gpu clients than just the X server (i.e. direct
+> rendering clients) and tracking them all could get tricky.
+> 
+> These are the two options I have seen thusfar. It seems like getting
+> this sort of information will be increasingly important as more and more
+> drivers move into kernel-space and it is likely that the intel
+> implementation will be a model for future drivers, so it would be nice
+> to implement it correctly the first time. Does anyone see an option
+> which I have missed?  Are there any thoughts on any new generic services
+> that the kernel might provide that might make this task easier? Any
+> comments, questions, or complaints would be greatly appreciated.
+> 
