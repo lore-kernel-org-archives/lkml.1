@@ -1,69 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZFYVpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZFYVvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZFYVpU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 17:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZFYVpJ
+	id S1754254AbZFYVvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 17:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZFYVu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 17:45:09 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:41467 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbZFYVpI (ORCPT
+	Thu, 25 Jun 2009 17:50:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51997 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752711AbZFYVuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 17:45:08 -0400
-Date: Thu, 25 Jun 2009 17:43:07 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Bug in arch/x86/include/asm/boot.h [Was: next cleanup report: 
- "bad" references to CONFIG variables]
-In-Reply-To: <20090625192412.GA15823@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.2.00.0906251739360.23271@localhost>
-References: <alpine.LFD.2.00.0906251028270.24694@localhost> <20090625192412.GA15823@uranus.ravnborg.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Thu, 25 Jun 2009 17:50:55 -0400
+Date: Thu, 25 Jun 2009 14:50:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com, menage@google.com
+Subject: Re: [PATCH 1/2] memcg: cgroup fix rmdir hang
+Message-Id: <20090625145044.37d6c56c.akpm@linux-foundation.org>
+In-Reply-To: <20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Sam Ravnborg wrote:
+On Tue, 23 Jun 2009 16:08:54 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> If you continue this then please filter the know false positives.
-> For once start ignoring defconfigs.
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Now, cgroup has a logic to wait until ready-to-rmdir for avoiding
+> frequent -EBUSY at rmdir.
+>  (See Commit ec64f51545fffbc4cb968f0cea56341a4b07e85a
+>   cgroup: fix frequent -EBUSY at rmdir.
+> 
+> Nishimura-san reported bad case for waiting and This is a fix to
+> make it reliable. A thread waiting for thread cannot be waken up
+> when a refcnt gotten by css_tryget() isn't put immediately.
+> (Original code assumed css_put() will be called soon.)
+> 
+> memcg has this case and this is a fix for the problem. This adds
+> retry_rmdir() callback to subsys and check we can sleep or not.
+> 
+> Note: another solution will be adding "rmdir state" to subsys.
+> But it will be much complicated than this do-enough-check solution.
+> 
 
-  point taken.  back at the "badrefs" page:
+A few issues..
 
-http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
+Firstly, this code (both before and after the patch) looks like a
+rather horrid hack.  
 
-i've cleaned up the "arch" categories by removing all matches to
-defconfig files, which cuts down the output considerably.
+<ooh look, a comment!>
 
-  the "drivers" section will be cleaned similarly shortly.
+	/*
+	 * css_put/get is provided for subsys to grab refcnt to css. In typical
+	 * case, subsystem has no reference after pre_destroy(). But, under
+	 * hierarchy management, some *temporal* refcnt can be hold.
+	 * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
+	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
+	 * is called when css_put() is called and refcnt goes down to 0.
+	 */
 
-rday
+(The correct word here is "temporary").
 
-p.s.  i did notice another false positive when the only references to
-a "config" directive is nothing but other "select" directives.  i'll
-fix that one of these days.  but it's never going to be perfect.  law
-of diminishing returns and all that.
+Where and under what circumstances is this temporary reference taken? 
+Is there any way in which we can fix all this properly, so that the
+directory removal will happen deterministically, without needing the
+in-kernel polling loop?
 
---
+ie: refcounting?
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+(I have a vague feeling that I've asked all this before.  But that's OK
+- the code's still horrid ;))
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+> Index: fix-rmdir-cgroup/include/linux/cgroup.h
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/include/linux/cgroup.h
+> +++ fix-rmdir-cgroup/include/linux/cgroup.h
+> @@ -374,6 +374,7 @@ struct cgroup_subsys {
+>  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+>  						  struct cgroup *cgrp);
+>  	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+> +	int (*retry_rmdir)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+
+This is poorly named.  The reader will expect that a function called
+"retry_rmdir" will, umm, retry an rmdir.
+
+But this function doesn't do that.  It's a predicate which the caller
+will use to determine whether the caller should retry the rmdir.
+
+A better name would be should_retry_rmdir(), for example.
+
+But even that isn't very good, because "should_retry_rmdir()" implies
+that the caller will only use this function for a single purpose.  The
+callee shouldn't assume this!
+
+So can we come up with a name which accurately reflects what the
+function actually does?  Like "has_remaining_references()", or somesuch?
+
+Also, making the return value `bool' would have come clarification
+benefits.
+
+>  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+>  	int (*can_attach)(struct cgroup_subsys *ss,
+>  			  struct cgroup *cgrp, struct task_struct *tsk);
+> Index: fix-rmdir-cgroup/kernel/cgroup.c
+> ===================================================================
+> --- fix-rmdir-cgroup.orig/kernel/cgroup.c
+> +++ fix-rmdir-cgroup/kernel/cgroup.c
+> @@ -636,6 +636,23 @@ static int cgroup_call_pre_destroy(struc
+>  		}
+>  	return ret;
+>  }
+> +/*
+> + * Call subsys's retry_rmdir() handler. If this returns non-Zero, we retry
+> + * rmdir immediately and call pre_destroy again.
+> + */
+> +static int cgroup_check_retry_rmdir(struct cgroup *cgrp)
+> +{
+> +	struct cgroup_subsys *ss;
+> +	int ret = 0;
+> +
+> +	for_each_subsys(cgrp->root, ss)
+> +		if (ss->pre_destroy) {
+> +			ret = ss->retry_rmdir(ss, cgrp);
+> +			if (ret)
+> +				break;
+> +		}
+> +	return ret;
+> +}
+
+There's an important and subtle precondition for this function: it is
+called in state TASK_INTERRUPTIBLE.  This means that the ->retry_rmdir
+handler must be careful to not disturb that state.  For if that
+function were to accidentally enter state TASK_RUNNING (say, it does a
+mutex_lock/unlock) then the kernel could enter a busy loop and would use
+lots of CPU time.  I guess that code comments are sufficient to cover
+this.  It's a property of ->retry_rmdir, really.
+
+Also, what sense does it make to call ->retry_rmdir() if ->pre_destroy
+is non-NULL?  Was that actually intentional?  If so, it is strange to link
+those two fields in this way.  The retry_rmdir() documentation didn't describe
+this.
+
+>  static void free_cgroup_rcu(struct rcu_head *obj)
+>  {
+> @@ -2722,7 +2739,8 @@ again:
+>  
+>  	if (!cgroup_clear_css_refs(cgrp)) {
+>  		mutex_unlock(&cgroup_mutex);
+> -		schedule();
+> +		if (!cgroup_check_retry_rmdir(cgrp))
+> +			schedule();
+>  		finish_wait(&cgroup_rmdir_waitq, &wait);
+>  		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>  		if (signal_pending(current))
+>
+> ...
+>
