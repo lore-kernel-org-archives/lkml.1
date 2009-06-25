@@ -1,157 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZFYO5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZFYPB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbZFYO5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZFYO5f
+	id S1754967AbZFYPB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZFYPBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:57:35 -0400
-Received: from mail-yx0-f186.google.com ([209.85.210.186]:41787 "EHLO
-	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZFYO5e convert rfc822-to-8bit (ORCPT
+	Thu, 25 Jun 2009 11:01:19 -0400
+Received: from mga09.intel.com ([134.134.136.24]:36749 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751225AbZFYPBR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:57:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=V3m4wjf1ukQQLh6H2c10XCUEsF5qEEtQSao53X91B4hqowi4z+s/wnjuSGkYm1AjbA
-         68sbiXCxzXiw24nDTHXt+5C2EQRTmh6ZlxaOPvLgUhG4vHkNzISjsf4x2QDkxGAXNUER
-         V30QfYRHsZgZBJdupMY9PuRwXVn1Yi28aLlf8=
-MIME-Version: 1.0
-In-Reply-To: <200906242124.05511.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
-	 <200906240208.23482.rjw@sisk.pl> <200906240236.41526.rjw@sisk.pl>
-	 <200906242124.05511.rjw@sisk.pl>
-Date: Thu, 25 Jun 2009 23:57:36 +0900
-Message-ID: <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of 
-	I/O devices (rev. 5)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 25 Jun 2009 11:01:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,290,1243839600"; 
+   d="scan'208";a="527764795"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Thomas Renninger <trenn@suse.de>
+CC: "kernel@stable.org" <kernel@stable.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, "rjw@sisk.pl" <rjw@sisk.pl>,
+       "hidave.darkstar@gmail.com" <hidave.darkstar@gmail.com>,
+       "penberg@cs.helsinki.fi" <penberg@cs.helsinki.fi>,
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
+       "davej@redhat.com" <davej@redhat.com>
+Date: Thu, 25 Jun 2009 08:03:47 -0700
+Subject: RE: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand
+	and conservative governors
+Thread-Topic: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand
+	and conservative governors
+Thread-Index: Acn1oN1yLg7rmb4FTXSiM88qEelYagABKumA
+Message-ID: <7E82351C108FA840AB1866AC776AEC46697F2A18@orsmsx505.amr.corp.intel.com>
+References: <20090623193215.GA31374@elte.hu>
+ <1245938485-12663-2-git-send-email-trenn@suse.de>
+ <20090625142552.GA18000@Krystal>
+In-Reply-To: <20090625142552.GA18000@Krystal>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 4:24 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
+ 
+
+>-----Original Message-----
+>From: Mathieu Desnoyers [mailto:mathieu.desnoyers@polymtl.ca] 
+>Sent: Thursday, June 25, 2009 7:26 AM
+>To: Thomas Renninger
+>Cc: kernel@stable.org; cpufreq@vger.kernel.org; 
+>linux-kernel@vger.kernel.org; mingo@elte.hu; rjw@sisk.pl; 
+>hidave.darkstar@gmail.com; penberg@cs.helsinki.fi; 
+>kernel-testers@vger.kernel.org; davej@redhat.com; Pallipadi, Venkatesh
+>Subject: Re: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes 
+>from ondemand and conservative governors
 >
-> Introduce a core framework for run-time power management of I/O
-> devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> a run-time PM workqueue and define some device run-time PM helper
-> functions at the core level.  Document all these things.
+>* Thomas Renninger (trenn@suse.de) wrote:
+>> Comment from Venkatesh:
+>> ...
+>> This mutex is just serializing the changes to those 
+>variables. I could't
+>> think of any functionality issues of not having the lock as such.
+>> 
+>> -> rip it out.
+>> 
+>> CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>> Signed-off-by: Thomas Renninger <trenn@suse.de>
+>> ---
+>>  drivers/cpufreq/cpufreq_conservative.c |   61 
+>+++-----------------------------
+>>  drivers/cpufreq/cpufreq_ondemand.c     |   48 
+>+++----------------------
+>>  2 files changed, 10 insertions(+), 99 deletions(-)
+>> 
+>> diff --git a/drivers/cpufreq/cpufreq_conservative.c 
+>b/drivers/cpufreq/cpufreq_conservative.c
+>> index 7a74d17..6303379 100644
+>> --- a/drivers/cpufreq/cpufreq_conservative.c
+>> +++ b/drivers/cpufreq/cpufreq_conservative.c
+>> @@ -18,7 +18,6 @@
+>>  #include <linux/cpu.h>
+>>  #include <linux/jiffies.h>
+>>  #include <linux/kernel_stat.h>
+>> -#include <linux/mutex.h>
+>>  #include <linux/hrtimer.h>
+>>  #include <linux/tick.h>
+>>  #include <linux/ktime.h>
+>> @@ -84,19 +83,6 @@ static DEFINE_PER_CPU(struct 
+>cpu_dbs_info_s, cpu_dbs_info);
+>>  
+>>  static unsigned int dbs_enable;	/* number of CPUs using 
+>this policy */
+>>  
+>> -/*
+>> - * DEADLOCK ALERT! There is a ordering requirement between 
+>cpu_hotplug
+>> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+>> - * dbs_mutex. If any function that can potentially take 
+>cpu_hotplug lock
+>> - * (like __cpufreq_driver_target()) is being called with 
+>dbs_mutex taken, then
+>> - * cpu_hotplug lock should be taken before that. Note that 
+>cpu_hotplug lock
+>> - * is recursive for the same process. -Venki
+>> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the 
+>dbs_mutex, because it
+>> - * would deadlock with cancel_delayed_work_sync(), which is 
+>needed for proper
+>> - * raceless workqueue teardown.
+>> - */
+>> -static DEFINE_MUTEX(dbs_mutex);
+>> -
+>>  static struct workqueue_struct	*kconservative_wq;
+>>  
+>>  static struct dbs_tuners {
+>> @@ -236,10 +222,7 @@ static ssize_t 
+>store_sampling_down_factor(struct cpufreq_policy *unused,
+>>  	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
+>>  		return -EINVAL;
+>>  
+>> -	mutex_lock(&dbs_mutex);
+>>  	dbs_tuners_ins.sampling_down_factor = input;
+>> -	mutex_unlock(&dbs_mutex);
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -253,10 +236,7 @@ static ssize_t 
+>store_sampling_rate(struct cpufreq_policy *unused,
+>>  	if (ret != 1)
+>>  		return -EINVAL;
+>>  
+>> -	mutex_lock(&dbs_mutex);
+>>  	dbs_tuners_ins.sampling_rate = max(input, 
+>minimum_sampling_rate());
+>> -	mutex_unlock(&dbs_mutex);
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -267,16 +247,11 @@ static ssize_t 
+>store_up_threshold(struct cpufreq_policy *unused,
+>>  	int ret;
+>>  	ret = sscanf(buf, "%u", &input);
+>>  
+>> -	mutex_lock(&dbs_mutex);
+>>  	if (ret != 1 || input > 100 ||
+>> -			input <= dbs_tuners_ins.down_threshold) {
+>> -		mutex_unlock(&dbs_mutex);
+>> +			input <= dbs_tuners_ins.down_threshold)
+>>  		return -EINVAL;
+>> -	}
+>>  
+>>  	dbs_tuners_ins.up_threshold = input;
+>> -	mutex_unlock(&dbs_mutex);
 >
-> Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>Here, for instance, there might be a problem if down_threshold is
+>changed concurrently with a store_up_threshold() call. See 
+>that there is
+>a test before the modification, and we need the mutex there 
+>for it to be
+>consistent.
+>
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -287,17 +262,12 @@ static ssize_t 
+>store_down_threshold(struct cpufreq_policy *unused,
+>>  	int ret;
+>>  	ret = sscanf(buf, "%u", &input);
+>>  
+>> -	mutex_lock(&dbs_mutex);
+>>  	/* cannot be lower than 11 otherwise freq will not fall */
+>>  	if (ret != 1 || input < 11 || input > 100 ||
+>> -			input >= dbs_tuners_ins.up_threshold) {
+>> -		mutex_unlock(&dbs_mutex);
+>> +			input >= dbs_tuners_ins.up_threshold)
+>>  		return -EINVAL;
+>> -	}
+>>  
+>>  	dbs_tuners_ins.down_threshold = input;
+>> -	mutex_unlock(&dbs_mutex);
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -316,11 +286,9 @@ static ssize_t 
+>store_ignore_nice_load(struct cpufreq_policy *policy,
+>>  	if (input > 1)
+>>  		input = 1;
+>>  
+>> -	mutex_lock(&dbs_mutex);
+>> -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+>> -		mutex_unlock(&dbs_mutex);
+>> +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+>>  		return count;
+>> -	}
+>> +
+>>  	dbs_tuners_ins.ignore_nice = input;
+>>  
+>>  	/* we need to re-evaluate prev_cpu_idle */
+>> @@ -332,8 +300,6 @@ static ssize_t 
+>store_ignore_nice_load(struct cpufreq_policy *policy,
+>>  		if (dbs_tuners_ins.ignore_nice)
+>>  			dbs_info->prev_cpu_nice = 
+>kstat_cpu(j).cpustat.nice;
+>>  	}
+>> -	mutex_unlock(&dbs_mutex);
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -352,10 +318,7 @@ static ssize_t store_freq_step(struct 
+>cpufreq_policy *policy,
+>>  
+>>  	/* no need to test here if freq_step is zero as the 
+>user might actually
+>>  	 * want this, they would be crazy though :) */
+>> -	mutex_lock(&dbs_mutex);
+>>  	dbs_tuners_ins.freq_step = input;
+>> -	mutex_unlock(&dbs_mutex);
+>> -
+>>  	return count;
+>>  }
+>>  
+>> @@ -566,13 +529,9 @@ static int cpufreq_governor_dbs(struct 
+>cpufreq_policy *policy,
+>
+>Hrm, this is where we want the mutexes removed, but I fear this is
+>creating a race between sysfs_create_group (sysfs file creation) and
+>policy initialization...
+>
+>I'm not convinced this mutex is not needed.
+>
 
-Hi Rafael,
+I am with Mathieu on this one. We can reduce the use of mutex here. But, it will still be needed. As I mentioned earlier, we need it to protect dbs_tuners getting changed from different CPUs at the same time. We also need it for dbs_enable change in start and stop from different CPUs. Otherwise dbs_enable increment/decrement and test will have races. I was playing with some changes for this. I should have a cleaner patchset later today...
 
-Thanks for your work on this. I've built some code for SuperH on top
-of this today, and with that behind me I have a few questions and a
-little bit of code feedback.
-
-Questions:
-
-1) Which functions are device drivers supposed to use?
-
-I simply added pm_runtime_resume() and pm_runtime_suspend() where
-clk_enable() and clk_disable() normally are used. In interrupt
-handlers I used pm_request_suspend() instead of pm_runtime_suspend().
-
-I'm not sure if the v5 patch does the right thing around
-really_probe() like Alan pointed out. Basically, I'd like to be able
-to call my bus callback for ->runtime_resume() from the driver
-probe(), but power.resume_count seems stuck at 1 which leads to
-pm_runtime_resume() returning -EAGAIN before invoking the bus
-callback.
-
-This leads to question number two...
-
-2) What's the default state in probe()?
-
-We touched this subject briefly before. I'd like to compare the
-Runtime PM default state with the clock framework default state. The
-clock framework requires you to use clk_enable() to enable the clock
-to a hardware block before it is allowed to access the hardware
-registers. At least that's how we handle stop bits on SuperH. So
-clocks come up disabled from boot and should be enabled and disabled
-by the device driver to save power.
-
-I'd like to change our Module Stop Bits code on SuperH (once again)
-from being handled by the clock framework to being managed by the
-Runtime PM framework. Having the clock framework deal with the stop
-bits works fine today, they are off by default after boot, and the
-driver often enables the clock with clk_enable() in probe() or
-hopefully in some more finegrained fashion.
-
-I'm not sure how the Module Stop Bits should fit with the Runtime PM
-code though. The default state for a device at probe() time seems to
-be RPM_ACTIVE. Should drivers call pm_runtime_enable() to enable
-Runtime PM?
-
-One part of me likes the idea that Runtime PM-enabled drivers start in
-RPM_SUSPENDED so they are forced to put pm_runtime_resume() before
-actually using the hardware. This makes the Runtime PM behaviour
-pretty close to the clock framework.
-
-If you dislike starting from RPM_SUSPENDED (most likely) then I wonder
-how I should set the state to RPM_SUSPENDED in the driver. I'd like to
-make sure that pm_runtime_resume() can invoke the bus callback so the
-hardware can be turned on for the first time somehow. Should I do a
-dummy suspend?
-
-3) Should drivers use pm_suspend_ignore_children(dev, true)?
-
-It turns out that I can't suspend my I2C master driver out of the box
-since it becomes the parent of all slaves on the I2C bus. The I2C
-master driver is just a platform driver, and the children are I2C
-devices (90% sure). I want to do Runtime PM regardless if the child
-devices are suspended or not, I guess I should use
-pm_suspend_ignore_children(dev, true) then?
-
-> +/**
-> + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
-> + * @dev: Device to resume.
-> + * @sync: If unset, the funtion has been called via pm_wq.
-> + *
-> + * Check if the device is really suspended and run the ->runtime_resume()
-> + * callback provided by the device's bus type driver.  Update the run-time PM
-> + * flags in the device object to reflect the current status of the device.  If
-> + * runtime suspend is in progress while this function is being run, wait for it
-> + * to finish before resuming the device.  If runtime suspend is scheduled, but
-> + * it hasn't started yet, cancel it and we're done.
-> + */
-> +int __pm_runtime_resume(struct device *dev, bool sync)
-> +{
-[snip]
-> +}
-> +EXPORT_SYMBOL_GPL(pm_runtime_resume);
-
-You're missing "__" here unless you're aiming for something very exotic. =)
-
-> +/**
-> + * pm_runtime_work - Run __pm_runtime_resume() for a device.
-> + * @work: Work structure used for scheduling the execution of this function.
-> + *
-> + * Use @work to get the device object the resume has been scheduled for and run
-> + * __pm_runtime_resume() for it.
-> + */
-> +static void pm_runtime_work(struct work_struct *work)
-> +{
-> +       __pm_runtime_resume(work_to_device(work), false);
-> +}
-
-Anything wrong with the name pm_runtime_resume_work()?
-
-Looking forward to v6, I'll switch task now, will be back to this late Monday.
-
-Cheers,
-
-/ magnus
+Thanks,
+Venki
