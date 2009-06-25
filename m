@@ -1,98 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZFYS4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbZFYS7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZFYS4D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 14:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZFYSzz
+	id S1757642AbZFYS7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 14:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZFYS7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 14:55:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40661 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754302AbZFYSzy (ORCPT
+	Thu, 25 Jun 2009 14:59:30 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:39227 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752210AbZFYS7a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 14:55:54 -0400
-Date: Thu, 25 Jun 2009 11:54:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: maximilian attems <max@stro.at>
-Cc: linux-kernel@vger.kernel.org, tj@kernel.org, dhowells@redhat.com,
-       ink@jurassic.park.msu.ru
-Subject: Re: >= 2.6.30 broken alpha smp build
-Message-Id: <20090625115423.6a31b49c.akpm@linux-foundation.org>
-In-Reply-To: <20090625090842.GA17936@stro.at>
-References: <20090625090842.GA17936@stro.at>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 14:59:30 -0400
+Date: Thu, 25 Jun 2009 12:59:32 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Troy Moure <twmoure@szypr.net>,
+       Alessandro Suardi <alessandro.suardi@gmail.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, lenb@kernel.org
+Subject: Re: [2.6.31-rc1] oops in acpi_get_pci_dev
+Message-ID: <20090625185932.GF27102@ldl.fc.hp.com>
+References: <alpine.LFD.2.00.0906251548300.2760@troy-laptop> <b6a2187b0906250902xede3041p599e538099340a04@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b6a2187b0906250902xede3041p599e538099340a04@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009 11:08:42 +0200
-maximilian attems <max@stro.at> wrote:
+Hi Jeff, Alessandro,
 
-> CC [M]  arch/alpha/kernel/srm_env.o
-> In file included from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/percpu.h:10,
->                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/local.h:4,
->                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/module.h:20,
->                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:33:
-> /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:100:1: error: "PER_CPU_ATTRIBUTES" redefined
-> /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:52:1: error: this is the location of the previous definition
-> make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
-> make[5]: *** [arch/alpha/kernel] Error 2
-> make[4]: *** [sub-make] Error 2
-> make[3]: *** [all] Error 2
-> make[2]: *** [debian/stamps/build_alpha_none_alpha-smp_plain] Error 2
-> make[1]: *** [build_alpha_none_alpha-smp_real] Error 2
+First, thanks for reporting this bug, and apologies for the
+inconvenience.
 
-Me too.
+* Jeff Chua <jeff.chua.linux@gmail.com>:
+> On Thu, Jun 25, 2009 at 11:13 PM, Troy Moure<twmoure@szypr.net> wrote:
+> > (I don't know if it's the "right" fix or not, not being familiar with the
+> > system.  If it is, I can send it in as a proper patch.)
+> >
+> > diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+> > index 8a5bf3b..55b5b90 100644
+> > --- a/drivers/acpi/pci_root.c
+> > +++ b/drivers/acpi/pci_root.c
+> > @@ -395,7 +395,7 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+> >                fn  = adr & 0xffff;
+> >
+> >                pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
+> > -               if (hnd == handle)
+> > +               if (!pdev || hnd == handle)
+> >                        break;
+> >
+> >                pbus = pdev->subordinate;
 
-> belows patch fixes aboves error but gives a new one on SMP
-> 
-> diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
-> index 06c5c7a..622d585 100644
-> --- a/arch/alpha/include/asm/percpu.h
-> +++ b/arch/alpha/include/asm/percpu.h
-> @@ -95,8 +95,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
->  #define PER_CPU_SHARED_ALIGNED_SECTION ""
->  #define PER_CPU_FIRST_SECTION ""
->  
-> -#endif
-> -
->  #define PER_CPU_ATTRIBUTES
->  
-> +#endif
-> +
->  #endif /* __ALPHA_PERCPU_H */
-> 
->   CC [M]  arch/alpha/kernel/srm_env.o
+I'm a little hesitant to do this (yet), because it means one of
+my assumptions was wrong.
 
-That fixed it.
+Can you please try this debug patch and send me the dmesg output?
+Please boot with 'debug'. I did add the same NULL check so you
+shouldn't crash, and can send me the output after you're done
+booting up.
 
-> cc1: warnings being treated as errors
-> In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:86,
->                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
->                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
-> /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/hrtimer.h:310: error: ___~@~X__used_____~@~Y attribute ignored
-> In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
->                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
-> /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:134: error: ___~@~X__used_____~@~Y attribute ignored
-> make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
-> 
+Also, if you could include the output of 'lspci -v', that would
+be great too.
 
-This is the
+Thanks.
 
-#define PER_CPU_ATTRIBUTES	__used
+/ac
 
-in arch/alpha/include/asm/percpu.h, added by 
-
-commit 9267b4b3880d00dc2dab90f1d817c856939114f7
-Author:     Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-AuthorDate: Sat Jun 21 03:25:39 2008 +0400
-Commit:     Linus Torvalds <torvalds@linux-foundation.org>
-CommitDate: Fri Jun 20 16:46:10 2008 -0700
-
-    alpha: fix module load failures on smp (bug #10926)
-
-
-There's no indication in the changelog why this was added and afacit no
-other architectures do it.  So I'm at a loss to help here. 
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 8a5bf3b..7674987 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -355,12 +355,20 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ 	struct pci_dev *pdev = NULL;
+ 	struct acpi_handle_node *node, *tmp;
+ 	struct acpi_pci_root *root;
++	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+ 	LIST_HEAD(device_list);
+ 
+ 	/*
+ 	 * Walk up the ACPI CA namespace until we reach a PCI root bridge.
+ 	 */
+ 	phandle = handle;
++
++	acpi_get_name(phandle, ACPI_FULL_PATHNAME, &buffer);
++	printk("Starting root bridge search from %s\n", (char *)buffer.pointer);
++	kfree(buffer.pointer);
++	buffer.pointer = NULL;
++	buffer.length = 0;
++
+ 	while (!acpi_is_root_bridge(phandle)) {
+ 		node = kzalloc(sizeof(struct acpi_handle_node), GFP_KERNEL);
+ 		if (!node)
+@@ -370,6 +378,12 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ 		node->handle = phandle;
+ 		list_add(&node->node, &device_list);
+ 
++		acpi_get_name(phandle, ACPI_FULL_PATHNAME, &buffer);
++		printk("+ Adding %s\n", (char *)buffer.pointer);
++		kfree(buffer.pointer);
++		buffer.pointer = NULL;
++		buffer.length = 0;
++
+ 		status = acpi_get_parent(phandle, &phandle);
+ 		if (ACPI_FAILURE(status))
+ 			goto out;
+@@ -380,6 +394,7 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ 		goto out;
+ 
+ 	pbus = root->bus;
++	dev_info(&pbus->dev, "I'm a little pci_bus, short and stout...\n");
+ 
+ 	/*
+ 	 * Now, walk back down the PCI device tree until we return to our
+@@ -394,7 +409,16 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ 		dev = (adr >> 16) & 0xffff;
+ 		fn  = adr & 0xffff;
+ 
++		printk("Searching for %04x:%02x:%02x.%d\n",
++			pci_domain_nr(pbus), pbus->number,
++			PCI_SLOT(PCI_DEVFN(dev, fn)),
++			PCI_FUNC(PCI_DEVFN(dev, fn)));
++
+ 		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
++		if (!pdev) {
++			printk("Ouch.\n");
++			break;
++		}
+ 		if (hnd == handle)
+ 			break;
+ 
