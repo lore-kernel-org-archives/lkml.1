@@ -1,224 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZFYM43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZFYM5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbZFYM43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbZFYMz5
+	id S1756227AbZFYM5y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZFYM5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:55:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56399 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755318AbZFYMz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:55:56 -0400
-Date: Thu, 25 Jun 2009 08:55:13 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: do some changes of io.policy interface
-Message-ID: <20090625125513.GA25439@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com> <4A435038.60406@cn.fujitsu.com>
+	Thu, 25 Jun 2009 08:57:47 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:63856 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbZFYM5q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:57:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=GZ1nYiemlC5Pf5UZtRtTYAZsBzO9g838rW1FbxfuExDLASjuGT7mSrzNkn4UpfshPB
+         iM+mf3r/wfgmy4Vezkh8oHOqyaP8zmVHG48g5iw6ZDA/sr4i0qEOmnUliOR3IxTjha0b
+         rUEdtYpdrr0y5qpPxvBsJNfR5uWJwllqTPBB8=
+Message-ID: <4A437442.8000909@gmail.com>
+Date: Thu, 25 Jun 2009 21:57:38 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A435038.60406@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it>	<clqON-2Xv-19@gated-at.bofh.it>	<clqON-2Xv-5@gated-at.bofh.it>	<cmknZ-8lW-9@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk> <4A1B164B.1010108@gmail.com> <4A1B76EB.9040500@kernel.org> <4A1B8193.1010703@gmail.com> <4A1B8328.80801@kernel.org> <4A1B8873.1040101@gmail.com> <4A1BEFB6.80205@kernel.org> <4A1C316C.9040201@gmail.com> <4A1C8444.9040605@kernel.org> <4A1D47C6.1070504@gmail.com> <4A2424A2.5020704@gmail.com> <4A25EA78.7070705@kernel.org> <4A25FBD1.70000@gmail.com> <4A2A1521.5020407@gmai
+ l.com>
+In-Reply-To: <4A2A1521.5020407@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------060108020901060306000506"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 06:23:52PM +0800, Gui Jianfeng wrote:
-> Paul Menage wrote:
-> > On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
-> >> You can use the following format to play with the new interface.
-> >> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-> >> weight=0 means removing the policy for DEV.
-> >>
-> >> Examples:
-> >> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> >> # echo /dev/hdb:300:2 > io.policy
-> >> # cat io.policy
-> >> dev weight class
-> >> /dev/hdb 300 2
-> > 
-> > I think that the read and write should be consistent. Can you just use
-> > white-space separation for both, rather than colon-separation for
-> > writes and white-space separation for reads?
-> > 
-> > Also, storing device inode paths statically as strings into the
-> > io_policy structure seems wrong, since it's quite possible for the
-> > device node that was used originally to be gone by the time that
-> > someone reads the io.policy file, or renamed, or even replaced with an
-> > inode that refers to to a different block device
-> > 
-> > My preferred alternatives would be:
-> > 
-> > - read/write the value as a device number rather than a name
-> > - read/write the block device's actual name (e.g. hda or sda) rather
-> > than a path to the inode
-> > 
-> 
-> Hi Paul, Vivek
-> 
-> Here is a patch to fix the issue Paul raised.
-> 
-> This patch achives the following goals
-> 1 According to Paul's comment, Modifing io.policy interface to
->   use device number for read/write directly. 
-> 2 Just use white-space separation for both, rather than colon-
->   separation for writes and white-space separation for reads.
-> 3 Do more strict checking for inputting.
-> 
-> old interface:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo "/dev/hdb:300:2" > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
-> 
-> new interface:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo "3:64 300 2" > io.policy
-> # cat io.policy
-> dev     weight  class
-> 3:64    300     2
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |   59 ++++++++++++++++++++++++++++++++++----------------
->  block/elevator-fq.h |    1 -
->  2 files changed, 40 insertions(+), 20 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index d779282..83c831b 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -1895,12 +1895,12 @@ static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
->  	if (list_empty(&iocg->policy_list))
->  		goto out;
->  
-> -	seq_printf(m, "dev weight class\n");
-> +	seq_printf(m, "dev\tweight\tclass\n");
->  
->  	spin_lock_irq(&iocg->lock);
->  	list_for_each_entry(pn, &iocg->policy_list, node) {
-> -		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
-> -			   pn->weight, pn->ioprio_class);
-> +		seq_printf(m, "%u:%u\t%lu\t%lu\n", MAJOR(pn->dev),
-> +			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
->  	}
->  	spin_unlock_irq(&iocg->lock);
->  out:
-> @@ -1936,44 +1936,65 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
->  	return NULL;
->  }
->  
-> -static int devname_to_devnum(const char *buf, dev_t *dev)
-> +static int check_dev_num(dev_t dev)
->  {
-> -	struct block_device *bdev;
-> +	int part = 0;
->  	struct gendisk *disk;
-> -	int part;
->  
-> -	bdev = lookup_bdev(buf);
-> -	if (IS_ERR(bdev))
-> +	disk = get_gendisk(dev, &part);
-> +	if (!disk || part)
->  		return -ENODEV;
->  
-> -	disk = get_gendisk(bdev->bd_dev, &part);
-> -	if (part)
-> -		return -EINVAL;
-> -
-> -	*dev = MKDEV(disk->major, disk->first_minor);
-> -	bdput(bdev);
-> -
->  	return 0;
->  }
->  
->  static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
->  {
-> -	char *s[3], *p;
-> +	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
->  	int ret;
-> +	unsigned long major, minor;
->  	int i = 0;
-> +	dev_t dev;
->  
->  	memset(s, 0, sizeof(s));
-> -	while ((p = strsep(&buf, ":")) != NULL) {
-> +	while ((p = strsep(&buf, " ")) != NULL) {
->  		if (!*p)
->  			continue;
->  		s[i++] = p;
-> +
-> +		/* Prevent from inputing too many things */
-> +		if (i == 4)
-> +			break;
->  	}
->  
-> -	ret = devname_to_devnum(s[0], &newpn->dev);
-> +	if (i != 3)
-> +		return -EINVAL;
-> +
-> +	p = strsep(&s[0], ":");
-> +	if (p != NULL)
-> +		major_s = p;
-> +	else
-> +		return -EINVAL;
-> +
-> +	minor_s = s[0];
-> +	if (!minor_s)
-> +		return -EINVAL;
-> +
-> +	ret = strict_strtoul(major_s, 10, &major);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	ret = strict_strtoul(minor_s, 10, &minor);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	dev = MKDEV(major, minor);
-> +
-> +	ret = check_dev_num(dev);
->  	if (ret)
->  		return ret;
->  
-> -	strcpy(newpn->dev_name, s[0]);
-> +	newpn->dev = dev;
->  
->  	if (s[1] == NULL)
->  		return -EINVAL;
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index b3193f8..7722ebe 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -286,7 +286,6 @@ struct io_group {
->  
->  struct io_policy_node {
->  	struct list_head node;
-> -	char dev_name[32];
->  	dev_t dev;
->  	unsigned long weight;
->  	unsigned long ioprio_class;
+This is a multi-part message in MIME format.
+--------------060108020901060306000506
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi Gui,
+Sorry about the long delay.
 
-Thanks for the patch. "unsigned long" for ioprio_class is too big. How
-about using "unsigned short"? I noticed that in io_cgroup also we are
-using "unsigned long". I will fix that.
+Niel Lambrechts wrote:
+> Morning Tejun,
+> 
+> Tejun Heo wrote:
+>> Hello,
+>>
+>> Can you please do the followings?
+>>
+>> 1. Apply the attached patch, build & boot
+>>   
+> I chose 2.6.30-rc7...
+>> 2. Trigger the problem and record dmesg
+>>   
+> It took 3 days and quite a few hibernate attempts ... :-)
+> 
+>> 3. On failed IO, the kernel will print the address of bi_endio.  Run
+>>    "nm -n" on the vmlinux in the kernel build root and look up which
+>>    function it is and post the dmesg and function name.
+> I did not have that specific vmlinux.o file any more, but
+> /boot/System.map-2.6.30-rc7-pae shows:
+> c01a49fd t end_bio_bh_io_sync
 
-For storing weight now we are planning to use "unsigned int". Can you
-please switch to that.
+So, it's coming from submit_bh()
 
-Thanks
-Vivek
+> Hope this is sufficient to help you. Sorry if this is silly - being so
+> inexperienced with the kernel - but I wondered if or why a dump_stack()
+> in that debug patch would not be helpful?
+
+The result is perfectly good and yeah dump_stack() on the issue path
+would help but the problem is that block IO requests are processed
+asynchronously so by the time we find out which request fail, the
+requester stack is long gone.  We can either record the stack trace
+with each request or trace it back one step at a time by chasing down
+the completion callbacks.  The first requires more coding, so... :-)
+
+Looks like the request gotta be coming from __breadahead().  The only
+place this is used in ext4 is in __ext4_get_inode_loc().  Ah.. it also
+contains the matching error message.  I still don't see how the READA
+buffer reads can affect the synchronous path.  They're doing proper
+exclusion via buffer lock.  Maybe they're getting merged?  Yeap, looks
+like block code is merging READAs and regular READs.
+
+Can you please try the attached patch and reproduce the problem and
+report the kernel log?  Hopefully, this will be the last debug run.
+
+Thanks.
+
+-- 
+tejun
+
+--------------060108020901060306000506
+Content-Type: text/x-patch;
+ name="bio_endio-debug2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bio_endio-debug2.patch"
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index b06cf5c..c8b3a6f 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -155,8 +155,13 @@ static void req_bio_endio(struct request *rq, struct bio *bio,
+ 		if (bio_integrity(bio))
+ 			bio_integrity_advance(bio, nbytes);
+ 
+-		if (bio->bi_size == 0)
++		if (bio->bi_size == 0) {
++			if (error)
++				printk("XXX %s: failing bio %p bi_rw=0x%lx with %d\n",
++				       rq->rq_disk ? rq->rq_disk->disk_name : "?",
++				       bio, bio->bi_rw, error);
+ 			bio_endio(bio, error);
++		}
+ 	} else {
+ 
+ 		/*
+diff --git a/fs/bio.c b/fs/bio.c
+index 24c9140..007edb9 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -1390,13 +1390,24 @@ void bio_check_pages_dirty(struct bio *bio)
+  **/
+ void bio_endio(struct bio *bio, int error)
+ {
++	char name[BDEVNAME_SIZE] = "?";
++
++	if (bio->bi_bdev)
++		bdevname(bio->bi_bdev, name);
++
+ 	if (error)
+ 		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+-	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags))
++	else if (!test_bit(BIO_UPTODATE, &bio->bi_flags)) {
++		printk("XXX %s: !uptodate on bio %p\n", name, bio);
+ 		error = -EIO;
++	}
+ 
+-	if (bio->bi_end_io)
++	if (bio->bi_end_io) {
++		if (error)
++			printk("XXX %s: bio=%p error=%d bi_end_io=%p\n",
++			       name, bio, error, bio->bi_end_io);
+ 		bio->bi_end_io(bio, error);
++	}
+ }
+ 
+ void bio_pair_release(struct bio_pair *bp)
+
+--------------060108020901060306000506--
