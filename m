@@ -1,193 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZFYFNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZFYFOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZFYFNq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZFYFNf
+	id S1757359AbZFYFOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZFYFNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:13:35 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1433 "EHLO
+	Thu, 25 Jun 2009 01:13:39 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1435 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbZFYFNe (ORCPT
+	with ESMTP id S1752724AbZFYFNi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:13:34 -0400
+	Thu, 25 Jun 2009 01:13:38 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/19] Use PCI_VDEVICE
-Date: Wed, 24 Jun 2009 22:13:16 -0700
-Message-Id: <cover.1245906151.git.joe@perches.com>
+Cc: Chas Williams <chas@cmf.nrl.navy.mil>, netdev@vger.kernel.org
+Subject: [PATCH 02/19] drivers/atm: Use PCI_VDEVICE
+Date: Wed, 24 Jun 2009 22:13:18 -0700
+Message-Id: <5b7c60739ce4077bf33eac0b3977c77c1dfa6278.1245906152.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
+In-Reply-To: <cover.1245906151.git.joe@perches.com>
+References: <cover.1245906151.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCI_VDEVICE macro can simplify declarations.
-Converted source code to use it via the script below:
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ drivers/atm/ambassador.c |    6 ++----
+ drivers/atm/eni.c        |    6 ++----
+ drivers/atm/firestream.c |    6 ++----
+ drivers/atm/fore200e.c   |    3 +--
+ drivers/atm/he.c         |    3 +--
+ drivers/atm/horizon.c    |    3 +--
+ drivers/atm/idt77252.c   |    3 +--
+ drivers/atm/nicstar.c    |    3 +--
+ drivers/atm/solos-pci.c  |    2 +-
+ drivers/atm/zatm.c       |    6 ++----
+ 10 files changed, 14 insertions(+), 27 deletions(-)
 
-#! /bin/bash
-
-for line in \
-    $(grep -ioP "PCI_VENDOR_ID_\w+\s+0x[a-f0-9]{4,4}" include/linux/pci_ids.h | \
-    sed -r -e "s/PCI_VENDOR_ID_(\w+)\s+(0x[a-fA-F0-9]{1,4})/\2:\1/g" | \
-    grep -vi "0x1102") ; do
-    
-    constant=$(echo $line | cut -f1 -d":")
-    vendor=$(echo $line | cut -f2 -d":")
-
-    echo "$constant -> $vendor"
-
-    for file in $(grep -rP --include=*.[ch] -li -w \
-	$constant drivers sound) ; do
-
-	perl -i -e \
-	    "local $/; while(<>) { s/\b$constant\s*,\s*(\w+)\s*,\s*PCI_ANY_ID\s*,\s*PCI_ANY_ID\s*,\s*0\s*,\s*0\s*,\s*/PCI_VDEVICE\($vendor, \1\), /gi; print; }" $file
-    done
-
-    for file in $(grep -rP --include=*.[ch] -li -w \
-	PCI_VENDOR_ID_$vendor drivers sound) ; do
-
-	perl -i -e \
-	    "local $/; while(<>) { s/\bPCI_VENDOR_ID_$vendor\s*,\s*(\w+)\s*,\s*PCI_ANY_ID\s*,\s*PCI_ANY_ID\s*,\s*0\s*,\s*0\s*,\s*/PCI_VDEVICE\($vendor, \1\), /g; print; }" $file
-    done
-
-done
-
----------
-
-Joe Perches (19):
-  drivers/ata: Use PCI_VDEVICE
-  drivers/atm: Use PCI_VDEVICE
-  drivers/block: Use PCI_VDEVICE
-  drivers/char/hw_random: Use PCI_VDEVICE
-  drivers/isdn: Use PCI_VDEVICE
-  drivers/media: Use PCI_VDEVICE
-  drivers/memstick: Use PCI_VDEVICE
-  drivers/misc: Use PCI_VDEVICE
-  drivers/mmc: Use PCI_VDEVICE
-  drivers/net/wan: Use PCI_VDEVICE
-  drivers/net/wireless: Use PCI_VDEVICE
-  drivers/net: Use PCI_VDEVICE
-  drivers/parport: Use PCI_VDEVICE
-  drivers/scsi: Use PCI_VDEVICE
-  drivers/serial: Use PCI_VDEVICE
-  drivers/staging: Use PCI_VDEVICE
-  drivers/telephony: Use PCI_VDEVICE
-  drivers/video: Use PCI_VDEVICE
-  sound: Use PCI_VDEVICE
-
- drivers/ata/ata_piix.c                             |   98 ++--
- drivers/ata/pata_scc.c                             |    3 +-
- drivers/atm/ambassador.c                           |    6 +-
- drivers/atm/eni.c                                  |    6 +-
- drivers/atm/firestream.c                           |    6 +-
- drivers/atm/fore200e.c                             |    3 +-
- drivers/atm/he.c                                   |    3 +-
- drivers/atm/horizon.c                              |    3 +-
- drivers/atm/idt77252.c                             |    3 +-
- drivers/atm/nicstar.c                              |    3 +-
- drivers/atm/solos-pci.c                            |    2 +-
- drivers/atm/zatm.c                                 |    6 +-
- drivers/block/sx8.c                                |    4 +-
- drivers/char/hw_random/amd-rng.c                   |    4 +-
- drivers/char/hw_random/geode-rng.c                 |    3 +-
- drivers/isdn/hardware/eicon/divasmain.c            |   34 +-
- drivers/isdn/hardware/mISDN/hfcmulti.c             |    9 +-
- drivers/isdn/hardware/mISDN/hfcpci.c               |   69 +--
- drivers/media/video/bt8xx/bttv-driver.c            |   12 +-
- drivers/media/video/meye.c                         |    3 +-
- drivers/memstick/host/jmb38x_ms.c                  |    3 +-
- drivers/misc/tifm_7xx1.c                           |    9 +-
- drivers/mmc/host/via-sdmmc.c                       |    3 +-
- drivers/net/3c59x.c                                |   90 ++--
- drivers/net/8139too.c                              |   18 +-
- drivers/net/amd8111e.c                             |    3 +-
- drivers/net/arcnet/com20020-pci.c                  |    6 +-
- drivers/net/bnx2.c                                 |   24 +-
- drivers/net/bnx2x_main.c                           |    9 +-
- drivers/net/cassini.c                              |    6 +-
- drivers/net/cxgb3/cxgb3_main.c                     |    2 +-
- drivers/net/irda/via-ircc.c                        |   10 +-
- drivers/net/natsemi.c                              |    2 +-
- drivers/net/ne2k-pci.c                             |   12 +-
- drivers/net/pci-skeleton.c                         |    4 +-
- drivers/net/sis900.c                               |    6 +-
- drivers/net/spider_net.c                           |    3 +-
- drivers/net/starfire.c                             |    2 +-
- drivers/net/sundance.c                             |    6 +-
- drivers/net/sungem.c                               |   24 +-
- drivers/net/tehuti.c                               |    6 +-
- drivers/net/tlan.c                                 |   39 +-
- drivers/net/tokenring/tmspci.c                     |    8 +-
- drivers/net/tulip/de2104x.c                        |    6 +-
- drivers/net/tulip/de4x5.c                          |   12 +-
- drivers/net/tulip/tulip_core.c                     |   28 +-
- drivers/net/tulip/uli526x.c                        |    4 +-
- drivers/net/tulip/winbond-840.c                    |    4 +-
- drivers/net/typhoon.c                              |   18 +-
- drivers/net/wan/farsync.c                          |   21 +-
- drivers/net/wan/pc300_drv.c                        |   12 +-
- drivers/net/wan/pc300too.c                         |   12 +-
- drivers/net/wan/wanxl.c                            |    9 +-
- drivers/net/wireless/ipw2x00/ipw2200.c             |   10 +-
- drivers/net/wireless/prism54/islpci_hotplug.c      |    4 +-
- drivers/net/yellowfin.c                            |    4 +-
- drivers/parport/parport_pc.c                       |   98 ++---
- drivers/parport/parport_serial.c                   |   93 ++---
- drivers/scsi/3w-9xxx.c                             |   12 +-
- drivers/scsi/3w-xxxx.c                             |    6 +-
- drivers/scsi/BusLogic.c                            |    9 +-
- drivers/scsi/a100u2w.c                             |    2 +-
- drivers/scsi/aacraid/linit.c                       |    6 +-
- drivers/scsi/dmx3191d.c                            |    3 +-
- drivers/scsi/fdomain.c                             |    3 +-
- drivers/scsi/initio.c                              |   20 +-
- drivers/scsi/megaraid.c                            |    9 +-
- drivers/scsi/qla1280.c                             |   18 +-
- drivers/scsi/stex.c                                |   18 +-
- drivers/scsi/sym53c8xx_2/sym_glue.c                |   45 +--
- drivers/scsi/tmscsim.c                             |    3 +-
- drivers/serial/8250_pci.c                          |  526 +++++---------------
- .../staging/comedi/drivers/addi-data/addi_common.c |   54 +-
- drivers/staging/epl/Edrv8139.c                     |    2 +-
- drivers/staging/vt6655/device_main.c               |    2 +-
- drivers/telephony/ixj.c                            |    3 +-
- drivers/video/aty/aty128fb.c                       |  141 ++----
- drivers/video/aty/radeon_base.c                    |    2 +-
- drivers/video/cirrusfb.c                           |    2 +-
- drivers/video/cyber2000fb.c                        |    9 +-
- drivers/video/i810/i810_main.c                     |   18 +-
- drivers/video/igafb.c                              |    3 +-
- drivers/video/imsttfb.c                            |    6 +-
- drivers/video/matrox/matroxfb_base.c               |   33 +-
- drivers/video/neofb.c                              |   27 +-
- drivers/video/pm2fb.c                              |    9 +-
- drivers/video/pm3fb.c                              |    3 +-
- drivers/video/pvr2fb.c                             |    3 +-
- drivers/video/riva/fbdev.c                         |  126 ++----
- drivers/video/savage/savagefb_driver.c             |   69 +--
- drivers/video/sis/sis_main.h                       |   20 +-
- drivers/video/tridentfb.c                          |   42 +-
- sound/oss/kahlua.c                                 |    2 +-
- sound/pci/atiixp.c                                 |    8 +-
- sound/pci/atiixp_modem.c                           |    4 +-
- sound/pci/au88x0/au8810.c                          |    3 +-
- sound/pci/au88x0/au8820.c                          |    3 +-
- sound/pci/au88x0/au8830.c                          |    3 +-
- sound/pci/cmipci.c                                 |   10 +-
- sound/pci/cs4281.c                                 |    2 +-
- sound/pci/cs46xx/cs46xx.c                          |    6 +-
- sound/pci/ens1370.c                                |    6 +-
- sound/pci/es1938.c                                 |    2 +-
- sound/pci/ice1712/ice1712.c                        |    2 +-
- sound/pci/ice1712/ice1724.c                        |    2 +-
- sound/pci/intel8x0.c                               |   46 +-
- sound/pci/intel8x0m.c                              |   34 +-
- sound/pci/mixart/mixart.c                          |    2 +-
- sound/pci/nm256/nm256.c                            |    6 +-
- sound/pci/rme32.c                                  |    9 +-
- sound/pci/rme96.c                                  |   12 +-
- sound/pci/sonicvibes.c                             |    2 +-
- sound/pci/via82xx.c                                |    4 +-
- sound/pci/via82xx_modem.c                          |    2 +-
- sound/pci/ymfpci/ymfpci.c                          |   12 +-
- 115 files changed, 838 insertions(+), 1508 deletions(-)
+diff --git a/drivers/atm/ambassador.c b/drivers/atm/ambassador.c
+index 703364b..cae8b04 100644
+--- a/drivers/atm/ambassador.c
++++ b/drivers/atm/ambassador.c
+@@ -2377,10 +2377,8 @@ MODULE_PARM_DESC(pci_lat, "PCI latency in bus cycles");
+ /********** module entry **********/
+ 
+ static struct pci_device_id amb_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_MADGE, PCI_DEVICE_ID_MADGE_AMBASSADOR, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 0 },
+-	{ PCI_VENDOR_ID_MADGE, PCI_DEVICE_ID_MADGE_AMBASSADOR_BAD, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 0 },
++	{ PCI_VDEVICE(MADGE, PCI_DEVICE_ID_MADGE_AMBASSADOR), 0 },
++	{ PCI_VDEVICE(MADGE, PCI_DEVICE_ID_MADGE_AMBASSADOR_BAD), 0 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/eni.c b/drivers/atm/eni.c
+index 5503bfc..b1d7acd 100644
+--- a/drivers/atm/eni.c
++++ b/drivers/atm/eni.c
+@@ -2268,10 +2268,8 @@ out0:
+ 
+ 
+ static struct pci_device_id eni_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_EF, PCI_DEVICE_ID_EF_ATM_FPGA, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 0 /* FPGA */ },
+-	{ PCI_VENDOR_ID_EF, PCI_DEVICE_ID_EF_ATM_ASIC, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 1 /* ASIC */ },
++	{ PCI_VDEVICE(EF, PCI_DEVICE_ID_EF_ATM_FPGA), 0 /* FPGA */ },
++	{ PCI_VDEVICE(EF, PCI_DEVICE_ID_EF_ATM_ASIC), 1 /* ASIC */ },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci,eni_pci_tbl);
+diff --git a/drivers/atm/firestream.c b/drivers/atm/firestream.c
+index b119640..8cb3088 100644
+--- a/drivers/atm/firestream.c
++++ b/drivers/atm/firestream.c
+@@ -2026,10 +2026,8 @@ static void __devexit firestream_remove_one (struct pci_dev *pdev)
+ }
+ 
+ static struct pci_device_id firestream_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_FUJITSU_ME, PCI_DEVICE_ID_FUJITSU_FS50, 
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, FS_IS50},
+-	{ PCI_VENDOR_ID_FUJITSU_ME, PCI_DEVICE_ID_FUJITSU_FS155, 
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, FS_IS155},
++	{ PCI_VDEVICE(FUJITSU_ME, PCI_DEVICE_ID_FUJITSU_FS50), FS_IS50},
++	{ PCI_VDEVICE(FUJITSU_ME, PCI_DEVICE_ID_FUJITSU_FS155), FS_IS155},
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index 10f000d..1241b08 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2770,8 +2770,7 @@ static void __devexit fore200e_pca_remove_one(struct pci_dev *pci_dev)
+ 
+ 
+ static struct pci_device_id fore200e_pca_tbl[] = {
+-    { PCI_VENDOR_ID_FORE, PCI_DEVICE_ID_FORE_PCA200E, PCI_ANY_ID, PCI_ANY_ID,
+-      0, 0, (unsigned long) &fore200e_bus[0] },
++    { PCI_VDEVICE(FORE, PCI_DEVICE_ID_FORE_PCA200E), (unsigned long) &fore200e_bus[0] },
+     { 0, }
+ };
+ 
+diff --git a/drivers/atm/he.c b/drivers/atm/he.c
+index 2de6406..a536a53 100644
+--- a/drivers/atm/he.c
++++ b/drivers/atm/he.c
+@@ -2921,8 +2921,7 @@ module_param(sdh, bool, 0);
+ MODULE_PARM_DESC(sdh, "use SDH framing (default 0)");
+ 
+ static struct pci_device_id he_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_FORE, PCI_DEVICE_ID_FORE_HE, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 0 },
++	{ PCI_VDEVICE(FORE, PCI_DEVICE_ID_FORE_HE), 0 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/horizon.c b/drivers/atm/horizon.c
+index 6b969f8..cec9a66 100644
+--- a/drivers/atm/horizon.c
++++ b/drivers/atm/horizon.c
+@@ -2896,8 +2896,7 @@ MODULE_PARM_DESC(max_rx_size, "maximum size of RX AAL5 frames");
+ MODULE_PARM_DESC(pci_lat, "PCI latency in bus cycles");
+ 
+ static struct pci_device_id hrz_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_MADGE, PCI_DEVICE_ID_MADGE_HORIZON, PCI_ANY_ID, PCI_ANY_ID,
+-	  0, 0, 0 },
++	{ PCI_VDEVICE(MADGE, PCI_DEVICE_ID_MADGE_HORIZON), 0 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
+index e33ae00..351b9b0 100644
+--- a/drivers/atm/idt77252.c
++++ b/drivers/atm/idt77252.c
+@@ -3781,8 +3781,7 @@ err_out_disable_pdev:
+ 
+ static struct pci_device_id idt77252_pci_tbl[] =
+ {
+-	{ PCI_VENDOR_ID_IDT, PCI_DEVICE_ID_IDT_IDT77252,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VDEVICE(IDT, PCI_DEVICE_ID_IDT_IDT77252), 0 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/nicstar.c b/drivers/atm/nicstar.c
+index 3da804b..8ddacf8 100644
+--- a/drivers/atm/nicstar.c
++++ b/drivers/atm/nicstar.c
+@@ -277,8 +277,7 @@ static void __devexit nicstar_remove_one(struct pci_dev *pcidev)
+ 
+ static struct pci_device_id nicstar_pci_tbl[] __devinitdata =
+ {
+-	{PCI_VENDOR_ID_IDT, PCI_DEVICE_ID_IDT_IDT77201,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{PCI_VDEVICE(IDT, PCI_DEVICE_ID_IDT_IDT77201), 0},
+ 	{0,}			/* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci, nicstar_pci_tbl);
+diff --git a/drivers/atm/solos-pci.c b/drivers/atm/solos-pci.c
+index 9359613..376c120 100644
+--- a/drivers/atm/solos-pci.c
++++ b/drivers/atm/solos-pci.c
+@@ -1265,7 +1265,7 @@ static void fpga_remove(struct pci_dev *dev)
+ }
+ 
+ static struct pci_device_id fpga_pci_tbl[] __devinitdata = {
+-	{ 0x10ee, 0x0300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VDEVICE(XILINX, 0x0300), 0 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/atm/zatm.c b/drivers/atm/zatm.c
+index 752b1ba..d33d6b6 100644
+--- a/drivers/atm/zatm.c
++++ b/drivers/atm/zatm.c
+@@ -1636,10 +1636,8 @@ out_free:
+ MODULE_LICENSE("GPL");
+ 
+ static struct pci_device_id zatm_pci_tbl[] __devinitdata = {
+-	{ PCI_VENDOR_ID_ZEITNET, PCI_DEVICE_ID_ZEITNET_1221,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, ZATM_COPPER },
+-	{ PCI_VENDOR_ID_ZEITNET, PCI_DEVICE_ID_ZEITNET_1225,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VDEVICE(ZEITNET, PCI_DEVICE_ID_ZEITNET_1221), ZATM_COPPER },
++	{ PCI_VDEVICE(ZEITNET, PCI_DEVICE_ID_ZEITNET_1225), 0 },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, zatm_pci_tbl);
+-- 
+1.6.3.1.10.g659a0.dirty
 
