@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZFYPmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbZFYPns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbZFYPmd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 11:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754337AbZFYPmZ
+	id S1759106AbZFYPns (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZFYPnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 11:42:25 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49524 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754747AbZFYPmY (ORCPT
+	Thu, 25 Jun 2009 11:43:41 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59549 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754337AbZFYPnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 11:42:24 -0400
-Subject: Re: [PATCH]input: Change timer function to workqueue for gpio_keys
-	driver
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-To: ext Alek Du <alek.du@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Trilok Soni <soni.trilok@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "ben-linux@fluff.org" <ben-linux@fluff.org>
-In-Reply-To: <20090625230949.53beda65@dxy.sh.intel.com>
-References: <20090608152420.0e76c302@dxy.sh.intel.com>
-	 <5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
-	 <359ed6810906250329x70cf380cy278f23e3ebc6a829@mail.gmail.com>
-	 <20090625210642.432e08a5@dxy.sh.intel.com>
-	 <1245936693.20530.107.camel@jani-desktop>
-	 <20090625220826.1fa7413e@dxy.sh.intel.com>
-	 <1245941565.20530.134.camel@jani-desktop>
-	 <1245942355.20530.141.camel@jani-desktop>
-	 <20090625230949.53beda65@dxy.sh.intel.com>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 18:42:08 +0300
-Message-Id: <1245944528.20530.145.camel@jani-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2009 15:42:13.0923 (UTC) FILETIME=[82C98F30:01C9F5AB]
-X-Nokia-AV: Clean
+	Thu, 25 Jun 2009 11:43:40 -0400
+Date: Thu, 25 Jun 2009 11:43:43 -0400
+To: uClinux development list <uclinux-dev@uclinux.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Sorensen <lsorense@csclub.uwaterloo.ca>
+Subject: Coldfire 5271 hitting BUG_ON(page_count(buddy) != 0);
+Message-ID: <20090625154343.GA10189@csclub.uwaterloo.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 17:09 +0200, ext Alek Du wrote:
-> On Thu, 25 Jun 2009 23:05:55 +0800
-> Jani Nikula <ext-jani.1.nikula@nokia.com> wrote:
-> > Actually scrap that, the input layer already ignores events with no
-> > state changes, right?
-> > 
-> Yes, correct. I just want to reply your previous mail, but seems you find that. :-)
+I am hitting a memory management bug and I would love some hints as to
+how to track down the bug and fix it.
 
-The point about your patch breaking debouncing is still valid, though.
+The bug hit is line 423 of page_alloc.c which is:
 
+BUG_ON(page_count(buddy) != 0);
 
-BR,
-Jani.
+The function it is part of is:
 
+static inline int page_is_buddy(struct page *page, struct page *buddy,
+                                                                int order)
+{
+        if (!pfn_valid_within(page_to_pfn(buddy)))
+                return 0;
 
+        if (page_zone_id(page) != page_zone_id(buddy))
+                return 0;
+
+        if (PageBuddy(buddy) && page_order(buddy) == order) {
+                BUG_ON(page_count(buddy) != 0);
+                return 1;
+        }
+        return 0;
+}
+
+I am seeing this both with 2.6.29.1 and 2.6.30 so far.  I unfortunately
+haven't poked much at the memory management code, so I am not even sure
+what this is supposed to be doing.  The cpu us a coldfire 5271.
+
+I also see crashes causing the kernel to dump lots of hex values.
+Building the kernel with debug enabled unfortunately seems to move things
+around enough to make it just lock up instead without any output.
+
+-- 
+Len Sorensen
