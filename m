@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbZFYPns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759197AbZFYPpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759106AbZFYPns (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 11:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZFYPnl
+	id S1759197AbZFYPpo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZFYPpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 11:43:41 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59549 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754337AbZFYPnk (ORCPT
+	Thu, 25 Jun 2009 11:45:35 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:44332 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbZFYPpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 11:43:40 -0400
-Date: Thu, 25 Jun 2009 11:43:43 -0400
-To: uClinux development list <uclinux-dev@uclinux.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Sorensen <lsorense@csclub.uwaterloo.ca>
-Subject: Coldfire 5271 hitting BUG_ON(page_count(buddy) != 0);
-Message-ID: <20090625154343.GA10189@csclub.uwaterloo.ca>
+	Thu, 25 Jun 2009 11:45:34 -0400
+Message-ID: <4A439B90.1030109@novell.com>
+Date: Thu, 25 Jun 2009 11:45:20 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com>
+In-Reply-To: <20090625110812.GA6487@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigE1A3917C6159630C9832B6C1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am hitting a memory management bug and I would love some hints as to
-how to track down the bug and fix it.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigE1A3917C6159630C9832B6C1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The bug hit is line 423 of page_alloc.c which is:
+Michael S. Tsirkin wrote:
+> On Wed, Jun 24, 2009 at 11:49:01AM +0300, Michael S. Tsirkin wrote:
+>  =20
+>> On Tue, Jun 23, 2009 at 09:43:31PM -0400, Gregory Haskins wrote:
+>>    =20
+>>> Michael S. Tsirkin wrote:
+>>>      =20
+>>>> Remove in_range from kvm_io_device and ask read/write callbacks, if
+>>>> supplied, to perform range checks internally. This allows aliasing
+>>>> (mostly for in-kernel virtio), as well as better error handling by
+>>>> making it possible to pass errors up to userspace. And it's enough t=
+o
+>>>> look at the diffstat to see that it's a better API anyway.
+>>>>
+>>>> While we are at it, document locking rules for kvm_io_device.
+>>>>  =20
+>>>>        =20
+>>> Hi Michael,
+>>>
+>>> I just tried to apply this to kvm.git/master, and it blew up really
+>>> badly.  What tree should I be using?
+>>>      =20
+>> Ugh, this is against 2.6.30. I'll post kvm.git version soon.
+>>
+>>    =20
+>
+> I went ahead and tried to rebase it, to find that it conflicts with
+> recent patch 35b3038961f94e83557944ae0d30c8fa0b5012cf merged in kvm.git=
+:
+> 'KVM: switch irq injection/acking data structures to irq_lock'
+> which now does this:
+> 	lock
+> 	find
+> 	unlock
+> 	write
+>
+> I thought for a while that it might make sense to start small and just
+> add in_range parameter for starters ...
+> However, I just realised that this only works because devices are not
+> added or removed dynamically.
+>
+> The long term fix is to switch to SRCU for bus management.  But if we
+> need to do this for iosignalfd anyway, in_range removal becomes possibl=
+e
+> again.
+>
+> Short term it might be also possible to go back to keeping kvm lock
+> across both find and read - since the lock is taken, we don't
+> really win anything currently if we drop the lock earlier.
+>
+> Comments?
+>  =20
 
-BUG_ON(page_count(buddy) != 0);
+I just took another look.  Things are quite messy and I don't know what
+the optimal order of merging is.  Go ahead with your remove-inrange and
+srcu plan and I will just defer submitting the iosignalfd related series
+till you are happy with the new layout.
 
-The function it is part of is:
+Thanks Michael,
+-Greg
 
-static inline int page_is_buddy(struct page *page, struct page *buddy,
-                                                                int order)
-{
-        if (!pfn_valid_within(page_to_pfn(buddy)))
-                return 0;
 
-        if (page_zone_id(page) != page_zone_id(buddy))
-                return 0;
 
-        if (PageBuddy(buddy) && page_order(buddy) == order) {
-                BUG_ON(page_count(buddy) != 0);
-                return 1;
-        }
-        return 0;
-}
+--------------enigE1A3917C6159630C9832B6C1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-I am seeing this both with 2.6.29.1 and 2.6.30 so far.  I unfortunately
-haven't poked much at the memory management code, so I am not even sure
-what this is supposed to be doing.  The cpu us a coldfire 5271.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-I also see crashes causing the kernel to dump lots of hex values.
-Building the kernel with debug enabled unfortunately seems to move things
-around enough to make it just lock up instead without any output.
+iEYEARECAAYFAkpDm5AACgkQlOSOBdgZUxmy4ACffdCP1GFQGpNf36rPOcQtww2B
+bxgAnR2FoIZaTauAaDzcWg1+Km0Py2/p
+=qshn
+-----END PGP SIGNATURE-----
 
--- 
-Len Sorensen
+--------------enigE1A3917C6159630C9832B6C1--
