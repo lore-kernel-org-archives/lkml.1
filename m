@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZFYEmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZFYEpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751877AbZFYEmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 00:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZFYElx
+	id S1753875AbZFYEpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 00:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750944AbZFYEpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 00:41:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44665 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750731AbZFYElw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 00:41:52 -0400
-Date: Thu, 25 Jun 2009 06:41:55 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH v2] slab,slub: ignore __GFP_WAIT if we're booting or suspending
-Message-ID: <20090625044155.GC23949@wotan.suse.de>
-References: <Pine.LNX.4.64.0906121113210.29129@melkki.cs.Helsinki.FI> <Pine.LNX.4.64.0906121201490.30049@melkki.cs.Helsinki.FI> <20090612091002.GA32052@elte.hu> <84144f020906120249y20c32d47y5615a32b3c9950df@mail.gmail.com> <20090612100756.GA25185@elte.hu> <84144f020906120311x7c7dd628s82e3ca9a840f9890@mail.gmail.com> <1244805060.7172.126.camel@pasglop> <1244806440.30512.51.camel@penberg-laptop> <20090612083005.56336219.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Thu, 25 Jun 2009 00:45:47 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56630 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750731AbZFYEpq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 00:45:46 -0400
+Date: Thu, 25 Jun 2009 13:44:44 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Russell King <rmk@arm.linux.org.uk>, Mikael Starvik <starvik@axis.com>,
+       Ralf Baechle <ralf@linux-mips.org>, Bryan Wu <cooloney@kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH 01/10] percpu: use dynamic percpu allocator as the default percpu allocator
+Message-ID: <20090625044444.GA19871@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+	x86@kernel.org, linux-arch@vger.kernel.org, mingo@elte.hu,
+	kyle@mcmartin.ca, cl@linux-foundation.org, Jesper.Nilsson@axis.com,
+	benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
+	rusty@rustcorp.com.au, torvalds@linux-foundation.org,
+	akpm@linux-foundation.org, Russell King <rmk@arm.linux.org.uk>,
+	Mikael Starvik <starvik@axis.com>,
+	Ralf Baechle <ralf@linux-mips.org>, Bryan Wu <cooloney@kernel.org>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Grant Grundler <grundler@parisc-linux.org>,
+	Hirokazu Takata <takata@linux-m32r.org>,
+	Richard Henderson <rth@twiddle.net>,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <1245825924-30412-1-git-send-email-tj@kernel.org> <1245825924-30412-2-git-send-email-tj@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090612083005.56336219.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <1245825924-30412-2-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 12, 2009 at 08:30:05AM -0700, Andrew Morton wrote:
-> On Fri, 12 Jun 2009 14:34:00 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On Wed, Jun 24, 2009 at 03:45:15PM +0900, Tejun Heo wrote:
+> This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
+> dynamic percpu allocator.  The first chunk is allocated using
+> embedding helper and 8k is reserved for modules.  This ensures that
+> the new allocator behaves almost identically to the original allocator
+> as long as static percpu variables are concerned, so it shouldn't
+> introduce much breakage.
 > 
-> > +static gfp_t slab_gfp_mask __read_mostly = __GFP_BITS_MASK & ~__GFP_WAIT;
+> s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
+> range limit the addressing model imposes.  Unfortunately, this breaks
+> if the address is specified using a variable, so for now, the two
+> archs aren't converted.
 > 
-> It'd be safer and saner to disable __GFP_FS and __GFP_IO as well. 
-> Having either of those flags set without __GFP_WAIT is a somewhat
-> self-contradictory thing and there might be code under reclaim which
-> assumes that __GFP_FS|__GFP_IO implies __GFP_WAIT.
+> The following architectures are affected by this change.
 > 
-> <wonders why mempool_alloc() didn't clear __GFP_FS>
+> * sh
+> * arm
+> * cris
+> * mips
+> * sparc(32)
+> * blackfin
+> * avr32
+> * parisc (broken, under investigation)
+> * m32r
+> * powerpc(32)
+> 
+No problems on sh.
 
-Maybe we never get there if __GFP_WAIT is clear? It would be neater
-if it did clear __GFP_FS, though...
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
