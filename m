@@ -1,115 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755149AbZFYRUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZFYRVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755149AbZFYRUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 13:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZFYRUq
+	id S1755999AbZFYRVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 13:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZFYRVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 13:20:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57739 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752699AbZFYRUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 13:20:45 -0400
-Date: Thu, 25 Jun 2009 13:20:42 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       martin.petersen@oracle.com
-Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
-Message-ID: <20090625172041.GA22891@redhat.com>
-References: <200906250904.57149.elendil@planet.nl> <20090625154120.GA22616@redhat.com> <200906251840.07617.elendil@planet.nl>
+	Thu, 25 Jun 2009 13:21:05 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:48413 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752724AbZFYRVD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 13:21:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=tPzWLyxwg6F84hCQROLpsj+HiseQC7LWRbe8LsmiWDX1NPwCBK/1xMWPY6e8y75K0M
+         uwPyNXUbkjfI3zKgOZPcRUCNDlRK0IoWCpRuMcUASvgbAKaikIHeOc5A5KsOvw5r6QeY
+         6+4vksUkvC4dnUN6fdiLuQhiKfCndGBc5QI5Y=
+Message-ID: <4A43B1FC.7060609@tuffmail.co.uk>
+Date: Thu, 25 Jun 2009 18:21:00 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906251840.07617.elendil@planet.nl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-input@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: 2.6.30-rc1: touchpad disabled on hibernation
+References: <4A438BA7.9010800@tuffmail.co.uk> <8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
+In-Reply-To: <8db1092f0906251016l5ac85bfdpbac841b939cfac2a@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25 2009 at 12:40pm -0400,
-Frans Pop <elendil@planet.nl> wrote:
-
-> On Thursday 25 June 2009, Mike Snitzer wrote:
-> > On Thu, Jun 25 2009 at  3:04am -0400,
-> > Frans Pop <elendil@planet.nl> wrote: 
-> > > During boot of 2.6.31-rc1 on an arm EABI system I got the following
-> > > errors:
-> > > device-mapper: table: 254:0: target device sda6 is misaligned
-> > > device-mapper: table: 254:0: target device sda6 is misaligned
-> > > device-mapper: table: 254:1: target device sda6 is misaligned
-> > > device-mapper: table: 254:1: target device sda6 is misaligned
-> > >
-> > > The boot did complete successfully. A boot with 2.6.30 just
-> > > previously was clean, and when I reboot back into 2.6.30 the messages
-> > > are gone again.
-> > >
-> > > The system has a single volume group with two logical volumes.
-> >
-> > Even though the messages don't contain "warning", and probably should,
-> > they are printed via DMWARN().
-> 
-> When I first saw the messages I almost got a heart attack, especially 
-> because I also got an fsck for the file systems on them. Luckily it 
-> turned out later that the reason for that was that I'd accidentally 
-> removed the rtc driver from my config, so the fsck was triggered by the 
-> system clock not being set :-/
-> 
-> > These warnings are a function of device-mapper now being
-> > topology-aware.  This means that your LVs are likely misaligned
-> > relative to the underlying hardware.  Given that you're using
-> > partitions I'd wager they are the source of the misalignment.  But
-> > there could be a bug lurking somewhere.
-> 
-> OK. If it does turn out to be benign, then I'd suggest marking the 
-> messages "info: " instead of "warning: ". With "warning" admins would 
-> still be given the idea that something might be desperately wrong and 
-> action should be taken NOW.
-> Personally, I'd even prefer just not to know, unless it for example has a 
-> major effect on performance _and_ is easily fixable using lvm2.
-> 
-> Wouldn't it be much more logical if the userspace tools warn about 
-> alignment problems when volumes are _created_?
+Maciej Rutecki wrote:
+> 2009/6/25 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+>   
+>> The synaptics touchpad on my EeePC 701 dies on hibernation.  2.6.30 was
+>> fine, and it doesn't happen on suspend to ram either.  There are no
+>> obvious error messages, but maybe this boot message is relevant:
+>>
+>> Platform driver 'i8042' needs updating, please use dev_pm_ops
+>>
+>>     
 >
-> The volumes were all created using Debian Installer's partitioning 
-> component, which uses libparted and lvm2.
+> Similar on s2disk, HP/Compaq notebook. Try reload psmouse module. I
+> reported it, but nobody answer.
+>   
+That works, thanks.
 
-The device-mapper layer doesn't distinguish between the first creation
-and every activation there after.  The blk_stack_limits() method is
-called by DM when an LV's table is pushed down to the kernel.  As such,
-you'll always see the warnings.  Think of it as motivation to fix
-libparted and all the other storage tools (LVM2 included) to create
-properly aligned devices :)
- 
-
-> > Please provide the output from the following commands:
-> >
-> > pvs -o +pe_start
-> 
->   PV         VG   Fmt  Attr PSize   PFree  1st PE
->   /dev/sda6  qnap lvm2 a-   124.50G 44.50G 192.00K
-> 
-> > cat /sys/block/sda/sda6/alignment_offset
-> > cat /sys/block/sda/queue/physical_block_size
-> > cat /sys/block/sda/queue/logical_block_size
-> 
-> I'm afraid those files don't exist on my systems (none of them: arm, s390 
-> and x86_64 notebook). Some kernel config option I'm missing maybe?
-
-OK, that is not possible; if you're seeing messages like the following:
-device-mapper: table: 254:0: target device sda6 is misaligned
-
-You should definitely have the topology attributes in the associated
-device's sysfs tree.  What does the following show on your 2.6.31-rc1
-system that produced the above "target device sda6 is misaligned":
-
-find /sys/block/sda/queue -type f
-
-If you don't see attributes like the following you're collecting
-information from the wrong machine:
-
-/sys/block/sda/queue/logical_block_size
-/sys/block/sda/queue/physical_block_size
-/sys/block/sda/queue/minimum_io_size
-/sys/block/sda/queue/optimal_io_size
-
+Alan
 
