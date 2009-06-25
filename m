@@ -1,154 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbZFYMkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZFYMnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752569AbZFYMkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZFYMkr
+	id S1753375AbZFYMnr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbZFYMnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:40:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45671 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbZFYMkq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:40:46 -0400
-Date: Thu, 25 Jun 2009 08:40:48 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jcm@jonmasters.org, tglx@linutronix.de, lethal@linux-sh.org,
-       mingo@elte.hu
-cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/urgent] ring-buffer: Make it generally available
-In-Reply-To: <tip-1155de47cd66d0c496d5a6fb2223e980ef1285b2@git.kernel.org>
-Message-ID: <alpine.DEB.2.00.0906250840220.12035@gandalf.stny.rr.com>
-References: <20090625053012.GB19944@linux-sh.org> <tip-1155de47cd66d0c496d5a6fb2223e980ef1285b2@git.kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 25 Jun 2009 08:43:40 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48788 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752215AbZFYMnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:43:39 -0400
+Date: Thu, 25 Jun 2009 14:43:42 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Message-ID: <20090625124342.GN31415@kernel.dk>
+References: <1245839904.3210.85.camel@localhost.localdomain> <20090625091033.GF31415@kernel.dk> <20090625092642.GG31415@kernel.dk> <200906251533.12925.a1426z@gawab.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906251533.12925.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-
-On Thu, 25 Jun 2009, tip-bot for Paul Mundt wrote:
-
-> Commit-ID:  1155de47cd66d0c496d5a6fb2223e980ef1285b2
-> Gitweb:     http://git.kernel.org/tip/1155de47cd66d0c496d5a6fb2223e980ef1285b2
-> Author:     Paul Mundt <lethal@linux-sh.org>
-> AuthorDate: Thu, 25 Jun 2009 14:30:12 +0900
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Thu, 25 Jun 2009 10:31:30 +0200
+On Thu, Jun 25 2009, Al Boldi wrote:
+> Jens Axboe wrote:
+> > On Thu, Jun 25 2009, Jens Axboe wrote:
+> > > On Thu, Jun 25 2009, Peter Zijlstra wrote:
+> > > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> > > > > On Wed, 24 Jun 2009 11:38:24 +0100
+> > > > >
+> > > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> > > > > > When writing to 2 (or more) devices at the same time, stop
+> > > > > > balance_dirty_pages moving dirty pages to writeback when it has
+> > > > > > reached the bdi threshold. This prevents balance_dirty_pages
+> > > > > > overshooting its limits and moving all dirty pages to writeback.
+> > > > > >
+> > > > > >
+> > > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > > > > > ---
+> > > >
+> > > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > >
+> > > After doing some integration and update work on the writeback branch, I
+> > > threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the test
+> > > mix. The writeback series include this patch as a prep patch. Results
+> > > for the mmap write test case:
+> > >
+> > > Kernel          Throughput      usr     sys     ctx     util
+> > > --------------------------------------------------------------
+> > > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
+> > > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
+> > > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
+> > > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
+> > > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
+> > > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
+> > > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
+> > > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
+> > > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
+> > >
+> > > To be perfectly clear:
+> > >
+> > > vanilla         2.6.31-rc1 stock
+> > > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
+> > > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
+> > >
+> > > This is just a single spindle w/ext4, nothing fancy. I'll do a 3-series
+> > > run with the writeback and this patch backed out, to see if it makes a
+> > > difference here. I didn't do that initially, since the results were in
+> > > the range that I expected.
+> >
+> > Results for writeback without the bdi_thresh patch
+> >
+> > Kernel          Throughput      usr     sys     ctx     util
+> > --------------------------------------------------------------
+> > wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
+> > wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
+> > wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
+> >
+> > Not a lot of difference there, without more than three runs it's hard to
+> > say what is significant. Could be a small decrease in throughput, if the
+> > 208MB/sec results from above is an outlier (I think it is, ~215MB/sec is
+> > usually the most consistent result).
 > 
-> ring-buffer: Make it generally available
-> 
-> In hunting down the cause for the hwlat_detector ring buffer spew in
-> my failed -next builds it became obvious that folks are now treating
-> ring_buffer as something that is generic independent of tracing and thus,
-> suitable for public driver consumption.
-> 
-> Given that there are only a few minor areas in ring_buffer that have any
-> reliance on CONFIG_TRACING or CONFIG_FUNCTION_TRACER, provide stubs for
-> those and make it generally available.
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> Cc: Jon Masters <jcm@jonmasters.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
+> What's the iowait on these runs?
 
-Thanks!
+Not sure, I didn't check. Why do you ask?
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+-- 
+Jens Axboe
 
--- Steve
-
-> LKML-Reference: <20090625053012.GB19944@linux-sh.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  kernel/Makefile            |    1 +
->  kernel/trace/ring_buffer.c |   11 +++++++++++
->  kernel/trace/trace.h       |    7 +++++++
->  3 files changed, 19 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/Makefile b/kernel/Makefile
-> index 0a32cb2..0630e29 100644
-> --- a/kernel/Makefile
-> +++ b/kernel/Makefile
-> @@ -96,6 +96,7 @@ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
->  obj-$(CONFIG_FUNCTION_TRACER) += trace/
->  obj-$(CONFIG_TRACING) += trace/
->  obj-$(CONFIG_X86_DS) += trace/
-> +obj-$(CONFIG_RING_BUFFER) += trace/
->  obj-$(CONFIG_SMP) += sched_cpupri.o
->  obj-$(CONFIG_SLOW_WORK) += slow-work.o
->  obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 04dac26..bf27bb7 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -1563,6 +1563,8 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
->  	return NULL;
->  }
->  
-> +#ifdef CONFIG_TRACING
-> +
->  #define TRACE_RECURSIVE_DEPTH 16
->  
->  static int trace_recursive_lock(void)
-> @@ -1593,6 +1595,13 @@ static void trace_recursive_unlock(void)
->  	current->trace_recursion--;
->  }
->  
-> +#else
-> +
-> +#define trace_recursive_lock()		(0)
-> +#define trace_recursive_unlock()	do { } while (0)
-> +
-> +#endif
-> +
->  static DEFINE_PER_CPU(int, rb_need_resched);
->  
->  /**
-> @@ -3104,6 +3113,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
->  }
->  EXPORT_SYMBOL_GPL(ring_buffer_read_page);
->  
-> +#ifdef CONFIG_TRACING
->  static ssize_t
->  rb_simple_read(struct file *filp, char __user *ubuf,
->  	       size_t cnt, loff_t *ppos)
-> @@ -3171,6 +3181,7 @@ static __init int rb_init_debugfs(void)
->  }
->  
->  fs_initcall(rb_init_debugfs);
-> +#endif
->  
->  #ifdef CONFIG_HOTPLUG_CPU
->  static int rb_cpu_notify(struct notifier_block *self,
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 6e735d4..3548ae5 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -597,6 +597,7 @@ print_graph_function(struct trace_iterator *iter)
->  
->  extern struct pid *ftrace_pid_trace;
->  
-> +#ifdef CONFIG_FUNCTION_TRACER
->  static inline int ftrace_trace_task(struct task_struct *task)
->  {
->  	if (!ftrace_pid_trace)
-> @@ -604,6 +605,12 @@ static inline int ftrace_trace_task(struct task_struct *task)
->  
->  	return test_tsk_trace_trace(task);
->  }
-> +#else
-> +static inline int ftrace_trace_task(struct task_struct *task)
-> +{
-> +	return 1;
-> +}
-> +#endif
->  
->  /*
->   * trace_iterator_flags is an enumeration that defines bit
-> 
