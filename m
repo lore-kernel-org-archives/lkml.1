@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758132AbZFYT1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbZFYT33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758132AbZFYT1a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZFYT1W
+	id S1758293AbZFYT33 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZFYT3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:27:22 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:33061 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZFYT1V (ORCPT
+	Thu, 25 Jun 2009 15:29:21 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:58814 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552AbZFYT3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:27:21 -0400
-Message-ID: <4A43871F.9030507@zytor.com>
-Date: Thu, 25 Jun 2009 07:18:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 25 Jun 2009 15:29:20 -0400
+Date: Thu, 25 Jun 2009 15:27:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Bug in arch/x86/include/asm/boot.h [Was: next cleanup report: 
+ "bad" references to CONFIG variables]
+In-Reply-To: <20090625192412.GA15823@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.2.00.0906251521430.12376@localhost>
+References: <alpine.LFD.2.00.0906251028270.24694@localhost> <20090625192412.GA15823@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       cl@linux-foundation.org
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <20090625000202.GR6760@one.firstfloor.org> <4A42C131.6040007@zytor.com> <20090625091939.GS6760@one.firstfloor.org>
-In-Reply-To: <20090625091939.GS6760@one.firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>>
->> *Ahem* virtual machines *ahem*...
-> 
-> And? Even there's not that big typically. 
-> 
-> The traditional problem was just for 128 NR_CPUs kernel were nothing
-> was sized based on machine capacity.
-> 
-> Also on large systems the VMs shouldn't be sized for full capacity.
-> 
+On Thu, 25 Jun 2009, Sam Ravnborg wrote:
 
-We have already have cases where the "possible" CPUs have eaten up the
-entire vmalloc area on 32 bits.  In real use.  It's a real problem.
+> If you continue this then please filter the know false positives.
+> For once start ignoring defconfigs.
 
-	-hpa
+  just to be clear, yes, there are numerous output lines from
+defconfig files, but a simple entry in a defconfig file can never
+*contribute* to something being flagged as bad or unused.  all those
+lines represent is the subsequent global search once something *has*
+been flagged as unused or bad, just to show where it occurs anywhere
+in the tree (which is sometimes informative).
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+  if a variable occurred *only* in defconfig files, it would be
+ignored and nothing would be printed for it.  but if that defconfig
+output has no value, i can toss it.
 
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
