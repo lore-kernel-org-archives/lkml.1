@@ -1,167 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZFYVvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZFYVwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbZFYVvH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 17:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZFYVu4
+	id S1755189AbZFYVwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 17:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbZFYVwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 17:50:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51997 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752711AbZFYVuz (ORCPT
+	Thu, 25 Jun 2009 17:52:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43572 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbZFYVwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 17:50:55 -0400
-Date: Thu, 25 Jun 2009 14:50:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
-       balbir@linux.vnet.ibm.com, lizf@cn.fujitsu.com, menage@google.com
-Subject: Re: [PATCH 1/2] memcg: cgroup fix rmdir hang
-Message-Id: <20090625145044.37d6c56c.akpm@linux-foundation.org>
-In-Reply-To: <20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090623160854.93abeecb.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 25 Jun 2009 17:52:37 -0400
+Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
+ Mapping Support
+From: David Woodhouse <dwmw2@infradead.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: fenghua.yu@intel.com, chrisw@redhat.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <1245913886.17089.91.camel@macbook.infradead.org>
+References: <20090625003841.GA12226@linux-os.sc.intel.com>
+	 <20090625095643F.fujita.tomonori@lab.ntt.co.jp>
+	 <20090625041605.GA9330@linux-os.sc.intel.com>
+	 <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
+	 <1245913886.17089.91.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 22:52:23 +0100
+Message-Id: <1245966743.30355.42.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 23 Jun 2009 16:08:54 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Thu, 2009-06-25 at 08:11 +0100, David Woodhouse wrote:
+> It raises the question: Why are we using firmware-specific interfaces to
+> list the available memory -- can't we get that from somewhere _generic_?
 > 
-> Now, cgroup has a logic to wait until ready-to-rmdir for avoiding
-> frequent -EBUSY at rmdir.
->  (See Commit ec64f51545fffbc4cb968f0cea56341a4b07e85a
->   cgroup: fix frequent -EBUSY at rmdir.
-> 
-> Nishimura-san reported bad case for waiting and This is a fix to
-> make it reliable. A thread waiting for thread cannot be waken up
-> when a refcnt gotten by css_tryget() isn't put immediately.
-> (Original code assumed css_put() will be called soon.)
-> 
-> memcg has this case and this is a fix for the problem. This adds
-> retry_rmdir() callback to subsys and check we can sleep or not.
-> 
-> Note: another solution will be adding "rmdir state" to subsys.
-> But it will be much complicated than this do-enough-check solution.
-> 
+> The less we tie our code to these crappy BIOS, EFI and ACPI interfaces,
+> the better off we'll be.
 
-A few issues..
+Does this work everywhere... ?
 
-Firstly, this code (both before and after the patch) looks like a
-rather horrid hack.  
+(Fenghua, why are we doing the whole setup per pci dev anyway -- why not
+set up the page tables once and point all devices at the same page
+tables?)
 
-<ooh look, a comment!>
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index e53eacd..1f0830a 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -39,7 +39,6 @@
+ #include <linux/sysdev.h>
+ #include <asm/cacheflush.h>
+ #include <asm/iommu.h>
+-#include <asm/e820.h>
+ #include "pci.h"
+ 
+ #define ROOT_SIZE		VTD_PAGE_SIZE
+@@ -2081,7 +2080,6 @@ static int domain_add_dev_info(struct dmar_domain *domain,
+ 
+ static int iommu_prepare_static_identity_mapping(void)
+ {
+-	int i;
+ 	struct pci_dev *pdev = NULL;
+ 	int ret;
+ 
+@@ -2091,16 +2089,18 @@ static int iommu_prepare_static_identity_mapping(void)
+ 
+ 	printk(KERN_INFO "IOMMU: Setting identity map:\n");
+ 	for_each_pci_dev(pdev) {
+-		for (i = 0; i < e820.nr_map; i++) {
+-			struct e820entry *ei = &e820.map[i];
+-
+-			if (ei->type == E820_RAM) {
+-				ret = iommu_prepare_identity_map(pdev,
+-					ei->addr, ei->addr + ei->size);
+-				if (ret)  {
+-					printk(KERN_INFO "1:1 mapping to one domain failed.\n");
+-					return -EFAULT;
+-				}
++		struct zone *zone;
++
++		for_each_populated_zone(zone) {
++			unsigned long zone_end_pfn = zone->zone_start_pfn +
++						     zone->spanned_pages;
++
++			ret = iommu_prepare_identity_map(pdev,
++				 (uint64_t)zone->zone_start_pfn << PAGE_SHIFT,
++				 (uint64_t)zone_end_pfn << PAGE_SHIFT);
++			if (ret) {
++				printk(KERN_INFO "1:1 mapping to one domain failed.\n");
++				return -EFAULT;
+ 			}
+ 		}
+ 		ret = domain_add_dev_info(si_domain, pdev);
 
-	/*
-	 * css_put/get is provided for subsys to grab refcnt to css. In typical
-	 * case, subsystem has no reference after pre_destroy(). But, under
-	 * hierarchy management, some *temporal* refcnt can be hold.
-	 * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
-	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
-	 * is called when css_put() is called and refcnt goes down to 0.
-	 */
-
-(The correct word here is "temporary").
-
-Where and under what circumstances is this temporary reference taken? 
-Is there any way in which we can fix all this properly, so that the
-directory removal will happen deterministically, without needing the
-in-kernel polling loop?
-
-ie: refcounting?
-
-(I have a vague feeling that I've asked all this before.  But that's OK
-- the code's still horrid ;))
 
 
-> Index: fix-rmdir-cgroup/include/linux/cgroup.h
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/include/linux/cgroup.h
-> +++ fix-rmdir-cgroup/include/linux/cgroup.h
-> @@ -374,6 +374,7 @@ struct cgroup_subsys {
->  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
->  						  struct cgroup *cgrp);
->  	int (*pre_destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +	int (*retry_rmdir)(struct cgroup_subsys *ss, struct cgroup *cgrp);
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-This is poorly named.  The reader will expect that a function called
-"retry_rmdir" will, umm, retry an rmdir.
-
-But this function doesn't do that.  It's a predicate which the caller
-will use to determine whether the caller should retry the rmdir.
-
-A better name would be should_retry_rmdir(), for example.
-
-But even that isn't very good, because "should_retry_rmdir()" implies
-that the caller will only use this function for a single purpose.  The
-callee shouldn't assume this!
-
-So can we come up with a name which accurately reflects what the
-function actually does?  Like "has_remaining_references()", or somesuch?
-
-Also, making the return value `bool' would have come clarification
-benefits.
-
->  	void (*destroy)(struct cgroup_subsys *ss, struct cgroup *cgrp);
->  	int (*can_attach)(struct cgroup_subsys *ss,
->  			  struct cgroup *cgrp, struct task_struct *tsk);
-> Index: fix-rmdir-cgroup/kernel/cgroup.c
-> ===================================================================
-> --- fix-rmdir-cgroup.orig/kernel/cgroup.c
-> +++ fix-rmdir-cgroup/kernel/cgroup.c
-> @@ -636,6 +636,23 @@ static int cgroup_call_pre_destroy(struc
->  		}
->  	return ret;
->  }
-> +/*
-> + * Call subsys's retry_rmdir() handler. If this returns non-Zero, we retry
-> + * rmdir immediately and call pre_destroy again.
-> + */
-> +static int cgroup_check_retry_rmdir(struct cgroup *cgrp)
-> +{
-> +	struct cgroup_subsys *ss;
-> +	int ret = 0;
-> +
-> +	for_each_subsys(cgrp->root, ss)
-> +		if (ss->pre_destroy) {
-> +			ret = ss->retry_rmdir(ss, cgrp);
-> +			if (ret)
-> +				break;
-> +		}
-> +	return ret;
-> +}
-
-There's an important and subtle precondition for this function: it is
-called in state TASK_INTERRUPTIBLE.  This means that the ->retry_rmdir
-handler must be careful to not disturb that state.  For if that
-function were to accidentally enter state TASK_RUNNING (say, it does a
-mutex_lock/unlock) then the kernel could enter a busy loop and would use
-lots of CPU time.  I guess that code comments are sufficient to cover
-this.  It's a property of ->retry_rmdir, really.
-
-Also, what sense does it make to call ->retry_rmdir() if ->pre_destroy
-is non-NULL?  Was that actually intentional?  If so, it is strange to link
-those two fields in this way.  The retry_rmdir() documentation didn't describe
-this.
-
->  static void free_cgroup_rcu(struct rcu_head *obj)
->  {
-> @@ -2722,7 +2739,8 @@ again:
->  
->  	if (!cgroup_clear_css_refs(cgrp)) {
->  		mutex_unlock(&cgroup_mutex);
-> -		schedule();
-> +		if (!cgroup_check_retry_rmdir(cgrp))
-> +			schedule();
->  		finish_wait(&cgroup_rmdir_waitq, &wait);
->  		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->  		if (signal_pending(current))
->
-> ...
->
