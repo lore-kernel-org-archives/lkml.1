@@ -1,71 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZFYLwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZFYLyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbZFYLwX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 07:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZFYLwJ
+	id S1753836AbZFYLyr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZFYLyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 07:52:09 -0400
-Received: from lanfw001a.cxnet.dk ([87.72.215.196]:49908 "EHLO
-	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbZFYLwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 07:52:07 -0400
-Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
-From: Jesper Dangaard Brouer <jdb@comx.dk>
-Reply-To: jdb@comx.dk
-To: Chrissie Caulfield <christine.caulfield@googlemail.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dougthompson@xmission.com,
-       axboe@kernel.dk, Patrick McHardy <kaber@trash.net>,
-       Trond.Myklebust@netapp.com, johannes@sipsolutions.net,
-       yoshfuji@linux-ipv6.org, shemminger@linux-foundation.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       linux-ext4@vger.kernel.org, tytso@mit.edu, adilger@sun.com,
-       netfilter-devel@vger.kernel.org
-In-Reply-To: <5A680E0A-EFEB-44EA-9F06-F338E6CBD6D1@googlemail.com>
-References: <20090623150330.22490.87327.stgit@localhost>
-	 <20090623150429.22490.15113.stgit@localhost>
-	 <4A41C67E.8070301@googlemail.com>
-	 <1245843884.6695.54.camel@localhost.localdomain>
-	 <1245845367.24921.3.camel@localhost.localdomain>
-	 <5A680E0A-EFEB-44EA-9F06-F338E6CBD6D1@googlemail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: ComX Networks A/S
-Date: Thu, 25 Jun 2009 13:52:09 +0200
-Message-Id: <1245930729.24921.67.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Thu, 25 Jun 2009 07:54:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38051 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751861AbZFYLyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 07:54:38 -0400
+Date: Thu, 25 Jun 2009 14:54:03 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+Message-ID: <20090625115403.GA7079@redhat.com>
+References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com> <4A435F28.3000301@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A435F28.3000301@novell.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 14:50 +0100, Chrissie Caulfield wrote:
-> I don't have any objection to the patch at all, 
+On Thu, Jun 25, 2009 at 07:27:36AM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Wed, Jun 24, 2009 at 11:49:01AM +0300, Michael S. Tsirkin wrote:
+> >   
+> >> On Tue, Jun 23, 2009 at 09:43:31PM -0400, Gregory Haskins wrote:
+> >>     
+> >>> Michael S. Tsirkin wrote:
+> >>>       
+> >>>> Remove in_range from kvm_io_device and ask read/write callbacks, if
+> >>>> supplied, to perform range checks internally. This allows aliasing
+> >>>> (mostly for in-kernel virtio), as well as better error handling by
+> >>>> making it possible to pass errors up to userspace. And it's enough to
+> >>>> look at the diffstat to see that it's a better API anyway.
+> >>>>
+> >>>> While we are at it, document locking rules for kvm_io_device.
+> >>>>   
+> >>>>         
+> >>> Hi Michael,
+> >>>
+> >>> I just tried to apply this to kvm.git/master, and it blew up really
+> >>> badly.  What tree should I be using?
+> >>>       
+> >> Ugh, this is against 2.6.30. I'll post kvm.git version soon.
+> >>
+> >>     
+> >
+> > I went ahead and tried to rebase it, to find that it conflicts with
+> > recent patch 35b3038961f94e83557944ae0d30c8fa0b5012cf merged in kvm.git:
+> > 'KVM: switch irq injection/acking data structures to irq_lock'
+> > which now does this:
+> > 	lock
+> > 	find
+> > 	unlock
+> > 	write
+> >
+> > I thought for a while that it might make sense to start small and just
+> > add in_range parameter for starters ...
+> > However, I just realised that this only works because devices are not
+> > added or removed dynamically.
+> >
+> > The long term fix is to switch to SRCU for bus management.  But if we
+> > need to do this for iosignalfd anyway, in_range removal becomes possible
+> > again.
+> >
+> > Short term it might be also possible to go back to keeping kvm lock
+> > across both find and read - since the lock is taken, we don't
+> > really win anything currently if we drop the lock earlier.
+> >
+> > Comments?
+> >
+> >   
+> 
+> Can we just get iosignalfd merged for now as it is, then?
 
-Thus assuming an:
+The patch that adds value to in_range is still okay. We could go that
+way for now.  But what I am saying is that groups are still devices, and
+the patch that adds kvm_io_bus_unregister_dev seems broken with the new
+locking. No?
 
-Acked-by: Chrissie Caulfield <christine.caulfield@googlemail.com>
+> Its not like
+> we cant patch the group/item code later to clean it up when the time is
+> right.
+> 
+> Regards,
+> -Greg
+> 
 
-(wondering if patchworks picks this up...)
+What's the rush?
 
-> it just seemed a  
-> little odd to deliberately add code inside #if 0 ;-)
+IMO the best plan is:
+- add srcu for io bus, removing kvm lock from that space completely
+- apply in_range removal patch on top of this
+- iosignalfd on top
 
-Yes, but it makes sense if you want to fix that code path later on.
+Comments?
 
-And I'm not the only one who have added code here... git blame:
 
-fa34ddd7 (Thomas Graf              2007-03-22 11:57:46 -0700 2401)
-457c4cbc (Eric W. Biederman        2007-09-12 12:01:34 +0200 2413)
-
-Cheers,
-                                  -- 
-                    Med venlig hilsen / Best regards
-                              Jesper Brouer
-                            ComX Networks A/S
-                         Linux Network developer
-                       Cand. Scient Datalog / MSc.
-                    Author of http://adsl-optimizer.dk
-               LinkedIn: http://www.linkedin.com/in/brouer
+-- 
+MST
