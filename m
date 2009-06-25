@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbZFYPxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbZFYPx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbZFYPxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 11:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZFYPxk
+	id S1757032AbZFYPx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 11:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757939AbZFYPxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 11:53:40 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:48308 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752580AbZFYPxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 11:53:40 -0400
-Message-ID: <4A439D7D.9030401@shipmail.org>
-Date: Thu, 25 Jun 2009 17:53:33 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 25 Jun 2009 11:53:44 -0400
+Received: from mga11.intel.com ([192.55.52.93]:15644 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757603AbZFYPxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 11:53:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,290,1243839600"; 
+   d="scan'208";a="469559642"
+Date: Thu, 25 Jun 2009 23:48:46 +0800
+From: Alek Du <alek.du@intel.com>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Trilok Soni <soni.trilok@gmail.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       "ben-linux@fluff.org" <ben-linux@fluff.org>
+Subject: Re: [PATCH]input: Change timer function to workqueue for gpio_keys
+ driver
+Message-ID: <20090625234846.1b987069@dxy.sh.intel.com>
+In-Reply-To: <1245944528.20530.145.camel@jani-desktop>
+References: <20090608152420.0e76c302@dxy.sh.intel.com>
+	<5d5443650906121040n3f36c99eka01f5eb5274ee6ff@mail.gmail.com>
+	<359ed6810906250329x70cf380cy278f23e3ebc6a829@mail.gmail.com>
+	<20090625210642.432e08a5@dxy.sh.intel.com>
+	<1245936693.20530.107.camel@jani-desktop>
+	<20090625220826.1fa7413e@dxy.sh.intel.com>
+	<1245941565.20530.134.camel@jani-desktop>
+	<1245942355.20530.141.camel@jani-desktop>
+	<20090625230949.53beda65@dxy.sh.intel.com>
+	<1245944528.20530.145.camel@jani-desktop>
+Organization: Intel Corp.
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 MIME-Version: 1.0
-To: Jerome Glisse <glisse@freedesktop.org>
-CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: TTM page pool allocator
-References: <1245931298.13359.8.camel@localhost.localdomain>
-In-Reply-To: <1245931298.13359.8.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerome Glisse skrev:
-> Hi,
+On Thu, 25 Jun 2009 23:42:08 +0800
+Jani Nikula <ext-jani.1.nikula@nokia.com> wrote:
+
+> On Thu, 2009-06-25 at 17:09 +0200, ext Alek Du wrote:
+> > On Thu, 25 Jun 2009 23:05:55 +0800
+> > Jani Nikula <ext-jani.1.nikula@nokia.com> wrote:
+> > > Actually scrap that, the input layer already ignores events with no
+> > > state changes, right?
+> > > 
+> > Yes, correct. I just want to reply your previous mail, but seems you find that. :-)
+> 
+> The point about your patch breaking debouncing is still valid, though.
+> 
 >
-> Thomas i attach a reworked page pool allocator based on Dave works,
-> this one should be ok with ttm cache status tracking. It definitely
-> helps on AGP system, now the bottleneck is in mesa vertex's dma
-> allocation.
->
-> Cheers,
-> Jerome
->   
-Hi, Jerome!
-In general it looks very good. Some things that need fixing:
+How? If IRQ triggered then the delay work scheduled, after debouncing time, in work, it checks GPIO pin state again,
+if pin is active, send "1" to input layer -- key pressed, if de-active, send "0" -- no event. 
 
-1)  We must have a way to hand back pages. I still not quite understand 
-how the shrink callbacks work and whether they are applicable. Another 
-scheme would be to free, say 1MB when we have at least 2MB available.
+I really did test on my board, could you also try it out?
 
-2) We should avoid including AGP headers if AGP is not configured. 
-Either reimplement unmap_page_from_agp or map_page_into_agp or move them 
-out from the AGP headers. We've hade complaints before from people with 
-AGP free systems that the code doesn't compile.
-
-3) Since we're allocating (and freeing) in batches we should use the 
-set_pages_array() interface to avoid a global tlb flush per page.
-
-4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
-it will always allocate cached pages and then transition them.
-
-5) Use TTM_PFX in printouts.
-
-/Thomas
-
-
-
+Thanks,
+Alek
+> BR,
+> Jani.
+> 
+> 
