@@ -1,78 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZFYCga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZFYChY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbZFYCga (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 22:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZFYCgV
+	id S1756079AbZFYChY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 22:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZFYChN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 22:36:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39220 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbZFYCgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 22:36:20 -0400
-Message-ID: <4A42E25B.6080102@kernel.org>
-Date: Thu, 25 Jun 2009 11:35:07 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 24 Jun 2009 22:37:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56057 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752094AbZFYChM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 22:37:12 -0400
+Message-ID: <4A42E310.3010400@cn.fujitsu.com>
+Date: Thu, 25 Jun 2009 10:38:08 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, andi@firstfloor.org, hpa@zytor.com, tglx@linutronix.de,
-       cl@linux-foundation.org
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org>
-In-Reply-To: <20090624165508.30b88343.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org, fweisbec@gmail.com, mingo@elte.hu,
+       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
+       mathieu.desnoyers@polymtl.ca, jiayingz@google.com, mbligh@google.com,
+       roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 7/7] V2 add syscall tracepoints
+References: <cover.1245770664.git.jbaron@redhat.com> <92f34bb50412cc43e04a484b48cb3452aabce775.1245770664.git.jbaron@redhat.com>
+In-Reply-To: <92f34bb50412cc43e04a484b48cb3452aabce775.1245770664.git.jbaron@redhat.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 02:35:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>  #endif /* _TRACE_SYSCALL_H */
+> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
+> index 08aed43..cc283d6 100644
+> --- a/kernel/trace/trace_syscalls.c
+> +++ b/kernel/trace/trace_syscalls.c
+> @@ -1,15 +1,16 @@
+>  #include <trace/syscall.h>
+>  #include <linux/kernel.h>
+> +#include <linux/ftrace.h>
+>  #include <asm/syscall.h>
+>  
+>  #include "trace_output.h"
+>  #include "trace.h"
+>  
+> -/* Keep a counter of the syscall tracing users */
+> -static int refcount;
+> -
+> -/* Prevent from races on thread flags toggling */
+>  static DEFINE_MUTEX(syscall_trace_lock);
+> +static int sys_refcount_enter;
+> +static int sys_refcount_exit;
+> +static DECLARE_BITMAP(enabled_enter_syscalls, FTRACE_SYSCALL_MAX + 1);
+> +static DECLARE_BITMAP(enabled_exit_syscalls, FTRACE_SYSCALL_MAX + 1);
 
-Andrew Morton wrote:
-> On Wed, 24 Jun 2009 22:30:06 +0900
-> Tejun Heo <tj@kernel.org> wrote:
-> 
->> This patchset is available in the following git tree and will be
->> published in for-next if there's no major objection.  It might get
->> rebased before going into for-next.
->>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git lpage-numa
-> 
-> <tries to read the patches>
-> 
-> Boy, this stuff is complicated.  Does it all work?
+Why "+ 1" ?
 
-I sure hope so.
+> -static int init_syscall_tracer(struct trace_array *tr)
+> +int reg_event_syscall_enter(char *name)
+>  {
+> -	start_ftrace_syscalls();
+> +	int ret = 0;
+> +	int num;
+>  
+> -	return 0;
+> +	num = syscall_name_to_nr(name);
+> +	if (num < 0 || num > FTRACE_SYSCALL_MAX)
+> +		return -ENOSYS;
 
-> The Impact: lines were useful :)
+syscall_name_to_nr() returns [0, FTRACE_SYSCALL_MAX) or -1,
+so you don't need to check num > MAX, instead it should be
+WAR_ON(num >= MAX).
 
-Eh.. well, it looks like it's going the way of dodo tho.
+> +	mutex_lock(&syscall_trace_lock);
+> +	if (!sys_refcount_enter)
+> +		ret = register_trace_syscall_enter(ftrace_syscall_enter);
+> +	if (ret) {
+> +		pr_info("event trace: Could not activate"
+> +				"syscall entry trace point");
 
-> I assume from the tremendous number of for_each_possible_cpu()s that
-> CPU hotplug awareness won't be happening.
-> 
-> Do we have a feeling for the amount of wastage here?  If
-> 
-> 	num_possible_cpus() - num_online_cpus() == N
-> 
-> and N is large, what did it cost?
-> 
-> And what are reasonable values of N?
+Should be:
 
-The goal is to eventually implement has_ever_been_online_cpus (any
-better naming?) mask and allocate only for those cpus.  I think I
-mentioned it in one of the patch descriptions but anyways the unit_map
-and lpage improvments implemented in this patchset will be used for
-that purpose.  The plan is to treat possible but offline cpus as if
-they belong to separate group such that they don't end up sharing the
-same PMD page and later when those cpus come up the generic 4k mapping
-can kick in and map them.
++		pr_info("event trace: Could not activate "
++				"syscall entry trace point");
 
-Thanks.
+> +	} else {
+> +		set_bit(num, enabled_enter_syscalls);
+> +		sys_refcount_enter++;
+> +	}
+> +	mutex_unlock(&syscall_trace_lock);
+> +	return ret;
+>  }
 
--- 
-tejun
+> +int reg_event_syscall_exit(char *name)
+>  {
+> -	int ret;
+> +	int ret = 0;
+> +	int num;
+>  
+> -	ret = register_ftrace_event(&syscall_enter_event);
+> -	if (!ret) {
+> -		printk(KERN_WARNING "event %d failed to register\n",
+> -		       syscall_enter_event.type);
+> -		WARN_ON_ONCE(1);
+> +	num = syscall_name_to_nr(name);
+> +	if (num < 0 || num > FTRACE_SYSCALL_MAX)
+> +		return -ENOSYS;
+
+ditto
+
+> +	mutex_lock(&syscall_trace_lock);
+> +	if (!sys_refcount_exit)
+> +		ret = register_trace_syscall_exit(ftrace_syscall_exit);
+> +	if (ret) {
+> +		pr_info("event trace: Could not activate"
+> +				"syscall exit trace point");
+
+ditto
+
+> +	} else {
+> +		set_bit(num, enabled_exit_syscalls);
+> +		sys_refcount_exit++;
+>  	}
+> +	mutex_unlock(&syscall_trace_lock);
+> +	return ret;
+> +}
+>  
+> -	ret = register_ftrace_event(&syscall_exit_event);
+> -	if (!ret) {
+> -		printk(KERN_WARNING "event %d failed to register\n",
+> -		       syscall_exit_event.type);
+> -		WARN_ON_ONCE(1);
+> -	}
+> +void unreg_event_syscall_exit(char *name)
+> +{
+> +	int num;
+>  
+> -	return register_tracer(&syscall_tracer);
+> +	num = syscall_name_to_nr(name);
+> +	if (num < 0 || num > FTRACE_SYSCALL_MAX)
+> +		return;
+
+ditto
+
+> +	mutex_lock(&syscall_trace_lock);
+> +	sys_refcount_exit--;
+> +	clear_bit(num, enabled_exit_syscalls);
+> +	if (!sys_refcount_exit)
+> +		unregister_trace_syscall_exit(ftrace_syscall_exit);
+> +	mutex_unlock(&syscall_trace_lock);
+>  }
