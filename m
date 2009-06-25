@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbZFYIOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbZFYITB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbZFYIOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZFYIOI
+	id S1756493AbZFYITB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZFYISo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:14:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60082 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750753AbZFYIOF (ORCPT
+	Thu, 25 Jun 2009 04:18:44 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:61373 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbZFYISm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:14:05 -0400
-Date: Thu, 25 Jun 2009 09:15:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Linus Walleij <linus.ml.walleij@gmail.com>,
-       Brian Swetland <swetland@google.com>,
-       Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       hackbod@android.com, Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
- usage
-Message-ID: <20090625091519.23bc42ff@lxorguk.ukuu.org.uk>
-In-Reply-To: <1245889219.32124.280.camel@desktop>
-References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
-	<1245254936.5982.261.camel@desktop>
-	<4A391A54.7000109@goop.org>
-	<d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
-	<1245274308.5982.268.camel@desktop>
-	<a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
-	<1245451983.32124.25.camel@desktop>
-	<d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
-	<1245849223.32124.112.camel@desktop>
-	<a55d774e0906241514w761f86fva294784583cdd8a4@mail.gmail.com>
-	<63386a3d0906241701o720fa667t662b9e3d4f080397@mail.gmail.com>
-	<1245889219.32124.280.camel@desktop>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 04:18:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=R31gpfysA/zOfLzk5ktx480Jmq0SLw8DaXX9uPl61xU+KM9OOgwRAQHNEe65ftx4aL
+         QsRKIbPqMVlWJSRrPpdo/Oo7Xg4He8XGEY0lojhfQV08qWx7zvBGuvVlWpdM+opR51UX
+         SeJ1XrzBAb8PEIxo0hM7Eg++s/GpcB6CAfkmI=
+From: Florian Fainelli <florian@openwrt.org>
+To: Michael Opdenacker <michael@free-electrons.com>
+Subject: Re: [PATCH 1/1] Minor code cleanup in drivers/net/r6040.c
+Date: Thu, 25 Jun 2009 10:18:40 +0200
+User-Agent: KMail/1.9.9
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1245913509-23245-1-git-send-email-michael@free-electrons.com>
+In-Reply-To: <1245913509-23245-1-git-send-email-michael@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906251018.40995.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009 17:20:19 -0700
-Daniel Walker <dwalker@fifo99.com> wrote:
+Le Thursday 25 June 2009 09:05:09 Michael Opdenacker, vous avez écrit :
+>  Replaced '0' by 'bar' in the probe function.
+>  The 'bar' variable was already set to '0' and is already
+>  used in pci_iomap(). This is cleaner and improves code
+>  consistency.
+>
+> Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
 
-> On Thu, 2009-06-25 at 02:01 +0200, Linus Walleij wrote:
-> 
-> > What I really want to know, is how this relates to the vmsplice() and
-> > other zero-copy buffer passing schemes already in the kernel. I was
-> > sort of dreaming that D-Bus and other IPC could be accelerated on
-> > top of that.
-> 
-> Marcel had mentioned earlier in this thread that D-Bus could be
-> accelerated with shared memory or moving the dbus-daemon into the
-> kernel. splice() and vmplice() seem like fairly robust system calls. I
-> would think they could be used also ..
+Acked-by: Florian Fainelli <florian@openwrt.org>
 
-Except for very large amounts of data what makes you think zero copy
-buffer passing will be fast ? TLB shootdowns are expensive and they scale
-horribly badly with threaded apps on multiprocessor systems ?
+> ---
+>  drivers/net/r6040.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/net/r6040.c b/drivers/net/r6040.c
+> index ed63d23..b3197e9 100644
+> --- a/drivers/net/r6040.c
+> +++ b/drivers/net/r6040.c
+> @@ -1112,13 +1112,13 @@ static int __devinit r6040_init_one(struct pci_dev
+> *pdev, }
+>
+>  	/* IO Size check */
+> -	if (pci_resource_len(pdev, 0) < io_size) {
+> +	if (pci_resource_len(pdev, bar) < io_size) {
+>  		printk(KERN_ERR DRV_NAME ": Insufficient PCI resources, aborting\n");
+>  		err = -EIO;
+>  		goto err_out;
+>  	}
+>
+> -	pioaddr = pci_resource_start(pdev, 0);	/* IO map base address */
+> +	pioaddr = pci_resource_start(pdev, bar);	/* IO map base address */
+>  	pci_set_master(pdev);
+>
+>  	dev = alloc_etherdev(sizeof(struct r6040_private));
+
+
+
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
