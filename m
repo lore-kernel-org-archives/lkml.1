@@ -1,175 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZFYTsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbZFYTu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757730AbZFYTsk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZFYTsb
+	id S1759485AbZFYTu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 15:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZFYTuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:48:31 -0400
-Received: from toq5.bellnexxia.net ([209.226.175.27]:48527 "EHLO
-	toq5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbZFYTs3 (ORCPT
+	Thu, 25 Jun 2009 15:50:21 -0400
+Received: from msux-gh1-uea01.nsa.gov ([63.239.67.1]:57534 "EHLO
+	msux-gh1-uea01.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753806AbZFYTuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:48:29 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjEFANtsQ0pMQWRX/2dsb2JhbACBUdFBhA0F
-Date: Thu, 25 Jun 2009 15:46:48 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: venkatesh.pallipadi@intel.com
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [patch 2/3] cpufreq: Define dbs_mutex purpose and cleanup its
-	usage
-Message-ID: <20090625194648.GA24657@Krystal>
-References: <20090625183354.491259000@intel.com> <20090625183601.493904000@intel.com>
+	Thu, 25 Jun 2009 15:50:20 -0400
+Subject: Re: kmemleak false positive?
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Dave Jones <davej@redhat.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@parisplace.org>, Kaigai Kohei <kaigai@ak.jp.nec.com>,
+       James Morris <jmorris@namei.org>
+In-Reply-To: <20090625154014.GA7866@redhat.com>
+References: <20090625001137.GB22755@redhat.com>
+	 <1245921918.26218.19.camel@pc1117.cambridge.arm.com>
+	 <20090625145600.GA6654@redhat.com>
+	 <1245943539.26218.70.camel@pc1117.cambridge.arm.com>
+	 <20090625154014.GA7866@redhat.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 25 Jun 2009 15:49:21 -0400
+Message-Id: <1245959361.5217.16.camel@moss-pluto.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090625183601.493904000@intel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:45:41 up 117 days, 16:11,  3 users,  load average: 0.19, 0.22,
-	0.14
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* venkatesh.pallipadi@intel.com (venkatesh.pallipadi@intel.com) wrote:
-> Commit b14893a62c73af0eca414cfed505b8c09efc613c although it was very
-> much needed to cleanup ondemand timer cleanly, openup a can of worms
-> related to locking dependencies in cpufreq.
+On Thu, 2009-06-25 at 11:40 -0400, Dave Jones wrote:
+> On Thu, Jun 25, 2009 at 04:25:39PM +0100, Catalin Marinas wrote:
+>  > > Hmm, it's pretty noisy, and everything it's found so far looks to be
+>  > > a false positive.
+>  > 
+>  > In this case, it would make sense to enable task stacks scanning by
+>  > default:
+>  > 
+>  > diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+>  > index 17096d1..a38418a 100644
+>  > --- a/mm/kmemleak.c
+>  > +++ b/mm/kmemleak.c
+>  > @@ -194,7 +194,7 @@ static unsigned long jiffies_min_age;
+>  >  /* delay between automatic memory scannings */
+>  >  static signed long jiffies_scan_wait;
+>  >  /* enables or disables the task stacks scanning */
+>  > -static int kmemleak_stack_scan;
+>  > +static int kmemleak_stack_scan = 1;
 > 
-> Patch here defines the need for dbs_mutex and cleans up its usage in
-> ondemand governor. This also resolves the lockdep warnings reported here
+> heh, I just did the same patch for the rawhide kernel builds.
+>  
+>  > >  > You can mount debugfs on /sys/kerne/debug and read the kmemleak file in
+>  > >  > there (it triggers a new scan as well).
+>  > > 
+>  > > Currently prints the acpi traces I already posted.
+>  > 
+>  > If they are still consistently shown with stack=on, it could be a leak.
 > 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/01925.html
+> Could be, though as you mentioned, with ACPI it's really hard to tell.
 > 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_ondemand.c |   37 +++++++++++++++--------------------
->  1 files changed, 16 insertions(+), 21 deletions(-)
+> Here's another case (with stack scanning on btw) which looks odd..
 > 
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 1911d17..b2d2106 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -78,15 +78,14 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
->  static unsigned int dbs_enable;	/* number of CPUs using this policy */
->  
->  /*
-> - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
-> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
-> - * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
-> - * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-> - * is recursive for the same process. -Venki
-> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
-> - * would deadlock with cancel_delayed_work_sync(), which is needed for proper
-> - * raceless workqueue teardown.
-> + * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
-> + * different CPUs. It also serializes dbs_enable usage in CPUFREQ_GOV_START
-> + * and CPUFREQ_GOV_STOP.
-> + *
-> + * dbs_mutex should be always held after lock_policy_rwsem whenever needed.
-> + * do_dbs_timer() must not take the dbs_mutex, because it would deadlock
-> + * with cancel_delayed_work_sync(), which is needed for proper raceless
-> + * workqueue teardown.
->   */
->  static DEFINE_MUTEX(dbs_mutex);
->  
-> @@ -240,12 +239,10 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
->  	unsigned int input;
->  	int ret;
->  	ret = sscanf(buf, "%u", &input);
-> +	if (ret != 1)
-> +		return -EINVAL;
->  
->  	mutex_lock(&dbs_mutex);
-> -	if (ret != 1) {
-> -		mutex_unlock(&dbs_mutex);
-> -		return -EINVAL;
-> -	}
->  	dbs_tuners_ins.sampling_rate = max(input, min_sampling_rate);
->  	mutex_unlock(&dbs_mutex);
->  
-> @@ -258,14 +255,12 @@ static ssize_t store_up_threshold(struct cpufreq_policy *unused,
->  	unsigned int input;
->  	int ret;
->  	ret = sscanf(buf, "%u", &input);
-> -
-> -	mutex_lock(&dbs_mutex);
->  	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
->  			input < MIN_FREQUENCY_UP_THRESHOLD) {
-> -		mutex_unlock(&dbs_mutex);
->  		return -EINVAL;
->  	}
->  
-> +	mutex_lock(&dbs_mutex);
->  	dbs_tuners_ins.up_threshold = input;
->  	mutex_unlock(&dbs_mutex);
->  
-> @@ -324,8 +319,8 @@ static ssize_t store_powersave_bias(struct cpufreq_policy *unused,
->  
->  	mutex_lock(&dbs_mutex);
->  	dbs_tuners_ins.powersave_bias = input;
-> -	ondemand_powersave_bias_init();
->  	mutex_unlock(&dbs_mutex);
-> +	ondemand_powersave_bias_init();
->  
->  	return count;
->  }
-> @@ -598,14 +593,16 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  				max(min_sampling_rate,
->  				    latency * LATENCY_MULTIPLIER);
->  		}
-> +		mutex_unlock(&dbs_mutex);
-> +
->  		dbs_timer_init(this_dbs_info);
->  
-> -		mutex_unlock(&dbs_mutex);
->  		break;
->  
->  	case CPUFREQ_GOV_STOP:
-> -		mutex_lock(&dbs_mutex);
->  		dbs_timer_exit(this_dbs_info);
+>  kmemleak: unreferenced object 0xd86ba000 (size 16):
+>  kmemleak:   comm "init", pid 1, jiffies 4294683556
+>  kmemleak:   backtrace:
+>  kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
+>  kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
+>  kmemleak:     [<c05cdfdc>] avtab_insertf+0xd6/0x140
+>  kmemleak:     [<c05ce3d7>] avtab_read_item+0x26a/0x284
+>  kmemleak:     [<c05ce5a5>] avtab_read+0x82/0xe5
+>  kmemleak:     [<c05d0618>] policydb_read+0x40c/0x1028
+>  kmemleak:     [<c05d459d>] security_load_policy+0x57/0x37c
+>  kmemleak:     [<c05c9995>] sel_write_load+0xb2/0x54a
+>  kmemleak:     [<c0500186>] vfs_write+0x9f/0x10f
+>  kmemleak:     [<c05002e1>] sys_write+0x58/0x8d
+>  kmemleak:     [<c040a8eb>] sysenter_do_call+0x12/0x38
+>  kmemleak:     [<ffffffff>] 0xffffffff
+> 
+> I looked over the SELinux code, and couldn't see an obvious leak.
+> Eric Paris came to the same conclusion.
 
-Hrm, so.. how do we protect against concurrent :
+I suspect it is a false positive caused by the current odd way in which
+we update the policydb.  So I would expect it to go away when we get
+around to rewriting that code, already on our todo list.
 
-CPUFREQ_GOV_START/CPUFREQ_GOV_STOP now ?
+However, KaiGai Kohei noticed that /sys/kernel/slab/avtab_node/objects
+seems to grow upon repeated load_policy invocations (of the same policy)
+for some kernels (e.g. F11 kernel) while remaining constant for the
+rawhide kernel.
 
-Mathieu
-
-> +
-> +		mutex_lock(&dbs_mutex);
->  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
->  		dbs_enable--;
->  		mutex_unlock(&dbs_mutex);
-> @@ -613,14 +610,12 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		break;
->  
->  	case CPUFREQ_GOV_LIMITS:
-> -		mutex_lock(&dbs_mutex);
->  		if (policy->max < this_dbs_info->cur_policy->cur)
->  			__cpufreq_driver_target(this_dbs_info->cur_policy,
->  				policy->max, CPUFREQ_RELATION_H);
->  		else if (policy->min > this_dbs_info->cur_policy->cur)
->  			__cpufreq_driver_target(this_dbs_info->cur_policy,
->  				policy->min, CPUFREQ_RELATION_L);
-> -		mutex_unlock(&dbs_mutex);
->  		break;
->  	}
->  	return 0;
-> -- 
-> 1.6.0.6
-> 
-> -- 
-> 
+# for i in `seq 1 100`
+> do
+> load_policy
+> cat /sys/kernel/slab/avtab_node/objects
+> done
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Stephen Smalley
+National Security Agency
+
