@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757560AbZFYAHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbZFYAId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757560AbZFYAHi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 20:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZFYAHb
+	id S1758352AbZFYAId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 20:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbZFYAIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 20:07:31 -0400
-Received: from mail-yx0-f176.google.com ([209.85.210.176]:64355 "EHLO
-	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbZFYAHa (ORCPT
+	Wed, 24 Jun 2009 20:08:23 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:63346 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbZFYAIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 20:07:30 -0400
+	Wed, 24 Jun 2009 20:08:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=P7eImIsN2UHY669tn6cDEa8s1JMLQpJ7LwOuDduhiBwrk7FEKRWS22rXY6QgfSK7WQ
-         3eFh/WDUD0gySnTLGE9ZW8dG6oPtMeiNfYzgSbfIDUAak1Tz9b9KFvYYmtyeu8ZQTX4J
-         idwKGq9McLigZuV5idrQ5Zk7Rfi8pkgkFM4bA=
+        b=FMRJDSkKQeDwjJu0wmAlABWXBxdJhe0pScoNT7gg3v8zD2TG0d8SdVZWb5060HtDvQ
+         ZH7sWl+38yS+jviYGqnkcWZ9xPlT+lIrSMdASN9lIWz+lzC/nUKkRjzdvdmU52uja8OM
+         uHmlnTEQVnd3iquZi6XJgFhyRAgaeknMA06Lg=
 MIME-Version: 1.0
-In-Reply-To: <20090624235856.GZ8633@ZenIV.linux.org.uk>
-References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com> 
-	<20090624235856.GZ8633@ZenIV.linux.org.uk>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 24 Jun 2009 20:07:12 -0400
-Message-ID: <8bd0f97a0906241707k14d09df5t6aa3229ed115b478@mail.gmail.com>
-Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not 
-	mounted
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Denys Vlasenko <vda.linux@googlemail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4A42BDF3.10901@bluewatersys.com>
+References: <4A42BDF3.10901@bluewatersys.com>
+Date: Thu, 25 Jun 2009 02:08:23 +0200
+Message-ID: <63386a3d0906241708j1ecbf8acwe47f9dbefd504c00@mail.gmail.com>
+Subject: Re: [PATCH] SST25L (non JEDEC) SPI Flash driver
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Ryan Mallon <ryan@bluewatersys.com>
+Cc: akpm@linux-foundation.org, linux kernel <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net,
+       David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 19:58, Al Viro wrote:
-> On Thu, Jun 25, 2009 at 01:00:56AM +0200, Denys Vlasenko wrote:
->> More elegant way is to execute /proc/self/exe.
->> This works just fine as long as /proc is mounted.
->
-> So mount it.
+2009/6/25 Ryan Mallon <ryan@bluewatersys.com>:
 
-well, in the busybox case, in order to run mount you might have to
-exec yourself first ...
+> It was suggested I send the following patch via you as David Woodhouse
+> is currently busy.
 
-> No.  This is just plain sick.  Magical pathnames have no business being
-> in the kernel.  If procfs is too much for your sensitive soul, do an
-> extremely trimmed-down version that would consist of *one* *file* (yes,
-> as root and only node on fs).  Said file being a procfs-style symlink,
-> doing exactly what /proc/self/exec would do.
->
-> On such system you can just mkdir /proc/self, touch /proc/self/exec,
-> mount -t self_exec none /proc/self/exec and be done with that.  No
-> magic needed, end of the story.
+Actually it was David Brownell (the SPI maintainer) I was thinking of
+that was sort of busy lately, perhaps Woodhouse (the MTD maintainer)
+is less busy ... let's see.
 
-if that is acceptable, how about a special binfmt that depends on
-EMBEDDED and we put the magic there.
--mike
+Linus Walleij
