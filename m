@@ -1,62 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZFYJNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZFYJRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753701AbZFYJNk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 05:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZFYJNd
+	id S1755261AbZFYJRP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 05:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZFYJRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 05:13:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33673 "EHLO mx3.mail.elte.hu"
+	Thu, 25 Jun 2009 05:17:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57994 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbZFYJNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 05:13:32 -0400
-Date: Thu, 25 Jun 2009 11:13:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Vince Weaver <vince@deater.net>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: performance counter 20% error finding retired instruction count
-Message-ID: <20090625091324.GA16860@elte.hu>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906242200000.12718@pianoman.cluster.toy> <1245912600.31755.21.camel@twins>
+	id S1751561AbZFYJRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 05:17:06 -0400
+Date: Thu, 25 Jun 2009 09:16:35 GMT
+From: tip-bot for Kurt Garloff <garloff@suse.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gregkh@suse.de, tglx@linutronix.de, robertangelino@gmail.com,
+       garloff@suse.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gregkh@suse.de, tglx@linutronix.de, robertangelino@gmail.com,
+       garloff@suse.de, mingo@elte.hu
+In-Reply-To: <20090624213211.GA11291@kroah.com>
+References: <20090624213211.GA11291@kroah.com>
+Subject: [tip:x86/urgent] x86: Add sysctl to allow panic on IOCK NMI error
+Message-ID: <tip-246982af230e52c0d83701b292790a0283362c9a@git.kernel.org>
+Git-Commit-ID: 246982af230e52c0d83701b292790a0283362c9a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1245912600.31755.21.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 09:16:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  246982af230e52c0d83701b292790a0283362c9a
+Gitweb:     http://git.kernel.org/tip/246982af230e52c0d83701b292790a0283362c9a
+Author:     Kurt Garloff <garloff@suse.de>
+AuthorDate: Wed, 24 Jun 2009 14:32:11 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 25 Jun 2009 11:13:02 +0200
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+x86: Add sysctl to allow panic on IOCK NMI error
 
-> On Wed, 2009-06-24 at 22:12 -0400, Vince Weaver wrote:
-> > 
-> > It's also nice to be able to skip the loader overhead, as the 
-> > loader can change from system to system and makes it hard to 
-> > compare counters across various machines.  Though it sounds like 
-> > the perf utility isn't going to be supporting this anytime soon.
-> 
-> Feel free to contribute such if you think its important.
+This patch introduces a new sysctl:
 
-I'd be glad to review and test any resulting patches from Vince - 
-and/or help out with pointers where to start and help out there's 
-any roadblocks along the way.
+    /proc/sys/kernel/panic_on_io_nmi
 
-The kernel side bits can be found in v2.6.31-rc1, in 
-kernel/perf_counter.c, include/linux/perf_counter.h and 
-arch/x86/kernel/cpu/perf_counter.c. We tried to keep the code as 
-hackable as possible.
+which defaults to 0 (off).
 
-The tooling bits can be found in tools/perf/ in the kernel repo. 
-builtin-stat.c contains the 'perf stat' bits.
+When enabled, the kernel panics when the kernel receives an NMI
+caused by an IO error.
 
-Thanks,
+The IO error triggered NMI indicates a serious system
+condition, which could result in IO data corruption. Rather
+than contiuing, panicing and dumping might be a better choice,
+so one can figure out what's causing the IO error.
 
-	Ingo
+This could be especially important to companies running IO
+intensive applications where corruption must be avoided, e.g. a
+bank's databases.
+
+[ SuSE has been shipping it for a while, it was done at the
+  request of a large database vendor, for their users. ]
+
+Signed-off-by: Kurt Garloff <garloff@suse.de>
+Signed-off-by: Roberto Angelino <robertangelino@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Kurt Garloff <garloff@suse.de>
+LKML-Reference: <20090624213211.GA11291@kroah.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/dumpstack.c |    1 +
+ arch/x86/kernel/traps.c     |    3 +++
+ include/linux/kernel.h      |    1 +
+ include/linux/sysctl.h      |    1 +
+ kernel/sysctl.c             |    8 ++++++++
+ kernel/sysctl_check.c       |    1 +
+ 6 files changed, 15 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/dumpstack.c b/arch/x86/kernel/dumpstack.c
+index 95ea5fa..c840571 100644
+--- a/arch/x86/kernel/dumpstack.c
++++ b/arch/x86/kernel/dumpstack.c
+@@ -22,6 +22,7 @@
+ #include "dumpstack.h"
+ 
+ int panic_on_unrecovered_nmi;
++int panic_on_io_nmi;
+ unsigned int code_bytes = 64;
+ int kstack_depth_to_print = 3 * STACKSLOTS_PER_LINE;
+ static int die_counter;
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index a0f48f5..5204332 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -346,6 +346,9 @@ io_check_error(unsigned char reason, struct pt_regs *regs)
+ 	printk(KERN_EMERG "NMI: IOCK error (debug interrupt?)\n");
+ 	show_registers(regs);
+ 
++	if (panic_on_io_nmi)
++		panic("NMI IOCK error: Not continuing");
++
+ 	/* Re-enable the IOCK line, wait for a few seconds */
+ 	reason = (reason & 0xf) | 8;
+ 	outb(reason, 0x61);
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index fac104e..d6320a3 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -303,6 +303,7 @@ extern int oops_in_progress;		/* If set, an oops, panic(), BUG() or die() is in
+ extern int panic_timeout;
+ extern int panic_on_oops;
+ extern int panic_on_unrecovered_nmi;
++extern int panic_on_io_nmi;
+ extern const char *print_tainted(void);
+ extern void add_taint(unsigned flag);
+ extern int test_taint(unsigned flag);
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index e76d3b2..56766b9 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -163,6 +163,7 @@ enum
+ 	KERN_MAX_LOCK_DEPTH=74,
+ 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+ 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
++	KERN_PANIC_ON_IO_NMI=77, /* int: whether we will panic on an io NMI */
+ };
+ 
+ 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 62e4ff9..d44e8c3 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -744,6 +744,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
++		.ctl_name	= KERN_PANIC_ON_IO_NMI,
++		.procname	= "panic_on_io_nmi",
++		.data		= &panic_on_io_nmi,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
++	{
+ 		.ctl_name	= KERN_BOOTLOADER_TYPE,
+ 		.procname	= "bootloader_type",
+ 		.data		= &bootloader_type,
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index b38423c..e1d8e0f 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -104,6 +104,7 @@ static const struct trans_ctl_table trans_kern_table[] = {
+ 	{ KERN_MAX_LOCK_DEPTH,		"max_lock_depth" },
+ 	{ KERN_NMI_WATCHDOG,		"nmi_watchdog" },
+ 	{ KERN_PANIC_ON_NMI,		"panic_on_unrecovered_nmi" },
++	{ KERN_PANIC_ON_IO_NMI,		"panic_on_io_nmi" },
+ 	{}
+ };
+ 
