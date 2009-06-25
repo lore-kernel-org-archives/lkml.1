@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZFYJI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZFYJKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311AbZFYJI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 05:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZFYJIu
+	id S1759819AbZFYJKj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 05:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZFYJKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 05:08:50 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:39295 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZFYJIt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 05:08:49 -0400
-Date: Thu, 25 Jun 2009 11:08:42 +0200
-From: maximilian attems <max@stro.at>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: >= 2.6.30 broken alpha smp build
-Message-ID: <20090625090842.GA17936@stro.at>
+	Thu, 25 Jun 2009 05:10:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33413 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128AbZFYJKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 05:10:31 -0400
+Date: Thu, 25 Jun 2009 11:10:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Message-ID: <20090625091033.GF31415@kernel.dk>
+References: <1245839904.3210.85.camel@localhost.localdomain> <20090624152732.d6352f4f.akpm@linux-foundation.org> <1245916833.31755.78.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1245916833.31755.78.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC [M]  arch/alpha/kernel/srm_env.o
-In file included from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/percpu.h:10,
-                 from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/local.h:4,
-                 from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/module.h:20,
-                 from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:33:
-/build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:100:1: error: "PER_CPU_ATTRIBUTES" redefined
-/build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:52:1: error: this is the location of the previous definition
-make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
-make[5]: *** [arch/alpha/kernel] Error 2
-make[4]: *** [sub-make] Error 2
-make[3]: *** [all] Error 2
-make[2]: *** [debian/stamps/build_alpha_none_alpha-smp_plain] Error 2
-make[1]: *** [build_alpha_none_alpha-smp_real] Error 2
+On Thu, Jun 25 2009, Peter Zijlstra wrote:
+> On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> > On Wed, 24 Jun 2009 11:38:24 +0100
+> > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> > 
+> > > When writing to 2 (or more) devices at the same time, stop
+> > > balance_dirty_pages moving dirty pages to writeback when it has reached
+> > > the bdi threshold. This prevents balance_dirty_pages overshooting its
+> > > limits and moving all dirty pages to writeback.     
+> > > 
+> > >     
+> > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > > ---
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-belows patch fixes aboves error but gives a new one on SMP
+After doing some integration and update work on the writeback branch, I
+threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the test
+mix. The writeback series include this patch as a prep patch. Results
+for the mmap write test case:
 
-diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
-index 06c5c7a..622d585 100644
---- a/arch/alpha/include/asm/percpu.h
-+++ b/arch/alpha/include/asm/percpu.h
-@@ -95,8 +95,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
- #define PER_CPU_SHARED_ALIGNED_SECTION ""
- #define PER_CPU_FIRST_SECTION ""
- 
--#endif
--
- #define PER_CPU_ATTRIBUTES
- 
-+#endif
-+
- #endif /* __ALPHA_PERCPU_H */
+Kernel          Throughput      usr     sys     ctx     util
+--------------------------------------------------------------
+vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
+vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
+vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
+vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
+vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
+vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
+writeback       215MB/sec       22.69%  53.23%   4085   92.32%
+writeback       214MB/sec       24.31%  52.90%   4495   92.40%
+writeback       208MB/sec       23.14%  52.12%   4067   91.68%
 
-  CC [M]  arch/alpha/kernel/srm_env.o
+To be perfectly clear:
 
-cc1: warnings being treated as errors
-In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:86,
-                 from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
-                 from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
-/home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/hrtimer.h:310: error: �~@~X__used__�~@~Y attribute ignored
-In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
-                 from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
-/home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:134: error: �~@~X__used__�~@~Y attribute ignored
-make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
+vanilla         2.6.31-rc1 stock
+vanilla+patch   2.6.31-rc1 + bdi_thresh patch
+writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
 
+This is just a single spindle w/ext4, nothing fancy. I'll do a 3-series
+run with the writeback and this patch backed out, to see if it makes a
+difference here. I didn't do that initially, since the results were in
+the range that I expected.
 
 -- 
-maks
+Jens Axboe
+
