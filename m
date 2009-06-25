@@ -1,75 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZFYMif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752569AbZFYMkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbZFYMif (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZFYMi0
+	id S1752569AbZFYMkz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZFYMkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:38:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34273 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbZFYMiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:38:25 -0400
-Date: Thu, 25 Jun 2009 15:37:57 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
-Message-ID: <20090625123757.GA7121@redhat.com>
-References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com> <4A435F28.3000301@novell.com> <20090625115403.GA7079@redhat.com> <4A4368A4.8030401@novell.com>
+	Thu, 25 Jun 2009 08:40:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45671 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbZFYMkq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:40:46 -0400
+Date: Thu, 25 Jun 2009 08:40:48 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jcm@jonmasters.org, tglx@linutronix.de, lethal@linux-sh.org,
+       mingo@elte.hu
+cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/urgent] ring-buffer: Make it generally available
+In-Reply-To: <tip-1155de47cd66d0c496d5a6fb2223e980ef1285b2@git.kernel.org>
+Message-ID: <alpine.DEB.2.00.0906250840220.12035@gandalf.stny.rr.com>
+References: <20090625053012.GB19944@linux-sh.org> <tip-1155de47cd66d0c496d5a6fb2223e980ef1285b2@git.kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4368A4.8030401@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 08:08:04AM -0400, Gregory Haskins wrote:
-> The patch has been in circulation for weeks, is well tested/reviewed
-> (and I hope its considered well written), and I want to get on with my
-> life ;).
 
-Hey, I feel your pain, I've been reviewing these ..
 
-> Your proposal doesn't change the user->kern ABI, so any
-> consolidation will be just an internal change to the kernel code only. 
-> People can start using the interface today to build things, and we can
-> fix up the internal code later once your proposals have had a chance to
-> be shaped after review, etc (which I know from experience can take a
-> while and change radically though the course ;).
+
+On Thu, 25 Jun 2009, tip-bot for Paul Mundt wrote:
+
+> Commit-ID:  1155de47cd66d0c496d5a6fb2223e980ef1285b2
+> Gitweb:     http://git.kernel.org/tip/1155de47cd66d0c496d5a6fb2223e980ef1285b2
+> Author:     Paul Mundt <lethal@linux-sh.org>
+> AuthorDate: Thu, 25 Jun 2009 14:30:12 +0900
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Thu, 25 Jun 2009 10:31:30 +0200
 > 
-> IOW: The only thing waiting does is hide the history of the edit, since
-> whatever change is proposed is invariably the same amount of work for me
-> to convert it over.  Its purely a question of whether its folded into
-> the history or visible as two change records.  Based on that. I don't
-> see any problem with it just going in now.  Its certainly ready from my
-> perspective.
+> ring-buffer: Make it generally available
 > 
-> So I guess the question is: What's your objection?
+> In hunting down the cause for the hwlat_detector ring buffer spew in
+> my failed -next builds it became obvious that folks are now treating
+> ring_buffer as something that is generic independent of tracing and thus,
+> suitable for public driver consumption.
+> 
+> Given that there are only a few minor areas in ring_buffer that have any
+> reliance on CONFIG_TRACING or CONFIG_FUNCTION_TRACER, provide stubs for
+> those and make it generally available.
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> Cc: Jon Masters <jcm@jonmasters.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
 
-No objections, only comments ;)
+Thanks!
 
-> (BTW: I am talking about the yet unpublished "v9" which addresses all
-> your other comments sans the io_bus interface changes.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-I thought we agreed on the io_bus approach. What changed?
+-- Steve
 
->  Will push out
-> later today)
-
-BTW, is the group removal race handled there somehow?
-Here's what I have in mind:
-kvm does
-	lock
-	dev = find
-	unlock
-
-	<---------- at this point group device is removed
-
-	write access to device that has been removed
-
-
--- 
-MST
+> LKML-Reference: <20090625053012.GB19944@linux-sh.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  kernel/Makefile            |    1 +
+>  kernel/trace/ring_buffer.c |   11 +++++++++++
+>  kernel/trace/trace.h       |    7 +++++++
+>  3 files changed, 19 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 0a32cb2..0630e29 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -96,6 +96,7 @@ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+>  obj-$(CONFIG_FUNCTION_TRACER) += trace/
+>  obj-$(CONFIG_TRACING) += trace/
+>  obj-$(CONFIG_X86_DS) += trace/
+> +obj-$(CONFIG_RING_BUFFER) += trace/
+>  obj-$(CONFIG_SMP) += sched_cpupri.o
+>  obj-$(CONFIG_SLOW_WORK) += slow-work.o
+>  obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 04dac26..bf27bb7 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -1563,6 +1563,8 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
+>  	return NULL;
+>  }
+>  
+> +#ifdef CONFIG_TRACING
+> +
+>  #define TRACE_RECURSIVE_DEPTH 16
+>  
+>  static int trace_recursive_lock(void)
+> @@ -1593,6 +1595,13 @@ static void trace_recursive_unlock(void)
+>  	current->trace_recursion--;
+>  }
+>  
+> +#else
+> +
+> +#define trace_recursive_lock()		(0)
+> +#define trace_recursive_unlock()	do { } while (0)
+> +
+> +#endif
+> +
+>  static DEFINE_PER_CPU(int, rb_need_resched);
+>  
+>  /**
+> @@ -3104,6 +3113,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_read_page);
+>  
+> +#ifdef CONFIG_TRACING
+>  static ssize_t
+>  rb_simple_read(struct file *filp, char __user *ubuf,
+>  	       size_t cnt, loff_t *ppos)
+> @@ -3171,6 +3181,7 @@ static __init int rb_init_debugfs(void)
+>  }
+>  
+>  fs_initcall(rb_init_debugfs);
+> +#endif
+>  
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  static int rb_cpu_notify(struct notifier_block *self,
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 6e735d4..3548ae5 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -597,6 +597,7 @@ print_graph_function(struct trace_iterator *iter)
+>  
+>  extern struct pid *ftrace_pid_trace;
+>  
+> +#ifdef CONFIG_FUNCTION_TRACER
+>  static inline int ftrace_trace_task(struct task_struct *task)
+>  {
+>  	if (!ftrace_pid_trace)
+> @@ -604,6 +605,12 @@ static inline int ftrace_trace_task(struct task_struct *task)
+>  
+>  	return test_tsk_trace_trace(task);
+>  }
+> +#else
+> +static inline int ftrace_trace_task(struct task_struct *task)
+> +{
+> +	return 1;
+> +}
+> +#endif
+>  
+>  /*
+>   * trace_iterator_flags is an enumeration that defines bit
+> 
