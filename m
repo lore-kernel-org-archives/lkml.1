@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbZFYHUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZFYHZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbZFYHUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZFYHU2
+	id S1755319AbZFYHZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZFYHZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:20:28 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58752 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbZFYHU1 (ORCPT
+	Thu, 25 Jun 2009 03:25:08 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:38576 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752332AbZFYHZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:20:27 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:user-agent:
-	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=hngoOtGVJuPtGn3wfd8aYyV0Hj32ECU8hrDJCtAq9AGfoiQ0iFnJO8ndW/e7XcR2A
-	/DlRrLkTpOPDd/TFpG6gw==
-From: Paul Menage <menage@google.com>
-Subject: [PATCH] UML: Fix some apparent bitrot in mmu_context.h
-To: rusty@rustcorp.com.au
-Cc: jdike@addtoit.com, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
-Date: Thu, 25 Jun 2009 00:19:56 -0700
-Message-ID: <20090625071956.20800.4589.stgit@menage.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
+	Thu, 25 Jun 2009 03:25:07 -0400
+Message-ID: <4A432652.9070907@snapgear.com>
+Date: Thu, 25 Jun 2009 17:25:06 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, gerg@uclinux.org, linux-m68k@vger.kernel.org
+Subject: Re: [PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
+References: <200906170710.n5H7AxxV009015@localhost.localdomain> <200906170941.44383.arnd@arndb.de> <4A3A4A16.6080307@snapgear.com>
+In-Reply-To: <4A3A4A16.6080307@snapgear.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UML: Fix some apparent bitrot in mmu_context.h
+Hi Arnd,
 
-- cpumask_clear() -> cpumask_clear_cpu()
+Greg Ungerer wrote:
+> Arnd Bergmann wrote:
+>> On Wednesday 17 June 2009, Greg Ungerer wrote:
+>>> [PATCH] m68k: merge the non-mmu and mmu versions of hardirq.h
+>>>
+>>> There is nothing different required between the non-mmu and mmu
+>>> versions of hardirq.h, so merge them back into a single file.
+>>>
+>>> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+>>
+>> AFAICT this file is also the same in the new asm-generic version, so you
+>> could fall back to that directly.
+> 
+> Indeed it could. It will need a clean out of ack_bad_irq() in
+> arch/m68knommu/kernel.irq.c, but otherwise looks good.
+> 
+> I'll prepare a new patch that uses that.
 
-Signed-off-by: Paul Menage <menage@google.com>
+This turns out not to be as trivial as I first thought.
 
---
+The include of linux/irq.h in the asm-generic/hardirq.h
+causes all sorts of include ordering problems for the m68k
+hardirq.h. The m68k hardirq.h includes asm/irq.h instead.
 
-Fixes the following compile errors:
+Regards
+Greg
 
-arch/um/include/asm/mmu_context.h: In function 'switch_mm':
-arch/um/include/asm/mmu_context.h:38: warning: passing argument 1 of 'cpumask_clear' makes pointer from integer without
-a cast
-arch/um/include/asm/mmu_context.h:38: error: too many arguments to function 'cpumask_clear'
 
----
-
- arch/um/include/asm/mmu_context.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
-index edd719e..34d8130 100644
---- a/arch/um/include/asm/mmu_context.h
-+++ b/arch/um/include/asm/mmu_context.h
-@@ -35,7 +35,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- 	unsigned cpu = smp_processor_id();
- 
- 	if(prev != next){
--		cpumask_clear(cpu, mm_cpumask(prev));
-+		cpumask_clear_cpu(cpu, mm_cpumask(prev));
- 		cpumask_set_cpu(cpu, mm_cpumask(next));
- 		if(next != &init_mm)
- 			__switch_mm(&next->context.id);
-
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
