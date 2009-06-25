@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZFYHL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZFYHMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756999AbZFYHL5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZFYHLs
+	id S1759301AbZFYHMh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZFYHM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:11:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47802 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752332AbZFYHLr (ORCPT
+	Thu, 25 Jun 2009 03:12:26 -0400
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:64064 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752600AbZFYHM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:11:47 -0400
-Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
- Mapping Support
-From: David Woodhouse <dwmw2@infradead.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: fenghua.yu@intel.com, chrisw@redhat.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
-References: <20090625003841.GA12226@linux-os.sc.intel.com>
-	 <20090625095643F.fujita.tomonori@lab.ntt.co.jp>
-	 <20090625041605.GA9330@linux-os.sc.intel.com>
-	 <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 08:11:26 +0100
-Message-Id: <1245913886.17089.91.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 25 Jun 2009 03:12:26 -0400
+X-VR-Score: -110.00
+X-Authority-Analysis: v=1.0 c=1 a=f-GefS3wO1IA:10 a=EKeX-pp0AAAA:8
+ a=ZSFQUDYELv5ILXZVOwMA:9 a=pP1wWgDYPhkw0fdYL_NMEqFYwgIA:4 a=R-wd4IrMln8A:10
+X-CM-Score: 0.00
+To: "John Stoffel" <john@stoffel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Bernd Schmidt <bernds_cb1@t-online.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Blackfin Architecture Team 
+	<uclinux-dist-devel@blackfin.uclinux.org>,
+       David Howells <dhowells@redhat.com>, stable@kernel.org
+Subject: Re: Fix for shared flat binary format in 2.6.30
+References: <4A3F5EAE.7020402@t-online.de>
+	<alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
+	<19007.60396.259650.682653@stoffel.org>
+From: Junio C Hamano <gitster@pobox.com>
+Date: Thu, 25 Jun 2009 00:12:28 -0700
+In-Reply-To: <19007.60396.259650.682653@stoffel.org> (John Stoffel's message of "Mon\, 22 Jun 2009 16\:39\:08 -0400")
+Message-ID: <7vab3wiy77.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 13:48 +0900, FUJITA Tomonori wrote:
-> This patch is really ugly; adds another ifdef and VT-D specific code
-> to the generic place (arch/x86/kernel/pci-dma.c).
-> 
-> However, I guess that we need to live with this for now since this
-> fixes the build error.
+"John Stoffel" <john@stoffel.org> writes:
 
-It raises the question: Why are we using firmware-specific interfaces to
-list the available memory -- can't we get that from somewhere _generic_?
+>> git commit -a
+>
+> # Put in a simple message of a line or two.
+>
+>     ratelimit parity error reporting, which helps alot on bootup over serial
+>     console when you get 10,000+ lines of this message.
 
-The less we tie our code to these crappy BIOS, EFI and ACPI interfaces,
-the better off we'll be.
+Doesn't this violate the accepted standard format for commit messages in
+the linux kernel project?
 
-> Another complaint from me is that, IIRC, the patch causes this build
-> error was posted was posted first during the merge window (18 June)
-> and merged few days later without properly reviewed (or compile
-> tested).
+Perhaps Documentation/SubmittingPatches #2 and #15 need to be read, or
+clarified, or both.
 
-I apologise for that. I got to it rather late, just as I was reviewing
-my outstanding code for Linus to pull. It _had_ been reviewed though --
-this was the second incarnation of the patch, after review.
 
-I didn't include it in my original pull request, and instead let it sit
-in linux-next for a day (which is not long, I know, but better than
-nothing). I then spent that day testing it myself, and tracking down a
-bug in it.
-
-I sent the fixed version to Linus at the end of the day -- I _thought_
-I would have been told of any IA64 build failures in linux-next by then,
-even if the original hadn't been tested on IA64 -- evidently I was
-wrong.
-
-I really must set myself up an IA64 cross-compiler. Every time I've
-looked at that so far I've got distracted into the whole "why is
-GCC/glibc build so incestuously broken" quagmire -- but I only need gcc,
-so I'll steel myself to ignore the braindamage and just build a simple
-compiler without glibc support.
-
-Better still would be if I could find some IA64 hardware with this
-IOMMU. Would kind of help with maintenance...
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
 
