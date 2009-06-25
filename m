@@ -1,154 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbZFYHmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbZFYHms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbZFYHmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZFYHmM
+	id S1759082AbZFYHms (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754743AbZFYHmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:42:12 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:44087 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbZFYHmL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:42:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pDZjpsW+r6eOt5PfsJ+cxs05geOmpXtSRi59fSQxIJMTMmE714FPzfwiGlzOJ8Ghta
-         5VNUtl1YpsMLcSggp46NM81iLDUdOZksIjD0BWtv7ilGkD22Z8Qv3TrXINDoMevX9jbc
-         e+9pGIKTgcfMoj8LiDQ5UN2Tj571qhnTa3aes=
+	Thu, 25 Jun 2009 03:42:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48961 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754311AbZFYHmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 03:42:38 -0400
+Date: Thu, 25 Jun 2009 09:42:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Alasdair G Kergon <agk@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: linux-next: manual merge of the block tree with Linus' tree
+Message-ID: <20090625074241.GD31415@kernel.dk>
+References: <20090625131517.d9adc935.sfr@canb.auug.org.au> <20090625133005.9f521529.sfr@canb.auug.org.au> <20090625063806.GC31415@kernel.dk>
 MIME-Version: 1.0
-Date: Thu, 25 Jun 2009 09:42:12 +0200
-Message-ID: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
-Subject: Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
-From: Yegor Yefremov <yegorslists@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Cc: dwmw2@infradead.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090625063806.GC31415@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
+On Thu, Jun 25 2009, Jens Axboe wrote:
+> On Thu, Jun 25 2009, Stephen Rothwell wrote:
+> > On Thu, 25 Jun 2009 13:15:17 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > >
+> > > I can't see how to easily fix this up, so I have dropped the block tree
+> > > for today (since it only contained 2.6.32 material, right?).
+> > 
+> > I also dropped the device-mapper tree for today as it was based on the
+> > block tree (and dragged in what I had just dropped) and, in any case, all
+> > its patches have been merged upstream.
+> 
+> OK to both, I'm fixing up the writeback conflicts right now.
 
-- extend struct amd_flash_info to enable 8 erase regions for 8Mb flash chips
-- change erase block command to 0x50 due to the differences between
-39VF6401/02 and 39VF6401B/02B chips
+Should be good to go again.
 
-Signed-off-by: Yegor Yefremov <yegorslists@googlemail.com>
+-- 
+Jens Axboe
 
-Index: linus/drivers/mtd/chips/cfi_cmdset_0002.c
-===================================================================
---- linus.orig/drivers/mtd/chips/cfi_cmdset_0002.c
-+++ linus/drivers/mtd/chips/cfi_cmdset_0002.c
-@@ -50,6 +50,8 @@
- #define SST49LF004B	        0x0060
- #define SST49LF040B	        0x0050
- #define SST49LF008A		0x005a
-+#define SST39VF6401B		0x236D
-+#define SST39VF6402B		0x236C
- #define AT49BV6416		0x00d6
-
- static int cfi_amdstd_read (struct mtd_info *, loff_t, size_t, size_t
-*, u_char *);
-@@ -1629,7 +1631,11 @@ static int __xipram do_erase_oneblock(st
- 	cfi_send_gen_cmd(0x80, cfi->addr_unlock1, chip->start, map, cfi,
-cfi->device_type, NULL);
- 	cfi_send_gen_cmd(0xAA, cfi->addr_unlock1, chip->start, map, cfi,
-cfi->device_type, NULL);
- 	cfi_send_gen_cmd(0x55, cfi->addr_unlock2, chip->start, map, cfi,
-cfi->device_type, NULL);
--	map_write(map, CMD(0x30), adr);
-+
-+	if (cfi->mfr == MANUFACTURER_SST && (cfi->id == SST39VF6401B ||
-cfi->id == SST39VF6402B))
-+		map_write(map, CMD(0x50), adr);
-+	else
-+		map_write(map, CMD(0x30), adr);
-
- 	chip->state = FL_ERASING;
- 	chip->erase_suspended = 0;
-Index: linus/drivers/mtd/chips/jedec_probe.c
-===================================================================
---- linus.orig/drivers/mtd/chips/jedec_probe.c
-+++ linus/drivers/mtd/chips/jedec_probe.c
-@@ -160,6 +160,9 @@
- #define SST39LF160	0x2782
- #define SST39VF1601	0x234b
- #define SST39VF3201	0x235b
-+#define SST39VF3202	0x235a
-+#define SST39VF6401B	0x236D
-+#define SST39VF6402B	0x236C
- #define SST39LF512	0x00D4
- #define SST39LF010	0x00D5
- #define SST39LF020	0x00D6
-@@ -273,7 +276,7 @@ struct amd_flash_info {
- 	const uint8_t dev_size;
- 	const uint8_t nr_regions;
- 	const uint16_t cmd_set;
--	const uint32_t regions[6];
-+	const uint32_t regions[8];
- 	const uint8_t devtypes;		/* Bitmask for x8, x16 etc. */
- 	const uint8_t uaddr;		/* unlock addrs for 8, 16, 32, 64 */
- };
-@@ -1519,6 +1522,59 @@ static const struct amd_flash_info jedec
- 			ERASEINFO(0x1000,256)
- 		}
- 	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF3202,
-+		.name		= "SST 39VF3202",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
-+		.dev_size	= SIZE_4MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 4,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256)
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF6401B,
-+		.name		= "SST 39VF6401B",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
-+		.dev_size	= SIZE_8MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 8,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF6402B,
-+		.name		= "SST 39VF6402B",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
-+		.dev_size	= SIZE_8MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 8,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+		}
-+	}, {
- 		.mfr_id		= MANUFACTURER_SST,
- 		.dev_id		= SST36VF3203,
- 		.name		= "SST 36VF3203",
