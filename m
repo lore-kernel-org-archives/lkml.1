@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZFYQsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758565AbZFYQts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZFYQsm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZFYQsa
+	id S1758565AbZFYQts (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZFYQtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:48:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33690 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752974AbZFYQs3 (ORCPT
+	Thu, 25 Jun 2009 12:49:39 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:53476 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502AbZFYQti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:48:29 -0400
-Date: Thu, 25 Jun 2009 09:47:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, zbr@ioremap.net,
-       jeff.chua.linux@gmail.com, paulus@samba.org, laijs@cn.fujitsu.com,
-       jengelh@medozas.de, r000n@r000n.net, benh@kernel.crashing.org,
-       mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH -tip 0/3] expedited "big hammer" RCU grace periods
-In-Reply-To: <20090625095953.GC29980@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906250944511.3605@localhost.localdomain>
-References: <20090624164535.GA13334@linux.vnet.ibm.com> <20090624180303.GE7576@elte.hu> <20090624184423.GK6779@linux.vnet.ibm.com> <20090625095953.GC29980@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 25 Jun 2009 12:49:38 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 25 Jun 2009 09:44:52 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mst@redhat.com, avi@redhat.com, paulmck@linux.vnet.ibm.com,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [KVM PATCH v5 0/4] irqfd fixes and enhancements
+In-Reply-To: <4A4382AE.8000508@novell.com>
+Message-ID: <alpine.DEB.1.10.0906250942070.9517@makko.or.mcafeemobile.com>
+References: <20090625132441.26748.641.stgit@dev.haskins.net> <4A4382AE.8000508@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 25 Jun 2009, Gregory Haskins wrote:
 
-
-On Thu, 25 Jun 2009, Ingo Molnar wrote:
+> So I know we talked yesterday in the review session about whether it was
+> actually worth all this complexity to deal with the POLLHUP or if we
+> should just revert to the prior "two syscall" model and be done with
+> it.  Rusty reflected these same sentiments this morning in response to
+> Davide's patch in a different thread.
 > 
-> Our general preference is to zap code.
+> I am a bit torn myself, tbh.  I do feel as though I have a good handle
+> on the issue and that it is indeed now fixed (at least, if this series
+> is applied and the slow-work issue is fixed, still pending upstream
+> ACK).  I have a lot invested in going the POLLHUP direction having spent
+> so much time thinking about the problem and working on the patches, so I
+> a bit of a biased opinion, I know.
 > 
-> /me stares at:
+> The reason why I am pushing this series out now is at least partly so we
+> can tie up these loose ends.  We have both solutions in front of us and
+> can make a decision either way.  At least the solution is formally
+> documented in the internet archives forever this way ;)
 > 
->   $ git diff --stat -M v2.6.30..v2.6.31-rc1 | tail -1
->   7743 files changed, 782278 insertions(+), 403162 deletions(-)
+> I took the review comments to heart that the shutdown code was
+> substantially larger and more complex than the actual fast-path code.  I
+> went though last night and simplified and clarified it.  I think the
+> latest result is leaner and clearer, so please give it another review
+> (particularly for races) before dismissing it.
 > 
-> /me corrects himself:
+> Ultimately, I think the concept of a release notification for eventfd is
+> a good thing for all eventfd users, so I don't think this thing should
+> go away per se even if irqfd decides to not use it. 
 
-Yes. Our general preference is to zap code, if only because it's so damn 
-unusual.
+Whatever you guys decide if fine for me. Next time though, I think I'll 
+wait a month or so after taking any action :)
 
-When one out of a hundred patches actually has more removals than 
-additions, we make a big deal out of it ("Look - I actually simplified 
-things"). For the 99 other patches we never size in polite company.
 
-Oh well. But every time we add lines, we do it with the _best_ intentions.
+- Davide
 
-		Linus
+
