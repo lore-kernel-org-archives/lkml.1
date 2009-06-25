@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZFYNge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZFYNiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbZFYNge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZFYNg1
+	id S1753122AbZFYNiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZFYNiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:36:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39373 "EHLO
+	Thu, 25 Jun 2009 09:38:07 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39376 "EHLO
 	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752683AbZFYNg0 (ORCPT
+	with ESMTP id S1750944AbZFYNiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:36:26 -0400
+	Thu, 25 Jun 2009 09:38:06 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] kfifo: Use "const" definitions
+Subject: [RFC PATCH] resource: shared I/O region support
 To: linux-kernel@vger.kernel.org
-Date: Thu, 25 Jun 2009 15:34:54 +0100
-Message-ID: <20090625143444.4098.35534.stgit@t61.ukuu.org.uk>
+Date: Thu, 25 Jun 2009 15:36:34 +0100
+Message-ID: <20090625143514.4132.95249.stgit@t61.ukuu.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,51 +25,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@linux.intel.com>
 
-Currently kfifo cannot be used by parts of the kernel that use "const"
-properly as kfifo itself does not use const for passed data blocks which
-are indeed const.
+SuperIO devices share regions and use lock/unlock operations to chip select.
+We therefore need to be able to request a resource and wait for it to be
+freed by whichever other SuperIO device currently hogs it. Right now you
+have to poll which is horrible.
+
+Add a MUXED field to IO port resources. If the MUXED field is set on the
+resource and on the request (via request_muxed_region) then we block until
+the previous owner of the muxed resource releases their region.
+
+This allows us to implement proper resource sharing and locking for superio
+chips using code of the form
+
+enable_my_superio_dev() {
+	request_muxed_region(0x44, 0x02, "superio:watchdog");
+	outb() ..sequence to enable chip
+}
+
+disable_my_superio_dev() {
+	outb() .. sequence of disable chip
+	release_region(0x44, 0x02);
+}
+
 
 Signed-off-by: Alan Cox <alan@linux.intel.com>
 ---
 
- include/linux/kfifo.h |    4 ++--
- kernel/kfifo.c        |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/ioport.h |    4 +++-
+ kernel/resource.c      |   14 +++++++++++++-
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
 
-diff --git a/include/linux/kfifo.h b/include/linux/kfifo.h
-index 29f62e1..ad6bdf5 100644
---- a/include/linux/kfifo.h
-+++ b/include/linux/kfifo.h
-@@ -38,7 +38,7 @@ extern struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask,
- 				 spinlock_t *lock);
- extern void kfifo_free(struct kfifo *fifo);
- extern unsigned int __kfifo_put(struct kfifo *fifo,
--				unsigned char *buffer, unsigned int len);
-+				const unsigned char *buffer, unsigned int len);
- extern unsigned int __kfifo_get(struct kfifo *fifo,
- 				unsigned char *buffer, unsigned int len);
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index 786e7b8..c9a3a41 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -50,6 +50,7 @@ struct resource_list {
+ #define IORESOURCE_STARTALIGN	0x00040000	/* start field is alignment */
  
-@@ -77,7 +77,7 @@ static inline void kfifo_reset(struct kfifo *fifo)
-  * bytes copied.
-  */
- static inline unsigned int kfifo_put(struct kfifo *fifo,
--				     unsigned char *buffer, unsigned int len)
-+				const unsigned char *buffer, unsigned int len)
- {
- 	unsigned long flags;
- 	unsigned int ret;
-diff --git a/kernel/kfifo.c b/kernel/kfifo.c
-index 26539e3..3765ff3 100644
---- a/kernel/kfifo.c
-+++ b/kernel/kfifo.c
-@@ -117,7 +117,7 @@ EXPORT_SYMBOL(kfifo_free);
-  * writer, you don't need extra locking to use these functions.
-  */
- unsigned int __kfifo_put(struct kfifo *fifo,
--			 unsigned char *buffer, unsigned int len)
-+			const unsigned char *buffer, unsigned int len)
- {
- 	unsigned int l;
+ #define IORESOURCE_MEM_64	0x00100000
++#define IORESOURCE_MUXED	0x00200000	/* Resource is software muxed */
  
+ #define IORESOURCE_EXCLUSIVE	0x08000000	/* Userland may not map this resource */
+ #define IORESOURCE_DISABLED	0x10000000
+@@ -136,7 +137,8 @@ static inline unsigned long resource_type(struct resource *res)
+ }
+ 
+ /* Convenience shorthand with allocation */
+-#define request_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), 0)
++#define request_region(start,n,name)		__request_region(&ioport_resource, (start), (n), (name), 0)
++#define request_muxed_region(start,n,name)	__request_region(&ioport_resource, (start), (n), (name), IORESOURCE_MUXED)
+ #define __request_mem_region(start,n,name, excl) __request_region(&iomem_resource, (start), (n), (name), excl)
+ #define request_mem_region(start,n,name) __request_region(&iomem_resource, (start), (n), (name), 0)
+ #define request_mem_region_exclusive(start,n,name) \
+diff --git a/kernel/resource.c b/kernel/resource.c
+index ac5f3a3..7f47f0b 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -592,6 +592,8 @@ resource_size_t resource_alignment(struct resource *res)
+  * release_region releases a matching busy region.
+  */
+ 
++static DECLARE_WAIT_QUEUE_HEAD(muxed_resource_wait);
++
+ /**
+  * __request_region - create a new busy resource region
+  * @parent: parent resource descriptor
+@@ -604,6 +606,7 @@ struct resource * __request_region(struct resource *parent,
+ 				   resource_size_t start, resource_size_t n,
+ 				   const char *name, int flags)
+ {
++	DECLARE_WAITQUEUE(wait, current);
+ 	struct resource *res = kzalloc(sizeof(*res), GFP_KERNEL);
+ 
+ 	if (!res)
+@@ -628,7 +631,14 @@ struct resource * __request_region(struct resource *parent,
+ 			if (!(conflict->flags & IORESOURCE_BUSY))
+ 				continue;
+ 		}
+-
++		if (conflict->flags & flags & IORESOURCE_MUXED) {
++			add_wait_queue(&muxed_resource_wait, &wait);
++			write_unlock(&resource_lock);
++			schedule();
++			remove_wait_queue(&muxed_resource_wait, &wait);
++			write_lock(&resource_lock);
++			continue;
++		}
+ 		/* Uhhuh, that didn't work out.. */
+ 		kfree(res);
+ 		res = NULL;
+@@ -702,6 +712,8 @@ void __release_region(struct resource *parent, resource_size_t start,
+ 				break;
+ 			*p = res->sibling;
+ 			write_unlock(&resource_lock);
++			if (res->flags & IORESOURCE_MUXED)
++				wake_up(&muxed_resource_wait);
+ 			kfree(res);
+ 			return;
+ 		}
 
