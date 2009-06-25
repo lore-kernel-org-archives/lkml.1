@@ -1,175 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZFYH5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZFYIAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZFYH5X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFYH5N
+	id S1756099AbZFYIAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZFYIA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:57:13 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:7444
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751622AbZFYH5N (ORCPT
+	Thu, 25 Jun 2009 04:00:27 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:15256 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbZFYIA0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:57:13 -0400
-Message-ID: <4A432DD4.3010905@panasas.com>
-Date: Thu, 25 Jun 2009 10:57:08 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: akpm@linux-foundation.org, jdike@addtoit.com, linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
-References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>	<4A3F4448.30502@panasas.com> <20090625135901.a028512d.sfr@canb.auug.org.au>
-In-Reply-To: <20090625135901.a028512d.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 25 Jun 2009 04:00:26 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20090624152732.d6352f4f.akpm@linux-foundation.org>
+References: <1245839904.3210.85.camel@localhost.localdomain>
+	 <20090624152732.d6352f4f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 10:00:33 +0200
+Message-Id: <1245916833.31755.78.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2009 07:57:12.0837 (UTC) FILETIME=[8C71B350:01C9F56A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/25/2009 06:59 AM, Stephen Rothwell wrote:
-> Hi all,
+On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> On Wed, 24 Jun 2009 11:38:24 +0100
+> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
 > 
-> I applied the following patch to yesterday's linux-next and the i386 uml
-> defconfig build succeeded.
+> > When writing to 2 (or more) devices at the same time, stop
+> > balance_dirty_pages moving dirty pages to writeback when it has reached
+> > the bdi threshold. This prevents balance_dirty_pages overshooting its
+> > limits and moving all dirty pages to writeback.     
+> > 
+> >     
+> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > ---
 
-Stephan Hi, 
-Does this means that there will be a UML build every linux-next now?
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
+
+[ moved explanation below ]
+
+> > 
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index 7b0dcea..7687879 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -541,8 +541,11 @@ static void balance_dirty_pages(struct address_space *mapping)
+> >  		 * filesystems (i.e. NFS) in which data may have been
+> >  		 * written to the server's write cache, but has not yet
+> >  		 * been flushed to permanent storage.
+> > +		 * Only move pages to writeback if this bdi is over its
+> > +		 * threshold otherwise wait until the disk writes catch
+> > +		 * up.
+> >  		 */
+> > -		if (bdi_nr_reclaimable) {
+> > +		if (bdi_nr_reclaimable > bdi_thresh) {
+> >  			writeback_inodes(&wbc);
+> >  			pages_written += write_chunk - wbc.nr_to_write;
+> >  			get_dirty_limits(&background_thresh, &dirty_thresh,
 > 
-> The last hunk of this patch (arch/um/include/asm/mmu_context.h) needs to
-> be notified to Rusty Russell (cc'd) since that only applied after merging
-> his tree.
-> 
-> The rest appears to apply ok to Linus' tree.
-> 
-> Please split this and send it to the appropriate people and cc me.
-> 
+> yup, we need to think about the effect with zillions of disks.  Peter,
+> could you please take a look?
 
-I agree, the minimum of fixing the arch definitions should be separated
-from the uml-net-drivers (Which conflicts).
+Looks to have been in that form forever (immediate git history).
 
-[One patch that needs to go to Linus Yesterday]
-arch/um/include/asm/dma-mapping.h
-arch/um/include/asm/mmu_context.h
+When reading the code I read it like:
 
-[Second patch through Rusty's tree]
-arch/um/drivers/slip_kern.c
-arch/um/drivers/slirp_kern.c
+		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+			break;
 
-Paul? we did not receive any feedback from you. I will wait until Sunday,
-then send a patch to Andrew Morton, perhaps he can send such a fix to Linus.
-Given UML maintainers have disappeared, right on a merge window.
+		if (nr_reclaimable + nr_writeback <
+				(background_thresh + dirty_thresh) / 2)
+			break;
 
-> On Mon, 22 Jun 2009 11:43:52 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
->> On 06/20/2009 03:55 AM, Paul Menage wrote:
->>> UML: Fix some apparent bitrot
->>>
->>> - migration of net_device methods into net_device_ops
->>> - dma_sync_single() changes
->>> - cpumask_clear() -> cpumask_clear_cpu()
->>>
->>> Signed-off-by: Paul Menage <menage@google.com>
->>>
->>> --
->>>
->>> Fixes the following compile errors:
->>>
->>> include/linux/dma-mapping.h:113: error: redefinition of 'dma_sync_single'
->>> arch/um/include/asm/dma-mapping.h:84: error: previous definition of 'dma_sync_single' was here
->>> include/linux/dma-mapping.h: In function 'dma_sync_single':
->>> include/linux/dma-mapping.h:117: error: implicit declaration of function 'dma_sync_single_for_cpu'
->>> include/linux/dma-mapping.h: At top level:
->>> include/linux/dma-mapping.h:120: error: redefinition of 'dma_sync_sg'
->>> arch/um/include/asm/dma-mapping.h:91: error: previous definition of 'dma_sync_sg' was here
->>> include/linux/dma-mapping.h: In function 'dma_sync_sg':
->>> include/linux/dma-mapping.h:124: error: implicit declaration of function 'dma_sync_sg_for_cpu'
->>>
->>>
->>> arch/um/drivers/slirp_kern.c: In function 'slirp_init':
->>> arch/um/drivers/slirp_kern.c:35: error: 'struct net_device' has no member named 'init'
->>>
->>>
->>> arch/um/include/asm/mmu_context.h: In function 'switch_mm':
->>> arch/um/include/asm/mmu_context.h:38: warning: passing argument 1 of 'cpumask_clear' makes pointer from integer without
->>> a cast
->>> arch/um/include/asm/mmu_context.h:38: error: too many arguments to function 'cpumask_clear'
->>>
->>> ---
->> Stephan hi.
->>
->> The above breakage is the usual stuff we get every merge window. With people doing
->> cross arch work and neglecting UML.
->>
->> Who is the person or people responsible for the large linux-next compilation rig?
->> Is it possible to also add a UML traget, at least for the x86_64/x86_32 sub-arch?
->>
->> Thanks
->> Boaz
->>
->>>  4 files changed, 3 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/arch/um/drivers/slip_kern.c b/arch/um/drivers/slip_kern.c
->>> index 5ec1756..dd2aadc 100644
->>> --- a/arch/um/drivers/slip_kern.c
->>> +++ b/arch/um/drivers/slip_kern.c
->>> @@ -30,7 +30,6 @@ static void slip_init(struct net_device *dev, void *data)
->>>  
->>>  	slip_proto_init(&spri->slip);
->>>  
->>> -	dev->init = NULL;
->>>  	dev->hard_header_len = 0;
->>>  	dev->header_ops = NULL;
->>>  	dev->addr_len = 0;
->>> diff --git a/arch/um/drivers/slirp_kern.c b/arch/um/drivers/slirp_kern.c
->>> index f15a6e7..e376284 100644
->>> --- a/arch/um/drivers/slirp_kern.c
->>> +++ b/arch/um/drivers/slirp_kern.c
->>> @@ -32,7 +32,6 @@ void slirp_init(struct net_device *dev, void *data)
->>>  
->>>  	slip_proto_init(&spri->slip);
->>>  
->>> -	dev->init = NULL;
->>>  	dev->hard_header_len = 0;
->>>  	dev->header_ops = NULL;
->>>  	dev->addr_len = 0;
->>> diff --git a/arch/um/include/asm/dma-mapping.h b/arch/um/include/asm/dma-mapping.h
->>> index 90fc708..378de4b 100644
->>> --- a/arch/um/include/asm/dma-mapping.h
->>> +++ b/arch/um/include/asm/dma-mapping.h
->>> @@ -79,14 +79,14 @@ dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
->>>  }
->>>  
->>>  static inline void
->>> -dma_sync_single(struct device *dev, dma_addr_t dma_handle, size_t size,
->>> +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
->>>  		enum dma_data_direction direction)
->>>  {
->>>  	BUG();
->>>  }
->>>  
->>>  static inline void
->>> -dma_sync_sg(struct device *dev, struct scatterlist *sg, int nelems,
->>> +dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
->>>  	    enum dma_data_direction direction)
->>>  {
->>>  	BUG();
->>> diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
->>> index edd719e..34d8130 100644
->>> --- a/arch/um/include/asm/mmu_context.h
->>> +++ b/arch/um/include/asm/mmu_context.h
->>> @@ -35,7 +35,7 @@ static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next,
->>>  	unsigned cpu = smp_processor_id();
->>>  
->>>  	if(prev != next){
->>> -		cpumask_clear(cpu, mm_cpumask(prev));
->>> +		cpumask_clear_cpu(cpu, mm_cpumask(prev));
->>>  		cpumask_set_cpu(cpu, mm_cpumask(next));
->>>  		if(next != &init_mm)
->>>  			__switch_mm(&next->context.id);
->>>
-> 
+		if (bdi_nr_reclaimable) {
+			writeback_inodes(&wbc);
+
+Which to me reads:
+
+  - if there's not enough to do, drop out
+  - see if background write-out can catch up, drop out
+  - is there anything to do, yay! work.
+
+/me goes read the changelog, maybe there's a clue in there :-)
+
+> > balance_dirty_pages can overreact and move all of the dirty pages to
+> > writeback unnecessarily.
+> > 
+> > balance_dirty_pages makes its decision to throttle based on the number
+> > of dirty plus writeback pages that are over the calculated limit,so it
+> > will continue to move pages even when there are plenty of pages in
+> > writeback and less than the threshold still dirty.
+> > 
+> > This allows it to overshoot its limits and move all the dirty pages to
+> > writeback while waiting for the drives to catch up and empty the
+> > writeback list. 
+
+Ahhh, indeed, how silly of me not to notice that before!
+ 
+> > This is the simplest fix I could find, but I'm not entirely sure that it
+> > alone will be enough for all cases. But it certainly is an improvement
+> > on my desktop machine writing to 2 disks.
+
+Seems good to me.
+
+> > Do we need something more for machines with large arrays where
+> > bdi_threshold * number_of_drives is greater than the dirty_ratio ?
+
+[ I assumed s/dirty_ratio/dirty_thresh/, since dirty_ratio is a ratio
+  and bdi_threshold is an actual value, therefore the inequality above
+  doesn't make sense ]
+
+That cannot actually happen (aside from small numerical glitches).
+
+bdi_threshold = P_i * dirty_thresh, where \Sum P_i = 1
+
+The proportion is relative to the recent writeout speed of the device.
+
+
+On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> Also...  get_dirty_limits() is rather hard to grok.  The callers of
+> get_dirty_limits() treat its three return values as "thresholds", but
+> they're not named as thresholds within get_dirty_limits() itself, which
+> is a bit confusing.  And the meaning of each of those return values is
+> pretty obscure from the code - could we document them please?
+
+Does something like this help?
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 7b0dcea..dc2cee1 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -426,6 +426,13 @@ unsigned long determine_dirtyable_memory(void)
+ 	return x + 1;	/* Ensure that we never return 0 */
+ }
+ 
++/*
++ * get_dirty_limits() - compute the various dirty limits
++ *
++ * @pbackground - dirty limit at which we want to start background write-out
++ * @pdirty	- total dirty limit, we should not have more dirty than this
++ * @pdbi_dirty	- the share of @pdirty available to @bdi
++ */
+ void
+ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+ 		 unsigned long *pbdi_dirty, struct backing_dev_info *bdi)
+
 
