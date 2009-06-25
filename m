@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZFYGLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZFYGNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbZFYGLf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 02:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFYGL2
+	id S1755603AbZFYGNz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 02:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFYGNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 02:11:28 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59196 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750731AbZFYGL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 02:11:28 -0400
-Message-ID: <4A43154A.2010407@cn.fujitsu.com>
-Date: Thu, 25 Jun 2009 14:12:26 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 25 Jun 2009 02:13:49 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:60341 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750731AbZFYGNs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 02:13:48 -0400
+Date: Thu, 25 Jun 2009 14:13:48 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: david@lang.hm
+Cc: alex@digriz.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: When does Linux drop UDP packets?
+Message-ID: <20090625061348.GA31407@gondor.apana.org.au>
+References: <20090625050052.GA30594@gondor.apana.org.au> <alpine.DEB.1.10.0906242236400.28437@asgard.lang.hm>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nikanth Karthikesan <knikanth@suse.de>, Paul Menage <menage@google.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH][resend] cpusets: document adding/removing cpus to cpuset
- elaborately
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906242236400.28437@asgard.lang.hm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Writing a pid to the file, tasks adds that task to that cgroup/cpuset. But to
-add a cpu/mem to a cpuset, the new list of cpus should be written to the
-cpuset.mems file which would replace the old list of cpus. Make this clearer
-in the documentation.
+On Wed, Jun 24, 2009 at 10:37:14PM -0700, david@lang.hm wrote:
+>
+> please explain more? how do they differ?
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-Acked-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Paul Menage <menage@google.com>
----
- Documentation/cgroups/cpusets.txt |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+An IGMP-snooping switch will only forward multicast traffic to
+ports that have subscribed to that group.  Broadcast traffic
+on the otherhand is forwarded to all ports.
 
-diff --git a/Documentation/cgroups/cpusets.txt b/Documentation/cgroups/cpusets.txt
-index f9ca389..1d7e978 100644
---- a/Documentation/cgroups/cpusets.txt
-+++ b/Documentation/cgroups/cpusets.txt
-@@ -777,6 +777,18 @@ in cpuset directories:
- # /bin/echo 1-4 > cpus		-> set cpus list to cpus 1,2,3,4
- # /bin/echo 1,2,3,4 > cpus	-> set cpus list to cpus 1,2,3,4
- 
-+To add a CPU to a cpuset, write the new list of CPUs including the
-+CPU to be added. To add 6 to the above cpuset:
-+
-+# /bin/echo 1-4,6 > cpus	-> set cpus list to cpus 1,2,3,4,6
-+
-+Similarly to remove a CPU from a cpuset, write the new list of CPUs
-+without the CPU to be removed.
-+
-+To remove all the CPUs:
-+
-+# /bin/echo "" > cpus		-> clear cpus list
-+
- 2.3 Setting flags
- -----------------
- 
-
-
-
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
