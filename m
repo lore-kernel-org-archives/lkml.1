@@ -1,494 +1,419 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbZFYWQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZFYWRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbZFYWQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 18:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZFYWQt
+	id S1756102AbZFYWRU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 18:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbZFYWQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 18:16:49 -0400
-Received: from mail.open.by ([193.232.92.17]:63556 "EHLO post.open.by"
+	Thu, 25 Jun 2009 18:16:56 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57453 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751897AbZFYWQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 18:16:48 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 8837 [Jun 25 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Fri, 26 Jun 2009 01:18:16 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: kmemleak suggestion (long message)
-Message-ID: <20090625221816.GA3480@localdomain.by>
+	id S1754847AbZFYWQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 18:16:52 -0400
+From: Thomas Renninger <trenn@suse.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand and conservative governors
+Date: Fri, 26 Jun 2009 00:17:09 +0200
+User-Agent: KMail/1.9.10
+Cc: kernel@stable.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rjw@sisk.pl, hidave.darkstar@gmail.com,
+       penberg@cs.helsinki.fi, kernel-testers@vger.kernel.org,
+       davej@redhat.com, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+References: <20090623193215.GA31374@elte.hu> <1245938485-12663-2-git-send-email-trenn@suse.de> <20090625142552.GA18000@Krystal>
+In-Reply-To: <20090625142552.GA18000@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200906260017.10730.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thursday 25 June 2009 04:25:52 pm Mathieu Desnoyers wrote:
+> * Thomas Renninger (trenn@suse.de) wrote:
+> > Comment from Venkatesh:
+> > ...
+> > This mutex is just serializing the changes to those variables. I could't
+> > think of any functionality issues of not having the lock as such.
+> >
+> > -> rip it out.
+> >
+> > CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > ---
+> >  drivers/cpufreq/cpufreq_conservative.c |   61
+> > +++----------------------------- drivers/cpufreq/cpufreq_ondemand.c     |
+> >   48 +++---------------------- 2 files changed, 10 insertions(+), 99
+> > deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_conservative.c
+> > b/drivers/cpufreq/cpufreq_conservative.c index 7a74d17..6303379 100644
+> > --- a/drivers/cpufreq/cpufreq_conservative.c
+> > +++ b/drivers/cpufreq/cpufreq_conservative.c
+> > @@ -18,7 +18,6 @@
+> >  #include <linux/cpu.h>
+> >  #include <linux/jiffies.h>
+> >  #include <linux/kernel_stat.h>
+> > -#include <linux/mutex.h>
+> >  #include <linux/hrtimer.h>
+> >  #include <linux/tick.h>
+> >  #include <linux/ktime.h>
+> > @@ -84,19 +83,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
+> > cpu_dbs_info);
+> >
+> >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+> >
+> > -/*
+> > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> > - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
+> > - * (like __cpufreq_driver_target()) is being called with dbs_mutex
+> > taken, then - * cpu_hotplug lock should be taken before that. Note that
+> > cpu_hotplug lock - * is recursive for the same process. -Venki
+> > - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex,
+> > because it - * would deadlock with cancel_delayed_work_sync(), which is
+> > needed for proper - * raceless workqueue teardown.
+> > - */
+> > -static DEFINE_MUTEX(dbs_mutex);
+> > -
+> >  static struct workqueue_struct	*kconservative_wq;
+> >
+> >  static struct dbs_tuners {
+> > @@ -236,10 +222,7 @@ static ssize_t store_sampling_down_factor(struct
+> > cpufreq_policy *unused, if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR
+> > || input < 1) return -EINVAL;
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	dbs_tuners_ins.sampling_down_factor = input;
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -253,10 +236,7 @@ static ssize_t store_sampling_rate(struct
+> > cpufreq_policy *unused, if (ret != 1)
+> >  		return -EINVAL;
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -267,16 +247,11 @@ static ssize_t store_up_threshold(struct
+> > cpufreq_policy *unused, int ret;
+> >  	ret = sscanf(buf, "%u", &input);
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	if (ret != 1 || input > 100 ||
+> > -			input <= dbs_tuners_ins.down_threshold) {
+> > -		mutex_unlock(&dbs_mutex);
+> > +			input <= dbs_tuners_ins.down_threshold)
+> >  		return -EINVAL;
+> > -	}
+> >
+> >  	dbs_tuners_ins.up_threshold = input;
+> > -	mutex_unlock(&dbs_mutex);
+>
+> Here, for instance, there might be a problem if down_threshold is
+> changed concurrently with a store_up_threshold() call. See that there is
+> a test before the modification, and we need the mutex there for it to be
+> consistent.
+Thanks, I was rather quick with the conservative changes..., but
+it should still be ok.
 
-Currently kmemleak prints info about all objects. I guess sometimes kmemleak gives you more than you actually need.
-syslog:
-...
-kmemleak: unreferenced object 0xf702fad0 (size 152):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c10edf3f>] set_anon_super+0x2f/0xf0
-kmemleak:     [<c10eea50>] sget+0x2d0/0x390
-kmemleak:     [<c10ef0f1>] get_sb_single+0x41/0xd0
-kmemleak:     [<c114a3f8>] sysfs_get_sb+0x28/0x40
-kmemleak:     [<c10eeea1>] vfs_kern_mount+0x71/0x150
-kmemleak:     [<c10eefa1>] kern_mount_data+0x21/0x40
-kmemleak:     [<c15cb2f5>] sysfs_init+0x67/0xcc
-kmemleak:     [<c15ca0f0>] mnt_init+0x9d/0x182
-kmemleak:     [<c15c9ca6>] vfs_caches_init+0x10d/0x130
-kmemleak:     [<c15aca26>] start_kernel+0x2f4/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf702fa20 (size 152):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c10edf3f>] set_anon_super+0x2f/0xf0
-kmemleak:     [<c10eea50>] sget+0x2d0/0x390
-kmemleak:     [<c10ef0f1>] get_sb_single+0x41/0xd0
-kmemleak:     [<c114a3f8>] sysfs_get_sb+0x28/0x40
-kmemleak:     [<c10eeea1>] vfs_kern_mount+0x71/0x150
-kmemleak:     [<c10eefa1>] kern_mount_data+0x21/0x40
-kmemleak:     [<c15cb2f5>] sysfs_init+0x67/0xcc
-kmemleak:     [<c15ca0f0>] mnt_init+0x9d/0x182
-kmemleak:     [<c15c9ca6>] vfs_caches_init+0x10d/0x130
-kmemleak:     [<c15aca26>] start_kernel+0x2f4/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-...
-kmemleak: unreferenced object 0xf7028140 (size 1024):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c10e5bcd>] alloc_arraycache+0x2d/0x70
-kmemleak:     [<c10e5e46>] do_tune_cpucache+0x236/0x3e0
-kmemleak:     [<c10e6192>] enable_cpucache+0x42/0x110
-kmemleak:     [<c13ec2a3>] setup_cpu_cache+0x183/0x2a0
-kmemleak:     [<c10e65f5>] kmem_cache_create+0x395/0x5a0
-kmemleak:     [<c15cf0d1>] radix_tree_init+0x33/0x87
-kmemleak:     [<c15aca2b>] start_kernel+0x2f9/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf70057b0 (size 128):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c113b729>] __proc_create+0x99/0x120
-kmemleak:     [<c113c143>] proc_symlink+0x33/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-....
-kmemleak: unreferenced object 0xf702fce0 (size 152):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c113bcaf>] proc_register+0x2f/0x1e0
-kmemleak:     [<c113c17e>] proc_symlink+0x6e/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-....x10
+It should be assured that if userspace is doing:
+echo x > down_threshold
+echo y > up_threshold
+that the first one will be served/finished first?
 
-Suppose, I'm monitoring application which never calls "[<c123b0c4>] idr_pre_get" or 
-"[<c12cf49b>] tty_ldisc_try_get". It would be nice to "temporarily turn-off unimportant" output. 
-I suggest to give ability to "blacklist" function(s). I did it via printed by kmemleak function address %p 
-(like [<c10e963b>]) since it's impossible to assume what objects will be reported in next YYY seconds 
-("unreferenced object 0xf702fce0"). (It's possible to "blacklist" according to function name 
-(like idr_pre_get) but I think %p is quite enough).
+If userspace is writing different values for each core to the global 
+conservative/ondemand tunables, or you have concurent userspace tools
+trying to configure ondemand/conservative, it's a userspace bug.
+It's confusing that ondemand/conservative allows per core reads/writes to
+global variables and I hope to be able to provide something to change that in 
+some days, maybe weeks.
 
-For example, to avoid some notifications I just copy-paste address from printed stack:
-echo "block=c123b0c4" > /sys/kernel/debug/kmemleak
+If you still can think of a possible issue, a userspace scenario would
+help.
 
-//debug output
-kmemleak: Added to blacklist: <c123b0c4>
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -287,17 +262,12 @@ static ssize_t store_down_threshold(struct
+> > cpufreq_policy *unused, int ret;
+> >  	ret = sscanf(buf, "%u", &input);
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	/* cannot be lower than 11 otherwise freq will not fall */
+> >  	if (ret != 1 || input < 11 || input > 100 ||
+> > -			input >= dbs_tuners_ins.up_threshold) {
+> > -		mutex_unlock(&dbs_mutex);
+> > +			input >= dbs_tuners_ins.up_threshold)
+> >  		return -EINVAL;
+> > -	}
+> >
+> >  	dbs_tuners_ins.down_threshold = input;
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -316,11 +286,9 @@ static ssize_t store_ignore_nice_load(struct
+> > cpufreq_policy *policy, if (input > 1)
+> >  		input = 1;
+> >
+> > -	mutex_lock(&dbs_mutex);
+> > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+> > -		mutex_unlock(&dbs_mutex);
+> > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+> >  		return count;
+> > -	}
+> > +
+> >  	dbs_tuners_ins.ignore_nice = input;
+> >
+> >  	/* we need to re-evaluate prev_cpu_idle */
+> > @@ -332,8 +300,6 @@ static ssize_t store_ignore_nice_load(struct
+> > cpufreq_policy *policy, if (dbs_tuners_ins.ignore_nice)
+> >  			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
+> >  	}
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -352,10 +318,7 @@ static ssize_t store_freq_step(struct cpufreq_policy
+> > *policy,
+> >
+> >  	/* no need to test here if freq_step is zero as the user might actually
+> >  	 * want this, they would be crazy though :) */
+> > -	mutex_lock(&dbs_mutex);
+> >  	dbs_tuners_ins.freq_step = input;
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -566,13 +529,9 @@ static int cpufreq_governor_dbs(struct
+> > cpufreq_policy *policy,
+>
+> Hrm, this is where we want the mutexes removed, but I fear this is
+> creating a race between sysfs_create_group (sysfs file creation) and
+> policy initialization...
+This can be solved by moving this_dbs_info->enable incremenation
+after sysfs_create_group.
+But yes, I forgot that in my patch, thanks!
 
-syslog:
-kmemleak: unreferenced object 0xf7049a10 (size 1024):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c10e5bcd>] alloc_arraycache+0x2d/0x70
-kmemleak:     [<c10e5e46>] do_tune_cpucache+0x236/0x3e0
-kmemleak:     [<c10e6192>] enable_cpucache+0x42/0x110
-kmemleak:     [<c13ec2a3>] setup_cpu_cache+0x183/0x2a0
-kmemleak:     [<c10e65f5>] kmem_cache_create+0x395/0x5a0
-kmemleak:     [<c15c2a6b>] signals_init+0x34/0x4c
-kmemleak:     [<c15aca30>] start_kernel+0x2fe/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf70495f8 (size 1024):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c10e5bcd>] alloc_arraycache+0x2d/0x70
-kmemleak:     [<c10e5e46>] do_tune_cpucache+0x236/0x3e0
-kmemleak:     [<c10e6192>] enable_cpucache+0x42/0x110
-kmemleak:     [<c13ec2a3>] setup_cpu_cache+0x183/0x2a0
-kmemleak:     [<c10e65f5>] kmem_cache_create+0x395/0x5a0
-kmemleak:     [<c15cabc9>] proc_init_inodecache+0x31/0x49
-kmemleak:     [<c15cabf7>] proc_root_init+0x16/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf70057b0 (size 128):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c113b729>] __proc_create+0x99/0x120
-kmemleak:     [<c113c143>] proc_symlink+0x33/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-...
-//Debug output showing that we have blocked objects.
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-kmemleak: Function blacklisted <c123b0c4>
-...
-kmemleak: unreferenced object 0xf7005680 (size 128):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e584d>] __kmalloc+0x16d/0x210
-kmemleak:     [<c113b729>] __proc_create+0x99/0x120
-kmemleak:     [<c113c143>] proc_symlink+0x33/0xb0
-kmemleak:     [<c15cb03a>] proc_net_init+0x22/0x3f
-kmemleak:     [<c15cac46>] proc_root_init+0x65/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
+> I'm not convinced this mutex is not needed.
+I am. Maybe it still takes some more thinking or step by step rework.
+Finding an unintrusive, riskless short term solution for .30 is a challenge, 
+though.
 
-To unblock:
-echo "unblock=c123b0c4" > /sys/kernel/debug/kmemleak
+    Thomas
 
-//Debug output
-kmemleak: Removed from blacklist <c123b0c4>
-
-syslog:
-...
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c113bcaf>] proc_register+0x2f/0x1e0
-kmemleak:     [<c113c17e>] proc_symlink+0x6e/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf7037810 (size 152):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c113bcaf>] proc_register+0x2f/0x1e0
-kmemleak:     [<c113c17e>] proc_symlink+0x6e/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-kmemleak: unreferenced object 0xf7037760 (size 152):
-kmemleak:   comm "swapper", pid 0, jiffies 4294877296
-kmemleak:   backtrace:
-kmemleak:     [<c10e963b>] kmemleak_alloc+0x11b/0x2b0
-kmemleak:     [<c10e4b91>] kmem_cache_alloc+0x111/0x1c0
-kmemleak:     [<c123b0c4>] idr_pre_get+0x64/0x90
-kmemleak:     [<c123b115>] ida_pre_get+0x25/0xe0
-kmemleak:     [<c113bcaf>] proc_register+0x2f/0x1e0
-kmemleak:     [<c113c17e>] proc_symlink+0x6e/0xb0
-kmemleak:     [<c15cac41>] proc_root_init+0x60/0xbe
-kmemleak:     [<c15aca3a>] start_kernel+0x308/0x343
-kmemleak:     [<c15ac088>] __init_begin+0x88/0xa1
-kmemleak:     [<ffffffff>] 0xffffffff
-...
-
-As you can see, I'm not blocking monitoring of any object. I just suppress output of objects with "unwanted" 
-addresses in stack.
-
-Other useful feature (to my mind) - block according to pid. (Or block "if pid != <the_one_I_want>").
-
-"block=XXXX"/"unblock=XXXX" is _very_ general. I should use block-address/block-function/filter-by-address, etc.
-Here is code I wrote today (it's just a concept. Not 'beta' or something like this.).
-It's against kmemleak.c without CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE support.
-
-If you like the basic idea - I'll continue my work.
-Any comments are highly appreciable.
-
----
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index c96f2c8..7a20898 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -153,6 +153,14 @@ struct kmemleak_object {
- 	char comm[TASK_COMM_LEN];	/* executable name */
- };
- 
-+/*
-+ * Structure holding the data for each unwanted address (blacklisted function).
-+ */
-+struct kmemleak_function {
-+	unsigned int pointer;
-+	struct list_head function_list;
-+};
-+
- /* flag representing the memory block allocation status */
- #define OBJECT_ALLOCATED	(1 << 0)
- /* flag set after the first reporting of an unreference object */
-@@ -164,10 +172,14 @@ struct kmemleak_object {
- static LIST_HEAD(object_list);
- /* the list of gray-colored objects (see color_gray comment below) */
- static LIST_HEAD(gray_list);
-+/* the list of blacklisted functions */
-+static LIST_HEAD(function_list);
- /* prio search tree for object boundaries */
- static struct prio_tree_root object_tree_root;
- /* rw_lock protecting the access to object_list and prio_tree_root */
- static DEFINE_RWLOCK(kmemleak_lock);
-+/* spinlock protecting the access to function_list*/
-+static DEFINE_RWLOCK(function_list_lock);
- 
- /* allocation caches for kmemleak internal data */
- static struct kmem_cache *object_cache;
-@@ -258,6 +270,102 @@ static void kmemleak_disable(void);
- 	kmemleak_disable();		\
- } while (0)
- 
-+
-+static int lookup_function(unsigned long pointer) {
-+	struct kmemleak_function *function;
-+	unsigned long flags;
-+
-+	/*Find out if given address (pointer) is in blacklist.
-+	 *
-+	 */
-+	read_lock_irqsave(&function_list_lock, flags);
-+	list_for_each_entry(function, &function_list, function_list) {
-+		if( function->pointer == pointer) {
-+			pr_info("Function already blacklisted <%p>\n", (void*)pointer);
-+			return 1;
-+		}
-+	}
-+	read_unlock_irqrestore(&function_list_lock, flags);
-+	
-+	return 0;
-+}
-+
-+
-+static void create_function(unsigned long pointer) {
-+	unsigned long flags;
-+	struct kmemleak_function *function;
-+
-+	/*prevent multi-blacklisted*/
-+	if( lookup_function(pointer) )
-+		return;
-+
-+	/*Is it ok? Should I allocate in cache (like objects)?*/
-+	function = kmalloc(sizeof(struct kmemleak_function), GFP_KERNEL & GFP_KMEMLEAK_MASK);
-+	if( !function ) {
-+		kmemleak_warn("Cannot allocate a kmemleak_function structure\n");
-+		return;
-+	}
-+
-+	function->pointer = pointer;
-+	INIT_LIST_HEAD(&function->function_list);
-+	
-+	write_lock_irqsave(&function_list_lock, flags);
-+	list_add(&function->function_list, &function_list);
-+	write_unlock_irqrestore(&function_list_lock, flags);
-+
-+	pr_info("Added to blacklist: <%p>\n", (void*)pointer);
-+}
-+
-+
-+static void delete_function(unsigned long pointer) {
-+	unsigned long flags;
-+	struct kmemleak_function *function;
-+
-+	write_lock_irqsave(&function_list_lock, flags);
-+
-+	list_for_each_entry(function, &function_list, function_list) {
-+		if( function->pointer == pointer ) {
-+			list_del(&function->function_list);
-+			/*Again. Is it ok?*/
-+			kfree(function);
-+			write_unlock_irqrestore(&function_list_lock, flags);
-+
-+			pr_info("Removed from blacklist <%p>\n", (void*)pointer);
-+			return;
-+		}
-+	}
-+	
-+	write_unlock_irqrestore(&function_list_lock, flags);
-+}
-+
-+
-+static int match_function(const unsigned long *trace , int trace_len) {
-+	int i;
-+	unsigned long flags;
-+	struct kmemleak_function *function;
-+	
-+	read_lock_irqsave(&function_list_lock, flags);
-+	/*Most objects usually have more than 10 pointers in stack.
-+	 *I don't think that blacklisted count normally will be more that 10 functions.
-+	 *So it's better to inner-loop on blacklist.
-+	 */
-+	list_for_each_entry(function, &function_list, function_list) {
-+		for(i = 0; i < trace_len; i++) {
-+			if( function->pointer == trace[i]) {
-+				read_unlock_irqrestore(&function_list_lock, flags);
-+				pr_info("Function blacklisted <%p>\n", (void*)trace[i]);
-+				return 1;
-+			}
-+		}
-+	}
-+
-+	read_unlock_irqrestore(&function_list_lock, flags);
-+
-+	return 0;
-+}
-+
-+
-+
- /*
-  * Object colors, encoded with count and min_count:
-  * - white - orphan object, not enough references to it (count < min_count)
-@@ -321,6 +429,15 @@ static void print_unreferenced(struct seq_file *seq,
- 			       struct kmemleak_object *object)
- {
- 	int i;
-+	void *ptr;
-+ 
-+	/*The basic idea is to stop printing object's stack with blacklisted
-+	 *function(s). As soon as we whitelist (unblock) function, we'll get this info
-+	 *again.
-+	 */
-+	if( match_function(object->trace, object->trace_len) )
-+		return;
-+
- 
- 	print_helper(seq, "unreferenced object 0x%08lx (size %zu):\n",
- 		     object->pointer, object->size);
-@@ -329,7 +446,7 @@ static void print_unreferenced(struct seq_file *seq,
- 	print_helper(seq, "  backtrace:\n");
- 
- 	for (i = 0; i < object->trace_len; i++) {
--		void *ptr = (void *)object->trace[i];
-+		ptr = (void *)object->trace[i];
- 		print_helper(seq, "    [<%p>] %pS\n", ptr, ptr);
- 	}
- }
-@@ -1303,6 +1420,33 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
- 		start_scan_thread();
- 	else if (strncmp(buf, "scan=off", 8) == 0)
- 		stop_scan_thread();
-+	else if (strncmp(buf, "block=", 6) == 0) {
-+		unsigned long pointer;
-+		int err;
-+		
-+		/*or we can force user to pass xADDRESS (base = 0).
-+		 *basically, address will be given as simple copy-paste
-+		 *from print_XXX stack <%p> (I think so).
-+		 */
-+		err = strict_strtoul(buf + 6, 16, &pointer);
-+		if (err < 0)
-+			return err;
-+
-+		create_function(pointer);
-+	}
-+	else if (strncmp(buf, "unblock=", 8) ==0 ) {
-+		unsigned long pointer;
-+		int err;
-+
-+		/*
-+		 *Read comment for block=XXX.
-+		 */
-+		err = strict_strtoul(buf + 8, 16, &pointer);
-+		if (err < 0)
-+			return err;
-+
-+		delete_function(pointer);
-+	}
- 	else if (strncmp(buf, "scan=", 5) == 0) {
- 		unsigned long secs;
- 		int err;
-@@ -1338,8 +1482,11 @@ static const struct file_operations kmemleak_fops = {
-  */
- static int kmemleak_cleanup_thread(void *arg)
- {
-+	unsigned long flags;
- 	struct kmemleak_object *object;
-+	struct kmemleak_function *function;
- 
-+	
- 	mutex_lock(&kmemleak_mutex);
- 	stop_scan_thread();
- 	mutex_unlock(&kmemleak_mutex);
-@@ -1349,6 +1496,15 @@ static int kmemleak_cleanup_thread(void *arg)
- 	list_for_each_entry_rcu(object, &object_list, object_list)
- 		delete_object(object->pointer);
- 	rcu_read_unlock();
-+
-+	write_lock_irqsave(&function_list_lock, flags);
-+	list_for_each_entry(function, &function_list, function_list) {
-+		list_del(&function->function_list);
-+		kfree(function);
-+	}
-+	
-+	write_unlock_irqrestore(&function_list_lock, flags);
-+
- 	mutex_unlock(&scan_mutex);
- 
- 	return 0;
+> Mathieu
+>
+> >  		if (this_dbs_info->enable) /* Already enabled */
+> >  			break;
+> >
+> > -		mutex_lock(&dbs_mutex);
+> > -
+> >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
+> > -		if (rc) {
+> > -			mutex_unlock(&dbs_mutex);
+> > +		if (rc)
+> >  			return rc;
+> > -		}
+> >
+> >  		for_each_cpu(j, policy->cpus) {
+> >  			struct cpu_dbs_info_s *j_dbs_info;
+> > @@ -612,13 +571,9 @@ static int cpufreq_governor_dbs(struct
+> > cpufreq_policy *policy, CPUFREQ_TRANSITION_NOTIFIER);
+> >  		}
+> >  		dbs_timer_init(this_dbs_info);
+> > -
+> > -		mutex_unlock(&dbs_mutex);
+> > -
+> >  		break;
+> >
+> >  	case CPUFREQ_GOV_STOP:
+> > -		mutex_lock(&dbs_mutex);
+> >  		dbs_timer_exit(this_dbs_info);
+> >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+> >  		dbs_enable--;
+> > @@ -631,13 +586,9 @@ static int cpufreq_governor_dbs(struct
+> > cpufreq_policy *policy, cpufreq_unregister_notifier(
+> >  					&dbs_cpufreq_notifier_block,
+> >  					CPUFREQ_TRANSITION_NOTIFIER);
+> > -
+> > -		mutex_unlock(&dbs_mutex);
+> > -
+> >  		break;
+> >
+> >  	case CPUFREQ_GOV_LIMITS:
+> > -		mutex_lock(&dbs_mutex);
+> >  		if (policy->max < this_dbs_info->cur_policy->cur)
+> >  			__cpufreq_driver_target(
+> >  					this_dbs_info->cur_policy,
+> > @@ -646,8 +597,6 @@ static int cpufreq_governor_dbs(struct cpufreq_policy
+> > *policy, __cpufreq_driver_target(
+> >  					this_dbs_info->cur_policy,
+> >  					policy->min, CPUFREQ_RELATION_L);
+> > -		mutex_unlock(&dbs_mutex);
+> > -
+> >  		break;
+> >  	}
+> >  	return 0;
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c
+> > b/drivers/cpufreq/cpufreq_ondemand.c index e741c33..d080a48 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -17,7 +17,6 @@
+> >  #include <linux/cpu.h>
+> >  #include <linux/jiffies.h>
+> >  #include <linux/kernel_stat.h>
+> > -#include <linux/mutex.h>
+> >  #include <linux/hrtimer.h>
+> >  #include <linux/tick.h>
+> >  #include <linux/ktime.h>
+> > @@ -91,19 +90,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
+> > cpu_dbs_info);
+> >
+> >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+> >
+> > -/*
+> > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> > - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
+> > - * (like __cpufreq_driver_target()) is being called with dbs_mutex
+> > taken, then - * cpu_hotplug lock should be taken before that. Note that
+> > cpu_hotplug lock - * is recursive for the same process. -Venki
+> > - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex,
+> > because it - * would deadlock with cancel_delayed_work_sync(), which is
+> > needed for proper - * raceless workqueue teardown.
+> > - */
+> > -static DEFINE_MUTEX(dbs_mutex);
+> > -
+> >  static struct workqueue_struct	*kondemand_wq;
+> >
+> >  static struct dbs_tuners {
+> > @@ -269,14 +255,10 @@ static ssize_t store_sampling_rate(struct
+> > cpufreq_policy *unused, int ret;
+> >  	ret = sscanf(buf, "%u", &input);
+> >
+> > -	mutex_lock(&dbs_mutex);
+> > -	if (ret != 1) {
+> > -		mutex_unlock(&dbs_mutex);
+> > +	if (ret != 1)
+> >  		return -EINVAL;
+> > -	}
+> > -	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> > -	mutex_unlock(&dbs_mutex);
+> >
+> > +	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
+> >  	return count;
+> >  }
+> >
+> > @@ -287,16 +269,11 @@ static ssize_t store_up_threshold(struct
+> > cpufreq_policy *unused, int ret;
+> >  	ret = sscanf(buf, "%u", &input);
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
+> > -			input < MIN_FREQUENCY_UP_THRESHOLD) {
+> > -		mutex_unlock(&dbs_mutex);
+> > +			input < MIN_FREQUENCY_UP_THRESHOLD)
+> >  		return -EINVAL;
+> > -	}
+> >
+> >  	dbs_tuners_ins.up_threshold = input;
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -315,11 +292,9 @@ static ssize_t store_ignore_nice_load(struct
+> > cpufreq_policy *policy, if (input > 1)
+> >  		input = 1;
+> >
+> > -	mutex_lock(&dbs_mutex);
+> > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
+> > -		mutex_unlock(&dbs_mutex);
+> > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
+> >  		return count;
+> > -	}
+> > +
+> >  	dbs_tuners_ins.ignore_nice = input;
+> >
+> >  	/* we need to re-evaluate prev_cpu_idle */
+> > @@ -332,8 +307,6 @@ static ssize_t store_ignore_nice_load(struct
+> > cpufreq_policy *policy, dbs_info->prev_cpu_nice =
+> > kstat_cpu(j).cpustat.nice;
+> >
+> >  	}
+> > -	mutex_unlock(&dbs_mutex);
+> > -
+> >  	return count;
+> >  }
+> >
+> > @@ -350,10 +323,8 @@ static ssize_t store_powersave_bias(struct
+> > cpufreq_policy *unused, if (input > 1000)
+> >  		input = 1000;
+> >
+> > -	mutex_lock(&dbs_mutex);
+> >  	dbs_tuners_ins.powersave_bias = input;
+> >  	ondemand_powersave_bias_init();
+> > -	mutex_unlock(&dbs_mutex);
+> >
+> >  	return count;
+> >  }
+> > @@ -586,13 +557,11 @@ static int cpufreq_governor_dbs(struct
+> > cpufreq_policy *policy, if (this_dbs_info->enable) /* Already enabled */
+> >  			break;
+> >
+> > -		mutex_lock(&dbs_mutex);
+> >  		dbs_enable++;
+> >
+> >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
+> >  		if (rc) {
+> >  			dbs_enable--;
+> > -			mutex_unlock(&dbs_mutex);
+> >  			return rc;
+> >  		}
+> >
+> > @@ -627,28 +596,21 @@ static int cpufreq_governor_dbs(struct
+> > cpufreq_policy *policy, dbs_tuners_ins.sampling_rate = def_sampling_rate;
+> >  		}
+> >  		dbs_timer_init(this_dbs_info);
+> > -
+> > -		mutex_unlock(&dbs_mutex);
+> >  		break;
+> >
+> >  	case CPUFREQ_GOV_STOP:
+> > -		mutex_lock(&dbs_mutex);
+> >  		dbs_timer_exit(this_dbs_info);
+> >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+> >  		dbs_enable--;
+> > -		mutex_unlock(&dbs_mutex);
+> > -
+> >  		break;
+> >
+> >  	case CPUFREQ_GOV_LIMITS:
+> > -		mutex_lock(&dbs_mutex);
+> >  		if (policy->max < this_dbs_info->cur_policy->cur)
+> >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
+> >  				policy->max, CPUFREQ_RELATION_H);
+> >  		else if (policy->min > this_dbs_info->cur_policy->cur)
+> >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
+> >  				policy->min, CPUFREQ_RELATION_L);
+> > -		mutex_unlock(&dbs_mutex);
+> >  		break;
+> >  	}
+> >  	return 0;
+> > --
+> > 1.6.0.2
 
 
-Thanks,
-	Sergey
