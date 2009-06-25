@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZFYHMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759908AbZFYHMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbZFYHMh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZFYHM0
+	id S1759908AbZFYHMt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZFYHMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:12:26 -0400
-Received: from fed1rmmtao104.cox.net ([68.230.241.42]:64064 "EHLO
-	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZFYHM0 (ORCPT
+	Thu, 25 Jun 2009 03:12:33 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:58332 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758167AbZFYHMc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:12:26 -0400
-X-VR-Score: -110.00
-X-Authority-Analysis: v=1.0 c=1 a=f-GefS3wO1IA:10 a=EKeX-pp0AAAA:8
- a=ZSFQUDYELv5ILXZVOwMA:9 a=pP1wWgDYPhkw0fdYL_NMEqFYwgIA:4 a=R-wd4IrMln8A:10
-X-CM-Score: 0.00
-To: "John Stoffel" <john@stoffel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Bernd Schmidt <bernds_cb1@t-online.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Blackfin Architecture Team 
-	<uclinux-dist-devel@blackfin.uclinux.org>,
-       David Howells <dhowells@redhat.com>, stable@kernel.org
-Subject: Re: Fix for shared flat binary format in 2.6.30
-References: <4A3F5EAE.7020402@t-online.de>
-	<alpine.LFD.2.01.0906221137580.3240@localhost.localdomain>
-	<19007.60396.259650.682653@stoffel.org>
-From: Junio C Hamano <gitster@pobox.com>
-Date: Thu, 25 Jun 2009 00:12:28 -0700
-In-Reply-To: <19007.60396.259650.682653@stoffel.org> (John Stoffel's message of "Mon\, 22 Jun 2009 16\:39\:08 -0400")
-Message-ID: <7vab3wiy77.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 25 Jun 2009 03:12:32 -0400
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jun 2009 03:12:32 EDT
+From: Michael Opdenacker <michael@free-electrons.com>
+To: florian@openwrt.org, davem@davemloft.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: Michael Opdenacker <michael@free-electrons.com>
+Subject: [PATCH 1/1] Minor code cleanup in drivers/net/r6040.c
+Date: Thu, 25 Jun 2009 09:05:09 +0200
+Message-Id: <1245913509-23245-1-git-send-email-michael@free-electrons.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"John Stoffel" <john@stoffel.org> writes:
+ Replaced '0' by 'bar' in the probe function.
+ The 'bar' variable was already set to '0' and is already
+ used in pci_iomap(). This is cleaner and improves code
+ consistency.
 
->> git commit -a
->
-> # Put in a simple message of a line or two.
->
->     ratelimit parity error reporting, which helps alot on bootup over serial
->     console when you get 10,000+ lines of this message.
+Signed-off-by: Michael Opdenacker <michael@free-electrons.com>
+---
+ drivers/net/r6040.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Doesn't this violate the accepted standard format for commit messages in
-the linux kernel project?
-
-Perhaps Documentation/SubmittingPatches #2 and #15 need to be read, or
-clarified, or both.
-
-
+diff --git a/drivers/net/r6040.c b/drivers/net/r6040.c
+index ed63d23..b3197e9 100644
+--- a/drivers/net/r6040.c
++++ b/drivers/net/r6040.c
+@@ -1112,13 +1112,13 @@ static int __devinit r6040_init_one(struct pci_dev *pdev,
+ 	}
+ 
+ 	/* IO Size check */
+-	if (pci_resource_len(pdev, 0) < io_size) {
++	if (pci_resource_len(pdev, bar) < io_size) {
+ 		printk(KERN_ERR DRV_NAME ": Insufficient PCI resources, aborting\n");
+ 		err = -EIO;
+ 		goto err_out;
+ 	}
+ 
+-	pioaddr = pci_resource_start(pdev, 0);	/* IO map base address */
++	pioaddr = pci_resource_start(pdev, bar);	/* IO map base address */
+ 	pci_set_master(pdev);
+ 
+ 	dev = alloc_etherdev(sizeof(struct r6040_private));
+-- 
+1.6.0.4
 
