@@ -1,147 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753629AbZFYM2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZFYMcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753629AbZFYM2V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZFYM2O
+	id S1753432AbZFYMcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZFYMcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:28:14 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:45141 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbZFYM2N (ORCPT
+	Thu, 25 Jun 2009 08:32:07 -0400
+Received: from mailhost14.gawab.com ([66.220.20.14]:45528 "HELO
+	info88.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752047AbZFYMcG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:28:13 -0400
-Message-ID: <55ca74318001aae803805a7bccfaca36.squirrel@www.hardeman.nu>
-In-Reply-To: <20090624234501.3d35642f@lxorguk.ukuu.org.uk>
-References: <20090624213645.GA18843@hardeman.nu>
-    <20090624234501.3d35642f@lxorguk.ukuu.org.uk>
-Date: Thu, 25 Jun 2009 14:28:14 +0200 (CEST)
-Subject: Re: [RFC/PATCH] Winbond CIR driver for the WPCD376I chip (ACPI/PNP 
-     id WEC1022)
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, jesse.barnes@intel.com
-User-Agent: SquirrelMail/1.4.15
+	Thu, 25 Jun 2009 08:32:06 -0400
+X-Trusted: Whitelisted
+From: Al Boldi <a1426z@gawab.com>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Date: Thu, 25 Jun 2009 15:33:12 +0300
+User-Agent: KMail/1.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <1245839904.3210.85.camel@localhost.localdomain> <20090625091033.GF31415@kernel.dk> <20090625092642.GG31415@kernel.dk>
+In-Reply-To: <20090625092642.GG31415@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906251533.12925.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, June 25, 2009 00:45, Alan Cox wrote:
->> Lots of drivers support one or more logical devices provided by
->> different SuperI/O chips, but there seems to be no synchronisation
->> between the different drivers? Since my driver gets all info from ACPI,
->> it's no real problem here, but I'm curious...shouldn't there be some
->> kind of synchronisation between SuperI/O drivers which might all be
->> changing global registers, such as the logical device select register?
+Jens Axboe wrote:
+> On Thu, Jun 25 2009, Jens Axboe wrote:
+> > On Thu, Jun 25 2009, Peter Zijlstra wrote:
+> > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> > > > On Wed, 24 Jun 2009 11:38:24 +0100
+> > > >
+> > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> > > > > When writing to 2 (or more) devices at the same time, stop
+> > > > > balance_dirty_pages moving dirty pages to writeback when it has
+> > > > > reached the bdi threshold. This prevents balance_dirty_pages
+> > > > > overshooting its limits and moving all dirty pages to writeback.
+> > > > >
+> > > > >
+> > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > > > > ---
+> > >
+> > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >
+> > After doing some integration and update work on the writeback branch, I
+> > threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the test
+> > mix. The writeback series include this patch as a prep patch. Results
+> > for the mmap write test case:
+> >
+> > Kernel          Throughput      usr     sys     ctx     util
+> > --------------------------------------------------------------
+> > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
+> > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
+> > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
+> > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
+> > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
+> > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
+> > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
+> > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
+> > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
+> >
+> > To be perfectly clear:
+> >
+> > vanilla         2.6.31-rc1 stock
+> > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
+> > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
+> >
+> > This is just a single spindle w/ext4, nothing fancy. I'll do a 3-series
+> > run with the writeback and this patch backed out, to see if it makes a
+> > difference here. I didn't do that initially, since the results were in
+> > the range that I expected.
 >
-> I'm looking at a similar case (clash between super I/O config for serial
-> and watchdog) at the moment that affects a proposed driver for some
-> serial port save/restore config stuff. We can request_region to avoid
-> collisions but there is no wait mechanism for super I/O devices which
-> probably wants fixing with a simple list of super I/O ports and a helper
-> lib. I was thinking something like
+> Results for writeback without the bdi_thresh patch
 >
-> 	handle = superio_request(name, dev, start, len);
+> Kernel          Throughput      usr     sys     ctx     util
+> --------------------------------------------------------------
+> wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
+> wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
+> wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
 >
-> 	EBUSY - someone else has the I/O space registered other than
-> 	super I/O. The super I/O lib would then request the I/O space and
-> 	hog it.
->
-> 	superio_claim(handle, block)
->
-> 	Claim the super I/O providing another person isn't using it,
-> 	optionally wait if so
->
-> 	superio_release(handle);
->
-> 	Give back the claim
->
-> 	superio_free(handle)
->
-> 	Free allocation
+> Not a lot of difference there, without more than three runs it's hard to
+> say what is significant. Could be a small decrease in throughput, if the
+> 208MB/sec results from above is an outlier (I think it is, ~215MB/sec is
+> usually the most consistent result).
 
-How would it work in conjunction with ACPI? When I looked at the ACPI
-dumps for my motherboard, the AML code seemed happy to fiddle with global
-SuperI/O registers (protected using an internal mutex).
+What's the iowait on these runs?
 
->>    2) Location of driver
->>
->> Where should this driver go in the tree? drivers/platform/x86/?
->
-> Not if the device is not x86 specific - eg a generic super I/O device
 
-I think the SuperI/O device itself can only be found on Intel motherboards
-at the moment (Winbond told me that the WPCD376I was an Intel-specific
-design), but perhaps drivers/input/misc is a better fit?
+Thanks!
 
->> The serial port which the WPCD376I uses for IR TX/RX is only useful for
->> Consumer IR, but it looks enough like a "normal" uart for the serial
->> driver to claim the port. I currently have to boot with
->> "8250.nr_uarts=1" to stop the serial driver from using the IR uart
->> (there is one "real" serial port in the chip). However, that's not a
->> very elegant or user-friendly option. Is there a way to blacklist the
->> port in the serial driver and/or to reclaim the port from the serial
->> driver when the CIR driver is loaded?
->
-> How similar is it to a normal UART and if it looks like a normal UART why
-> not drive it as one ?
-
-(Sorry this is a brain-dump, not intended to be a rant, hopefully you can
-follow my line of reasoning and provide some feedback)
-
-I'm not that familiar with UART's in general, but the fact that I could
-write a working driver using a datasheet for a 10 year older SuperI/O chip
-from a different manufacturer suggests that the register layout is fairly
-standard :)
-
-There are some differences, for example, the Wake-On-IR (a separate
-logical device with two sets of registers on its own) registers control
-the input (there is one long-range command input and a short-range,
-wide-band learning input) and output (there are 4 different IR blaster
-pins which output can be directed to) as well as the baud clock generator
-(24/48Mhz) for the serial port.
-
-Considering that it's IR-only hardware, some of the uart registers and
-operations (such as the modem control register, modem status interrupts,
-break signals, termios and timeouts) make no sense. Baud rates can be set
-freely but there is little point in doing so.
-
-The UART detects IR activity and then continues sampling data to the RX
-fifo until told to stop doing so (that's what the
-how-many-0xff-bytes-in-a-row check in the irq handler does).
-
-Also, some special handling (like disabling RX while doing TX) might be
-necessary in order not to receive the sent IR commands.
-
-Also, I don't think it's very user-friendly to have a IR device show up as
-/dev/tty...how would userspace be able to find out that it's actually an
-IR transceiver?
-
-If the driver supported all of the capabilities of the hardware, there
-would need to be a way to select the TX output (1-4) and RX input
-(learn/command) as well as some other minor things (like getting a report
-on which of the 4 TX outputs that are actually connected). These are
-functionalities which are supported in Vista by using a number of
-CIR-specific ioctls (and by creating a CIR-specific driver class).
-
-The WPCD376I hardware matches the requirements Microsoft has made for
-Vista MCE IR receivers (and is therefore identical, feature-wise to other
-alternatives such as the SIO1049 chip, as they all want that Vista
-MCE-compatible badge), so I imagine that future IR hardware will have the
-same capability.
-
-I'm not saying that the Linux kernel should replicate Vista, but some kind
-of CIR-specific ioctl's or other solution will have to be defined anyway,
-and the same ioctl's (or whatever) will also need to work for e.g. a
-USB-based CIR transceiver or other hardware which doesn't happen to
-include an UART.
-
-Therefore I still think it's better to model the driver as an input
-device, and ultimately to teach the input subsystem some specifics of CIR
-devices, similar to how force-feedback devices are handled today.
-
--- 
-David Härdeman
-
+--
+Al
