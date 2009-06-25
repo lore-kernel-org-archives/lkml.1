@@ -1,63 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbZFYK74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZFYLIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbZFYK74 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZFYK7t
+	id S1756227AbZFYLIF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZFYLHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:59:49 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:52043 "EHLO dan.rpsys.net"
+	Thu, 25 Jun 2009 07:07:48 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39287 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207AbZFYK7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:59:48 -0400
-Subject: Re: [PATCH] LED: Reply-To: use correct name for
-	/sys/devices/virtual/leds/ entries
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Greg KH <greg@kroah.com>
-Cc: asdf@kroah.com, Guennadi Liakhovetski <lg@denx.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090624223343.GA17235@kroah.com>
-References: <20090624223343.GA17235@kroah.com>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 11:57:55 +0100
-Message-Id: <1245927475.6001.38.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1751207AbZFYLHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 07:07:45 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Thu, 25 Jun 2009 21:07:37 +1000 (EST)
+Message-ID: <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
+In-Reply-To: <yq11vp8spxo.fsf@sermon.lab.mkp.net>
+References: <19010.62951.886231.96622@notabene.brown>
+    <yq11vp8spxo.fsf@sermon.lab.mkp.net>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out 
+     of the 'queue' sysfs directory.
+Cc: "Mike Snitzer" <snitzer@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Alasdair G Kergon" <agk@redhat.com>, jens.axboe@oracle.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       "device-mapper development" <dm-devel@redhat.com>
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 15:33 -0700, Greg KH wrote:
-> From: Olaf Hering <olh@suse.de>
-> 
-> This is needed to get kde-powersave to work properly on some g4
-> powerbooks.
-> 
-> From: Olaf Hering <olh@suse.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+On Thu, June 25, 2009 6:00 pm, Martin K. Petersen wrote:
+>>>>>> "Neil" == Neil Brown <neilb@suse.de> writes:
+>
+> Neil,
+>
+> Neil>  Of these:
+>
+> Neil>    max_hw_sectors_kb, nr_requests, rq_affinity, iosched/,
+> Neil>    max_sectors_kb scheduler nomerges rotational
+>
+> Neil>  are really only relevant to the elevator code and those devices
+> Neil>  that used that code (ide, scsi, etc).
+>
+> I'm not sure I completely agree with putting rotational in that bucket.
+> It affects the choice of allocation policy in btrfs, for instance.
+>
 
-I'm ok with this apart from:
+I confess to have some uncertainty about this.  There is, as far as
+I can tell, no documentation for it.
 
-> --- a/drivers/leds/ledtrig-default-on.c
-> +++ b/drivers/leds/ledtrig-default-on.c
-> @@ -23,7 +23,7 @@ static void defon_trig_activate(struct l
->  }
->  
->  static struct led_trigger defon_led_trigger = {
-> -	.name     = "default-on",
-> +	.name     = "default::on",
->  	.activate = defon_trig_activate,
->  };
+So I asked git why it as added, and it pointed to
+  commit 1308835ffffe6d61ad1f48c5c381c9cc47f683ec
 
-which doesn't seem to match the patch description. Why does the trigger
-name need to be changed?
+which suggests that it was added so that user space could tell the
+kernel whether the device was rotational, rather than the other way
+around.
 
-Cheers,
+But yes, maybe 'rotational' doesn't belong with the others.
 
-Richard
+>
+> Neil>  Adding a number of extra fields such as minimum_io_size,
+> Neil>  optimal_io_size etc to '/queue' seems to increase the number of
+> Neil>  aberrations and enforces md and dm device to have a /queue which
+> Neil>  is largely irrelevant.
+>
+> You seem to be hung up on the fact that you don't queue things.  I think
+> that's beside the point.  You *do* have a request_queue thanks to
+> calling blk_queue_make_request() in md.c.  And there is more to
+> request_queue than the values you brought up.  Like the callback
+> functions.  I'm not saying that all the values in request_queue apply to
+> MD, but I really don't understand what all the fuss is about.  Other
+> than the presence of the string "queue" in the choice of naming.
+>
+
+Well names are very important.  And as I said later we could possibly keep
+them in 'queue' and make 'queue' a more generic directory.  I don't like
+that but it is probably better than the current situation.
+
+As you say, I do currently have a request_queue, but that is an internal
+detail, not part of the externally visible interface, and it is something
+that is very much in my sights as something I want to change.  I'm
+still working out the details so I'm a fair way from a concrete proposal
+and a long way from some code.  That change certainly doesn't have
+to happen in any rush.  But we should get the externally visible
+names "right" if we can.
+
+> Anyway.  If you look at the request_queue in the current tree you'll see
+> that the very limits we are discussing are contained in a separate
+> struct.  We can easily move that somewhere else at a later date if that
+> is deemed the right thing to do.
+
+Agreed.  But not relevant at the moment.  The view from user-space is what
+is important.
+
+>
+>
+> Neil>    I have suggested to Martin that 2 are enough.
+>
+> I think I have covered this in a separate mail.  You are mixing up
+> hardware limitations and I/O hints on the grounds that they went in as
+> part of the same patch set and live in the same place.
+
+I think I'm actually mixing them up because they look very much the
+same.  Both say "try to make write requests at least this big" and
+I cannot see the difference being very big to the filesystem.
+
+I tend to mix them up a bit with read_ahead_kb as they are in some
+ways just the 'write' version of that.  But it didn't arrive in the
+same patch set :-)
+
+Also, I think you seem to be treating the read-modify-write behaviour
+of a 4K-sector hard drive as different-in-kind to the read-modify-write
+behaviour of raid5.  I cannot see that.  In both cases an error can cause
+unexpected corruption and in both cases getting the alignment right helps
+throughput a lot.  So the only difference between these two values
+is the size.
+If one is 4K and one is 40Meg and you have 512bytes of data that you
+want to write as safely as possibly, you might pad it to 4K, but you
+wont pad it to 40Meg.
+If you have 32Meg of data that you want to write as safely as you can,
+you may well pad it to 40Meg, rather than say  "it is a multiple of
+4K, that is enough for me".
+So: the difference is only in the size.
 
 
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+>
+> fdisk/mdadm/dmsetup need to use physical_block_size and alignment_offset
+> to prevent us from misaligning when setting up partitions and virtual
+> block devices.  Also, when stacking devices I need to know these values
+> to ensure that the I/O hints set by MD/DM don't conflict with the
+> underlying hardware limitations.  There are also special cases like
+> shared disk setups and filesystem journal padding that may need to know
+> details of the hardware atomicity.
+
+"... of the *device* atomicity." It hardly matters whether the device is
+hardware or software, it can still have atomicity issues.
+
+>
+> mkfs.* can leverage minimum_io_size and optimal_io_size hints to choose
+> block sizes and to lay out data structures on stripe boundaries.  Just
+> like we're doing today except using a common interface for all block
+> devices instead of poking at MD and LVM internals.
+
+As we are using generic terms like "minimum" and "optimal", let's keep
+with those terms when describing filesystem behaviour and not mention
+stripes.
+"mkfs.* can leverage these values to choose the most appropriate sizes
+and alignments for various data strutures".
+What is the most appropriate size?  It depends on how much data we have
+to store, and how much wastage we can afford.  So if there are a range
+of reasonably optimal sizes, the fs can choose the best fit, without
+needing to pretend to understand why one is more optimal than another.
+
+And the "Just like we're doing today ..." is actually a bit sad.
+If you look at mkfs.ext3, it requires 3 values:
+  - block size
+  - stride-size
+  - stripe-width
+
+block size needs to be smallish and a power of 2 and at most
+PAGE_SIZE (I think).  It would be ideal if this could be stripe-size on
+a raid5, but the stripe is usually too large so the next best is
+physical_block_size (so, a size based decision).
+
+stripe-width is only really needed on raid4/5/6 as it is aimed at
+avoiding read-modify-write, so it would be the stripe size, which would
+be minimum_io_size.  Though on a SCSI device it should probably
+be "OPTIMAL TRANSFER LENGTH GRANULARITY" which I thought would be
+optimal_io_size..  so maybe we use that and make minimum_io_size and
+optimal_io_size the same on raid5 ??  Or just provide a list of useful
+sizes and let the fs choose whatever is in the right ball-park.
+
+stride-size is used for raid0 or raid4, or the "Asymmetric" raid5 layouts.
+It allows ext3 to stagger which drive certain 'hot' data structures are
+on.  The current metrics don't allow for that at all.
+I'm not saying they should, and I'm not sure how they could.  But it
+is sad.
+
+>
+> logical_block_size, physical_block_size and alignment_offset are
+> hardware limits that need to be honored when creating a (virtual) block
+> device or partition.
+
+logical_block_size is a firmware limit.  The others are just hints.
+Strong hints I agree.  Hints we should follow if at all possible.
+But still hints.
+
+>
+> The minimum/optimal write sizes are hints to the *user* of the block
+> device about how to lay out things.  If you look at my MD patch you'll
+> see that I only set the I/O hints.  The hardware settings are off limits
+> for MD.
+>
+>
+> I don't particularly care whether we store the values in queue/,
+> topology/, metrics/, limits/ or in the device root.  Nor whether we call
+> it minimum_write_size instead of minimum_io_size.  I'll be happy to roll
+> up a renaming patch...
+
+Good, thanks..  I do strongly care that they don't go in queue/, and
+that they have a name that is as close as possible to what they mean.
+Let's see if anyone else has an opinion.
+
+Thanks,
+NeilBrown
+
 
