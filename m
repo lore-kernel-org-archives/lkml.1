@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZFYRA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZFYRIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753722AbZFYRA0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 13:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZFYRAR
+	id S1753725AbZFYRIX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 13:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZFYRIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 13:00:17 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:36952 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751366AbZFYRAQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 13:00:16 -0400
-Subject: Re: kmemleak false positive?
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090625154014.GA7866@redhat.com>
-References: <20090625001137.GB22755@redhat.com>
-	 <1245921918.26218.19.camel@pc1117.cambridge.arm.com>
-	 <20090625145600.GA6654@redhat.com>
-	 <1245943539.26218.70.camel@pc1117.cambridge.arm.com>
-	 <20090625154014.GA7866@redhat.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 25 Jun 2009 18:00:02 +0100
-Message-Id: <1245949202.26218.88.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2009 17:00:03.0609 (UTC) FILETIME=[62231890:01C9F5B6]
+	Thu, 25 Jun 2009 13:08:14 -0400
+Received: from mail2.cray.com ([136.162.64.100]:39694 "EHLO mail2.cray.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752618AbZFYRIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 13:08:14 -0400
+X-Greylist: delayed 1734 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jun 2009 13:08:14 EDT
+Date: Thu, 25 Jun 2009 09:39:17 -0700
+From: Kyle Hubert <khubert@cray.com>
+To: linux-kernel@vger.kernel.org
+Cc: Igor Gorodetsky <igorodet@cray.com>
+Subject: 2.6 Makefile replacement for VPATH
+Message-ID: <20090625163916.GN6248@cray.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Cray-VirusStatus: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 11:40 -0400, Dave Jones wrote:
-> Here's another case (with stack scanning on btw) which looks odd..
-> 
->  kmemleak: unreferenced object 0xd86ba000 (size 16):
->  kmemleak:   comm "init", pid 1, jiffies 4294683556
->  kmemleak:   backtrace:
->  kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
->  kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
->  kmemleak:     [<c05cdfdc>] avtab_insertf+0xd6/0x140
->  kmemleak:     [<c05ce3d7>] avtab_read_item+0x26a/0x284
->  kmemleak:     [<c05ce5a5>] avtab_read+0x82/0xe5
->  kmemleak:     [<c05d0618>] policydb_read+0x40c/0x1028
->  kmemleak:     [<c05d459d>] security_load_policy+0x57/0x37c
->  kmemleak:     [<c05c9995>] sel_write_load+0xb2/0x54a
->  kmemleak:     [<c0500186>] vfs_write+0x9f/0x10f
->  kmemleak:     [<c05002e1>] sys_write+0x58/0x8d
->  kmemleak:     [<c040a8eb>] sysenter_do_call+0x12/0x38
->  kmemleak:     [<ffffffff>] 0xffffffff
-> 
-> I looked over the SELinux code, and couldn't see an obvious leak.
-> Eric Paris came to the same conclusion.
 
-How long does a memory scanning take (i.e. time cat debug/kmemleak) on
-your platform? Another tweak is to increase MSECS_MIN_AGE to something
-like 1 minute or more. Especially on SMP, some newly allocated objects
-may be in registers and reported as leaks.
+Hi. I'm requesting information about how to handle a VPATH situation
+for drivers in the 2.6 build, with the corresponding solution that we
+have.
 
-I'll have a look at the initial colour assigned to newly allocated
-objects. Currently the objects allocated during a scan have no colour so
-that they are not reported. However, they are not scanned either so
-other object pointers allocated before the scan started may be stored in
-those new objects.
+I refer to VPATH with regards to the situation where you can have
+multiple Makefiles target the same source file to build different
+objects. In particular, we are using the same source file recompiled
+with different options to be able to support different devices.
 
--- 
-Catalin
+This is where VPATH can help in the GNU Makefile tradition. Yet, the
+2.6 build system has multiple stages to build driver modules, and as
+such the VPATH variable is not carried forward. How do other people
+handle this?
 
+If you use an obj-m that refers via relative directories to the source
+file, ie: "../src", then the two resulting object files have the same
+name and the last compiled one will be listed in
+.tmp_versions/drv.mod. This will be the only one linked into an
+drv.ko.
+
+If you use a multi-object, ie: drv-objs, then you can split the two
+drivers into two different names. Each multi-object's parts are
+compiled and linked into the multi-object's .o during the compilation
+stage, and two .mod files will be created. Thus, two .kos will be
+linked during the final stage. This appears to be a solution. However,
+during the compilation stage, the two multi-objects will recompile the
+original "../src/src.o" intermediary object. This affects the date of
+the intermediary .o, and each subsequent execution of the Make command
+will consider it a candidate for recompile, and the two drivers will
+be rebuilt, regardless of any source code changes.
+
+How do others handle this? Do they just move their driver outside of
+the kernel Makefiles so they can iterate through the two builds via
+traditional Make routines?
+
+Thank you,
+-Kyle Hubert
