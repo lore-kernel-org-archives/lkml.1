@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZFYS11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZFYS1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbZFYS11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 14:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZFYS1R
+	id S1756002AbZFYS1p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 14:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbZFYS1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 14:27:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59634 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbZFYS1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 14:27:16 -0400
-Date: Thu, 25 Jun 2009 21:26:36 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: avi@redhat.com, Davide Libenzi <davidel@xmailserver.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
-	notifier race conditions
-Message-ID: <20090625182636.GA3239@redhat.com>
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com> <200906252112.24730.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906250922530.9517@makko.or.mcafeemobile.com> <4A43B4A6.8050001@novell.com>
+	Thu, 25 Jun 2009 14:27:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44536 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752977AbZFYS1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 14:27:35 -0400
+Date: Thu, 25 Jun 2009 11:26:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhltc@us.ibm.com>
+Subject: Re: [GIT pull] final futex fixes for 2.6.31
+In-Reply-To: <alpine.LFD.2.00.0906251940570.2767@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0906251125150.3605@localhost.localdomain>
+References: <alpine.LFD.2.00.0906241629590.2767@localhost.localdomain> <alpine.LFD.2.01.0906240946000.3240@localhost.localdomain> <alpine.LFD.2.00.0906242146500.2767@localhost.localdomain> <1245897826.2560.421.camel@ymzhang> <alpine.LFD.2.00.0906251151400.2767@localhost.localdomain>
+ <20090625100413.GD29980@elte.hu> <alpine.LFD.2.00.0906251940570.2767@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A43B4A6.8050001@novell.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 01:32:22PM -0400, Gregory Haskins wrote:
-> Please take a close look at it and consider for merging, if you would.
 
-With all the incremental patching, I kind of lost track of what the
-complete file would look like.  Is there a git tree I could pull?
 
--- 
-MST
+On Thu, 25 Jun 2009, Thomas Gleixner wrote:
+> 
+> I'm truly embarrassed to ask you to pull the latest futexes-for-linus
+> git tree from:
+
+No problem. It was a harmless bug (at worst we'd do some extra work), and 
+I made the same mistake, so I can't blame you.
+
+And I merged Peter's prototype clarification so that next time there will 
+be less reason for this to happen.
+
+		Linus
