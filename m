@@ -1,127 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbZFYOoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZFYOo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbZFYOoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZFYOoI
+	id S1755312AbZFYOo4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZFYOot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:44:08 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:28571 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbZFYOoG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:44:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=emhi8PtGg0eD1rENAI5hB0MG7sdMm6RUpaeeKQ+qQA7ApMR9gCv3li2wu0i/7+YZZD
-         5fUk0VpwibvHS6VI5k9ApHCVA/ig6V9kxeP+66fX+X/dGsG7i78H+VkEGgG2QPMarD4J
-         pJpD8fmoDQiYsIiT/k5g9gnDc6tMdtFWb/IVc=
+	Thu, 25 Jun 2009 10:44:49 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35161 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586AbZFYOos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 10:44:48 -0400
+Date: Thu, 25 Jun 2009 16:44:50 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Message-ID: <20090625144450.GT31415@kernel.dk>
+References: <1245839904.3210.85.camel@localhost.localdomain> <200906251533.12925.a1426z@gawab.com> <20090625124342.GN31415@kernel.dk> <200906251646.22785.a1426z@gawab.com>
 MIME-Version: 1.0
-In-Reply-To: <2f11576a0906250714o5d77db11wd32c1c7139753cb5@mail.gmail.com>
-References: <20090625183616.23b55b24.minchan.kim@barrios-desktop>
-	 <2f11576a0906250714o5d77db11wd32c1c7139753cb5@mail.gmail.com>
-Date: Thu, 25 Jun 2009 23:44:09 +0900
-Message-ID: <28c262360906250744h5bf9f0a0w265d8c35e7d69335@mail.gmail.com>
-Subject: Re: [PATCH] prevent to reclaim anon page of lumpy reclaim for no swap 
-	space
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906251646.22785.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 11:14 PM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> This patch prevent to reclaim anon page in case of no swap space.
->> VM already prevent to reclaim anon page in various place.
->> But it doesnt't prevent it for lumpy reclaim.
->>
->> It shuffles lru list unnecessary so that it is pointless.
->
-> NAK.
->
-> 1. if system have no swap, add_to_swap() never get swap entry.
->   eary check don't improve performance so much.
+On Thu, Jun 25 2009, Al Boldi wrote:
+> Jens Axboe wrote:
+> > On Thu, Jun 25 2009, Al Boldi wrote:
+> > > Jens Axboe wrote:
+> > > > On Thu, Jun 25 2009, Jens Axboe wrote:
+> > > > > On Thu, Jun 25 2009, Peter Zijlstra wrote:
+> > > > > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> > > > > > > On Wed, 24 Jun 2009 11:38:24 +0100
+> > > > > > >
+> > > > > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> > > > > > > > When writing to 2 (or more) devices at the same time, stop
+> > > > > > > > balance_dirty_pages moving dirty pages to writeback when it has
+> > > > > > > > reached the bdi threshold. This prevents balance_dirty_pages
+> > > > > > > > overshooting its limits and moving all dirty pages to
+> > > > > > > > writeback.
+> > > > > > > >
+> > > > > > > >
+> > > > > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > > > > > > > ---
+> > > > > >
+> > > > > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > >
+> > > > > After doing some integration and update work on the writeback branch,
+> > > > > I threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the
+> > > > > test mix. The writeback series include this patch as a prep patch.
+> > > > > Results for the mmap write test case:
+> > > > >
+> > > > > Kernel          Throughput      usr     sys     ctx     util
+> > > > > --------------------------------------------------------------
+> > > > > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
+> > > > > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
+> > > > > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
+> > > > > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
+> > > > > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
+> > > > > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
+> > > > > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
+> > > > > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
+> > > > > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
+> > > > >
+> > > > > To be perfectly clear:
+> > > > >
+> > > > > vanilla         2.6.31-rc1 stock
+> > > > > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
+> > > > > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
+> > > > >
+> > > > > This is just a single spindle w/ext4, nothing fancy. I'll do a
+> > > > > 3-series run with the writeback and this patch backed out, to see if
+> > > > > it makes a difference here. I didn't do that initially, since the
+> > > > > results were in the range that I expected.
+> > > >
+> > > > Results for writeback without the bdi_thresh patch
+> > > >
+> > > > Kernel          Throughput      usr     sys     ctx     util
+> > > > --------------------------------------------------------------
+> > > > wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
+> > > > wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
+> > > > wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
+> > > >
+> > > > Not a lot of difference there, without more than three runs it's hard
+> > > > to say what is significant. Could be a small decrease in throughput, if
+> > > > the 208MB/sec results from above is an outlier (I think it is,
+> > > > ~215MB/sec is usually the most consistent result).
+> > >
+> > > What's the iowait on these runs?
+> >
+> > Not sure, I didn't check. Why do you ask?
+> 
+> iowait gives you an indication of seekactivity.
 
-Hmm. I mean no swap space but not no swap device.
-add_to_swap ? You mean Rik pointed me out ?
-If system have swap device, Rik's pointing is right.
-I will update his suggestion.
+The test case is random mmap writes to files that have been laid out
+sequentially. So it's all seeks. The target drive is an SSD disk though,
+so it doesn't matter a whole lot (it's a good SSD).
 
-> 2. __isolate_lru_page() is not only called lumpy reclaim case, but
-> also be called
->    normal reclaim.
+-- 
+Jens Axboe
 
-You mean about performance degradation ?
-I think most case have enough swap space and then one condition
-variable(nr_swap_page) check is trivial. I think.
-We can also use [un]likely but I am not sure it help us.
-
-
-> 3. if system have no swap, anon pages shuffuling doesn't cause any matter.
-
-Again, I mean no swap space but no swap device system.
-And I have a plan to remove anon_vma in no swap device system.
-
-As you point me out, it's pointless in no swap device system.
-I don't like unnecessary structure memory footprint and locking overhead.
-I think no swap device system is problem in server environment as well
-as embedded. but I am not sure when I will do. :)
-
-
-> Then, I don't think this patch's benefit is bigger than side effect.
->
->
->
->> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
->> ---
->>  mm/vmscan.c |    6 ++++++
->>  1 files changed, 6 insertions(+), 0 deletions(-)
->>
->> diff --git a/mm/vmscan.c b/mm/vmscan.c
->> index 026f452..fb401fe 100644
->> --- a/mm/vmscan.c
->> +++ b/mm/vmscan.c
->> @@ -830,7 +830,13 @@ int __isolate_lru_page(struct page *page, int mode, int file)
->>         * When this function is being called for lumpy reclaim, we
->>         * initially look into all LRU pages, active, inactive and
->>         * unevictable; only give shrink_page_list evictable pages.
->> +
->> +        * If we don't have enough swap space, reclaiming of anon page
->> +        * is pointless.
->>         */
->> +       if (nr_swap_pages <= 0 && PageAnon(page))
->> +               return ret;
->> +
->>        if (PageUnevictable(page))
->>                return ret;
->>
->> --
->> 1.5.4.3
->>
->>
->>
->>
->> --
->> Kinds Regards
->> Minchan Kim
->>
->> --
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->>
->
-
-
-
---
-Kinds regards,
-Minchan Kim
