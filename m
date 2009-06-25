@@ -1,115 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZFYKjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZFYKm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753945AbZFYKjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFYKjW
+	id S1755496AbZFYKm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369AbZFYKmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:39:22 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:39357 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750731AbZFYKjW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:39:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=vu6bEsK1ap+Xv7XCxr2cBkNBYbweMEYD1RdmR1rSJzs0QkSegUbCwzdSyyAnyhwv7a
-         Q+bC0Lz0214ejIjwCjAPVT1jyD3OSKn5i+cks8709mQGJKujKZmWBqPbnS4iJtWu/pBc
-         QFs+jUdYqK1t7kqe7Sk7CZsrVnqnhjFAbnU4U=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <20090624085222.GC18713@elte.hu>
-References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
-	 <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
-	 <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com>
-	 <20090623075959.GA23534@ywang-moblin2.bj.intel.com>
-	 <7c86c4470906230127g4f574b61p24f109c7a94c6e39@mail.gmail.com>
-	 <7c86c4470906230140p35ce043fw24e0c20651568f31@mail.gmail.com>
-	 <20090623085321.GC23534@ywang-moblin2.bj.intel.com>
-	 <20090623094717.GA30634@elte.hu>
-	 <20090624021944.GA2808@ywang-moblin2.bj.intel.com>
-	 <20090624085222.GC18713@elte.hu>
-Date: Thu, 25 Jun 2009 12:39:23 +0200
-Message-ID: <7c86c4470906250339k4a168611vfe206c599d098489@mail.gmail.com>
-Subject: Re: perf_counter Atom patch
-From: stephane eranian <eranian@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yong Wang <yong.y.wang@linux.intel.com>,
-       "Wang, Yong Y" <yong.y.wang@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
-       Andi Kleen <andi@firstfloor.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 25 Jun 2009 06:42:07 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59685 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZFYKmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 06:42:05 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
+       Alan.Brunelle@hp.com
+Subject: [PATCH 0/10] Per-bdi writeback flusher threads v12
+Date: Thu, 25 Jun 2009 12:41:53 +0200
+Message-Id: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.3.rc0.1.gf800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 10:52 AM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * Yong Wang <yong.y.wang@linux.intel.com> wrote:
->
->> On Tue, Jun 23, 2009 at 11:47:17AM +0200, Ingo Molnar wrote:
->> >
->> > * Yong Wang <yong.y.wang@linux.intel.com> wrote:
->> >
->> > > On Tue, Jun 23, 2009 at 10:40:45AM +0200, stephane eranian wrote:
->> > > > Yong,
->> > > >
->> > > > On Tue, Jun 23, 2009 at 10:27 AM, stephane
->> > > > eranian<eranian@googlemail.com> wrote:
->> > > > > Hi,
->> > > > >
->> > > > > On Tue, Jun 23, 2009 at 9:59 AM, Yong Wang<yong.y.wang@linux.intel.com> wrote:
->> > > > >> On Tue, Jun 23, 2009 at 09:45:03AM +0200, stephane eranian wrote:
->> > > > >>>
->> > > > >>> Unfortunately, I don't have a N270 to compare with your results.
->> > > > >>> We need to verify whether or not N270 implements the fixed counters.
->> > > > >>> Does it report architected perfmon v3 or v1?
->> > > > >>>
->> > > > >>
->> > > > >> All Atom processors report perfmon v3 as specified in SDM. N270 is no
->> > > > >> exception.
->> > > > >>
->> > > > > V3 does not set a minimal number of fixed counters, could be zero. But
->> > > > > that seems
->> > > > > odd. Let me ask around.
->> > > > >
->> > > > Second thought on this:
->> > > >        x86_pmu.num_counters_fixed      =
->> > > > max((int)edx.split.num_counters_fixed, 3);
->> > > >
->> > > >         rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
->> > > >
->> > > >
->> > > > Forcing num_counter_fixed is not enough, you need to make sure
->> > > > they are actually activated in GLOBAL_CTRL, i.e., make sure bits
->> > > > 32-34 are set in intel_ctrl. Depending on which machine you're
->> > > > on, the power on value for GLOBAL_CTRL changes. The correct
->> > > > value for it should be that ONLY generic counters are on by
->> > > > default.
->> > > >
->> > >
->> > > Oh, this might be why fixed counter do not work on my Atom box. I
->> > > will look into it. [...]
->> >
->> > Thanks - having a different bootup default for the global ctrl
->> > indeed sounds like a good and plausible explanation - please send a
->> > patch for that if you've tested it, removing that quirk and adding
->> > the global-enable ctrl logic.
->> >
->>
->> The root cause of fixed counters not working on Atom is indeed
->> related to global counter control MSR. The power-on value on Atom
->> is 0x3 which means only general purpose counters are enabled by
->> default. The power-on value on Core2 is 0xffffffffffffffff which I
->> believe is also the case for Nehalem. That's why Core2 and Nehalem
->> do not have the problem.
->
-> I suspect it can also be firmware/BIOS and microcode version
-> dependent - it's better to not rely on bootup state like that
-> indeed.
+Hi,
 
-I would recommend you ignore boot up values and setup GLOBAL_CTRL*
-the way you need. So I agree.
+Here's the 12th version of the writeback patches. Changes since v11:
+
+- Fixup kthread_run() error check, it should use IS_ERR() instead of
+  checking for NULL. Thanks Andrew.
+- Fix a silly buglet that would quickly respawn otherwise idle threads
+  once they had exited. This was due to an inverted if test. Didn't cause
+  any harm except potentially too many writeback threads setting idle in
+  the system.
+- Integrate kupdate periodic writeback with the explicit writeback. Cleans
+  that part up.
+- Update to 2.6.31-rc1. With the recent patches from viro and hch, v11
+  did not apply cleanly at all to 2.6.31-rc1.
+
+For ease of patching, I've put the full diff here:
+
+  http://kernel.dk/writeback-v12.patch
+
+and also stored this in a writeback-v12 branch that will not change,
+you can pull that into Linus tree from here:
+
+  git://git.kernel.dk/linux-2.6-block.git writeback-v12
+
+Please test and report results/interesting finds. Thanks! The target
+for this patchset is 2.6.32 and it'll be sitting (and has been for the past
+week approx) in -next until then.
+
+ b/block/blk-core.c            |    1 
+ b/drivers/block/aoe/aoeblk.c  |    1 
+ b/drivers/char/mem.c          |    1 
+ b/fs/btrfs/disk-io.c          |    1 
+ b/fs/buffer.c                 |    2 
+ b/fs/char_dev.c               |    1 
+ b/fs/configfs/inode.c         |    1 
+ b/fs/fs-writeback.c           |  775 +++++++++++++++++++++++++++-------
+ b/fs/fuse/inode.c             |    1 
+ b/fs/hugetlbfs/inode.c        |    1 
+ b/fs/nfs/client.c             |    1 
+ b/fs/ocfs2/dlm/dlmfs.c        |    1 
+ b/fs/ramfs/inode.c            |    1 
+ b/fs/super.c                  |    3 
+ b/fs/sysfs/inode.c            |    1 
+ b/fs/ubifs/super.c            |    1 
+ b/include/linux/backing-dev.h |   71 +++
+ b/include/linux/fs.h          |   11 
+ b/include/linux/writeback.h   |   15 
+ b/kernel/cgroup.c             |    1 
+ b/mm/Makefile                 |    2 
+ b/mm/backing-dev.c            |  533 +++++++++++++++++++++++
+ b/mm/page-writeback.c         |  157 ------
+ b/mm/swap_state.c             |    1 
+ b/mm/vmscan.c                 |    2 
+ mm/pdflush.c                  |  269 -----------
+ 26 files changed, 1259 insertions(+), 596 deletions(-)
+
+-- 
+Jens Axboe
+
+
