@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZFYSwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZFYS4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZFYSwz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 14:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZFYSws
+	id S1756856AbZFYS4D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 14:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZFYSzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 14:52:48 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:57255 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbZFYSws (ORCPT
+	Thu, 25 Jun 2009 14:55:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40661 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754302AbZFYSzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 14:52:48 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
-Date: Thu, 25 Jun 2009 20:52:49 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       martin.petersen@oracle.com
-References: <200906250904.57149.elendil@planet.nl> <200906251953.34253.elendil@planet.nl> <20090625182302.GA23113@redhat.com>
-In-Reply-To: <20090625182302.GA23113@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 25 Jun 2009 14:55:54 -0400
+Date: Thu, 25 Jun 2009 11:54:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: maximilian attems <max@stro.at>
+Cc: linux-kernel@vger.kernel.org, tj@kernel.org, dhowells@redhat.com,
+       ink@jurassic.park.msu.ru
+Subject: Re: >= 2.6.30 broken alpha smp build
+Message-Id: <20090625115423.6a31b49c.akpm@linux-foundation.org>
+In-Reply-To: <20090625090842.GA17936@stro.at>
+References: <20090625090842.GA17936@stro.at>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906252052.50364.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Jun 2009 18:52:51.0098 (UTC) FILETIME=[23DFF7A0:01C9F5C6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009, Mike Snitzer wrote:
-> OK, I found a really stupid bug.  I was passing the data start offset
-> (pe_start) through to blk_stack_limits() in terms of sectors rather
-> than bytes.  The following should silence your warnings:
+On Thu, 25 Jun 2009 11:08:42 +0200
+maximilian attems <max@stro.at> wrote:
 
-Yes, all clear again. So not broken userspace after all ;-)
+> CC [M]  arch/alpha/kernel/srm_env.o
+> In file included from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/percpu.h:10,
+>                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/local.h:4,
+>                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/module.h:20,
+>                  from /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:33:
+> /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:100:1: error: "PER_CPU_ATTRIBUTES" redefined
+> /build/buildd-linux-2.6_2.6.30-1-alpha-vHGTgq/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/percpu.h:52:1: error: this is the location of the previous definition
+> make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
+> make[5]: *** [arch/alpha/kernel] Error 2
+> make[4]: *** [sub-make] Error 2
+> make[3]: *** [all] Error 2
+> make[2]: *** [debian/stamps/build_alpha_none_alpha-smp_plain] Error 2
+> make[1]: *** [build_alpha_none_alpha-smp_real] Error 2
 
-Reported-by: Frans Pop <elendil@planet.nl>
-Tested-by: Frans Pop <elendil@planet.nl>
+Me too.
 
-Thanks,
-FJP
+> belows patch fixes aboves error but gives a new one on SMP
+> 
+> diff --git a/arch/alpha/include/asm/percpu.h b/arch/alpha/include/asm/percpu.h
+> index 06c5c7a..622d585 100644
+> --- a/arch/alpha/include/asm/percpu.h
+> +++ b/arch/alpha/include/asm/percpu.h
+> @@ -95,8 +95,8 @@ extern unsigned long __per_cpu_offset[NR_CPUS];
+>  #define PER_CPU_SHARED_ALIGNED_SECTION ""
+>  #define PER_CPU_FIRST_SECTION ""
+>  
+> -#endif
+> -
+>  #define PER_CPU_ATTRIBUTES
+>  
+> +#endif
+> +
+>  #endif /* __ALPHA_PERCPU_H */
+> 
+>   CC [M]  arch/alpha/kernel/srm_env.o
 
-> diff --git a/drivers/md/dm-table.c b/drivers/md/dm-table.c
-> index 4899ebe..2cba557 100644
-> --- a/drivers/md/dm-table.c
-> +++ b/drivers/md/dm-table.c
-> @@ -495,7 +495,7 @@ int dm_set_device_limits(struct dm_target *ti,
-> struct dm_dev *dev, return 0;
->  	}
->
-> -	if (blk_stack_limits(limits, &q->limits, start) < 0)
-> +	if (blk_stack_limits(limits, &q->limits, start << 9) < 0)
->  		DMWARN("%s: target device %s is misaligned",
->  		       dm_device_name(ti->table->md), bdevname(bdev, b));
+That fixed it.
 
+> cc1: warnings being treated as errors
+> In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:86,
+>                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
+>                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
+> /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/hrtimer.h:310: error: ___~@~X__used_____~@~Y attribute ignored
+> In file included from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/include/asm/uaccess.h:5,
+>                  from /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/arch/alpha/kernel/srm_env.c:37:
+> /home/maks/src/linux-2.6-2.6.30/debian/build/source_alpha_none/include/linux/sched.h:134: error: ___~@~X__used_____~@~Y attribute ignored
+> make[6]: *** [arch/alpha/kernel/srm_env.o] Error 1
+> 
+
+This is the
+
+#define PER_CPU_ATTRIBUTES	__used
+
+in arch/alpha/include/asm/percpu.h, added by 
+
+commit 9267b4b3880d00dc2dab90f1d817c856939114f7
+Author:     Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+AuthorDate: Sat Jun 21 03:25:39 2008 +0400
+Commit:     Linus Torvalds <torvalds@linux-foundation.org>
+CommitDate: Fri Jun 20 16:46:10 2008 -0700
+
+    alpha: fix module load failures on smp (bug #10926)
+
+
+There's no indication in the changelog why this was added and afacit no
+other architectures do it.  So I'm at a loss to help here. 
