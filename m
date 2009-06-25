@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZFYOgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbZFYOgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbZFYOgR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYOgG
+	id S1757450AbZFYOgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZFYOgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:36:06 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:38449 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbZFYOgF (ORCPT
+	Thu, 25 Jun 2009 10:36:37 -0400
+Received: from mail-gx0-f222.google.com ([209.85.217.222]:61421 "EHLO
+	mail-gx0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750964AbZFYOgg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:36:05 -0400
-Date: Thu, 25 Jun 2009 10:34:05 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: next cleanup report:  "bad" references to CONFIG variables
-Message-ID: <alpine.LFD.2.00.0906251028270.24694@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 25 Jun 2009 10:36:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Hca50wCtkHKRZLOC0pSy3HgsVsTz5Z394YvQ9oBRuUgSWDf+ObQEvthZC1HGnBr9F7
+         Gs4bzwhoHa1duMpT1G1dnNyTDqeJydK7NqTSTcsc3VJyjlSJxGuGMmHjdikEylyEkvEa
+         6Mmh7RilCCJyzmYgSH/oiFy5rEJb9DYKHC5og=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+In-Reply-To: <4A438522.7040309@redhat.com>
+References: <20090625183616.23b55b24.minchan.kim@barrios-desktop>
+	 <4A438522.7040309@redhat.com>
+Date: Thu, 25 Jun 2009 23:30:11 +0900
+Message-ID: <28c262360906250730h7f8240c2mb1411ef147b239b2@mail.gmail.com>
+Subject: Re: [PATCH] prevent to reclaim anon page of lumpy reclaim for no swap 
+	space
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Juna 25, 2009 at 11:09 PM, Rik van Riel<riel@redhat.com> wrote:
+> Minchan Kim wrote:
+>>
+>> This patch prevent to reclaim anon page in case of no swap space.
+>> VM already prevent to reclaim anon page in various place.
+>> But it doesnt't prevent it for lumpy reclaim.
+>>
+>> It shuffles lru list unnecessary so that it is pointless.
+>> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+>> ---
+>>  mm/vmscan.c |    6 ++++++
+>>  1 files changed, 6 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> index 026f452..fb401fe 100644
+>> --- a/mm/vmscan.c
+>> +++ b/mm/vmscan.c
+>> @@ -830,7 +830,13 @@ int __isolate_lru_page(struct page *page, int mode,
+>> int file)
+>>         * When this function is being called for lumpy reclaim, we
+>>         * initially look into all LRU pages, active, inactive and
+>>         * unevictable; only give shrink_page_list evictable pages.
+>> +
+>> +        * If we don't have enough swap space, reclaiming of anon page
+>> +        * is pointless.
+>>         */
+>> +       if (nr_swap_pages <= 0 && PageAnon(page))
+>> +               return ret;
+>> +
+>
+> Should that be something like this:
+>
+>        if (nr_swap_pages <= 0 && (PageAnon(page) && !PageSwapCache(page)))
+>
+> We can still reclaim anonymous pages that already have
+> a swap slot assigned to them.
 
-  here's the next cleanup report that's well underway -- "bad"
-references to CONFIG variables that don't exist in any Kconfig file:
+Yes. I missed that.
+Thanks for careful review. Rik. :)
 
-  http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
+>
+> --
+> All rights reversed.
+>
 
-(currently, only the arch/ and drivers/ directories have been updated
--- the rest should be done shortly.)
 
-  in a nutshell, that's a list of references to variables of the form
-CONFIG_*, where there is no such variable defined anywhere in a
-Kconfig file.  some possible reasons for that:
 
-  1) leftover historical cruft
-  2) simple typo
-  3) someone's added code without adding the Kconfig infrastructure
-     for it (annoyingly, there appears to be quite a lot of that)
-  4) someone likes to name their macros with a "CONFIG_" prefix just
-     to pollute the Kconfig namespace (argh)
-
-in any event, it's all there (some of it starting to look awfully
-familiar as the years go by).  as always, ignore the false positives.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+-- 
+Kinds regards,
+Minchan Kim
