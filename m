@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760399AbZFYFRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760256AbZFYFRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760399AbZFYFRy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbZFYFOP
+	id S1760256AbZFYFRl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZFYFOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:14:15 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1469 "EHLO
+	Thu, 25 Jun 2009 01:14:14 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1465 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbZFYFOJ (ORCPT
+	with ESMTP id S1756243AbZFYFOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:14:09 -0400
+	Thu, 25 Jun 2009 01:14:04 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Adam Radford <linuxraid@amcc.com>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
-       Rik Faith <faith@cs.unc.edu>, Neela Syam Kolli <megaraidlinux@lsi.com>,
-       Willem Riede <osst@riede.org>,
-       =?utf-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Kurt Garloff <garloff@suse.de>, linux-scsi@vger.kernel.org,
-       osst-users@lists.sourceforge.net
-Subject: [PATCH 14/19] drivers/scsi: Use PCI_VDEVICE
-Date: Wed, 24 Jun 2009 22:13:30 -0700
-Message-Id: <079fbc10b41dd4b7f0d381b7e969134184652c95.1245906152.git.joe@perches.com>
+Cc: Steffen Klassert <klassert@mathematik.tu-chemnitz.de>,
+       Michael Chan <mchan@broadcom.com>,
+       Eilon Greenstein <eilong@broadcom.com>, Divy Le Ray <divy@chelsio.com>,
+       Samuel Ortiz <samuel@sortiz.org>, Tim Hockin <thockin@hockin.org>,
+       Daniele Venzano <venza@brownhat.org>, Jens Osterkamp <jens@de.ibm.com>,
+       Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
+       Ion Badulescu <ionut@cs.columbia.edu>,
+       Andy Gospodarek <andy@greyhouse.net>,
+       Alexander Indenbaum <baum@tehutinetworks.net>,
+       Samuel Chessman <chessman@tux.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       David Dillow <dave@thedillows.org>, netdev@vger.kernel.org
+Subject: [PATCH 12/19] drivers/net: Use PCI_VDEVICE
+Date: Wed, 24 Jun 2009 22:13:28 -0700
+Message-Id: <f746d5c571120f930fb6bb50d8303766573f927d.1245906152.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1245906151.git.joe@perches.com>
 References: <cover.1245906151.git.joe@perches.com>
@@ -34,339 +36,736 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/scsi/3w-9xxx.c              |   12 +++------
- drivers/scsi/3w-xxxx.c              |    6 +---
- drivers/scsi/BusLogic.c             |    9 ++----
- drivers/scsi/a100u2w.c              |    2 +-
- drivers/scsi/aacraid/linit.c        |    6 ++--
- drivers/scsi/dmx3191d.c             |    3 +-
- drivers/scsi/fdomain.c              |    3 +-
- drivers/scsi/initio.c               |   20 +++++++-------
- drivers/scsi/megaraid.c             |    9 ++----
- drivers/scsi/qla1280.c              |   18 ++++---------
- drivers/scsi/stex.c                 |   18 +++++--------
- drivers/scsi/sym53c8xx_2/sym_glue.c |   45 +++++++++++-----------------------
- drivers/scsi/tmscsim.c              |    3 +-
- 13 files changed, 57 insertions(+), 97 deletions(-)
+ drivers/net/3c59x.c               |   90 ++++++++++++++++++------------------
+ drivers/net/8139too.c             |   18 ++++----
+ drivers/net/amd8111e.c            |    3 +-
+ drivers/net/arcnet/com20020-pci.c |    6 +-
+ drivers/net/bnx2.c                |   24 +++-------
+ drivers/net/bnx2x_main.c          |    9 +---
+ drivers/net/cassini.c             |    6 +--
+ drivers/net/cxgb3/cxgb3_main.c    |    2 +-
+ drivers/net/irda/via-ircc.c       |   10 ++--
+ drivers/net/natsemi.c             |    2 +-
+ drivers/net/ne2k-pci.c            |   12 +++---
+ drivers/net/pci-skeleton.c        |    4 +-
+ drivers/net/sis900.c              |    6 +--
+ drivers/net/spider_net.c          |    3 +-
+ drivers/net/starfire.c            |    2 +-
+ drivers/net/sundance.c            |    6 +-
+ drivers/net/sungem.c              |   24 +++-------
+ drivers/net/tehuti.c              |    6 +-
+ drivers/net/tlan.c                |   39 +++++-----------
+ drivers/net/tokenring/tmspci.c    |    8 ++--
+ drivers/net/tulip/de2104x.c       |    6 +--
+ drivers/net/tulip/de4x5.c         |   12 ++---
+ drivers/net/tulip/tulip_core.c    |   28 ++++++------
+ drivers/net/tulip/uli526x.c       |    4 +-
+ drivers/net/tulip/winbond-840.c   |    4 +-
+ drivers/net/typhoon.c             |   18 +++-----
+ drivers/net/yellowfin.c           |    4 +-
+ 27 files changed, 153 insertions(+), 203 deletions(-)
 
-diff --git a/drivers/scsi/3w-9xxx.c b/drivers/scsi/3w-9xxx.c
-index 36c21b1..eff7307 100644
---- a/drivers/scsi/3w-9xxx.c
-+++ b/drivers/scsi/3w-9xxx.c
-@@ -2278,14 +2278,10 @@ out_disable_device:
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index c34aee9..6b8d205 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -373,51 +373,51 @@ static struct vortex_chip_info {
  
- /* PCI Devices supported by this driver */
- static struct pci_device_id twa_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9000,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9550SX,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9650SE,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9690SA,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9000), 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9550SX), 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9650SE), 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9690SA), 0},
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, twa_pci_tbl);
-diff --git a/drivers/scsi/3w-xxxx.c b/drivers/scsi/3w-xxxx.c
-index faa0fcf..bb6f53d 100644
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -2400,10 +2400,8 @@ static void tw_remove(struct pci_dev *pdev)
  
- /* PCI Devices supported by this driver */
- static struct pci_device_id tw_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_1000,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_7000,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_1000), 0},
-+	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_7000), 0},
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, tw_pci_tbl);
-diff --git a/drivers/scsi/BusLogic.c b/drivers/scsi/BusLogic.c
-index 1ddcf40..fad02a1 100644
---- a/drivers/scsi/BusLogic.c
-+++ b/drivers/scsi/BusLogic.c
-@@ -3615,12 +3615,9 @@ __setup("BusLogic=", BusLogic_Setup);
+ static struct pci_device_id vortex_pci_tbl[] = {
+-	{ 0x10B7, 0x5900, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C590 },
+-	{ 0x10B7, 0x5920, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C592 },
+-	{ 0x10B7, 0x5970, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C597 },
+-	{ 0x10B7, 0x5950, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_1 },
+-	{ 0x10B7, 0x5951, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_2 },
+-
+-	{ 0x10B7, 0x5952, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C595_3 },
+-	{ 0x10B7, 0x9000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_1 },
+-	{ 0x10B7, 0x9001, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_2 },
+-	{ 0x10B7, 0x9004, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_3 },
+-	{ 0x10B7, 0x9005, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_4 },
+-
+-	{ 0x10B7, 0x9006, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900_5 },
+-	{ 0x10B7, 0x900A, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C900B_FL },
+-	{ 0x10B7, 0x9050, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905_1 },
+-	{ 0x10B7, 0x9051, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905_2 },
+-	{ 0x10B7, 0x9055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_1 },
+-
+-	{ 0x10B7, 0x9058, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_2 },
+-	{ 0x10B7, 0x905A, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905B_FX },
+-	{ 0x10B7, 0x9200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C905C },
+-	{ 0x10B7, 0x9202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C9202 },
+-	{ 0x10B7, 0x9800, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C980 },
+-	{ 0x10B7, 0x9805, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C9805 },
+-
+-	{ 0x10B7, 0x7646, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CSOHO100_TX },
+-	{ 0x10B7, 0x5055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C555 },
+-	{ 0x10B7, 0x6055, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C556 },
+-	{ 0x10B7, 0x6056, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C556B },
+-	{ 0x10B7, 0x5b57, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C575 },
+-
+-	{ 0x10B7, 0x5057, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C575_1 },
+-	{ 0x10B7, 0x5157, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE575 },
+-	{ 0x10B7, 0x5257, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE575CT },
+-	{ 0x10B7, 0x6560, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFE656 },
+-	{ 0x10B7, 0x6562, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFEM656 },
+-
+-	{ 0x10B7, 0x6564, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3CCFEM656_1 },
+-	{ 0x10B7, 0x4500, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C450 },
+-	{ 0x10B7, 0x9201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C920 },
+-	{ 0x10B7, 0x1201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C982A },
+-	{ 0x10B7, 0x1202, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_3C982B },
+-
+-	{ 0x10B7, 0x9056, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_905BT4 },
+-	{ 0x10B7, 0x9210, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_920B_EMB_WNM },
++	{ PCI_VDEVICE(3COM, 0x5900), CH_3C590 },
++	{ PCI_VDEVICE(3COM, 0x5920), CH_3C592 },
++	{ PCI_VDEVICE(3COM, 0x5970), CH_3C597 },
++	{ PCI_VDEVICE(3COM, 0x5950), CH_3C595_1 },
++	{ PCI_VDEVICE(3COM, 0x5951), CH_3C595_2 },
++
++	{ PCI_VDEVICE(3COM, 0x5952), CH_3C595_3 },
++	{ PCI_VDEVICE(3COM, 0x9000), CH_3C900_1 },
++	{ PCI_VDEVICE(3COM, 0x9001), CH_3C900_2 },
++	{ PCI_VDEVICE(3COM, 0x9004), CH_3C900_3 },
++	{ PCI_VDEVICE(3COM, 0x9005), CH_3C900_4 },
++
++	{ PCI_VDEVICE(3COM, 0x9006), CH_3C900_5 },
++	{ PCI_VDEVICE(3COM, 0x900A), CH_3C900B_FL },
++	{ PCI_VDEVICE(3COM, 0x9050), CH_3C905_1 },
++	{ PCI_VDEVICE(3COM, 0x9051), CH_3C905_2 },
++	{ PCI_VDEVICE(3COM, 0x9055), CH_3C905B_1 },
++
++	{ PCI_VDEVICE(3COM, 0x9058), CH_3C905B_2 },
++	{ PCI_VDEVICE(3COM, 0x905A), CH_3C905B_FX },
++	{ PCI_VDEVICE(3COM, 0x9200), CH_3C905C },
++	{ PCI_VDEVICE(3COM, 0x9202), CH_3C9202 },
++	{ PCI_VDEVICE(3COM, 0x9800), CH_3C980 },
++	{ PCI_VDEVICE(3COM, 0x9805), CH_3C9805 },
++
++	{ PCI_VDEVICE(3COM, 0x7646), CH_3CSOHO100_TX },
++	{ PCI_VDEVICE(3COM, 0x5055), CH_3C555 },
++	{ PCI_VDEVICE(3COM, 0x6055), CH_3C556 },
++	{ PCI_VDEVICE(3COM, 0x6056), CH_3C556B },
++	{ PCI_VDEVICE(3COM, 0x5b57), CH_3C575 },
++
++	{ PCI_VDEVICE(3COM, 0x5057), CH_3C575_1 },
++	{ PCI_VDEVICE(3COM, 0x5157), CH_3CCFE575 },
++	{ PCI_VDEVICE(3COM, 0x5257), CH_3CCFE575CT },
++	{ PCI_VDEVICE(3COM, 0x6560), CH_3CCFE656 },
++	{ PCI_VDEVICE(3COM, 0x6562), CH_3CCFEM656 },
++
++	{ PCI_VDEVICE(3COM, 0x6564), CH_3CCFEM656_1 },
++	{ PCI_VDEVICE(3COM, 0x4500), CH_3C450 },
++	{ PCI_VDEVICE(3COM, 0x9201), CH_3C920 },
++	{ PCI_VDEVICE(3COM, 0x1201), CH_3C982A },
++	{ PCI_VDEVICE(3COM, 0x1202), CH_3C982B },
++
++	{ PCI_VDEVICE(3COM, 0x9056), CH_905BT4 },
++	{ PCI_VDEVICE(3COM, 0x9210), CH_920B_EMB_WNM },
  
- #ifdef MODULE
- static struct pci_device_id BusLogic_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER_NC,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_FLASHPOINT,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VDEVICE(BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER), 0},
-+	{ PCI_VDEVICE(BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_MULTIMASTER_NC), 0},
-+	{ PCI_VDEVICE(BUSLOGIC, PCI_DEVICE_ID_BUSLOGIC_FLASHPOINT), 0},
- 	{ }
+ 	{0,}						/* 0 terminated list. */
  };
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index 8ae72ec..fb4944a 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -232,16 +232,16 @@ static const struct {
+ 
+ 
+ static struct pci_device_id rtl8139_pci_tbl[] = {
+-	{0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
++	{PCI_VDEVICE(REALTEK, 0x8139), RTL8139 },
++	{PCI_VDEVICE(REALTEK, 0x8138), RTL8139 },
+ 	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+ 	{0x1500, 0x1360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+ 	{0x4033, 0x1360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x1186, 0x1300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x1186, 0x1340, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x13d1, 0xab06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x1259, 0xa117, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x1259, 0xa11e, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
++	{PCI_VDEVICE(DLINK, 0x1300), RTL8139 },
++	{PCI_VDEVICE(DLINK, 0x1340), RTL8139 },
++	{PCI_VDEVICE(ABOCOM, 0xab06), RTL8139 },
++	{PCI_VDEVICE(AT, 0xa117), RTL8139 },
++	{PCI_VDEVICE(AT, 0xa11e), RTL8139 },
+ 	{0x14ea, 0xab06, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+ 	{0x14ea, 0xab07, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+ 	{0x11db, 0x1234, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+@@ -254,10 +254,10 @@ static struct pci_device_id rtl8139_pci_tbl[] = {
+ 
+ #ifdef CONFIG_SH_SECUREEDGE5410
+ 	/* Bogus 8139 silicon reports 8129 without external PROM :-( */
+-	{0x10ec, 0x8129, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
++	{PCI_VDEVICE(REALTEK, 0x8129), RTL8139 },
  #endif
-diff --git a/drivers/scsi/a100u2w.c b/drivers/scsi/a100u2w.c
-index 208d6df..d05ecd5 100644
---- a/drivers/scsi/a100u2w.c
-+++ b/drivers/scsi/a100u2w.c
-@@ -1214,7 +1214,7 @@ static void __devexit inia100_remove_one(struct pci_dev *pdev)
- } 
+ #ifdef CONFIG_8139TOO_8129
+-	{0x10ec, 0x8129, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8129 },
++	{PCI_VDEVICE(REALTEK, 0x8129), RTL8129 },
+ #endif
  
- static struct pci_device_id inia100_pci_tbl[] = {
--	{PCI_VENDOR_ID_INIT, 0x1060, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VDEVICE(INIT, 0x1060), 0},
+ 	/* some crazy cards report invalid vendor ids like
+diff --git a/drivers/net/amd8111e.c b/drivers/net/amd8111e.c
+index 19831bd..ede19b8 100644
+--- a/drivers/net/amd8111e.c
++++ b/drivers/net/amd8111e.c
+@@ -115,8 +115,7 @@ MODULE_PARM_DESC(dynamic_ipg, "Enable or Disable dynamic IPG, 1: Enable, 0: Disa
+ 
+ static struct pci_device_id amd8111e_pci_tbl[] = {
+ 
+-	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD8111E_7462,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD8111E_7462), 0UL },
+ 	{ 0, }
+ 
+ };
+diff --git a/drivers/net/arcnet/com20020-pci.c b/drivers/net/arcnet/com20020-pci.c
+index dbf4de3..1c65222 100644
+--- a/drivers/net/arcnet/com20020-pci.c
++++ b/drivers/net/arcnet/com20020-pci.c
+@@ -165,10 +165,10 @@ static struct pci_device_id com20020pci_id_table[] = {
+ 	{ 0x1571, 0xa204, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+ 	{ 0x1571, 0xa205, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+ 	{ 0x1571, 0xa206, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+-	{ 0x10B5, 0x9030, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+-	{ 0x10B5, 0x9050, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++	{ PCI_VDEVICE(PLX, 0x9030), ARC_CAN_10MBIT },
++	{ PCI_VDEVICE(PLX, 0x9050), ARC_CAN_10MBIT },
+ 	{ 0x14BA, 0x6000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
+-	{ 0x10B5, 0x2200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, ARC_CAN_10MBIT },
++	{ PCI_VDEVICE(PLX, 0x2200), ARC_CAN_10MBIT },
  	{0,}
  };
- MODULE_DEVICE_TABLE(pci, inia100_pci_tbl);
-diff --git a/drivers/scsi/aacraid/linit.c b/drivers/scsi/aacraid/linit.c
-index 9b97c3e..d0461ab 100644
---- a/drivers/scsi/aacraid/linit.c
-+++ b/drivers/scsi/aacraid/linit.c
-@@ -157,9 +157,9 @@ static const struct pci_device_id aac_pci_tbl[] __devinitdata = {
  
- 	{ 0x9005, 0x0285, 0x1028, PCI_ANY_ID, 0, 0, 57 }, /* Dell Catchall */
- 	{ 0x9005, 0x0285, 0x17aa, PCI_ANY_ID, 0, 0, 58 }, /* Legend Catchall */
--	{ 0x9005, 0x0285, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 59 }, /* Adaptec Catch All */
--	{ 0x9005, 0x0286, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 60 }, /* Adaptec Rocket Catch All */
--	{ 0x9005, 0x0288, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 61 }, /* Adaptec NEMER/ARK Catch All */
-+	{ PCI_VDEVICE(ADAPTEC2, 0x0285), 59 }, /* Adaptec Catch All */
-+	{ PCI_VDEVICE(ADAPTEC2, 0x0286), 60 }, /* Adaptec Rocket Catch All */
-+	{ PCI_VDEVICE(ADAPTEC2, 0x0288), 61 }, /* Adaptec NEMER/ARK Catch All */
- 	{ 0,}
- };
- MODULE_DEVICE_TABLE(pci, aac_pci_tbl);
-diff --git a/drivers/scsi/dmx3191d.c b/drivers/scsi/dmx3191d.c
-index fa738ec..c7bac47 100644
---- a/drivers/scsi/dmx3191d.c
-+++ b/drivers/scsi/dmx3191d.c
-@@ -140,8 +140,7 @@ static void __devexit dmx3191d_remove_one(struct pci_dev *pdev)
- }
- 
- static struct pci_device_id dmx3191d_pci_tbl[] = {
--	{PCI_VENDOR_ID_DOMEX, PCI_DEVICE_ID_DOMEX_DMX3191D,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4},
-+	{PCI_VDEVICE(DOMEX, PCI_DEVICE_ID_DOMEX_DMX3191D), 4},
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, dmx3191d_pci_tbl);
-diff --git a/drivers/scsi/fdomain.c b/drivers/scsi/fdomain.c
-index 32eef66..d31104a 100644
---- a/drivers/scsi/fdomain.c
-+++ b/drivers/scsi/fdomain.c
-@@ -1770,8 +1770,7 @@ struct scsi_host_template fdomain_driver_template = {
- #ifdef CONFIG_PCI
- 
- static struct pci_device_id fdomain_pci_tbl[] __devinitdata = {
--	{ PCI_VENDOR_ID_FD, PCI_DEVICE_ID_FD_36C70,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
-+	{ PCI_VDEVICE(FD, PCI_DEVICE_ID_FD_36C70), 0UL },
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, fdomain_pci_tbl);
-diff --git a/drivers/scsi/initio.c b/drivers/scsi/initio.c
-index 89a5948..069ecb1 100644
---- a/drivers/scsi/initio.c
-+++ b/drivers/scsi/initio.c
-@@ -129,11 +129,11 @@ static void i91uSCBPost(u8 * pHcb, u8 * pScb);
- 
- /* PCI Devices supported by this driver */
- static struct pci_device_id i91u_pci_devices[] = {
--	{ PCI_VENDOR_ID_INIT,  I950_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_INIT,  I940_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_INIT,  I935_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_INIT,  I920_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{ PCI_VENDOR_ID_DOMEX, I920_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{ PCI_VDEVICE(INIT, I950_DEVICE_ID), 0},
-+	{ PCI_VDEVICE(INIT, I940_DEVICE_ID), 0},
-+	{ PCI_VDEVICE(INIT, I935_DEVICE_ID), 0},
-+	{ PCI_VDEVICE(INIT, I920_DEVICE_ID), 0},
-+	{ PCI_VDEVICE(DOMEX, I920_DEVICE_ID), 0},
- 	{ }
- };
- MODULE_DEVICE_TABLE(pci, i91u_pci_devices);
-@@ -2978,11 +2978,11 @@ static void initio_remove_one(struct pci_dev *pdev)
- MODULE_LICENSE("GPL");
- 
- static struct pci_device_id initio_pci_tbl[] = {
--	{PCI_VENDOR_ID_INIT, 0x9500, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_INIT, 0x9400, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_INIT, 0x9401, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_INIT, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_DOMEX, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VDEVICE(INIT, 0x9500), 0},
-+	{PCI_VDEVICE(INIT, 0x9400), 0},
-+	{PCI_VDEVICE(INIT, 0x9401), 0},
-+	{PCI_VDEVICE(INIT, 0x0002), 0},
-+	{PCI_VDEVICE(DOMEX, 0x0002), 0},
- 	{0,}
- };
- MODULE_DEVICE_TABLE(pci, initio_pci_tbl);
-diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
-index 49eb061..956b991 100644
---- a/drivers/scsi/megaraid.c
-+++ b/drivers/scsi/megaraid.c
-@@ -4974,12 +4974,9 @@ megaraid_shutdown(struct pci_dev *pdev)
- }
- 
- static struct pci_device_id megaraid_pci_tbl[] = {
--	{PCI_VENDOR_ID_AMI, PCI_DEVICE_ID_AMI_MEGARAID,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_AMI, PCI_DEVICE_ID_AMI_MEGARAID2,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_AMI_MEGARAID3,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VDEVICE(AMI, PCI_DEVICE_ID_AMI_MEGARAID), 0},
-+	{PCI_VDEVICE(AMI, PCI_DEVICE_ID_AMI_MEGARAID2), 0},
-+	{PCI_VDEVICE(INTEL, PCI_DEVICE_ID_AMI_MEGARAID3), 0},
- 	{0,}
- };
- MODULE_DEVICE_TABLE(pci, megaraid_pci_tbl);
-diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
-index 8371d91..e6332b4 100644
---- a/drivers/scsi/qla1280.c
-+++ b/drivers/scsi/qla1280.c
-@@ -545,18 +545,12 @@ struct qla_boards {
- 
- /* NOTE: the last argument in each entry is used to index ql1280_board_tbl */
- static struct pci_device_id qla1280_pci_tbl[] = {
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP12160,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1020,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1},
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1080,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2},
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1240,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3},
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1280,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4},
--	{PCI_VENDOR_ID_QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP10160,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP12160), 0},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1020), 1},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1080), 2},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1240), 3},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP1280), 4},
-+	{PCI_VDEVICE(QLOGIC, PCI_DEVICE_ID_QLOGIC_ISP10160), 5},
- 	{0,}
- };
- MODULE_DEVICE_TABLE(pci, qla1280_pci_tbl);
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index 8d2a95c..31b383a 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -1300,27 +1300,23 @@ static struct scsi_host_template driver_template = {
- 
- static struct pci_device_id stex_pci_tbl[] = {
- 	/* st_shasta */
--	{ 0x105a, 0x8350, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		st_shasta }, /* SuperTrak EX8350/8300/16350/16300 */
--	{ 0x105a, 0xc350, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		st_shasta }, /* SuperTrak EX12350 */
--	{ 0x105a, 0x4302, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		st_shasta }, /* SuperTrak EX4350 */
--	{ 0x105a, 0xe350, PCI_ANY_ID, PCI_ANY_ID, 0, 0,
--		st_shasta }, /* SuperTrak EX24350 */
-+	{ PCI_VDEVICE(PROMISE, 0x8350), st_shasta }, /* SuperTrak EX8350/8300/16350/16300 */
-+	{ PCI_VDEVICE(PROMISE, 0xc350), st_shasta }, /* SuperTrak EX12350 */
-+	{ PCI_VDEVICE(PROMISE, 0x4302), st_shasta }, /* SuperTrak EX4350 */
-+	{ PCI_VDEVICE(PROMISE, 0xe350), st_shasta }, /* SuperTrak EX24350 */
- 
- 	/* st_vsc */
--	{ 0x105a, 0x7250, PCI_ANY_ID, PCI_ANY_ID, 0, 0, st_vsc },
-+	{ PCI_VDEVICE(PROMISE, 0x7250), st_vsc },
- 
- 	/* st_yosemite */
- 	{ 0x105a, 0x8650, 0x105a, PCI_ANY_ID, 0, 0, st_yosemite },
- 
- 	/* st_seq */
--	{ 0x105a, 0x3360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, st_seq },
-+	{ PCI_VDEVICE(PROMISE, 0x3360), st_seq },
- 
- 	/* st_yel */
- 	{ 0x105a, 0x8650, 0x1033, PCI_ANY_ID, 0, 0, st_yel },
--	{ 0x105a, 0x8760, PCI_ANY_ID, PCI_ANY_ID, 0, 0, st_yel },
-+	{ PCI_VDEVICE(PROMISE, 0x8760), st_yel },
- 	{ }	/* terminate list */
- };
- 
-diff --git a/drivers/scsi/sym53c8xx_2/sym_glue.c b/drivers/scsi/sym53c8xx_2/sym_glue.c
-index 45374d6..3d6f83c 100644
---- a/drivers/scsi/sym53c8xx_2/sym_glue.c
-+++ b/drivers/scsi/sym53c8xx_2/sym_glue.c
-@@ -2072,40 +2072,25 @@ static struct spi_function_template sym2_transport_functions = {
- };
- 
- static struct pci_device_id sym2_id_table[] __devinitdata = {
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C810,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C820,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL }, /* new */
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C825,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C815,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C810AP,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL }, /* new */
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C860,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C810), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C820), 0UL }, /* new */
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C825), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C815), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_LSI_53C810AP), 0UL }, /* new */
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C860), 0UL },
- 	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C1510,
- 	  PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_STORAGE_SCSI<<8,  0xffff00, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C896,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C895,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C885,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C875,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C896), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C895), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C885), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C875), 0UL },
- 	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C1510,
- 	  PCI_ANY_ID, PCI_ANY_ID,  PCI_CLASS_STORAGE_SCSI<<8,  0xffff00, 0UL }, /* new */
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C895A,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C875A,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C1010_33,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_LSI_53C1010_66,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
--	{ PCI_VENDOR_ID_LSI_LOGIC, PCI_DEVICE_ID_NCR_53C875J,
--	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_LSI_53C895A), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_LSI_53C875A), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_LSI_53C1010_33), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_LSI_53C1010_66), 0UL },
-+	{ PCI_VDEVICE(LSI_LOGIC, PCI_DEVICE_ID_NCR_53C875J), 0UL },
+diff --git a/drivers/net/bnx2.c b/drivers/net/bnx2.c
+index b70cc99..8a208c6 100644
+--- a/drivers/net/bnx2.c
++++ b/drivers/net/bnx2.c
+@@ -124,24 +124,16 @@ static DEFINE_PCI_DEVICE_TABLE(bnx2_pci_tbl) = {
+ 	  PCI_VENDOR_ID_HP, 0x3101, 0, 0, NC370T },
+ 	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706,
+ 	  PCI_VENDOR_ID_HP, 0x3106, 0, 0, NC370I },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5706 },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5708,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5708 },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5706), BCM5706 },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5708), BCM5708 },
+ 	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706S,
+ 	  PCI_VENDOR_ID_HP, 0x3102, 0, 0, NC370F },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5706S,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5706S },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5708S,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5708S },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5709,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5709 },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_5709S,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5709S },
+-	{ PCI_VENDOR_ID_BROADCOM, 0x163b,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5716 },
+-	{ PCI_VENDOR_ID_BROADCOM, 0x163c,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM5716S },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5706S), BCM5706S },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5708S), BCM5708S },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5709), BCM5709 },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_5709S), BCM5709S },
++	{ PCI_VDEVICE(BROADCOM, 0x163b), BCM5716 },
++	{ PCI_VDEVICE(BROADCOM, 0x163c), BCM5716S },
  	{ 0, }
  };
  
-diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
-index 9a42734..034a87d 100644
---- a/drivers/scsi/tmscsim.c
-+++ b/drivers/scsi/tmscsim.c
-@@ -2557,8 +2557,7 @@ static void __devexit dc390_remove_one(struct pci_dev *dev)
+diff --git a/drivers/net/bnx2x_main.c b/drivers/net/bnx2x_main.c
+index fbf1352..f2cabdc 100644
+--- a/drivers/net/bnx2x_main.c
++++ b/drivers/net/bnx2x_main.c
+@@ -123,12 +123,9 @@ static struct {
+ 
+ 
+ static const struct pci_device_id bnx2x_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57710,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM57710 },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57711,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM57711 },
+-	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57711E,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, BCM57711E },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57710), BCM57710 },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711), BCM57711 },
++	{ PCI_VDEVICE(BROADCOM, PCI_DEVICE_ID_NX2_57711E), BCM57711E },
+ 	{ 0 }
+ };
+ 
+diff --git a/drivers/net/cassini.c b/drivers/net/cassini.c
+index eb06667..cd60678 100644
+--- a/drivers/net/cassini.c
++++ b/drivers/net/cassini.c
+@@ -237,10 +237,8 @@ static u16 link_modes[] __devinitdata = {
+ };
+ 
+ static struct pci_device_id cas_pci_tbl[] __devinitdata = {
+-	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_CASSINI,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_SATURN,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_CASSINI), 0UL },
++	{ PCI_VDEVICE(NS, PCI_DEVICE_ID_NS_SATURN), 0UL },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 538dda4..2405b40 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -77,7 +77,7 @@ enum {
+ #define EEPROM_MAGIC 0x38E2F10C
+ 
+ #define CH_DEVICE(devid, idx) \
+-	{ PCI_VENDOR_ID_CHELSIO, devid, PCI_ANY_ID, PCI_ANY_ID, 0, 0, idx }
++	{ PCI_VDEVICE(CHELSIO, devid), idx }
+ 
+ static const struct pci_device_id cxgb3_pci_tbl[] = {
+ 	CH_DEVICE(0x20, 0),	/* PE9000 */
+diff --git a/drivers/net/irda/via-ircc.c b/drivers/net/irda/via-ircc.c
+index 8647985..ced05d1 100644
+--- a/drivers/net/irda/via-ircc.c
++++ b/drivers/net/irda/via-ircc.c
+@@ -122,11 +122,11 @@ static void iodelay(int udelay)
  }
  
- static struct pci_device_id tmscsim_pci_tbl[] = {
--	{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD53C974,
--		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
-+	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD53C974), 0 },
+ static struct pci_device_id via_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_VIA, 0x8231, PCI_ANY_ID, PCI_ANY_ID,0,0,0 },
+-	{ PCI_VENDOR_ID_VIA, 0x3109, PCI_ANY_ID, PCI_ANY_ID,0,0,1 },
+-	{ PCI_VENDOR_ID_VIA, 0x3074, PCI_ANY_ID, PCI_ANY_ID,0,0,2 },
+-	{ PCI_VENDOR_ID_VIA, 0x3147, PCI_ANY_ID, PCI_ANY_ID,0,0,3 },
+-	{ PCI_VENDOR_ID_VIA, 0x3177, PCI_ANY_ID, PCI_ANY_ID,0,0,4 },
++	{ PCI_VDEVICE(VIA, 0x8231), 0 },
++	{ PCI_VDEVICE(VIA, 0x3109), 1 },
++	{ PCI_VDEVICE(VIA, 0x3074), 2 },
++	{ PCI_VDEVICE(VIA, 0x3147), 3 },
++	{ PCI_VDEVICE(VIA, 0x3177), 4 },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+index c9bfe4e..5ba33bc 100644
+--- a/drivers/net/natsemi.c
++++ b/drivers/net/natsemi.c
+@@ -249,7 +249,7 @@ static struct {
+ 
+ static struct pci_device_id natsemi_pci_tbl[] __devinitdata = {
+ 	{ PCI_VENDOR_ID_NS, 0x0020, 0x12d9,     0x000c,     0, 0, 0 },
+-	{ PCI_VENDOR_ID_NS, 0x0020, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
++	{ PCI_VDEVICE(NS, 0x0020), 1 },
+ 	{ }	/* terminate list */
+ };
+ MODULE_DEVICE_TABLE(pci, natsemi_pci_tbl);
+diff --git a/drivers/net/ne2k-pci.c b/drivers/net/ne2k-pci.c
+index 3fcebb7..200c302 100644
+--- a/drivers/net/ne2k-pci.c
++++ b/drivers/net/ne2k-pci.c
+@@ -137,14 +137,14 @@ static struct {
+ 
+ 
+ static struct pci_device_id ne2k_pci_tbl[] = {
+-	{ 0x10ec, 0x8029, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_RealTek_RTL_8029 },
+-	{ 0x1050, 0x0940, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_89C940 },
+-	{ 0x11f6, 0x1401, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Compex_RL2000 },
+-	{ 0x8e2e, 0x3000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_KTI_ET32P2 },
++	{ PCI_VDEVICE(REALTEK, 0x8029), CH_RealTek_RTL_8029 },
++	{ PCI_VDEVICE(WINBOND2, 0x0940), CH_Winbond_89C940 },
++	{ PCI_VDEVICE(COMPEX, 0x1401), CH_Compex_RL2000 },
++	{ PCI_VDEVICE(KTI, 0x3000), CH_KTI_ET32P2 },
+ 	{ 0x4a14, 0x5000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_NetVin_NV5000SC },
+-	{ 0x1106, 0x0926, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Via_86C926 },
++	{ PCI_VDEVICE(VIA, 0x0926), CH_Via_86C926 },
+ 	{ 0x10bd, 0x0e34, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_SureCom_NE34 },
+-	{ 0x1050, 0x5a5a, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_W89C940F },
++	{ PCI_VDEVICE(WINBOND2, 0x5a5a), CH_Winbond_W89C940F },
+ 	{ 0x12c3, 0x0058, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Holtek_HT80232 },
+ 	{ 0x12c3, 0x5598, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Holtek_HT80229 },
+ 	{ 0x8c4a, 0x1980, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_Winbond_89C940_8c4a },
+diff --git a/drivers/net/pci-skeleton.c b/drivers/net/pci-skeleton.c
+index 8c1f698..6e94f83 100644
+--- a/drivers/net/pci-skeleton.c
++++ b/drivers/net/pci-skeleton.c
+@@ -212,8 +212,8 @@ static struct {
+ 
+ 
+ static struct pci_device_id netdrv_pci_tbl[] = {
+-	{0x10ec, 0x8139, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RTL8139 },
+-	{0x10ec, 0x8138, PCI_ANY_ID, PCI_ANY_ID, 0, 0, NETDRV_CB },
++	{PCI_VDEVICE(REALTEK, 0x8139), RTL8139 },
++	{PCI_VDEVICE(REALTEK, 0x8138), NETDRV_CB },
+ 	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, SMC1211TX },
+ /*	{0x1113, 0x1211, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MPX5030 },*/
+ 	{0x1500, 0x1360, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DELTA8139 },
+diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
+index a9a897b..4b4850a 100644
+--- a/drivers/net/sis900.c
++++ b/drivers/net/sis900.c
+@@ -106,10 +106,8 @@ static const char * card_names[] = {
+ 	"SiS 7016 PCI Fast Ethernet"
+ };
+ static struct pci_device_id sis900_pci_tbl [] = {
+-	{PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_900,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, SIS_900},
+-	{PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_7016,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, SIS_7016},
++	{PCI_VDEVICE(SI, PCI_DEVICE_ID_SI_900), SIS_900},
++	{PCI_VDEVICE(SI, PCI_DEVICE_ID_SI_7016), SIS_7016},
+ 	{0,}
+ };
+ MODULE_DEVICE_TABLE (pci, sis900_pci_tbl);
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 90e663f..867bb14 100644
+--- a/drivers/net/spider_net.c
++++ b/drivers/net/spider_net.c
+@@ -72,8 +72,7 @@ MODULE_PARM_DESC(tx_descriptors, "number of descriptors used " \
+ char spider_net_driver_name[] = "spidernet";
+ 
+ static struct pci_device_id spider_net_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_TOSHIBA_2, PCI_DEVICE_ID_TOSHIBA_SPIDER_NET,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VDEVICE(TOSHIBA_2, PCI_DEVICE_ID_TOSHIBA_SPIDER_NET), 0UL },
+ 	{ 0, }
+ };
+ 
+diff --git a/drivers/net/starfire.c b/drivers/net/starfire.c
+index 838cce8..4a55f81 100644
+--- a/drivers/net/starfire.c
++++ b/drivers/net/starfire.c
+@@ -302,7 +302,7 @@ enum chipset {
+ };
+ 
+ static struct pci_device_id starfire_pci_tbl[] = {
+-	{ 0x9004, 0x6915, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CH_6915 },
++	{ PCI_VDEVICE(ADAPTEC, 0x6915), CH_6915 },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, starfire_pci_tbl);
+diff --git a/drivers/net/sundance.c b/drivers/net/sundance.c
+index 545f81b..15fac0a 100644
+--- a/drivers/net/sundance.c
++++ b/drivers/net/sundance.c
+@@ -211,9 +211,9 @@ static const struct pci_device_id sundance_pci_tbl[] = {
+ 	{ 0x1186, 0x1002, 0x1186, 0x1003, 0, 0, 1 },
+ 	{ 0x1186, 0x1002, 0x1186, 0x1012, 0, 0, 2 },
+ 	{ 0x1186, 0x1002, 0x1186, 0x1040, 0, 0, 3 },
+-	{ 0x1186, 0x1002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4 },
+-	{ 0x13F0, 0x0201, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5 },
+-	{ 0x13F0, 0x0200, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 6 },
++	{ PCI_VDEVICE(DLINK, 0x1002), 4 },
++	{ PCI_VDEVICE(SUNDANCE, 0x0201), 5 },
++	{ PCI_VDEVICE(SUNDANCE, 0x0200), 6 },
  	{ }
  };
- MODULE_DEVICE_TABLE(pci, tmscsim_pci_tbl);
+ MODULE_DEVICE_TABLE(pci, sundance_pci_tbl);
+diff --git a/drivers/net/sungem.c b/drivers/net/sungem.c
+index d2dfe0a..7033c29 100644
+--- a/drivers/net/sungem.c
++++ b/drivers/net/sungem.c
+@@ -107,8 +107,7 @@ MODULE_LICENSE("GPL");
+ #define PFX GEM_MODULE_NAME ": "
+ 
+ static struct pci_device_id gem_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_GEM,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_GEM), 0UL },
+ 
+ 	/* These models only differ from the original GEM in
+ 	 * that their tx/rx fifos are of a different size and
+@@ -117,20 +116,13 @@ static struct pci_device_id gem_pci_tbl[] = {
+ 	 * Apple's GMAC does support gigabit on machines with
+ 	 * the BCM54xx PHYs. -BenH
+ 	 */
+-	{ PCI_VENDOR_ID_SUN, PCI_DEVICE_ID_SUN_RIO_GEM,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMACP,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC2,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_K2_GMAC,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_SH_SUNGEM,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
+-	{ PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_IPID2_GMAC,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0UL },
++	{ PCI_VDEVICE(SUN, PCI_DEVICE_ID_SUN_RIO_GEM), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMACP), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_UNI_N_GMAC2), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_K2_GMAC), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_SH_SUNGEM), 0UL },
++	{ PCI_VDEVICE(APPLE, PCI_DEVICE_ID_APPLE_IPID2_GMAC), 0UL },
+ 	{0, }
+ };
+ 
+diff --git a/drivers/net/tehuti.c b/drivers/net/tehuti.c
+index 3c2679c..70dd73a 100644
+--- a/drivers/net/tehuti.c
++++ b/drivers/net/tehuti.c
+@@ -65,9 +65,9 @@
+ #include "tehuti.h"
+ 
+ static struct pci_device_id __devinitdata bdx_pci_tbl[] = {
+-	{0x1FC9, 0x3009, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{0x1FC9, 0x3010, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{0x1FC9, 0x3014, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{PCI_VDEVICE(TEHUTI, 0x3009), 0},
++	{PCI_VDEVICE(TEHUTI, 0x3010), 0},
++	{PCI_VDEVICE(TEHUTI, 0x3014), 0},
+ 	{0}
+ };
+ 
+diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
+index 384cb5e..133efc4 100644
+--- a/drivers/net/tlan.c
++++ b/drivers/net/tlan.c
+@@ -255,32 +255,19 @@ static struct board {
+ };
+ 
+ static struct pci_device_id tlan_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL10,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3I,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_THUNDER,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3B,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 4 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100PI,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 5 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100D,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 6 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100I,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 7 },
+-	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2183,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 8 },
+-	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2325,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 9 },
+-	{ PCI_VENDOR_ID_OLICOM, PCI_DEVICE_ID_OLICOM_OC2326,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 10 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_100_WS_5100,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 11 },
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_T2,
+-		PCI_ANY_ID, PCI_ANY_ID, 0, 0, 12 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL10), 0 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100), 1 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3I), 2 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_THUNDER), 3 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETFLEX3B), 4 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100PI), 5 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100D), 6 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_NETEL100I), 7 },
++	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2183), 8 },
++	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2325), 9 },
++	{ PCI_VDEVICE(OLICOM, PCI_DEVICE_ID_OLICOM_OC2326), 10 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_100_WS_5100), 11 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_NETELLIGENT_10_T2), 12 },
+ 	{ 0,}
+ };
+ MODULE_DEVICE_TABLE(pci, tlan_pci_tbl);
+diff --git a/drivers/net/tokenring/tmspci.c b/drivers/net/tokenring/tmspci.c
+index f92fe86..a0c3c94 100644
+--- a/drivers/net/tokenring/tmspci.c
++++ b/drivers/net/tokenring/tmspci.c
+@@ -58,10 +58,10 @@ static struct card_info card_info_table[] = {
+ };
+ 
+ static struct pci_device_id tmspci_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_COMPAQ, PCI_DEVICE_ID_COMPAQ_TOKENRING, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-	{ PCI_VENDOR_ID_SYSKONNECT, PCI_DEVICE_ID_SYSKONNECT_TR, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
+-	{ PCI_VENDOR_ID_TCONRAD, PCI_DEVICE_ID_TCONRAD_TOKENRING, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3C339, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3 },
++	{ PCI_VDEVICE(COMPAQ, PCI_DEVICE_ID_COMPAQ_TOKENRING), 0 },
++	{ PCI_VDEVICE(SYSKONNECT, PCI_DEVICE_ID_SYSKONNECT_TR), 1 },
++	{ PCI_VDEVICE(TCONRAD, PCI_DEVICE_ID_TCONRAD_TOKENRING), 2 },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3C339), 3 },
+ 	{ }			/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(pci, tmspci_pci_tbl);
+diff --git a/drivers/net/tulip/de2104x.c b/drivers/net/tulip/de2104x.c
+index 81f054d..d2536c5 100644
+--- a/drivers/net/tulip/de2104x.c
++++ b/drivers/net/tulip/de2104x.c
+@@ -338,10 +338,8 @@ static unsigned int de_ok_to_advertise (struct de_private *de, u32 new_media);
+ 
+ 
+ static struct pci_device_id de_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
++	{ PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP), 0 },
++	{ PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS), 1 },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(pci, de_pci_tbl);
+diff --git a/drivers/net/tulip/de4x5.c b/drivers/net/tulip/de4x5.c
+index eb72d2e..a208844 100644
+--- a/drivers/net/tulip/de4x5.c
++++ b/drivers/net/tulip/de4x5.c
+@@ -2348,14 +2348,10 @@ static void __devexit de4x5_pci_remove (struct pci_dev *pdev)
+ }
+ 
+ static struct pci_device_id de4x5_pci_tbl[] = {
+-        { PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP,
+-          PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-        { PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS,
+-          PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
+-        { PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_FAST,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
+-        { PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_21142,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 3 },
++        { PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP), 0 },
++        { PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP_PLUS), 1 },
++        { PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_TULIP_FAST), 2 },
++        { PCI_VDEVICE(DEC, PCI_DEVICE_ID_DEC_21142), 3 },
+         { },
+ };
+ 
+diff --git a/drivers/net/tulip/tulip_core.c b/drivers/net/tulip/tulip_core.c
+index 2abb5d3..8f3616d 100644
+--- a/drivers/net/tulip/tulip_core.c
++++ b/drivers/net/tulip/tulip_core.c
+@@ -208,8 +208,8 @@ struct tulip_chip_table tulip_tbl[] = {
+ 
+ 
+ static struct pci_device_id tulip_pci_tbl[] = {
+-	{ 0x1011, 0x0009, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DC21140 },
+-	{ 0x1011, 0x0019, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DC21143 },
++	{ PCI_VDEVICE(DEC, 0x0009), DC21140 },
++	{ PCI_VDEVICE(DEC, 0x0019), DC21143 },
+ 	{ 0x11AD, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, LC82C168 },
+ 	{ 0x10d9, 0x0512, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98713 },
+ 	{ 0x10d9, 0x0531, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
+@@ -220,28 +220,28 @@ static struct pci_device_id tulip_pci_tbl[] = {
+ 	{ 0x1317, 0x0985, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+ 	{ 0x1317, 0x1985, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+ 	{ 0x1317, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x13D1, 0xAB02, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x13D1, 0xAB03, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x13D1, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
++	{ PCI_VDEVICE(ABOCOM, 0xAB02), COMET },
++	{ PCI_VDEVICE(ABOCOM, 0xAB03), COMET },
++	{ PCI_VDEVICE(ABOCOM, 0xAB08), COMET },
+ 	{ 0x104A, 0x0981, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+ 	{ 0x104A, 0x2774, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1259, 0xa120, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x11F6, 0x9881, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMPEX9881 },
+-	{ 0x8086, 0x0039, PCI_ANY_ID, PCI_ANY_ID, 0, 0, I21145 },
++	{ PCI_VDEVICE(AT, 0xa120), COMET },
++	{ PCI_VDEVICE(COMPEX, 0x9881), COMPEX9881 },
++	{ PCI_VDEVICE(INTEL, 0x0039), I21145 },
+ 	{ 0x1282, 0x9100, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
+ 	{ 0x1282, 0x9102, PCI_ANY_ID, PCI_ANY_ID, 0, 0, DM910X },
+ 	{ 0x1113, 0x1216, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+ 	{ 0x1113, 0x1217, PCI_ANY_ID, PCI_ANY_ID, 0, 0, MX98715 },
+ 	{ 0x1113, 0x9511, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1186, 0x1541, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1186, 0x1561, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1186, 0x1591, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
++	{ PCI_VDEVICE(DLINK, 0x1541), COMET },
++	{ PCI_VDEVICE(DLINK, 0x1561), COMET },
++	{ PCI_VDEVICE(DLINK, 0x1591), COMET },
+ 	{ 0x14f1, 0x1803, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CONEXANT },
+ 	{ 0x1626, 0x8410, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1737, 0xAB09, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x1737, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
++	{ PCI_VDEVICE(LINKSYS, 0xAB09), COMET },
++	{ PCI_VDEVICE(LINKSYS, 0xAB08), COMET },
+ 	{ 0x17B3, 0xAB08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+-	{ 0x10b7, 0x9300, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET }, /* 3Com 3CSOHO100B-TX */
++	{ PCI_VDEVICE(3COM, 0x9300), COMET }, /* 3Com 3CSOHO100B-TX */
+ 	{ 0x14ea, 0xab08, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET }, /* Planex FNW-3602-TX */
+ 	{ 0x1414, 0x0002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, COMET },
+ 	{ } /* terminate list */
+diff --git a/drivers/net/tulip/uli526x.c b/drivers/net/tulip/uli526x.c
+index 9277ce8..090a7d0 100644
+--- a/drivers/net/tulip/uli526x.c
++++ b/drivers/net/tulip/uli526x.c
+@@ -1782,8 +1782,8 @@ static u16 phy_read_1bit(unsigned long ioaddr, u32 chip_id)
+ 
+ 
+ static struct pci_device_id uli526x_pci_tbl[] = {
+-	{ 0x10B9, 0x5261, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_ULI5261_ID },
+-	{ 0x10B9, 0x5263, PCI_ANY_ID, PCI_ANY_ID, 0, 0, PCI_ULI5263_ID },
++	{ PCI_VDEVICE(AL, 0x5261), PCI_ULI5261_ID },
++	{ PCI_VDEVICE(AL, 0x5263), PCI_ULI5263_ID },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, uli526x_pci_tbl);
+diff --git a/drivers/net/tulip/winbond-840.c b/drivers/net/tulip/winbond-840.c
+index 842b1a2..5f86d08 100644
+--- a/drivers/net/tulip/winbond-840.c
++++ b/drivers/net/tulip/winbond-840.c
+@@ -220,8 +220,8 @@ enum chip_capability_flags {
+ 
+ static const struct pci_device_id w840_pci_tbl[] = {
+ 	{ 0x1050, 0x0840, PCI_ANY_ID, 0x8153,     0, 0, 0 },
+-	{ 0x1050, 0x0840, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
+-	{ 0x11f6, 0x2011, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 2 },
++	{ PCI_VDEVICE(WINBOND2, 0x0840), 1 },
++	{ PCI_VDEVICE(COMPEX, 0x2011), 2 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(pci, w840_pci_tbl);
+diff --git a/drivers/net/typhoon.c b/drivers/net/typhoon.c
+index cf25eb4..c0063c5 100644
+--- a/drivers/net/typhoon.c
++++ b/drivers/net/typhoon.c
+@@ -215,12 +215,9 @@ static struct typhoon_card_info typhoon_card_info[] __devinitdata = {
+  * bits 12-16 indicate card type: (0) client and (1) server
+  */
+ static struct pci_device_id typhoon_pci_tbl[] = {
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0,TYPHOON_TX },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_TX_95,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_TX95 },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_TX_97,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_TX97 },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990), TYPHOON_TX },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990_TX_95), TYPHOON_TX95 },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990_TX_97), TYPHOON_TX97 },
+ 	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990B,
+ 	  PCI_ANY_ID, 0x1000, 0, 0, TYPHOON_TXM },
+ 	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990B,
+@@ -235,12 +232,9 @@ static struct pci_device_id typhoon_pci_tbl[] = {
+ 	  PCI_ANY_ID, 0x2101, 0, 0, TYPHOON_FX95SVR },
+ 	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990_FX,
+ 	  PCI_ANY_ID, 0x2102, 0, 0, TYPHOON_FX97SVR },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR95,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR95 },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR97,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR97 },
+-	{ PCI_VENDOR_ID_3COM, PCI_DEVICE_ID_3COM_3CR990SVR,
+-	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, TYPHOON_SVR },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR95), TYPHOON_SVR95 },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR97), TYPHOON_SVR97 },
++	{ PCI_VDEVICE(3COM, PCI_DEVICE_ID_3COM_3CR990SVR), TYPHOON_SVR },
+ 	{ 0, }
+ };
+ MODULE_DEVICE_TABLE(pci, typhoon_pci_tbl);
+diff --git a/drivers/net/yellowfin.c b/drivers/net/yellowfin.c
+index 3c7a505..97129a7 100644
+--- a/drivers/net/yellowfin.c
++++ b/drivers/net/yellowfin.c
+@@ -238,8 +238,8 @@ static const struct pci_id_info pci_id_tbl[] = {
+ };
+ 
+ static const struct pci_device_id yellowfin_pci_tbl[] = {
+-	{ 0x1000, 0x0702, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-	{ 0x1000, 0x0701, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1 },
++	{ PCI_VDEVICE(NCR, 0x0702), 0 },
++	{ PCI_VDEVICE(NCR, 0x0701), 1 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE (pci, yellowfin_pci_tbl);
 -- 
 1.6.3.1.10.g659a0.dirty
 
