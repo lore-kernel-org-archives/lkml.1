@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbZFYWBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbZFYWFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285AbZFYWBY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 18:01:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZFYWBR
+	id S1755901AbZFYWFA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 18:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZFYWEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 18:01:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44139 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751514AbZFYWBQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 18:01:16 -0400
-Date: Thu, 25 Jun 2009 15:00:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Woodhouse <dwmw2@infradead.org>
-cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, fenghua.yu@intel.com,
-       chrisw@redhat.com, akpm@linux-foundation.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
- Mapping Support
-In-Reply-To: <1245966743.30355.42.camel@macbook.infradead.org>
-Message-ID: <alpine.LFD.2.01.0906251459320.3605@localhost.localdomain>
-References: <20090625003841.GA12226@linux-os.sc.intel.com>  <20090625095643F.fujita.tomonori@lab.ntt.co.jp>  <20090625041605.GA9330@linux-os.sc.intel.com>  <20090625134827W.fujita.tomonori@lab.ntt.co.jp>  <1245913886.17089.91.camel@macbook.infradead.org>
- <1245966743.30355.42.camel@macbook.infradead.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 25 Jun 2009 18:04:53 -0400
+Received: from solo.fdn.fr ([80.67.169.19]:57270 "EHLO solo.fdn.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753416AbZFYWEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 18:04:52 -0400
+Date: Fri, 26 Jun 2009 00:04:52 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC] accessibility, speakup, speech synthesis & /sys
+Message-ID: <20090625220452.GF5540@const.famille.thibault.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+Just as a reminder, Speakup is an in-kernel screen reader that uses
+hardware speech synthesis to say what gets printed on the Linux console.
 
-On Thu, 25 Jun 2009, David Woodhouse wrote:
+In the process of cleaning it, we are moving its configuration stuff
+into proper places.  I believe there are two things:
 
-> On Thu, 2009-06-25 at 08:11 +0100, David Woodhouse wrote:
-> > It raises the question: Why are we using firmware-specific interfaces to
-> > list the available memory -- can't we get that from somewhere _generic_?
-> > 
-> > The less we tie our code to these crappy BIOS, EFI and ACPI interfaces,
-> > the better off we'll be.
-> 
-> Does this work everywhere... ?
+- per- harware speech synthesizer parameters (e.g. speed, pitch, etc.)
+- screen reading parameters (e.g. characters pronunciation, key_echo,
+  current synthesizer being used etc.)
 
-Whimper.
+Speech synthesizers should probably have their own device class, how
+should it be called? "synth"? "speech"?
 
-Please pleas please please.. Pretty please, let this work (instead of 
-duplicating the insanity).
+Synthesizers are usually plugged on serial ports, but there is no bus
+abstraction for that, so I believe we can put them in the virtual bus.
 
-		Linus
+Then there are the screen reading parameters. I'd tend to think that
+like there are /sys/{block,firmware,fs,power}, there could be a
+/sys/accessibility, or even shorter, /sys/a11y?  Speakup parameters
+could then be in /sys/a11y/speakup?
 
-
+Samuel
