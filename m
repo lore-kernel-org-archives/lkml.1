@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZFYLmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZFYLmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbZFYLmg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 07:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZFYLmZ
+	id S1752473AbZFYLmt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZFYLme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 07:42:25 -0400
-Received: from ozlabs.org ([203.10.76.45]:47511 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbZFYLmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 07:42:24 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix notifier race conditions
-Date: Thu, 25 Jun 2009 21:12:24 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: Gregory Haskins <ghaskins@novell.com>, mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com>
+	Thu, 25 Jun 2009 07:42:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52656 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbZFYLmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 07:42:31 -0400
+Date: Thu, 25 Jun 2009 13:42:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: davidb@quicinc.com, Brian Swetland <swetland@google.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "san@android.com" <san@android.com>,
+       "rlove@google.com" <rlove@google.com>, Greg KH <greg@kroah.com>
+Subject: Re: HTC Dream in 2.6.31-git? (was Re: HTC Dream aka. t-mobile g1
+	support)
+Message-ID: <20090625114230.GA4447@elf.ucw.cz>
+References: <20090612150504.GA15084@elf.ucw.cz> <a55d774e0906121350s5c0932der44928bb8f5acad73@mail.gmail.com> <20090615170103.GE25040@elf.ucw.cz> <a55d774e0906151132m5584409epe0b7581fde5ec184@mail.gmail.com> <20090617091139.GA4536@elf.ucw.cz> <a55d774e0906170240w631cdfbfq52647d1c438647cb@mail.gmail.com> <20090623130615.GB897@elf.ucw.cz> <20090623214543.GA22725@huya.quicinc.com> <20090624091039.GA5631@elf.ucw.cz> <d6200be20906241637q7975e623x24f2999b1cc0d3aa@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200906252112.24730.rusty@rustcorp.com.au>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d6200be20906241637q7975e623x24f2999b1cc0d3aa@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009 08:15:11 am Davide Libenzi wrote:
-> On Wed, 24 Jun 2009, Rusty Russell wrote:
-> > On Tue, 23 Jun 2009 03:33:22 am Davide Libenzi wrote:
-> > > What you're doing there, is setting up a kernel-to-kernel (since
-> > > userspace only role is to create the eventfd) communication, using a
-> > > file* as accessory. That IMO is plain wrong.
+On Wed 2009-06-24 16:37:33, Arve Hj?nnev?g wrote:
+> On Wed, Jun 24, 2009 at 2:10 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> > On Tue 2009-06-23 14:45:43, davidb@quicinc.com wrote:
+> >> On Tue, Jun 23, 2009 at 06:06:15AM -0700, Pavel Machek wrote:
+> >>
+> >> > Is there version of linux-msm tree for 2.6.31-git ...? (even 2.6.30 version
+> >> > would help). I tried naively porting patches forward, but resulting
+> >> > kernel would not boot :-(.
+> >>
+> >> Not yet, at least not yet in our tree.  I'm hoping to get to this
+> >> fairly soon.
 > >
-> > The most sensible is that userspace can use these fds; an in-kernel
-> > variant is possible too, but not primary IMHO.
+> > If you have any patches, let me know; you'll have one happy tester.
 > >
-> > It's nice that userspace create the fds; it can then use the same fd for
-> > multiple event sources.
-> >
-> > But I didn't see anything wrong with the way eventfd used to work: you
-> > have a kvm ioctl to say "attach this eventfd to this guest notification"
-> > and that does the eventfd_fget.  A detach ioctl does the fput (as does
-> > release of the kvm fd).
-> >
-> > If they close the eventfd and don't do the detach ioctl, it's their
-> > problem.
->
-> Some components would like to know if userspace dropped the fd, and take
-> proper action accordingly (release resources, drop module instances,
-> etc...).
+> 
+> I don't have time to merge or rebase onto 2.6.31 and test it right
+> now, but I pushed my old 2.6.30-rc2 test branch to
+> git://android.git.kernel.org/kernel/experimental.git (as
+> android-msm-2.6.30-rc2-test) which should at least get you closer to
+> booting on 2.6.31.
 
-Like to know?  Possibly.  Need to know?  Not anything I've seen so far.
+Thanks! It actually boots for me. I'll see if I can get 2.6.30 &
+2.6.31-rc to boot, too. 
 
-If userspace creates the fd, component grab a ref and if userspace wants that 
-fd completely freed must close the fd *and* tell component.  Simple, race free 
-and explicit.  All wins.
-
-As this discussion shows, doing some kind of implies non-reference is hard, 
-complex and racy.
-
-> Another thing that comes in my mind (that for some components might not
-> matter) is considering the effect of userspace doing things like:
->
-> 	for (;;) {
-> 		fd = eventfd(...);
-> 		ioctl(xfd, XXX_ADD, fd);
-> 		close(fd);
-> 	}
->
-> That might lead to unprivileged users drawing kernel memory w/out any
-> userspace accountability, if not properly handled.
-
-No, fget_eventfd covers this exactly as expected.  Don't doubt your ability to 
-design sane kernel interfaces; eventfd is nice!  All lguest needed was a 
-couple of EXPORT_SYMBOLS and it fitted in beautifully.
-
-Thanks,
-Rusty.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
