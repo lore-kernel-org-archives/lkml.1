@@ -1,131 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZFYH2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZFYH3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbZFYH2X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 03:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZFYH2P
+	id S1756900AbZFYH3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 03:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZFYH3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 03:28:15 -0400
-Received: from stz-softwaretechnik.de ([217.160.223.211]:3005 "EHLO
-	stlx01.stz-softwaretechnik.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752449AbZFYH2P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 03:28:15 -0400
-Date: Thu, 25 Jun 2009 09:27:54 +0200
-From: Ralf Gross <rg@stz-softwaretechnik.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: Re: io-scheduler tuning for better read/write ratio
-Message-ID: <20090625072754.GC16642@p15145560.pureserver.info>
-References: <4A37CB2A.6010209@davidnewall.com> <x49iqinys2k.fsf@segfault.boston.devel.redhat.com> <20090624072554.GA16642@p15145560.pureserver.info> <200906241057.41227.a1426z@gawab.com>
+	Thu, 25 Jun 2009 03:29:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37440 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752789AbZFYH3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 03:29:01 -0400
+Subject: Re: [PATCH] x86/pci: don't use crs for root if we only have one
+ root bus
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Gary Hade <garyhade@us.ibm.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090625070347.GB2676@elte.hu>
+References: <20090624122433.GA24781@elte.hu>
+	 <20090624145119.GA12664@elte.hu> <4A429EBB.5010209@kernel.org>
+	 <4A42AFAC.6000300@kernel.org>
+	 <alpine.LFD.2.01.0906241607100.18460@localhost.localdomain>
+	 <alpine.LFD.2.01.0906241615160.18460@localhost.localdomain>
+	 <20090624163705.0389c8f0@jbarnes-g45>
+	 <alpine.LFD.2.01.0906241645300.3605@localhost.localdomain>
+	 <20090624170114.385322df@jbarnes-g45>  <20090625070347.GB2676@elte.hu>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 12:58:26 +0530
+Message-Id: <1245914906.3116.66.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906241057.41227.a1426z@gawab.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi schrieb:
-> Ralf Gross wrote:
-> > The main problem is with bacula. It reads/writes from/to two
-> > spoolfiles on the same device.
-> >
-> > I get the same behavior with 2 dd processes, one reading from disk, one
-> > writing to it.
-> >
-> > Here's the output from dstat (5 sec intervall).
-> >
-> > --dsk/md1--
-> > _read _writ
-> >   26M   95M
-> >   31M   96M
-> >   20M   85M
-> >   31M  108M
-> >   28M   89M
-> >   24M   95M
-> >   26M   79M
-> >   32M  115M
-> >   50M   74M
-> >  129M   15k
-> >  147M 1638B
-> >  147M    0
-> >  147M    0
-> >  113M    0
-> >
-> >
-> > At the end I stopped the dd process that is writing to the device, so you
-> > can see that the md device is capable of reading with >120 MB/s.
-> >
-> > I did this with these two commands.
-> >
-> > dd if=/dev/zero of=test bs=1MB
-> > dd if=/dev/md1 of=/dev/null bs=1M
+On Thu, 2009-06-25 at 09:03 +0200, Ingo Molnar wrote:
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> Try changing /proc/sys/vm/dirty_ratio = 1
+> > > [ There's a difference between "we're supposed to find and fix bugs
+> > > in the -rc series", and "I release known-buggy -rc1's since we're
+> > > supposed to fix it later". For similar reasons, I hate pulling
+> > > known-buggy stuff during the merge window - it's ok if it shows
+> > > itself to be buggy _later_, but if people send me stuff that they
+> > > know is buggy as they send it to me, then that's a problem. ]
+> > 
+> > Yeah, 100% agreed.  I didn't hear any reports until after people 
+> > started using your tree, so I think this case was handled 
+> > correctly: push something that *seems* ok upstream, but with eyes 
+> > wide open for the possibility we'd need to revert.
+> 
+> There's only one small gripe i have with the handling of it: the 
+> timing. "9e9f46c: PCI: use ACPI _CRS data by default" was written 
+> and committed on June 11th, two days _after_ the merge window 
+> opened.
+> 
+> That's way too late for maybe-broken changes to x86 lowlevel details 
+> (especially if it touches hw-environmental interaction - which is 
+> very hard to test with meaningful coverage), and it's also pretty 
+> much the worst moment to solicit testing from people who are busy 
+> getting their stuff to Linus and who are busy testing out any of the 
+> unexpected interactions and bugs.
+> 
+> So this was, to a certain degree, a predictable outcome. Trees in 
+> the Linux "critical path" of testing (core kernel, x86, core 
+> networking, very common drivers, PCI, driver core, VFS, etc.) should 
+> generally try to cool down 1-2 weeks before the merge window - 
+> because breakage there can do a lot of knock-on cascading damage. 
+> Two weeks is not a lot of time and the effects of showstopper bugs 
+> get magnified disproportionately.
+> 
 
-$cat /proc/sys/vm/dirty_ratio
-1
+Yes, I was also thinking about this when I checked the commit date. And
+totally agree with Ingo's suggestions.
 
+Thanks,
+--
+JSR
 
-$dstat -D md1 -d 5
---dsk/md1--
-_read _writ
-  18M   18M
-   0     0 
- 820k  101M
-  18M  113M
-  26M   73M
-  26M  110M
-  32M  100M
-  19M  111M
-  13M  117M
-  13M  142M
-  32M   88M
-  26M   99M
-  38M   58M
-
-No change. Even setting dirty_ratio to 100 didn't show any difference.
-
-
-With the cfq scheduler and slice_idle = 24 (trial and error) I get better
-results. Itried this before, but the overall throughput was a bit lower than
-with deadline.
-
-It seems that I can not tune deadline to get the samet behaviour.
-
---dsk/md1--
-_read _writ
-  18M   18M
-  25M   77M
-  51M   65M
-  51M   47M
-  62M   45M
-  53M   28M
-  45M   43M
-  46M   47M
-  47M   42M
-  51M   41M
-  38M   51M
-  51M   40M
-  45M   40M
-  58M   42M
-  69M   41M
-  72M   42M
- 122M    0
- 141M  340k
---dsk/md1--
-_read _writ
- 139M  562k
- 136M    0
- 141M   13k
-  64M    0
-1638B  104M
-   0   110M
-   0   122M
-   0   104M
-   0   108M
-
-The last numbers are for reading/writing only.
-
-Ralf
