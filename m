@@ -1,68 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZFYQj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZFYQkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbZFYQj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZFYQjS
+	id S1754145AbZFYQkS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZFYQkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:39:18 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:56128 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbZFYQjR (ORCPT
+	Thu, 25 Jun 2009 12:40:08 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:64122 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752571AbZFYQkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:39:17 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 25 Jun 2009 09:34:31 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Gregory Haskins <ghaskins@novell.com>, mst@redhat.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
- notifier race conditions
-In-Reply-To: <200906252112.24730.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.1.10.0906250922530.9517@makko.or.mcafeemobile.com>
-References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com> <200906252112.24730.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 25 Jun 2009 12:40:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [2.6.31-rc1] device-mapper: target device sda6 is misaligned
+Date: Thu, 25 Jun 2009 18:40:06 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       martin.petersen@oracle.com
+References: <200906250904.57149.elendil@planet.nl> <20090625154120.GA22616@redhat.com>
+In-Reply-To: <20090625154120.GA22616@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906251840.07617.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Jun 2009 16:40:08.0455 (UTC) FILETIME=[99C51170:01C9F5B3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Rusty Russell wrote:
-
-> On Thu, 25 Jun 2009 08:15:11 am Davide Libenzi wrote:
+On Thursday 25 June 2009, Mike Snitzer wrote:
+> On Thu, Jun 25 2009 at  3:04am -0400,
+> Frans Pop <elendil@planet.nl> wrote: 
+> > During boot of 2.6.31-rc1 on an arm EABI system I got the following
+> > errors:
+> > device-mapper: table: 254:0: target device sda6 is misaligned
+> > device-mapper: table: 254:0: target device sda6 is misaligned
+> > device-mapper: table: 254:1: target device sda6 is misaligned
+> > device-mapper: table: 254:1: target device sda6 is misaligned
 > >
-> > Some components would like to know if userspace dropped the fd, and take
-> > proper action accordingly (release resources, drop module instances,
-> > etc...).
-> 
-> Like to know?  Possibly.  Need to know?  Not anything I've seen so far.
-> 
-> If userspace creates the fd, component grab a ref and if userspace wants that 
-> fd completely freed must close the fd *and* tell component.  Simple, race free 
-> and explicit.  All wins.
-> 
-> As this discussion shows, doing some kind of implies non-reference is hard, 
-> complex and racy.
+> > The boot did complete successfully. A boot with 2.6.30 just
+> > previously was clean, and when I reboot back into 2.6.30 the messages
+> > are gone again.
+> >
+> > The system has a single volume group with two logical volumes.
+>
+> Even though the messages don't contain "warning", and probably should,
+> they are printed via DMWARN().
 
-Easier, we agree. Not doing anything is always easier, provided the 
-userspace interface allows for it.
-Cleaner, I'm not sure. Again, it depends from the userspace interface, but 
-usually when you close(2) something, you expect the kernel to react 
-accordingly, and not on relying on userspace issuing extra calls in order 
-to proper cleanup the kernel context.
-This is even more true when the eventfd is the sole handle to the visisble 
-userspace interface.
-In such cases, not taking proper action on close(2) and requiring extra 
-calls, would lead to designing interface with the close-no-really-i-mean-it
-patterns.
+When I first saw the messages I almost got a heart attack, especially 
+because I also got an fsck for the file systems on them. Luckily it 
+turned out later that the reason for that was that I'd accidentally 
+removed the rtc driver from my config, so the fsck was triggered by the 
+system clock not being set :-/
 
+> These warnings are a function of device-mapper now being
+> topology-aware.  This means that your LVs are likely misaligned
+> relative to the underlying hardware.  Given that you're using
+> partitions I'd wager they are the source of the misalignment.  But
+> there could be a bug lurking somewhere.
 
+OK. If it does turn out to be benign, then I'd suggest marking the 
+messages "info: " instead of "warning: ". With "warning" admins would 
+still be given the idea that something might be desperately wrong and 
+action should be taken NOW.
+Personally, I'd even prefer just not to know, unless it for example has a 
+major effect on performance _and_ is easily fixable using lvm2.
 
-- Davide
+Wouldn't it be much more logical if the userspace tools warn about 
+alignment problems when volumes are _created_?
 
+The volumes were all created using Debian Installer's partitioning 
+component, which uses libparted and lvm2.
 
+> Please provide the output from the following commands:
+>
+> pvs -o +pe_start
+
+  PV         VG   Fmt  Attr PSize   PFree  1st PE
+  /dev/sda6  qnap lvm2 a-   124.50G 44.50G 192.00K
+
+> cat /sys/block/sda/sda6/alignment_offset
+> cat /sys/block/sda/queue/physical_block_size
+> cat /sys/block/sda/queue/logical_block_size
+
+I'm afraid those files don't exist on my systems (none of them: arm, s390 
+and x86_64 notebook). Some kernel config option I'm missing maybe?
+
+Here's the partition layout:
+# fdisk -u -l /dev/sda
+
+Disk /dev/sda: 164.7 GB, 164696555520 bytes
+255 heads, 63 sectors/track, 20023 cylinders, total 321672960 sectors
+Units = sectors of 1 * 512 = 512 bytes
+Disk identifier: 0x00054f49
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *          63    19535039     9767488+  83  Linux
+/dev/sda2        19535040    39070079     9767520   83  Linux
+/dev/sda3        39070080    58605119     9767520   83  Linux
+/dev/sda4        58605120   321669494   131532187+   5  Extended
+/dev/sda5        58605183    60565049      979933+  82  Linux swap
+/dev/sda6        60565113   321669494   130552191   8e  Linux LVM
+
+> If you could also provide the same info for all other PVs that are in
+> the VG that would be appreciated.
+
+There's only the one PV.
+
+On Thursday 25 June 2009, Mike Snitzer wrote:
+> In addition to the other commands I asked for in my previous mail;
+> please provide the output from the following commands on both your real
+> and emulated configs:
+
+# dmsetup ls
+qnap-home       (254, 0)
+qnap-music      (254, 1)
+
+# dmsetup table
+qnap-home: 0 83886080 linear 8:6 384
+qnap-music: 0 83886080 linear 8:6 83886464
+
+The above is all for the arm system.
+
+Thanks,
+FJP
