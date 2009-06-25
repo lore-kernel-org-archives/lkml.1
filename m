@@ -1,110 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFYNpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZFYNxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbZFYNpb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZFYNpX
+	id S1755776AbZFYNxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZFYNxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:45:23 -0400
-Received: from mailhost11.gawab.com ([66.220.20.11]:46242 "HELO
-	info12.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751160AbZFYNpX (ORCPT
+	Thu, 25 Jun 2009 09:53:10 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:43204 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbZFYNxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:45:23 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-Date: Thu, 25 Jun 2009 16:46:22 +0300
-User-Agent: KMail/1.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <1245839904.3210.85.camel@localhost.localdomain> <200906251533.12925.a1426z@gawab.com> <20090625124342.GN31415@kernel.dk>
-In-Reply-To: <20090625124342.GN31415@kernel.dk>
+	Thu, 25 Jun 2009 09:53:09 -0400
+From: Jens Osterkamp <jens@linux.vnet.ibm.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 12/19] drivers/net: Use PCI_VDEVICE
+Date: Thu, 25 Jun 2009 15:52:55 +0200
+User-Agent: KMail/1.10.4 (Linux/2.6.27-14-generic; KDE/4.1.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org,
+       Steffen Klassert <klassert@mathematik.tu-chemnitz.de>,
+       Michael Chan <mchan@broadcom.com>,
+       Eilon Greenstein <eilong@broadcom.com>, Divy Le Ray <divy@chelsio.com>,
+       Samuel Ortiz <samuel@sortiz.org>, Tim Hockin <thockin@hockin.org>,
+       Daniele Venzano <venza@brownhat.org>, Jens Osterkamp <jens@de.ibm.com>,
+       Ishizaki Kou <kou.ishizaki@toshiba.co.jp>,
+       Ion Badulescu <ionut@cs.columbia.edu>,
+       Andy Gospodarek <andy@greyhouse.net>,
+       Alexander Indenbaum <baum@tehutinetworks.net>,
+       Samuel Chessman <chessman@tux.org>, Kyle McMartin <kyle@mcmartin.ca>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       David Dillow <dave@thedillows.org>, netdev@vger.kernel.org
+References: <cover.1245906151.git.joe@perches.com>  <f746d5c571120f930fb6bb50d8303766573f927d.1245906152.git.joe@perches.com>
+In-Reply-To: <f746d5c571120f930fb6bb50d8303766573f927d.1245906152.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200906251646.22785.a1426z@gawab.com>
+Message-Id: <200906251552.56458.jens@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Jun 25 2009, Al Boldi wrote:
-> > Jens Axboe wrote:
-> > > On Thu, Jun 25 2009, Jens Axboe wrote:
-> > > > On Thu, Jun 25 2009, Peter Zijlstra wrote:
-> > > > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
-> > > > > > On Wed, 24 Jun 2009 11:38:24 +0100
-> > > > > >
-> > > > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> > > > > > > When writing to 2 (or more) devices at the same time, stop
-> > > > > > > balance_dirty_pages moving dirty pages to writeback when it has
-> > > > > > > reached the bdi threshold. This prevents balance_dirty_pages
-> > > > > > > overshooting its limits and moving all dirty pages to
-> > > > > > > writeback.
-> > > > > > >
-> > > > > > >
-> > > > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> > > > > > > ---
-> > > > >
-> > > > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > >
-> > > > After doing some integration and update work on the writeback branch,
-> > > > I threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the
-> > > > test mix. The writeback series include this patch as a prep patch.
-> > > > Results for the mmap write test case:
-> > > >
-> > > > Kernel          Throughput      usr     sys     ctx     util
-> > > > --------------------------------------------------------------
-> > > > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
-> > > > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
-> > > > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
-> > > > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
-> > > > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
-> > > > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
-> > > > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
-> > > > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
-> > > > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
-> > > >
-> > > > To be perfectly clear:
-> > > >
-> > > > vanilla         2.6.31-rc1 stock
-> > > > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
-> > > > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
-> > > >
-> > > > This is just a single spindle w/ext4, nothing fancy. I'll do a
-> > > > 3-series run with the writeback and this patch backed out, to see if
-> > > > it makes a difference here. I didn't do that initially, since the
-> > > > results were in the range that I expected.
-> > >
-> > > Results for writeback without the bdi_thresh patch
-> > >
-> > > Kernel          Throughput      usr     sys     ctx     util
-> > > --------------------------------------------------------------
-> > > wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
-> > > wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
-> > > wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
-> > >
-> > > Not a lot of difference there, without more than three runs it's hard
-> > > to say what is significant. Could be a small decrease in throughput, if
-> > > the 208MB/sec results from above is an outlier (I think it is,
-> > > ~215MB/sec is usually the most consistent result).
-> >
-> > What's the iowait on these runs?
->
-> Not sure, I didn't check. Why do you ask?
+On Thursday 25 June 2009, Joe Perches wrote:
 
-iowait gives you an indication of seekactivity.
+> drivers/net/spider_net.c          |    3 +-
 
+spider_net bits look fine.
 
-Thanks!
+Acked-by: Jens Osterkamp <jens@linux.vnet.ibm.com>
 
---
-Al
+Thanks,
 
-
-
+Jens
