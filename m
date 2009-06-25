@@ -1,96 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZFYMnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZFYMs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbZFYMnr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbZFYMnk
+	id S1753324AbZFYMs3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFYMsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:43:40 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48788 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752215AbZFYMnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:43:39 -0400
-Date: Thu, 25 Jun 2009 14:43:42 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-Message-ID: <20090625124342.GN31415@kernel.dk>
-References: <1245839904.3210.85.camel@localhost.localdomain> <20090625091033.GF31415@kernel.dk> <20090625092642.GG31415@kernel.dk> <200906251533.12925.a1426z@gawab.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906251533.12925.a1426z@gawab.com>
+	Thu, 25 Jun 2009 08:48:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49713 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751342AbZFYMsV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:48:21 -0400
+Date: Thu, 25 Jun 2009 13:49:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David =?ISO-8859-14?B?SORyZGVtYW4=?= <david@hardeman.nu>
+Cc: linux-kernel@vger.kernel.org, jesse.barnes@intel.com
+Subject: Re: [RFC/PATCH] Winbond CIR driver for the WPCD376I chip (ACPI/PNP
+      id WEC1022)
+Message-ID: <20090625134946.46109bac@lxorguk.ukuu.org.uk>
+In-Reply-To: <55ca74318001aae803805a7bccfaca36.squirrel@www.hardeman.nu>
+References: <20090624213645.GA18843@hardeman.nu>
+	<20090624234501.3d35642f@lxorguk.ukuu.org.uk>
+	<55ca74318001aae803805a7bccfaca36.squirrel@www.hardeman.nu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25 2009, Al Boldi wrote:
-> Jens Axboe wrote:
-> > On Thu, Jun 25 2009, Jens Axboe wrote:
-> > > On Thu, Jun 25 2009, Peter Zijlstra wrote:
-> > > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
-> > > > > On Wed, 24 Jun 2009 11:38:24 +0100
-> > > > >
-> > > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> > > > > > When writing to 2 (or more) devices at the same time, stop
-> > > > > > balance_dirty_pages moving dirty pages to writeback when it has
-> > > > > > reached the bdi threshold. This prevents balance_dirty_pages
-> > > > > > overshooting its limits and moving all dirty pages to writeback.
-> > > > > >
-> > > > > >
-> > > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> > > > > > ---
-> > > >
-> > > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > >
-> > > After doing some integration and update work on the writeback branch, I
-> > > threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the test
-> > > mix. The writeback series include this patch as a prep patch. Results
-> > > for the mmap write test case:
-> > >
-> > > Kernel          Throughput      usr     sys     ctx     util
-> > > --------------------------------------------------------------
-> > > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
-> > > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
-> > > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
-> > > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
-> > > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
-> > > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
-> > > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
-> > > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
-> > > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
-> > >
-> > > To be perfectly clear:
-> > >
-> > > vanilla         2.6.31-rc1 stock
-> > > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
-> > > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
-> > >
-> > > This is just a single spindle w/ext4, nothing fancy. I'll do a 3-series
-> > > run with the writeback and this patch backed out, to see if it makes a
-> > > difference here. I didn't do that initially, since the results were in
-> > > the range that I expected.
-> >
-> > Results for writeback without the bdi_thresh patch
-> >
-> > Kernel          Throughput      usr     sys     ctx     util
-> > --------------------------------------------------------------
-> > wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
-> > wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
-> > wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
-> >
-> > Not a lot of difference there, without more than three runs it's hard to
-> > say what is significant. Could be a small decrease in throughput, if the
-> > 208MB/sec results from above is an outlier (I think it is, ~215MB/sec is
-> > usually the most consistent result).
-> 
-> What's the iowait on these runs?
+> How would it work in conjunction with ACPI? When I looked at the ACPI
+> dumps for my motherboard, the AML code seemed happy to fiddle with global
+> SuperI/O registers (protected using an internal mutex).
 
-Not sure, I didn't check. Why do you ask?
+If the device is ACPI managed in this way then all accesses to all devices
+at that address must go via ACPI as I understand it.
 
--- 
-Jens Axboe
+> Also, I don't think it's very user-friendly to have a IR device show up as
+> /dev/tty...how would userspace be able to find out that it's actually an
+> IR transceiver?
 
+Thats easy to fix - the question is more "is it an 8250 UART with some
+quirks" or is it best driven by another device.
+
+You can certainly stop the serial layer grabbing it (or undo that)
+providing the port isn't the console (which in this case would make no
+sense).
+
+> Therefore I still think it's better to model the driver as an input
+> device, and ultimately to teach the input subsystem some specifics of CIR
+> devices, similar to how force-feedback devices are handled today.
+
+Seems reasonable for this device.
+
+Alan
