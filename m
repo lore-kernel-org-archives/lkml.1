@@ -1,105 +1,405 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755312AbZFYOo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZFYOuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755312AbZFYOo4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZFYOot
+	id S1754197AbZFYOuQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZFYOt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:44:49 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35161 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751586AbZFYOos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:44:48 -0400
-Date: Thu, 25 Jun 2009 16:44:50 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-Message-ID: <20090625144450.GT31415@kernel.dk>
-References: <1245839904.3210.85.camel@localhost.localdomain> <200906251533.12925.a1426z@gawab.com> <20090625124342.GN31415@kernel.dk> <200906251646.22785.a1426z@gawab.com>
+	Thu, 25 Jun 2009 10:49:58 -0400
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:60829 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751462AbZFYOt5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 10:49:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=rGc7b70Irqzblo0MOSeGiRreQyOMY5v0g+HX42j/MKaHvV4SJ4jEZVKuhCaOd82RBj
+         l2GSMte1FAinjbj9juMOlwPrOImN56plDBbI4LGXwDtFbaIQYihwhGAiVaUkftto5T67
+         Gl/xwa5OJRC9Prd/eTi/U7T3xxrBOgx5qGyz4=
+Message-ID: <4A438E8F.4080008@gmail.com>
+Date: Thu, 25 Jun 2009 10:49:51 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906251646.22785.a1426z@gawab.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: pass value to in_range callback
+References: <20090625125333.GB7166@redhat.com>
+In-Reply-To: <20090625125333.GB7166@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFB848B259BF6B62C293A878E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25 2009, Al Boldi wrote:
-> Jens Axboe wrote:
-> > On Thu, Jun 25 2009, Al Boldi wrote:
-> > > Jens Axboe wrote:
-> > > > On Thu, Jun 25 2009, Jens Axboe wrote:
-> > > > > On Thu, Jun 25 2009, Peter Zijlstra wrote:
-> > > > > > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
-> > > > > > > On Wed, 24 Jun 2009 11:38:24 +0100
-> > > > > > >
-> > > > > > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
-> > > > > > > > When writing to 2 (or more) devices at the same time, stop
-> > > > > > > > balance_dirty_pages moving dirty pages to writeback when it has
-> > > > > > > > reached the bdi threshold. This prevents balance_dirty_pages
-> > > > > > > > overshooting its limits and moving all dirty pages to
-> > > > > > > > writeback.
-> > > > > > > >
-> > > > > > > >
-> > > > > > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> > > > > > > > ---
-> > > > > >
-> > > > > > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > > >
-> > > > > After doing some integration and update work on the writeback branch,
-> > > > > I threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the
-> > > > > test mix. The writeback series include this patch as a prep patch.
-> > > > > Results for the mmap write test case:
-> > > > >
-> > > > > Kernel          Throughput      usr     sys     ctx     util
-> > > > > --------------------------------------------------------------
-> > > > > vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
-> > > > > vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
-> > > > > vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
-> > > > > vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
-> > > > > vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
-> > > > > vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
-> > > > > writeback       215MB/sec       22.69%  53.23%   4085   92.32%
-> > > > > writeback       214MB/sec       24.31%  52.90%   4495   92.40%
-> > > > > writeback       208MB/sec       23.14%  52.12%   4067   91.68%
-> > > > >
-> > > > > To be perfectly clear:
-> > > > >
-> > > > > vanilla         2.6.31-rc1 stock
-> > > > > vanilla+patch   2.6.31-rc1 + bdi_thresh patch
-> > > > > writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
-> > > > >
-> > > > > This is just a single spindle w/ext4, nothing fancy. I'll do a
-> > > > > 3-series run with the writeback and this patch backed out, to see if
-> > > > > it makes a difference here. I didn't do that initially, since the
-> > > > > results were in the range that I expected.
-> > > >
-> > > > Results for writeback without the bdi_thresh patch
-> > > >
-> > > > Kernel          Throughput      usr     sys     ctx     util
-> > > > --------------------------------------------------------------
-> > > > wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
-> > > > wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
-> > > > wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
-> > > >
-> > > > Not a lot of difference there, without more than three runs it's hard
-> > > > to say what is significant. Could be a small decrease in throughput, if
-> > > > the 208MB/sec results from above is an outlier (I think it is,
-> > > > ~215MB/sec is usually the most consistent result).
-> > >
-> > > What's the iowait on these runs?
-> >
-> > Not sure, I didn't check. Why do you ask?
-> 
-> iowait gives you an indication of seekactivity.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFB848B259BF6B62C293A878E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-The test case is random mmap writes to files that have been laid out
-sequentially. So it's all seeks. The target drive is an SSD disk though,
-so it doesn't matter a whole lot (it's a good SSD).
+Michael S. Tsirkin wrote:
+> For write transactions, pass the value written to in_range checks so
+> that we can make each iosignalfd a separate device on kvm bus.
+>
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+>
+> Reposting with a subject now. Sorry.
+>
+> Avi, can you please merge this patch in kvm.git so that
+> Gregory can use it for iosignalfd? Once bus has RCU
+> we'll be able to remove in_range completely, but
+> let's do it step by step.
+>  =20
 
--- 
-Jens Axboe
+I think this patch will just make more churn for me, not less.  You have
+now convinced me that your io_range-less approach is better.  ;)
 
+Lets just fix the RCU thing and do it right.  Patch is under development
+as we speak.
+
+-Greg
+
+>  arch/ia64/kvm/kvm-ia64.c  |    9 ++++--
+>  arch/x86/kvm/i8254.c      |    2 +-
+>  arch/x86/kvm/lapic.c      |    2 +-
+>  arch/x86/kvm/x86.c        |   60 +++++++++++++++++++++++++------------=
+-------
+>  include/linux/kvm_host.h  |    3 +-
+>  virt/kvm/coalesced_mmio.c |    3 +-
+>  virt/kvm/ioapic.c         |    3 +-
+>  virt/kvm/iodev.h          |    9 +++---
+>  virt/kvm/kvm_main.c       |    5 ++-
+>  9 files changed, 56 insertions(+), 40 deletions(-)
+>
+> diff --git a/arch/ia64/kvm/kvm-ia64.c b/arch/ia64/kvm/kvm-ia64.c
+> index c1c5cb6..68058c2 100644
+> --- a/arch/ia64/kvm/kvm-ia64.c
+> +++ b/arch/ia64/kvm/kvm-ia64.c
+> @@ -211,11 +211,13 @@ int kvm_dev_ioctl_check_extension(long ext)
+>  }
+> =20
+>  static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,=
+
+> -					gpa_t addr, int len, int is_write)
+> +					gpa_t addr, int len, int is_write,
+> +					void *write_val)
+>  {
+>  	struct kvm_io_device *dev;
+> =20
+> -	dev =3D kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len, is_write=
+);
+> +	dev =3D kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len, is_write=
+,
+> +	                          write_val);
+> =20
+>  	return dev;
+>  }
+> @@ -247,7 +249,8 @@ static int handle_mmio(struct kvm_vcpu *vcpu, struc=
+t kvm_run *kvm_run)
+>  	kvm_run->exit_reason =3D KVM_EXIT_MMIO;
+>  	return 0;
+>  mmio:
+> -	mmio_dev =3D vcpu_find_mmio_dev(vcpu, p->addr, p->size, !p->dir);
+> +	mmio_dev =3D vcpu_find_mmio_dev(vcpu, p->addr, p->size,
+> +				      !p->dir, &p->data);
+>  	if (mmio_dev) {
+>  		if (!p->dir)
+>  			kvm_iodevice_write(mmio_dev, p->addr, p->size,
+> diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+> index 331705f..6f84cb2 100644
+> --- a/arch/x86/kvm/i8254.c
+> +++ b/arch/x86/kvm/i8254.c
+> @@ -495,7 +495,7 @@ static void pit_ioport_read(struct kvm_io_device *t=
+his,
+>  }
+> =20
+>  static int pit_in_range(struct kvm_io_device *this, gpa_t addr,
+> -			int len, int is_write)
+> +			int len, int is_write, void *write_val)
+>  {
+>  	return ((addr >=3D KVM_PIT_BASE_ADDRESS) &&
+>  		(addr < KVM_PIT_BASE_ADDRESS + KVM_PIT_MEM_LENGTH));
+> diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+> index 2e02865..3d08b1d 100644
+> --- a/arch/x86/kvm/lapic.c
+> +++ b/arch/x86/kvm/lapic.c
+> @@ -747,7 +747,7 @@ static void apic_mmio_write(struct kvm_io_device *t=
+his,
+>  }
+> =20
+>  static int apic_mmio_range(struct kvm_io_device *this, gpa_t addr,
+> -			   int len, int size)
+> +			   int len, int is_write, void *write_val)
+>  {
+>  	struct kvm_lapic *apic =3D to_lapic(this);
+>  	int ret =3D 0;
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 5a66bb9..73a56ca 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -2265,13 +2265,13 @@ static void kvm_init_msr_list(void)
+>   */
+>  static struct kvm_io_device *vcpu_find_pervcpu_dev(struct kvm_vcpu *vc=
+pu,
+>  						gpa_t addr, int len,
+> -						int is_write)
+> +						int is_write, void *write_val)
+>  {
+>  	struct kvm_io_device *dev;
+> =20
+>  	if (vcpu->arch.apic) {
+>  		dev =3D &vcpu->arch.apic->dev;
+> -		if (kvm_iodevice_in_range(dev, addr, len, is_write))
+> +		if (kvm_iodevice_in_range(dev, addr, len, is_write, write_val))
+>  			return dev;
+>  	}
+>  	return NULL;
+> @@ -2280,14 +2280,14 @@ static struct kvm_io_device *vcpu_find_pervcpu_=
+dev(struct kvm_vcpu *vcpu,
+> =20
+>  static struct kvm_io_device *vcpu_find_mmio_dev(struct kvm_vcpu *vcpu,=
+
+>  						gpa_t addr, int len,
+> -						int is_write)
+> +						int is_write, void *write_val)
+>  {
+>  	struct kvm_io_device *dev;
+> =20
+> -	dev =3D vcpu_find_pervcpu_dev(vcpu, addr, len, is_write);
+> +	dev =3D vcpu_find_pervcpu_dev(vcpu, addr, len, is_write, write_val);
+>  	if (dev =3D=3D NULL)
+>  		dev =3D kvm_io_bus_find_dev(&vcpu->kvm->mmio_bus, addr, len,
+> -					  is_write);
+> +					  is_write, write_val);
+>  	return dev;
+>  }
+> =20
+> @@ -2383,7 +2383,7 @@ mmio:
+>  	 * Is this MMIO handled locally?
+>  	 */
+>  	mutex_lock(&vcpu->kvm->lock);
+> -	mmio_dev =3D vcpu_find_mmio_dev(vcpu, gpa, bytes, 0);
+> +	mmio_dev =3D vcpu_find_mmio_dev(vcpu, gpa, bytes, 0, NULL);
+>  	mutex_unlock(&vcpu->kvm->lock);
+>  	if (mmio_dev) {
+>  		kvm_iodevice_read(mmio_dev, gpa, bytes, val);
+> @@ -2437,7 +2437,7 @@ mmio:
+>  	 * Is this MMIO handled locally?
+>  	 */
+>  	mutex_lock(&vcpu->kvm->lock);
+> -	mmio_dev =3D vcpu_find_mmio_dev(vcpu, gpa, bytes, 1);
+> +	mmio_dev =3D vcpu_find_mmio_dev(vcpu, gpa, bytes, 1, val);
+>  	mutex_unlock(&vcpu->kvm->lock);
+>  	if (mmio_dev) {
+>  		kvm_iodevice_write(mmio_dev, gpa, bytes, val);
+> @@ -2791,9 +2791,10 @@ static void pio_string_write(struct kvm_io_devic=
+e *pio_dev,
+> =20
+>  static struct kvm_io_device *vcpu_find_pio_dev(struct kvm_vcpu *vcpu,
+>  					       gpa_t addr, int len,
+> -					       int is_write)
+> +					       int is_write, void *write_val)
+>  {
+> -	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr, len, is_write);=
+
+> +	return kvm_io_bus_find_dev(&vcpu->kvm->pio_bus, addr, len, is_write,
+> +	                           write_val);
+>  }
+> =20
+>  int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct kvm_run *run, int in=
+,
+> @@ -2820,7 +2821,8 @@ int kvm_emulate_pio(struct kvm_vcpu *vcpu, struct=
+ kvm_run *run, int in,
+>  	memcpy(vcpu->arch.pio_data, &val, 4);
+> =20
+>  	mutex_lock(&vcpu->kvm->lock);
+> -	pio_dev =3D vcpu_find_pio_dev(vcpu, port, size, !in);
+> +	pio_dev =3D vcpu_find_pio_dev(vcpu, port, size, !in,
+> +				    vcpu->arch.pio_data);
+>  	mutex_unlock(&vcpu->kvm->lock);
+>  	if (pio_dev) {
+>  		kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
+> @@ -2837,7 +2839,6 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu,=
+ struct kvm_run *run, int in,
+>  {
+>  	unsigned now, in_page;
+>  	int ret =3D 0;
+> -	struct kvm_io_device *pio_dev;
+> =20
+>  	vcpu->run->exit_reason =3D KVM_EXIT_IO;
+>  	vcpu->run->io.direction =3D in ? KVM_EXIT_IO_IN : KVM_EXIT_IO_OUT;
+> @@ -2881,12 +2882,6 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu=
+, struct kvm_run *run, int in,
+> =20
+>  	vcpu->arch.pio.guest_gva =3D address;
+> =20
+> -	mutex_lock(&vcpu->kvm->lock);
+> -	pio_dev =3D vcpu_find_pio_dev(vcpu, port,
+> -				    vcpu->arch.pio.cur_count,
+> -				    !vcpu->arch.pio.in);
+> -	mutex_unlock(&vcpu->kvm->lock);
+> -
+>  	if (!vcpu->arch.pio.in) {
+>  		/* string PIO write */
+>  		ret =3D pio_copy_data(vcpu);
+> @@ -2894,16 +2889,29 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcp=
+u, struct kvm_run *run, int in,
+>  			kvm_inject_gp(vcpu, 0);
+>  			return 1;
+>  		}
+> -		if (ret =3D=3D 0 && pio_dev) {
+> -			pio_string_write(pio_dev, vcpu);
+> -			complete_pio(vcpu);
+> -			if (vcpu->arch.pio.count =3D=3D 0)
+> -				ret =3D 1;
+> +		if (ret =3D=3D 0) {
+> +			struct kvm_io_device *pio_dev;
+> +			mutex_lock(&vcpu->kvm->lock);
+> +			pio_dev =3D vcpu_find_pio_dev(vcpu, port,
+> +						    vcpu->arch.pio.cur_count,
+> +						    1, vcpu->arch.pio_data);
+> +			mutex_unlock(&vcpu->kvm->lock);
+> +			if (pio_dev) {
+> +				pio_string_write(pio_dev, vcpu);
+> +				complete_pio(vcpu);
+> +				if (vcpu->arch.pio.count =3D=3D 0)
+> +					ret =3D 1;
+> +			}
+>  		}
+> -	} else if (pio_dev)
+> -		pr_unimpl(vcpu, "no string pio read support yet, "
+> -		       "port %x size %d count %ld\n",
+> -			port, size, count);
+> +	} else {
+> +		mutex_lock(&vcpu->kvm->lock);
+> +		if (vcpu_find_pio_dev(vcpu, port, vcpu->arch.pio.cur_count, 0,
+> +				     NULL))
+> +			pr_unimpl(vcpu, "no string pio read support yet, "
+> +				  "port %x size %d count %ld\n",
+> +				  port, size, count);
+> +		mutex_unlock(&vcpu->kvm->lock);
+> +	}
+> =20
+>  	return ret;
+>  }
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 2451f48..7b2bd9b 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -60,7 +60,8 @@ struct kvm_io_bus {
+>  void kvm_io_bus_init(struct kvm_io_bus *bus);
+>  void kvm_io_bus_destroy(struct kvm_io_bus *bus);
+>  struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
+> -					  gpa_t addr, int len, int is_write);
+> +					  gpa_t addr, int len, int is_write,
+> +					  void *write_val);
+>  void kvm_io_bus_register_dev(struct kvm_io_bus *bus,
+>  			     struct kvm_io_device *dev);
+> =20
+> diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
+> index 397f419..9561bc2 100644
+> --- a/virt/kvm/coalesced_mmio.c
+> +++ b/virt/kvm/coalesced_mmio.c
+> @@ -20,7 +20,8 @@ static inline struct kvm_coalesced_mmio_dev *to_mmio(=
+struct kvm_io_device *dev)
+>  }
+> =20
+>  static int coalesced_mmio_in_range(struct kvm_io_device *this,
+> -				   gpa_t addr, int len, int is_write)
+> +				   gpa_t addr, int len, int is_write,
+> +				   void *write_val)
+>  {
+>  	struct kvm_coalesced_mmio_dev *dev =3D to_mmio(this);
+>  	struct kvm_coalesced_mmio_zone *zone;
+> diff --git a/virt/kvm/ioapic.c b/virt/kvm/ioapic.c
+> index d8b2eca..fa3f4fb 100644
+> --- a/virt/kvm/ioapic.c
+> +++ b/virt/kvm/ioapic.c
+> @@ -228,7 +228,8 @@ static inline struct kvm_ioapic *to_ioapic(struct k=
+vm_io_device *dev)
+>  }
+> =20
+>  static int ioapic_in_range(struct kvm_io_device *this, gpa_t addr,
+> -			   int len, int is_write)
+> +			   int len, int is_write,
+> +			   void *write_val)
+>  {
+>  	struct kvm_ioapic *ioapic =3D to_ioapic(this);
+> =20
+> diff --git a/virt/kvm/iodev.h b/virt/kvm/iodev.h
+> index 2c67f5a..d8cf9e2 100644
+> --- a/virt/kvm/iodev.h
+> +++ b/virt/kvm/iodev.h
+> @@ -30,7 +30,7 @@ struct kvm_io_device_ops {
+>  		      int len,
+>  		      const void *val);
+>  	int (*in_range)(struct kvm_io_device *this, gpa_t addr, int len,
+> -			int is_write);
+> +			int is_write, void *write_val);
+>  	void (*destructor)(struct kvm_io_device *this);
+>  };
+> =20
+> @@ -61,10 +61,11 @@ static inline void kvm_iodevice_write(struct kvm_io=
+_device *dev,
+>  	dev->ops->write(dev, addr, len, val);
+>  }
+> =20
+> -static inline int kvm_iodevice_in_range(struct kvm_io_device *dev,
+> -					gpa_t addr, int len, int is_write)
+> +static inline int kvm_iodevice_inrange(struct kvm_io_device *dev,
+> +				       gpa_t addr, int len, int is_write,
+> +				       void *write_val)
+>  {
+> -	return dev->ops->in_range(dev, addr, len, is_write);
+> +	return dev->ops->in_range(dev, addr, len, is_write, write_val);
+>  }
+> =20
+>  static inline void kvm_iodevice_destructor(struct kvm_io_device *dev)
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 58d6bc6..f5dfe02 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2485,14 +2485,15 @@ void kvm_io_bus_destroy(struct kvm_io_bus *bus)=
+
+>  }
+> =20
+>  struct kvm_io_device *kvm_io_bus_find_dev(struct kvm_io_bus *bus,
+> -					  gpa_t addr, int len, int is_write)
+> +					  gpa_t addr, int len, int is_write,
+> +					  void *write_val)
+>  {
+>  	int i;
+> =20
+>  	for (i =3D 0; i < bus->dev_count; i++) {
+>  		struct kvm_io_device *pos =3D bus->devs[i];
+> =20
+> -		if (kvm_iodevice_in_range(pos, addr, len, is_write))
+> +		if (kvm_iodevice_in_range(pos, addr, len, is_write, write_val))
+>  			return pos;
+>  	}
+> =20
+>  =20
+
+
+
+--------------enigFB848B259BF6B62C293A878E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpDjo8ACgkQP5K2CMvXmqFtdwCgiELWtDWv71iRjhUprlKgHgoA
+rmkAn3UH9iQjXBwUk2XwDu6q0dfzQlwK
+=e67b
+-----END PGP SIGNATURE-----
+
+--------------enigFB848B259BF6B62C293A878E--
