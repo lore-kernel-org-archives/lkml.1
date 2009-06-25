@@ -1,89 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZFYO4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZFYO5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbZFYO4x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZFYO4p
+	id S1756398AbZFYO5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZFYO5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:56:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:21026 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbZFYO4o (ORCPT
+	Thu, 25 Jun 2009 10:57:35 -0400
+Received: from mail-yx0-f186.google.com ([209.85.210.186]:41787 "EHLO
+	mail-yx0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbZFYO5e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:56:44 -0400
+	Thu, 25 Jun 2009 10:57:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Ge/iQbrJxdLi26ir0Ru244q1R0oEhELDfKpZB9CeG1gwYUBsT9xJPN1qI3mrqO6viK
-         E7jGwNris1RlSagbLsauX1CmhKQlJPXRqE7BIkf8/qXzF3TedC93VuSuznE72JeV2wA7
-         qei1bZXvYhLFFc1X7Em/jtmv2en0rSjk2lN4s=
-Message-ID: <4A439029.10601@gmail.com>
-Date: Thu, 25 Jun 2009 10:56:41 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V3m4wjf1ukQQLh6H2c10XCUEsF5qEEtQSao53X91B4hqowi4z+s/wnjuSGkYm1AjbA
+         68sbiXCxzXiw24nDTHXt+5C2EQRTmh6ZlxaOPvLgUhG4vHkNzISjsf4x2QDkxGAXNUER
+         V30QfYRHsZgZBJdupMY9PuRwXVn1Yi28aLlf8=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [KVM PATCH v8 1/3] KVM: make io_bus interface more robust
-References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003035.15859.33528.stgit@dev.haskins.net> <4A438825.5000606@novell.com> <20090625145341.GC7221@redhat.com>
-In-Reply-To: <20090625145341.GC7221@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig226247ED22B143150E7089D1"
+In-Reply-To: <200906242124.05511.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org>
+	 <200906240208.23482.rjw@sisk.pl> <200906240236.41526.rjw@sisk.pl>
+	 <200906242124.05511.rjw@sisk.pl>
+Date: Thu, 25 Jun 2009 23:57:36 +0900
+Message-ID: <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of 
+	I/O devices (rev. 5)
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig226247ED22B143150E7089D1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Michael S. Tsirkin wrote:
-> On Thu, Jun 25, 2009 at 10:22:29AM -0400, Gregory Haskins wrote:
->  =20
->> Gregory Haskins wrote:
->>    =20
->>> Today kvm_io_bus_regsiter_dev() returns void and will internally BUG_=
-ON if it
->>> fails.  We want to create dynamic MMIO/PIO entries driven from usersp=
-ace later
->>> in the series, so we need to enhance the code to be more robust with =
-the
->>> following changes:
->>>
->>>    1) Add a return value to the registration function
->>>    2) Fix up all the callsites to check the return code, handle any
->>>       failures, and percolate the error up to the caller.
->>>    3) Add an unregister function that collapses holes in the array
->>>      =20
+On Thu, Jun 25, 2009 at 4:24 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
 >
-> Does not unregister need rcu bus fixes to work?
+> Introduce a core framework for run-time power management of I/O
+> devices.  Add device run-time PM fields to 'struct dev_pm_info'
+> and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+> a run-time PM workqueue and define some device run-time PM helper
+> functions at the core level.  Document all these things.
 >
->  =20
-Not without users ;)
+> Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-But, hmm.   Perhaps I should re-split out the return value stuff so it
-can go independent of the unregister.  Gah, this io_bus is a nightmare.
+Hi Rafael,
 
--Greg
+Thanks for your work on this. I've built some code for SuperH on top
+of this today, and with that behind me I have a few questions and a
+little bit of code feedback.
 
+Questions:
 
---------------enig226247ED22B143150E7089D1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+1) Which functions are device drivers supposed to use?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+I simply added pm_runtime_resume() and pm_runtime_suspend() where
+clk_enable() and clk_disable() normally are used. In interrupt
+handlers I used pm_request_suspend() instead of pm_runtime_suspend().
 
-iEYEARECAAYFAkpDkCkACgkQP5K2CMvXmqE+TwCcCB/YlHBHgodDVf3XLHE4TqjF
-91wAn39g+FNtW5nPSYjfFyR1x3rdJ+9t
-=myHr
------END PGP SIGNATURE-----
+I'm not sure if the v5 patch does the right thing around
+really_probe() like Alan pointed out. Basically, I'd like to be able
+to call my bus callback for ->runtime_resume() from the driver
+probe(), but power.resume_count seems stuck at 1 which leads to
+pm_runtime_resume() returning -EAGAIN before invoking the bus
+callback.
 
---------------enig226247ED22B143150E7089D1--
+This leads to question number two...
+
+2) What's the default state in probe()?
+
+We touched this subject briefly before. I'd like to compare the
+Runtime PM default state with the clock framework default state. The
+clock framework requires you to use clk_enable() to enable the clock
+to a hardware block before it is allowed to access the hardware
+registers. At least that's how we handle stop bits on SuperH. So
+clocks come up disabled from boot and should be enabled and disabled
+by the device driver to save power.
+
+I'd like to change our Module Stop Bits code on SuperH (once again)
+from being handled by the clock framework to being managed by the
+Runtime PM framework. Having the clock framework deal with the stop
+bits works fine today, they are off by default after boot, and the
+driver often enables the clock with clk_enable() in probe() or
+hopefully in some more finegrained fashion.
+
+I'm not sure how the Module Stop Bits should fit with the Runtime PM
+code though. The default state for a device at probe() time seems to
+be RPM_ACTIVE. Should drivers call pm_runtime_enable() to enable
+Runtime PM?
+
+One part of me likes the idea that Runtime PM-enabled drivers start in
+RPM_SUSPENDED so they are forced to put pm_runtime_resume() before
+actually using the hardware. This makes the Runtime PM behaviour
+pretty close to the clock framework.
+
+If you dislike starting from RPM_SUSPENDED (most likely) then I wonder
+how I should set the state to RPM_SUSPENDED in the driver. I'd like to
+make sure that pm_runtime_resume() can invoke the bus callback so the
+hardware can be turned on for the first time somehow. Should I do a
+dummy suspend?
+
+3) Should drivers use pm_suspend_ignore_children(dev, true)?
+
+It turns out that I can't suspend my I2C master driver out of the box
+since it becomes the parent of all slaves on the I2C bus. The I2C
+master driver is just a platform driver, and the children are I2C
+devices (90% sure). I want to do Runtime PM regardless if the child
+devices are suspended or not, I guess I should use
+pm_suspend_ignore_children(dev, true) then?
+
+> +/**
+> + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
+> + * @dev: Device to resume.
+> + * @sync: If unset, the funtion has been called via pm_wq.
+> + *
+> + * Check if the device is really suspended and run the ->runtime_resume()
+> + * callback provided by the device's bus type driver.  Update the run-time PM
+> + * flags in the device object to reflect the current status of the device.  If
+> + * runtime suspend is in progress while this function is being run, wait for it
+> + * to finish before resuming the device.  If runtime suspend is scheduled, but
+> + * it hasn't started yet, cancel it and we're done.
+> + */
+> +int __pm_runtime_resume(struct device *dev, bool sync)
+> +{
+[snip]
+> +}
+> +EXPORT_SYMBOL_GPL(pm_runtime_resume);
+
+You're missing "__" here unless you're aiming for something very exotic. =)
+
+> +/**
+> + * pm_runtime_work - Run __pm_runtime_resume() for a device.
+> + * @work: Work structure used for scheduling the execution of this function.
+> + *
+> + * Use @work to get the device object the resume has been scheduled for and run
+> + * __pm_runtime_resume() for it.
+> + */
+> +static void pm_runtime_work(struct work_struct *work)
+> +{
+> +       __pm_runtime_resume(work_to_device(work), false);
+> +}
+
+Anything wrong with the name pm_runtime_resume_work()?
+
+Looking forward to v6, I'll switch task now, will be back to this late Monday.
+
+Cheers,
+
+/ magnus
