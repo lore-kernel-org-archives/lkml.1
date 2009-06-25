@@ -1,101 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbZFYCur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZFYC5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbZFYCur (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 24 Jun 2009 22:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZFYCug
+	id S1754307AbZFYC5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 24 Jun 2009 22:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFYC4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 24 Jun 2009 22:50:36 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:45606
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751772AbZFYCug (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 24 Jun 2009 22:50:36 -0400
-Message-ID: <4A42E68A.3020702@bluewatersys.com>
-Date: Thu, 25 Jun 2009 14:52:58 +1200
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 24 Jun 2009 22:56:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38779 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbZFYC4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 24 Jun 2009 22:56:54 -0400
+Message-ID: <4A42E72D.2060904@kernel.org>
+Date: Thu, 25 Jun 2009 11:55:41 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-CC: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
-       spi-devel-general@lists.sourceforge.net, mike@steroidmicros.com,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Linus Walleij <linus.ml.walleij@gmail.com>, akpm@linux-foundation.org
-Subject: Re: [spi-devel-general] [PATCH] SST25L (non JEDEC) SPI Flash driver
-References: <4A3F017B.2010409@bluewatersys.com> <BD79186B4FD85F4B8E60E381CAEE1909019BE1CE@mi8nycmail19.Mi8.com> <4A42DB93.8020503@bluewatersys.com> <BD79186B4FD85F4B8E60E381CAEE1909019BE1D5@mi8nycmail19.Mi8.com>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909019BE1D5@mi8nycmail19.Mi8.com>
-X-Enigmail-Version: 0.95.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
+       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH 01/10] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <1245825924-30412-1-git-send-email-tj@kernel.org>	 <1245825924-30412-2-git-send-email-tj@kernel.org> <1245887275.4022.619.camel@mulgrave.site>
+In-Reply-To: <1245887275.4022.619.camel@mulgrave.site>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 02:55:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H Hartley Sweeten wrote:
-> On Wednesday, June 24, 2009 7:06 PM, Ryan Mallon wrote:
->> H Hartley Sweeten wrote:
->>> On Sunday, June 21, 2009 8:59 PM, Ryan Mallon wrote:
+James Bottomley wrote:
+> On Wed, 2009-06-24 at 15:45 +0900, Tejun Heo wrote:
+>> This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
+>> dynamic percpu allocator.  The first chunk is allocated using
+>> embedding helper and 8k is reserved for modules.  This ensures that
+>> the new allocator behaves almost identically to the original allocator
+>> as long as static percpu variables are concerned, so it shouldn't
+>> introduce much breakage.
+>>
+>> s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
+>> range limit the addressing model imposes.  Unfortunately, this breaks
+>> if the address is specified using a variable, so for now, the two
+>> archs aren't converted.
+>>
+>> The following architectures are affected by this change.
+>>
+>> * sh
+>> * arm
+>> * cris
+>> * mips
+>> * sparc(32)
+>> * blackfin
+>> * avr32
+>> * parisc (broken, under investigation)
+> 
+> OK, I thought I'd investigate this.  Unfortunately, your git tree
+> doesn't build when pulled into head ... could you update?
+> 
+> mm/percpu.c: In function 'setup_per_cpu_areas':
+> mm/percpu.c:2007: error: too many arguments to function 'pcpu_embed_first_chunk'
 
-> I think you could still support the block erase and chip erase internal
-> to the driver for performance.  Maybe something like the following?
-> 
-> static int sst25l_erase(struct mtd_info *mtd, struct erase_info *instr)
-> {
-...
-> 	if (instr->len == mtd->size) {
-> 		err = __sst25l_erase(flash, addr, SST25L_CMD_CHIP_ERASE);
-> 		if (err) {
-> 			mutex_unlock(&flash->lock);
-> 			instr->state = MTD_ERASE_FAILED;
-> 			dev_err(&flash->spi->dev, "Erase failed\n");
-> 			return err;
-> 		}
-> 	} else {
-> 		while (addr < end) {
-> 			u32 erasesize;
-> 
-> 			if (addr % block || addr + block > end) {
-> 				erasesize = sector;
-> 				err = __sst25l_erase(flash, addr,
-> 						SST25L_CMD_SECTOR_ERASE);
-> 			} else {
-> 				erasesize = block;
-> 				err = __sst25l_erase(flash, addr,
-> 						SST25L_CMD_BLOCK_ERASE);
-> 			}
-> 			if (err) {
-> 				mutex_unlock(&flash->lock);
-> 				instr->state = MTD_ERASE_FAILED;
-> 				dev_err(&flash->spi->dev, "Erase failed\n");
-> 				return err;
-> 			}
-> 
-> 			addr += erasesize;
-> 		}
-> 	}
+Hmm... strange.  I don't see such failures.  Can you please try the
+following git tree?
 
-> 
-> You would need to add sector_size and block_size to the ss25l_flash
-> and flash_info structs and modify flash_info as appropriate.  Then copy
-> those over during the probe and use sector_size for mtd.erasesize.
-> 
-> That way we get the 4K erase size but still get the performance increase
-> for block and chip erase.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-james
 
-We discussed this, but it adds additional complexity to what is
-otherwise quite a simple driver. The 4K sector erase will work in all
-cases, and the speed difference shouldn't be a massive problem. I would
-venture a guess that most people using the chips have reasonably
-non-volatile storage on them, and don't get erased very often. We use
-ours for the Bootloader and boot environment.
+The contains all posted percpu patches and pulls in the current
+linus#master (rc1).
 
-~Ryan
+Thanks.
 
 -- 
-Bluewater Systems Ltd - ARM Technology Solution Centre
-
-       Ryan Mallon                              Unit 5, Amuri Park
-       Phone: +64 3 3779127                     404 Barbadoes St
-       Fax:   +64 3 3779135                     PO Box 13 889
-       Email: ryan@bluewatersys.com             Christchurch, 8013
-       Web:   http://www.bluewatersys.com       New Zealand
-       Freecall Australia  1800 148 751         USA 1800 261 2934
+tejun
