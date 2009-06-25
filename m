@@ -1,259 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736AbZFYFJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZFYFNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751736AbZFYFJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 01:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZFYFJM
+	id S1754704AbZFYFNq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 01:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZFYFNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 01:09:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:38058 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750788AbZFYFJL (ORCPT
+	Thu, 25 Jun 2009 01:13:35 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1433 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZFYFNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 01:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CB8gO1f25ViACZurMf6gqBRtodz5PC2E8jj8zpf9tAyBNwXdkncQUIto/cM/6ZI5MK
-         5XoKlLP5xK2IQXyHJeXmWtQOjWygvuNv8VegGyoNu7rwlLIbk+Q9uTPewd0VeNaszU44
-         +pi8+YkAL4iMeLroUNAcX6OpN6KLy5vuE9usA=
-Date: Thu, 25 Jun 2009 07:09:10 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo <mingo@elte.hu>, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 1/2] ftrace: add tracepoint for timer
-Message-ID: <20090625050908.GB6071@nowhere>
-References: <4A38B9C7.3080802@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A38B9C7.3080802@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 25 Jun 2009 01:13:34 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 00/19] Use PCI_VDEVICE
+Date: Wed, 24 Jun 2009 22:13:16 -0700
+Message-Id: <cover.1245906151.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 05:39:19PM +0800, Xiao Guangrong wrote:
-> This patch is modify from Mathieu's patch base on Ingo's suggestion, the
-> original patch can be found here:
-> 	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
-> 
-> Great thanks to Thomas for giving me so many valuable advices.
-> 
-> Those tracepoints are wanted and useful:
-> 1: We can detect a timer's delay
-> 2: We can monitor the lifecycle and behaviors of a timer
-> 
-> Thus they help in analysing and debuging.
-> 
-> Example ftrace output:
->    insmod-3743  [001] 217105.738770: timer_init: timer=e0b3e4c8
->    insmod-3743  [001] 217105.738868: timer_start: timer=e0b3e4c8 func=timer_fun expires=442863 timeout=50
->    <idle>-0     [001] 217105.935436: timer_expire: timer=e0b3e4c8 func=timer_fun jiffies=442863
->    <idle>-0     [001] 217105.935440: timer_cancel: timer=e0b3e4c8 func=timer_fun
-> 
-> We expect the timer expires at 442863, after 50 jiffies, actually the timer
-> expires at 442863, so it is delayed by 0 jiffies.
-> 
-> Changelog v1->v2:
-> 1: Add jiffies info into timer
-> 2: Combine debugobjects and trace as Thomas's suggestion
->  
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+The PCI_VDEVICE macro can simplify declarations.
+Converted source code to use it via the script below:
 
+#! /bin/bash
 
-Thomas, are you fine with these patches?
-If so, I can prepare a pull request to Ingo, unless he prefers to
-apply them himself.
+for line in \
+    $(grep -ioP "PCI_VENDOR_ID_\w+\s+0x[a-f0-9]{4,4}" include/linux/pci_ids.h | \
+    sed -r -e "s/PCI_VENDOR_ID_(\w+)\s+(0x[a-fA-F0-9]{1,4})/\2:\1/g" | \
+    grep -vi "0x1102") ; do
+    
+    constant=$(echo $line | cut -f1 -d":")
+    vendor=$(echo $line | cut -f2 -d":")
 
-Thanks,
-Frederic.
+    echo "$constant -> $vendor"
 
+    for file in $(grep -rP --include=*.[ch] -li -w \
+	$constant drivers sound) ; do
 
+	perl -i -e \
+	    "local $/; while(<>) { s/\b$constant\s*,\s*(\w+)\s*,\s*PCI_ANY_ID\s*,\s*PCI_ANY_ID\s*,\s*0\s*,\s*0\s*,\s*/PCI_VDEVICE\($vendor, \1\), /gi; print; }" $file
+    done
 
-> ---
->  include/trace/events/timer.h |   82 ++++++++++++++++++++++++++++++++++++++++++
->  kernel/timer.c               |   33 +++++++++++++++--
->  2 files changed, 111 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
-> index 6e7beb5..e9c51ee 100644
-> --- a/include/trace/events/timer.h
-> +++ b/include/trace/events/timer.h
-> @@ -110,6 +110,88 @@ TRACE_EVENT(hrtimer_exit,
->  			"HRTIMER_RESTART" : "HRTIMER_NORESTART")
->  );
->  
-> +TRACE_EVENT(timer_init,
-> +
-> +	TP_PROTO(struct timer_list *timer),
-> +
-> +	TP_ARGS(timer),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer	= timer;
-> +	),
-> +
-> +	TP_printk("timer=%p", __entry->timer)
-> +);
-> +
-> +TRACE_EVENT(timer_start,
-> +
-> +	TP_PROTO(struct timer_list *timer, unsigned long expires),
-> +
-> +	TP_ARGS(timer, expires),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
-> +		__field( unsigned long,	expires		)
-> +		__field( int,		timeout		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer		= timer;
-> +		__entry->function	= timer->function;
-> +		__entry->expires	= expires;
-> +		__entry->timeout	= timer->expires - jiffies;
-> +	),
-> +
-> +	TP_printk("timer=%p func=%pf expires=%lu timeout=%d", __entry->timer,
-> +		  __entry->function, __entry->expires, __entry->timeout)
-> +);
-> +
-> +TRACE_EVENT(timer_expire,
-> +
-> +	TP_PROTO(struct timer_list *timer),
-> +
-> +	TP_ARGS(timer),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
-> +		__field( unsigned long,	jiffies		)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer		= timer;
-> +		__entry->function	= timer->function;
-> +		__entry->jiffies	= jiffies;
-> +	),
-> +
-> +	TP_printk("timer=%p func=%pf jiffies=%lu", __entry->timer,
-> +		  __entry->function, __entry->jiffies)
-> +);
-> +
-> +TRACE_EVENT(timer_cancel,
-> +
-> +	TP_PROTO(struct timer_list *timer),
-> +
-> +	TP_ARGS(timer),
-> +
-> +	TP_STRUCT__entry(
-> +		__field( void *,	timer		)
-> +		__field( void *,	function	)
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__entry->timer		= timer;
-> +		__entry->function	= timer->function;
-> +	),
-> +
-> +	TP_printk("timer=%p func=%pf", __entry->timer, __entry->function)
-> +);
-> +
->  #endif /*  _TRACE_TIMER_H */
->  
->  /* This part must be outside protection */
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index d07c900..11660c7 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -521,6 +521,30 @@ static inline void debug_timer_activate(struct timer_list *timer) { }
->  static inline void debug_timer_deactivate(struct timer_list *timer) { }
->  #endif
->  
-> +static inline void debug_and_trace_timer_init(struct timer_list *timer)
-> +{
-> +	debug_timer_init(timer);
-> +	trace_timer_init(timer);
-> +}
-> +
-> +static inline void
-> +debug_and_trace_timer_activate(struct timer_list *timer, unsigned long expires)
-> +{
-> +	debug_timer_activate(timer);
-> +	trace_timer_start(timer, expires);
-> +}
-> +
-> +static inline void debug_and_trace_timer_expire(struct timer_list *timer)
-> +{
-> +	trace_timer_expire(timer);
-> +}
-> +
-> +static inline void debug_and_trace_timer_deactivate(struct timer_list *timer)
-> +{
-> +	debug_timer_deactivate(timer);
-> +	trace_timer_cancel(timer);
-> +}
-> +
->  static void __init_timer(struct timer_list *timer,
->  			 const char *name,
->  			 struct lock_class_key *key)
-> @@ -549,7 +573,7 @@ void init_timer_key(struct timer_list *timer,
->  		    const char *name,
->  		    struct lock_class_key *key)
->  {
-> -	debug_timer_init(timer);
-> +	debug_and_trace_timer_init(timer);
->  	__init_timer(timer, name, key);
->  }
->  EXPORT_SYMBOL(init_timer_key);
-> @@ -568,7 +592,7 @@ static inline void detach_timer(struct timer_list *timer,
->  {
->  	struct list_head *entry = &timer->entry;
->  
-> -	debug_timer_deactivate(timer);
-> +	debug_and_trace_timer_deactivate(timer);
->  
->  	__list_del(entry->prev, entry->next);
->  	if (clear_pending)
-> @@ -629,7 +653,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
->  			goto out_unlock;
->  	}
->  
-> -	debug_timer_activate(timer);
-> +	debug_and_trace_timer_activate(timer, expires);
->  
->  	new_base = __get_cpu_var(tvec_bases);
->  
-> @@ -781,7 +805,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
->  	BUG_ON(timer_pending(timer) || !timer->function);
->  	spin_lock_irqsave(&base->lock, flags);
->  	timer_set_base(timer, base);
-> -	debug_timer_activate(timer);
-> +	debug_and_trace_timer_activate(timer, timer->expires);
->  	internal_add_timer(base, timer);
->  	/*
->  	 * Check whether the other CPU is idle and needs to be
-> @@ -952,6 +976,7 @@ static inline void __run_timers(struct tvec_base *base)
->  			unsigned long data;
->  
->  			timer = list_first_entry(head, struct timer_list,entry);
-> +			debug_and_trace_timer_expire(timer);
->  			fn = timer->function;
->  			data = timer->data;
->  
-> -- 
-> 1.6.1.2
-> 
-> 
+    for file in $(grep -rP --include=*.[ch] -li -w \
+	PCI_VENDOR_ID_$vendor drivers sound) ; do
+
+	perl -i -e \
+	    "local $/; while(<>) { s/\bPCI_VENDOR_ID_$vendor\s*,\s*(\w+)\s*,\s*PCI_ANY_ID\s*,\s*PCI_ANY_ID\s*,\s*0\s*,\s*0\s*,\s*/PCI_VDEVICE\($vendor, \1\), /g; print; }" $file
+    done
+
+done
+
+---------
+
+Joe Perches (19):
+  drivers/ata: Use PCI_VDEVICE
+  drivers/atm: Use PCI_VDEVICE
+  drivers/block: Use PCI_VDEVICE
+  drivers/char/hw_random: Use PCI_VDEVICE
+  drivers/isdn: Use PCI_VDEVICE
+  drivers/media: Use PCI_VDEVICE
+  drivers/memstick: Use PCI_VDEVICE
+  drivers/misc: Use PCI_VDEVICE
+  drivers/mmc: Use PCI_VDEVICE
+  drivers/net/wan: Use PCI_VDEVICE
+  drivers/net/wireless: Use PCI_VDEVICE
+  drivers/net: Use PCI_VDEVICE
+  drivers/parport: Use PCI_VDEVICE
+  drivers/scsi: Use PCI_VDEVICE
+  drivers/serial: Use PCI_VDEVICE
+  drivers/staging: Use PCI_VDEVICE
+  drivers/telephony: Use PCI_VDEVICE
+  drivers/video: Use PCI_VDEVICE
+  sound: Use PCI_VDEVICE
+
+ drivers/ata/ata_piix.c                             |   98 ++--
+ drivers/ata/pata_scc.c                             |    3 +-
+ drivers/atm/ambassador.c                           |    6 +-
+ drivers/atm/eni.c                                  |    6 +-
+ drivers/atm/firestream.c                           |    6 +-
+ drivers/atm/fore200e.c                             |    3 +-
+ drivers/atm/he.c                                   |    3 +-
+ drivers/atm/horizon.c                              |    3 +-
+ drivers/atm/idt77252.c                             |    3 +-
+ drivers/atm/nicstar.c                              |    3 +-
+ drivers/atm/solos-pci.c                            |    2 +-
+ drivers/atm/zatm.c                                 |    6 +-
+ drivers/block/sx8.c                                |    4 +-
+ drivers/char/hw_random/amd-rng.c                   |    4 +-
+ drivers/char/hw_random/geode-rng.c                 |    3 +-
+ drivers/isdn/hardware/eicon/divasmain.c            |   34 +-
+ drivers/isdn/hardware/mISDN/hfcmulti.c             |    9 +-
+ drivers/isdn/hardware/mISDN/hfcpci.c               |   69 +--
+ drivers/media/video/bt8xx/bttv-driver.c            |   12 +-
+ drivers/media/video/meye.c                         |    3 +-
+ drivers/memstick/host/jmb38x_ms.c                  |    3 +-
+ drivers/misc/tifm_7xx1.c                           |    9 +-
+ drivers/mmc/host/via-sdmmc.c                       |    3 +-
+ drivers/net/3c59x.c                                |   90 ++--
+ drivers/net/8139too.c                              |   18 +-
+ drivers/net/amd8111e.c                             |    3 +-
+ drivers/net/arcnet/com20020-pci.c                  |    6 +-
+ drivers/net/bnx2.c                                 |   24 +-
+ drivers/net/bnx2x_main.c                           |    9 +-
+ drivers/net/cassini.c                              |    6 +-
+ drivers/net/cxgb3/cxgb3_main.c                     |    2 +-
+ drivers/net/irda/via-ircc.c                        |   10 +-
+ drivers/net/natsemi.c                              |    2 +-
+ drivers/net/ne2k-pci.c                             |   12 +-
+ drivers/net/pci-skeleton.c                         |    4 +-
+ drivers/net/sis900.c                               |    6 +-
+ drivers/net/spider_net.c                           |    3 +-
+ drivers/net/starfire.c                             |    2 +-
+ drivers/net/sundance.c                             |    6 +-
+ drivers/net/sungem.c                               |   24 +-
+ drivers/net/tehuti.c                               |    6 +-
+ drivers/net/tlan.c                                 |   39 +-
+ drivers/net/tokenring/tmspci.c                     |    8 +-
+ drivers/net/tulip/de2104x.c                        |    6 +-
+ drivers/net/tulip/de4x5.c                          |   12 +-
+ drivers/net/tulip/tulip_core.c                     |   28 +-
+ drivers/net/tulip/uli526x.c                        |    4 +-
+ drivers/net/tulip/winbond-840.c                    |    4 +-
+ drivers/net/typhoon.c                              |   18 +-
+ drivers/net/wan/farsync.c                          |   21 +-
+ drivers/net/wan/pc300_drv.c                        |   12 +-
+ drivers/net/wan/pc300too.c                         |   12 +-
+ drivers/net/wan/wanxl.c                            |    9 +-
+ drivers/net/wireless/ipw2x00/ipw2200.c             |   10 +-
+ drivers/net/wireless/prism54/islpci_hotplug.c      |    4 +-
+ drivers/net/yellowfin.c                            |    4 +-
+ drivers/parport/parport_pc.c                       |   98 ++---
+ drivers/parport/parport_serial.c                   |   93 ++---
+ drivers/scsi/3w-9xxx.c                             |   12 +-
+ drivers/scsi/3w-xxxx.c                             |    6 +-
+ drivers/scsi/BusLogic.c                            |    9 +-
+ drivers/scsi/a100u2w.c                             |    2 +-
+ drivers/scsi/aacraid/linit.c                       |    6 +-
+ drivers/scsi/dmx3191d.c                            |    3 +-
+ drivers/scsi/fdomain.c                             |    3 +-
+ drivers/scsi/initio.c                              |   20 +-
+ drivers/scsi/megaraid.c                            |    9 +-
+ drivers/scsi/qla1280.c                             |   18 +-
+ drivers/scsi/stex.c                                |   18 +-
+ drivers/scsi/sym53c8xx_2/sym_glue.c                |   45 +--
+ drivers/scsi/tmscsim.c                             |    3 +-
+ drivers/serial/8250_pci.c                          |  526 +++++---------------
+ .../staging/comedi/drivers/addi-data/addi_common.c |   54 +-
+ drivers/staging/epl/Edrv8139.c                     |    2 +-
+ drivers/staging/vt6655/device_main.c               |    2 +-
+ drivers/telephony/ixj.c                            |    3 +-
+ drivers/video/aty/aty128fb.c                       |  141 ++----
+ drivers/video/aty/radeon_base.c                    |    2 +-
+ drivers/video/cirrusfb.c                           |    2 +-
+ drivers/video/cyber2000fb.c                        |    9 +-
+ drivers/video/i810/i810_main.c                     |   18 +-
+ drivers/video/igafb.c                              |    3 +-
+ drivers/video/imsttfb.c                            |    6 +-
+ drivers/video/matrox/matroxfb_base.c               |   33 +-
+ drivers/video/neofb.c                              |   27 +-
+ drivers/video/pm2fb.c                              |    9 +-
+ drivers/video/pm3fb.c                              |    3 +-
+ drivers/video/pvr2fb.c                             |    3 +-
+ drivers/video/riva/fbdev.c                         |  126 ++----
+ drivers/video/savage/savagefb_driver.c             |   69 +--
+ drivers/video/sis/sis_main.h                       |   20 +-
+ drivers/video/tridentfb.c                          |   42 +-
+ sound/oss/kahlua.c                                 |    2 +-
+ sound/pci/atiixp.c                                 |    8 +-
+ sound/pci/atiixp_modem.c                           |    4 +-
+ sound/pci/au88x0/au8810.c                          |    3 +-
+ sound/pci/au88x0/au8820.c                          |    3 +-
+ sound/pci/au88x0/au8830.c                          |    3 +-
+ sound/pci/cmipci.c                                 |   10 +-
+ sound/pci/cs4281.c                                 |    2 +-
+ sound/pci/cs46xx/cs46xx.c                          |    6 +-
+ sound/pci/ens1370.c                                |    6 +-
+ sound/pci/es1938.c                                 |    2 +-
+ sound/pci/ice1712/ice1712.c                        |    2 +-
+ sound/pci/ice1712/ice1724.c                        |    2 +-
+ sound/pci/intel8x0.c                               |   46 +-
+ sound/pci/intel8x0m.c                              |   34 +-
+ sound/pci/mixart/mixart.c                          |    2 +-
+ sound/pci/nm256/nm256.c                            |    6 +-
+ sound/pci/rme32.c                                  |    9 +-
+ sound/pci/rme96.c                                  |   12 +-
+ sound/pci/sonicvibes.c                             |    2 +-
+ sound/pci/via82xx.c                                |    4 +-
+ sound/pci/via82xx_modem.c                          |    2 +-
+ sound/pci/ymfpci/ymfpci.c                          |   12 +-
+ 115 files changed, 838 insertions(+), 1508 deletions(-)
 
