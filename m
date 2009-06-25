@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757182AbZFYT6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbZFYUGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757182AbZFYT6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 15:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYT6M
+	id S1759138AbZFYUGX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 16:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZFYUGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 15:58:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47814 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752687AbZFYT6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 15:58:12 -0400
-Date: Thu, 25 Jun 2009 19:57:33 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       jaswinder@kernel.org, efault@gmx.de, jaswinderrajput@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1245945462.9157.11.camel@hpdv5.satnam>
-References: <1245945462.9157.11.camel@hpdv5.satnam>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Add alias for 'l1d' and 'l1i'
-Message-ID: <tip-4418351f06d9ce73acc846158c20186965f920f3@git.kernel.org>
-Git-Commit-ID: 4418351f06d9ce73acc846158c20186965f920f3
-X-Mailer: tip-git-log-daemon
+	Thu, 25 Jun 2009 16:06:12 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:45720 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134AbZFYUGL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 16:06:11 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [RFC] vfat: change the default from shortname=lower to shortname=mixed
+Date: Fri, 26 Jun 2009 05:06:11 +0900
+Message-ID: <87ws70ulho.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.95 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 25 Jun 2009 19:57:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4418351f06d9ce73acc846158c20186965f920f3
-Gitweb:     http://git.kernel.org/tip/4418351f06d9ce73acc846158c20186965f920f3
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Thu, 25 Jun 2009 21:27:42 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 25 Jun 2009 21:54:53 +0200
+Hi,
 
-perf_counter tools: Add alias for 'l1d' and 'l1i'
+I was asked like the following sometimes,
 
-Add 'l1d' and 'l1i' aliases again as shortcuts - just dont make them
-the primary display alias.
+  Why is shortname=lower the default mount option for vfat filesystems?
+  Because, with "shortname=lower", copying one FAT filesystem tree to
+  another FAT filesystem tree using Liux results in semantically
+  different filesystems. (E.g.: Filenames which were once "all
+  uppercase" are now "all lowercase").
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1245945462.9157.11.camel@hpdv5.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+And from recently email 
+
+  http://bugs.debian.org/476903
+  http://bugs.debian.org/497121
+  http://bugzilla.gnome.org/554031
+  https://bugs.launchpad.net/ubuntu/+bug/290362
 
 
----
- tools/perf/util/parse-events.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+My usual answer for it is, personally I agree that "winnt" or "mixed"
+is proper. However, it is long-standing default behavior. Um...
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 430f060..4d042f1 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -71,8 +71,8 @@ static char *sw_event_names[] = {
- #define MAX_ALIASES 8
+But, now, situation would not be same with long past (didn't have
+shortname= option).
+
+Well, so, what do you think about changing the default of vfat from
+"shortname=lower" to "shortname=mixed"?  If default was changed, the
+shortname (8.3) will not changed to lower case to show. And if possible,
+it will try to preserve created shortname.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+
+This causes Linux and Windows to display filenames the same.
+
+Signed-off-by: Paul Wise <pabs3@bonedaddy.net>
+
+ Documentation/filesystems/vfat.txt |    2 +-
+ fs/fat/inode.c                     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/filesystems/vfat.txt b/Documentation/filesystems/vfat.txt
+index b58b84b..eed520f 100644
+--- a/Documentation/filesystems/vfat.txt
++++ b/Documentation/filesystems/vfat.txt
+@@ -102,7 +102,7 @@ shortname=lower|win95|winnt|mixed
+ 		 winnt: emulate the Windows NT rule for display/create.
+ 		 mixed: emulate the Windows NT rule for display,
+ 			emulate the Windows 95 rule for create.
+-		 Default setting is `lower'.
++		 Default setting is `mixed'.
  
- static char *hw_cache[][MAX_ALIASES] = {
-- { "L1-d$",	"l1-d",		"L1-data",				},
-- { "L1-i$",	"l1-i",		"L1-instruction",			},
-+ { "L1-d$",	"l1-d",		"l1d",		"L1-data",		},
-+ { "L1-i$",	"l1-i",		"l1i",		"L1-instruction",	},
-  { "LLC",	"L2"							},
-  { "dTLB",	"d-tlb",	"Data-TLB",				},
-  { "iTLB",	"i-tlb",	"Instruction-TLB",			},
+ tz=UTC        -- Interpret timestamps as UTC rather than local time.
+                  This option disables the conversion of timestamps
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 8970d8c..f9af501 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -971,7 +971,7 @@ static int parse_options(char *options, int is_vfat, int silent, int *debug,
+ 	opts->codepage = fat_default_codepage;
+ 	opts->iocharset = fat_default_iocharset;
+ 	if (is_vfat) {
+-		opts->shortname = VFAT_SFN_DISPLAY_LOWER|VFAT_SFN_CREATE_WIN95;
++		opts->shortname = VFAT_SFN_DISPLAY_WINNT|VFAT_SFN_CREATE_WIN95;
+ 		opts->rodir = 0;
+ 	} else {
+ 		opts->shortname = 0;
+-- 
+1.6.3.1
