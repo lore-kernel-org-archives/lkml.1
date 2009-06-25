@@ -1,217 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFYM4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZFYM43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZFYM4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZFYMzz
+	id S1755920AbZFYM43 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959AbZFYMz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:55:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48648 "EHLO hera.kernel.org"
+	Thu, 25 Jun 2009 08:55:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56399 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755390AbZFYMzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:55:54 -0400
-Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090625093346.GD23547@elte.hu>
-References: <1245760130.3776.6.camel@localhost.localdomain>
-	 <20090623195656.GC8777@elte.hu>
-	 <1245876060.3038.7.camel@localhost.localdomain>
-	 <20090625093346.GD23547@elte.hu>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 18:25:22 +0530
-Message-Id: <1245934522.5308.39.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1755318AbZFYMz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:55:56 -0400
+Date: Thu, 25 Jun 2009 08:55:13 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] io-controller: do some changes of io.policy interface
+Message-ID: <20090625125513.GA25439@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com> <4A435038.60406@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A435038.60406@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 11:33 +0200, Ingo Molnar wrote:
-
-> Firstly, please run your patches through checkpatch - it will report 
-> a real problem in your patch.
+On Thu, Jun 25, 2009 at 06:23:52PM +0800, Gui Jianfeng wrote:
+> Paul Menage wrote:
+> > On Fri, Jun 19, 2009 at 1:37 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+> >> You can use the following format to play with the new interface.
+> >> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+> >> weight=0 means removing the policy for DEV.
+> >>
+> >> Examples:
+> >> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+> >> # echo /dev/hdb:300:2 > io.policy
+> >> # cat io.policy
+> >> dev weight class
+> >> /dev/hdb 300 2
+> > 
+> > I think that the read and write should be consistent. Can you just use
+> > white-space separation for both, rather than colon-separation for
+> > writes and white-space separation for reads?
+> > 
+> > Also, storing device inode paths statically as strings into the
+> > io_policy structure seems wrong, since it's quite possible for the
+> > device node that was used originally to be gone by the time that
+> > someone reads the io.policy file, or renamed, or even replaced with an
+> > inode that refers to to a different block device
+> > 
+> > My preferred alternatives would be:
+> > 
+> > - read/write the value as a device number rather than a name
+> > - read/write the block device's actual name (e.g. hda or sda) rather
+> > than a path to the inode
+> > 
 > 
-> Secondly, this special-casing of the BPU isnt very clean in this 
-> form. The BPU isnt 'special' because it deals with instructions - 
-> it's special because it's for all practical purposes read-only.
+> Hi Paul, Vivek
 > 
-> So we should extend our table with a read-only flag, and the BPU and 
-> the iTLB should be listed as read-only. (iTLB-store-miss is another 
-> thing that makes no sense) For those we should skip the 'store' 
-> bits.
+> Here is a patch to fix the issue Paul raised.
 > 
-> That way the generic code does not have this special-case wart 
-> dependent on PERF_COUNT_HW_CACHE_BPU.
+> This patch achives the following goals
+> 1 According to Paul's comment, Modifing io.policy interface to
+>   use device number for read/write directly. 
+> 2 Just use white-space separation for both, rather than colon-
+>   separation for writes and white-space separation for reads.
+> 3 Do more strict checking for inputting.
 > 
+> old interface:
+> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+> # echo "/dev/hdb:300:2" > io.policy
+> # cat io.policy
+> dev weight class
+> /dev/hdb 300 2
+> 
+> new interface:
+> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+> # echo "3:64 300 2" > io.policy
+> # cat io.policy
+> dev     weight  class
+> 3:64    300     2
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/elevator-fq.c |   59 ++++++++++++++++++++++++++++++++++----------------
+>  block/elevator-fq.h |    1 -
+>  2 files changed, 40 insertions(+), 20 deletions(-)
+> 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index d779282..83c831b 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -1895,12 +1895,12 @@ static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
+>  	if (list_empty(&iocg->policy_list))
+>  		goto out;
+>  
+> -	seq_printf(m, "dev weight class\n");
+> +	seq_printf(m, "dev\tweight\tclass\n");
+>  
+>  	spin_lock_irq(&iocg->lock);
+>  	list_for_each_entry(pn, &iocg->policy_list, node) {
+> -		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
+> -			   pn->weight, pn->ioprio_class);
+> +		seq_printf(m, "%u:%u\t%lu\t%lu\n", MAJOR(pn->dev),
+> +			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
+>  	}
+>  	spin_unlock_irq(&iocg->lock);
+>  out:
+> @@ -1936,44 +1936,65 @@ static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
+>  	return NULL;
+>  }
+>  
+> -static int devname_to_devnum(const char *buf, dev_t *dev)
+> +static int check_dev_num(dev_t dev)
+>  {
+> -	struct block_device *bdev;
+> +	int part = 0;
+>  	struct gendisk *disk;
+> -	int part;
+>  
+> -	bdev = lookup_bdev(buf);
+> -	if (IS_ERR(bdev))
+> +	disk = get_gendisk(dev, &part);
+> +	if (!disk || part)
+>  		return -ENODEV;
+>  
+> -	disk = get_gendisk(bdev->bd_dev, &part);
+> -	if (part)
+> -		return -EINVAL;
+> -
+> -	*dev = MKDEV(disk->major, disk->first_minor);
+> -	bdput(bdev);
+> -
+>  	return 0;
+>  }
+>  
+>  static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
+>  {
+> -	char *s[3], *p;
+> +	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
+>  	int ret;
+> +	unsigned long major, minor;
+>  	int i = 0;
+> +	dev_t dev;
+>  
+>  	memset(s, 0, sizeof(s));
+> -	while ((p = strsep(&buf, ":")) != NULL) {
+> +	while ((p = strsep(&buf, " ")) != NULL) {
+>  		if (!*p)
+>  			continue;
+>  		s[i++] = p;
+> +
+> +		/* Prevent from inputing too many things */
+> +		if (i == 4)
+> +			break;
+>  	}
+>  
+> -	ret = devname_to_devnum(s[0], &newpn->dev);
+> +	if (i != 3)
+> +		return -EINVAL;
+> +
+> +	p = strsep(&s[0], ":");
+> +	if (p != NULL)
+> +		major_s = p;
+> +	else
+> +		return -EINVAL;
+> +
+> +	minor_s = s[0];
+> +	if (!minor_s)
+> +		return -EINVAL;
+> +
+> +	ret = strict_strtoul(major_s, 10, &major);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	ret = strict_strtoul(minor_s, 10, &minor);
+> +	if (ret)
+> +		return -EINVAL;
+> +
+> +	dev = MKDEV(major, minor);
+> +
+> +	ret = check_dev_num(dev);
+>  	if (ret)
+>  		return ret;
+>  
+> -	strcpy(newpn->dev_name, s[0]);
+> +	newpn->dev = dev;
+>  
+>  	if (s[1] == NULL)
+>  		return -EINVAL;
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index b3193f8..7722ebe 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -286,7 +286,6 @@ struct io_group {
+>  
+>  struct io_policy_node {
+>  	struct list_head node;
+> -	char dev_name[32];
+>  	dev_t dev;
+>  	unsigned long weight;
+>  	unsigned long ioprio_class;
 
-I am sorry BPU still needs special handling ;-)
+Hi Gui,
 
-[PATCH] perf_counter tools: shorten names for events
+Thanks for the patch. "unsigned long" for ioprio_class is too big. How
+about using "unsigned short"? I noticed that in io_cgroup also we are
+using "unsigned long". I will fix that.
 
-Added new alias for events.
+For storing weight now we are planning to use "unsigned int". Can you
+please switch to that.
 
-special handling for BPU for :
- 'branch loads'       -> 'branches'
- 'branch load-misses' -> 'branch-misses'
-
-On AMD box:
-$ ./perf stat -e l1d -e l1d-misses -e l1d-write -e l1d-prefetch -e l1d-prefetch-miss -e l1i -e l1i-misses -e l1i-prefetch -e l2 -e l2-misses -e l2-write -e dtlb -e dtlb-misses -e itlb -e itlb-misses -e bpu -e bpu-misses -- ls -lR /usr/include/ > /dev/null
-
-Before :
-
- Performance counter stats for 'ls -lR /usr/include/':
-
-      248064467  L1-data-Cache-Load-Referencees  (scaled from 23.27%)
-        1001433  L1-data-Cache-Load-Misses  (scaled from 23.34%)
-         153691  L1-data-Cache-Store-Referencees  (scaled from 23.34%)
-         423248  L1-data-Cache-Prefetch-Referencees  (scaled from 23.33%)
-         302138  L1-data-Cache-Prefetch-Misses  (scaled from 23.25%)
-      251217546  L1-instruction-Cache-Load-Referencees  (scaled from 23.25%)
-        5757005  L1-instruction-Cache-Load-Misses  (scaled from 23.23%)
-          93435  L1-instruction-Cache-Prefetch-Referencees  (scaled from 23.24%)
-        6496073  L2-Cache-Load-Referencees  (scaled from 23.32%)
-         609485  L2-Cache-Load-Misses  (scaled from 23.45%)
-        6876991  L2-Cache-Store-Referencees  (scaled from 23.71%)
-      248922840  Data-TLB-Cache-Load-Referencees  (scaled from 23.94%)
-        5828386  Data-TLB-Cache-Load-Misses  (scaled from 24.17%)
-      257613506  Instruction-TLB-Cache-Load-Referencees  (scaled from 24.20%)
-           6833  Instruction-TLB-Cache-Load-Misses  (scaled from 23.88%)
-      109043606  Branch-Cache-Load-Referencees  (scaled from 23.64%)
-        5552296  Branch-Cache-Load-Misses  (scaled from 23.42%)
-
-    0.413702461  seconds time elapsed.
-
-After :
-
- Peformance counter stats for 'ls -lR /usr/include/':
-
-      266590464  L1d-loads             (scaled from 23.03%)
-        1222273  L1d-load-misses       (scaled from 23.58%)
-         146204  L1d-stores            (scaled from 23.83%)
-         406344  L1d-prefetches        (scaled from 24.09%)
-         283748  L1d-prefetch-misses   (scaled from 24.10%)
-      249650965  L1i-loads             (scaled from 23.80%)
-        3353961  L1i-load-misses       (scaled from 23.82%)
-         104599  L1i-prefetches        (scaled from 23.68%)
-        4836405  LLC-loads             (scaled from 23.67%)
-         498214  LLC-load-misses       (scaled from 23.66%)
-        4953994  LLC-stores            (scaled from 23.64%)
-      243354097  dTLB-loads            (scaled from 23.77%)
-        6468584  dTLB-load-misses      (scaled from 23.74%)
-      249719549  iTLB-loads            (scaled from 23.25%)
-           5060  iTLB-load-misses      (scaled from 23.00%)
-      112343016  branches              (scaled from 22.76%)
-        5528876  branch-misses         (scaled from 22.54%)
-
-    0.427154051  seconds time elapsed.
-
-Reported-by : Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- tools/perf/util/parse-events.c |   56 +++++++++++++++++++++++++++------------
- 1 files changed, 39 insertions(+), 17 deletions(-)
-
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 7939a21..993cee4 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -71,23 +71,23 @@ static char *sw_event_names[] = {
- #define MAX_ALIASES 8
- 
- static char *hw_cache[][MAX_ALIASES] = {
--	{ "L1-data",		"l1-d",		"l1d"			},
--	{ "L1-instruction",	"l1-i",		"l1i"			},
--	{ "L2",			"l2"					},
--	{ "Data-TLB",		"dtlb",		"d-tlb"			},
--	{ "Instruction-TLB",	"itlb",		"i-tlb"			},
--	{ "Branch",		"bpu" ,		"btb",		"bpc"	},
-+ { "L1d",	"l1-d",		"L1-data",				},
-+ { "L1i",	"l1-i",		"L1-instruction",			},
-+ { "LLC",	"L2"							},
-+ { "dTLB",	"d-tlb",	"Data-TLB",				},
-+ { "iTLB",	"i-tlb",	"Instruction-TLB",			},
-+ { "branch",	"branches",	"bpu",		"btb",		"bpc",	},
- };
- 
- static char *hw_cache_op[][MAX_ALIASES] = {
--	{ "Load",		"read"					},
--	{ "Store",		"write"					},
--	{ "Prefetch",		"speculative-read", "speculative-load"	},
-+ { "load",	"loads",	"read",					},
-+ { "store",	"stores",	"write",				},
-+ { "prefetch",	"prefetches",	"speculative-read", "speculative-load",	},
- };
- 
- static char *hw_cache_result[][MAX_ALIASES] = {
--	{ "Reference",		"ops",		"access"		},
--	{ "Miss"							},
-+ { "refs",	"Reference",	"ops",		"access",		},
-+ { "misses",	"miss",							},
- };
- 
- #define C(x)		PERF_COUNT_HW_CACHE_##x
-@@ -118,6 +118,33 @@ static int is_cache_op_valid(u8 cache_type, u8 cache_op)
- 		return 0;	/* invalid */
- }
- 
-+static char *event_cache_name(u8 cache_type, u8 cache_op, u8 cache_result)
-+{
-+	static char name[50];
-+
-+	/*
-+	 * special handling for BPU for :
-+	 * 'branch loads'	-> 'branches'
-+	 * 'branch load-misses'	-> 'branch-misses'
-+	 */
-+	if (cache_type == PERF_COUNT_HW_CACHE_BPU) {
-+		if (cache_result)
-+			sprintf(name, "%s-%s", hw_cache[cache_type][0],
-+				hw_cache_result[cache_result][0]);
-+		else
-+			sprintf(name, "%s", hw_cache[cache_type][1]);
-+
-+	} else if (cache_result)
-+		sprintf(name, "%s-%s-%s", hw_cache[cache_type][0],
-+			hw_cache_op[cache_op][0],
-+			hw_cache_result[cache_result][0]);
-+		else
-+			sprintf(name, "%s-%s", hw_cache[cache_type][0],
-+				hw_cache_op[cache_op][1]);
-+
-+	return name;
-+}
-+
- char *event_name(int counter)
- {
- 	u64 config = attrs[counter].config;
-@@ -137,7 +164,6 @@ char *event_name(int counter)
- 
- 	case PERF_TYPE_HW_CACHE: {
- 		u8 cache_type, cache_op, cache_result;
--		static char name[100];
- 
- 		cache_type   = (config >>  0) & 0xff;
- 		if (cache_type > PERF_COUNT_HW_CACHE_MAX)
-@@ -153,12 +179,8 @@ char *event_name(int counter)
- 
- 		if (!is_cache_op_valid(cache_type, cache_op))
- 			return "invalid-cache";
--		sprintf(name, "%s-Cache-%s-%ses",
--			hw_cache[cache_type][0],
--			hw_cache_op[cache_op][0],
--			hw_cache_result[cache_result][0]);
- 
--		return name;
-+		return event_cache_name(cache_type, cache_op, cache_result);
- 	}
- 
- 	case PERF_TYPE_SOFTWARE:
--- 
-1.6.0.6
-
-
-
+Thanks
+Vivek
