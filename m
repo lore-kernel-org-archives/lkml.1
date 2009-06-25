@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZFYJZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZFYJ0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZFYJZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 05:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756121AbZFYJZf
+	id S1758392AbZFYJ0s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 05:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYJ0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 05:25:35 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:55838 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752887AbZFYJZe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 05:25:34 -0400
-Subject: Re: kmemleak false positive?
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090625001137.GB22755@redhat.com>
-References: <20090625001137.GB22755@redhat.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 25 Jun 2009 10:25:17 +0100
-Message-Id: <1245921918.26218.19.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Jun 2009 09:25:21.0191 (UTC) FILETIME=[DC8C7B70:01C9F576]
+	Thu, 25 Jun 2009 05:26:41 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51161 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752234AbZFYJ0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 05:26:40 -0400
+Date: Thu, 25 Jun 2009 11:26:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
+Message-ID: <20090625092642.GG31415@kernel.dk>
+References: <1245839904.3210.85.camel@localhost.localdomain> <20090624152732.d6352f4f.akpm@linux-foundation.org> <1245916833.31755.78.camel@twins> <20090625091033.GF31415@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090625091033.GF31415@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-24 at 20:11 -0400, Dave Jones wrote:
-> During boot, I see the following traces from kmemleak.
-> They seem to be pointing at kmemleak itself. 
+On Thu, Jun 25 2009, Jens Axboe wrote:
+> On Thu, Jun 25 2009, Peter Zijlstra wrote:
+> > On Wed, 2009-06-24 at 15:27 -0700, Andrew Morton wrote:
+> > > On Wed, 24 Jun 2009 11:38:24 +0100
+> > > Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> > > 
+> > > > When writing to 2 (or more) devices at the same time, stop
+> > > > balance_dirty_pages moving dirty pages to writeback when it has reached
+> > > > the bdi threshold. This prevents balance_dirty_pages overshooting its
+> > > > limits and moving all dirty pages to writeback.     
+> > > > 
+> > > >     
+> > > > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > > > ---
+> > 
+> > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> After doing some integration and update work on the writeback branch, I
+> threw 2.6.31-rc1, 2.6.31-rc1+patch, 2.6.31-rc1+writeback into the test
+> mix. The writeback series include this patch as a prep patch. Results
+> for the mmap write test case:
+> 
+> Kernel          Throughput      usr     sys     ctx     util
+> --------------------------------------------------------------
+> vanilla         184MB/sec       19.51%  50.49%  12995   82.88%
+> vanilla         184MB/sec       19.60%  50.77%  12846   83.47%
+> vanilla         182MB/sec       19.25%  51.18%  14692   82.76%
+> vanilla+patch   169MB/sec       18.08%  43.61%   9507   76.38%
+> vanilla+patch   170MB/sec       18.37%  43.46%  10275   76.62%
+> vanilla+patch   165MB/sec       17.59%  42.06%  10165   74.39%
+> writeback       215MB/sec       22.69%  53.23%   4085   92.32%
+> writeback       214MB/sec       24.31%  52.90%   4495   92.40%
+> writeback       208MB/sec       23.14%  52.12%   4067   91.68%
+> 
+> To be perfectly clear:
+> 
+> vanilla         2.6.31-rc1 stock
+> vanilla+patch   2.6.31-rc1 + bdi_thresh patch
+> writeback       2.6.31-rc1 + bdi_thresh patch + writeback series
+> 
+> This is just a single spindle w/ext4, nothing fancy. I'll do a 3-series
+> run with the writeback and this patch backed out, to see if it makes a
+> difference here. I didn't do that initially, since the results were in
+> the range that I expected.
 
-The stack trace includes kmemleak_alloc (I skipped one level but
-depending on gcc inlining it may need two) but the allocation happened
-via debug_objects_mem_init(), more exactly the fill_pool() in
-lib/debugobjects.c
+Results for writeback without the bdi_thresh patch
 
-> False positive?
-[...]
-> kmemleak: unreferenced object 0xdb804000 (size 20):
-> kmemleak:   comm "swapper", pid 0, jiffies 4294667296
-> kmemleak:   backtrace:
-> kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
-> kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
-> kmemleak:     [<c0aae5a7>] debug_objects_mem_init+0x63/0x1d9
-> kmemleak:     [<c0a86a62>] start_kernel+0x2da/0x38d
-> kmemleak:     [<c0a86090>] i386_start_kernel+0x7f/0x98
-> kmemleak:     [<ffffffff>] 0xffffffff
+Kernel          Throughput      usr     sys     ctx     util
+--------------------------------------------------------------
+wb-bdi_thresh   211MB/sec       22.71%  53.30%   4050   91.19%
+wb-bdi_thresh   212MB/sec       22.78%  53.55%   4809   91.51%
+wb-bdi_thresh   212MB/sec       22.99%  54.23%   4715   93.10%
 
-It could be a false positive. Do you get some "kmemleak: referenced"
-messages as well at a later time? In this case, it is just transient
-"leak", caused maybe by pointers stored on the stack or registers.
-
-Is the obj_pool in lib/debugobjects.c supposed to be empty at the end of
-the test and all objects freed? The obj_pool is a list and the first
-elements in this list are from obj_static_pool, which is __initdata.
-Objects added to the list may be referred by chaining with the
-obj_static_pool objects but kmemleak doesn't scan __initdata as this is
-usually freed before kmemleak does its first scan. So, if it is just a
-transient "leak", kmemleak should later report "kmemleak: referenced" if
-a kmem_cache_free() is called on any of the reported objects.
-
-You can mount debugfs on /sys/kerne/debug and read the kmemleak file in
-there (it triggers a new scan as well). You can also echo stack=on to
-the above kmemleak file to enable kernel stack scanning.
-
-Could you send me your config options for DEBUG_OBJECTS_* and slab
-allocator so I can try to reproduce this?
-
-Thanks.
+Not a lot of difference there, without more than three runs it's hard to
+say what is significant. Could be a small decrease in throughput, if the
+208MB/sec results from above is an outlier (I think it is, ~215MB/sec is
+usually the most consistent result).
 
 -- 
-Catalin
+Jens Axboe
 
