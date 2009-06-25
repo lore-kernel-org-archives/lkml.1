@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbZFYO4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZFYO4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbZFYO4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 10:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZFYO4M
+	id S1757048AbZFYO4x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 10:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZFYO4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 10:56:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52486 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbZFYO4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 10:56:12 -0400
-Date: Thu, 25 Jun 2009 10:56:01 -0400
-From: Dave Jones <davej@redhat.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: kmemleak false positive?
-Message-ID: <20090625145600.GA6654@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20090625001137.GB22755@redhat.com> <1245921918.26218.19.camel@pc1117.cambridge.arm.com>
+	Thu, 25 Jun 2009 10:56:45 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:21026 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751687AbZFYO4o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 10:56:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=Ge/iQbrJxdLi26ir0Ru244q1R0oEhELDfKpZB9CeG1gwYUBsT9xJPN1qI3mrqO6viK
+         E7jGwNris1RlSagbLsauX1CmhKQlJPXRqE7BIkf8/qXzF3TedC93VuSuznE72JeV2wA7
+         qei1bZXvYhLFFc1X7Em/jtmv2en0rSjk2lN4s=
+Message-ID: <4A439029.10601@gmail.com>
+Date: Thu, 25 Jun 2009 10:56:41 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245921918.26218.19.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [KVM PATCH v8 1/3] KVM: make io_bus interface more robust
+References: <20090619002224.15859.97977.stgit@dev.haskins.net> <20090619003035.15859.33528.stgit@dev.haskins.net> <4A438825.5000606@novell.com> <20090625145341.GC7221@redhat.com>
+In-Reply-To: <20090625145341.GC7221@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig226247ED22B143150E7089D1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 10:25:17AM +0100, Catalin Marinas wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig226247ED22B143150E7089D1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
- > > kmemleak:   backtrace:
- > > kmemleak:     [<c04fd8b3>] kmemleak_alloc+0x193/0x2b8
- > > kmemleak:     [<c04f5e73>] kmem_cache_alloc+0x11e/0x174
- > > kmemleak:     [<c0aae5a7>] debug_objects_mem_init+0x63/0x1d9
- > > kmemleak:     [<c0a86a62>] start_kernel+0x2da/0x38d
- > > kmemleak:     [<c0a86090>] i386_start_kernel+0x7f/0x98
- > > kmemleak:     [<ffffffff>] 0xffffffff
- > 
- > It could be a false positive. Do you get some "kmemleak: referenced"
- > messages as well at a later time? In this case, it is just transient
- > "leak", caused maybe by pointers stored on the stack or registers.
+Michael S. Tsirkin wrote:
+> On Thu, Jun 25, 2009 at 10:22:29AM -0400, Gregory Haskins wrote:
+>  =20
+>> Gregory Haskins wrote:
+>>    =20
+>>> Today kvm_io_bus_regsiter_dev() returns void and will internally BUG_=
+ON if it
+>>> fails.  We want to create dynamic MMIO/PIO entries driven from usersp=
+ace later
+>>> in the series, so we need to enhance the code to be more robust with =
+the
+>>> following changes:
+>>>
+>>>    1) Add a return value to the registration function
+>>>    2) Fix up all the callsites to check the return code, handle any
+>>>       failures, and percolate the error up to the caller.
+>>>    3) Add an unregister function that collapses holes in the array
+>>>      =20
+>
+> Does not unregister need rcu bus fixes to work?
+>
+>  =20
+Not without users ;)
 
-Yes, some time later.
+But, hmm.   Perhaps I should re-split out the return value stuff so it
+can go independent of the unregister.  Gah, this io_bus is a nightmare.
 
- > Is the obj_pool in lib/debugobjects.c supposed to be empty at the end of
- > the test and all objects freed? The obj_pool is a list and the first
- > elements in this list are from obj_static_pool, which is __initdata.
- > Objects added to the list may be referred by chaining with the
- > obj_static_pool objects but kmemleak doesn't scan __initdata as this is
- > usually freed before kmemleak does its first scan. So, if it is just a
- > transient "leak", kmemleak should later report "kmemleak: referenced" if
- > a kmem_cache_free() is called on any of the reported objects.
+-Greg
 
-Hmm, it's pretty noisy, and everything it's found so far looks to be
-a false positive.
 
- > You can mount debugfs on /sys/kerne/debug and read the kmemleak file in
- > there (it triggers a new scan as well).
+--------------enig226247ED22B143150E7089D1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Currently prints the acpi traces I already posted.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
- > You can also echo stack=on to
- > the above kmemleak file to enable kernel stack scanning.
- > 
- > Could you send me your config options for DEBUG_OBJECTS_* and slab
- > allocator so I can try to reproduce this?
- 
-CONFIG_DEBUG_OBJECTS=y
-# CONFIG_DEBUG_OBJECTS_SELFTEST is not set
-CONFIG_DEBUG_OBJECTS_FREE=y
-CONFIG_DEBUG_OBJECTS_TIMERS=y
-CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
+iEYEARECAAYFAkpDkCkACgkQP5K2CMvXmqE+TwCcCB/YlHBHgodDVf3XLHE4TqjF
+91wAn39g+FNtW5nPSYjfFyR1x3rdJ+9t
+=myHr
+-----END PGP SIGNATURE-----
 
-	Dave
-
+--------------enig226247ED22B143150E7089D1--
