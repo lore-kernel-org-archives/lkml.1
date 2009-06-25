@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbZFYIGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbZFYIHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbZFYIGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 04:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZFYIGL
+	id S1759509AbZFYIHA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 04:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbZFYIGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 04:06:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35825 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753205AbZFYIGG (ORCPT
+	Thu, 25 Jun 2009 04:06:35 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:62996 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755759AbZFYIGb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 04:06:06 -0400
-Subject: Re: Add support for the SST 39VF3202, 39VF6401B and 39VF6402B
- flash chips
-From: David Woodhouse <dwmw2@infradead.org>
-To: Yegor Yefremov <yegorslists@googlemail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
-References: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 25 Jun 2009 09:06:07 +0100
-Message-Id: <1245917167.17089.102.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+	Thu, 25 Jun 2009 04:06:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=MN6WZ0PYVX6nSF+BKDyKYw1SVxCV3DlkbT2am9n7Kx8xQgex8GyhdOHOJWxm6nnQZ
+	7g6aSnhHYSYm9ZYew3rCg==
+MIME-Version: 1.0
+In-Reply-To: <4A432DD4.3010905@panasas.com>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+	 <4A3F4448.30502@panasas.com>
+	 <20090625135901.a028512d.sfr@canb.auug.org.au>
+	 <4A432DD4.3010905@panasas.com>
+Date: Thu, 25 Jun 2009 01:06:27 -0700
+Message-ID: <6599ad830906250106q2807c72ci21e95b02448ec4f7@mail.gmail.com>
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+From: Paul Menage <menage@google.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
+       linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 09:42 +0200, Yegor Yefremov wrote:
-> Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
-> 
-> - extend struct amd_flash_info to enable 8 erase regions for 8Mb flash chips
+On Thu, Jun 25, 2009 at 12:57 AM, Boaz Harrosh<bharrosh@panasas.com> wrote:
+>
+> Paul? we did not receive any feedback from you
 
-If you didn't mean 8,000,000 bits, don't say it. Did you mean 8MiB?
+I split it out into two patches and sent them about an hour ago. (One
+for mmu_context.h sent to Rusty and one for the other two fixes, sent
+to Linus)
 
-> - change erase block command to 0x50 due to the differences between
-> 39VF6401/02 and 39VF6401B/02B chips
-
-Hm, can you elucidate? And should that be done as a quirk instead?
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Paul
