@@ -1,248 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZFYK3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZFYKjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbZFYK3r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:29:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbZFYK32
+	id S1753945AbZFYKjb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFYKjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:29:28 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47683 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbZFYK3Y (ORCPT
+	Thu, 25 Jun 2009 06:39:22 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:39357 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750731AbZFYKjW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:29:24 -0400
-Message-ID: <4A435162.90109@gmail.com>
-Date: Thu, 25 Jun 2009 12:28:50 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 25 Jun 2009 06:39:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=vu6bEsK1ap+Xv7XCxr2cBkNBYbweMEYD1RdmR1rSJzs0QkSegUbCwzdSyyAnyhwv7a
+         Q+bC0Lz0214ejIjwCjAPVT1jyD3OSKn5i+cks8709mQGJKujKZmWBqPbnS4iJtWu/pBc
+         QFs+jUdYqK1t7kqe7Sk7CZsrVnqnhjFAbnU4U=
 MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com
-Subject: Re: [RFC] tcp: race in receive part
-References: <20090618102727.GC3782@jolsa.lab.eng.brq.redhat.com> <4A3A49F2.6060705@gmail.com> <20090623091257.GA4850@jolsa.lab.eng.brq.redhat.com> <4A40AF2A.3050509@gmail.com> <20090624102038.GA5409@jolsa.lab.eng.brq.redhat.com> <4A42082D.9060402@gmail.com> <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
-In-Reply-To: <20090624162112.GB5409@jolsa.lab.eng.brq.redhat.com>
+Reply-To: eranian@gmail.com
+In-Reply-To: <20090624085222.GC18713@elte.hu>
+References: <7c86c4470906221326j6edbf9f3g5d65e96d86aaf7ab@mail.gmail.com>
+	 <9F0C1DB20AFA954FA1DA05309350433D7B2584D1@pdsmsx503.ccr.corp.intel.com>
+	 <7c86c4470906230045k578bc146wa0e09e4094d937a5@mail.gmail.com>
+	 <20090623075959.GA23534@ywang-moblin2.bj.intel.com>
+	 <7c86c4470906230127g4f574b61p24f109c7a94c6e39@mail.gmail.com>
+	 <7c86c4470906230140p35ce043fw24e0c20651568f31@mail.gmail.com>
+	 <20090623085321.GC23534@ywang-moblin2.bj.intel.com>
+	 <20090623094717.GA30634@elte.hu>
+	 <20090624021944.GA2808@ywang-moblin2.bj.intel.com>
+	 <20090624085222.GC18713@elte.hu>
+Date: Thu, 25 Jun 2009 12:39:23 +0200
+Message-ID: <7c86c4470906250339k4a168611vfe206c599d098489@mail.gmail.com>
+Subject: Re: perf_counter Atom patch
+From: stephane eranian <eranian@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yong Wang <yong.y.wang@linux.intel.com>,
+       "Wang, Yong Y" <yong.y.wang@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Andi Kleen <andi@firstfloor.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 25 Jun 2009 12:29:08 +0200 (CEST)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Olsa a écrit :
-> 
-> I made the modification, plz check the attached diff.
-> 
-> I found some places where the read_lock is not ahead of the check:
->   "if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))"
-> 
-> I'm not sure we dont want to address those as well; located in following
-> files:
->         drivers/net/tun.c
->         net/core/stream.c
->         net/sctp/socket.c
->         net/sunrpc/svcsock.c
+On Wed, Jun 24, 2009 at 10:52 AM, Ingo Molnar<mingo@elte.hu> wrote:
+>
+> * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+>
+>> On Tue, Jun 23, 2009 at 11:47:17AM +0200, Ingo Molnar wrote:
+>> >
+>> > * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+>> >
+>> > > On Tue, Jun 23, 2009 at 10:40:45AM +0200, stephane eranian wrote:
+>> > > > Yong,
+>> > > >
+>> > > > On Tue, Jun 23, 2009 at 10:27 AM, stephane
+>> > > > eranian<eranian@googlemail.com> wrote:
+>> > > > > Hi,
+>> > > > >
+>> > > > > On Tue, Jun 23, 2009 at 9:59 AM, Yong Wang<yong.y.wang@linux.intel.com> wrote:
+>> > > > >> On Tue, Jun 23, 2009 at 09:45:03AM +0200, stephane eranian wrote:
+>> > > > >>>
+>> > > > >>> Unfortunately, I don't have a N270 to compare with your results.
+>> > > > >>> We need to verify whether or not N270 implements the fixed counters.
+>> > > > >>> Does it report architected perfmon v3 or v1?
+>> > > > >>>
+>> > > > >>
+>> > > > >> All Atom processors report perfmon v3 as specified in SDM. N270 is no
+>> > > > >> exception.
+>> > > > >>
+>> > > > > V3 does not set a minimal number of fixed counters, could be zero. But
+>> > > > > that seems
+>> > > > > odd. Let me ask around.
+>> > > > >
+>> > > > Second thought on this:
+>> > > >        x86_pmu.num_counters_fixed      =
+>> > > > max((int)edx.split.num_counters_fixed, 3);
+>> > > >
+>> > > >         rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, x86_pmu.intel_ctrl);
+>> > > >
+>> > > >
+>> > > > Forcing num_counter_fixed is not enough, you need to make sure
+>> > > > they are actually activated in GLOBAL_CTRL, i.e., make sure bits
+>> > > > 32-34 are set in intel_ctrl. Depending on which machine you're
+>> > > > on, the power on value for GLOBAL_CTRL changes. The correct
+>> > > > value for it should be that ONLY generic counters are on by
+>> > > > default.
+>> > > >
+>> > >
+>> > > Oh, this might be why fixed counter do not work on my Atom box. I
+>> > > will look into it. [...]
+>> >
+>> > Thanks - having a different bootup default for the global ctrl
+>> > indeed sounds like a good and plausible explanation - please send a
+>> > patch for that if you've tested it, removing that quirk and adding
+>> > the global-enable ctrl logic.
+>> >
+>>
+>> The root cause of fixed counters not working on Atom is indeed
+>> related to global counter control MSR. The power-on value on Atom
+>> is 0x3 which means only general purpose counters are enabled by
+>> default. The power-on value on Core2 is 0xffffffffffffffff which I
+>> believe is also the case for Nehalem. That's why Core2 and Nehalem
+>> do not have the problem.
+>
+> I suspect it can also be firmware/BIOS and microcode version
+> dependent - it's better to not rely on bootup state like that
+> indeed.
 
-We'll take care of them later :)
-
-> 
-> 
-> thanks,
-> jirka
-> 
-
-This patch is OK with me, please submit a new formal patch with
-fresh ChangeLog so that we can all agree and Signed-off-by/Acked-by
-
-Oleg, I think your comment can be addressed in a followup patch ?
-
-Thanks to all
-
-> 
-> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> index b7e5db8..570c0ff 100644
-> --- a/arch/x86/include/asm/spinlock.h
-> +++ b/arch/x86/include/asm/spinlock.h
-> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
->  #define _raw_read_relax(lock)	cpu_relax()
->  #define _raw_write_relax(lock)	cpu_relax()
->  
-> +/* The read_lock() on x86 is a full memory barrier. */
-> +#define smp_mb__after_read_lock() barrier()
-> +
->  #endif /* _ASM_X86_SPINLOCK_H */
-> diff --git a/fs/select.c b/fs/select.c
-> index d870237..cf5d80b 100644
-> --- a/fs/select.c
-> +++ b/fs/select.c
-> @@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
->  	init_waitqueue_func_entry(&entry->wait, pollwake);
->  	entry->wait.private = pwq;
->  	add_wait_queue(wait_address, &entry->wait);
-> +
-> +	/* This memory barrier is paired with the smp_mb__after_read_lock
-> +	 * in the sk_has_sleeper. */
-> +	smp_mb();
->  }
->  
->  int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
-> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> index 252b245..dd28726 100644
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -132,6 +132,11 @@ do {								\
->  #endif /*__raw_spin_is_contended*/
->  #endif
->  
-> +/* The read_lock does not imply full memory barrier. */
-> +#ifndef smp_mb__after_read_lock
-> +#define smp_mb__after_read_lock() smp_mb()
-> +#endif
-> +
->  /**
->   * spin_unlock_wait - wait until the spinlock gets unlocked
->   * @lock: the spinlock in question.
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 07133c5..a02a956 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-> @@ -1241,6 +1241,24 @@ static inline int sk_has_allocations(const struct sock *sk)
->  	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
->  }
->  
-> +/**
-> + * sk_has_sleeper - check if there are any waiting processes
-> + * @sk: socket
-> + *
-> + * Returns true if socket has waiting processes
-> + */
-> +static inline int sk_has_sleeper(struct sock *sk)
-> +{
-> +	/*
-> +	 * We need to be sure we are in sync with the
-> +	 * add_wait_queue modifications to the wait queue.
-> +	 *
-> +	 * This memory barrier is paired in the __pollwait.
-> +	 */
-> +	smp_mb__after_read_lock();
-> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> +}
-> +
->  /*
->   * 	Queue a received datagram if it will fit. Stream and sequenced
->   *	protocols can't normally use this as they need to fit buffers in
-> diff --git a/net/atm/common.c b/net/atm/common.c
-> index c1c9793..67a8642 100644
-> --- a/net/atm/common.c
-> +++ b/net/atm/common.c
-> @@ -92,7 +92,7 @@ static void vcc_sock_destruct(struct sock *sk)
->  static void vcc_def_wakeup(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up(sk->sk_sleep);
->  	read_unlock(&sk->sk_callback_lock);
->  }
-> @@ -110,7 +110,7 @@ static void vcc_write_space(struct sock *sk)
->  	read_lock(&sk->sk_callback_lock);
->  
->  	if (vcc_writable(sk)) {
-> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		if (sk_has_sleeper(sk))
->  			wake_up_interruptible(sk->sk_sleep);
->  
->  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
-> diff --git a/net/core/sock.c b/net/core/sock.c
-> index b0ba569..6354863 100644
-> --- a/net/core/sock.c
-> +++ b/net/core/sock.c
-> @@ -1715,7 +1715,7 @@ EXPORT_SYMBOL(sock_no_sendpage);
->  static void sock_def_wakeup(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up_interruptible_all(sk->sk_sleep);
->  	read_unlock(&sk->sk_callback_lock);
->  }
-> @@ -1723,7 +1723,7 @@ static void sock_def_wakeup(struct sock *sk)
->  static void sock_def_error_report(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up_interruptible_poll(sk->sk_sleep, POLLERR);
->  	sk_wake_async(sk, SOCK_WAKE_IO, POLL_ERR);
->  	read_unlock(&sk->sk_callback_lock);
-> @@ -1732,7 +1732,7 @@ static void sock_def_error_report(struct sock *sk)
->  static void sock_def_readable(struct sock *sk, int len)
->  {
->  	read_lock(&sk->sk_callback_lock);
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLIN |
->  						POLLRDNORM | POLLRDBAND);
->  	sk_wake_async(sk, SOCK_WAKE_WAITD, POLL_IN);
-> @@ -1747,7 +1747,7 @@ static void sock_def_write_space(struct sock *sk)
->  	 * progress.  --DaveM
->  	 */
->  	if ((atomic_read(&sk->sk_wmem_alloc) << 1) <= sk->sk_sndbuf) {
-> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		if (sk_has_sleeper(sk))
->  			wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
->  						POLLWRNORM | POLLWRBAND);
->  
-> diff --git a/net/dccp/output.c b/net/dccp/output.c
-> index c0e88c1..c96119f 100644
-> --- a/net/dccp/output.c
-> +++ b/net/dccp/output.c
-> @@ -196,7 +196,7 @@ void dccp_write_space(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
->  
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up_interruptible(sk->sk_sleep);
->  	/* Should agree with poll, otherwise some programs break */
->  	if (sock_writeable(sk))
-> diff --git a/net/iucv/af_iucv.c b/net/iucv/af_iucv.c
-> index 6be5f92..ba0149d 100644
-> --- a/net/iucv/af_iucv.c
-> +++ b/net/iucv/af_iucv.c
-> @@ -306,7 +306,7 @@ static inline int iucv_below_msglim(struct sock *sk)
->  static void iucv_sock_wake_msglim(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
-> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +	if (sk_has_sleeper(sk))
->  		wake_up_interruptible_all(sk->sk_sleep);
->  	sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
->  	read_unlock(&sk->sk_callback_lock);
-> diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
-> index eac5e7b..60e0e38 100644
-> --- a/net/rxrpc/af_rxrpc.c
-> +++ b/net/rxrpc/af_rxrpc.c
-> @@ -63,7 +63,7 @@ static void rxrpc_write_space(struct sock *sk)
->  	_enter("%p", sk);
->  	read_lock(&sk->sk_callback_lock);
->  	if (rxrpc_writable(sk)) {
-> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		if (sk_has_sleeper(sk))
->  			wake_up_interruptible(sk->sk_sleep);
->  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
->  	}
-> diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-> index 36d4e44..143143a 100644
-> --- a/net/unix/af_unix.c
-> +++ b/net/unix/af_unix.c
-> @@ -315,7 +315,7 @@ static void unix_write_space(struct sock *sk)
->  {
->  	read_lock(&sk->sk_callback_lock);
->  	if (unix_writable(sk)) {
-> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> +		if (sk_has_sleeper(sk))
->  			wake_up_interruptible_sync(sk->sk_sleep);
->  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
->  	}
-> 
-
+I would recommend you ignore boot up values and setup GLOBAL_CTRL*
+the way you need. So I agree.
