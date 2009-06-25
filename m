@@ -1,201 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZFYWt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757125AbZFYWuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZFYWt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 18:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZFYWtt
+	id S1757125AbZFYWuP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 18:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755380AbZFYWty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 18:49:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49609 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751893AbZFYWts (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 18:49:48 -0400
-Message-Id: <200906252249.n5PMnaPt016847@imap1.linux-foundation.org>
-Subject: mmotm 2009-06-25-15-49 uploaded
-To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-From: akpm@linux-foundation.org
-Date: Thu, 25 Jun 2009 15:49:36 -0700
+	Thu, 25 Jun 2009 18:49:54 -0400
+Received: from vena.lwn.net ([206.168.112.25]:37594 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755088AbZFYWtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 18:49:52 -0400
+Date: Thu, 25 Jun 2009 16:49:50 -0600
+From: Jake Edge <jake@lwn.net>
+To: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>, nico@cam.org,
+       pierre@ossman.eu, saschasommer@freenet.de
+Subject: errors when booting with SDCard present (2.6.31-rc1 and others)
+Message-ID: <20090625164950.1157936f@chukar>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mm-of-the-moment snapshot 2009-06-25-15-49 has been uploaded to
+I am getting some strange (to me anyway) errors in /var/log/messages
+when I boot with an SD Card present in the card reader on my laptop ... 'irq 20: nobody cared' and 'inconsistent lock state' ... so far, I have reproduced similar behavior on 2.6.31-rc1, 2.6.30, 2.6.29, and a (slightly old) Fedora 11 kernel: 2.6.29.2-126.fc11.i586
 
-   http://userweb.kernel.org/~akpm/mmotm/
+(from 2.6.31-rc1)
 
-and will soon be available at
+It starts with an:
 
-   git://git.zen-sources.org/zen/mmotm.git
+irq 20: nobody cared (try booting with the "irqpoll" option)
 
-It contains the following patches against 2.6.31-rc1:
+(irq 20 corresponds to a USB host controller) with the following backtrace:
 
-eventfd-revised-interface-and-cleanups-4th-rev.patch
-gcov-fix-__ctors_start-alignment.patch
-maintainers-update-edac-i82975x.patch
-repeatable-slab-corruption-with-ltp-msgctl08.patch
-linux-next.patch
-next-remove-localversion.patch
-i-need-old-gcc.patch
-kernel-core-add-smp_call_function_any.patch
-kernel-core-add-smp_call_function_any-update.patch
-arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts-by-using-smp_call_function_any.patch
-s3c-fix-check-of-index-into-s3c_gpios.patch
-pcmcia-yenta-add-missing-__devexit-marking.patch
-pcmcia-pccard-deadlock-fix.patch
-video-initial-support-for-adv7180.patch
-posix_cpu_timers_exit_group-do-not-use-thread_group_cputimer.patch
-input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface.patch
-input-documentation-input-xpadtxt-update-for-new-driver-functionality.patch
-input-more-i8042-reset-quirks-for-msi-wind-clone-netbooks.patch
-input-tsc2007-remove-hr-timer.patch
-input-tsc2007-make-platform-callbacks-optional.patch
-mmc-in-mmc_power_up-use-previously-selected-ocr-if-available.patch
-omap-hsmmc-do-not-enable-buffer-ready-interrupt-if-using-dma.patch
-jffs2-move-jffs2_gcd_mtd-threads-to-the-new-kthread-api.patch
-mtd-sst25l-non-jedec-spi-flash-driver.patch
-mtd-sst25l-non-jedec-spi-flash-driver-update.patch
-mtd-sst25l-non-jedec-spi-flash-driver-fix.patch
-nand-add-new-ecc-mode-ecc_hw_oob_first.patch
-3x59x-fix-pci-resource-management.patch
-3x59x-fix-pci-resource-management-checkpatch-fixes.patch
-parisc-remove-obsolete-hw_interrupt_type.patch
-serial_txx9-use-container_of-instead-of-direct-cast.patch
-icom-converting-space-to-tabs.patch
-serial-8250c-irq-handling-race-and-spurious-iir-read.patch
-serial-add-parameter-to-force-skipping-the-test-for-the-txen-bug.patch
-hypfs-remove-useless-variable-qname.patch
-scsi-use-the-common-hex_asc-array-rather-than-a-private-one.patch
-scsi-gdthc-use-unaligned-access-helpers.patch
-scsi-annotate-gdth_rdcap_data-gdth_rdcap16_data-endianness.patch
-scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
-drivers-usb-gadget-s3c2410_udcc-fix.patch
-vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
-raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
-vfs-improve-comment-describing-fget_light.patch
-libfs-make-simple_read_from_buffer-conventional.patch
-fs-inodec-add-dev-id-and-inode-number-for-debugging-in-init_special_inode.patch
-vfs-split-generic_forget_inode-so-that-hugetlbfs-does-not-have-to-copy-it.patch
-seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch
-mac80211-use-kzfree-in-key-handling-to-enforce-data-sanitization.patch
-xtensa-variant-specific-code.patch
-mm.patch
-parport-serial-add-support-for-netmos-9901-multi-io-card.patch
-edac-add-ddr3-memory-type-for-mpc85xx-edac.patch
-elf-limit-max-map-count-to-safe-value.patch
-ext2-return-eio-not-estale-on-directory-traversal-through-deleted-inode.patch
-genirq-do-not-disable-irq_wakeup-marked-irqs-on-suspend.patch
-dmapools-protect-page_list-walk-in-show_pools.patch
-spi-new-spi-mode-bits.patch
-spi-add-spi_master-flag-word.patch
-fbdev-add-mutex-for-fb_mmap-locking.patch
-spi-bitbang-bugfix-in-message-setup.patch
-kernel-resourcec-fix-sign-extension-in-reserve_setup.patch
-maintainers-starfire-duralan-update.patch
-bsdacct-fix-access-to-invalid-filp-in-acct_on.patch
-mm-prevent-balance_dirty_pages-from-doing-too-much-work.patch
-cpusets-document-adding-removing-cpus-to-cpuset-elaborately.patch
-alpha-fix-2630-smp-build.patch
-cciss-fix-the-termination-of-the-scanning-thread.patch
-arch-x86-oprofile-op_model_amdc-fix-op_amd_handle_ibs-return-type.patch
-drivers-rtc-rtc-cmosc-cmos_init-dont-ignore-pnp_register_driver-return-value.patch
-serial-bfin_5xx-fix-building-as-module-when-early-printk-is-enabled.patch
-oom-move-oom_adj-value-from-task_struct-to-mm_struct-fix.patch
-mm-make-swap-token-dummies-static-inlines.patch
-mm-make-swap-token-dummies-static-inlines-fix.patch
-readahead-add-blk_run_backing_dev.patch
-readahead-add-blk_run_backing_dev-fix.patch
-readahead-add-blk_run_backing_dev-fix-fix-2.patch
-frv-duplicate-output_buffer-of-e03.patch
-frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
-m68k-count-can-reach-51-not-50.patch
-m68k-cnt-reaches-1-not-0.patch
-arch-m68k-include-asm-motorola_pgalloch-fix-kunmap-arg.patch
-rework-fix-is_single_threaded.patch
-printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec.patch
-printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix.patch
-printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix-2.patch
-printk-add-printk_delay-to-make-messages-readable-for-some-scenarios.patch
-printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix.patch
-printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-cleanup.patch
-getrusage-fill-ru_maxrss-value.patch
-getrusage-fill-ru_maxrss-value-update.patch
-asm-sections-add-text-data-checking-functions-for-arches-to-override.patch
-kallsyms-use-new-arch_is_kernel_text.patch
-lockdep-use-new-arch_is_kernel_data.patch
-blackfin-override-text-data-checking-functions.patch
-drivers-hwmon-coretempc-enable-the-intel-atom.patch
-proc-connector-add-event-for-process-becoming-session-leader.patch
-proc-connector-add-event-for-process-becoming-session-leader-checkpatch-fixes.patch
-procfs-provide-stack-information-for-threads-v08.patch
-spi-remove-imx-spi-driver.patch
-spi-add-spi-driver-for-most-known-imx-socs.patch
-sunrpc-use-formatting-of-module-name-in-sunrpc.patch
-gpiolib-allow-exported-gpio-nodes-to-be-named-using-sysfs-links.patch
-gpio-add-mc33880-driver.patch
-omapfb-add-support-for-the-apollon-lcd.patch
-omapfb-add-support-for-mipi-dcs-compatible-lcds.patch
-omapfb-add-support-for-the-amstrad-delta-lcd.patch
-omapfb-add-support-for-the-2430sdp-lcd.patch
-omapfb-add-support-for-the-omap2evm-lcd.patch
-omapfb-add-support-for-the-3430sdp-lcd.patch
-omapfb-add-support-for-the-omap3-evm-lcd.patch
-omapfb-add-support-for-the-omap3-beagle-dvi-output.patch
-omapfb-add-support-for-the-gumstix-overo-lcd.patch
-omapfb-add-support-for-the-zoom-mdk-lcd.patch
-omapfb-add-support-for-rotation-on-the-blizzard-lcd-ctrl.patch
-n770-enable-lcd-mipi-dcs-in-kconfig.patch
-omapfb-dispc-various-typo-fixes.patch
-omapfb-dispc-disable-iface-clocks-along-with-func-clocks.patch
-omapfb-dispc-enable-wake-up-capability.patch
-omapfb-dispc-allow-multiple-external-irq-handlers.patch
-omapfb-suspend-resume-only-if-fb-device-is-already-initialized.patch
-omapfb-fix-coding-style-remove-dead-line.patch
-omapfb-add-fb-manual-update-option-to-kconfig.patch
-omapfb-hwa742-fix-pointer-to-be-const.patch
-platinumfb-misplaced-parenthesis.patch
-intelfb-fix-setting-of-active-pipe-with-lvds-displays.patch
-hfsplus-identify-journal-info-block-in-volume-header.patch
-hfsplus-fix-journal-detection.patch
-memcg-remove-the-overhead-associated-with-the-root-cgroup.patch
-memcg-remove-the-overhead-associated-with-the-root-cgroup-fix.patch
-signals-tracehook_notify_jctl-change.patch
-utrace-core.patch
-n_hdlc-add-buffer-flushing-checkpatch-fixes.patch
-bzip2-lzma-gzip-fix-comments-describing-decompressor-api.patch
-bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
-lzma-gzip-fix-potential-oops-when-input-data-is-truncated.patch
-sound-core-pcm_timerc-use-lib-gcdc.patch
-net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc.patch
-net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc-fix.patch
-vfs-take-2add-set_page_dirty_notag.patch
-reiser4-vfs-add-super_operationssync_inodes-2.patch
-reiser4-export-remove_from_page_cache.patch
-reiser4-export-remove_from_page_cache-fix.patch
-reiser4-export-find_get_pages.patch
-reiser4.patch
-reiser4-adjust-to-the-new-aops.patch
-reiser4-adjust-to-the-new-aops-fixup.patch
-reiser4-remove-simple_prepare_write-usage.patch
-reiser4-remove-simple_prepare_write-usage-checkpatch-fixes.patch
-fs-symlink-write_begin-allocation-context-fix-reiser4-fix.patch
-reiser4-handling-error-returned-by-d_obtain_alias-fixup.patch
-reiser4-update-names-of-quota-methods.patch
-reiser4-use-set_page_dirty_notag.patch
-make-sure-nobodys-leaking-resources.patch
-journal_add_journal_head-debug.patch
-releasing-resources-with-children.patch
-make-frame_pointer-default=y.patch
-mutex-subsystem-synchro-test-module.patch
-slab-leaks3-default-y.patch
-put_bh-debug.patch
-add-debugging-aid-for-memory-initialisation-problems.patch
-shrink_slab-handle-bad-shrinkers.patch
-keep-track-of-network-interface-renaming.patch
-workaround-for-a-pci-restoring-bug.patch
-prio_tree-debugging-patch.patch
-single_open-seq_release-leak-diagnostics.patch
-add-a-refcount-check-in-dput.patch
-getblk-handle-2tb-devices.patch
-getblk-handle-2tb-devices-fix.patch
-undeprecate-pci_find_device.patch
-notify_change-callers-must-hold-i_mutex.patch
+Jun 25 15:42:19 ouzel kernel: Pid: 1093, comm: plymouthd Not tainted 2.6.31-rc1-jake #27
+Jun 25 15:42:19 ouzel kernel: Call Trace:
+Jun 25 15:42:19 ouzel kernel: [<c047db7c>] __report_bad_irq+0x33/0x74
+Jun 25 15:42:19 ouzel kernel: [<c047dcb7>] note_interrupt+0xfa/0x153
+Jun 25 15:42:19 ouzel kernel: [<c047e23d>] handle_fasteoi_irq+0x92/0xb5
+Jun 25 15:42:19 ouzel kernel: [<c047e1ab>] ? handle_fasteoi_irq+0x0/0xb5
+Jun 25 15:42:19 ouzel kernel: <IRQ>  [<c0404ad4>] ? do_IRQ+0x49/0x9c
+Jun 25 15:42:19 ouzel kernel: [<c043df85>] ? __do_softirq+0x0/0x1bc
+Jun 25 15:42:19 ouzel kernel: [<c0403aae>] ? common_interrupt+0x2e/0x34
+Jun 25 15:42:19 ouzel kernel: [<c043df85>] ? __do_softirq+0x0/0x1bc
+Jun 25 15:42:19 ouzel kernel: [<c045007b>] ? down_interruptible+0x19/0x3c
+Jun 25 15:42:19 ouzel kernel: [<c043dfda>] ? __do_softirq+0x55/0x1bc
+Jun 25 15:42:19 ouzel kernel: [<c043df85>] ? __do_softirq+0x0/0x1bc
+Jun 25 15:42:19 ouzel kernel: <IRQ>  [<c043e405>] ? irq_exit+0x3d/0x75
+Jun 25 15:42:19 ouzel kernel: [<c0417abd>] ? smp_apic_timer_interrupt+0x6c/0x7a
+Jun 25 15:42:19 ouzel kernel: [<c049b888>] ? perf_swcounter_event+0xca/0x18a
+Jun 25 15:42:19 ouzel kernel: [<c0403dbb>] ? apic_timer_interrupt+0x2f/0x34
+Jun 25 15:42:19 ouzel kernel: [<c049b888>] ? perf_swcounter_event+0xca/0x18a
+Jun 25 15:42:19 ouzel kernel: [<c045cc1b>] ? lock_acquire+0xce/0xdd
+Jun 25 15:42:19 ouzel kernel: [<c049b888>] ? perf_swcounter_event+0xca/0x18a
+Jun 25 15:42:19 ouzel kernel: [<c049b8c5>] ? perf_swcounter_event+0x107/0x18a
+Jun 25 15:42:19 ouzel kernel: [<c049b888>] ? perf_swcounter_event+0xca/0x18a
+Jun 25 15:42:19 ouzel kernel: [<c074d8d1>] ? do_page_fault+0x262/0x2d0
+Jun 25 15:42:19 ouzel kernel: [<c074d66f>] ? do_page_fault+0x0/0x2d0
+Jun 25 15:42:19 ouzel kernel: [<c074be4b>] ? error_code+0x6b/0x70
+Jun 25 15:42:19 ouzel kernel: [<c074d66f>] ? do_page_fault+0x0/0x2d0
+Jun 25 15:42:19 ouzel kernel: handlers:
+Jun 25 15:42:19 ouzel kernel: [<c0667e65>] (usb_hcd_irq+0x0/0x8d)
+Jun 25 15:42:19 ouzel kernel: [<c0667e65>] (usb_hcd_irq+0x0/0x8d)
+Jun 25 15:42:19 ouzel kernel: Disabling IRQ #20
+
+Then there are messages about an 'inconsistent lock state':
+
+Jun 25 15:42:19 ouzel kernel: =================================
+Jun 25 15:42:19 ouzel kernel: [ INFO: inconsistent lock state ]
+Jun 25 15:42:19 ouzel kernel: 2.6.31-rc1-jake #27
+Jun 25 15:42:19 ouzel kernel: ---------------------------------
+Jun 25 15:42:19 ouzel kernel: inconsistent {IN-HARDIRQ-W} -> {HARDIRQ-ON-W} usage.
+Jun 25 15:42:19 ouzel kernel: swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+Jun 25 15:42:19 ouzel kernel: (&irq_desc_lock_class){?.-...}, at: [<c047d9f8>] try_one_irq+0x1d/0xfa
+Jun 25 15:42:19 ouzel kernel: {IN-HARDIRQ-W} state was registered at:
+Jun 25 15:42:19 ouzel kernel:  [<c045bb1b>] __lock_acquire+0x20f/0xadc
+Jun 25 15:42:19 ouzel kernel:  [<c045cc07>] lock_acquire+0xba/0xdd
+Jun 25 15:42:19 ouzel kernel:  [<c074b3c9>] _spin_lock+0x2d/0x5d
+Jun 25 15:42:19 ouzel kernel:  [<c047e27c>] handle_level_irq+0x1c/0xb3
+Jun 25 15:42:19 ouzel kernel:  [<ffffffff>] 0xffffffff
+Jun 25 15:42:19 ouzel kernel: irq event stamp: 435284
+Jun 25 15:42:19 ouzel kernel: hardirqs last  enabled at (435284): [<c074ba1c>] _spin_unlock_irq+0x27/0x4f
+Jun 25 15:42:19 ouzel kernel: hardirqs last disabled at (435283): [<c074b472>] _spin_lock_irq+0x17/0x68
+Jun 25 15:42:19 ouzel kernel: softirqs last  enabled at (435270): [<c043e132>] __do_softirq+0x1ad/0x1bc
+Jun 25 15:42:19 ouzel kernel: softirqs last disabled at (435281): [<c040543e>] do_softirq+0x6e/0xcc
+Jun 25 15:42:19 ouzel kernel:
+Jun 25 15:42:19 ouzel kernel: other info that might help us debug this:
+Jun 25 15:42:19 ouzel kernel: 1 lock held by swapper/0:
+Jun 25 15:42:19 ouzel kernel: #0:  (kernel/irq/spurious.c:21){+.-...}, at: [<c0441ab4>] run_timer_softirq+0xfc/0x1e6
+Jun 25 15:42:19 ouzel kernel:
+Jun 25 15:42:19 ouzel kernel: stack backtrace:
+Jun 25 15:42:19 ouzel kernel: Pid: 0, comm: swapper Not tainted 2.6.31-rc1-jake #27
+Jun 25 15:42:19 ouzel kernel: Call Trace:
+Jun 25 15:42:19 ouzel kernel: [<c07490d2>] ? printk+0x14/0x1a
+Jun 25 15:42:19 ouzel kernel: [<c045ac3d>] valid_state+0x12a/0x13d
+Jun 25 15:42:19 ouzel kernel: [<c045ad41>] mark_lock+0xf1/0x1d9
+Jun 25 15:42:19 ouzel kernel: [<c045b426>] ? check_usage_backwards+0x0/0x3f
+Jun 25 15:42:19 ouzel kernel: [<c045bb89>] __lock_acquire+0x27d/0xadc
+Jun 25 15:42:19 ouzel kernel: [<c047d9f8>] ? try_one_irq+0x1d/0xfa
+Jun 25 15:42:19 ouzel kernel: [<c045cc07>] lock_acquire+0xba/0xdd
+Jun 25 15:42:19 ouzel kernel: [<c047d9f8>] ? try_one_irq+0x1d/0xfa
+Jun 25 15:42:19 ouzel kernel: [<c074b3c9>] _spin_lock+0x2d/0x5d
+Jun 25 15:42:19 ouzel kernel: [<c047d9f8>] ? try_one_irq+0x1d/0xfa
+Jun 25 15:42:19 ouzel kernel: [<c047d9f8>] try_one_irq+0x1d/0xfa
+Jun 25 15:42:19 ouzel kernel: [<c047db05>] poll_all_shared_irqs+0x30/0x43
+Jun 25 15:42:19 ouzel kernel: [<c047db25>] poll_spurious_irqs+0xd/0x22
+Jun 25 15:42:19 ouzel kernel: [<c0441b29>] run_timer_softirq+0x171/0x1e6
+Jun 25 15:42:19 ouzel kernel: [<c0441ab4>] ? run_timer_softirq+0xfc/0x1e6
+Jun 25 15:42:19 ouzel kernel: [<c047db18>] ? poll_spurious_irqs+0x0/0x22
+Jun 25 15:42:19 ouzel kernel: [<c043e068>] __do_softirq+0xe3/0x1bc
+Jun 25 15:42:19 ouzel kernel: [<c043df85>] ? __do_softirq+0x0/0x1bc
+Jun 25 15:42:19 ouzel kernel: <IRQ>  [<c043e405>] ? irq_exit+0x3d/0x75
+Jun 25 15:42:19 ouzel kernel: [<c0404b13>] ? do_IRQ+0x88/0x9c
+Jun 25 15:42:19 ouzel kernel: [<c0403aae>] ? common_interrupt+0x2e/0x34
+Jun 25 15:42:19 ouzel kernel: [<c045007b>] ? down_interruptible+0x19/0x3c
+Jun 25 15:42:19 ouzel kernel: [<c05f14cb>] ? acpi_idle_enter_simple+0x11e/0x14f
+Jun 25 15:42:19 ouzel kernel: [<c06b0ea2>] ? cpuidle_idle_call+0x6a/0xa0
+Jun 25 15:42:19 ouzel kernel: [<c0402609>] ? cpu_idle+0x58/0x8b
+Jun 25 15:42:19 ouzel kernel: [<c0739884>] ? rest_init+0x6c/0x6e
+Jun 25 15:42:19 ouzel kernel: [<c0942838>] ? start_kernel+0x316/0x31b
+Jun 25 15:42:19 ouzel kernel: [<c0942071>] ? __init_begin+0x71/0x79
+
+I seem to get none of this behavior when I boot without that card present ... it just has a VFAT filesystem, which seems to be in reasonable shape when I look at it ... the machine seems to run fine, but these messages don't look good ...
+
+apologies if I cast too wide of a net on the email ... it is a Ricoh R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter according to lspci ...
+
+further checking shows that I have CONFIG_MMC_SDRICOH_CS turned off, on my
+kernels (not sure why), but that module is available for the Fedora kernel
+which seems to have the same behavior.
+
+any thoughts?
+
+thanks,
+
+jake
+
+-- 
+Jake Edge - LWN - jake@lwn.net - http://lwn.net
