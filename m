@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759734AbZFYKpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbZFYKpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759734AbZFYKpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 06:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbZFYKml
+	id S1760261AbZFYKpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 06:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759371AbZFYKoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 06:42:41 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59782 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753091AbZFYKmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 06:42:15 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr, fweisbec@gmail.com,
-       Alan.Brunelle@hp.com, Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 09/10] writeback: check for registered bdi in flusher add and inode dirty
-Date: Thu, 25 Jun 2009 12:42:02 +0200
-Message-Id: <1245926523-21959-10-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.3.rc0.1.gf800
-In-Reply-To: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com>
-References: <1245926523-21959-1-git-send-email-jens.axboe@oracle.com>
+	Thu, 25 Jun 2009 06:44:54 -0400
+Received: from mail-pz0-f189.google.com ([209.85.222.189]:34057 "EHLO
+	mail-pz0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759552AbZFYKox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 06:44:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NISjlhlM9t/nLAdayFuQ9KWxz6cBH1YGuAeH+IWYYgmBn1ZpINJMo/7nZUOXvT5Y/k
+         s/wSQgh535Mh6n2VYbW6GtkmeXJukmbWk3QC3eFBrx4ZiEntntH9RrTeeskRdWuRimyM
+         aKKrwMo5/1HbixlIT2hB6j38GG67qhzcmPq54=
+Date: Thu, 25 Jun 2009 18:47:00 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+Message-ID: <20090625104700.GF6374@cr0.nay.redhat.com>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com> <20090622024610.GC5893@cr0.nay.redhat.com> <4A421AA6.5060908@panasas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A421AA6.5060908@panasas.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also a debugging aid. We want to catch dirty inodes being added to
-backing devices that don't do writeback.
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/fs-writeback.c           |    7 +++++++
- include/linux/backing-dev.h |    1 +
- mm/backing-dev.c            |    6 ++++++
- 3 files changed, 14 insertions(+), 0 deletions(-)
+On Wed, Jun 24, 2009 at 03:23:02PM +0300, Boaz Harrosh wrote:
+>On 06/22/2009 05:46 AM, Amerigo Wang wrote:
+>> On Fri, Jun 19, 2009 at 05:55:24PM -0700, Paul Menage wrote:
+>>> UML: Fix some apparent bitrot
+>>>
+>>> - migration of net_device methods into net_device_ops
+>>> - dma_sync_single() changes
+>>> - cpumask_clear() -> cpumask_clear_cpu()
+>>>
+>>> Signed-off-by: Paul Menage <menage@google.com>
+>> 
+>> 
+>> Looks good.
+>> 
+>> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+>> 
+>> 
+>
+>Dear Jeff, Amerigo
+>
+>who is pushing this patch to Linus for 2.6.31. (ASAP)
+>Linus has threatened to cut -rc1 soon, and it is
+>unbuildable for UML currently.
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 796b243..dfb4767 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -643,6 +643,13 @@ void __mark_inode_dirty(struct inode *inode, int flags)
- 		 */
- 		if (!was_dirty) {
- 			struct bdi_writeback *wb = inode_get_wb(inode);
-+			struct backing_dev_info *bdi = wb->bdi;
-+
-+			if (bdi_cap_writeback_dirty(bdi) &&
-+			    !test_bit(BDI_registered, &bdi->state)) {
-+				WARN_ON(1);
-+				printk("bdi-%s not registered\n", bdi->name);
-+			}
- 
- 			inode->dirtied_when = jiffies;
- 			list_move(&inode->i_list, &wb->b_dirty);
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 9d2efc5..e623c57 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -31,6 +31,7 @@ enum bdi_state {
- 	BDI_wblist_lock,	/* bdi->wb_list now needs locking */
- 	BDI_async_congested,	/* The async (write) queue is getting full */
- 	BDI_sync_congested,	/* The sync queue is getting full */
-+	BDI_registered,		/* bdi_register() was done */
- 	BDI_unused,		/* Available bits start here */
- };
- 
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 6cdd9e5..75e6c47 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -569,6 +569,11 @@ static void bdi_add_one_flusher_task(struct backing_dev_info *bdi,
- 	if (!bdi_cap_writeback_dirty(bdi))
- 		return;
- 
-+	if (WARN_ON(!test_bit(BDI_registered, &bdi->state))) {
-+		printk("bdi %p/%s is not registered!\n", bdi, bdi->name);
-+		return;
-+	}
-+
- 	/*
- 	 * Check with the helper whether to proceed adding a task. Will only
- 	 * abort if we two or more simultanous calls to
-@@ -678,6 +683,7 @@ remove_err:
- 	}
- 
- 	bdi_debug_register(bdi, dev_name(dev));
-+	set_bit(BDI_registered, &bdi->state);
- exit:
- 	return ret;
- }
--- 
-1.6.3.rc0.1.gf800
+Hello, Boaz.
 
+It is supposed to be Jeff who should take UML patches,
+but since we haven't seen Jeff for a long time, Andrew
+should help us to take them.
+
+So Andrew? ping... :)
