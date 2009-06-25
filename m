@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZFYMwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZFYMyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755067AbZFYMwm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 08:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZFYMwc
+	id S1755096AbZFYMyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 08:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZFYMyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 08:52:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56308 "EHLO mx2.redhat.com"
+	Thu, 25 Jun 2009 08:54:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56349 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752224AbZFYMwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 08:52:31 -0400
-Date: Thu, 25 Jun 2009 15:52:01 +0300
+	id S1752322AbZFYMyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 08:54:02 -0400
+Date: Thu, 25 Jun 2009 15:53:33 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com
-Message-ID: <20090625125201.GA7166@redhat.com>
+       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: [PATCH] kvm: pass value to in_range callback
+Message-ID: <20090625125333.GB7166@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,15 +24,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-markmc@redhat.com
-Subject: [PATCH] kvm: pass value to in_range callback
-Reply-To: 
-
 For write transactions, pass the value written to in_range checks so
 that we can make each iosignalfd a separate device on kvm bus.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
+
+Reposting with a subject now. Sorry.
 
 Avi, can you please merge this patch in kvm.git so that
 Gregory can use it for iosignalfd? Once bus has RCU
