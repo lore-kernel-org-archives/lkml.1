@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbZFYRJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbZFYRNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbZFYRJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 13:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZFYRJZ
+	id S1754947AbZFYRNl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 13:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZFYRNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 13:09:25 -0400
-Received: from mailhost14.gawab.com ([66.220.20.14]:44060 "HELO
-	info88.gawab.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754149AbZFYRJY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 13:09:24 -0400
-X-Trusted: Whitelisted
-From: Al Boldi <a1426z@gawab.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC][PATCH] mm: stop balance_dirty_pages doing too much work
-Date: Thu, 25 Jun 2009 20:10:33 +0300
-User-Agent: KMail/1.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Richard Kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <1245839904.3210.85.camel@localhost.localdomain> <200906251646.22785.a1426z@gawab.com> <20090625144450.GT31415@kernel.dk>
-In-Reply-To: <20090625144450.GT31415@kernel.dk>
+	Thu, 25 Jun 2009 13:13:31 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49342 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452AbZFYRNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 13:13:30 -0400
+Message-ID: <4A43B060.30904@garzik.org>
+Date: Thu, 25 Jun 2009 13:14:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Joe Perches <joe@perches.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ion Badulescu <ionut@badula.org>, NetDev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: STARFIRE/DURALAN update
+References: <1245946630.395.37.camel@Joe-Laptop.home>
+In-Reply-To: <1245946630.395.37.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906252010.33535.a1426z@gawab.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> The test case is random mmap writes to files that have been laid out
-> sequentially. So it's all seeks. The target drive is an SSD disk though,
-> so it doesn't matter a whole lot (it's a good SSD).
+Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index fa2a16d..218126a 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5533,8 +5533,8 @@ F:	drivers/staging/
+>  
+>  STARFIRE/DURALAN NETWORK DRIVER
+>  P:	Ion Badulescu
+> -M:	ionut@cs.columbia.edu
+> -S:	Maintained
+> +M:	ionut@badula.org
+> +S:	Odd Fixes
+>  F:	drivers/net/starfire*
+>  
+>  STARMODE RADIO IP (STRIP) PROTOCOL DRIVER
 
-Oh, SSD.  What numbers do you get for normal disks?
+This change needs a better explanation, and should be CC'd to netdev 
+since it relates to network drivers.
+
+	Jeff
 
 
-Thanks!
-
---
-Al
 
