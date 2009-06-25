@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZFYQXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbZFYQ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757213AbZFYQXw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 12:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbZFYQXp
+	id S1752654AbZFYQ2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 12:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZFYQ2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 12:23:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55783 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZFYQXp (ORCPT
+	Thu, 25 Jun 2009 12:28:08 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2213 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbZFYQ2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 12:23:45 -0400
-Message-ID: <4A43A3E4.9040701@zytor.com>
-Date: Thu, 25 Jun 2009 09:20:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-git(16 and 17) system hangs after resume from suspend
- to 	disk, mce related?
-References: <8db1092f0906211002y2b391212ve2902fc3a6517586@mail.gmail.com>	 <4A3E7F38.7030300@linux.intel.com>	 <8db1092f0906211313x73ac9340n9af5775b56cfd189@mail.gmail.com>	 <4A3EE668.5090400@jp.fujitsu.com> <4A417176.40008@jp.fujitsu.com>	 <4A41C4E2.5080206@linux.intel.com> <8db1092f0906250853g7aa1af09w678b700780eabcd3@mail.gmail.com>
-In-Reply-To: <8db1092f0906250853g7aa1af09w678b700780eabcd3@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 25 Jun 2009 12:28:07 -0400
+Subject: [PATCH] MAINTAINERS: update EDAC-I82975X
+From: Joe Perches <joe@perches.com>
+To: LKML <linux-kernel@vger.kernel.org>, ravi@jetztechnologies.com,
+       arvind@jetztechnologies.com
+Cc: Jiri Kosina <jkosina@suse.cz>, Doug Thompson <norsk5@yahoo.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bluesmoke-devel@lists.sourceforge.net
+In-Reply-To: <61309.59.144.3.168.1245913271.squirrel@mail.jetzbroadband.com>
+References: <589165.9933.qm@web50102.mail.re2.yahoo.com>
+	 <alpine.LRH.2.00.0906241425510.31685@twin.jikos.cz>
+	 <4A4316DF.3050902@jetztechnologies.com>
+	 <61309.59.144.3.168.1245913271.squirrel@mail.jetzbroadband.com>
+Content-Type: text/plain
+Date: Thu, 25 Jun 2009 09:28:08 -0700
+Message-Id: <1245947288.395.41.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej Rutecki wrote:
-> 
-> Are this patches was added to -rc1?
-> 
+On Thu, 2009-06-25 at 12:31 +0530, rdesikan@jetzbroadband.com wrote:
+> Please update the maintainers as follows: 
+>  
+> Arvind R. email: arvind@jetztechnologies.com 
+> Ranganathan Desikan  email: ravi@jetztechnologies.com 
 
-No, but they're in our push queue.  Since they're bug fixes they will be
-pushed after we have run tests on them.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-	-hpa
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fa2a16d..01e901f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2087,9 +2087,9 @@ F:	drivers/edac/i5400_edac.c
+ 
+ EDAC-I82975X
+ P:	Ranganathan Desikan
+-M:	rdesikan@jetzbroadband.com
++M:	ravi@jetztechnologies.com
+ P:	Arvind R.
+-M:	arvind@acarlab.com
++M:	arvind@jetztechnologies.com
+ L:	bluesmoke-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:	bluesmoke.sourceforge.net
+ S:	Maintained
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
 
