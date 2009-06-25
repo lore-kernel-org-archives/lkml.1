@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZFYLa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZFYLcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZFYLa0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 07:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZFYLaP
+	id S1753973AbZFYLcy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 07:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZFYLcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 07:30:15 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:54698 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbZFYLaO (ORCPT
+	Thu, 25 Jun 2009 07:32:47 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39218 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750984AbZFYLcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 07:30:14 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Greg Ungerer <gerg@snapgear.com>
-Subject: Re: [uClinux-dev] [PATCH] m68k: restore lost coldfire CLOCK_TICK_RATE
-Date: Thu, 25 Jun 2009 13:30:09 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: uClinux development list <uclinux-dev@uclinux.org>,
-       linux-kernel@vger.kernel.org
-References: <20090620201147.GA14095@frolo.macqel> <20090624211144.GA13167@frolo.macqel> <4A42C5DC.1040103@snapgear.com>
-In-Reply-To: <4A42C5DC.1040103@snapgear.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 25 Jun 2009 07:32:46 -0400
+Date: Thu, 25 Jun 2009 12:34:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Dianne Hackborn <hackbod@android.com>, Daniel Walker <dwalker@fifo99.com>,
+       Arve =?ISO-8859-14?B?SGr4bm5lduVn?= <arve@android.com>,
+       Brian Swetland <swetland@google.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] staging: android: binder: Remove some funny &&
+ usage
+Message-ID: <20090625123402.1fac5aba@lxorguk.ukuu.org.uk>
+In-Reply-To: <1245924848.12994.26.camel@localhost.localdomain>
+References: <1244832678-30329-1-git-send-email-dwalker@fifo99.com>
+	<4A390B9A.40806@goop.org>
+	<1245254936.5982.261.camel@desktop>
+	<4A391A54.7000109@goop.org>
+	<d6200be20906171426n71979124i4b359b6f4fc35d7e@mail.gmail.com>
+	<1245274308.5982.268.camel@desktop>
+	<a55d774e0906191220i7280fe77qb724037fb92fab86@mail.gmail.com>
+	<1245451983.32124.25.camel@desktop>
+	<d6200be20906191713n161d4281u1f43804e675e29ac@mail.gmail.com>
+	<1245458940.32124.45.camel@desktop>
+	<26b7c7380906242109id89b490m2c148ec0ac9b3696@mail.gmail.com>
+	<1245924848.12994.26.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906251330.10127.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18Qk8+85HuxWzn1NjvbkxkkRxsRFU46vLp1GQj
- nTQAtyojIQRJGtlZTLbVnAvzWsfbGhHqKTIoAsdKZE8rWTpogI
- low3nsncEXZ+VZcupEjNA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009, Greg Ungerer wrote:
-> I thought it did that based on gettimeofday()?  And that ends up
-> going through the underlying timer code, which for both of
-> the ColdFire timer types doesn't use CLOCK_TICK_RATE. They directly
-> use the MCF_CLK definition.
+> To me it seems everything that you want from Binder is already possible
+> with D-Bus. Seems the only missing piece is to create dbus-daemon as a
+> kernel subsystem so it is available for all userspace processes from the
+> beginning (including init/upstart).
 
-The problem is the definition of TICK_NSEC, which is calculated from
-CLOCK_TICK_RATE. If you use the i8253 PIT tick rate, this will be
-slightly different from the regular TICK_NSEC value of (1000000000 / HZ).
+You don't even need that - you can start dbus immediately as part of init
+if it makes you happy.
 
-	Arnd <><
