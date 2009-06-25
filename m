@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZFYNzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbZFYN5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbZFYNzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 09:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZFYNzl
+	id S1754089AbZFYN5E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 09:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZFYN4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 09:55:41 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36957 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752134AbZFYNzl (ORCPT
+	Thu, 25 Jun 2009 09:56:55 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:33056 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134AbZFYN4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 09:55:41 -0400
-Date: Thu, 25 Jun 2009 14:55:32 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] [ARM] msm: add minimal board file for HTC Dream
-	device
-Message-ID: <20090625135532.GB11875@n2100.arm.linux.org.uk>
-References: <1245033557-10968-1-git-send-email-swetland@google.com> <1245033557-10968-2-git-send-email-swetland@google.com> <1245033557-10968-3-git-send-email-swetland@google.com> <1245033557-10968-4-git-send-email-swetland@google.com> <20090615132248.GB14555@elf.ucw.cz> <a55d774e0906151125h36ee7c36yb9ecf5fb3fb8e41b@mail.gmail.com> <20090615182850.GA10490@elf.ucw.cz> <a55d774e0906151151p223895b1pc01be38e1d0e9358@mail.gmail.com> <20090624205618.GD9149@elf.ucw.cz>
+	Thu, 25 Jun 2009 09:56:55 -0400
+Message-ID: <4A4381F5.5010405@linux.vnet.ibm.com>
+Date: Thu, 25 Jun 2009 15:56:05 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624205618.GD9149@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] gcov: fix __ctors_start alignment
+References: <20090625101147.GB5051@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090625101147.GB5051@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 10:56:19PM +0200, Pavel Machek wrote:
-> Are there any issues that prevent this from being merged? Russell, can
-> you take those patches?
+Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> The ctors section for each object file is eight byte aligned (on 64 bit).
+> However the __ctors_start symbol starts at an arbitrary address dependent
+> on the size of the previous sections.
+> Therefore the linker may add some zeroes after __ctors_start to make sure
+> the ctors contents are properly aligned. However the extra zeroes at the
+> beginning aren't expected by the code. When walking the functions pointers
+> contained in there and extra zeroes are added this may result in random
+> jumps.
+> So make sure that the __ctors_start symbol is always aligned as well.
 
-I thought Alan's preference was for me to be out of the loop on machine
-specific stuff, and for platform maintainers to push their stuff directly
-into linux-next and to Linus.
+Ack. And good find! :) Also with this patch applied, the x86_64 boot 
+problem reported by Ingo Molnar no longer occurs.
 
-If people do want to push stuff via me, that's fine, but they're going to
-have to explicitly ask for it.  If they don't, that's also fine.  (There
-are those who clearly stated that they want my continued involvement and
-review.)
-
-In any case, patch 1 looks like it's entirely related to serial stuff, and
-it looks like Alan has some outstanding issues there.  I think that at
-least needs Alan's ack or Alan to deal with it.  The other two look fine
-to me.
