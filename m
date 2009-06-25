@@ -1,433 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZFYW0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZFYW3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbZFYW0Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 18:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbZFYW0G
+	id S1756904AbZFYW3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 18:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZFYW3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 18:26:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:42690 "EHLO mx1.suse.de"
+	Thu, 25 Jun 2009 18:29:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41917 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754713AbZFYW0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 18:26:03 -0400
-From: Thomas Renninger <trenn@suse.de>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand and conservative governors
-Date: Fri, 26 Jun 2009 00:26:20 +0200
-User-Agent: KMail/1.9.10
-Cc: kernel@stable.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, rjw@sisk.pl, hidave.darkstar@gmail.com,
-       penberg@cs.helsinki.fi, kernel-testers@vger.kernel.org,
-       davej@redhat.com, Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-References: <20090623193215.GA31374@elte.hu> <20090625142552.GA18000@Krystal> <200906260017.10730.trenn@suse.de>
-In-Reply-To: <200906260017.10730.trenn@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753372AbZFYW3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 18:29:09 -0400
+Subject: Re: [PATCH -tip] perf_counter tools: add support to set of
+ multiple events in one short
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1245963764.10962.2.camel@hpdv5.satnam>
+References: <1245963764.10962.2.camel@hpdv5.satnam>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 03:58:34 +0530
+Message-Id: <1245968914.10962.12.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906260026.21394.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 June 2009 12:17:09 am Thomas Renninger wrote:
-> On Thursday 25 June 2009 04:25:52 pm Mathieu Desnoyers wrote:
-> > * Thomas Renninger (trenn@suse.de) wrote:
-> > > Comment from Venkatesh:
-> > > ...
-> > > This mutex is just serializing the changes to those variables. I
-> > > could't think of any functionality issues of not having the lock as
-> > > such.
-> > >
-> > > -> rip it out.
-> > >
-> > > CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > > Signed-off-by: Thomas Renninger <trenn@suse.de>
-> > > ---
-> > >  drivers/cpufreq/cpufreq_conservative.c |   61
-> > > +++----------------------------- drivers/cpufreq/cpufreq_ondemand.c    
-> > > | 48 +++---------------------- 2 files changed, 10 insertions(+), 99
-> > > deletions(-)
-> > >
-> > > diff --git a/drivers/cpufreq/cpufreq_conservative.c
-> > > b/drivers/cpufreq/cpufreq_conservative.c index 7a74d17..6303379 100644
-> > > --- a/drivers/cpufreq/cpufreq_conservative.c
-> > > +++ b/drivers/cpufreq/cpufreq_conservative.c
-> > > @@ -18,7 +18,6 @@
-> > >  #include <linux/cpu.h>
-> > >  #include <linux/jiffies.h>
-> > >  #include <linux/kernel_stat.h>
-> > > -#include <linux/mutex.h>
-> > >  #include <linux/hrtimer.h>
-> > >  #include <linux/tick.h>
-> > >  #include <linux/ktime.h>
-> > > @@ -84,19 +83,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
-> > > cpu_dbs_info);
-> > >
-> > >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
-> > >
-> > > -/*
-> > > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
-> > > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> > > - * dbs_mutex. If any function that can potentially take cpu_hotplug
-> > > lock - * (like __cpufreq_driver_target()) is being called with
-> > > dbs_mutex taken, then - * cpu_hotplug lock should be taken before that.
-> > > Note that cpu_hotplug lock - * is recursive for the same process.
-> > > -Venki - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the
-> > > dbs_mutex, because it - * would deadlock with
-> > > cancel_delayed_work_sync(), which is needed for proper - * raceless
-> > > workqueue teardown.
-> > > - */
-> > > -static DEFINE_MUTEX(dbs_mutex);
-> > > -
-> > >  static struct workqueue_struct	*kconservative_wq;
-> > >
-> > >  static struct dbs_tuners {
-> > > @@ -236,10 +222,7 @@ static ssize_t store_sampling_down_factor(struct
-> > > cpufreq_policy *unused, if (ret != 1 || input >
-> > > MAX_SAMPLING_DOWN_FACTOR
-> > >
-> > > || input < 1) return -EINVAL;
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	dbs_tuners_ins.sampling_down_factor = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -253,10 +236,7 @@ static ssize_t store_sampling_rate(struct
-> > > cpufreq_policy *unused, if (ret != 1)
-> > >  		return -EINVAL;
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -267,16 +247,11 @@ static ssize_t store_up_threshold(struct
-> > > cpufreq_policy *unused, int ret;
-> > >  	ret = sscanf(buf, "%u", &input);
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	if (ret != 1 || input > 100 ||
-> > > -			input <= dbs_tuners_ins.down_threshold) {
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +			input <= dbs_tuners_ins.down_threshold)
-> > >  		return -EINVAL;
-> > > -	}
-> > >
-> > >  	dbs_tuners_ins.up_threshold = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> >
-> > Here, for instance, there might be a problem if down_threshold is
-> > changed concurrently with a store_up_threshold() call. See that there is
-> > a test before the modification, and we need the mutex there for it to be
-> > consistent.
->
-> Thanks, I was rather quick with the conservative changes..., but
-> it should still be ok.
->
-> It should be assured that if userspace is doing:
-> echo x > down_threshold
-> echo y > up_threshold
-> that the first one will be served/finished first?
->
-> If userspace is writing different values for each core to the global
-> conservative/ondemand tunables, or you have concurent userspace tools
-> trying to configure ondemand/conservative, it's a userspace bug.
-> It's confusing that ondemand/conservative allows per core reads/writes to
-> global variables and I hope to be able to provide something to change that
-> in some days, maybe weeks.
->
-> If you still can think of a possible issue, a userspace scenario would
-> help.
->
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -287,17 +262,12 @@ static ssize_t store_down_threshold(struct
-> > > cpufreq_policy *unused, int ret;
-> > >  	ret = sscanf(buf, "%u", &input);
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	/* cannot be lower than 11 otherwise freq will not fall */
-> > >  	if (ret != 1 || input < 11 || input > 100 ||
-> > > -			input >= dbs_tuners_ins.up_threshold) {
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +			input >= dbs_tuners_ins.up_threshold)
-> > >  		return -EINVAL;
-> > > -	}
-> > >
-> > >  	dbs_tuners_ins.down_threshold = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -316,11 +286,9 @@ static ssize_t store_ignore_nice_load(struct
-> > > cpufreq_policy *policy, if (input > 1)
-> > >  		input = 1;
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
-> > >  		return count;
-> > > -	}
-> > > +
-> > >  	dbs_tuners_ins.ignore_nice = input;
-> > >
-> > >  	/* we need to re-evaluate prev_cpu_idle */
-> > > @@ -332,8 +300,6 @@ static ssize_t store_ignore_nice_load(struct
-> > > cpufreq_policy *policy, if (dbs_tuners_ins.ignore_nice)
-> > >  			dbs_info->prev_cpu_nice = kstat_cpu(j).cpustat.nice;
-> > >  	}
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -352,10 +318,7 @@ static ssize_t store_freq_step(struct
-> > > cpufreq_policy *policy,
-> > >
-> > >  	/* no need to test here if freq_step is zero as the user might
-> > > actually * want this, they would be crazy though :) */
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	dbs_tuners_ins.freq_step = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -566,13 +529,9 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy,
-> >
-> > Hrm, this is where we want the mutexes removed, but I fear this is
-> > creating a race between sysfs_create_group (sysfs file creation) and
-> > policy initialization...
->
-> This can be solved by moving this_dbs_info->enable incremenation
-> after sysfs_create_group.
-Forget this sentence, don't think about it, it's crap.
-I better go to bed now...
+On Fri, 2009-06-26 at 02:32 +0530, Jaswinder Singh Rajput wrote:
+> Add support for HARDWARE and SOFTWARE events :
+>  perf stat -e all-sw-events
+>  perf stat -e sw-events
+>  perf stat -e all-hw-events
+>  perf stat -e hw-events
+> 
+> On AMD box :
+> 
+> ./perf stat -e hw-events -e all-sw-events -- ls -lR > /dev/null
+> 
+>  Performance counter stats for 'ls -lR':
+> 
+>         9977353  cycles               #    557.193 M/sec  (scaled from 21.81%)
+>         4244800  instructions         #      0.425 IPC    (scaled from 27.51%)
+>         2953188  cache-references     #    164.923 M/sec  (scaled from 89.10%)
+>           72469  cache-misses         #      4.047 M/sec  (scaled from 89.13%)
+>          775760  branches             #     43.323 M/sec  (scaled from 89.10%)
+>           57814  branch-misses        #      3.229 M/sec  (scaled from 83.34%)
+>   <not counted>  bus-cycles
+>       17.970985  cpu-clock-msecs
+>       17.906460  task-clock-msecs     #      0.955 CPUs
+>             386  page-faults          #      0.022 M/sec
+>             386  minor-faults         #      0.022 M/sec
+>               0  major-faults         #      0.000 M/sec
+>               4  context-switches     #      0.000 M/sec
+>               1  CPU-migrations       #      0.000 M/sec
+> 
+>     0.018750671  seconds time elapsed.
+> 
+> Reported-by : Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  tools/perf/util/parse-events.c |   66 ++++++++++++++++++++++++++++++++++++++-
+>  1 files changed, 64 insertions(+), 2 deletions(-)
 
-       Thomas
+Please treat :
+ [PATCH -tip] perf_counter tools: add support to set of multiple events in one short
+as 
+ [PATCH 1/2-tip] perf_counter tools: add support to set of multiple events in one short
 
-> But yes, I forgot that in my patch, thanks!
->
-> > I'm not convinced this mutex is not needed.
->
-> I am. Maybe it still takes some more thinking or step by step rework.
-> Finding an unintrusive, riskless short term solution for .30 is a
-> challenge, though.
->
->     Thomas
->
-> > Mathieu
-> >
-> > >  		if (this_dbs_info->enable) /* Already enabled */
-> > >  			break;
-> > >
-> > > -		mutex_lock(&dbs_mutex);
-> > > -
-> > >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
-> > > -		if (rc) {
-> > > -			mutex_unlock(&dbs_mutex);
-> > > +		if (rc)
-> > >  			return rc;
-> > > -		}
-> > >
-> > >  		for_each_cpu(j, policy->cpus) {
-> > >  			struct cpu_dbs_info_s *j_dbs_info;
-> > > @@ -612,13 +571,9 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy, CPUFREQ_TRANSITION_NOTIFIER);
-> > >  		}
-> > >  		dbs_timer_init(this_dbs_info);
-> > > -
-> > > -		mutex_unlock(&dbs_mutex);
-> > > -
-> > >  		break;
-> > >
-> > >  	case CPUFREQ_GOV_STOP:
-> > > -		mutex_lock(&dbs_mutex);
-> > >  		dbs_timer_exit(this_dbs_info);
-> > >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
-> > >  		dbs_enable--;
-> > > @@ -631,13 +586,9 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy, cpufreq_unregister_notifier(
-> > >  					&dbs_cpufreq_notifier_block,
-> > >  					CPUFREQ_TRANSITION_NOTIFIER);
-> > > -
-> > > -		mutex_unlock(&dbs_mutex);
-> > > -
-> > >  		break;
-> > >
-> > >  	case CPUFREQ_GOV_LIMITS:
-> > > -		mutex_lock(&dbs_mutex);
-> > >  		if (policy->max < this_dbs_info->cur_policy->cur)
-> > >  			__cpufreq_driver_target(
-> > >  					this_dbs_info->cur_policy,
-> > > @@ -646,8 +597,6 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy, __cpufreq_driver_target(
-> > >  					this_dbs_info->cur_policy,
-> > >  					policy->min, CPUFREQ_RELATION_L);
-> > > -		mutex_unlock(&dbs_mutex);
-> > > -
-> > >  		break;
-> > >  	}
-> > >  	return 0;
-> > > diff --git a/drivers/cpufreq/cpufreq_ondemand.c
-> > > b/drivers/cpufreq/cpufreq_ondemand.c index e741c33..d080a48 100644
-> > > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > > @@ -17,7 +17,6 @@
-> > >  #include <linux/cpu.h>
-> > >  #include <linux/jiffies.h>
-> > >  #include <linux/kernel_stat.h>
-> > > -#include <linux/mutex.h>
-> > >  #include <linux/hrtimer.h>
-> > >  #include <linux/tick.h>
-> > >  #include <linux/ktime.h>
-> > > @@ -91,19 +90,6 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s,
-> > > cpu_dbs_info);
-> > >
-> > >  static unsigned int dbs_enable;	/* number of CPUs using this policy */
-> > >
-> > > -/*
-> > > - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
-> > > - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> > > - * dbs_mutex. If any function that can potentially take cpu_hotplug
-> > > lock - * (like __cpufreq_driver_target()) is being called with
-> > > dbs_mutex taken, then - * cpu_hotplug lock should be taken before that.
-> > > Note that cpu_hotplug lock - * is recursive for the same process.
-> > > -Venki - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the
-> > > dbs_mutex, because it - * would deadlock with
-> > > cancel_delayed_work_sync(), which is needed for proper - * raceless
-> > > workqueue teardown.
-> > > - */
-> > > -static DEFINE_MUTEX(dbs_mutex);
-> > > -
-> > >  static struct workqueue_struct	*kondemand_wq;
-> > >
-> > >  static struct dbs_tuners {
-> > > @@ -269,14 +255,10 @@ static ssize_t store_sampling_rate(struct
-> > > cpufreq_policy *unused, int ret;
-> > >  	ret = sscanf(buf, "%u", &input);
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > > -	if (ret != 1) {
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +	if (ret != 1)
-> > >  		return -EINVAL;
-> > > -	}
-> > > -	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
-> > > -	mutex_unlock(&dbs_mutex);
-> > >
-> > > +	dbs_tuners_ins.sampling_rate = max(input, minimum_sampling_rate());
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -287,16 +269,11 @@ static ssize_t store_up_threshold(struct
-> > > cpufreq_policy *unused, int ret;
-> > >  	ret = sscanf(buf, "%u", &input);
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
-> > > -			input < MIN_FREQUENCY_UP_THRESHOLD) {
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +			input < MIN_FREQUENCY_UP_THRESHOLD)
-> > >  		return -EINVAL;
-> > > -	}
-> > >
-> > >  	dbs_tuners_ins.up_threshold = input;
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -315,11 +292,9 @@ static ssize_t store_ignore_nice_load(struct
-> > > cpufreq_policy *policy, if (input > 1)
-> > >  		input = 1;
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > > -	if (input == dbs_tuners_ins.ignore_nice) { /* nothing to do */
-> > > -		mutex_unlock(&dbs_mutex);
-> > > +	if (input == dbs_tuners_ins.ignore_nice) /* nothing to do */
-> > >  		return count;
-> > > -	}
-> > > +
-> > >  	dbs_tuners_ins.ignore_nice = input;
-> > >
-> > >  	/* we need to re-evaluate prev_cpu_idle */
-> > > @@ -332,8 +307,6 @@ static ssize_t store_ignore_nice_load(struct
-> > > cpufreq_policy *policy, dbs_info->prev_cpu_nice =
-> > > kstat_cpu(j).cpustat.nice;
-> > >
-> > >  	}
-> > > -	mutex_unlock(&dbs_mutex);
-> > > -
-> > >  	return count;
-> > >  }
-> > >
-> > > @@ -350,10 +323,8 @@ static ssize_t store_powersave_bias(struct
-> > > cpufreq_policy *unused, if (input > 1000)
-> > >  		input = 1000;
-> > >
-> > > -	mutex_lock(&dbs_mutex);
-> > >  	dbs_tuners_ins.powersave_bias = input;
-> > >  	ondemand_powersave_bias_init();
-> > > -	mutex_unlock(&dbs_mutex);
-> > >
-> > >  	return count;
-> > >  }
-> > > @@ -586,13 +557,11 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy, if (this_dbs_info->enable) /* Already enabled
-> > > */ break;
-> > >
-> > > -		mutex_lock(&dbs_mutex);
-> > >  		dbs_enable++;
-> > >
-> > >  		rc = sysfs_create_group(&policy->kobj, &dbs_attr_group);
-> > >  		if (rc) {
-> > >  			dbs_enable--;
-> > > -			mutex_unlock(&dbs_mutex);
-> > >  			return rc;
-> > >  		}
-> > >
-> > > @@ -627,28 +596,21 @@ static int cpufreq_governor_dbs(struct
-> > > cpufreq_policy *policy, dbs_tuners_ins.sampling_rate =
-> > > def_sampling_rate; }
-> > >  		dbs_timer_init(this_dbs_info);
-> > > -
-> > > -		mutex_unlock(&dbs_mutex);
-> > >  		break;
-> > >
-> > >  	case CPUFREQ_GOV_STOP:
-> > > -		mutex_lock(&dbs_mutex);
-> > >  		dbs_timer_exit(this_dbs_info);
-> > >  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
-> > >  		dbs_enable--;
-> > > -		mutex_unlock(&dbs_mutex);
-> > > -
-> > >  		break;
-> > >
-> > >  	case CPUFREQ_GOV_LIMITS:
-> > > -		mutex_lock(&dbs_mutex);
-> > >  		if (policy->max < this_dbs_info->cur_policy->cur)
-> > >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
-> > >  				policy->max, CPUFREQ_RELATION_H);
-> > >  		else if (policy->min > this_dbs_info->cur_policy->cur)
-> > >  			__cpufreq_driver_target(this_dbs_info->cur_policy,
-> > >  				policy->min, CPUFREQ_RELATION_L);
-> > > -		mutex_unlock(&dbs_mutex);
-> > >  		break;
-> > >  	}
-> > >  	return 0;
-> > > --
-> > > 1.6.0.2
+And here is 2/2 :
+
+[PATCH 2/2 -tip] perf_counter tools: Add support for all CACHE events
+
+Add support for all CACHE events :
+ perf stat -e all-cache-events
+ perf stat -e cache-events
+
+On AMD box (<not-counted> events are not available for AMD):
+
+./perf stat -e all-cache-events -- ls -lR /usr/include/ > /dev/null
+
+ Performance counter stats for 'ls -lR /usr/include/':
+
+      246370884  L1-d$-loads           (scaled from 23.55%)
+        1074018  L1-d$-load-misses     (scaled from 23.38%)
+         150708  L1-d$-stores          (scaled from 23.57%)
+  <not counted>  L1-d$-store-misses
+         428804  L1-d$-prefetches      (scaled from 23.47%)
+         314446  L1-d$-prefetch-misses  (scaled from 23.42%)
+      252626137  L1-i$-loads           (scaled from 23.24%)
+        3985110  L1-i$-load-misses     (scaled from 23.24%)
+          93754  L1-i$-prefetches      (scaled from 23.34%)
+  <not counted>  L1-i$-prefetch-misses
+        5202314  LLC-loads             (scaled from 23.34%)
+         525467  LLC-load-misses       (scaled from 23.25%)
+        5220558  LLC-stores            (scaled from 23.21%)
+  <not counted>  LLC-store-misses
+  <not counted>  LLC-prefetches
+  <not counted>  LLC-prefetch-misses
+      251954203  dTLB-loads            (scaled from 23.70%)
+        5297550  dTLB-load-misses      (scaled from 23.96%)
+  <not counted>  dTLB-stores
+  <not counted>  dTLB-store-misses
+  <not counted>  dTLB-prefetches
+  <not counted>  dTLB-prefetch-misses
+      248561524  iTLB-loads            (scaled from 24.15%)
+           4693  iTLB-load-misses      (scaled from 24.18%)
+      106992392  branch-loads          (scaled from 23.67%)
+        5239561  branch-load-misses    (scaled from 23.43%)
+
+    0.395946903  seconds time elapsed.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ tools/perf/util/parse-events.c |   70 +++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 65 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index cfc622b..c1cd93e 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -40,14 +40,63 @@ static struct event_symbol event_symbols[] = {
+   { CSW(CPU_MIGRATIONS),	"cpu-migrations",	"migrations"	},
+ };
+ 
++struct event_cache_symbol {
++	u8	type;
++	u64	config;
++};
++
+ struct event_type_symbol {
+ 	char	*symbol;
+ 	char	*alias;
+ };
+ 
++#define CHCACHE(x, y, z)						\
++.type = PERF_TYPE_HW_CACHE,						\
++.config = (PERF_COUNT_HW_CACHE_##x | (PERF_COUNT_HW_CACHE_OP_##y << 8) |\
++	   (PERF_COUNT_HW_CACHE_RESULT_##z << 16))
++
++/* Generalized Hardware cache counters events		*/
++static struct event_cache_symbol event_cache_symbols[] = {
++  { CHCACHE(L1D,	READ,		ACCESS)		},
++  { CHCACHE(L1D,	READ,		MISS)		},
++  { CHCACHE(L1D,	WRITE,		ACCESS)		},
++  { CHCACHE(L1D,	WRITE,		MISS)		},
++  { CHCACHE(L1D,	PREFETCH,	ACCESS)		},
++  { CHCACHE(L1D,	PREFETCH,	MISS)		},
++
++  { CHCACHE(L1I,	READ,		ACCESS)		},
++  { CHCACHE(L1I,	READ,		MISS)		},
++  { CHCACHE(L1I,	PREFETCH,	ACCESS)		},
++  { CHCACHE(L1I,	PREFETCH,	MISS)		},
++
++  { CHCACHE(LL,		READ,		ACCESS)		},
++  { CHCACHE(LL,		READ,		MISS)		},
++  { CHCACHE(LL,		WRITE,		ACCESS)		},
++  { CHCACHE(LL,		WRITE,		MISS)		},
++  { CHCACHE(LL,		PREFETCH,	ACCESS)		},
++  { CHCACHE(LL,		PREFETCH,	MISS)		},
++
++  { CHCACHE(DTLB,	READ,		ACCESS)		},
++  { CHCACHE(DTLB,	READ,		MISS)		},
++  { CHCACHE(DTLB,	WRITE,		ACCESS)		},
++  { CHCACHE(DTLB,	WRITE,		MISS)		},
++  { CHCACHE(DTLB,	PREFETCH,	ACCESS)		},
++  { CHCACHE(DTLB,	PREFETCH,	MISS)		},
++
++  { CHCACHE(ITLB,	READ,		ACCESS)		},
++  { CHCACHE(ITLB,	READ,		MISS)		},
++
++  { CHCACHE(BPU,	READ,		ACCESS)		},
++  { CHCACHE(BPU,	READ,		MISS)		},
++
++};
++
+ static struct event_type_symbol event_type_symbols[] = {
+- [PERF_TYPE_HARDWARE] = { "hw-events",		"all-hw-events",	},
+- [PERF_TYPE_SOFTWARE] = { "sw-events",		"all-sw-events",	},
++ [PERF_TYPE_HARDWARE]	= { "hw-events",	"all-hw-events",	},
++ [PERF_TYPE_SOFTWARE]	= { "sw-events",	"all-sw-events",	},
++ [PERF_TYPE_TRACEPOINT]	= { "",			"",			},
++ [PERF_TYPE_HW_CACHE]	= { "cache-events",	"all-cache-events",	},
++ [PERF_TYPE_RAW]	= { "",			"",			},
+ };
+ 
+ #define __PERF_COUNTER_FIELD(config, name) \
+@@ -264,8 +313,18 @@ static int set_multiple_events(unsigned int type)
+ 				nr_counters++;
+ 			}
+ 		}
++		break;
+ 
++	case PERF_TYPE_HW_CACHE:
++		for (i = 0; i < ARRAY_SIZE(event_cache_symbols); i++) {
++			memset(&attr, 0, sizeof(attr));
++			attr.type = event_cache_symbols[i].type;
++			attr.config = event_cache_symbols[i].config;
++			attrs[nr_counters] = attr;
++			nr_counters++;
++		}
+ 		break;
++
+ 	default:
+ 		return -1;
+ 	}
+@@ -279,9 +338,10 @@ static int set_multiple_events(unsigned int type)
+ 
+ static int check_type_events(const char *str, unsigned int i)
+ {
+-	if (!strncmp(str, event_type_symbols[i].symbol,
+-		     strlen(event_type_symbols[i].symbol)))
+-		return 1;
++	if (strlen(event_type_symbols[i].symbol))
++		if (!strncmp(str, event_type_symbols[i].symbol,
++			     strlen(event_type_symbols[i].symbol)))
++			return 1;
+ 
+ 	if (strlen(event_type_symbols[i].alias))
+ 		if (!strncmp(str, event_type_symbols[i].alias,
+-- 
+1.6.0.6
+
+
 
 
