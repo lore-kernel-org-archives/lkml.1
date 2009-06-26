@@ -1,175 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZFZWCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZFZWFE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZFZWCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZFZWCN
+	id S1752742AbZFZWFE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:05:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZFZWEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:02:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbZFZWCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:02:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
-Date: Sat, 27 Jun 2009 00:02:30 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org> <200906242124.05511.rjw@sisk.pl> <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
-In-Reply-To: <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Fri, 26 Jun 2009 18:04:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751657AbZFZWEy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:04:54 -0400
+Date: Fri, 26 Jun 2009 15:04:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH] unifdef: teach it about defined(FOO) syntax
+Message-Id: <20090626150453.77425669.akpm@linux-foundation.org>
+In-Reply-To: <1158166a0906211121q51a8d320j1d9ab0e1570373da@mail.gmail.com>
+References: <1158166a0906211121q51a8d320j1d9ab0e1570373da@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906270002.32030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009, Magnus Damm wrote:
-> On Thu, Jun 25, 2009 at 4:24 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
-> >
-> > Introduce a core framework for run-time power management of I/O
-> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
-> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
-> > a run-time PM workqueue and define some device run-time PM helper
-> > functions at the core level.  Document all these things.
-> >
-> > Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+On Sun, 21 Jun 2009 20:21:32 +0200
+Denys Vlasenko <vda.linux@googlemail.com> wrote:
+
+> Hi,
 > 
-> Hi Rafael,
+> uclibc project patched unifdef.c (which we stole from kernel)
+> so that it understands defined(FOO) in addition to defined FOO,
+> and also taught it to understand short-circuited evaluation
+> of && and ||
 > 
-> Thanks for your work on this. I've built some code for SuperH on top
-> of this today, and with that behind me I have a few questions and a
-> little bit of code feedback.
+> The patch is attached. (Sorry, not inline, I fear Google
+> web mail interface may mangle it).
 > 
-> Questions:
+> I ran these commands in unpatched and patched tree:
 > 
-> 1) Which functions are device drivers supposed to use?
+> make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- defconfig
+> ln -s asm-x86 include/asm
+> make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- headers_install
 > 
-> I simply added pm_runtime_resume() and pm_runtime_suspend() where
-> clk_enable() and clk_disable() normally are used. In interrupt
-> handlers I used pm_request_suspend() instead of pm_runtime_suspend().
+> and then diffed usr/*. The difference clearly shows that
+> new unifdef works better than old one:
 > 
-> I'm not sure if the v5 patch does the right thing around
-> really_probe() like Alan pointed out.
-
-Yes, Alan was right.  V6 doesn't address that, but V7 will. :-)
-
-> Basically, I'd like to be able to call my bus callback for
-> ->runtime_resume() from the driver probe(), but power.resume_count seems
-> stuck at 1 which leads to pm_runtime_resume() returning -EAGAIN before
-> invoking the bus callback.
 > 
-> This leads to question number two...
+> linux-2.6.30.test/usr/include/linux/acct.h:
+> @@ -59,9 +59,7 @@ struct acct
+>  	comp_t		ac_majflt;		/* Major Pagefaults */
+>  	comp_t		ac_swaps;		/* Number of Swaps */
+>  /* m68k had no padding here. */
+> -#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+>  	__u16		ac_ahz;			/* AHZ */
+> -#endif
+>  	__u32		ac_exitcode;		/* Exitcode */
+>  	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
+>  	__u8		ac_etime_hi;		/* Elapsed Time MSB */
 > 
-> 2) What's the default state in probe()?
-
-Currently, it's 'active', but runtime_disabled is set.  I'm open to
-suggestions, though.
-
-> We touched this subject briefly before. I'd like to compare the
-> Runtime PM default state with the clock framework default state. The
-> clock framework requires you to use clk_enable() to enable the clock
-> to a hardware block before it is allowed to access the hardware
-> registers. At least that's how we handle stop bits on SuperH. So
-> clocks come up disabled from boot and should be enabled and disabled
-> by the device driver to save power.
 > 
-> I'd like to change our Module Stop Bits code on SuperH (once again)
-> from being handled by the clock framework to being managed by the
-> Runtime PM framework. Having the clock framework deal with the stop
-> bits works fine today, they are off by default after boot, and the
-> driver often enables the clock with clk_enable() in probe() or
-> hopefully in some more finegrained fashion.
+> linux-2.6.30.test/usr/include/linux/soundcard.h:
+> @@ -1033,7 +1033,6 @@ typedef struct mixer_vol_table {
+>   */
+>  #define LOCL_STARTAUDIO		1
 > 
-> I'm not sure how the Module Stop Bits should fit with the Runtime PM
-> code though. The default state for a device at probe() time seems to
-> be RPM_ACTIVE. Should drivers call pm_runtime_enable() to enable
-> Runtime PM?
-
-That's the idea.
-
-> One part of me likes the idea that Runtime PM-enabled drivers start in
-> RPM_SUSPENDED so they are forced to put pm_runtime_resume() before
-> actually using the hardware. This makes the Runtime PM behaviour
-> pretty close to the clock framework.
+> -#if !defined(__KERNEL__) || defined(USE_SEQ_MACROS)
+>  /*
+>   *	Some convenience macros to simplify programming of the
+>   *	/dev/sequencer interface
+> @@ -1275,4 +1274,3 @@ void seqbuf_dump(void);	/* This function
+>  		(SEQ_DUMPBUF(), write(seqfd, (char*)(patchx), len))
 > 
-> If you dislike starting from RPM_SUSPENDED (most likely) then I wonder
-> how I should set the state to RPM_SUSPENDED in the driver. I'd like to
-> make sure that pm_runtime_resume() can invoke the bus callback so the
-> hardware can be turned on for the first time somehow. Should I do a
-> dummy suspend?
-
-Hmm, good question.
-
-While run-time PM is disabled (power.runtime_disabled is set), which is the
-case in the initial state, you can just change power.runtime_status to
-RPM_SUSPENDED and nothing wrong happens as long as that reflects the actual
-status of the device.
-
-I'll add a helper function for that.
-
-> 3) Should drivers use pm_suspend_ignore_children(dev, true)?
+>  #endif
+> -#endif
 > 
-> It turns out that I can't suspend my I2C master driver out of the box
-> since it becomes the parent of all slaves on the I2C bus. The I2C
-> master driver is just a platform driver, and the children are I2C
-> devices (90% sure). I want to do Runtime PM regardless if the child
-> devices are suspended or not, I guess I should use
-> pm_suspend_ignore_children(dev, true) then?
+> ...
+>
 
-Yes, that's the idea.
+eek.  Please avoid quoting anything which looks like a patch in the
+changelog.  Because when some poor schmuck comes along and tries to
+apply it, patch(1) goes sniffing around in the changelog, thinks it
+sees a patch and makes a huge mess of everything.
 
-> > +/**
-> > + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
-> > + * @dev: Device to resume.
-> > + * @sync: If unset, the funtion has been called via pm_wq.
-> > + *
-> > + * Check if the device is really suspended and run the ->runtime_resume()
-> > + * callback provided by the device's bus type driver.  Update the run-time PM
-> > + * flags in the device object to reflect the current status of the device.  If
-> > + * runtime suspend is in progress while this function is being run, wait for it
-> > + * to finish before resuming the device.  If runtime suspend is scheduled, but
-> > + * it hasn't started yet, cancel it and we're done.
-> > + */
-> > +int __pm_runtime_resume(struct device *dev, bool sync)
-> > +{
-> [snip]
-> > +}
-> > +EXPORT_SYMBOL_GPL(pm_runtime_resume);
-> 
-> You're missing "__" here unless you're aiming for something very exotic. =)
 
-Ah, thanks!
+> Please apply.
 
-> > +/**
-> > + * pm_runtime_work - Run __pm_runtime_resume() for a device.
-> > + * @work: Work structure used for scheduling the execution of this function.
-> > + *
-> > + * Use @work to get the device object the resume has been scheduled for and run
-> > + * __pm_runtime_resume() for it.
-> > + */
-> > +static void pm_runtime_work(struct work_struct *work)
-> > +{
-> > +       __pm_runtime_resume(work_to_device(work), false);
-> > +}
-> 
-> Anything wrong with the name pm_runtime_resume_work()?
+Unfortunately unifdef.c got changed after 2.6.30 and this patch throws
+more rejects than I am comfortable about fixing.
 
-Not at all. :-)  Just switched to that.
-
-> Looking forward to v6, I'll switch task now, will be back to this late Monday.
-
-Well, V6 was already sent, but unfortunately it didn't address your comments.
-I'll send V7 during the weekend.
-
-Best,
-Rafael
