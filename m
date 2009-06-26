@@ -1,121 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZFZW10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754536AbZFZW2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZFZW10 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZFZW1M
+	id S1754536AbZFZW2R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZFZW2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:27:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:17485 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754707AbZFZW1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:27:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer;
-        b=Ph3LmyD5APTFx5E1L3fVnvu9zL19I1P9yAQA0MyYr2tolTzhx6fiMfPF7+yiB2HFHo
-         YkSUj9tW6Nd2W54xvYOyLJea8oqxP3fCZBKu+hyA369hLDguFlHV4DI/L5GY6Pik0Xew
-         57GHQ9JbGxAuYD18Lk4uUQKhp2cZgClz6MgFk=
-Subject: Re: [PATCH] PCAP regulator driver (for 2.6.32).
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Pierre Ossman <pierre@ossman.eu>
-In-Reply-To: <20090626150849.GA5504@sirena.org.uk>
-References: <1245961793.10360.26.camel@brutus>
-	 <20090625233723.GA13150@sirena.org.uk> <1245996263.10360.122.camel@brutus>
-	 <20090626105550.GE5415@sirena.org.uk> <1246019192.10360.202.camel@brutus>
-	 <20090626150849.GA5504@sirena.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bbZDxfxw2UtDH4thRGW8"
-Date: Fri, 26 Jun 2009 19:26:55 -0300
-Message-Id: <1246055215.10360.273.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 26 Jun 2009 18:28:03 -0400
+Received: from mail.open.by ([193.232.92.17]:59932 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751295AbZFZW2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:28:02 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8849 [Jun 27 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Sat, 27 Jun 2009 01:29:37 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Greg KH <gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+Message-ID: <20090626222937.GA3858@localdomain.by>
+References: <20090626143652.GB6281@localdomain.by>
+ <20090626144949.GA24173@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090626144949.GA24173@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (06/26/09 07:49), Greg KH wrote:
+> Date: Fri, 26 Jun 2009 07:49:49 -0700
+> From: Greg KH <gregkh@suse.de>
+> To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> Cc: Kay Sievers <kay.sievers@vrfy.org>,
+> 	"Eric W. Biederman" <ebiederm@xmission.com>,
+> 	linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+> User-Agent: Mutt/1.5.19 (2009-01-05)
+> 
+> On Fri, Jun 26, 2009 at 05:36:52PM +0300, Sergey Senozhatsky wrote:
+> > Hello.
+> > I suppose this patch fixes memory leak in kobject.c
+> > Correct me if I'm wrong.
+> > Thanks.
+> > -----------
+> > 
+> > Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
+> > 
+> > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> > ---
+> > diff --git a/lib/kobject.c b/lib/kobject.c
+> > index b512b74..922cd8c 100644
+> > --- a/lib/kobject.c
+> > +++ b/lib/kobject.c
+> > @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+> >  		return 0;
+> >  
+> >  	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> > -	if (!kobj->name)
+> > +	if (!kobj->name) {
+> > +		kfree(old_name);
+> >  		return -ENOMEM;
+> > +	}
+> 
+> We've been through this before (search lkml archives).  If kvasprintf
+> fails, then we don't want to free old_name, as the caller might want to
+> do something with it.
+> 
+Hello Greg,
 
---=-bbZDxfxw2UtDH4thRGW8
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+int kobject_set_name_vargs.... {
+	const char *old_name = kobj->name;
 
-Em Sex, 2009-06-26 =C3=A0s 16:08 +0100, Mark Brown escreveu:
-> > If the above is not possible, then regulator_is_enabled() doesn't match
-> > regulator_enable()/regulator_disable() pair. Maybe the API should make
-> > this clear?
->=20
-> Frankly I'm not sure how much any documentation is going to help here.
-> There's already a note about the fact that the regulator might've been
-> enabled elsewhere, it could be strengthened a bit but it still relies on
-> people reading it.
+old_name is local variable.
 
-I wasn't talking about documentation.
+In the following lines we overwrite kobject->name.
 
-> Fundamentally, if your consumer is trying to explicitly force the
-> regulator off then it's not able to cope with the regulator being
-> shared.  I suspect that if someone does add a non-shared API then the
-> problem will go away, half the problem is with consumers thinking they
-> have exclusive use of the regulator.
+	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+	if (!kobj->name)
+		return -ENOMEM;
 
-The consumer (pxamci.c with the logic implemented on mmc/core.c) is not
-trying to explicitly force the regulator off. It is trying to know if
-itself has previously enabled the regulator.
+It's not clear to me how we can do anything (including kfree) with old_name after 'return -ENOMEM'.
 
-The problem is that regulator_is_enabled returns the regulator
-_hardware_ state, and regulator_enable/regulator_disable are used to
-update the use_count. This is an API inconsistency as the consumer
-should keep an internal use_count and _not_ rely on
-regulator_is_enabled.
+Well, I'll try to search lklm.
+Thanks.
 
-I see no point in exporting regulator_is_enabled() as it is now. There
-is no use in a consumer driver to know if the regulator _hardware_ is
-enabled (as it may be shared).
 
-So, if the regulator framework has no bugs regarding regulators left on
-by the bootloader, then maybe the buggy code is mmc/core.c?
+> Or something along those lines, I can't remember the exact reasoning
+> this early in the morning.
+> 
+> Kay, do you remember?
+> 
+> thanks,
+> 
+> greg k-h
+> 
 
-int mmc_regulator_set_ocr(struct regulator *supply, unsigned short vdd_bit)
-{
-	...
-	int enabled;
-
-	enabled =3D regulator_is_enabled(supply);
-	...
-	if (vdd_bit) {
-		...
-		if (result =3D=3D 0 && !enabled)
-			result =3D regulator_enable(supply);
-	} else if (enabled) {
-		result =3D regulator_disable(supply);
-	}
-	return result;
-}
-
-Anyway, I don't have more time to spend on this issue, so i will just do
-as you request, remove the workaround from pcap_regulator.c and put it
-on pxamci.c, even if I think that this is the ugliest solution so far.
-
---=20
-Daniel Ribeiro
-
---=-bbZDxfxw2UtDH4thRGW8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
- assinada digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpFSy8ACgkQw3OYl0G0liT67ACfe7tIBz+hPmX7TE+sGVB45f13
-zfkAnRitDhh7X/hVeE5v1HBwsXytZUtJ
-=t0GG
------END PGP SIGNATURE-----
-
---=-bbZDxfxw2UtDH4thRGW8--
-
+	Sergey
