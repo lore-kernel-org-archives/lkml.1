@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760578AbZFZOoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbZFZOpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760578AbZFZOoG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbZFZOn4
+	id S1759396AbZFZOpA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 10:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZFZOox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:43:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34873 "EHLO mx2.redhat.com"
+	Fri, 26 Jun 2009 10:44:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59476 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752546AbZFZOn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:43:56 -0400
-Message-ID: <4A44DE14.2080403@redhat.com>
-Date: Fri, 26 Jun 2009 09:41:24 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	id S1755152AbZFZOow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 10:44:52 -0400
+Date: Fri, 26 Jun 2009 16:44:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
+Message-ID: <20090626144445.GB19477@elte.hu>
+References: <20090626071955.GG14078@elte.hu> <20090626101310.4110a290@lxorguk.ukuu.org.uk> <20090626093859.GA12571@elte.hu> <20090626111603.758ec7fb@lxorguk.ukuu.org.uk> <20090626110429.GB12446@elte.hu> <20090626125653.5e30bae4@lxorguk.ukuu.org.uk> <20090626122254.GA9959@elte.hu> <20090626133318.5b8de81b@lxorguk.ukuu.org.uk> <20090626125111.GA11575@elte.hu> <20090626143446.2cf061f5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-References: <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com> <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com> <20090626011155.GI6472@mit.edu> <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090626143446.2cf061f5@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg wrote:
-> Hi Ted,
-> 
-> On Thu, Jun 25, 2009 at 05:11:25PM -0500, Eric Sandeen wrote:
->>> ecryptfs used to do kmalloc(PAGE_CACHE_SIZE) & virt_to_page on that, and
->>> with SLUB + slub debug, that gave back non-aligned memory, causing
->>> eventual corruption ...
-> 
-> On Thu, 25 Jun 2009, Theodore Tso wrote:
->> Grumble.  Any chance we could add an kmem_cache option which requires
->> the memory to be aligned?  Otherwise we could rewrite our own sub-page
->> allocator in ext4 that only handled aligned filesystem block sizes
->> (i.e., 1k, 2k, 4k, etc.) but that would be really silly and be extra
->> code that really should be done once at core functionality.
-> 
-> We alredy have SLAB_HW_ALIGN but I wonder if this is a plain old bug in 
-> SLUB. Christoph, Nick, don't we need something like this in the allocator? 
-> Eric, does this fix your case?
 
-I'll test it; it'd be great if it did, I'm um, a bit ashamed at how I
-fixed it ;)
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Thanks!
--Eric
-
-> 			Pekka
+> > We will gladly take clean x86 patches that abstract away 
+> > lowlevel details of x86 platforms, and have been taking them and 
+> > have been writing them for a long time. If this patch-set can 
+> > shape itself in such a way (as i requested), without hindering 
+> > the common case, it is certainly welcome.
 > 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 819f056..7cd1e69 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -2400,7 +2400,7 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
->  	 * user specified and the dynamic determination of cache line size
->  	 * on bootup.
->  	 */
-> -	align = calculate_alignment(flags, align, s->objsize);
-> +	align = calculate_alignment(flags, align, size);
->  
->  	/*
->  	 * SLUB stores one object immediately after another beginning from
+> Lets try again shall we. I'l repeat the relevant bits of the mail 
+> you quoted bits from and ignored almost all of
 
+Below is my reply to your above points (already sent in another 
+mail) - which is really just mostly re-hashing the (rather obvious 
+looking) things that have been said before.
+
+	Ingo
+
+---------------------->
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > The thing is, you are trying to defend a v1 patch-set here that 
+> > is really indefensible: it's ugly and deficient in numerous 
+> > smaller and larger details. I outlined numerous deficiencies 
+> > already - and i'll review v2 too to see what else is there to 
+> > fix.
+> 
+> No I'm trying to understand what you actually want the thing to 
+> look like.
+
+It's a case by case thing and i pointed out a few specific 
+directions in the review. The IO-APIC changes should probably go on 
+top of Jeremy's IO-APIC driver-ization patches. They dont 
+necessarily need their own IO-APIC driver (if the resulting line 
+count increase is too much), but they should not wreck Jeremy's 
+IO-APIC patches.
+
+Bootup quirks that are small modificatons to existing PC 
+initialization sequences should go into x86_quirks.
+
+Timer related changes (the APB system timer) are mostly modular 
+already by virtue of half of it being a clocksource and clockevents 
+driver. The remaining bit of system timer handling should be 
+abstracted out as a 'struct x86_system_timer' kind of structure, 
+with ->init, ->timer_irq and ->shutdown functions.
+
+[ Although it is beyond me why ABP was done - why wasnt HPET good
+  enough? HPET can do per CPU clockevents too and it's just as 
+  off-chip (and hence fundamentally slow) as ABP. ]
+
+	Ingo
