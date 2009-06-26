@@ -1,84 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZFZQqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbZFZQv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbZFZQqr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZFZQqk
+	id S1756995AbZFZQv2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 12:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZFZQvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:46:40 -0400
-Received: from bar.sig21.net ([80.81.252.164]:43162 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbZFZQqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:46:40 -0400
-X-Greylist: delayed 3054 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jun 2009 12:46:39 EDT
-Date: Fri, 26 Jun 2009 17:55:46 +0200
-From: Martin Mueller <mm@sig21.net>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel locks up when idle on VIA-nano U2300 with VIA VX800 on
-	Jetway JNF76-N1GL-LF mainboard
-Message-ID: <20090626155542.GA26353@caesar.sig21.net>
-Mail-Followup-To: Chuck Ebbert <cebbert@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <20090426095121.GS26701@catull.sig21.net> <gt1jsf$hb8$1@ger.gmane.org> <20090426170602.GA26009@catull.sig21.net> <20090601201951.01a48d3e@dhcp-100-2-144.bos.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601201951.01a48d3e@dhcp-100-2-144.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-21-Score: -2.0 (--)
-X-Spam-21-Report: No, score=-2.0 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.496,BAYES_20=-0.74 autolearn=no
+	Fri, 26 Jun 2009 12:51:20 -0400
+Received: from outbound-mail-138.bluehost.com ([67.222.39.28]:36066 "HELO
+	outbound-mail-138.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751026AbZFZQvT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 12:51:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=jMQIsZrJCc0h5cCk0kH3GcEnDQ0YcInCTvoI509xDVtnNr3iTRi9sdU6+9+5PMmLYSeuQWDzimE44qoKR99Hk32HzZXaVVepw7/JER0SOg/mnESQ9e9l55Fdu81ycqNB;
+Date: Fri, 26 Jun 2009 09:51:19 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
+Message-ID: <20090626095119.15067a53@jbarnes-g45>
+In-Reply-To: <20090626071955.GG14078@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+	<20090626071955.GG14078@elte.hu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Mon, Jun 01, 2009 at 08:19:51PM -0400, Chuck Ebbert wrote:
-> On Sun, 26 Apr 2009 19:06:02 +0200
-> Martin Mueller <mm@sig21.net> wrote:
+On Fri, 26 Jun 2009 09:19:55 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+> >  void platform_feature_init_default(int subarch_id)
+> >  {
+> > -	printk(KERN_INFO "Use default X86 platform feature set\n");
+> > +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
+> > +		if (subarch_id == X86_SUBARCH_MRST) {
+> > +			setup_mrst_default_feature();
+> > +			return;
+> > +		}
+> > +	} else {
+> > +		printk(KERN_INFO "Use default X86 platform feature
+> > set\n");
+> > +	}
+> >  }
 > 
-> > Hi Jeffrey,
-> > 
-> > On Sun, Apr 26, 2009 at 12:25:51PM +0000, Jeffrey Cao wrote:
-> > > On 2009-04-26, Martin Mueller <mm@sig21.net> wrote:
-> > 
-> > > > Next, I downloaded linux-2.6.30-rc3, compiled a minimal version with
-> > > > just initrd. I left out PCI-support, ACPI and almost everything else
-> > > > menuconfig allowed me to unselect except the VGA text console. This
-> > > > kernel locked up after giving me the initial prompt from busybox in
-> > > > the initrd.
-> > > >
-> > > > When adding the following lines in the script executed by the kernel
-> > > > after booting in the initrd, the system actually works:
-> > > >
-> > > >   while true; do true; done &
-> > > >   /bin/sh
-> > > >
-> > > > As soon as I kill the shell loop, the system freezes again.
-> > > >
-> > > > So my conclusion is: the kernel locks up the first time the CPU
-> > > > is idle.
-> > 
-> > > This seems something to do with the board and the hard disk drive.
-> > 
-> > Thanks for your suggestion, but it has nothing to do with the hardisk.
-> > As I wrote above, the problem is reproducible with only an initrd, vga
-> > text console, keyboard and no other driver loaded or compiled in.
-> > 
-> > The kernel freezes as soon as it get's idle the first time.
-> > 
-> 
-> Adding idle=halt to the boot options works. idle=nomwait should work too but
-> it doesn't.
+> Why dont we have some clean and robust PCI config space based 
+> enumeration instead of this boot ID based thing?
 
-Thanks for your suggestion it worked fine. Yesterday I did a BIOS
-update (A03) from jetway, which contained a microcode update for the
-CPU. Since then it also works without this bootparam.
+MRST has special PCI support that depends on having the platform
+identified already, so if you want to use something other than a flag
+here, maybe we could use an SFI string instead.
 
-bye
-  MM
---
-A: Because it messes up the order in which people normally read text.
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
+-- 
+Jesse Barnes, Intel Open Source Technology Center
