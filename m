@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbZFZIvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZFZIxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbZFZIvh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:51:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZFZIva
+	id S1757817AbZFZIxa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZFZIxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:51:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52068 "EHLO mx1.suse.de"
+	Fri, 26 Jun 2009 04:53:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52097 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752781AbZFZIv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:51:29 -0400
-Date: Fri, 26 Jun 2009 10:51:30 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-ID: <20090626085130.GB12201@wotan.suse.de>
-References: <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <alpine.LFD.2.01.0906241334260.3154@localhost.localdomain> <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.LFD.2.01.0906251259430.3605@localhost.localdomain> <alpine.LFD.2.01.0906251317570.3605@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906251317570.3605@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	id S1754082AbZFZIxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 04:53:21 -0400
+Date: Fri, 26 Jun 2009 10:53:24 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: hid tree build failure
+In-Reply-To: <20090626153100.de647d08.sfr@canb.auug.org.au>
+Message-ID: <alpine.LNX.2.00.0906261052350.18021@wotan.suse.de>
+References: <20090626153100.de647d08.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 01:22:25PM -0700, Linus Torvalds wrote:
+On Fri, 26 Jun 2009, Stephen Rothwell wrote:
+
+> Today's linux-next build (sparc32 defconfig) failed like this:
 > 
+> drivers/hid/hid-core.c:862:34: error: macro "hid_dump_input" passed 3 arguments, but takes just 2
+> drivers/hid/hid-core.c: In function 'hid_process_event':
+> drivers/hid/hid-core.c:862: error: 'hid_dump_input' undeclared (first use in this function)
+> drivers/hid/hid-core.c:862: error: (Each undeclared identifier is reported only once
+> drivers/hid/hid-core.c:862: error: for each function it appears in.)
+> drivers/hid/hid-core.c:984:68: error: macro "hid_dump_input" passed 3 arguments, but takes just 2
+> drivers/hid/hid-core.c: In function 'hid_set_field':
+> drivers/hid/hid-core.c:984: error: 'hid_dump_input' undeclared (first use in this function)
+> drivers/hid/hid-core.c: In function 'hid_input_report':
+> drivers/hid/hid-core.c:1090: error: 'HID_DEBUG_BUFSIZE' undeclared (first use in this function)
 > 
-> On Thu, 25 Jun 2009, Linus Torvalds wrote:
-> > 
-> > Whether these are important to you or not, I dunno. I actually suspect 
-> > that we might want a combination of "high priority + allow memory 
-> > freeing", which would be
-> > 
-> > 	#define GFP_CRITICAL (__GFP_HIGH | __GFP_WAIT)
+> Caused by commit cd667ce24796700e1a0e6e7528efc61c96ff832e ("HID: use
+> debugfs for events/reports dumping") which modified the prototype for
+> hid_dump_input, but not the !CONFIG_DEBUG_FS version.  It also added
+> HID_DEBUG_BUFSIZE when CONFIG_DEBUG_FS, but used it otherwise.
 > 
-> Actually, that doesn't work quite the way I intended.
-> 
-> The current page allocator screws up, and doesn't allow us to do this 
+> I have reverted that commit for today (along with commit
+> a635f9dd83f3382577f4544a96df12356e951a40 ("HID: use debugfs for report
+> dumping descriptor") which doesn't build without the other one).
 
-No I think it works OK. As designed, at least (whether or not
-you agree with the design :P)
+Hi Stephen,
 
+should be now fixed in the branch you pull into -next.
 
-> (well, you _can_ combine the flags, but they don't mean what they mean on 
-> their own). If you have the WAIT flag set, the page allocator will not set 
-> the ALLOC_HARDER bit,
+Thanks,
 
-But it does use ALLOC_HIGH.
-
-
-> so it turns out that GFP_ATOMIC (__GFP_HIGH on its 
-> own) sometimes actually allows more allocations than the above 
-> GFP_CRITICAL would.
-
-Yes. The intention was to allow allocations from sleepable/reclaimable
-context but not allow them to use up all the reserves allowed for
-atomic context (so you don't suddenly get bursts of atomic allocation
-failure warnings on your network card when under heavy disk IO, for
-example).
-
- 
-> It might make more sense to make a __GFP_WAIT allocation set the 
-> ALLOC_HARDER bit _if_ it repeats. The problem with doing a loop of 
-> allocations outside of the page allocator is that you then miss the 
-> subtlety of "try increasingly harder" that the page allocator internally 
-> does (well, right now, the "increasingly harder" only exists for the 
-> try-to-free path, but we could certainly have it for the try-to-allocate 
-> side too)
+-- 
+Jiri Kosina
+SUSE Labs
