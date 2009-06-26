@@ -1,89 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbZFZOpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZFZOpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759396AbZFZOpA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbZFZOox
+	id S1760668AbZFZOpm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 10:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbZFZOpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:44:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59476 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755152AbZFZOow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:44:52 -0400
-Date: Fri, 26 Jun 2009 16:44:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
-Message-ID: <20090626144445.GB19477@elte.hu>
-References: <20090626071955.GG14078@elte.hu> <20090626101310.4110a290@lxorguk.ukuu.org.uk> <20090626093859.GA12571@elte.hu> <20090626111603.758ec7fb@lxorguk.ukuu.org.uk> <20090626110429.GB12446@elte.hu> <20090626125653.5e30bae4@lxorguk.ukuu.org.uk> <20090626122254.GA9959@elte.hu> <20090626133318.5b8de81b@lxorguk.ukuu.org.uk> <20090626125111.GA11575@elte.hu> <20090626143446.2cf061f5@lxorguk.ukuu.org.uk>
+	Fri, 26 Jun 2009 10:45:36 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:40213 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222AbZFZOpf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 10:45:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
+         :mime-version:content-type;
+        b=T8YSbYfdQGUWqkzC98wBf0LaVk0RGUAC+Cb9h19DAt8jF3pp0oE/4pTXrn3ztzMAHK
+         MakE6HpmrBajvd7AJgtpcmnPcRQUQbfQdssxt4ulQ8BHMifO+b4y5eQSJIAq6/MB8vgR
+         oCPLB4MKccSO3E3mLPvJJxrmxBNV9WmiBKvMg=
+Date: Fri, 26 Jun 2009 16:44:20 +0200 (CEST)
+From: "rubenatch@gmail.com" <rubenatch@gmail.com>
+X-X-Sender: root@localhost
+To: jkosina@suse.cz
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCHv2] Adding rumble support to Thrustmaster Dual Trigger 3-in-1
+ devices
+Message-ID: <alpine.DEB.2.00.0906261639570.17888@localhost>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626143446.2cf061f5@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2063028922-1246027534=:17888"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+--8323328-2063028922-1246027534=:17888
+Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-> > We will gladly take clean x86 patches that abstract away 
-> > lowlevel details of x86 platforms, and have been taking them and 
-> > have been writing them for a long time. If this patch-set can 
-> > shape itself in such a way (as i requested), without hindering 
-> > the common case, it is certainly welcome.
-> 
-> Lets try again shall we. I'l repeat the relevant bits of the mail 
-> you quoted bits from and ignored almost all of
 
-Below is my reply to your above points (already sent in another 
-mail) - which is really just mostly re-hashing the (rather obvious 
-looking) things that have been said before.
+From: Rubén Aós Garralda <rubenatch@gmail.com>
 
-	Ingo
+This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads (in
+both PC and PS3 modes). It uses the same code as Thrustmaster FireStorm 
+Dual Power 2/3, so it only modifies hid-core.c (to put the devices in the 
+"forbidden list" and hid-tmff.c to add the new USB IDs.
 
----------------------->
+---
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Latest patch was BAAAAAD (it had a missing end of comment), please 
+discard. New patch:
 
-> > The thing is, you are trying to defend a v1 patch-set here that 
-> > is really indefensible: it's ugly and deficient in numerous 
-> > smaller and larger details. I outlined numerous deficiencies 
-> > already - and i'll review v2 too to see what else is there to 
-> > fix.
-> 
-> No I'm trying to understand what you actually want the thing to 
-> look like.
+diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c linux-source-test/drivers/hid/hid-core.c
+--- linux-source-2.6.30/drivers/hid/hid-core.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/hid-core.c	2009-06-26 15:33:48.000000000 +0200
+@@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS, USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
++       	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED, USB_DEVICE_ID_TOPSEED_CYBERLINK) },
+diff -uprN linux-source-2.6.30/drivers/hid/hid-tmff.c linux-source-test/drivers/hid/hid-tmff.c
+--- linux-source-2.6.30/drivers/hid/hid-tmff.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/hid-tmff.c	2009-06-26 15:35:27.000000000 +0200
+@@ -236,7 +236,11 @@ err:
+  static const struct hid_device_id tm_devices[] = {
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300),
+  		.driver_data = (unsigned long)ff_rumble },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),	/* FireStorm Dual Power 2 (and 3) */
++		.driver_data = (unsigned long)ff_rumble },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323),	/* Dual Trigger 3-in-1 (PC Mode) */
++		.driver_data = (unsigned long)ff_rumble },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324),	/* Dual Trigger 3-in-1 (PS3 Mode) */
+  		.driver_data = (unsigned long)ff_rumble },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),	/* FGT Rumble Force Wheel */
+  		.driver_data = (unsigned long)ff_rumble },
+diff -uprN linux-source-2.6.30/drivers/hid/Kconfig linux-source-test/drivers/hid/Kconfig
+--- linux-source-2.6.30/drivers/hid/Kconfig	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/Kconfig	2009-06-26 15:58:15.000000000 +0200
+@@ -268,8 +268,9 @@ config THRUSTMASTER_FF
+  	depends on USB_HID
+  	select INPUT_FF_MEMLESS
+  	help
+-	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or
+-	  a THRUSTMASTER Ferrari GT Rumble Force or Force Feedback Wheel.
++	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or 3,
++	  a THRUSTMASTER Dual Trigger 3-in-1 or a THRUSTMASTER Ferrari GT
++	  Rumble Force or Force Feedback Wheel.
 
-It's a case by case thing and i pointed out a few specific 
-directions in the review. The IO-APIC changes should probably go on 
-top of Jeremy's IO-APIC driver-ization patches. They dont 
-necessarily need their own IO-APIC driver (if the resulting line 
-count increase is too much), but they should not wreck Jeremy's 
-IO-APIC patches.
-
-Bootup quirks that are small modificatons to existing PC 
-initialization sequences should go into x86_quirks.
-
-Timer related changes (the APB system timer) are mostly modular 
-already by virtue of half of it being a clocksource and clockevents 
-driver. The remaining bit of system timer handling should be 
-abstracted out as a 'struct x86_system_timer' kind of structure, 
-with ->init, ->timer_irq and ->shutdown functions.
-
-[ Although it is beyond me why ABP was done - why wasnt HPET good
-  enough? HPET can do per CPU clockevents too and it's just as 
-  off-chip (and hence fundamentally slow) as ABP. ]
-
-	Ingo
+  config ZEROPLUS_FF
+  	tristate "Zeroplus based game controller support"
+--8323328-2063028922-1246027534=:17888--
