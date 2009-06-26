@@ -1,65 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbZFZWGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZFZWKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277AbZFZWGp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZFZWGi
+	id S1753914AbZFZWKK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752331AbZFZWKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:06:38 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45576 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbZFZWGh (ORCPT
+	Fri, 26 Jun 2009 18:10:00 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:55367 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752005AbZFZWJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:06:37 -0400
-Date: Sat, 27 Jun 2009 00:08:58 +0200
+	Fri, 26 Jun 2009 18:09:59 -0400
+Date: Sat, 27 Jun 2009 00:12:19 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       devel@ksplice.com, Denys Vlasenko <vda.linux@googlemail.com>
-Subject: Re: [PATCH 0/2] Macros for section name cleanup
-Message-ID: <20090626220858.GB26451@uranus.ravnborg.org>
-References: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] unifdef: teach it about defined(FOO) syntax
+Message-ID: <20090626221219.GC26451@uranus.ravnborg.org>
+References: <1158166a0906211121q51a8d320j1d9ab0e1570373da@mail.gmail.com> <20090626150453.77425669.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245801452-13222-1-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <20090626150453.77425669.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 23, 2009 at 07:57:30PM -0400, Tim Abbott wrote:
-> These are the remaining changes from my previous macros for section
-> name cleanup patch series that were not subsumed by Sam Ravnborg's
-> recent update to vmlinux.lds.h (commit
-> 7923f90fffa8746f6457d4eea2109fd3d6414189).
+On Fri, Jun 26, 2009 at 03:04:53PM -0700, Andrew Morton wrote:
+> On Sun, 21 Jun 2009 20:21:32 +0200
+> Denys Vlasenko <vda.linux@googlemail.com> wrote:
 > 
-> I've dropped the patch reworking __read_mostly to be a generic thing
-> in include/linux/cache.h.  I think the consensus on that patch was
-> that we should first make all the architectures support
-> .data.read_mostly in their linker scripts and then do a single patch
-> removing all the architecture implementations in favor of a single one
-> in include/linux/cache.h.
+> > Hi,
+> > 
+> > uclibc project patched unifdef.c (which we stole from kernel)
+> > so that it understands defined(FOO) in addition to defined FOO,
+> > and also taught it to understand short-circuited evaluation
+> > of && and ||
+> > 
+> > The patch is attached. (Sorry, not inline, I fear Google
+> > web mail interface may mangle it).
+> > 
+> > I ran these commands in unpatched and patched tree:
+> > 
+> > make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- defconfig
+> > ln -s asm-x86 include/asm
+> > make ARCH=i386 CROSS_COMPILE=i486-linux-uclibc- headers_install
+> > 
+> > and then diffed usr/*. The difference clearly shows that
+> > new unifdef works better than old one:
+> > 
+> > 
+> > linux-2.6.30.test/usr/include/linux/acct.h:
+> > @@ -59,9 +59,7 @@ struct acct
+> >  	comp_t		ac_majflt;		/* Major Pagefaults */
+> >  	comp_t		ac_swaps;		/* Number of Swaps */
+> >  /* m68k had no padding here. */
+> > -#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+> >  	__u16		ac_ahz;			/* AHZ */
+> > -#endif
+> >  	__u32		ac_exitcode;		/* Exitcode */
+> >  	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
+> >  	__u8		ac_etime_hi;		/* Elapsed Time MSB */
+> > 
+> > 
+> > linux-2.6.30.test/usr/include/linux/soundcard.h:
+> > @@ -1033,7 +1033,6 @@ typedef struct mixer_vol_table {
+> >   */
+> >  #define LOCL_STARTAUDIO		1
+> > 
+> > -#if !defined(__KERNEL__) || defined(USE_SEQ_MACROS)
+> >  /*
+> >   *	Some convenience macros to simplify programming of the
+> >   *	/dev/sequencer interface
+> > @@ -1275,4 +1274,3 @@ void seqbuf_dump(void);	/* This function
+> >  		(SEQ_DUMPBUF(), write(seqfd, (char*)(patchx), len))
+> > 
+> >  #endif
+> > -#endif
+> > 
+> > ...
+> >
 > 
-> The long-term goal here is to add support for building the kernel with
-> -ffunction-sections -fdata-sections.  This requires renaming all the
-> magic section names in the kernel of the form .text.foo, .data.foo,
-> .bss.foo, and .rodata.foo to not have collisions with sections
-> generated for code like:
+> eek.  Please avoid quoting anything which looks like a patch in the
+> changelog.  Because when some poor schmuck comes along and tries to
+> apply it, patch(1) goes sniffing around in the changelog, thinks it
+> sees a patch and makes a huge mess of everything.
 > 
-> static int nosave = 0; /* -fdata-sections places in .data.nosave */
-> static void head(); /* -ffunction-sections places in .text.head */
 > 
-> Sam Ravnborg proposed that rather than just renaming all the sections
-> outright, we should start by first getting more control over the
-> section names used in the kernel so that we can later rename sections
-> without touching too many files.  This patch series provides the
-> architecture-independent macros needed for that cleanup.
+> > Please apply.
 > 
-> Tim Abbott (2):
->   Add new macros for page-aligned data and bss sections.
->   Add new __init_task_data macro to be used in arch init_task.c files.
+> Unfortunately unifdef.c got changed after 2.6.30 and this patch throws
+> more rejects than I am comfortable about fixing.
 
-Applied all thre patches from you - replacing one from Jesper Nilsson
-with the one from you.
+Russell King actually implemented the same functionality (more or less).
+Denys - could you try if the one in the kernel is better/worse
+then the one you have here.
+
+The implementation Russell did looks much simpler than this
+patch and so far it has only been a win.
 
 	Sam
