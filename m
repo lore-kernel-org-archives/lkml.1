@@ -1,51 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZFZWVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZFZW1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZFZWVV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZFZWVN
+	id S1754217AbZFZW1F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZFZW0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:21:13 -0400
-Received: from mail.samba.org ([66.70.73.150]:53350 "EHLO lists.samba.org"
+	Fri, 26 Jun 2009 18:26:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46038 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbZFZWVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:21:12 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19013.18894.749105.721881@samba.org>
-Date: Sat, 27 Jun 2009 08:21:02 +1000
+	id S1751257AbZFZW0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:26:54 -0400
+Subject: Re: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up
+ usr/
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <4A45405A.1010404@zytor.com>
-References: <19013.8005.541836.436991@samba.org>
-	<4A45405A.1010404@zytor.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Russell King <rmk+lkml@arm.linux.org.uk>, benh@kernel.crashing.org,
+       paulus@samba.org
+In-Reply-To: <1245569547.2480.18.camel@ht.satnam>
+References: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
+	 <1245569547.2480.18.camel@ht.satnam>
+Content-Type: text/plain
+Date: Sat, 27 Jun 2009 03:56:11 +0530
+Message-Id: <1246055171.2988.18.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hpa wrote:
- > However, as such it really should be paired with a "don't even recognize
- > the shortname if a longname exists" option.
+Hello Sam, Peter,
 
-Right, we could just skip the 8.3 name matching and go straight to the
-longname match in fat_search_long(). I wonder if anyone ever relies on
-the 8.3 matching when a file has a long name on Linux?
+On Sun, 2009-06-21 at 13:02 +0530, Jaswinder Singh Rajput wrote:
+> On Sat, 2009-06-20 at 13:52 -0700, H. Peter Anvin wrote:
+> > Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
+> > with *.gz and *.lzma which are already there.  Remove specific rules
+> > in usr/gitignore, since they are now covered by the global rules.
+> > 
+> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> > Cc: Sam Ravnborg <sam@ravnborg.org>
+> 
+> It seems this is based on my patch :
+> 
+> [PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
+> 
+> And you forget to CC me ;-)
+> 
+> Are you trying to do this, fill signed-off-by and enjoy :
+> 
+> [PATCH] Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
+>  with *.gz and *.lzma which are already there.  Remove specific rules
+>  in other gitignores, since they are now covered by the global rules.
+> 
+> ---
+>  .gitignore                          |    2 ++
+>  Documentation/DocBook/.gitignore    |    1 -
+>  arch/arm/boot/compressed/.gitignore |    1 -
+>  arch/powerpc/boot/.gitignore        |    1 -
+>  kernel/.gitignore                   |    1 -
+>  usr/.gitignore                      |    2 --
+>  6 files changed, 2 insertions(+), 6 deletions(-)
+> 
 
- > It's also questionable IMO if this shouldn't be another FAT superdriver,
- > just as we have VFAT, MS-DOS etc. we could have "purevfat".
+What is your views about this patch.
 
-It would be only a few lines of code difference between the two
-drivers - is it worth the maintainence overhead of splitting it up?
+Thanks,
+--
+JSR
 
-Maybe a mount option to ignore 8.3 names for files with long names
-would be better? Perhaps even the default?
+> diff --git a/.gitignore b/.gitignore
+> index cecb3b0..a255340 100644
+> --- a/.gitignore
+> +++ b/.gitignore
+> @@ -25,6 +25,8 @@
+>  *.elf
+>  *.bin
+>  *.gz
+> +*.bz2
+> +*.cpio
+>  *.lzma
+>  *.patch
+>  
+> diff --git a/Documentation/DocBook/.gitignore b/Documentation/DocBook/.gitignore
+> index c6def35..0c91638 100644
+> --- a/Documentation/DocBook/.gitignore
+> +++ b/Documentation/DocBook/.gitignore
+> @@ -2,7 +2,6 @@
+>  *.ps
+>  *.pdf
+>  *.html
+> -*.9.gz
+>  *.9
+>  *.aux
+>  *.dvi
+> diff --git a/arch/arm/boot/compressed/.gitignore b/arch/arm/boot/compressed/.gitignore
+> index ab204db..269b788 100644
+> --- a/arch/arm/boot/compressed/.gitignore
+> +++ b/arch/arm/boot/compressed/.gitignore
+> @@ -1,3 +1,2 @@
+>  font.c
+> -piggy.gz
+>  vmlinux.lds
+> diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
+> index 2f50acd..af4105b 100644
+> --- a/arch/powerpc/boot/.gitignore
+> +++ b/arch/powerpc/boot/.gitignore
+> @@ -16,7 +16,6 @@ inftrees.h
+>  infutil.c
+>  infutil.h
+>  kernel-vmlinux.strip.c
+> -kernel-vmlinux.strip.gz
+>  mktree
+>  uImage
+>  cuImage.*
+> diff --git a/kernel/.gitignore b/kernel/.gitignore
+> index ab4f109..04f6d83 100644
+> --- a/kernel/.gitignore
+> +++ b/kernel/.gitignore
+> @@ -2,5 +2,4 @@
+>  # Generated files
+>  #
+>  config_data.h
+> -config_data.gz
+>  timeconst.h
+> diff --git a/usr/.gitignore b/usr/.gitignore
+> index 69b2e89..4d7d9f4 100644
+> --- a/usr/.gitignore
+> +++ b/usr/.gitignore
+> @@ -2,7 +2,5 @@
+>  # Generated files
+>  #
+>  gen_init_cpio
+> -initramfs_data.cpio
+> -initramfs_data.cpio.gz
+>  initramfs_list
+>  include
 
-Cheers, Tridge
