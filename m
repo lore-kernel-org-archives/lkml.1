@@ -1,141 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZFZW1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZFZW10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZFZW1F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZFZW0y
+	id S1754715AbZFZW10 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZFZW1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:26:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46038 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbZFZW0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:26:54 -0400
-Subject: Re: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up
- usr/
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, benh@kernel.crashing.org,
-       paulus@samba.org
-In-Reply-To: <1245569547.2480.18.camel@ht.satnam>
-References: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
-	 <1245569547.2480.18.camel@ht.satnam>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 03:56:11 +0530
-Message-Id: <1246055171.2988.18.camel@hpdv5.satnam>
+	Fri, 26 Jun 2009 18:27:12 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:17485 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754707AbZFZW1I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:27:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=Ph3LmyD5APTFx5E1L3fVnvu9zL19I1P9yAQA0MyYr2tolTzhx6fiMfPF7+yiB2HFHo
+         YkSUj9tW6Nd2W54xvYOyLJea8oqxP3fCZBKu+hyA369hLDguFlHV4DI/L5GY6Pik0Xew
+         57GHQ9JbGxAuYD18Lk4uUQKhp2cZgClz6MgFk=
+Subject: Re: [PATCH] PCAP regulator driver (for 2.6.32).
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Pierre Ossman <pierre@ossman.eu>
+In-Reply-To: <20090626150849.GA5504@sirena.org.uk>
+References: <1245961793.10360.26.camel@brutus>
+	 <20090625233723.GA13150@sirena.org.uk> <1245996263.10360.122.camel@brutus>
+	 <20090626105550.GE5415@sirena.org.uk> <1246019192.10360.202.camel@brutus>
+	 <20090626150849.GA5504@sirena.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bbZDxfxw2UtDH4thRGW8"
+Date: Fri, 26 Jun 2009 19:26:55 -0300
+Message-Id: <1246055215.10360.273.camel@brutus>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Sam, Peter,
 
-On Sun, 2009-06-21 at 13:02 +0530, Jaswinder Singh Rajput wrote:
-> On Sat, 2009-06-20 at 13:52 -0700, H. Peter Anvin wrote:
-> > Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-> > with *.gz and *.lzma which are already there.  Remove specific rules
-> > in usr/gitignore, since they are now covered by the global rules.
-> > 
-> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > Cc: Sam Ravnborg <sam@ravnborg.org>
-> 
-> It seems this is based on my patch :
-> 
-> [PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
-> 
-> And you forget to CC me ;-)
-> 
-> Are you trying to do this, fill signed-off-by and enjoy :
-> 
-> [PATCH] Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
->  with *.gz and *.lzma which are already there.  Remove specific rules
->  in other gitignores, since they are now covered by the global rules.
-> 
-> ---
->  .gitignore                          |    2 ++
->  Documentation/DocBook/.gitignore    |    1 -
->  arch/arm/boot/compressed/.gitignore |    1 -
->  arch/powerpc/boot/.gitignore        |    1 -
->  kernel/.gitignore                   |    1 -
->  usr/.gitignore                      |    2 --
->  6 files changed, 2 insertions(+), 6 deletions(-)
-> 
+--=-bbZDxfxw2UtDH4thRGW8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-What is your views about this patch.
+Em Sex, 2009-06-26 =C3=A0s 16:08 +0100, Mark Brown escreveu:
+> > If the above is not possible, then regulator_is_enabled() doesn't match
+> > regulator_enable()/regulator_disable() pair. Maybe the API should make
+> > this clear?
+>=20
+> Frankly I'm not sure how much any documentation is going to help here.
+> There's already a note about the fact that the regulator might've been
+> enabled elsewhere, it could be strengthened a bit but it still relies on
+> people reading it.
 
-Thanks,
---
-JSR
+I wasn't talking about documentation.
 
-> diff --git a/.gitignore b/.gitignore
-> index cecb3b0..a255340 100644
-> --- a/.gitignore
-> +++ b/.gitignore
-> @@ -25,6 +25,8 @@
->  *.elf
->  *.bin
->  *.gz
-> +*.bz2
-> +*.cpio
->  *.lzma
->  *.patch
->  
-> diff --git a/Documentation/DocBook/.gitignore b/Documentation/DocBook/.gitignore
-> index c6def35..0c91638 100644
-> --- a/Documentation/DocBook/.gitignore
-> +++ b/Documentation/DocBook/.gitignore
-> @@ -2,7 +2,6 @@
->  *.ps
->  *.pdf
->  *.html
-> -*.9.gz
->  *.9
->  *.aux
->  *.dvi
-> diff --git a/arch/arm/boot/compressed/.gitignore b/arch/arm/boot/compressed/.gitignore
-> index ab204db..269b788 100644
-> --- a/arch/arm/boot/compressed/.gitignore
-> +++ b/arch/arm/boot/compressed/.gitignore
-> @@ -1,3 +1,2 @@
->  font.c
-> -piggy.gz
->  vmlinux.lds
-> diff --git a/arch/powerpc/boot/.gitignore b/arch/powerpc/boot/.gitignore
-> index 2f50acd..af4105b 100644
-> --- a/arch/powerpc/boot/.gitignore
-> +++ b/arch/powerpc/boot/.gitignore
-> @@ -16,7 +16,6 @@ inftrees.h
->  infutil.c
->  infutil.h
->  kernel-vmlinux.strip.c
-> -kernel-vmlinux.strip.gz
->  mktree
->  uImage
->  cuImage.*
-> diff --git a/kernel/.gitignore b/kernel/.gitignore
-> index ab4f109..04f6d83 100644
-> --- a/kernel/.gitignore
-> +++ b/kernel/.gitignore
-> @@ -2,5 +2,4 @@
->  # Generated files
->  #
->  config_data.h
-> -config_data.gz
->  timeconst.h
-> diff --git a/usr/.gitignore b/usr/.gitignore
-> index 69b2e89..4d7d9f4 100644
-> --- a/usr/.gitignore
-> +++ b/usr/.gitignore
-> @@ -2,7 +2,5 @@
->  # Generated files
->  #
->  gen_init_cpio
-> -initramfs_data.cpio
-> -initramfs_data.cpio.gz
->  initramfs_list
->  include
+> Fundamentally, if your consumer is trying to explicitly force the
+> regulator off then it's not able to cope with the regulator being
+> shared.  I suspect that if someone does add a non-shared API then the
+> problem will go away, half the problem is with consumers thinking they
+> have exclusive use of the regulator.
+
+The consumer (pxamci.c with the logic implemented on mmc/core.c) is not
+trying to explicitly force the regulator off. It is trying to know if
+itself has previously enabled the regulator.
+
+The problem is that regulator_is_enabled returns the regulator
+_hardware_ state, and regulator_enable/regulator_disable are used to
+update the use_count. This is an API inconsistency as the consumer
+should keep an internal use_count and _not_ rely on
+regulator_is_enabled.
+
+I see no point in exporting regulator_is_enabled() as it is now. There
+is no use in a consumer driver to know if the regulator _hardware_ is
+enabled (as it may be shared).
+
+So, if the regulator framework has no bugs regarding regulators left on
+by the bootloader, then maybe the buggy code is mmc/core.c?
+
+int mmc_regulator_set_ocr(struct regulator *supply, unsigned short vdd_bit)
+{
+	...
+	int enabled;
+
+	enabled =3D regulator_is_enabled(supply);
+	...
+	if (vdd_bit) {
+		...
+		if (result =3D=3D 0 && !enabled)
+			result =3D regulator_enable(supply);
+	} else if (enabled) {
+		result =3D regulator_disable(supply);
+	}
+	return result;
+}
+
+Anyway, I don't have more time to spend on this issue, so i will just do
+as you request, remove the workaround from pcap_regulator.c and put it
+on pxamci.c, even if I think that this is the ugliest solution so far.
+
+--=20
+Daniel Ribeiro
+
+--=-bbZDxfxw2UtDH4thRGW8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
+ assinada digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpFSy8ACgkQw3OYl0G0liT67ACfe7tIBz+hPmX7TE+sGVB45f13
+zfkAnRitDhh7X/hVeE5v1HBwsXytZUtJ
+=t0GG
+-----END PGP SIGNATURE-----
+
+--=-bbZDxfxw2UtDH4thRGW8--
 
