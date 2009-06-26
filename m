@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbZFZSVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZFZS1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759396AbZFZSVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbZFZSVr
+	id S1760964AbZFZS1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZFZS1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:21:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44689 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbZFZSVq (ORCPT
+	Fri, 26 Jun 2009 14:27:39 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:17107 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400AbZFZS1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:21:46 -0400
-Subject: RE: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
- Mapping Support
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: "'FUJITA Tomonori'" <fujita.tomonori@lab.ntt.co.jp>,
-       "'chrisw@redhat.com'" <chrisw@redhat.com>,
-       "'torvalds@linux-foundation.org'" <torvalds@linux-foundation.org>,
-       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
-       "Luck, Tony" <tony.luck@intel.com>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B0216BF5@orsmsx505.amr.corp.intel.com>
-References: <20090625003841.GA12226@linux-os.sc.intel.com>
-	 <20090625095643F.fujita.tomonori@lab.ntt.co.jp>
-	 <20090625041605.GA9330@linux-os.sc.intel.com>
-	 <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
-	 <1245913886.17089.91.camel@macbook.infradead.org>
-	 <1245966743.30355.42.camel@macbook.infradead.org>
-	 <A6AD88C3F2289247BE726C37303E1EB8B0216BF5@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 19:21:28 +0100
-Message-Id: <1246040488.663.51.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+	Fri, 26 Jun 2009 14:27:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:cc:content-type:content-transfer-encoding;
+        b=Y2qgbyUY8xdxR0lBbNE/sWIGZVIxLCqXoCj6jix9hXpl/3sMj4XFKZWiOGobRPgyy5
+         2Zrgnz39K+Q+oOEwQ3l/C4ojN6KMddEYuvf4ctGcdByvXAgwMxNS+vuJBbTjuj3eHOTh
+         hAs5rFRdpTHG68at3HRfAMcMgiVIb2wLDaqS0=
+MIME-Version: 1.0
+Date: Fri, 26 Jun 2009 20:27:40 +0200
+X-Google-Sender-Auth: 6b2e4258c6201e7b
+Message-ID: <deb7a2310906261127v2fd1564elb823716ae03fc0d4@mail.gmail.com>
+Subject: [patch 1/1] personality handling: fix PER_CLEAR_ON_SETID for security 
+	reasons
+From: Julien Tinnes <jt@cr0.org>
+To: hch@infradead.org
+Cc: security@kernel.org, taviso@sdf.lonestar.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 14:56 -0700, Yu, Fenghua wrote:
-> 
-> >(Fenghua, why are we doing the whole setup per pci dev anyway -- why
-> not
-> >set up the page tables once and point all devices at the same page
-> >tables?)
-> >
-> 
-> That's what the ia64 fix patch does...the first pci device set up the
-> page table. Then all following pci devices use that page table by
-> setting up the context mapping.
+Hello,
 
-I've sorted that out separately -- it's not necessarily part of this
-fix, although it _would_ be nice to have it in 2.6.31, since your
-original 1:1 mapping patch is quite slow (and takes quite a lot of
-memory) without it.
+We have found that the current PER_CLEAR_ON_SETID mask on Linux
+doesn't include neither ADDR_COMPAT_LAYOUT, nor MMAP_PAGE_ZERO.
 
-This time, I _am_ going to let it bake in linux-next for a while first
-though.
+The current mask is READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE.
 
-Until Linus pulls the IA64 build fix from the real iommu-2.6.git tree,
-I've put this into git://git.infradead.org/~dwmw2/iommu-pt.git
+We believe it is important to add MMAP_PAGE_ZERO, because by using
+this personality it is possible to have the first page mapped inside a
+process running as setuid root. This could be used in those scenarios:
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+- Exploiting a NULL pointer dereference issue in a setuid root binary
+- Bypassing the mmap_min_addr restrictions of the Linux kernel: by
+running a setuid binary that would drop privileges before giving us
+control back (for instance by loading a user-supplied library), we
+could get the first page mapped in a process we control. By further
+using mremap and mprotect on this mapping, we can then completely
+bypass the mmap_min_addr restrictions.
 
+Less importantly, we believe ADDR_COMPAT_LAYOUT should also be added
+since on x86 32bits it will in practice disable most of the address
+space layout randomization (only the stack will remain randomized).
+
+Signed-off-by: Julien Tinnes <jt@cr0.org> and Tavis Ormandy
+<taviso@sdf.lonestar.org>
+
+---
+
+
+diff -r f70f443c9ead include/linux/personality.h
+--- a/include/linux/personality.h	Fri Jun 26 19:59:33 2009 +0200
++++ b/include/linux/personality.h	Fri Jun 26 20:00:40 2009 +0200
+@@ -40,7 +40,7 @@ enum {
+  * Security-relevant compatibility flags that must be
+  * cleared upon setuid or setgid exec:
+  */
+-#define PER_CLEAR_ON_SETID (READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE)
++#define PER_CLEAR_ON_SETID
+(READ_IMPLIES_EXEC|ADDR_NO_RANDOMIZE|ADDR_COMPAT_LAYOUT|MMAP_PAGE_ZERO)
+
+ /*
+  * Personality types.
