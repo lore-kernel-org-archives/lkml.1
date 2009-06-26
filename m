@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbZFZPAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbZFZPBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbZFZPAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFZPAZ
+	id S1760224AbZFZPBG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZFZPA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:00:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33698 "EHLO mx1.suse.de"
+	Fri, 26 Jun 2009 11:00:59 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39560 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751190AbZFZPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:00:25 -0400
-Date: Fri, 26 Jun 2009 07:49:49 -0700
-From: Greg KH <gregkh@suse.de>
-To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kobject_set_name_vargs memory leak
-Message-ID: <20090626144949.GA24173@suse.de>
-References: <20090626143652.GB6281@localdomain.by>
+	id S1752081AbZFZPA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:00:58 -0400
+Date: Fri, 26 Jun 2009 17:00:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
+Message-ID: <20090626150051.GA22223@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com> <20090626071955.GG14078@elte.hu> <20090626101310.4110a290@lxorguk.ukuu.org.uk> <20090626093859.GA12571@elte.hu> <20090626111603.758ec7fb@lxorguk.ukuu.org.uk> <20090626110429.GB12446@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090626143652.GB6281@localdomain.by>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090626110429.GB12446@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 05:36:52PM +0300, Sergey Senozhatsky wrote:
-> Hello.
-> I suppose this patch fixes memory leak in kobject.c
-> Correct me if I'm wrong.
-> Thanks.
-> -----------
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> And? There's an obvious quality difference between various 
+> platform enumeration methods - and we strive for the highest 
+> quality methods.
 > 
-> Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
+> Using boot flags is one of the lowest quality enumeration methods 
+> and the fact that there's precedence for it in other architectures 
+> is not a technical reason to make the same mistakes on x86 too.
 > 
-> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-> ---
-> diff --git a/lib/kobject.c b/lib/kobject.c
-> index b512b74..922cd8c 100644
-> --- a/lib/kobject.c
-> +++ b/lib/kobject.c
-> @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
->  		return 0;
->  
->  	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
-> -	if (!kobj->name)
-> +	if (!kobj->name) {
-> +		kfree(old_name);
->  		return -ENOMEM;
-> +	}
+> Especially here where there's two other enumeration methods easily 
+> available: SFI and PCI. Any of those suffices.
 
-We've been through this before (search lkml archives).  If kvasprintf
-fails, then we don't want to free old_name, as the caller might want to
-do something with it.
+btw., the "I am MRST" bootstrap info is certainly doable via a 
+bootloader flag as well, if this platform is _so_ deprived of basic 
+PC features that it has no other channel of information. Especially 
+if it has no BIOS and if the bootloader provides the memory map as 
+well - which seems to be the case here.
 
-Or something along those lines, I can't remember the exact reasoning
-this early in the morning.
+I can understand the PCI ID space being potentially awkward (if many 
+models with mismatching PCI IDs are planned) - so it's certainly 
+possible that the only thing that remains in the end is the 
+bootloader provided flag - no matter how sucky that may be.
 
-Kay, do you remember?
+So i am not trying to make a bigger deal out of this than it really 
+deserves and this is not a showstopper in my eyes - but this is 
+really an exceptional case and shouldnt be the glory model for how 
+ultra embedded should be done on x86 ...
 
-thanks,
-
-greg k-h
+	Ingo
