@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZFZWcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZFZWii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756135AbZFZWcl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZFZWcc
+	id S1754855AbZFZWii (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZFZWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:32:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60143 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbZFZWcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:32:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 6)
-Date: Sat, 27 Jun 2009 00:32:44 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
+	Fri, 26 Jun 2009 18:38:28 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:2874 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbZFZWi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:38:27 -0400
+Date: Fri, 26 Jun 2009 19:36:34 -0300
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: SandeepKsinha <sandeepksinha@gmail.com>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com,
+       neilb@suse.de
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
+	data integrity
+Message-ID: <20090626223634.GG5913@blitiri.com.ar>
+References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain> <20090525174630.GI1376@blitiri.com.ar> <8763fop31e.fsf@frosties.localdomain> <20090526125252.GL1376@blitiri.com.ar> <878wkhyqj3.fsf@frosties.localdomain> <37d33d830906260026t60ae1c71h981b6f3bc0165053@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906270032.45290.rjw@sisk.pl>
+In-Reply-To: <37d33d830906260026t60ae1c71h981b6f3bc0165053@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 June 2009, Alan Stern wrote:
-> On Fri, 26 Jun 2009, Rafael J. Wysocki wrote:
+On Fri, Jun 26, 2009 at 12:56:42PM +0530, SandeepKsinha wrote:
+> Hi Alberto,
 > 
-> > > It occurs to me that the problem would be solved if were a cancel_work
-> > > routine.  In the same vein, it ought to be possible for
-> > > cancel_delayed_work to run in interrupt context.  I'll see what can be
-> > > done.
-> > 
-> > Having looked at the workqueue code I'm not sure if there's a way to implement
-> > that in a non-racy way.  Which may be the reason why there are no such
-> > functions already. :-)
+> + * TODO: would it be better to have M1 and M2 apart, to improve the chances of
+> + * recovery in case of a failure?
+> + *
 > 
-> Well, I'll give it a try.
+> How do you guarantee consistency in case of any lost writes? Your
+> checksum might hold an updated value while your data block might be
+> lost or written to a wrong destination?
+
+The module aims to detect corruption, not prevent or recover from it. If the
+write bio returns an error, it should be properly handled and propagated to
+the upper layers.
+
+If it returns success but writes the wrong data to the disk, then there will
+be a mismatch between the checksum and the data at the destination, which will
+be detected when it is read.
+
+If a write returns success but no write ever takes place on the disk, then
+dm-csum (as it is now) will not detect it; although I'm not sure if that
+qualifies as on-disk data corruption or is it a disk controller issue.
+
+
+> When implementing such integrity solutions, IMO, it is always
+> advisable to handle such error conditions else this might lead to
+> issues. Since, checksums  are very tightly coupled with the data and
+> any misleading can be quite dangerous unlike parity which can be
+> recovered.
+
+The code considers the possibility of bios failing, and propagates this
+information to the upper layers. If you see any part of the code that lacks
+error handling, please let me know so I can fix it.
+
+
+> Calculate the data's CRC, and compare it to the one found in M1. If they
+> + *    match, the reading is successful. If not, compare it to the one found in
+> + *    M2. If they match, the reading is successful;
 > 
-> Speaking of races, have you noticed that the way power.work_done gets 
-> used is racy?
+> Also, I hope by M1 and M2 you refer to the entry for a particular
+> block in the respective IMD sector. What kind of mechanism do you use
 
-Not really. :-)
+M1 and M2 refer to whole IMD sectors.
 
-> You can't wait for the completion before releasing the 
-> lock, but then anything could happen.
-> 
-> A safer approach would be to use a wait_queue.
 
-I'm not sure what you mean exactly.  What's the race?
+> to determine which is younger?
+> Is it the timestamp or some generation count?
+>
+> I assume information is per_block_entry in the IMD sectors. Which I
+> don't see in your implementation?
 
-> > In the meantime I reworked the patch (below) to use more RPM_* flags and I
-> > removed the runtime_break and runtime_notify bits from it.  Also added some
-> > comments to explain some non-obvious steps (hope that helps).
-> > 
-> > I also added the pm_runtime_put_atomic() and pm_runtime_put() as per the
-> > comment above.
-> > 
-> > It seems to be a bit cleaner this way, but that's my personal view. :-)
-> 
-> I'll look at it over the weekend.  And I'll try to see if proper 
-> cancel_work and cancel_delayed_work functions can help clean it up.
+It's per IMD sector. More specifically, struct imd_sector_header's
+last_updated contains the generation count for the entire IMD sector, which is
+used to determine which one is younger for updating purposes.
 
-Great, thanks!
+On reads, both IMD sectors are loaded and CRCs are verified against both.
 
-Best,
-Rafael
+Thanks a lot,
+		Alberto
+
