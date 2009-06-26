@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZFZGbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZFZGdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZFZGbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 02:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbZFZGbi
+	id S1756137AbZFZGdU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 02:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZFZGdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 02:31:38 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:43938 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750890AbZFZGbh (ORCPT
+	Fri, 26 Jun 2009 02:33:12 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:49502 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbZFZGdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 02:31:37 -0400
-Message-ID: <4A446B49.8040001@shipmail.org>
-Date: Fri, 26 Jun 2009 08:31:37 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 26 Jun 2009 02:33:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=hzRAQ1hQQxMcIiCLSJhZmyzTc2+JKR45TVEMYxFNFIWLxDeu+ZieRZwv8hXQ2WcSWI
+         nJOxoO7XTQuO780keYo45288hDBv6QLvg6je+XS2sXkuakT2O+I0WMl5Fq9yS7vCDXTZ
+         RRGBMv/XCQiw5yhfdlxvF+jDPzut2ZR0IJIkU=
+Message-ID: <4A446998.4070508@gmail.com>
+Date: Fri, 26 Jun 2009 08:24:24 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: Jerome Glisse <glisse@freedesktop.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: TTM page pool allocator
-References: <1245931298.13359.8.camel@localhost.localdomain> <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
-In-Reply-To: <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Tejun Heo <htejun@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@mit.edu>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it>	<cmoBl-6Ok-21@gated-at.bofh.it>	<cmp4n-7rb-15@gated-at.bofh.it>	<cmsYg-5BR-27@gated-at.bofh.it>	<cmvW7-1Yj-23@gated-at.bofh.it>	<cnheh-3vO-7@gated-at.bofh.it>	<cnPg1-7Q4-19@gated-at.bofh.it>	<cnTWo-7bV-25@gated-at.bofh.it>	<co1Kd-350-5@gated-at.bofh.it>	<co2Qf-4QQ-27@gated-at.bofh.it>	<co4yj-7Mc-5@gated-at.bofh.it>	<cp71c-4py-29@gated-at.bofh.it>	<cEVyE-re-1@gated-at.bofh.it>	<4A17C39E.2030302@gmail.com>	<4A19F006.3000303@kernel.org> <20090525091534.13ae103c@lxorguk.ukuu.org.uk> <4A1B164B.1010108@gmail.com> <4A1B76EB.9040500@kernel.org> <4A1B8193.1010703@gmail.com> <4A1B8328.80801@kernel.org> <4A1B8873.1040101@gmail.com> <4A1BEFB6.80205@kernel.org> <4A1C316C.9040201@gmail.com> <4A1C8444.9040605@kernel.org> <4A1D47C6.1070504@gmail.com> <4A2424A2.5020704@gmail.com> <4A25EA78.7070705@kernel.org> <4A25FBD1.70000@gmail.com> <4A2A1521.5020407@gmai l.com> <4A437442.8000909@gmail.com> <4A4396E9.1030509@gmail.co m> <4A441A69.1010803@gmail.com>
+In-Reply-To: <4A441A69.1010803@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie skrev:
-> On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org> wrote:
->   
->> Hi,
+On 06/26/2009 02:46 AM, Tejun Heo wrote:
+> Hello, Niel.
+>
+> Niel Lambrechts wrote:
+>    
+>> I've recently switched my root partition from OpenSUSE 11.1 to Fedora 11
+>> and since then I've not again seen the issue. I'm still using vanilla
+>> 2.6.30 generated with the same .config and EXT4 as before, so I have no
+>> idea why I cannot reproduce the issue. I still use hibernate + sleep
+>> frequently, and I just checked - I have 5 days uptime with a mount count
+>> of 20 and the file-system is still clean.
 >>
->> Thomas i attach a reworked page pool allocator based on Dave works,
->> this one should be ok with ttm cache status tracking. It definitely
->> helps on AGP system, now the bottleneck is in mesa vertex's dma
->> allocation.
->>
->>     
->
-> My original version kept a list of wb pages as well, this proved to be
-> quite a useful
-> optimisation on my test systems when I implemented it, without it I
-> was spending ~20%
-> of my CPU in getting free pages, granted I always used WB pages on
-> PCIE/IGP systems.
->
-> Another optimisation I made at the time was around the populate call,
-> (not sure if this
-> is what still happens):
->
-> Allocate a 64K local BO for DMA object.
-> Write into the first 5 pages from userspace - get WB pages.
-> Bind to GART, swap those 5 pages to WC + flush.
-> Then populate the rest with WC pages from the list.
-> Granted I think allocating WC in the first place from the pool might
-> work just as well since most of the DMA buffers are write only.
->   
+>> The one big difference is that my original partition was a EXT2 ->  EXT3
+>> ->  EXT4 upgrade job over a long period of time, and some of the EXT4
+>> parameters now used by Fedora 11 on the reformatted root partition are
+>> different from what I had then. Here is a summary of the differences in
+>> case it matters at all:
+>>      
+<snip>
+> Eh... if my analysis is correct the bug will be dependent on some
+> non-deterministic things including timing and layout of blocks of the
+> file which the filesystem touchs during suspend/resume.  I'm fairly
+> sure the problem is still there.  Oh well, it seems I'll have to
+> construct a synthetic case to test it.  Anyways, please let me know if
+> you encounter the problem again.  I'll keep you in loop with further
+> patches.
+>    
 
-Yes, I think in the latter case the user-space driver should take care 
-to specify WC from the beginning, when the BO is allocated.
+Understood, what I mean to imply is that I might (at least temporarily) 
+be shielded from the bug because reformatting the root partition could 
+possibly have removed some fragmentation and improved the initial disk 
+layout. With the previous partition layout there would also have been a 
+mixture of extents and non-extents based files since that system was 
+upgraded from EXT2 to EXT3 to EXT4.
 
-BTW is there any DMA buffer verification taking place on WC buffers on 
-Radeon?
+I'll try to boot from 2.6.29 again as well, and put it through some 
+suspend/resume cycles just in case that made any difference.
 
-> Dave.
->   
+Regards,
+Niel
 
-/Thomas
 
