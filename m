@@ -1,122 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZFZFtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbZFZGEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZFZFtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 01:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZFZFtG
+	id S1751872AbZFZGEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 02:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZFZGD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 01:49:06 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34987 "EHLO mx2.suse.de"
+	Fri, 26 Jun 2009 02:03:56 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:48477 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbZFZFtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 01:49:05 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Fri, 26 Jun 2009 15:49:39 +1000
+	id S1750890AbZFZGDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 02:03:55 -0400
+Message-ID: <4A4464CA.4060006@msgid.tls.msk.ru>
+Date: Fri, 26 Jun 2009 10:03:54 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+CC: linux-input <linux-input@vger.kernel.org>, alsa-devel@vger.kernel.org
+Subject: Re: PC speaker beeps in 2.6.30?
+References: <4A365DA6.8000102@msgid.tls.msk.ru>
+In-Reply-To: <4A365DA6.8000102@msgid.tls.msk.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <19012.24947.650584.93908@notabene.brown>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: block tree build failure
-In-Reply-To: message from Jens Axboe on Friday June 26
-References: <20090626125331.89c689f2.sfr@canb.auug.org.au>
-	<f236aae1aa8ea7c4f3700dbca2f3ae14.squirrel@neil.brown.name>
-	<20090626043937.GJ31415@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday June 26, jens.axboe@oracle.com wrote:
-> On Fri, Jun 26 2009, NeilBrown wrote:
-> > On Fri, June 26, 2009 12:53 pm, Stephen Rothwell wrote:
-> > > Hi Jens,
-> > >
-> > > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> > >
-> > > block/blk-core.c: In function '__make_request':
-> > > block/blk-core.c:1179: error: expected ';' before 'return'
-> > >
-> > > Caused by commit 6cf2a6c8d01514e86a8d38e4eeed402378b635dc ("Restore
-> > > barrier support for md and probably other virtual devices") which I have
-> > > reverted for today.
-> > 
-> > Arg, that's my fault - sorry.
-> > 
-> > +               bio_endio(bio, -EOPNOTSUPP)
-> > +                       return 0;
-> > 
-> > should of course be
-> > 
-> > +               bio_endio(bio, -EOPNOTSUPP);
-> > +               return 0;
+[Adding some more Cc's...]
+
+Am I the only concerned about this?  My 2.6.30 is still
+silent w.r.t. old good PC speaker beeps, and I wasn't
+able to make it to produce any sound.  Yes, as pointed
+out by others there is a control now, in alsa, and I
+can hear ugly and scary beeps from my stereo speakers
+(when they're turned on and when the control is un-muted).
+But that's.. not a solution/answer to the original
+question... ;)
+
+Thanks!
+
+Michael Tokarev wrote at Mon, 15 Jun 2009 18:41:42 +0400:
+> Anyone know what happened with PC speaker in 2.6.30?
+> Basically, it does not work anymore here, with the
+> config which is very similar to the one used for
+> previous 2.6.29 kernel (where PC speaker worked).
+> At least I don't see any relevant differences and
+> the (seemengly) relevant symbols -- which are
+> INPUT_PCSPKR and PCSPKR_PLATFORM -- are both set
+> to 'y' for both 2.6.29 and 2.6.30.
 > 
-> I was certain I ran it through a compile cycle, sorry about that
-> Stephen. And Neil sending uncompiled patches, very uncool. Did you even
-> test it? I've pulled it for now.
+> Help? :)
+> 
+> Thanks.
+> 
+> /mjt
 
-I tested this time.
-Without the patch a 'mount -o journal=1 /dev/md0 /mnt'
-followed by writing to /mnt/something produces
-
-Jun 26 15:34:18 dell kernel: JBD: barrier-based sync failed on md0 - disabling barriers
-
-in the kernel logs.
-With the patch, it doesn't.
-
-Comment updated slightly too.
-
-NeilBrown
-
-Author: NeilBrown <neilb@suse.de>
-Date:   Fri Jun 26 15:41:35 2009 +1000
-
-Restore barrier support for md and probably other virtual devices.
-
-The next_ordered flag is only meaningful for devices that use __make_request.
-So move the test against next_ordered out of generic code and in to
-__make_request
-
-Since this test was added, barriers have not worked on md or any
-devices that don't use __make_request and so don't bother to set
-next_ordered.  (dm explicitly sets something other than
-QUEUE_ORDERED_NONE since
-  commit 99360b4c18f7675b50d283301d46d755affe75fd
-but notes in the comments that it is otherwise meaningless).
-
-Cc: Ken Milmore <ken.milmore@googlemail.com>
-Cc: stable@kernel.org
-Signed-off-by: NeilBrown <neilb@suse.de>
-
-diff --git a/block/blk-core.c b/block/blk-core.c
-index b06cf5c..2283116 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1172,6 +1172,11 @@ static int __make_request(struct request_queue *q, struct bio *bio)
- 	const int unplug = bio_unplug(bio);
- 	int rw_flags;
- 
-+	if (bio_barrier(bio) && bio_has_data(bio) &&
-+	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-+		bio_endio(bio, -EOPNOTSUPP);
-+		return 0;
-+	}
- 	/*
- 	 * low level driver can indicate that it wants pages above a
- 	 * certain limit bounced to low memory (ie for highmem, or even
-@@ -1472,11 +1477,6 @@ static inline void __generic_make_request(struct bio *bio)
- 			err = -EOPNOTSUPP;
- 			goto end_io;
- 		}
--		if (bio_barrier(bio) && bio_has_data(bio) &&
--		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
--			err = -EOPNOTSUPP;
--			goto end_io;
--		}
- 
- 		ret = q->make_request_fn(q, bio);
- 	} while (ret);
