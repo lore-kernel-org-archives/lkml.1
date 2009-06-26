@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZFZSqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbZFZSsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbZFZSqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZFZSqM
+	id S1757846AbZFZSsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZFZSsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:46:12 -0400
-Received: from THUNK.ORG ([69.25.196.29]:36188 "EHLO thunker.thunk.org"
+	Fri, 26 Jun 2009 14:48:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51940 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751432AbZFZSqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:46:11 -0400
-Date: Fri, 26 Jun 2009 14:45:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: mtk.manpages@gmail.com, jean-noel.cordenner@bull.net, cmm@us.ibm.com,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-man <linux-man@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
-Subject: Re: MS_I_VERSION added in 2.6.25
-Message-ID: <20090626184522.GF7182@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christoph Hellwig <hch@infradead.org>, mtk.manpages@gmail.com,
-	jean-noel.cordenner@bull.net, cmm@us.ibm.com,
-	lkml <linux-kernel@vger.kernel.org>,
-	linux-man <linux-man@vger.kernel.org>,
-	mk <michael.kerrisk@gmail.com>
-References: <cfd18e0f0906252346v53594fb5u2b2bd630b12ded8e@mail.gmail.com> <20090626171144.GA2282@infradead.org>
+	id S1751312AbZFZSsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 14:48:01 -0400
+Date: Fri, 26 Jun 2009 20:47:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Roland Dreier <rdreier@cisco.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter tools: shorten names for events
+Message-ID: <20090626184738.GB30885@elte.hu>
+References: <1245760130.3776.6.camel@localhost.localdomain> <20090623195656.GC8777@elte.hu> <1245876060.3038.7.camel@localhost.localdomain> <20090625093346.GD23547@elte.hu> <1245934522.5308.39.camel@hpdv5.satnam> <ada3a9ol58t.fsf@cisco.com> <20090625153406.GA12918@elte.hu> <1246032399.3063.3.camel@hpdv5.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090626171144.GA2282@infradead.org>
+In-Reply-To: <1246032399.3063.3.camel@hpdv5.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 01:11:44PM -0400, Christoph Hellwig wrote:
-> On Fri, Jun 26, 2009 at 08:46:34AM +0200, Michael Kerrisk wrote:
-> > Hi,
-> > 
-> > Linux 2.6.25 added the MS_I_VERSION flag for inode versioning. Some
-> > text on this should be added to the mount(2) man page. Could someone
-> > of you provide a short description of
-> > 
-> > * What inode versions are used for
-> 
-> I don't think it should be documented.  It should never have been a
-> user-visible option to start with and I'm eventually going to fix that.
-> 
-> The correct way to do this would be a feature flag in the superblock.
 
-Agreed, the intention was this was something which NFSv4 would request
-of the filesystem, by flipping a bit.  I don't see a good reason why a
-user would ever want to explicit request 64-bit version numbers, since
-they're not even visible to userspace.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-						- Ted
+> On Thu, 2009-06-25 at 17:34 +0200, Ingo Molnar wrote:
+> > * Roland Dreier <rdreier@cisco.com> wrote:
+> > 
+> > >  >       266590464  L1d-loads             (scaled from 23.03%)
+> > > 
+> > > IMHO "L1d" is too abbreviated for it to be obvious that it means 
+> > > L1 data cache.  If you want something really short maybe "L1-d$" 
+> > > might be a little clearer, but I stil like "L1-dcache" best.
+> > 
+> > i changed it to L1-d$ / L1-i$.
+> > 
+> > > The formatting of aligning things is nice defitely but we could 
+> > > also shorten lines by saying "scaled from" in fewer characters 
+> > > maybe?  (I have to admit I don't know what "scaled from X%" means 
+> > > in this case so I can't suggest something better, but the fact 
+> > > that I can't easily tell what it means probably suggests that the 
+> > > wording could be improved)
+> > 
+> > Indeed, the '(scaled from 12.3%)' message should i guess be changed 
+> > to:
+> > 
+> >   (9.43x scaled)
+> > 
+> > ( and a multiplicative factor is more expressive anyway, than the 
+> >   percentage of from where we scale up. )
+> > 
+> 
+> Can you please let me know how you get 9.43x from 12.3%
+
+it was a guesstimate - the real factor is 8.13x
+
+from X percentage scaling factor you get to the multiplier factor by 
+doing:
+
+   100.0 / X
+
+	Ingo
