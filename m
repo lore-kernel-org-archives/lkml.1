@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZFZBAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbZFZBHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753263AbZFZBAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 21:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZFZA77
+	id S1755200AbZFZBHj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 21:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZFZBHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 20:59:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64744 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbZFZA76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 20:59:58 -0400
-Message-ID: <4A441D7F.2070505@cn.fujitsu.com>
-Date: Fri, 26 Jun 2009 08:59:43 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: do some changes of io.policy interface
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com> <4A435038.60406@cn.fujitsu.com> <20090625125513.GA25439@redhat.com>
-In-Reply-To: <20090625125513.GA25439@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 21:07:30 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49998 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbZFZBH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 21:07:29 -0400
+Date: Fri, 26 Jun 2009 11:07:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       jdike@addtoit.com, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+Message-Id: <20090626110722.7ca2e8c4.sfr@canb.auug.org.au>
+In-Reply-To: <4A432DD4.3010905@panasas.com>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+	<4A3F4448.30502@panasas.com>
+	<20090625135901.a028512d.sfr@canb.auug.org.au>
+	<4A432DD4.3010905@panasas.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Jun_2009_11_07_22_+1000_+N+U/eWqXUq/h3ys"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> 
-> Hi Gui,
-> 
-> Thanks for the patch. "unsigned long" for ioprio_class is too big. How
-> about using "unsigned short"? I noticed that in io_cgroup also we are
-> using "unsigned long". I will fix that.
+--Signature=_Fri__26_Jun_2009_11_07_22_+1000_+N+U/eWqXUq/h3ys
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  Ah, i see, If you already have the patch, would you share it?
+Hi Boaz,
 
-> 
-> For storing weight now we are planning to use "unsigned int". Can you
-> please switch to that.
-> 
-> Thanks
-> Vivek
-> 
-> 
-> 
+On Thu, 25 Jun 2009 10:57:08 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
+e:
+>
+> On 06/25/2009 06:59 AM, Stephen Rothwell wrote:
+> > Hi all,
+> >=20
+> > I applied the following patch to yesterday's linux-next and the i386 uml
+> > defconfig build succeeded.
+>=20
+> Stephan Hi,=20
+       ^
+Stephen :-)
 
--- 
-Regards
-Gui Jianfeng
+> Does this means that there will be a UML build every linux-next now?
 
+Yes,  I will also see if the x86_64 UML will build.  I know the PPC one
+won't (does anyone care?).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__26_Jun_2009_11_07_22_+1000_+N+U/eWqXUq/h3ys
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpEH0oACgkQjjKRsyhoI8yFagCgvy78dnYVEHWwv1bBsSkYJ0gc
+9/oAoKlewV4ngE2itq7NE2FPMPMRi8uI
+=jXJo
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Jun_2009_11_07_22_+1000_+N+U/eWqXUq/h3ys--
