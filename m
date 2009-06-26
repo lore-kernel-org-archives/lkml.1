@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFZWwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZFZWxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZFZWwX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZFZWwO
+	id S1754639AbZFZWxD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZFZWwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:52:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42700 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbZFZWwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:52:14 -0400
-Subject: Re: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up
- usr/
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, benh@kernel.crashing.org,
-       paulus@samba.org
-In-Reply-To: <20090626224638.GB27310@uranus.ravnborg.org>
-References: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
-	 <1245569547.2480.18.camel@ht.satnam>
-	 <20090626222112.GB27048@uranus.ravnborg.org>
-	 <1246055488.2988.19.camel@hpdv5.satnam>
-	 <20090626224638.GB27310@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 04:21:12 +0530
-Message-Id: <1246056672.2988.23.camel@hpdv5.satnam>
+	Fri, 26 Jun 2009 18:52:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52594 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750875AbZFZWww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:52:52 -0400
+Date: Fri, 26 Jun 2009 23:53:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Cc: SandeepKsinha <sandeepksinha@gmail.com>,
+       Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com,
+       neilb@suse.de
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
+ data integrity
+Message-ID: <20090626235357.7bec63a8@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090626223634.GG5913@blitiri.com.ar>
+References: <20090521161317.GU1376@blitiri.com.ar>
+	<87my91qsn4.fsf@frosties.localdomain>
+	<20090525174630.GI1376@blitiri.com.ar>
+	<8763fop31e.fsf@frosties.localdomain>
+	<20090526125252.GL1376@blitiri.com.ar>
+	<878wkhyqj3.fsf@frosties.localdomain>
+	<37d33d830906260026t60ae1c71h981b6f3bc0165053@mail.gmail.com>
+	<20090626223634.GG5913@blitiri.com.ar>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-27 at 00:46 +0200, Sam Ravnborg wrote:
-> On Sat, Jun 27, 2009 at 04:01:28AM +0530, Jaswinder Singh Rajput wrote:
-> > On Sat, 2009-06-27 at 00:21 +0200, Sam Ravnborg wrote:
-> > > On Sun, Jun 21, 2009 at 01:02:27PM +0530, Jaswinder Singh Rajput wrote:
-> > > > 
-> > > > On Sat, 2009-06-20 at 13:52 -0700, H. Peter Anvin wrote:
-> > > > > Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-> > > > > with *.gz and *.lzma which are already there.  Remove specific rules
-> > > > > in usr/gitignore, since they are now covered by the global rules.
-> > > > > 
-> > > > > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > > > > Cc: Sam Ravnborg <sam@ravnborg.org>
-> > > > 
-> > > > It seems this is based on my patch :
-> > > > 
-> > > > [PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
-> > > > 
-> > > > And you forget to CC me ;-)
-> > > > 
-> > > > Are you trying to do this, fill signed-off-by and enjoy :
-> > > > 
-> > > > [PATCH] Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-> > > >  with *.gz and *.lzma which are already there.  Remove specific rules
-> > > >  in other gitignores, since they are now covered by the global rules.
-> > > 
-> > > I would prefer to have *.gz and *.lzma pushed out to the
-> > > directories where it matters.
-> > > There global ignore rules will bite us one day.
-> > > 
-> > > So I did not apply neither this nor Peter's original patch.
-> > > 
-> > 
-> > Ok and what about :
-> > 
-> > [PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
+> If it returns success but writes the wrong data to the disk, then there will
+> be a mismatch between the checksum and the data at the destination, which will
+> be detected when it is read.
+
+(or to the wrong place on the disk which for pre SATA is actually
+possibly more likely as the command transfers are not CRC protected on
+the cable - just slower, while the data is CRC protected). SATA fixes
+this.
+
+> If a write returns success but no write ever takes place on the disk, then
+> dm-csum (as it is now) will not detect it; although I'm not sure if that
+> qualifies as on-disk data corruption or is it a disk controller issue.
+
+Does it matter to the poor victim ? At this point you get into putting
+mirrors on disks A & B with their integrity on the opposite pair so if
+one forgets to do I/O hopefully both won't.
+
+To be honest if you are really really paranoid you don't do link layer
+checksumming anyway (which is what this is) you checksum in the apps using
+the data set. That protects you against lots of error cases in the
+memory/cache system and on network transmissions. On big clusters
+crunching enormous amounts of data all those 1 in 10^lots bit error rates
+become such that it's worth the effort.
+
+> It's per IMD sector. More specifically, struct imd_sector_header's
+> last_updated contains the generation count for the entire IMD sector, which is
+> used to determine which one is younger for updating purposes.
 > 
-> You are far to trigger happy with your patches.
-> This is not a quest about getting maximum number of patches
-> applied.
-> This is about doing stuff in the right way and Peter had not even
-> replied when you start to push your patch.
-> 
-> We have been there before and I'm getting tired of your
-> attitude towards your patch handling.
-> 
+> On reads, both IMD sectors are loaded and CRCs are verified against both.
 
-I am also tired of bz2 file coming up each and every time I prepare
-patch. I am curious because I want to get rid of it.
+Seems reasonably paranoid - drives will do things under you like commit
+data to disk out in a different order to the commands unless the cache
+gets flushed between them but the barrier code should do that bit.
 
-I do not care whether you apply mine or peter or yours. I need solution.
-
-Thanks,
---
-JSR
-
+Alan
