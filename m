@@ -1,241 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbZFZPxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZFZPx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759811AbZFZPxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758450AbZFZPwp
+	id S1759071AbZFZPx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbZFZPwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:52:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55623 "EHLO hera.kernel.org"
+	Fri, 26 Jun 2009 11:52:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55626 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756129AbZFZPwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:52:43 -0400
-Date: Fri, 26 Jun 2009 15:52:02 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+	id S1758506AbZFZPwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:52:47 -0400
+Date: Fri, 26 Jun 2009 15:52:14 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
-References: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf report: Print sorted callchains per histogram entries
-Message-ID: <tip-f55c555226b1010b249730ec6b232e5470286950@git.kernel.org>
-Git-Commit-ID: f55c555226b1010b249730ec6b232e5470286950
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1246014623.31755.195.camel@twins>
+References: <1246014623.31755.195.camel@twins>
+Subject: [tip:perfcounters/urgent] perf_counter: Complete counter swap
+Message-ID: <tip-19d2e755436054dfc2be640bffc32e427c37ac3d@git.kernel.org>
+Git-Commit-ID: 19d2e755436054dfc2be640bffc32e427c37ac3d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 15:52:03 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 15:52:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f55c555226b1010b249730ec6b232e5470286950
-Gitweb:     http://git.kernel.org/tip/f55c555226b1010b249730ec6b232e5470286950
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 26 Jun 2009 16:28:01 +0200
+Commit-ID:  19d2e755436054dfc2be640bffc32e427c37ac3d
+Gitweb:     http://git.kernel.org/tip/19d2e755436054dfc2be640bffc32e427c37ac3d
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 26 Jun 2009 13:10:23 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 26 Jun 2009 16:47:01 +0200
+CommitDate: Fri, 26 Jun 2009 17:48:54 +0200
 
-perf report: Print sorted callchains per histogram entries
+perf_counter: Complete counter swap
 
-Use the newly created callchains radix tree to gather the chains stats
-from the recorded events and then print the callchains for all of them,
-sorted by hits, using the "-c" parameter with perf report.
+Complete the counter swap by indeed switching the times too and
+updating the userpage after modifying the counter values.
 
-Example:
-
- 66.15%  [k] atm_clip_exit
-            63.08%
-                0xffffffffffffff80
-                0xffffffff810196a8
-                0xffffffff810c14c8
-                0xffffffff8101a79c
-                0xffffffff810194f3
-                0xffffffff8106ab7f
-                0xffffffff8106abe5
-                0xffffffff8106acde
-                0xffffffff8100d94b
-                0xffffffff8153e7ea
-                [...]
-
-             1.54%
-                0xffffffffffffff80
-                0xffffffff810196a8
-                0xffffffff810c14c8
-                0xffffffff8101a79c
-		[...]
-
-Symbols are not yet resolved.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1246014623.31755.195.camel@twins>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-report.c |   82 +++++++++++++++++++++++++++++++++++++------
- 1 files changed, 71 insertions(+), 11 deletions(-)
+ kernel/perf_counter.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 28d1cb2..ed391db 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -15,6 +15,7 @@
- #include "util/rbtree.h"
- #include "util/symbol.h"
- #include "util/string.h"
-+#include "util/callchain.h"
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index f2f2326..66ab1e9 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1048,9 +1048,14 @@ static void __perf_counter_sync_stat(struct perf_counter *counter,
+ 	value = atomic64_xchg(&counter->count, value);
+ 	atomic64_set(&next_counter->count, value);
  
- #include "perf.h"
- #include "util/header.h"
-@@ -52,6 +53,7 @@ static char		*parent_pattern = default_parent_pattern;
- static regex_t		parent_regex;
- 
- static int		exclude_other = 1;
-+static int		callchain;
- 
- static u64		sample_type;
- 
-@@ -488,17 +490,19 @@ static size_t threads__fprintf(FILE *fp)
- static struct rb_root hist;
- 
- struct hist_entry {
--	struct rb_node	 rb_node;
--
--	struct thread	 *thread;
--	struct map	 *map;
--	struct dso	 *dso;
--	struct symbol	 *sym;
--	struct symbol	 *parent;
--	u64		 ip;
--	char		 level;
--
--	u64		 count;
-+	struct rb_node		rb_node;
++	swap(counter->total_time_enabled, next_counter->total_time_enabled);
++	swap(counter->total_time_running, next_counter->total_time_running);
 +
-+	struct thread		*thread;
-+	struct map		*map;
-+	struct dso		*dso;
-+	struct symbol		*sym;
-+	struct symbol		*parent;
-+	u64			ip;
-+	char			level;
-+	struct callchain_node	callchain;
-+	struct rb_root		sorted_chain;
-+
-+	u64			count;
- };
- 
- /*
-@@ -769,6 +773,48 @@ hist_entry__collapse(struct hist_entry *left, struct hist_entry *right)
+ 	/*
+-	 * XXX also sync time_enabled and time_running ?
++	 * Since we swizzled the values, update the user visible data too.
+ 	 */
++	perf_counter_update_userpage(counter);
++	perf_counter_update_userpage(next_counter);
  }
  
- static size_t
-+callchain__fprintf(FILE *fp, struct callchain_node *self, u64 total_samples)
-+{
-+	struct callchain_list *chain;
-+	size_t ret = 0;
-+
-+	if (!self)
-+		return 0;
-+
-+	ret += callchain__fprintf(fp, self->parent, total_samples);
-+
-+
-+	list_for_each_entry(chain, &self->val, list)
-+		ret += fprintf(fp, "                %p\n", (void *)chain->ip);
-+
-+	return ret;
-+}
-+
-+static size_t
-+hist_entry_callchain__fprintf(FILE *fp, struct hist_entry *self,
-+			      u64 total_samples)
-+{
-+	struct rb_node *rb_node;
-+	struct callchain_node *chain;
-+	size_t ret = 0;
-+
-+	rb_node = rb_first(&self->sorted_chain);
-+	while (rb_node) {
-+		double percent;
-+
-+		chain = rb_entry(rb_node, struct callchain_node, rb_node);
-+		percent = chain->hit * 100.0 / total_samples;
-+		ret += fprintf(fp, "           %6.2f%%\n", percent);
-+		ret += callchain__fprintf(fp, chain, total_samples);
-+		ret += fprintf(fp, "\n");
-+		rb_node = rb_next(rb_node);
-+	}
-+
-+	return ret;
-+}
-+
-+
-+static size_t
- hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
- {
- 	struct sort_entry *se;
-@@ -808,6 +854,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
- 
- 	ret += fprintf(fp, "\n");
- 
-+	if (callchain)
-+		hist_entry_callchain__fprintf(fp, self, total_samples);
-+
- 	return ret;
- }
- 
-@@ -892,6 +941,7 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
- 		.level	= level,
- 		.count	= count,
- 		.parent = NULL,
-+		.sorted_chain = RB_ROOT
- 	};
- 	int cmp;
- 
-@@ -934,6 +984,8 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
- 
- 		if (!cmp) {
- 			he->count += count;
-+			if (callchain)
-+				append_chain(&he->callchain, chain);
- 			return 0;
- 		}
- 
-@@ -947,6 +999,10 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
- 	if (!he)
- 		return -ENOMEM;
- 	*he = entry;
-+	if (callchain) {
-+		callchain_init(&he->callchain);
-+		append_chain(&he->callchain, chain);
-+	}
- 	rb_link_node(&he->rb_node, parent, p);
- 	rb_insert_color(&he->rb_node, &hist);
- 
-@@ -1023,6 +1079,9 @@ static void output__insert_entry(struct hist_entry *he)
- 	struct rb_node *parent = NULL;
- 	struct hist_entry *iter;
- 
-+	if (callchain)
-+		sort_chain_to_rbtree(&he->sorted_chain, &he->callchain);
-+
- 	while (*p != NULL) {
- 		parent = *p;
- 		iter = rb_entry(parent, struct hist_entry, rb_node);
-@@ -1599,6 +1658,7 @@ static const struct option options[] = {
- 		   "regex filter to identify parent, see: '--sort parent'"),
- 	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
- 		    "Only display entries with parent-match"),
-+	OPT_BOOLEAN('c', "callchain", &callchain, "Display callchains"),
- 	OPT_END()
- };
- 
+ #define list_next_entry(pos, member) \
