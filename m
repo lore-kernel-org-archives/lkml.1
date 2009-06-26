@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbZFZXWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZFZXY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbZFZXWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 19:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZFZXWD
+	id S1756970AbZFZXY2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 19:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbZFZXYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 19:22:03 -0400
-Received: from mail.open.by ([193.232.92.17]:53884 "EHLO post.open.by"
+	Fri, 26 Jun 2009 19:24:21 -0400
+Received: from mga09.intel.com ([134.134.136.24]:64448 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752129AbZFZXWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 19:22:02 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 8849 [Jun 27 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Sat, 27 Jun 2009 02:23:39 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Greg KH <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kobject_set_name_vargs memory leak
-Message-ID: <20090626232339.GD3858@localdomain.by>
-References: <20090626143652.GB6281@localdomain.by>
- <20090626144949.GA24173@suse.de>
+	id S1751714AbZFZXYV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 19:24:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,299,1243839600"; 
+   d="scan'208";a="528228930"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Date: Fri, 26 Jun 2009 16:24:22 -0700
+Subject: RE: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+Thread-Topic: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+Thread-Index: Acn2li0+FIUS8g+6Q+azA50WCPUC7AAHBWnQ
+Message-ID: <43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
+ <m1ab3ubx4q.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ab3ubx4q.fsf@fess.ebiederm.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626144949.GA24173@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/26/09 07:49), Greg KH wrote:
-> We've been through this before (search lkml archives).  If kvasprintf
-> fails, then we don't want to free old_name, as the caller might want to
-> do something with it.
-> 
-> Or something along those lines, I can't remember the exact reasoning
-> this early in the morning.
-> 
-> Kay, do you remember?
+
+
+>-----Original Message-----
+>From: Eric W. Biederman [mailto:ebiederm@xmission.com]
+>Sent: Friday, June 26, 2009 12:42 PM
+>To: Pan, Jacob jun
+>Cc: linux-kernel@vger.kernel.org; H. Peter Anvin
+>Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
 >
-I found.
-http://lkml.org/lkml/2009/5/11/11
+>"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
+>
+>>>From 82d64ca4f963d2e205326534aff0c77d9bfa5858 Mon Sep 17 00:00:00 2001
+>> From: Jacob Pan <jacob.jun.pan@intel.com>
+>> Date: Fri, 12 Jun 2009 02:16:05 -0700
+>> Subject: [PATCH] x86/apic: support moorestown interrupt subsystem
+>>
+>> This patch uses platform flags to selectively enable apic related setup
+>> code.
+>>
+>> Since moorestown does not have legacy timer or PIC, the only system
+>> timer irqs are routed via ioapic. Early timer ioapic enabling is also
+>> added to allow boot time timing services.
+>
+>This patch is horribly wrong.   We should not have a moorestown specific
+>hack  we should not do early timer ioapic on everything that supports
+>it which is most x86 machines since apics became common.
+>
+[[JPAN]] maybe I misunderstood. But I am doing the special early timer ioapic
+setup in x86_quirks, so it is not for every platform.
 
->kobject with name set before should not come into this function,
->kobject_rename should be used instead.
+>At which point moorestown support should just be a little work somewhere
+>in the table parsers.
+>
+[[JPAN]] can you elaborate a little? I was hoping to move APIC initialization earlier so that I don't have to have the special treatment for system timer.
+But it seems require early memory allocator.
 
-It's just would be safer to kfree or restore I guess.
- 
-> thanks,
-> 
-> greg k-h
-> 
-
-	Sergey
+>If you can't compile out the 8259 support code this has been factored
+>wrong.
+>
+>There are a handful of legacy systems with mptables that run in ioapic
+>mode yet use the timer and sometimes a couple of other devices on
+>the 8259 PIC.  Handling that case will complicate things a bit.
+>
+>Hopefully it will be easier now to properly rework the code.  When
+>I tried it.  Linus's laptop died somewhere half way through bootup.
+>So we had to revert the support.
+>
+>In summary if moorestown does not have an 8259 PIC it is time to remove
+>this long standing deficiency of the x86 ioapic code, not hack around
+>it.
+>
+[[JPAN]] Moorestown does not have 8259, even IOAPIC is emulated by FW. Are you
+saying we should try to completely separate 8259 instead of use if(8259) here
+and there in the IOAPIC code? T
+>Eric
+[[JPAN]] thanks for the feedback.
