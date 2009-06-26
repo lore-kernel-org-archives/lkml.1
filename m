@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZFZHlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZFZHrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZFZHlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbZFZHlV
+	id S1753848AbZFZHrY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZFZHrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:41:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35219 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbZFZHjQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:39:16 -0400
-Date: Fri, 26 Jun 2009 08:39:19 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Zeno Davatz <zdavatz@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.31-rc1 crashes randomly on my Machine.
-Message-ID: <20090626073919.GD8633@ZenIV.linux.org.uk>
-References: <40a4ed590906252356i574f0da4jc3763cfc9f0f65f6@mail.gmail.com> <20090626071520.GC8633@ZenIV.linux.org.uk>
+	Fri, 26 Jun 2009 03:47:16 -0400
+Received: from mail.open.by ([193.232.92.17]:64014 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751531AbZFZHrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 03:47:15 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8838 [Jun 25 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Fri, 26 Jun 2009 10:48:48 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: kmemleak suggestion (long message)
+Message-ID: <20090626074847.GA3451@localdomain.by>
+References: <20090625221816.GA3480@localdomain.by>
+ <20090626065923.GA14078@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090626071520.GC8633@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090626065923.GA14078@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 08:15:21AM +0100, Al Viro wrote:
-> On Fri, Jun 26, 2009 at 08:56:52AM +0200, Zeno Davatz wrote:
+On (06/26/09 08:59), Ingo Molnar wrote:
+> Date: Fri, 26 Jun 2009 08:59:23 +0200
+> From: Ingo Molnar <mingo@elte.hu>
+> To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>,
+> 	Pekka Enberg <penberg@cs.helsinki.fi>,
+> 	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+> 	Andrew Morton <akpm@linux-foundation.org>,
+> 	linux-kernel@vger.kernel.org, linux-mm@kvack.org
+> Subject: Re: kmemleak suggestion (long message)
+> User-Agent: Mutt/1.5.18 (2008-05-17)
 > 
-> > Jun 25 21:19:12 zenogentoo Code: 00 00 00 c7 47 20 00 00 00 00 c7 47
-> > 24 00 00 00 00 c7 47 10 00 00 00 00 c7 47 14 00 00 00 00 c7 47 0c 00
-> > 00 00 00 e9 27 ff ff ff <ff> 89 e5 57 56 53 83 ec 34 89 45 d0 89 55 cc
-> > 89 4d c8 8b 70 6c
-> > Jun 25 21:19:12 zenogentoo EIP: [<c10d1d35>] seq_read+0x0/0x3a5 SS:ESP
-> > 0068:f4b01f44
-> > Jun 25 21:19:12 zenogentoo CR2: 0000000053565be5
-> > Jun 25 21:19:12 zenogentoo ---[ end trace 6254fef9dc80950b ]---
-> > Jun 25 21:19:12 zenogentoo BUG: unable to handle kernel paging request
-> > at 53565be5
 > 
-> Real cute...  Disassembly of that sucker:
-> 	decl   0x535657e5(%ecx)
-> which matches nicely the address in page fault.  However, that doesn't
-> look even remotely plausible for a beginning of function.  OTOH,
-> disassembly at one byte offset from that gives
-> 	mov    %esp,%ebp
-> 	push   %edi
-> 	push   %esi
-> 	push   %ebx
-> which is exactly what you'd expect to see in such place.
+> * Sergey Senozhatsky <sergey.senozhatsky@mail.by> wrote:
+> 
+> > Hello.
+> > 
+> > Currently kmemleak prints info about all objects. I guess 
+> > sometimes kmemleak gives you more than you actually need.
+> 
+> It prints _a lot_ of info and spams the syslog. I lost crash info a 
+> few days ago due to that: by the time i inspected a crashed machine 
+> the tons of kmemleak output scrolled out the crash from the dmesg 
+> buffer.
+> 
+> This is not acceptable.
+> 
+Agreed.
 
-Actually, it's not *quite* what you'd expect to see.  What's missing is
-	push   %ebp
-as the first instruction, preceding that stuff.  And it would take one
-byte, so...
+> Instead it should perhaps print _at most_ a single line every few 
+> minutes, printing a summary about _how many_ leaked entries it 
+> suspects, and should offer a /debug/mm/kmemleak style of file where 
+> the entries can be read out from.
+> 
+> Ok?
+> 
+> 	Ingo
+> 
+Agreed.
 
->  IOW, you've
-> got an off-by-one - it had jumped at one byte before the actual entry
-> point of seq_read().
-
-... this is not an off-by-one at all.  The first byte of function code
-got overwritten with 0xff.  Code before that doesn't seem to be mangled -
-it's
-	movl   $0x0,0x20(%edi)
-	movl   $0x0,0x24(%edi)
-	movl   $0x0,0x10(%edi)
-	movl   $0x0,0x14(%edi)
-	movl   $0x0,0xc(%edi)
-	jmp    <a bit back>
-which is at least not entirely implausible.  So it seems to be a memory
-corruption in .text, which might or might not affect the directly
-preceding bytes (0xe9 <signed 32bit int> is a relative jump, so there's
-no way to tell whether this 0xff had been the only byte affected - it
-would be preceded by 3 0xff coming from small negative integer anyway).
+	Sergey
