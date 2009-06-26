@@ -1,89 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbZFZK4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbZFZK4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbZFZK4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 06:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZFZKz6
+	id S1758084AbZFZK4r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 06:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZFZK4h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 06:55:58 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:52524 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754532AbZFZKz5 (ORCPT
+	Fri, 26 Jun 2009 06:56:37 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:54291 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754564AbZFZK4g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 06:55:57 -0400
-Date: Fri, 26 Jun 2009 11:55:51 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Message-ID: <20090626105550.GE5415@sirena.org.uk>
-References: <1245961793.10360.26.camel@brutus>
- <20090625233723.GA13150@sirena.org.uk>
- <1245996263.10360.122.camel@brutus>
+	Fri, 26 Jun 2009 06:56:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nQP1Kpu9hEMHt820j6heOX4n3aLr+qk9FvGhEVfMh7u3D9i38HmJ+t0OLYBM/fcvP4
+         uvijQzr5HS/jSgmvc0OwQiWd1kwVQEof4lJJzKRi982XcZmdfx/9DbTV5SIdDXBddq5F
+         WkYalg3eGdTFtP2XJuLLPimUMFa73kYia0RkA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1245996263.10360.122.camel@brutus>
-X-Cookie: You have no real enemies.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] PCAP regulator driver (for 2.6.32).
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+In-Reply-To: <20090625230535.GE1723@ldl.fc.hp.com>
+References: <20090610194714.28982.51363.stgit@bob.kio>
+	 <20090610195600.28982.3404.stgit@bob.kio>
+	 <81b0412b0906251538j2614bf91ya2edbaf120796dfc@mail.gmail.com>
+	 <20090625230535.GE1723@ldl.fc.hp.com>
+Date: Fri, 26 Jun 2009 12:56:35 +0200
+Message-ID: <81b0412b0906260356p12fd7807y40223175bf785cc0@mail.gmail.com>
+Subject: Re: [PATCH v3 11/12] ACPI: video: convert to acpi_get_pci_dev
+From: Alex Riesen <raa.lkml@gmail.com>
+To: Alex Chiang <achiang@hp.com>
+Cc: lenb@kernel.org, twmoure@szypr.net, alessandro.suardi@gmail.com,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 03:04:23AM -0300, Daniel Ribeiro wrote:
-> Em Sex, 2009-06-26 �s 00:37 +0100, Mark Brown escreveu:
+2009/6/26 Alex Chiang <achiang@hp.com>:
+> Thanks for the bug report and sorry for the troubles.
+>
+> I've already got a debug patch here:
+>
+>        http://thread.gmane.org/gmane.linux.kernel/857228/focus=857468
+>
+> Perhaps you can try it too?
 
-> > actively being used off is likely to cause issues.  Regulator drivers
-> > should just leave everything as they find it and leave it up to the core
-> > and machine drivers to make any changes.
+Will do soon.
 
-> So, the regulator is enabled at boot, but it can't be disabled because
-> use_count is 0. This is the same issue as twl4030-mmc, but instead of a
-> enable/disable pair on pxamci.c i opted to disable it at pcap's
+> Len, in the mean time, can you please apply this as an emergency,
+> "let's not crash anyone else's machine" while I try and figure
+> out why the ACPI video driver breaks my assumptions?
 
-At the minute you need to use the enable/disable pair since (as we've
-previously discussed) the API needs to support regulators which are
-shared between multiple users (potentially including multiple users from
-the same consumer).
-
-> regulator probe(). VAUX2 and VAUX3 are only used for MMC on all the
-> hardware that I know of, so it is safe.
-
-I've heard that one before :)
-
-> I can move this hack to pxamci.c if you want me to (as David did for
-> twl4030), but this issue really should be fixed on regulator/core.c:
-
-You need to either do that or add an API allowing consumers to claim a
-regulator for exclusive use.  If the regulator is claimed for exclusive
-use then other consumers wouldn't be able to access it and there would
-be no issue with interfering with other users.
-
-> With the current code if you use a regulator which can be disabled as
-> the supplier for the CPU core, then the regulator framework will power
-> off the CPU at boot.
-
-This will only be done if the board has said that it has fully specified
-the regulator configuration - if the board hasn't done that then the
-state of the regulators will stay unchanged.  The regulator API is very
-dependant on boards supplying good constraints, if bad constraints are
-provided the consequences could include even more serious things like
-lasting hardware damage.  This is just an example of what can go wrong
-with a bad board setup.
-
-> Maybe you should simply allow disable() if use_count is 0, and not
-> auto-disable() on regulator_init_complete() ?
-
-That doesn't fulfil the same need since it requires that there be a
-consumer for the regulator to actively sit there and disable it.  It's
-not intended to help if a consumer actively needs to have the regulator
-disabled right now, it's there to disable the regulator if nothing wants
-to have it on which isn't quite the same thing.
+This patch helped, does not panic anymore.
