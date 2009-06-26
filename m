@@ -1,236 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZFZMBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZFZMKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbZFZMBM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 08:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757577AbZFZMA7
+	id S1758044AbZFZMKq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 08:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFZMKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 08:00:59 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:47172 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754911AbZFZMA6 (ORCPT
+	Fri, 26 Jun 2009 08:10:33 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:48109 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754372AbZFZMKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 08:00:58 -0400
-Message-ID: <4A44B86D.6010301@novell.com>
-Date: Fri, 26 Jun 2009 08:00:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: dhowells@redhat.com
-CC: linux-kernel@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH v3] slow-work: add (module*)work->owner to fix races with
- module clients
-References: <20090625014520.449.98923.stgit@dev.haskins.net>
-In-Reply-To: <20090625014520.449.98923.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC57083DD7A8B3524F16917D4"
+	Fri, 26 Jun 2009 08:10:32 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       "Lars Marowsky-Bree" <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>, drbd-dev@lists.linbit.com,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: [PATCH 15/15] drbd: Kconfig and Makefile bits
+Date: Fri, 26 Jun 2009 14:01:55 +0200
+Message-Id: <1246017715-9821-16-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1246017715-9821-15-git-send-email-philipp.reisner@linbit.com>
+References: <1246017715-9821-1-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-2-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-3-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-4-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-5-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-6-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-7-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-8-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-9-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-10-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-11-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-12-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-13-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-14-git-send-email-philipp.reisner@linbit.com>
+ <1246017715-9821-15-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC57083DD7A8B3524F16917D4
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
+Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
-Gregory Haskins wrote:
-> (Try 3: applies to Linus' git master:626f380d)
->
-> [ Changelog:
->
->     v3:
->         *) moved (module*)owner to slow_work_ops=20
->         *) removed useless barrier()
-> 	*) updated documentation/comments=20
->
->     v2:
-> 	*) cache "owner" value to prevent invalid access after put_ref
->
->     v1:
-> 	*) initial release
-> ]
->
->  =20
-
-(I know there were several versions of this patch floating around.  This
-was compounded by the fact that I had also originally submitted it as
-part of a larger series against KVM and those problems I had with my
-mailer.  But FWIW: This is the latest version to consider for merging to
-mainline.  I've CC'd Michael Tsirkin who has reviewed this patch.=20
-Perhaps I can prod an Acked-by/Reviewed-by tag out of him ;) )
-
-Kind Regards,
--Greg
-
-> -------------------------
->
-> slow-work: add (module*)work->owner to fix races with module clients
->
-> The slow_work facility was designed to use reference counting instead o=
-f
-> barriers for synchronization.  The reference counting mechanism is
-> implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
-> problematic for module use of the slow_work facility because it is
-> impossible to synchronize against the .text installed in the callbacks:=
-
-> There is no way to ensure that the slow-work threads have completely
-> exited the .text in question and rmmod may yank it out from under the
-> slow_work thread.
->
-> This patch attempts to address this issue by mapping "struct module* ow=
-ner"
-> to the slow_work_ops item, and maintaining a module reference
-> count coincident with the more externally visible reference count.  Sin=
-ce
-> the slow_work facility is resident in kernel, it should be a race-free
-> location to issue a module_put() call.  This will ensure that modules
-> can properly cleanup before exiting.
->
-> A module_get()/module_put() pair on slow_work_enqueue() and the subsequ=
-ent
-> dequeue technically adds the overhead of the atomic operations for ever=
-y
-> work item scheduled.  However, slow_work is designed for deferring
-> relatively long-running and/or sleepy tasks to begin with, so this
-> overhead will hopefully be negligible.
->
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> CC: David Howells <dhowells@redhat.com>
-> ---
->
->  Documentation/slow-work.txt |    6 +++++-
->  include/linux/slow-work.h   |    3 +++
->  kernel/slow-work.c          |   20 +++++++++++++++++++-
->  3 files changed, 27 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
-> index ebc50f8..2a38878 100644
-> --- a/Documentation/slow-work.txt
-> +++ b/Documentation/slow-work.txt
-> @@ -80,6 +80,7 @@ Slow work items may then be set up by:
->   (2) Declaring the operations to be used for this item:
-> =20
->  	struct slow_work_ops myitem_ops =3D {
-> +	        .owner   =3D THIS_MODULE,
->  		.get_ref =3D myitem_get_ref,
->  		.put_ref =3D myitem_put_ref,
->  		.execute =3D myitem_execute,
-> @@ -102,7 +103,10 @@ A suitably set up work item can then be enqueued f=
-or processing:
->  	int ret =3D slow_work_enqueue(&myitem);
-> =20
->  This will return a -ve error if the thread pool is unable to gain a re=
-ference
-> -on the item, 0 otherwise.
-> +on the item, 0 otherwise.  Loadable modules may only enqueue work if a=
-t least
-> +one reference to the module is known to be held.  The slow-work infras=
-tructure
-> +will acquire a reference to the module and hold it until after the ite=
-m's
-> +reference is dropped, assuring the stability of the callback.
-> =20
-> =20
->  The items are reference counted, so there ought to be no need for a fl=
-ush
-> diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
-> index b65c888..1382918 100644
-> --- a/include/linux/slow-work.h
-> +++ b/include/linux/slow-work.h
-> @@ -17,6 +17,7 @@
->  #ifdef CONFIG_SLOW_WORK
-> =20
->  #include <linux/sysctl.h>
-> +#include <linux/module.h>
-> =20
->  struct slow_work;
-> =20
-> @@ -24,6 +25,8 @@ struct slow_work;
->   * The operations used to support slow work items
->   */
->  struct slow_work_ops {
-> +	struct module *owner;
-> +
->  	/* get a ref on a work item
->  	 * - return 0 if successful, -ve if not
->  	 */
-> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-> index 09d7519..18dee34 100644
-> --- a/kernel/slow-work.c
-> +++ b/kernel/slow-work.c
-> @@ -145,6 +145,15 @@ static unsigned slow_work_calc_vsmax(void)
->  	return min(vsmax, slow_work_max_threads - 1);
->  }
-> =20
-> +static void slow_work_put(struct slow_work *work)
-> +{
-> +	/* cache values that are needed during/after pointer invalidation */
-> +	struct module *owner =3D work->ops->owner;
-> +
-> +	work->ops->put_ref(work);
-> +	module_put(owner);
-> +}
-> +
->  /*
->   * Attempt to execute stuff queued on a slow thread.  Return true if w=
-e managed
->   * it, false if there was nothing to do.
-> @@ -219,7 +228,7 @@ static bool slow_work_execute(void)
->  		spin_unlock_irq(&slow_work_queue_lock);
->  	}
-> =20
-> -	work->ops->put_ref(work);
-> +	slow_work_put(work);
->  	return true;
-> =20
->  auto_requeue:
-> @@ -299,6 +308,14 @@ int slow_work_enqueue(struct slow_work *work)
->  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
->  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
->  		} else {
-> +			/*
-> +			 * Callers must ensure that their module has at least
-> +			 * one reference held while the work is enqueued.  We
-> +			 * will acquire another reference here and drop it
-> +			 * once we do the last ops->put_ref()
-> +			 */
-> +			__module_get(work->ops->owner);
-> +
->  			if (work->ops->get_ref(work) < 0)
->  				goto cant_get_ref;
->  			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
-> @@ -313,6 +330,7 @@ int slow_work_enqueue(struct slow_work *work)
->  	return 0;
-> =20
->  cant_get_ref:
-> +	module_put(work->ops->owner);
->  	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
->  	return -EAGAIN;
->  }
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->  =20
-
-
-
---------------enigC57083DD7A8B3524F16917D4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpEuG0ACgkQlOSOBdgZUxnLXACgi02Ox3pcdYe2SXvITMboXoMF
-MWcAn2efVqSaDTAuiWrll0/5b0Jvzyqe
-=303j
------END PGP SIGNATURE-----
-
---------------enigC57083DD7A8B3524F16917D4--
+---
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index bb72ada..f4a0988 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -271,6 +271,8 @@ config BLK_DEV_CRYPTOLOOP
+ 	  instead, which can be configured to be on-disk compatible with the
+ 	  cryptoloop device.
+ 
++source "drivers/block/drbd/Kconfig"
++
+ config BLK_DEV_NBD
+ 	tristate "Network block device support"
+ 	depends on NET
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 7755a5e..33f0046 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -35,5 +35,6 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
+ 
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd/
+ 
+ swim_mod-objs	:= swim.o swim_asm.o
+diff --git a/drivers/block/drbd/Kconfig b/drivers/block/drbd/Kconfig
+new file mode 100644
+index 0000000..f133a89
+--- /dev/null
++++ b/drivers/block/drbd/Kconfig
+@@ -0,0 +1,80 @@
++#
++# DRBD device driver configuration
++#
++
++comment "DRBD disabled because PROC_FS, INET or CONNECTOR not selected"
++	depends on !PROC_FS || !INET || !CONNECTOR
++
++config BLK_DEV_DRBD
++	tristate "DRBD Distributed Replicated Block Device support"
++	depends on PROC_FS && INET && CONNECTOR
++	select LRU_CACHE
++	help
++
++	  NOTE: In order to authenticate connections you have to select
++	  CRYPTO_HMAC and a hash function as well.
++
++	  DRBD is a shared-nothing, synchronously replicated block device. It
++	  is designed to serve as a building block for high availability
++	  clusters and in this context, is a "drop-in" replacement for shared
++	  storage. Simplistically, you could see it as a network RAID 1.
++
++	  Each minor device has a role, which can be 'primary' or 'secondary'.
++	  On the node with the primary device the application is supposed to
++	  run and to access the device (/dev/drbdX). Every write is sent to
++	  the local 'lower level block device' and, across the network, to the
++	  node with the device in 'secondary' state.  The secondary device
++	  simply writes the data to its lower level block device.
++
++	  DRBD can also be used in dual-Primary mode (device writable on both
++	  nodes), which means it can exhibit shared disk semantics in a
++	  shared-nothing cluster.  Needless to say, on top of dual-Primary
++	  DRBD utilizing a cluster file system is necessary to maintain for
++	  cache coherency.
++
++	  For automatic failover you need a cluster manager (e.g. heartbeat).
++	  See also: http://www.drbd.org/, http://www.linux-ha.org
++
++	  If unsure, say N.
++
++config DRBD_TRACE
++	tristate "DRBD tracing"
++	depends on BLK_DEV_DRBD
++	select TRACEPOINTS
++	help
++
++	  Say Y here if you want to be able to trace various events in DRBD.
++
++	  If unsure, say N.
++
++config DRBD_FAULT_INJECTION
++	bool "DRBD fault injection"
++	depends on BLK_DEV_DRBD
++	help
++
++	  Say Y here if you want to simulate IO errors, in order to test DRBD's
++	  behavior.
++
++	  The actual simulation of IO errors is done by writing 3 values to
++	  /sys/module/drbd/parameters/
++
++	  enable_faults: bitmask of...
++	  1	meta data write
++	  2               read
++	  4	resync data write
++	  8	            read
++	  16	data write
++	  32	data read
++	  64	read ahead
++	  128	kmalloc of bitmap
++	  256	allocation of EE (epoch_entries)
++
++	  fault_devs: bitmask of minor numbers
++	  fault_rate: frequency in percent
++
++	  Example: Simulate data write errors on /dev/drbd0 with a probability of 5%.
++		echo 16 > /sys/module/drbd/parameters/enable_faults
++		echo 1 > /sys/module/drbd/parameters/fault_devs
++		echo 5 > /sys/module/drbd/parameters/fault_rate
++
++	  If unsure, say N.
+diff --git a/drivers/block/drbd/Makefile b/drivers/block/drbd/Makefile
+new file mode 100644
+index 0000000..68d1e7c
+--- /dev/null
++++ b/drivers/block/drbd/Makefile
+@@ -0,0 +1,8 @@
++drbd-y := drbd_bitmap.o drbd_proc.o
++drbd-y += drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o
++drbd-y += drbd_main.o drbd_strings.o drbd_nl.o
++
++drbd_trace-y := drbd_tracing.o drbd_strings.o
++
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd.o
++obj-$(CONFIG_DRBD_TRACE)       += drbd_trace.o
