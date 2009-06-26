@@ -1,111 +1,329 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZFZPu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZFZPwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbZFZPu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbZFZPuN
+	id S1757873AbZFZPwk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZFZPwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:50:13 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:56858 "EHLO bear.ext.ti.com"
+	Fri, 26 Jun 2009 11:52:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55618 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbZFZPuL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:50:11 -0400
-From: "Singh, Vimal" 
-	<IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
-       "jzhang@ti.com" <jzhang@ti.com>
-CC: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>
-Date: Fri, 26 Jun 2009 21:15:23 +0530
-Subject: RE: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-Thread-Topic: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-Thread-Index: Acn2cDCwauoIdiwQSz65goR/2Dq2+wABO18Q
-Message-ID: <19F8576C6E063C45BE387C64729E739404321C60D1@dbde02.ent.ti.com>
-References: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>,<1246028984.663.9.camel@macbook.infradead.org>
-In-Reply-To: <1246028984.663.9.camel@macbook.infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1750899AbZFZPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:52:31 -0400
+Date: Fri, 26 Jun 2009 15:51:48 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
+References: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Prepare a small callchain framework
+Message-ID: <tip-8cb76d99d715741637b6d0884f389e17e9cb05d2@git.kernel.org>
+Git-Commit-ID: 8cb76d99d715741637b6d0884f389e17e9cb05d2
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 15:51:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 8:39 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Fri, 2009-06-26 at 21:21 +0800, tom.leiming@gmail.com wrote:
->> From: Ming Lei <tom.leiming@gmail.com>
->>
->> drivers/mtd/nand/omap2.c: In function 'omap_wait':
->> drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this function)
->> drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported only once
->> drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
->> drivers/mtd/nand/omap2.c:557: error: implicit declaration of function 'time_before'
->
-> OK.
->
->> ......
->>
->> drivers/mtd/nand/omap2.c: In function 'omap_wait':
->> drivers/mtd/nand/omap2.c:545: warning: 'status' may be used uninitialized in this function
->
-> Hm, why do you set it to zero? In the (fairly unlikely) case where you
-> never go through the loop at all, because you're preempted until the
-> timeout has completed, what value do you want it to return?
->
-> Don't just make changes by bashing on the keyboard until the compiler
-> shuts up; please apply brain.
->
-> That way, I think you'll notice that the return value from this function
-> is completely screwed anyway.... Vimal? Shouldn't it be returning
-> NAND_STATUS_FAIL in the failure case, not a value read directly from the
-> hardware register? And shouldn't there be a cpu_relax() (or even
-> schedule) in there too?
+Commit-ID:  8cb76d99d715741637b6d0884f389e17e9cb05d2
+Gitweb:     http://git.kernel.org/tip/8cb76d99d715741637b6d0884f389e17e9cb05d2
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Fri, 26 Jun 2009 16:28:00 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 26 Jun 2009 16:47:00 +0200
 
-That's correct David. I think 'cond_resched()' would be fine here.
+perf_counter tools: Prepare a small callchain framework
 
->
->> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
->> ---
->>  drivers/mtd/nand/omap2.c |    4 +++-
->>  1 files changed, 3 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
->> index 0cd76f8..2905c79 100644
->> --- a/drivers/mtd/nand/omap2.c
->> +++ b/drivers/mtd/nand/omap2.c
->> @@ -15,6 +15,7 @@
->>  #include <linux/mtd/nand.h>
->>  #include <linux/mtd/partitions.h>
->>  #include <linux/io.h>
->> +#include <linux/jiffies.h>
->>
->>  #include <asm/dma.h>
->>
->> @@ -541,7 +542,8 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
->>       struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
->>                                                       mtd);
->>       unsigned long timeo = jiffies;
->> -     int status, state = this->state;
->> +     int state = this->state;
->> +     int status = 0;
->>
->>       if (state == FL_ERASING)
->>               timeo += (HZ * 400) / 1000;
-> --
-> David Woodhouse                            Open Source Technology Centre
-> David.Woodhouse@intel.com                              Intel Corporation
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+We plan to display the callchains depending on some user-configurable
+parameters.
+
+To gather the callchains stats from the recorded stream in a fast way,
+this patch introduces an ad hoc radix tree adapted for callchains and also
+a rbtree to sort these callchains once we have gathered every events
+from the stream.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
 
 ---
-Vimal
+ tools/perf/Makefile         |    1 +
+ tools/perf/builtin-report.c |    5 -
+ tools/perf/perf.h           |    5 +
+ tools/perf/util/callchain.c |  174 +++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/util/callchain.h |   33 ++++++++
+ 5 files changed, 213 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index d3887ed..1c1296d 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -329,6 +329,7 @@ LIB_OBJS += util/symbol.o
+ LIB_OBJS += util/color.o
+ LIB_OBJS += util/pager.o
+ LIB_OBJS += util/header.o
++LIB_OBJS += util/callchain.o
+ 
+ BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 681c223..28d1cb2 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -62,11 +62,6 @@ struct ip_event {
+ 	unsigned char __more_data[];
+ };
+ 
+-struct ip_callchain {
+-	u64 nr;
+-	u64 ips[0];
+-};
+-
+ struct mmap_event {
+ 	struct perf_event_header header;
+ 	u32 pid, tid;
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index 16c84fd..a49842b 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -66,4 +66,9 @@ sys_perf_counter_open(struct perf_counter_attr *attr,
+ #define MAX_COUNTERS			256
+ #define MAX_NR_CPUS			256
+ 
++struct ip_callchain {
++	u64 nr;
++	u64 ips[0];
++};
++
+ #endif
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+new file mode 100644
+index 0000000..ad3c285
+--- /dev/null
++++ b/tools/perf/util/callchain.c
+@@ -0,0 +1,174 @@
++/*
++ * Copyright (C) 2009, Frederic Weisbecker <fweisbec@gmail.com>
++ *
++ * Handle the callchains from the stream in an ad-hoc radix tree and then
++ * sort them in an rbtree.
++ *
++ */
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <stdbool.h>
++#include <errno.h>
++
++#include "callchain.h"
++
++
++static void rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
++{
++	struct rb_node **p = &root->rb_node;
++	struct rb_node *parent = NULL;
++	struct callchain_node *rnode;
++
++	while (*p) {
++		parent = *p;
++		rnode = rb_entry(parent, struct callchain_node, rb_node);
++
++		if (rnode->hit < chain->hit)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	rb_link_node(&chain->rb_node, parent, p);
++	rb_insert_color(&chain->rb_node, root);
++}
++
++/*
++ * Once we get every callchains from the stream, we can now
++ * sort them by hit
++ */
++void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
++{
++	struct callchain_node *child;
++
++	list_for_each_entry(child, &node->children, brothers)
++		sort_chain_to_rbtree(rb_root, child);
++
++	if (node->hit)
++		rb_insert_callchain(rb_root, node);
++}
++
++static struct callchain_node *create_child(struct callchain_node *parent)
++{
++	struct callchain_node *new;
++
++	new = malloc(sizeof(*new));
++	if (!new) {
++		perror("not enough memory to create child for code path tree");
++		return NULL;
++	}
++	new->parent = parent;
++	INIT_LIST_HEAD(&new->children);
++	INIT_LIST_HEAD(&new->val);
++	list_add_tail(&new->brothers, &parent->children);
++
++	return new;
++}
++
++static void
++fill_node(struct callchain_node *node, struct ip_callchain *chain, int start)
++{
++	int i;
++
++	for (i = start; i < chain->nr; i++) {
++		struct callchain_list *call;
++
++		call = malloc(sizeof(*chain));
++		if (!call) {
++			perror("not enough memory for the code path tree");
++			return;
++		}
++		call->ip = chain->ips[i];
++		list_add_tail(&call->list, &node->val);
++	}
++	node->val_nr = i - start;
++}
++
++static void add_child(struct callchain_node *parent, struct ip_callchain *chain)
++{
++	struct callchain_node *new;
++
++	new = create_child(parent);
++	fill_node(new, chain, parent->val_nr);
++
++	new->hit = 1;
++}
++
++static void
++split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
++		struct callchain_list *to_split, int idx)
++{
++	struct callchain_node *new;
++
++	/* split */
++	new = create_child(parent);
++	list_move_tail(&to_split->list, &new->val);
++	new->hit = parent->hit;
++	parent->hit = 0;
++	parent->val_nr = idx;
++
++	/* create the new one */
++	add_child(parent, chain);
++}
++
++static int
++__append_chain(struct callchain_node *root, struct ip_callchain *chain,
++		int start);
++
++static int
++__append_chain_children(struct callchain_node *root, struct ip_callchain *chain)
++{
++	struct callchain_node *rnode;
++
++	/* lookup in childrens */
++	list_for_each_entry(rnode, &root->children, brothers) {
++		int ret = __append_chain(rnode, chain, root->val_nr);
++		if (!ret)
++			return 0;
++	}
++	return -1;
++}
++
++static int
++__append_chain(struct callchain_node *root, struct ip_callchain *chain,
++		int start)
++{
++	struct callchain_list *cnode;
++	int i = start;
++	bool found = false;
++
++	/* lookup in the current node */
++	list_for_each_entry(cnode, &root->val, list) {
++		if (cnode->ip != chain->ips[i++])
++			break;
++		if (!found)
++			found = true;
++		if (i == chain->nr)
++			break;
++	}
++
++	/* matches not, relay on the parent */
++	if (!found)
++		return -1;
++
++	/* we match only a part of the node. Split it and add the new chain */
++	if (i < root->val_nr) {
++		split_add_child(root, chain, cnode, i);
++		return 0;
++	}
++
++	/* we match 100% of the path, increment the hit */
++	if (i == root->val_nr) {
++		root->hit++;
++		return 0;
++	}
++
++	return __append_chain_children(root, chain);
++}
++
++void append_chain(struct callchain_node *root, struct ip_callchain *chain)
++{
++	if (__append_chain_children(root, chain) == -1)
++		add_child(root, chain);
++}
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+new file mode 100644
+index 0000000..fa1cd2f
+--- /dev/null
++++ b/tools/perf/util/callchain.h
+@@ -0,0 +1,33 @@
++#ifndef __PERF_CALLCHAIN_H
++#define __PERF_CALLCHAIN_H
++
++#include "../perf.h"
++#include "list.h"
++#include "rbtree.h"
++
++
++struct callchain_node {
++	struct callchain_node	*parent;
++	struct list_head	brothers;
++	struct list_head 	children;
++	struct list_head 	val;
++	struct rb_node		rb_node;
++	int			val_nr;
++	int			hit;
++};
++
++struct callchain_list {
++	unsigned long		ip;
++	struct list_head	list;
++};
++
++static inline void callchain_init(struct callchain_node *node)
++{
++	INIT_LIST_HEAD(&node->brothers);
++	INIT_LIST_HEAD(&node->children);
++	INIT_LIST_HEAD(&node->val);
++}
++
++void append_chain(struct callchain_node *root, struct ip_callchain *chain);
++void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node);
++#endif
