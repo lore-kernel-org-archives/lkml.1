@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZFZJHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbZFZJLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758630AbZFZJHt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 05:07:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756623AbZFZJHk
+	id S1757972AbZFZJLr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 05:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756598AbZFZJLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 05:07:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39048 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755065AbZFZJHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 05:07:39 -0400
-Date: Fri, 26 Jun 2009 11:07:41 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Andreas Dilger <adilger@sun.com>, David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-ID: <20090626090741.GB11450@wotan.suse.de>
-References: <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com> <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com> <20090626011155.GI6472@mit.edu> <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI> <20090626085629.GC12201@wotan.suse.de> <1246006681.27533.22.camel@penberg-laptop>
+	Fri, 26 Jun 2009 05:11:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50993 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756301AbZFZJLi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 05:11:38 -0400
+Subject: Re: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem
+ in sl[aou]b
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Matt Mackall <mpm@selenic.com>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       cl@linux-foundation.org, jdb@comx.dk
+In-Reply-To: <20090626090355.GA11450@wotan.suse.de>
+References: <20090625193137.GA16861@linux.vnet.ibm.com>
+	 <1245965239.21085.393.camel@calx>  <20090626090355.GA11450@wotan.suse.de>
+Date: Fri, 26 Jun 2009 12:11:40 +0300
+Message-Id: <1246007500.27533.23.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246006681.27533.22.camel@penberg-laptop>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 11:58:01AM +0300, Pekka Enberg wrote:
-> On Fri, 2009-06-26 at 10:56 +0200, Nick Piggin wrote:
-> > On Fri, Jun 26, 2009 at 08:16:18AM +0300, Pekka Enberg wrote:
-> > > Hi Ted,
+On Fri, 2009-06-26 at 11:03 +0200, Nick Piggin wrote:
+> On Thu, Jun 25, 2009 at 04:27:19PM -0500, Matt Mackall wrote:
+> > On Thu, 2009-06-25 at 12:31 -0700, Paul E. McKenney wrote:
+> > > Hello!
 > > > 
-> > > On Thu, Jun 25, 2009 at 05:11:25PM -0500, Eric Sandeen wrote:
-> > > > > ecryptfs used to do kmalloc(PAGE_CACHE_SIZE) & virt_to_page on that, and
-> > > > > with SLUB + slub debug, that gave back non-aligned memory, causing
-> > > > > eventual corruption ...
+> > > Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather
+> > > than rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result
+> > > in RCU callbacks accessing a kmem_cache after it had been destroyed.
 > > > 
-> > > On Thu, 25 Jun 2009, Theodore Tso wrote:
-> > > > Grumble.  Any chance we could add an kmem_cache option which requires
-> > > > the memory to be aligned?  Otherwise we could rewrite our own sub-page
-> > > > allocator in ext4 that only handled aligned filesystem block sizes
-> > > > (i.e., 1k, 2k, 4k, etc.) but that would be really silly and be extra
-> > > > code that really should be done once at core functionality.
-> > > 
-> > > We alredy have SLAB_HW_ALIGN but I wonder if this is a plain old bug in 
-> > > SLUB. Christoph, Nick, don't we need something like this in the allocator? 
-> > > Eric, does this fix your case?
+> > > The following untested (might not even compile) patch proposes a fix.
 > > 
-> > Well I don't understand Ted's complaint. kmem_cache_create takes an
-> > alignment argument.
+> > Acked-by: Matt Mackall <mpm@selenic.com>
+> > 
+> > Nick, you'll want to make sure you get this in SLQB.
 > 
-> Yes, but AFAICT, SLUB_DEBUG doesn't respect the given alignment without
-> my patch.
+> Thanks Matt. Paul, I think this should be appropriate for
+> stable@kernel.org too?
 
-Well your patch doesn't hurt (doesn't seem to make much sense to
-use objsize rather than size when calculating alignment). But I
-think alignment should still be calculated OK: calculate_alignemnt
-will always return >= align, and so the next statement will
-round up size to the correct alignment AFAICT.
+Yup, I added cc to the patch. Thanks!
+
+			Pekka
+
