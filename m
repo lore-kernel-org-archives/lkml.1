@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZFZCUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZFZC0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbZFZCUP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 22:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZFZCUA
+	id S1754567AbZFZC0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 22:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZFZC0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 22:20:00 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34291 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbZFZCUA (ORCPT
+	Thu, 25 Jun 2009 22:26:32 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:60358 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbZFZC0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 22:20:00 -0400
-Message-ID: <4A443033.8060401@gmail.com>
-Date: Fri, 26 Jun 2009 04:19:31 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 25 Jun 2009 22:26:31 -0400
+Message-ID: <4A4431D9.10906@oss.ntt.co.jp>
+Date: Fri, 26 Jun 2009 11:26:33 +0900
+From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Oleg Nesterov <oleg@redhat.com>, Jiri Olsa <jolsa@redhat.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: akpm@linux-foundation.org
+CC: jbeulich@novell.com, gregkh@suse.de, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com,
+       yasutake.koichi@jp.panasonic.com
+Subject: Re: [PATCH] PCI: remove pci_dac_dma_... APIs on mn10300
+References: <1228367335.10823.22.camel@sebastian.kern.oss.ntt.co.jp>
+In-Reply-To: <1228367335.10823.22.camel@sebastian.kern.oss.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 26 Jun 2009 04:19:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi a écrit :
-> On Fri, 26 Jun 2009, Eric Dumazet wrote:
+Fernando Luis Vázquez Cao wrote:
+> It seems that mn10300 made it upstream after Jan Beulich's pci_dac_dma_*
+> cleanup work and still defines pci_dac_dma_supported(). This API is not
+> required by the PCI subsystem anymore, so remove it.
 > 
->> Davide Libenzi a écrit :
->>> On Thu, 25 Jun 2009, Oleg Nesterov wrote:
->>>
->>>> Can't really comment this patch, except this all looks reasonable to me.
->>>> Add more CCs.
->>> While this can work, IMO it'd be cleaner to have the smp_mb() moved from 
->>> fs/select.c to the ->poll() function.
->>> Having a barrier that matches another one in another susbsystem, because 
->>> of the special locking logic of such subsystem, is not too shiny IMHO.
->>>
->> Yes but barrier is necessary only if add_wait_queue() was actually called, and __pollwait()
->> does this call.
->>
->> Adding a plain smp_mb() in tcp_poll() for example would slowdown select()/poll() with NULL
->> timeout.
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> ---
 > 
-> Do you think of it as good design adding an MB on a subsystem, because of 
-> the special locking logic of another one?
-> The (eventual) slowdown, IMO can be argued sideways, by saying that 
-> non-socket users will pay the price for their polls.
-> 
+> diff -urNp linux-2.6.28-rc7-orig/include/asm-mn10300/pci.h linux-2.6.28-rc7/include/asm-mn10300/pci.h
+> --- linux-2.6.28-rc7-orig/include/asm-mn10300/pci.h	2008-10-10 07:13:53.000000000 +0900
+> +++ linux-2.6.28-rc7/include/asm-mn10300/pci.h	2008-12-04 13:53:13.000000000 +0900
+> @@ -70,10 +70,6 @@ struct pci_dev;
+>   */
+>  #define PCI_DMA_BUS_IS_PHYS	(1)
+>  
+> -
+> -/* This is always fine. */
+> -#define pci_dac_dma_supported(pci_dev, mask)	(0)
+> -
+>  /* Return the index of the PCI controller for device. */
+>  static inline int pci_controller_num(struct pci_dev *dev)
+>  {
 
-I wont argue with you David, just try to correct bugs.
+It seems this patch slipped through the cracks. I will be replying to this email
+with an updated version rebased against 2.6.31-rc1.
 
-fs/ext4/ioctl.c line 182
+Thanks,
 
-	set_current_state(TASK_INTERRUPTIBLE);
-	add_wait_queue(&EXT4_SB(sb)->ro_wait_queue, &wait);
-	if (timer_pending(&EXT4_SB(sb)->turn_ro_timer)) {
-		schedule();
-
-Another example of missing barrier after add_wait_queue()
-
-Because add_wait_queue() misses a barrier, we have to add one after each call.
-
-Maybe it would be safer to add barrier in add_wait_queue() itself, not in _pollwait().
-
+Fernando
