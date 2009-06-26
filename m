@@ -1,73 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbZFZCIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZFZCKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755724AbZFZCIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 22:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZFZCIe
+	id S1756517AbZFZCKw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 22:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZFZCKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 22:08:34 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:59703 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752242AbZFZCId (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 22:08:33 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 25 Jun 2009 19:04:04 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Eric Dumazet <eric.dumazet@gmail.com>
-cc: Oleg Nesterov <oleg@redhat.com>, Jiri Olsa <jolsa@redhat.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-In-Reply-To: <4A442B65.8040701@gmail.com>
-Message-ID: <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com>
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 25 Jun 2009 22:10:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36650 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752242AbZFZCKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 22:10:43 -0400
+Date: Thu, 25 Jun 2009 19:08:54 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@redhat.com>, David Woodhouse <dwmw2@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, fenghua.yu@intel.com,
+       akpm@linux-foundation.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
+	Mapping Support
+Message-ID: <20090626020854.GG28176@x200.localdomain>
+References: <20090625003841.GA12226@linux-os.sc.intel.com> <20090625095643F.fujita.tomonori@lab.ntt.co.jp> <20090625041605.GA9330@linux-os.sc.intel.com> <20090625134827W.fujita.tomonori@lab.ntt.co.jp> <1245913886.17089.91.camel@macbook.infradead.org> <1245966743.30355.42.camel@macbook.infradead.org> <20090625234342.GD28176@x200.localdomain> <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain> <20090626015205.GE28176@x200.localdomain> <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1480592630-1245981844=:9517"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> Ok. Sounds like what I want is to get this patch through the ia64 people, 
+> after it has gotten some testing there. Since ia64 is where the current 
+> kernel fails anyway, that sounds like the motivation will be there too.
 
---8323329-1480592630-1245981844=:9517
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Yup, I agree.
 
-On Fri, 26 Jun 2009, Eric Dumazet wrote:
-
-> Davide Libenzi a écrit :
-> > On Thu, 25 Jun 2009, Oleg Nesterov wrote:
-> > 
-> >> Can't really comment this patch, except this all looks reasonable to me.
-> >> Add more CCs.
-> > 
-> > While this can work, IMO it'd be cleaner to have the smp_mb() moved from 
-> > fs/select.c to the ->poll() function.
-> > Having a barrier that matches another one in another susbsystem, because 
-> > of the special locking logic of such subsystem, is not too shiny IMHO.
-> > 
-> 
-> Yes but barrier is necessary only if add_wait_queue() was actually called, and __pollwait()
-> does this call.
-> 
-> Adding a plain smp_mb() in tcp_poll() for example would slowdown select()/poll() with NULL
-> timeout.
-
-Do you think of it as good design adding an MB on a subsystem, because of 
-the special locking logic of another one?
-The (eventual) slowdown, IMO can be argued sideways, by saying that 
-non-socket users will pay the price for their polls.
-
-
-
-- Davide
-
-
---8323329-1480592630-1245981844=:9517--
+thanks,
+-chris
