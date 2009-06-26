@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbZFZThA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761635AbZFZThq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761651AbZFZThA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 15:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbZFZTgx
+	id S1761635AbZFZThq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 15:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761260AbZFZThi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 15:36:53 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:45629 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbZFZTgw (ORCPT
+	Fri, 26 Jun 2009 15:37:38 -0400
+Received: from outbound-mail-26.bluehost.com ([69.89.17.191]:60751 "HELO
+	outbound-mail-26.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758855AbZFZThh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 15:36:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=tqTyzyl1JWDx2EcJEZARY/PtB/X/C2mHTXd8I5virDnhfIc6qUtNqw5yfnONYDROSe
-         6va4QI41+qghhGB/JMvV6Mvbnn1DhPatW3eEAoY3zsFtqpSHjJ4I62PEBW/6smVcUj8S
-         LYDydxmf33wTtZDOQ+8wAEBGmVy+DYHgZZyf8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [PATCH] IDE: ide-taskfile.c fix compilation warning and cleanup
-Date: Fri, 26 Jun 2009 21:42:42 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090617-09943-g5d77a4c; KDE/4.2.3; i686; ; )
-Cc: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-References: <1245650973.30547.3.camel@ht.satnam> <200906221250.36318.bzolnier@gmail.com> <1245986290.3568.1.camel@hpdv5.satnam>
-In-Reply-To: <1245986290.3568.1.camel@hpdv5.satnam>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906262142.43102.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Fri, 26 Jun 2009 15:37:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=dFE8XpyKocAtXSASMrj/zqwnRKxEFb1Cyos1whTsW9wHuW0ldr6zrUkfWPBJ7V4yKVTtc1SL2MHdVp+rjhGa3B7yDPFOWCcAdH4v4k2XZYC35hcR9mDjH+PAraCNxL0t;
+Date: Fri, 26 Jun 2009 12:37:36 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH] virtio_blk: add missing __dev{init,exit} markings
+Message-ID: <20090626123736.594969c8@jbarnes-g45>
+In-Reply-To: <200905200010.51786.rusty@rustcorp.com.au>
+References: <1242632349-15894-1-git-send-email-vapier@gentoo.org>
+	<200905200010.51786.rusty@rustcorp.com.au>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 26 June 2009 05:18:10 Jaswinder Singh Rajput wrote:
-> On Mon, 2009-06-22 at 12:50 +0200, Bartlomiej Zolnierkiewicz wrote:
+On Wed, 20 May 2009 00:10:51 +0930
+Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> > Besides I would suggest splitting the patch on fix and cleanup parts.
+> On Mon, 18 May 2009 05:09:09 pm Mike Frysinger wrote:
+> > -static int virtblk_probe(struct virtio_device *vdev)
+> > +static int __devinit virtblk_probe(struct virtio_device *vdev)
 > 
-> Here is the cleanup part:
+> This makes sense, I think, but then it implies that
+> virtio_dev_probe() should also be __devinit, right?
 > 
-> [PATCH] IDE: ide-taskfile.c fix style problems
+> And I look at pci_bus_probe(), and it's not __devinit.
 > 
-> Fix trivial style problems:
-> 
-> WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
-> WARNING: space prohibited between function name and open parenthesis '('
-> WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> ERROR: do not use C99 // comments X 2
-> ERROR: trailing statements should be on next line
-> ERROR: trailing whitespace
-> ERROR: switch and case should be at the same indent
-> WARNING: line over 80 characters
-> 
-> total: 5 errors, 4 warnings
-> 
-> Also removed dead code
-> 
-> Also used pr_err() to avoid line breaks
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Is the PCI code just slack?
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+I wouldn't be surprised if some annotations were missing or incorrect
+given the churn in hotplug lately, but I can't find that particular
+symbol...
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
