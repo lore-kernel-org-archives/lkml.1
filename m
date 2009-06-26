@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760865AbZFZQJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbZFZQNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760865AbZFZQJd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbZFZQJJ
+	id S1760742AbZFZQNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 12:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZFZQNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:09:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37265 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760745AbZFZQJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:09:08 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] cfq-iosched: move cfqq initialization out of cfq_find_alloc_queue()
-References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com>
-	<1246007120-24034-2-git-send-email-jens.axboe@oracle.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Fri, 26 Jun 2009 12:09:05 -0400
-In-Reply-To: <1246007120-24034-2-git-send-email-jens.axboe@oracle.com> (Jens
-	Axboe's message of "Fri, 26 Jun 2009 11:05:19 +0200")
-Message-ID: <x49bpob9dum.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 26 Jun 2009 12:13:12 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42322 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751252AbZFZQNM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 12:13:12 -0400
+Subject: Re: kmemleak suggestion (long message)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20090626085056.GC3451@localdomain.by>
+References: <20090625221816.GA3480@localdomain.by>
+	 <20090626065923.GA14078@elte.hu>
+	 <84144f020906260007u3e79086bv91900e487ba0fb50@mail.gmail.com>
+	 <20090626081452.GB3451@localdomain.by>
+	 <1246004270.27533.16.camel@penberg-laptop>
+	 <20090626085056.GC3451@localdomain.by>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 26 Jun 2009 17:12:46 +0100
+Message-Id: <1246032766.30717.44.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Jun 2009 16:12:47.0145 (UTC) FILETIME=[F1E2C990:01C9F678]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+On Fri, 2009-06-26 at 11:50 +0300, Sergey Senozhatsky wrote:
+> On (06/26/09 11:17), Pekka Enberg wrote:
+> > Well, the thing is, I am not sure it's needed if we implement Ingo's
+> > suggestion. After all, syslog is no longer spammed very hard and you can
+> > do all the filtering in userspace when you read /debug/mm/kmemleak file,
+> > no?
+> 
+> Well, we just move 'spam' out of syslog. Not dealing with 'spam' itself.
+> I'm not sure about 'filtering in userspace when you read'. Suppose I use
+> 'tail -f /debug/mm/kmemleak'. How can I easy suppress printing of (for example):
 
-> We're going to be needing that init code outside of that function
-> to get rid of the __GFP_NOFAIL in cfqq allocation.
->
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+I had a look at your patch and I tend to agree with Pekka. It really
+adds too much complexity for something that could be easily done in user
+space (could be more concise or even written in perl, awk, sed, python
+etc.):
 
-This looks pretty straight-forward.
+cat /sys/kernel/debug/kmemleak | tr "\n" "#" \
+	| sed -e "s/#unreferenced/\nunreferenced/g" \
+	| grep -v "tty_ldisc_try_get" | tr "#" "\n"
 
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+It would have made sense with the output in syslog but I just removed
+this feature.
+
+As for "tail -f", I'm not sure it would work anyway because of the way
+the seqfile content is generated. New detected leaks aren't necessarily
+appended to the kmemleak file. They are always listed in the order they
+were allocated.
+
+Thanks anyway.
+
+-- 
+Catalin
+
