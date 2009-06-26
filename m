@@ -1,115 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752242AbZFZBuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZFZByB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752242AbZFZBuj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 21:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZFZBua
+	id S1753753AbZFZByB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 21:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZFZBxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 21:50:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:35884 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbZFZBu3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 21:50:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=QSn/1zcbvvsEjfYNV6qC/mo9oWXvO4qTqMqoXLd3ArCJKPSrHs9rPJF4fvK3dQtkJK
-         UwvxQ8VZk2GpoJ2ldmlx5Y6wvtQyC3Hu9fA3NZWaDhJtpte4loL1hzYupBJ/bTaH4Qrb
-         6VGA3f6Q3Kt6o+TmHxGya9C9bwvyjx2ysYnuA=
-Message-ID: <4A442964.2010406@gmail.com>
-Date: Fri, 26 Jun 2009 10:50:28 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 25 Jun 2009 21:53:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42149 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752242AbZFZBxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 21:53:51 -0400
+Date: Thu, 25 Jun 2009 18:52:05 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Wright <chrisw@redhat.com>, David Woodhouse <dwmw2@infradead.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, fenghua.yu@intel.com,
+       akpm@linux-foundation.org, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       linux-ia64@vger.kernel.org
+Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
+	Mapping Support
+Message-ID: <20090626015205.GE28176@x200.localdomain>
+References: <20090625003841.GA12226@linux-os.sc.intel.com> <20090625095643F.fujita.tomonori@lab.ntt.co.jp> <20090625041605.GA9330@linux-os.sc.intel.com> <20090625134827W.fujita.tomonori@lab.ntt.co.jp> <1245913886.17089.91.camel@macbook.infradead.org> <1245966743.30355.42.camel@macbook.infradead.org> <20090625234342.GD28176@x200.localdomain> <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain>
 MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com,
-       eric.dumazet@gmail.com
-Subject: Re: [PATCH] net: fix race in the receive/select
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com>
-In-Reply-To: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Jiri Olsa wrote:
-> Adding memory barrier to the __pollwait function paired with 
-> receive callbacks.  The smp_mb__after_lock define is added, 
-> since {read|write|spin}_lock() on x86 are full memory barriers.
+* Linus Torvalds (torvalds@linux-foundation.org) wrote:
+> On Thu, 25 Jun 2009, Chris Wright wrote:
+> >
+> > From: Chris Wright <chrisw@redhat.com>
+> > Subject: [PATCH] intel-iommu: fix Identity Mapping to be arch independent
+> > 
+> > Drop the e820 scanning and use existing function for finding valid RAM
+> > regions to add to 1:1 mapping.
+> > 
+> > Signed-off-by: Chris Wright <chrisw@redhat.com>
 > 
-> The race fires, when following code paths meet, and the tp->rcv_nxt and
-> __add_wait_queue updates stay in CPU caches.
+> Is this tested on something that actually uses IOMMU?
 > 
-> 
-> CPU1                         CPU2
-> 
-> sys_select                   receive packet
->   ...                        ...
->   __add_wait_queue           update tp->rcv_nxt
->   ...                        ...
->   tp->rcv_nxt check          sock_def_readable
->   ...                        {
->   schedule                      ...
->                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
->                                         wake_up_interruptible(sk->sk_sleep)
->                                 ...
->                              }
-> 
-> If there was no cache the code would work ok, since the wait_queue and
-> rcv_nxt are opposit to each other.
-> 
-> Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> tp->rcv_nxt and will return with new data mask.  
-> In both cases the process (CPU1) is being added to the wait queue, so the
-> waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> 
-> The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> endup calling schedule and sleep forever if there are no more data on the
-> socket.
+> If so, of the patches I've seen so far, this is obviously my favorite.
 
-So, the problem is the half barrier semantics of spin_lock on CPU1's
-side and lack of any barrier (read for tp->rcv_nxt check can creep
-above the queuelist update) in waitqueue_active() check on CPU2's side
-(read for waitqueue list can creep above tcv_nxt update).  Am I
-understanding it right?
+I tested it on x86; works fine and creates a slightly tighter set of page
+tables (matching to e820).  But I don't have an IA-64 box w/ an IOMMU.
 
-This is a little bit scary.  The interface kind of suggests that they
-have strong enough barrier semantics (well, I would assume that).  I
-wonder whether there are more more places where this kind of race
-condition exists.
+It does have one problem, however, the graphics work around code isn't
+compiled in on IA-64, so it needs:
 
-> @@ -219,6 +219,10 @@ static void __pollwait(struct file *filp, wait_queue_head_t *wait_address,
->  	init_waitqueue_func_entry(&entry->wait, pollwake);
->  	entry->wait.private = pwq;
->  	add_wait_queue(wait_address, &entry->wait);
-> +
-> +	/* This memory barrier is paired with the smp_mb__after_lock
-> +	 * in the sk_has_sleeper. */
-> +	smp_mb();
+(a) a small ifdef move
+(b) to be tested on IA-64, since my hypothesis was based on the fact that
+it was already being used on IA-64
 
-I'm not entirely sure this is the correct place to do it while the mb
-for the other side lives in network code.  Wouldn't it be better to
-move this memory barrier to network select code?  It's strange for an
-API to have only single side of a barrier pair and leave the other to
-the API user.
+Here's v2, fixing (a) above (compile tested on IA-64), still needing (b).
 
-Also, maybe we need smp_mb__after_unlock() too?  Maybe
-add_wait_queue_mb() possibly paired with wait_queue_active_mb() is
-better?  On x86, it wouldn't make any difference tho.
+thanks,
+-chris
+---
+From: Chris Wright <chrisw@redhat.com>
+Subject: [PATCH v2] intel-iommu: fix Identity Mapping to be arch independent
 
-One more thing, can you please use fully winged style for multiline
-comments?
+Drop the e820 scanning and use existing function for finding valid RAM
+regions to add to 1:1 mapping.
 
-Thanks.
+Signed-off-by: Chris Wright <chrisw@redhat.com>
+---
+ drivers/pci/intel-iommu.c |   19 +++++--------------
+ 1 files changed, 5 insertions(+), 14 deletions(-)
 
--- 
-tejun
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index e53eacd..420afa8 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -39,7 +39,6 @@
+ #include <linux/sysdev.h>
+ #include <asm/cacheflush.h>
+ #include <asm/iommu.h>
+-#include <asm/e820.h>
+ #include "pci.h"
+ 
+ #define ROOT_SIZE		VTD_PAGE_SIZE
+@@ -1908,7 +1907,6 @@ static inline int iommu_prepare_rmrr_dev(struct dmar_rmrr_unit *rmrr,
+ 		rmrr->end_address + 1);
+ }
+ 
+-#ifdef CONFIG_DMAR_GFX_WA
+ struct iommu_prepare_data {
+ 	struct pci_dev *pdev;
+ 	int ret;
+@@ -1943,6 +1941,7 @@ static int __init iommu_prepare_with_active_regions(struct pci_dev *pdev)
+ 	return data.ret;
+ }
+ 
++#ifdef CONFIG_DMAR_GFX_WA
+ static void __init iommu_prepare_gfx_mapping(void)
+ {
+ 	struct pci_dev *pdev = NULL;
+@@ -2081,7 +2080,6 @@ static int domain_add_dev_info(struct dmar_domain *domain,
+ 
+ static int iommu_prepare_static_identity_mapping(void)
+ {
+-	int i;
+ 	struct pci_dev *pdev = NULL;
+ 	int ret;
+ 
+@@ -2091,17 +2089,10 @@ static int iommu_prepare_static_identity_mapping(void)
+ 
+ 	printk(KERN_INFO "IOMMU: Setting identity map:\n");
+ 	for_each_pci_dev(pdev) {
+-		for (i = 0; i < e820.nr_map; i++) {
+-			struct e820entry *ei = &e820.map[i];
+-
+-			if (ei->type == E820_RAM) {
+-				ret = iommu_prepare_identity_map(pdev,
+-					ei->addr, ei->addr + ei->size);
+-				if (ret)  {
+-					printk(KERN_INFO "1:1 mapping to one domain failed.\n");
+-					return -EFAULT;
+-				}
+-			}
++		ret = iommu_prepare_with_active_regions(pdev);
++		if (ret) {
++			printk(KERN_INFO "1:1 mapping to one domain failed.\n");
++			return -EFAULT;
+ 		}
+ 		ret = domain_add_dev_info(si_domain, pdev);
+ 		if (ret)
