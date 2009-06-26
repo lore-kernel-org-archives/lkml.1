@@ -1,80 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZFZRoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759798AbZFZRos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753552AbZFZRoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:44:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbZFZRoR
+	id S1759798AbZFZRos (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755011AbZFZRok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:44:17 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:46482 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZFZRoR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:44:17 -0400
-Date: Fri, 26 Jun 2009 11:44:18 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rc1: parisc: multiple PCI BAR collisions
-Message-ID: <20090626174418.GX19977@parisc-linux.org>
-References: <a4423d670906260158q15080049ue516c3d454f4afbf@mail.gmail.com> <20090626170304.GA20871@lackof.org>
-MIME-Version: 1.0
+	Fri, 26 Jun 2009 13:44:40 -0400
+Received: from mailq1.tnnet.fi ([217.112.240.127]:57832 "EHLO mailq1.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbZFZRoj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:44:39 -0400
+X-Greylist: delayed 672 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jun 2009 13:44:38 EDT
+Message-ID: <4A450658.4F89D9D5@users.sourceforge.net>
+Date: Fri, 26 Jun 2009 20:33:12 +0300
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: linux-crypto@nl.linux.org
+CC: linux-kernel@vger.kernel.org
+Subject: Announce loop-AES-v3.2g file/swap crypto package
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626170304.GA20871@lackof.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 11:03:04AM -0600, Grant Grundler wrote:
-> On Fri, Jun 26, 2009 at 12:58:22PM +0400, Alexander Beregalov wrote:
-> > Hi
-> > 
-> > Hardware is HP j6000.
-> > It cannot initialize many PCI devices (sym53c8xx, tulip, STI,
-> > usb(onci)) and cannot boot (no root device).
-> > Messages like this:
-> > sym53c8xx 0:0:0f.0: device not available because of BAR 1 [0xf4005000
-> > - 0xf40053ff] collisions.
-> 
-> I'm pretty sure this is a problem of the root bus resources not getting
-> setup correctly. I'm not clear on what's wrong. jejb and willy are looking
-> at it now as well.
+loop-AES changes since previous release:
+- Fixed losetup -f bug in ancient util-linux-2.12r patch. This was actually
+  a link goof that linked wrong version of a function. Newer util-linux-ng
+  version was not affected. Bug reported by Phil Grundig.
+- Worked around block layer interface breakage on linux-2.6.31-rc1 kernel.
 
-This patch fixes it for me.
+bzip2 compressed tarball is here:
 
-----
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2g.tar.bz2
+    md5sum c54bdd2b01f57fee1a93a5bbbd3ce505
 
-Fix PCI resource allocation on non-PAT SBA machines
-
-We weren't marking the resources as memory resources, so they weren't
-being found by pci_claim_resource().
-
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
-
-diff --git a/drivers/parisc/sba_iommu.c b/drivers/parisc/sba_iommu.c
-index d46dd57..123d8fe 100644
---- a/drivers/parisc/sba_iommu.c
-+++ b/drivers/parisc/sba_iommu.c
-@@ -2057,6 +2057,7 @@ void sba_directed_lmmio(struct parisc_device *pci_hba, struct resource *r)
- 		r->start = (base & ~1UL) | PCI_F_EXTEND;
- 		size = ~ READ_REG32(reg + LMMIO_DIRECT0_MASK);
- 		r->end = r->start + size;
-+		r->flags = IORESOURCE_MEM;
- 	}
- }
- 
-@@ -2093,4 +2094,5 @@ void sba_distributed_lmmio(struct parisc_device *pci_hba, struct resource *r )
- 	size = (~READ_REG32(sba->sba_hpa + LMMIO_DIST_MASK)) / ROPES_PER_IOC;
- 	r->start += rope * (size + 1);	/* adjust base for this rope */
- 	r->end = r->start + size;
-+	r->flags = IORESOURCE_MEM;
- }
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2g.tar.bz2.sign
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
