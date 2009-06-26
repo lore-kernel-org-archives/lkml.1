@@ -1,91 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbZFZPJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZFZPOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbZFZPJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbZFZPJt
+	id S1754293AbZFZPOJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZFZPN4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:09:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57908 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751269AbZFZPJs (ORCPT
+	Fri, 26 Jun 2009 11:13:56 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:37233 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751269AbZFZPNz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:09:48 -0400
-Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-From: David Woodhouse <dwmw2@infradead.org>
-To: tom.leiming@gmail.com, jzhang@ti.com, vimalsingh@ti.com
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       david-b@pacbell.net
-In-Reply-To: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
-References: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
+	Fri, 26 Jun 2009 11:13:55 -0400
+Subject: Re: [PATCH 01/10] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, kyle@mcmartin.ca, cl@linux-foundation.org,
+       Jesper.Nilsson@axis.com, benh@kernel.crashing.org,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Paul Mundt <lethal@linux-sh.org>, Russell King <rmk@arm.linux.org.uk>,
+       Mikael Starvik <starvik@axis.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Bryan Wu <cooloney@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <4A42E72D.2060904@kernel.org>
+References: <1245825924-30412-1-git-send-email-tj@kernel.org>
+	 <1245825924-30412-2-git-send-email-tj@kernel.org>
+	 <1245887275.4022.619.camel@mulgrave.site>  <4A42E72D.2060904@kernel.org>
 Content-Type: text/plain
-Date: Fri, 26 Jun 2009 16:09:44 +0100
-Message-Id: <1246028984.663.9.camel@macbook.infradead.org>
+Date: Fri, 26 Jun 2009 10:13:49 -0500
+Message-Id: <1246029229.3925.20.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-26 at 21:21 +0800, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
+On Thu, 2009-06-25 at 11:55 +0900, Tejun Heo wrote:
+> James Bottomley wrote:
+> > On Wed, 2009-06-24 at 15:45 +0900, Tejun Heo wrote:
+> >> This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
+> >> dynamic percpu allocator.  The first chunk is allocated using
+> >> embedding helper and 8k is reserved for modules.  This ensures that
+> >> the new allocator behaves almost identically to the original allocator
+> >> as long as static percpu variables are concerned, so it shouldn't
+> >> introduce much breakage.
+> >>
+> >> s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
+> >> range limit the addressing model imposes.  Unfortunately, this breaks
+> >> if the address is specified using a variable, so for now, the two
+> >> archs aren't converted.
+> >>
+> >> The following architectures are affected by this change.
+> >>
+> >> * sh
+> >> * arm
+> >> * cris
+> >> * mips
+> >> * sparc(32)
+> >> * blackfin
+> >> * avr32
+> >> * parisc (broken, under investigation)
+> > 
+> > OK, I thought I'd investigate this.  Unfortunately, your git tree
+> > doesn't build when pulled into head ... could you update?
+> > 
+> > mm/percpu.c: In function 'setup_per_cpu_areas':
+> > mm/percpu.c:2007: error: too many arguments to function 'pcpu_embed_first_chunk'
 > 
-> drivers/mtd/nand/omap2.c: In function 'omap_wait':
-> drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this function)
-> drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported only once
-> drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
-> drivers/mtd/nand/omap2.c:557: error: implicit declaration of function 'time_before'
-
-OK.
-
-> ......
+> Hmm... strange.  I don't see such failures.  Can you please try the
+> following git tree?
 > 
-> drivers/mtd/nand/omap2.c: In function 'omap_wait':
-> drivers/mtd/nand/omap2.c:545: warning: 'status' may be used uninitialized in this function
-
-Hm, why do you set it to zero? In the (fairly unlikely) case where you
-never go through the loop at all, because you're preempted until the
-timeout has completed, what value do you want it to return?
-
-Don't just make changes by bashing on the keyboard until the compiler
-shuts up; please apply brain.
-
-That way, I think you'll notice that the return value from this function
-is completely screwed anyway.... Vimal? Shouldn't it be returning
-NAND_STATUS_FAIL in the failure case, not a value read directly from the
-hardware register? And shouldn't there be a cpu_relax() (or even
-schedule) in there too?
-
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  drivers/mtd/nand/omap2.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-james
 > 
-> diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
-> index 0cd76f8..2905c79 100644
-> --- a/drivers/mtd/nand/omap2.c
-> +++ b/drivers/mtd/nand/omap2.c
-> @@ -15,6 +15,7 @@
->  #include <linux/mtd/nand.h>
->  #include <linux/mtd/partitions.h>
->  #include <linux/io.h>
-> +#include <linux/jiffies.h>
->  
->  #include <asm/dma.h>
->  
-> @@ -541,7 +542,8 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
->  	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
->  							mtd);
->  	unsigned long timeo = jiffies;
-> -	int status, state = this->state;
-> +	int state = this->state;
-> +	int status = 0;
->  
->  	if (state == FL_ERASING)
->  		timeo += (HZ * 400) / 1000;
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+> The contains all posted percpu patches and pulls in the current
+> linus#master (rc1).
+
+It still fails with the above error.
+
+If you look at your own file:
+
+http://git.kernel.org/?p=linux/kernel/git/tj/percpu.git;a=blob;f=mm/percpu.c;h=b11ae7af3f7a214717d6670edb2985368efa8391;hb=for-james
+
+on line 1456 pcpu_embed_first_chunk is defined with *three* arguments
+
+on line 2006 it's used with *four* arguments
+
+This is what the compiler doesn't like.
+
+James
+
 
