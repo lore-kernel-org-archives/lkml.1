@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZFZFah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755574AbZFZFbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZFZFah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 01:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752912AbZFZFaa
+	id S1755574AbZFZFbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 01:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZFZFbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 01:30:30 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:56200 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752254AbZFZFaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 01:30:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nOVvSOB6/9l1cAgLbjh8kh6LpcvHyvNthhsp3ECZIKpNuMPxHOUzhd6BaqGyLtmi6x
-         YWnnS8ubgm2dHm0gwfuvJwx5yZ6mlL3YGc67oS7Rp7bgQJgz5F2UH/yyaDNQbnUNc89X
-         wumSiy0nvtlq9ZQA6u0OyjUlCoA6qy4aPdqyc=
-MIME-Version: 1.0
-In-Reply-To: <1245352632.7508.1.camel@localhost.localdomain>
-References: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-	 <1245352632.7508.1.camel@localhost.localdomain>
-Date: Fri, 26 Jun 2009 14:30:32 +0900
-Message-ID: <aec7e5c30906252230s62196e1fr5671aa591f1869a3@mail.gmail.com>
-Subject: Re: [PATCH] clocksource: save mult_orig in clocksource_disable()
-From: Magnus Damm <magnus.damm@gmail.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, lethal@linux-sh.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jun 2009 01:31:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35594 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752912AbZFZFbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 01:31:06 -0400
+Date: Fri, 26 Jun 2009 15:31:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: hid tree build failure
+Message-Id: <20090626153100.de647d08.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Jun_2009_15_31_00_+1000_rOc.ENEUxaYezNms"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 4:17 AM, john stultz<johnstul@us.ibm.com> wrote:
-> On Fri, 2009-06-19 at 00:24 +0900, Magnus Damm wrote:
->> From: Magnus Damm <damm@igel.co.jp>
->>
->> Save clocksource mult_orig in clocksource_disable().
->>
->> To fix the common case where ->enable() does not setup
->> mult, make sure mult_orig is saved in mult on disable.
->>
->> Also add comments to explain why we do this.
->>
->> Signed-off-by: Magnus Damm <damm@igel.co.jp>
->
-> Acked-by: John Stultz <johnstul@us.ibm.com>
->
-> Thomas, Andrew, please push this for 2.6.31.
+--Signature=_Fri__26_Jun_2009_15_31_00_+1000_rOc.ENEUxaYezNms
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This one is slowly making it's way in I suppose?
+Hi Jiri,
 
-/ magnus
+Today's linux-next build (sparc32 defconfig) failed like this:
+
+drivers/hid/hid-core.c:862:34: error: macro "hid_dump_input" passed 3 argum=
+ents, but takes just 2
+drivers/hid/hid-core.c: In function 'hid_process_event':
+drivers/hid/hid-core.c:862: error: 'hid_dump_input' undeclared (first use i=
+n this function)
+drivers/hid/hid-core.c:862: error: (Each undeclared identifier is reported =
+only once
+drivers/hid/hid-core.c:862: error: for each function it appears in.)
+drivers/hid/hid-core.c:984:68: error: macro "hid_dump_input" passed 3 argum=
+ents, but takes just 2
+drivers/hid/hid-core.c: In function 'hid_set_field':
+drivers/hid/hid-core.c:984: error: 'hid_dump_input' undeclared (first use i=
+n this function)
+drivers/hid/hid-core.c: In function 'hid_input_report':
+drivers/hid/hid-core.c:1090: error: 'HID_DEBUG_BUFSIZE' undeclared (first u=
+se in this function)
+
+Caused by commit cd667ce24796700e1a0e6e7528efc61c96ff832e ("HID: use
+debugfs for events/reports dumping") which modified the prototype for
+hid_dump_input, but not the !CONFIG_DEBUG_FS version.  It also added
+HID_DEBUG_BUFSIZE when CONFIG_DEBUG_FS, but used it otherwise.
+
+I have reverted that commit for today (along with commit
+a635f9dd83f3382577f4544a96df12356e951a40 ("HID: use debugfs for report
+dumping descriptor") which doesn't build without the other one).
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__26_Jun_2009_15_31_00_+1000_rOc.ENEUxaYezNms
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpEXRQACgkQjjKRsyhoI8zJKQCgtLAYQTqNkOoTARRi1RiXqWdi
+GN4AoKUlsqQG/5AEF2P+aijwqKgkZRg6
+=YnSZ
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Jun_2009_15_31_00_+1000_rOc.ENEUxaYezNms--
