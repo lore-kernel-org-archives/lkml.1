@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZFZIKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZFZINk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZFZIKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZFZIKZ
+	id S1753357AbZFZINk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZFZINZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:10:25 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:58087 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225AbZFZIKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:10:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vj8VuYybx0ai5MkAy5cWLSUbYPSRzDzkaAB0+uQWZgK3/gv1CAAT0WOA512p3AhKpC
-         JPcAu6XWBONoJz98111gaDoWQyDMu+bikwYDUyVwdTBS3qMyNZt987wuSSqTjgAkVf7d
-         Z7Zc+Hx8D3GfRvghrBAQjrdPXn7JuBYroem5I=
-Date: Fri, 26 Jun 2009 08:10:19 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-Message-ID: <20090626081018.GC5204@ff.dom.local>
-References: <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626054230.GA5204@ff.dom.local>
+	Fri, 26 Jun 2009 04:13:25 -0400
+Received: from mail.open.by ([193.232.92.17]:58264 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752533AbZFZINY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 04:13:24 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8838 [Jun 25 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Fri, 26 Jun 2009 11:14:52 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: kmemleak suggestion (long message)
+Message-ID: <20090626081452.GB3451@localdomain.by>
+References: <20090625221816.GA3480@localdomain.by>
+ <20090626065923.GA14078@elte.hu>
+ <84144f020906260007u3e79086bv91900e487ba0fb50@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090626054230.GA5204@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <84144f020906260007u3e79086bv91900e487ba0fb50@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 05:42:30AM +0000, Jarek Poplawski wrote:
-> On 26-06-2009 05:14, Davide Libenzi wrote:
-> > On Fri, 26 Jun 2009, Eric Dumazet wrote:
-> > 
-> >> I wont argue with you David, just try to correct bugs.
-> >>
-> >> fs/ext4/ioctl.c line 182
-> >>
-> >> 	set_current_state(TASK_INTERRUPTIBLE);
-> >> 	add_wait_queue(&EXT4_SB(sb)->ro_wait_queue, &wait);
-> >> 	if (timer_pending(&EXT4_SB(sb)->turn_ro_timer)) {
-> >> 		schedule();
-> >>
-> >> Another example of missing barrier after add_wait_queue()
-> >>
-> >> Because add_wait_queue() misses a barrier, we have to add one after each call.
-> >>
-> >> Maybe it would be safer to add barrier in add_wait_queue() itself, not in _pollwait().
-> > 
-> > Not all the code that uses add_wait_queue() does need to have the MB,
-> > like code that does the most common pattern:
-> > 
-> > xxx_poll(...) {
-> > 	poll_wait(...);
-> > 	lock();
-> > 	flags = calc_flags(->status);
-> > 	unlock();
-> > 	return flags;
-> > }
-> > 
-> > xxx_update(...) {
-> > 	lock();
-> > 	->status = ...;
-> > 	unlock();
-> > 	if (waitqueue_active())
-> > 		wake_up();
-> > }
-> > 
-> > It's the code that does the lockless flags calculation in ->poll that 
-> > might need it.
-> > I dunno what the amount of changes are, but cross-matching MB across 
-> > subsystems does not look nice.
-> > IMHO that's a detail of the subsystem locking, and should be confined 
-> > inside the subsystem itself.
-> > No?
+On (06/26/09 10:07), Pekka Enberg wrote:
+> > This is not acceptable.
+> >
+> > Instead it should perhaps print _at most_ a single line every few
+> > minutes, printing a summary about _how many_ leaked entries it
+> > suspects, and should offer a /debug/mm/kmemleak style of file where
+> > the entries can be read out from.
 > 
-> How about poll_wait_mb() and waitqueue_active_mb() (with mb and
-> additional check for NULL of wait_queue_head)?
+> Yup, makes tons of sense.
+> 
+>                                      Pekka
+> 
 
-Hmm... But considering Eric's arguments I see it would be hard
-/impossible to do it with the current api, so let's forget.
+Hello Pekka,
+What do you about suggested ability to filter/block "unwanted" reports?
+IMHO it makes sense.
 
-Jarek P.
+	Sergey
