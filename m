@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZFZCBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZFZCBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZFZCBI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 22:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZFZCA4
+	id S1755915AbZFZCBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 22:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZFZCBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 22:00:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53564 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752293AbZFZCAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 22:00:55 -0400
-Date: Thu, 25 Jun 2009 19:00:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Wright <chrisw@redhat.com>
-cc: David Woodhouse <dwmw2@infradead.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, fenghua.yu@intel.com,
-       akpm@linux-foundation.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
- Mapping Support
-In-Reply-To: <20090626015205.GE28176@x200.localdomain>
-Message-ID: <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain>
-References: <20090625003841.GA12226@linux-os.sc.intel.com> <20090625095643F.fujita.tomonori@lab.ntt.co.jp> <20090625041605.GA9330@linux-os.sc.intel.com> <20090625134827W.fujita.tomonori@lab.ntt.co.jp> <1245913886.17089.91.camel@macbook.infradead.org>
- <1245966743.30355.42.camel@macbook.infradead.org> <20090625234342.GD28176@x200.localdomain> <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain> <20090626015205.GE28176@x200.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 25 Jun 2009 22:01:15 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40999 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752666AbZFZCBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 22:01:13 -0400
+Date: Fri, 26 Jun 2009 12:01:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+Message-Id: <20090626120111.ef8622ba.sfr@canb.auug.org.au>
+In-Reply-To: <20090625145155.GA6383@c2.user-mode-linux.org>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+	<4A3F4448.30502@panasas.com>
+	<20090622085735.GB6499@cr0.nay.redhat.com>
+	<20090622205226.fee30ba8.sfr@canb.auug.org.au>
+	<20090625104901.GG6374@cr0.nay.redhat.com>
+	<20090625145155.GA6383@c2.user-mode-linux.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Jun_2009_12_01_11_+1000_YNeEzb3njtCdI8sg"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__26_Jun_2009_12_01_11_+1000_YNeEzb3njtCdI8sg
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, 25 Jun 2009 10:51:55 -0400 Jeff Dike <jdike@addtoit.com> wrote:
+>
+> On Thu, Jun 25, 2009 at 06:49:01PM +0800, Amerigo Wang wrote:
+> > make ARCH=3Dum SUBARCH=3Dppc? Or something similar...
+>=20
+> It would need to be
+> 	make ARCH=3Dum=20
+> with an x86 cross-compiler.
 
-On Thu, 25 Jun 2009, Chris Wright wrote:
-> I tested it on x86; works fine and creates a slightly tighter set of page
-> tables (matching to e820).  But I don't have an IA-64 box w/ an IOMMU.
-> 
-> It does have one problem, however, the graphics work around code isn't
-> compiled in on IA-64, so it needs:
+On out PowerPC host I am using
 
-Ok. Sounds like what I want is to get this patch through the ia64 people, 
-after it has gotten some testing there. Since ia64 is where the current 
-kernel fails anyway, that sounds like the motivation will be there too.
+	make ARCH=3Dum SUBARCH=3Di386 CROSS_COMPILE=3D<path to i386 cross compiler>
 
-And there's little point in me merging it until it's been tested to fix 
-the actual problem we have now.
+I am just building defconfig, would another config also be useful?
 
-Thanks,
+Currently plain "make ARCH=3Dum" on PowerPC doesn't appear to work.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-		Linus
+--Signature=_Fri__26_Jun_2009_12_01_11_+1000_YNeEzb3njtCdI8sg
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpEK+cACgkQjjKRsyhoI8wSkwCgkjJ4mO9aS59K8scR2ibpLv9S
+cRIAn0TGIPSRwn6YkvVzBvWb4a50HEId
+=CcyU
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Jun_2009_12_01_11_+1000_YNeEzb3njtCdI8sg--
