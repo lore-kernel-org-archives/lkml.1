@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZFZHUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbZFZHWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757293AbZFZHUM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZFZHUE
+	id S1757170AbZFZHWe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFZHW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:20:04 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50229 "EHLO mx2.mail.elte.hu"
+	Fri, 26 Jun 2009 03:22:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51634 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbZFZHUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:20:03 -0400
-Date: Fri, 26 Jun 2009 09:19:55 +0200
+	id S1751334AbZFZHW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 03:22:26 -0400
+Date: Fri, 26 Jun 2009 09:22:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "H. Peter Anvin" <hpa@linux.intel.com>
-Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
-Message-ID: <20090626071955.GG14078@elte.hu>
-References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+Subject: Re: [PATCH 2/9] x86: introduce a set of platform feature flags
+Message-ID: <20090626072218.GH14078@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E1@orsmsx508.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+In-Reply-To: <43F901BD926A4E43B106BF17856F07556412B7E1@orsmsx508.amr.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,98 +36,93 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Pan, Jacob jun <jacob.jun.pan@intel.com> wrote:
 
-> >From 365e3a59c34055490f137af2da281d4305535237 Mon Sep 17 00:00:00 2001
+> >From 41685ae1e8b8e77fdacbdf8e8155f1e54624cbef Mon Sep 17 00:00:00 2001
 > From: Jacob Pan <jacob.jun.pan@intel.com>
-> Date: Thu, 11 Jun 2009 09:42:42 -0700
-> Subject: [PATCH] x86/moorestown: add moorestown platform flags
+> Date: Thu, 11 Jun 2009 09:37:26 -0700
+> Subject: [PATCH] x86: introduce a set of platform feature flags
 > 
-> This patch adds some new features to the x86 platform feature flags.
+> This patch introduces a set of x86 pc platform feature flags. the intention is
+> to clean up setup code based on the availability of patform features.
 > 
-> These new features are first introduced in Intel Moorestown platform but
-> may continue to be present in the next generations.
+> With the introduction of non-PC x86 platforms, these flags will also pave
+> the way for cleaner integration.
 > 
-> Feature flags are initialized based on HW subarchitecture ID provided
-> by the FW via boot protocol.
+> The current feature flags are not a complete set of all possible PC features
+> only the ones relavent to system setup, such as resource allocation, are
+> included.
 > 
 > Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
 > ---
->  arch/x86/Kconfig                        |   13 ++++++++++++-
->  arch/x86/include/asm/platform_feature.h |    2 ++
->  arch/x86/kernel/platform_info.c         |   12 +++++++++++-
->  3 files changed, 25 insertions(+), 2 deletions(-)
+>  arch/x86/include/asm/platform_feature.h |   65 ++++++++++++++++++
+>  arch/x86/kernel/.gitignore              |    1 +
+>  arch/x86/kernel/Makefile                |   11 +++
+>  arch/x86/kernel/mkx86pcflags.pl         |   32 +++++++++
+>  arch/x86/kernel/platform_info.c         |  111 +++++++++++++++++++++++++++++++
+>  5 files changed, 220 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/x86/include/asm/platform_feature.h
+>  create mode 100644 arch/x86/kernel/mkx86pcflags.pl
+>  create mode 100644 arch/x86/kernel/platform_info.c
 > 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index d1430ef..c48c291 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1658,7 +1658,18 @@ config CMDLINE_OVERRIDE
->  
->  	  This is used to work around broken boot loaders.  This should
->  	  be set to 'N' under normal conditions.
-> -
-> +config MRST
-> +	bool "Moorestown MID platform"
-> +	default n
-> +	depends on X86_32
-> +	select SFI
-> +	help
-> +	  Moorestown is Intel's Low Power Intel Architecture (LPIA) based Moblin
-> +	  Internet Device(MID) platform. Moorestown consists of two chips:
-> +	  Lincroft (CPU core, graphics, and memory controller) and Langwell IOH.
-> +	  Unlike standard x86 PCs, Moorestown does not have many legacy devices
-> +	  nor standard legacy replacement devices/features. e.g. Moorestown does
-> +	  not contain i8259, i8254, HPET, legacy BIOS, most of the io ports.
->  endmenu
->  
->  config ARCH_ENABLE_MEMORY_HOTPLUG
 > diff --git a/arch/x86/include/asm/platform_feature.h b/arch/x86/include/asm/platform_feature.h
-> index bcadda5..026bdc7 100644
-> --- a/arch/x86/include/asm/platform_feature.h
+> new file mode 100644
+> index 0000000..bcadda5
+> --- /dev/null
 > +++ b/arch/x86/include/asm/platform_feature.h
-> @@ -45,6 +45,8 @@
->  #define X86_PLATFORM_FEATURE_ACPI		(0*32+8) /* has ACPI support */
->  #define X86_PLATFORM_FEATURE_SFI		(0*32+9) /* has SFI support */
->  #define X86_PLATFORM_FEATURE_8042		(0*32+10) /* i8042 KBC */
-> +#define X86_PLATFORM_FEATURE_APBT		(0*32+11) /* APB timer */
-> +#define X86_PLATFORM_FEATURE_VRTC		(0*32+12) /* virtual RTC */
->  
->  extern __u32 platform_feature[N_PLATFORM_CAPINTS];
->  extern const char *const
-> diff --git a/arch/x86/kernel/platform_info.c b/arch/x86/kernel/platform_info.c
-> index b39898a..3021ea9 100644
-> --- a/arch/x86/kernel/platform_info.c
-> +++ b/arch/x86/kernel/platform_info.c
-> @@ -105,7 +105,17 @@ static int __init sysfs_platforminfo_init(void)
->  }
->  arch_initcall(sysfs_platforminfo_init);
->  
-> +/* Initialize a set of default feature flags based on subarch IDs
-> + * Currently, only MRST platform has non-X86 PC standard feature set.
+> @@ -0,0 +1,65 @@
+> +/*
+> + * platform_feature.h - Defines x86 platform feature bits
+> + *
+> + * (C) Copyright 2008 Intel Corporation
+> + * Author: Jacob Pan (jacob.jun.pan@intel.com)
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; version 2
+> + * of the License.
+> + *
+> + * Note: platform feature flags allow kernel to identify hardware capabilities
+> + * at boottime and runtime. It enables binary compaitiblity between standard
+> + * X86 PC and non-standard X86 platforms such as MID. These flags are default
+> + * to X86 PC standard, at boot time, they will be overwritten by system tables
+> + * provided by firmware.
+> + *
 > + */
+> +#ifndef _ASM_X86_PLATFORM_FEATURE_H
+> +#define _ASM_X86_PLATFORM_FEATURE_H
+> +
+> +#ifndef __ASSEMBLY__
+> +#include <linux/bitops.h>
+> +#endif
+> +#include <asm/required-features.h>
+> +
+> +#define N_PLATFORM_CAPINTS	2	/* N 32-bit words worth of info */
+> +/* X86 base platform features, include PC, legacy free MID devices, etc.
+> + * This list provides early and important information to the kernel in a
+> + * centralized place such that kernel can make a decision on the best
+> + * choice of which system devices to use. e.g. timers or interrupt
+> + * controllers.
+> + */
+> +#define X86_PLATFORM_FEATURE_8259		(0*32+0) /* i8259A PIC */
+> +#define X86_PLATFORM_FEATURE_8254		(0*32+1) /* i8253/4 PIT */
+> +#define X86_PLATFORM_FEATURE_IOAPIC		(0*32+2) /* IO-APIC */
+> +#define X86_PLATFORM_FEATURE_HPET		(0*32+3) /* HPET timer */
+> +#define X86_PLATFORM_FEATURE_RTC		(0*32+4) /* real time clock*/
+> +#define X86_PLATFORM_FEATURE_FLOPPY		(0*32+5) /* ISA floppy */
+> +#define X86_PLATFORM_FEATURE_ISA		(0*32+6) /* ISA/LPC bus */
+> +#define X86_PLATFORM_FEATURE_BIOS		(0*32+7) /* BIOS service,
+> +							   *  e.g. int calls
+> +							   *  EBDA, etc.
+> +							   */
+> +#define X86_PLATFORM_FEATURE_ACPI		(0*32+8) /* has ACPI support */
+> +#define X86_PLATFORM_FEATURE_SFI		(0*32+9) /* has SFI support */
+> +#define X86_PLATFORM_FEATURE_8042		(0*32+10) /* i8042 KBC */
 
-please use the customary comment style:
+i think a better and cleaner approach would be to 'driverize' the 
+affected platform details - not sprinkle the code with 
+platform_has() calls.
 
-  /*
-   * Comment .....
-   * ...... goes here:
-   */
-
-specified in Documentation/CodingStyle.
-
->  void platform_feature_init_default(int subarch_id)
->  {
-> -	printk(KERN_INFO "Use default X86 platform feature set\n");
-> +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
-> +		if (subarch_id == X86_SUBARCH_MRST) {
-> +			setup_mrst_default_feature();
-> +			return;
-> +		}
-> +	} else {
-> +		printk(KERN_INFO "Use default X86 platform feature set\n");
-> +	}
->  }
-
-Why dont we have some clean and robust PCI config space based 
-enumeration instead of this boot ID based thing?
+Whether a given platform has a 'standard PC' or some custom driver 
+then depends on that driver's init sequence - it's not a central 
+thing.
 
 	Ingo
