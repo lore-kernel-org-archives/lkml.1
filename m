@@ -1,79 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbZFZIzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZFZI4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758060AbZFZIzU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757951AbZFZIzI
+	id S1758136AbZFZI4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbZFZI42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:55:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53862 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbZFZIzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:55:05 -0400
-Message-ID: <4A448D17.9010305@cn.fujitsu.com>
-Date: Fri, 26 Jun 2009 16:55:51 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: fix stack tracer sysctl handling
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jun 2009 04:56:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52169 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753243AbZFZI41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 04:56:27 -0400
+Date: Fri, 26 Jun 2009 10:56:29 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Andreas Dilger <adilger@sun.com>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090626085629.GC12201@wotan.suse.de>
+References: <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com> <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com> <20090626011155.GI6472@mit.edu> <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This made my machine completely frozen:
-  # echo 1 > /proc/sys/kernel/stack_tracer_enabled
-  # echo 2 > /proc/sys/kernel/stack_tracer_enabled
+On Fri, Jun 26, 2009 at 08:16:18AM +0300, Pekka Enberg wrote:
+> Hi Ted,
+> 
+> On Thu, Jun 25, 2009 at 05:11:25PM -0500, Eric Sandeen wrote:
+> > > ecryptfs used to do kmalloc(PAGE_CACHE_SIZE) & virt_to_page on that, and
+> > > with SLUB + slub debug, that gave back non-aligned memory, causing
+> > > eventual corruption ...
+> 
+> On Thu, 25 Jun 2009, Theodore Tso wrote:
+> > Grumble.  Any chance we could add an kmem_cache option which requires
+> > the memory to be aligned?  Otherwise we could rewrite our own sub-page
+> > allocator in ext4 that only handled aligned filesystem block sizes
+> > (i.e., 1k, 2k, 4k, etc.) but that would be really silly and be extra
+> > code that really should be done once at core functionality.
+> 
+> We alredy have SLAB_HW_ALIGN but I wonder if this is a plain old bug in 
+> SLUB. Christoph, Nick, don't we need something like this in the allocator? 
+> Eric, does this fix your case?
 
-The cause is register_ftrace_function() was called twice.
-
-Also fix ftrace_enabled sysctl, though seems nothing bad happened
-as I tested it.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/ftrace.c      |    4 ++--
- kernel/trace/trace_stack.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 673fc8b..4521c77 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -3159,10 +3159,10 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
- 
- 	ret  = proc_dointvec(table, write, file, buffer, lenp, ppos);
- 
--	if (ret || !write || (last_ftrace_enabled == ftrace_enabled))
-+	if (ret || !write || (last_ftrace_enabled == !!ftrace_enabled))
- 		goto out;
- 
--	last_ftrace_enabled = ftrace_enabled;
-+	last_ftrace_enabled = !!ftrace_enabled;
- 
- 	if (ftrace_enabled) {
- 
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index 2d7aebd..e644af9 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -326,10 +326,10 @@ stack_trace_sysctl(struct ctl_table *table, int write,
- 	ret = proc_dointvec(table, write, file, buffer, lenp, ppos);
- 
- 	if (ret || !write ||
--	    (last_stack_tracer_enabled == stack_tracer_enabled))
-+	    (last_stack_tracer_enabled == !!stack_tracer_enabled))
- 		goto out;
- 
--	last_stack_tracer_enabled = stack_tracer_enabled;
-+	last_stack_tracer_enabled = !!stack_tracer_enabled;
- 
- 	if (stack_tracer_enabled)
- 		register_ftrace_function(&trace_ops);
--- 
-1.5.4.rc3
+Well I don't understand Ted's complaint. kmem_cache_create takes an
+alignment argument.
 
