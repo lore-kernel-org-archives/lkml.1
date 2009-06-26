@@ -1,64 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZFZAAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZFZAOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbZFZAAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 20:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZFZAAb
+	id S1753967AbZFZAOQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 20:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZFZAOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 20:00:31 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:57154 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752699AbZFZAAa (ORCPT
+	Thu, 25 Jun 2009 20:14:05 -0400
+Received: from mga11.intel.com ([192.55.52.93]:49431 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbZFZAOE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 20:00:30 -0400
-X-Greylist: delayed 1730 seconds by postgrey-1.27 at vger.kernel.org; Thu, 25 Jun 2009 20:00:30 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cLdsw/v6ah0GAPDaXV1ObGqLS1mXgWQ+u8/H3V7yBsRtp/R4XgoT9j0+oWq8EVSHQ7
-         UxDYMEcHGhG8ndAMxPnY9AV49AAG7oWKTa9YrAKxQCn/JziIn2J+O3CcgFqbd+zFITP4
-         YKmpYVr+WmDKssxoPaWtP0gn8QvIZ6YiomRZU=
+	Thu, 25 Jun 2009 20:14:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,293,1243839600"; 
+   d="scan'208";a="469709369"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Date: Thu, 25 Jun 2009 17:14:05 -0700
+Subject: [PATCH 1/9] x86/boot: add setup_secondary_clock to x86 quirk
+Thread-Topic: [PATCH 1/9] x86/boot: add setup_secondary_clock to x86 quirk
+Thread-Index: Acn18wQG83VnmHP/QyyQtuX0+C2RGQ==
+Message-ID: <43F901BD926A4E43B106BF17856F07556412B7E0@orsmsx508.amr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-In-Reply-To: <1245931298.13359.8.camel@localhost.localdomain>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-Date: Fri, 26 Jun 2009 10:00:32 +1000
-Message-ID: <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
-Subject: Re: TTM page pool allocator
-From: Dave Airlie <airlied@gmail.com>
-To: Jerome Glisse <glisse@freedesktop.org>
-Cc: thomas@shipmail.org, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org> wrote:
-> Hi,
->
-> Thomas i attach a reworked page pool allocator based on Dave works,
-> this one should be ok with ttm cache status tracking. It definitely
-> helps on AGP system, now the bottleneck is in mesa vertex's dma
-> allocation.
->
+This patch was suggested by Thomas Gleixner in the early discussion below. the code will be used by the follow up patches written for Intel Moorestown platform.
 
-My original version kept a list of wb pages as well, this proved to be
-quite a useful
-optimisation on my test systems when I implemented it, without it I
-was spending ~20%
-of my CPU in getting free pages, granted I always used WB pages on
-PCIE/IGP systems.
+Thanks to Thomas for the idea.
 
-Another optimisation I made at the time was around the populate call,
-(not sure if this
-is what still happens):
+http://lkml.org/lkml/2009/6/9/459
 
-Allocate a 64K local BO for DMA object.
-Write into the first 5 pages from userspace - get WB pages.
-Bind to GART, swap those 5 pages to WC + flush.
-Then populate the rest with WC pages from the list.
+>From ed9e77d627a661ad0bcb515cc84106c91ea58257 Mon Sep 17 00:00:00 2001
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Date: Tue, 9 Jun 2009 17:02:48 -0700
+Subject: [PATCH] x86/boot: add setup_secondary_clock to x86 quirk
 
-Granted I think allocating WC in the first place from the pool might
-work just as well since most of the DMA buffers are write only.
+Some x86 platform such as Intel Moorestown use external timers for per
+cpu clockevent devices. This quirk is added such as we can override the
+default local APIC timers if such platform is detected.
 
-Dave.
+Should not have impact on other platforms that uses default or platform
+specific x86_quirks.
+
+Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+---
+ arch/x86/include/asm/setup.h |    1 +
+ arch/x86/kernel/smpboot.c    |   15 ++++++++++++++-
+ 2 files changed, 15 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
+index 4093d1e..7bf325a 100644
+--- a/arch/x86/include/asm/setup.h
++++ b/arch/x86/include/asm/setup.h
+@@ -31,6 +31,7 @@ struct x86_quirks {
+ 	void (*smp_read_mpc_oem)(struct mpc_oemtable *oemtable,
+ 				unsigned short oemsize);
+ 	int (*setup_ioapic_ids)(void);
++	void (*setup_secondary_clock)(void);
+ };
+ 
+ extern void x86_quirk_intr_init(void);
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 2fecda6..3260159 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -66,6 +66,8 @@
+ #include <linux/mc146818rtc.h>
+ 
+ #include <asm/smpboot_hooks.h>
++#include <asm/platform_feature.h>
++#include <asm/apb_timer.h>
+ 
+ #ifdef CONFIG_X86_32
+ u8 apicid_2_node[MAX_APICID];
+@@ -263,6 +265,17 @@ static void __cpuinit smp_callin(void)
+ }
+ 
+ /*
++ * Setup secondary clock
++ */
++notrace static void __cpuinit __setup_secondary_clock(void)
++{
++	if (x86_quirks->setup_secondary_clock)
++		x86_quirks->setup_secondary_clock();
++	else
++		setup_secondary_clock();
++}
++
++/*
+  * Activate a secondary processor.
+  */
+ notrace static void __cpuinit start_secondary(void *unused)
+@@ -323,7 +336,7 @@ notrace static void __cpuinit start_secondary(void *unused)
+ 	/* enable local interrupts */
+ 	local_irq_enable();
+ 
+-	setup_secondary_clock();
++	__setup_secondary_clock();
+ 
+ 	wmb();
+ 	cpu_idle();
+-- 
+1.5.6.5
+
+
