@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZFZRga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZFZRmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZFZRga (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZFZRgU
+	id S1756082AbZFZRmp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZFZRmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:36:20 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:49749 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752364AbZFZRgT (ORCPT
+	Fri, 26 Jun 2009 13:42:37 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:59681 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbZFZRmg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:36:19 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 26 Jun 2009 10:32:17 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Oleg Nesterov <oleg@redhat.com>
-cc: Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-In-Reply-To: <20090626135742.GB3845@redhat.com>
-Message-ID: <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com>
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com>
- <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626135742.GB3845@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 26 Jun 2009 13:42:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Ew0RJTSOuZfogOhqJ2avHoGxzMYVzvPH+gcSwo8ZW2j8F/st3+Tv1D4eNSzuqxmSPJ
+         XD+G8NzUuZIACd+pF+NRBTKnejssuBMIFc181icddktpJ+snasl84WwqszTXFPJvupm3
+         nf7CSh25AU9rjFE2MWU+Y3GBFPYak8r06bWMo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1246035502.4534.21747.camel@localhost.localdomain>
+References: <20090625185942.GA29401@linux-os.sc.intel.com>
+	 <20090625123750.734b7f50.akpm@linux-foundation.org>
+	 <20090625215541.GB29401@linux-os.sc.intel.com>
+	 <Pine.LNX.4.64.0906261036080.21067@melkki.cs.Helsinki.FI>
+	 <1246035502.4534.21747.camel@localhost.localdomain>
+Date: Fri, 26 Jun 2009 20:42:38 +0300
+X-Google-Sender-Auth: 337d157984ac4d91
+Message-ID: <84144f020906261042g735938f1n77f1983649a0aac0@mail.gmail.com>
+Subject: Re: possible recursive locking detected at kmem_cache_free
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "rjw@sisk.pl" <rjw@sisk.pl>, "mingo@elte.hu" <mingo@elte.hu>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009, Oleg Nesterov wrote:
-
-> And if we remove waitqueue_active() in xxx_update(), then lock/unlock is
-> not needed too.
+On Fri, Jun 26, 2009 at 7:58 PM, Pallipadi,
+Venkatesh<venkatesh.pallipadi@intel.com> wrote:
+> On Fri, 2009-06-26 at 00:37 -0700, Pekka J Enberg wrote:
+>> Hi Venki,
+>>
+>> On Thu, 25 Jun 2009, Pallipadi, Venkatesh wrote:
+>> > > > Not sure if this has been reported elsewhere. I started seeing this with git
+>> > > > kernel from this morning on a system with RedHat EL5 base installation with
+>> > > > ext3 root file system. Attached is the config I am using.
+>> > > >
+>> > > > Let me know if you need any more details. This seems to be at every boot. I
+>> > > > am trying the bisect right now.
+>> > > >
+>> > >
+>> > > Thanks.  Let's cc Pekka.
+>> > >
+>> >
+>> > git bisect result.
+>>
+>> Thanks! I think I just broke lockdep annotations for slab. Does this patch
+>> fix things?
+>>
 >
-> If xxx_poll() takes q->lock first, it can safely miss the changes in ->status
-> and schedule(): xxx_update() will take q->lock, notice the sleeper and wake
-> it up (ok, it will set ->triggered but this doesn't matter).
-> 
-> If xxx_update() takes q->lock first, xxx_poll() must see the changes in
-> status after poll_wait()->unlock(&q->lock) (in fact, after lock, not unlock).
+> Yes. This patch helps.
 
-Sure. The snippet above was just to show what typically the code does, not 
-a suggestion on how to solve the socket case.
-But yeah, the problem in this case is the waitqueue_active() call. Without 
-that, the wait queue lock/unlock in poll_wait() and the one in wake_up() 
-guarantees the necessary barriers.
-Some might argue the costs of the lock/unlock of q->lock, and wonder if 
-MBs are a more efficient solution. This is something I'm not going into.
-To me, it just looked not right having cross-matching MB in different 
-subsystems.
+OK, thanks for testing, Venki! I'll merge this to slab.git first thing
+on Monday.
 
-
-
-- Davide
-
-
+                           Pekka
