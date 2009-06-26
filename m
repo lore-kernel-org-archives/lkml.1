@@ -1,77 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZFZSFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZFZSFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbZFZSFU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZFZSFG
+	id S1760013AbZFZSFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759192AbZFZSF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:05:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56892 "EHLO mx2.redhat.com"
+	Fri, 26 Jun 2009 14:05:27 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:49878 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbZFZSFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:05:05 -0400
-Date: Fri, 26 Jun 2009 16:50:27 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-Message-ID: <20090626145027.GA6534@redhat.com>
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com> <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626135742.GB3845@redhat.com> <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751312AbZFZSF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 14:05:26 -0400
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: "J.R. Okajima" <hooanon05@yahoo.co.jp>, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 14:05:27 -0400
+Message-Id: <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/26, Davide Libenzi wrote:
->
-> On Fri, 26 Jun 2009, Oleg Nesterov wrote:
->
-> > And if we remove waitqueue_active() in xxx_update(), then lock/unlock is
-> > not needed too.
-> >
-> > If xxx_poll() takes q->lock first, it can safely miss the changes in ->status
-> > and schedule(): xxx_update() will take q->lock, notice the sleeper and wake
-> > it up (ok, it will set ->triggered but this doesn't matter).
-> >
-> > If xxx_update() takes q->lock first, xxx_poll() must see the changes in
-> > status after poll_wait()->unlock(&q->lock) (in fact, after lock, not unlock).
->
-> Sure. The snippet above was just to show what typically the code does, not
-> a suggestion on how to solve the socket case.
+This patch fixes an imbalance message as reported by J.R. Okajima.
+The IMA file counters are incremented in ima_path_check. If the
+actual open fails, such as ETXTBSY, decrement the counters to
+prevent unnecessary imbalance messages.
 
-Yes, yes. I just meant you are right imho, we shouldn't add mb() into
-add_wait_queue().
+Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+---
+ fs/namei.c                        |    7 +++++++
+ include/linux/ima.h               |    6 ++++++
+ security/integrity/ima/ima_main.c |   29 ++++++++++++++++++++++++++++-
+ 3 files changed, 41 insertions(+), 1 deletions(-)
 
-> But yeah, the problem in this case is the waitqueue_active() call. Without
-> that, the wait queue lock/unlock in poll_wait() and the one in wake_up()
-> guarantees the necessary barriers.
-> Some might argue the costs of the lock/unlock of q->lock, and wonder if
-> MBs are a more efficient solution. This is something I'm not going into.
-> To me, it just looked not right having cross-matching MB in different
-> subsystems.
+diff --git a/fs/namei.c b/fs/namei.c
+index 527119a..5abba79 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1758,6 +1758,10 @@ do_last:
+ 			goto exit;
+ 		}
+ 		filp = nameidata_to_filp(&nd, open_flag);
++		if (IS_ERR(filp))
++			ima_counts_put(&nd.path,
++				       acc_mode & (MAY_READ | MAY_WRITE |
++						   MAY_EXEC));
+ 		mnt_drop_write(nd.path.mnt);
+ 		return filp;
+ 	}
+@@ -1812,6 +1816,9 @@ ok:
+ 		goto exit;
+ 	}
+ 	filp = nameidata_to_filp(&nd, open_flag);
++	if (IS_ERR(filp))
++		ima_counts_put(&nd.path,
++			       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC));
+ 	/*
+ 	 * It is now safe to drop the mnt write
+ 	 * because the filp has had a write taken
+diff --git a/include/linux/ima.h b/include/linux/ima.h
+index b1b827d..0e3f2a4 100644
+--- a/include/linux/ima.h
++++ b/include/linux/ima.h
+@@ -24,6 +24,7 @@ extern int ima_path_check(struct path *path, int mask, int update_counts);
+ extern void ima_file_free(struct file *file);
+ extern int ima_file_mmap(struct file *file, unsigned long prot);
+ extern void ima_counts_get(struct file *file);
++extern void ima_counts_put(struct path *path, int mask);
+ 
+ #else
+ static inline int ima_bprm_check(struct linux_binprm *bprm)
+@@ -60,5 +61,10 @@ static inline void ima_counts_get(struct file *file)
+ {
+ 	return;
+ }
++
++static inline void ima_counts_put(struct path *path, int mask)
++{
++	return;
++}
+ #endif /* CONFIG_IMA_H */
+ #endif /* _LINUX_IMA_H */
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 6f61187..101c512 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -238,7 +238,34 @@ out:
+ }
+ 
+ /*
+- * ima_opens_get - increment file counts
++ * ima_counts_put - decrement file counts
++ *
++ * File counts are incremented in ima_path_check. On file open
++ * error, such as ETXTBSY, decrement the counts to prevent
++ * unnecessary imbalance messages.
++ */
++void ima_counts_put(struct path *path, int mask)
++{
++	struct inode *inode = path->dentry->d_inode;
++	struct ima_iint_cache *iint;
++
++	if (!ima_initialized || !S_ISREG(inode->i_mode))
++		return;
++	iint = ima_iint_find_insert_get(inode);
++	if (!iint)
++		return;
++
++	mutex_lock(&iint->mutex);
++	iint->opencount--;
++	if ((mask & MAY_WRITE) || (mask == 0))
++		iint->writecount--;
++	else if (mask & (MAY_READ | MAY_EXEC))
++		iint->readcount--;
++	mutex_unlock(&iint->mutex);
++}
++
++/*
++ * ima_counts_get - increment file counts
+  *
+  * - for IPC shm and shmat file.
+  * - for nfsd exported files.
+-- 
+1.6.0.6
 
-This is subjective and thus up to maintainers, but personally I think you
-are very, very right.
 
-Perhaps we can add
-
-	void sock_poll_wait(struct file *file, struct sock *sk, poll_table *pt)
-	{
-		if (pt) {
-			poll_wait(file, sk->sk_sleep, pt);
-			/*
-			 * fat comment
-			 */
-			smp_mb(); // or smp_mb__after_unlock();
-		}
-	}
-
-Oleg.
 
