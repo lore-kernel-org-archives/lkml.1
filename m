@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbZFZOfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZFZOfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbZFZOfZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZFZOfT
+	id S1757960AbZFZOfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 10:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbZFZOfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:35:19 -0400
-Received: from mail.open.by ([193.232.92.17]:59948 "EHLO post.open.by"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752980AbZFZOfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:35:18 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 8845 [Jun 25 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Fri, 26 Jun 2009 17:36:52 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] kobject_set_name_vargs memory leak
-Message-ID: <20090626143652.GB6281@localdomain.by>
+	Fri, 26 Jun 2009 10:35:32 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:54911 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760483AbZFZOfX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 10:35:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cLJomGps/qUqn6xMPpyFctEya1ENMw2vCPxTyZWw2jHKtfBqehugUQfDZz/d0nerdP
+         6/OUIrtWRWWITPbXUldJhqPoQTs4PsKMeLUQPT+kqkkrGG7s7XPfgXGV8SmYh1fgy+To
+         OBKOzt4MLxHGrICOjedCLWXsSHlv3upyZ+x/4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090626150856.7b5fafb2@lxorguk.ukuu.org.uk>
+References: <b08bcbf50906260704s11181158r27d88e2dd518b1e9@mail.gmail.com>
+	 <20090626150856.7b5fafb2@lxorguk.ukuu.org.uk>
+Date: Fri, 26 Jun 2009 16:35:25 +0200
+Message-ID: <b08bcbf50906260735q6af6522dl6f1bb407f68a801e@mail.gmail.com>
+Subject: Re: Kernel hard_start_xmit performance vs SOCK_RAW performance
+From: Gallus <gall.cwpl@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-I suppose this patch fixes memory leak in kobject.c
-Correct me if I'm wrong.
-Thanks.
------------
+2009/6/26 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> On Fri, 26 Jun 2009 16:04:04 +0200
+> Gallus <gall.cwpl@gmail.com> wrote:
+>
+>> Hi,
+>> what path would you choose to rapidly generate packets
+>
+> Documentation/networking/pktgen.txt
 
-Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
+Thank you Alan for the answer.
 
-Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
----
-diff --git a/lib/kobject.c b/lib/kobject.c
-index b512b74..922cd8c 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
- 		return 0;
- 
- 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
--	if (!kobj->name)
-+	if (!kobj->name) {
-+		kfree(old_name);
- 		return -ENOMEM;
-+	}
- 
- 	/* ewww... some of these buggers have '/' in the name ... */
- 	while ((s = strchr(kobj->name, '/')))
+However, my goal is to generate packets with certain *content* in them.
+
+-- 
+Regards,
+Gallus
+please CC me
