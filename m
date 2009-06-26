@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZFZJDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbZFZJEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZFZJDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 05:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZFZJDL
+	id S1757510AbZFZJEF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 05:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZFZJDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 05:03:11 -0400
-Received: from mail-yx0-f203.google.com ([209.85.210.203]:62698 "EHLO
-	mail-yx0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZFZJDK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 05:03:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=M8msXle9ODxhjs24nQVus/BEk450OsiSenFirytcWvDPhROx6DtT1IIdejr6Y1MStH
-         Z0IuuGLVEvpRt7lFiWZUqFCRqsTIZLQ5T6AGEO2tEEw9/dB2AYmmNi4pYxfPn1I3cSl2
-         85yEAUdfj+gSJT3dOBC+8HsUDsnzpsPC4YBR8=
-MIME-Version: 1.0
-In-Reply-To: <42a6d9690906260128q46c092aqf29aa6d6e77b9ccb@mail.gmail.com>
-References: <42a6d9690906260128q46c092aqf29aa6d6e77b9ccb@mail.gmail.com>
-Date: Fri, 26 Jun 2009 16:40:57 +0800
-Message-ID: <42a6d9690906260140k52f16701i13ccb8874a616688@mail.gmail.com>
-Subject: SG_DXFER_TO_FROM_DEV does not copy user buffer to driver buffer in 
-	linux 2.6.28 and later?
-From: zhou sf <sxzzsf@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 26 Jun 2009 05:03:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38950 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754963AbZFZJDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 05:03:55 -0400
+Date: Fri, 26 Jun 2009 11:03:55 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Matt Mackall <mpm@selenic.com>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, cl@linux-foundation.org, penberg@cs.helsinki.fi,
+       jdb@comx.dk
+Subject: Re: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem in sl[aou]b
+Message-ID: <20090626090355.GA11450@wotan.suse.de>
+References: <20090625193137.GA16861@linux.vnet.ibm.com> <1245965239.21085.393.camel@calx>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1245965239.21085.393.camel@calx>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Test with the following program, and dump the data buf at queuecommand
-of the driver, found the data is something like:
-"00 00 00 00 ff 53 4d 42 2e 00 00 00 00 80 01 c0 00 00 00 00 00 00 00
-00 00 00 00 00 02 20 4a ..."
-While before 2.6.28, it is "ec ec ec ec ..." as expected.
+On Thu, Jun 25, 2009 at 04:27:19PM -0500, Matt Mackall wrote:
+> On Thu, 2009-06-25 at 12:31 -0700, Paul E. McKenney wrote:
+> > Hello!
+> > 
+> > Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather
+> > than rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result
+> > in RCU callbacks accessing a kmem_cache after it had been destroyed.
+> > 
+> > The following untested (might not even compile) patch proposes a fix.
+> 
+> Acked-by: Matt Mackall <mpm@selenic.com>
+> 
+> Nick, you'll want to make sure you get this in SLQB.
 
+Thanks Matt. Paul, I think this should be appropriate for
+stable@kernel.org too?
 
-#include <string.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <scsi/sg.h>
-
-int main(int argc, char* argv[])
-{
-       int fd;
-       sg_io_hdr_t io_hdr;
-       int ret;
-
-       unsigned char sensebuf[32], cdb[16], outbuf[256];
-
-       if ((argc!=2) || (fd = open(argv[1], O_RDWR)) < 0) {
-               return -1;
-       }
-
-       memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
-       memset(cdb, 0, sizeof(cdb));
-       memset(outbuf, 0xec, sizeof(outbuf));
-       memset(sensebuf, 0xec, sizeof(sensebuf));
-
-       io_hdr.interface_id = 'S';
-
-       io_hdr.cmdp = cdb;
-       io_hdr.cmd_len = sizeof(cdb);
-
-       io_hdr.sbp = sensebuf;
-       io_hdr.mx_sb_len = sizeof(sensebuf);
-
-       io_hdr.dxferp = outbuf;
-       io_hdr.dxfer_len = sizeof(outbuf);
-       io_hdr.dxfer_direction = SG_DXFER_TO_FROM_DEV;
-
-       io_hdr.timeout = 20000;
-
-       ret = ioctl(fd, SG_IO, &io_hdr);
-       return 0;
-}
+> 
+> > Reported-by: Jesper Dangaard Brouer <jdb@comx.dk>
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  slab.c |    2 +-
+> >  slob.c |    2 ++
+> >  slub.c |    2 ++
+> >  3 files changed, 5 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/mm/slab.c b/mm/slab.c
+> > index e74a16e..5241b65 100644
+> > --- a/mm/slab.c
+> > +++ b/mm/slab.c
+> > @@ -2547,7 +2547,7 @@ void kmem_cache_destroy(struct kmem_cache *cachep)
+> >  	}
+> >  
+> >  	if (unlikely(cachep->flags & SLAB_DESTROY_BY_RCU))
+> > -		synchronize_rcu();
+> > +		rcu_barrier();
+> >  
+> >  	__kmem_cache_destroy(cachep);
+> >  	mutex_unlock(&cache_chain_mutex);
+> > diff --git a/mm/slob.c b/mm/slob.c
+> > index c78742d..9641da3 100644
+> > --- a/mm/slob.c
+> > +++ b/mm/slob.c
+> > @@ -595,6 +595,8 @@ EXPORT_SYMBOL(kmem_cache_create);
+> >  void kmem_cache_destroy(struct kmem_cache *c)
+> >  {
+> >  	kmemleak_free(c);
+> > +	if (c->flags & SLAB_DESTROY_BY_RCU)
+> > +		rcu_barrier();
+> >  	slob_free(c, sizeof(struct kmem_cache));
+> >  }
+> >  EXPORT_SYMBOL(kmem_cache_destroy);
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 819f056..a9201d8 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -2595,6 +2595,8 @@ static inline int kmem_cache_close(struct kmem_cache *s)
+> >   */
+> >  void kmem_cache_destroy(struct kmem_cache *s)
+> >  {
+> > +	if (s->flags & SLAB_DESTROY_BY_RCU)
+> > +		rcu_barrier();
+> >  	down_write(&slub_lock);
+> >  	s->refcount--;
+> >  	if (!s->refcount) {
+> 
+> -- 
+> http://selenic.com : development and support for Mercurial and Linux
+> 
