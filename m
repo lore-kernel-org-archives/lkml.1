@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZFZSLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbZFZSQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756521AbZFZSLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZFZSLr
+	id S1759512AbZFZSQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZFZSQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:11:47 -0400
-Received: from smtpauth00.csee.onr.siteprotect.com ([64.26.60.144]:57167 "EHLO
-	smtpauth00.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753132AbZFZSLr (ORCPT
+	Fri, 26 Jun 2009 14:16:16 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:54967 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbZFZSQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:11:47 -0400
-Date: Fri, 26 Jun 2009 14:22:40 -0400 (EDT)
-From: Vince Weaver <vince@deater.net>
-X-X-Sender: vince@pianoman.cluster.toy
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: performance counter 20% error finding retired instruction count
-In-Reply-To: <20090624151010.GA12799@elte.hu>
-Message-ID: <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
- <20090624151010.GA12799@elte.hu>
+	Fri, 26 Jun 2009 14:16:15 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 26 Jun 2009 11:12:15 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Oleg Nesterov <oleg@redhat.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] net: fix race in the receive/select
+In-Reply-To: <20090626145027.GA6534@redhat.com>
+Message-ID: <alpine.DEB.1.10.0906261111230.16400@makko.or.mcafeemobile.com>
+References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com>
+ <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626135742.GB3845@redhat.com> <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com> <20090626145027.GA6534@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 24 Jun 2009, Ingo Molnar wrote:
-> * Vince Weaver <vince@deater.net> wrote:
->
-> Those ~2100 instructions are executed by your app: as the ELF
-> dynamic loader starts up your test-app.
->
-> If you have some tool that reports less than that then that tool is
-> not being truthful about the true overhead of your application.
+On Fri, 26 Jun 2009, Oleg Nesterov wrote:
 
-Wait a second... my application is a statically linked binary.  There is 
-no ELF dynamic loader involved at all.
+> Perhaps we can add
+> 
+> 	void sock_poll_wait(struct file *file, struct sock *sk, poll_table *pt)
+> 	{
+> 		if (pt) {
+> 			poll_wait(file, sk->sk_sleep, pt);
+> 			/*
+> 			 * fat comment
+> 			 */
+> 			smp_mb(); // or smp_mb__after_unlock();
+> 		}
+> 	}
 
-On further investigation, all of the overhead comes _entirely_ from the 
-perf utility.  This is overhead and instructions that would not occur when 
-not using the perf utility.
-
->From the best I can tell digging through the perf sources, the performance 
-counters are set up and started in userspace, but instead of doing an 
-immediate clone/exec, thousands of instructions worth of other stuff is 
-done by perf in between.
-
-Ther "perfmon" util, plus linux-user simulators like qemu and valgrind do 
-things properly.  perf can't it seems, and it seems to be a limitation of 
-the new performance counter infrastructure.
+That'd be fine IMHO. Are DaveM and Eric OK?
 
 
-Vince
-
-PS.  Why is the perf code littered with many many  __MINGW32__ defined?
-      Should this be in the kernel tree?  It makes the code really hard
-      to follow.  Are there plans to port perf to windows?
+- Davide
 
 
