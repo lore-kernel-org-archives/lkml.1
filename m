@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZFZRam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZFZRbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbZFZRam (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZFZRaf
+	id S1757202AbZFZRbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbZFZRbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:30:35 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:57959 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbZFZRae (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:30:34 -0400
-Date: Fri, 26 Jun 2009 13:30:26 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when
-	using pipes in core_pattern
-Message-ID: <20090626173026.GB7337@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090626104804.GA7337@hmsreliant.think-freely.org> <20090626092001.32e35e17.akpm@linux-foundation.org>
+	Fri, 26 Jun 2009 13:31:06 -0400
+Received: from smtp5.welho.com ([213.243.153.39]:34382 "EHLO smtp5.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757059AbZFZRbF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:31:05 -0400
+Date: Fri, 26 Jun 2009 20:31:05 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Russell King <linux@arm.linux.org.uk>,
+       Antonino Daplas <adaplas@gmail.com>,
+       Petr Vandrovec <vandrove@vc.cvut.cz>,
+       Thomas Winischhofer <thomas@winischhofer.net>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 18/19] drivers/video: Use PCI_VDEVICE
+Message-ID: <20090626173105.GI9980@sci.fi>
+Mail-Followup-To: Joe Perches <joe@perches.com>,
+	linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Russell King <linux@arm.linux.org.uk>,
+	Antonino Daplas <adaplas@gmail.com>,
+	Petr Vandrovec <vandrove@vc.cvut.cz>,
+	Thomas Winischhofer <thomas@winischhofer.net>,
+	linux-fbdev-devel@lists.sourceforge.net
+References: <cover.1245906151.git.joe@perches.com> <198c226b3dfd003881e7f95b3fbbc8d433804b01.1245906153.git.joe@perches.com> <20090626095454.GH9980@sci.fi> <1246034126.18587.19.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090626092001.32e35e17.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1246034126.18587.19.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 09:20:01AM -0700, Andrew Morton wrote:
-> On Fri, 26 Jun 2009 06:48:04 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
+On Fri, Jun 26, 2009 at 09:35:26AM -0700, Joe Perches wrote:
+> On Fri, 2009-06-26 at 12:54 +0300, Ville Syrjälä wrote:
+> > Perhaps there should be a PCI_VDDEVICE() or something for this type of
+> > stuff? Would make things even shorter.
 > 
-> > > > --- a/kernel/sysctl.c
-> > > > +++ b/kernel/sysctl.c
-> > > > @@ -75,6 +75,7 @@ extern int max_threads;
-> > > >  extern int core_uses_pid;
-> > > >  extern int suid_dumpable;
-> > > >  extern char core_pattern[];
-> > > > +extern unsigned int core_pipe_limit;
-> > > 
-> > > Bah.
-> > > 
-> > > We should fix this one day.
-> > > 
-> > Is there a particular way you'd like to see it fixed?
+> drivers/edac/edac_core.h has:
 > 
-> Not in the context of this patch.
+> #define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
+> 	PCI_DEVICE_ID_ ## vend ## _ ## dev
 > 
-> One way would be to add a new sysctl-externs.h and then put all the
-> declarations in there.  That file gets included by sysctl.c and by each
-> file which shares a global with sysctl.c
-> 
-Thanks, I'll keep that in mind, and look into squaring it away when I have a few
-extra cycles.
-Neil
+> Try submitting a patch and see what happens...
 
+Too lazy. I was thinking that since you're already looking at
+this stuff you might be tricked into doing some more work.
+
+> > It seems your script missed atyfb. It could use PCI_VDEVICE() too.
 > 
-> 
+> Can you show an example please?
+
+I didn't read you script and didn't look at the patches too closely. It
+seems you only converted the open-coded stuff and not stuff already
+using the PCI_DEVICE() macro. atyfb falls into this category.
+
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
