@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZFZJTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZFZJTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758403AbZFZJTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 05:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZFZJTO
+	id S1758598AbZFZJTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 05:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756764AbZFZJTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 26 Jun 2009 05:19:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42673 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755541AbZFZJTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 26 Jun 2009 05:19:14 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59576 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754382AbZFZJTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 05:19:13 -0400
-Date: Fri, 26 Jun 2009 10:20:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: kmemleak suggestion (long message)
-Message-ID: <20090626102008.31a67543@lxorguk.ukuu.org.uk>
-In-Reply-To: <1246006463.30717.12.camel@pc1117.cambridge.arm.com>
-References: <20090625221816.GA3480@localdomain.by>
-	<20090626065923.GA14078@elte.hu>
-	<84144f020906260007u3e79086bv91900e487ba0fb50@mail.gmail.com>
-	<20090626081452.GB3451@localdomain.by>
-	<1246004270.27533.16.camel@penberg-laptop>
-	<20090626085056.GC3451@localdomain.by>
-	<1246006463.30717.12.camel@pc1117.cambridge.arm.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Subject: Re: [PATCH] hwmon: add GP2A002 proximity/ambient sensor
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Minkyu Kang <mk7.kang@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+       lm-sensors@lm-sensors.org, suchang.woo@samsung.com,
+       kyungmin.park@samsung.com
+In-Reply-To: <4A448926.1030701@samsung.com>
+References: <4A448926.1030701@samsung.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 14:46:00 +0530
+Message-Id: <1246007760.3067.5.camel@hpdv5.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009 09:54:23 +0100
-Catalin Marinas <catalin.marinas@arm.com> wrote:
+On Fri, 2009-06-26 at 17:39 +0900, Minkyu Kang wrote:
+> The GP2A002 is a I2C interfaced Sensor for Proximity/Ambient
+> This patch adds support the GP2A002 sensor
+> 
+> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
+> Signed-off-by: Suchang Woo <suchang.woo@samsung.com>
+> ---
+>  drivers/hwmon/Kconfig    |    7 +
+>  drivers/hwmon/Makefile   |    1 +
+>  drivers/hwmon/gp2ap002.c |  471 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/gp2ap002.h |   21 ++
+>  4 files changed, 500 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/hwmon/gp2ap002.c
+>  create mode 100644 include/linux/gp2ap002.h
+> 
 
-> On Fri, 2009-06-26 at 11:50 +0300, Sergey Senozhatsky wrote:
-> > On (06/26/09 11:17), Pekka Enberg wrote:
-> > > Well, the thing is, I am not sure it's needed if we implement Ingo's
-> > > suggestion. After all, syslog is no longer spammed very hard and you can
-> > > do all the filtering in userspace when you read /debug/mm/kmemleak file,
-> > > no?
-> > 
-> > Well, we just move 'spam' out of syslog. Not dealing with 'spam' itself.
-> > I'm not sure about 'filtering in userspace when you read'. Suppose I use
-> > 'tail -f /debug/mm/kmemleak'. How can I easy suppress printing of (for example):
-> 
-> I don't have a strong opinion on this patch at the moment, I'll have a
-> look later today.
-> 
-> > Or any report with tty_ldisc_try_get (ppp generates tons of them).
-> 
-> BTW, that's a real leak IMHO (posted a patch yesterday in reply to the
-> initial report to Alan Cox).
+> diff --git a/include/linux/gp2ap002.h b/include/linux/gp2ap002.h
+> new file mode 100644
+> index 0000000..b6a950b
+> --- /dev/null
+> +++ b/include/linux/gp2ap002.h
+> @@ -0,0 +1,21 @@
+> +/*
+> + *  Copyright (C) 2009 Samsung Electronics
+> + *  Minkyu Kang <mk7.kang@samsung.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __GP2AP002_H_
+> +#define __GP2AP002_H_
+> +
+> +struct gp2ap002_platform_data {
+> +	int (*get_adc)(void);
+> +	void (*power_enable)(int);
+> +	int vo_gpio;
+> +	int prox_mode;
+> +	int enable;
+> +};
+> +
+> +#endif
 
-Yes its on my todo list - probably for early next week along with nailing
-down a couple of warnings suggesting there is another race lurking
-somewhere.
+I am curious what is the use of include/linux/gp2ap002.h, it only have
+gp2ap002_platform_data structure which you can keep in your source file
+the only file which is using it.
+
+Thanks,
+--
+JSR
+
