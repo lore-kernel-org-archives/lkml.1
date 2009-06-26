@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761399AbZFZTgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761651AbZFZThA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761399AbZFZTgm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 15:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZFZTgc
+	id S1761651AbZFZThA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 15:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbZFZTgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 15:36:32 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47353 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbZFZTgb (ORCPT
+	Fri, 26 Jun 2009 15:36:53 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:45629 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755291AbZFZTgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 15:36:31 -0400
-Message-ID: <4A452300.5080507@gmail.com>
-Date: Fri, 26 Jun 2009 21:35:28 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 26 Jun 2009 15:36:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=tqTyzyl1JWDx2EcJEZARY/PtB/X/C2mHTXd8I5virDnhfIc6qUtNqw5yfnONYDROSe
+         6va4QI41+qghhGB/JMvV6Mvbnn1DhPatW3eEAoY3zsFtqpSHjJ4I62PEBW/6smVcUj8S
+         LYDydxmf33wTtZDOQ+8wAEBGmVy+DYHgZZyf8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [PATCH] IDE: ide-taskfile.c fix compilation warning and cleanup
+Date: Fri, 26 Jun 2009 21:42:42 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090617-09943-g5d77a4c; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+References: <1245650973.30547.3.camel@ht.satnam> <200906221250.36318.bzolnier@gmail.com> <1245986290.3568.1.camel@hpdv5.satnam>
+In-Reply-To: <1245986290.3568.1.camel@hpdv5.satnam>
 MIME-Version: 1.0
-To: jolsa@redhat.com
-CC: David Miller <davem@davemloft.net>, davidel@xmailserver.org,
-       oleg@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fbl@redhat.com, nhorman@redhat.com, htejun@gmail.com
-Subject: Re: [PATCH] net: fix race in the receive/select
-References: <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com>	<20090626145027.GA6534@redhat.com>	<alpine.DEB.1.10.0906261111230.16400@makko.or.mcafeemobile.com> <20090626.111738.141246987.davem@davemloft.net>
-In-Reply-To: <20090626.111738.141246987.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 26 Jun 2009 21:35:40 +0200 (CEST)
+Content-Disposition: inline
+Message-Id: <200906262142.43102.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller a écrit :
-> From: Davide Libenzi <davidel@xmailserver.org>
-> Date: Fri, 26 Jun 2009 11:12:15 -0700 (PDT)
+On Friday 26 June 2009 05:18:10 Jaswinder Singh Rajput wrote:
+> On Mon, 2009-06-22 at 12:50 +0200, Bartlomiej Zolnierkiewicz wrote:
+
+> > Besides I would suggest splitting the patch on fix and cleanup parts.
 > 
->> On Fri, 26 Jun 2009, Oleg Nesterov wrote:
->>
->>> Perhaps we can add
->>>
->>> 	void sock_poll_wait(struct file *file, struct sock *sk, poll_table *pt)
->>> 	{
->>> 		if (pt) {
->>> 			poll_wait(file, sk->sk_sleep, pt);
->>> 			/*
->>> 			 * fat comment
->>> 			 */
->>> 			smp_mb(); // or smp_mb__after_unlock();
->>> 		}
->>> 	}
->> That'd be fine IMHO. Are DaveM and Eric OK?
+> Here is the cleanup part:
 > 
-> No objections from me.
+> [PATCH] IDE: ide-taskfile.c fix style problems
+> 
+> Fix trivial style problems:
+> 
+> WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+> WARNING: space prohibited between function name and open parenthesis '('
+> WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+> ERROR: do not use C99 // comments X 2
+> ERROR: trailing statements should be on next line
+> ERROR: trailing whitespace
+> ERROR: switch and case should be at the same indent
+> WARNING: line over 80 characters
+> 
+> total: 5 errors, 4 warnings
+> 
+> Also removed dead code
+> 
+> Also used pr_err() to avoid line breaks
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Very good :)
-
-Jiri, please respin a patch with this idea from Oleg
-
-(We'll have to check all calls to poll_wait() in net tree)
-
-Thanks everybody
-
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
