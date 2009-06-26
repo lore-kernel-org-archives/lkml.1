@@ -1,53 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbZFZRDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbZFZRDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbZFZRDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbZFZRDD
+	id S1760935AbZFZRDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760785AbZFZRDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:03:03 -0400
-Received: from complete.lackof.org ([198.49.126.79]:44974 "EHLO
-	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753889AbZFZRDC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:03:02 -0400
-Date: Fri, 26 Jun 2009 11:03:04 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-parisc@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rc1: parisc: multiple PCI BAR collisions
-Message-ID: <20090626170304.GA20871@lackof.org>
-References: <a4423d670906260158q15080049ue516c3d454f4afbf@mail.gmail.com>
+	Fri, 26 Jun 2009 13:03:10 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:32796 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760758AbZFZRDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:03:09 -0400
+Message-ID: <57946.192.168.10.89.1246035773.squirrel@dbdmail.itg.ti.com>
+In-Reply-To: <53729.192.168.10.89.1246035472.squirrel@dbdmail.itg.ti.com>
+References: <53729.192.168.10.89.1246035472.squirrel@dbdmail.itg.ti.com>
+Date: Fri, 26 Jun 2009 22:32:53 +0530 (IST)
+Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
+From: "vimal singh" <vimalsingh@ti.com>
+To: "vimal singh" <vimalsingh@ti.com>
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "david-b@pacbell.net" <david-b@pacbell.net>
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670906260158q15080049ue516c3d454f4afbf@mail.gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 12:58:22PM +0400, Alexander Beregalov wrote:
-> Hi
-> 
-> Hardware is HP j6000.
-> It cannot initialize many PCI devices (sym53c8xx, tulip, STI,
-> usb(onci)) and cannot boot (no root device).
-> Messages like this:
-> sym53c8xx 0:0:0f.0: device not available because of BAR 1 [0xf4005000
-> - 0xf40053ff] collisions.
+Somehow I do not see below errors on compilation:
+drivers/mtd/nand/omap2.c: In function 'omap_wait':
+drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this
+function)
+drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported
+only once
+drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
+drivers/mtd/nand/omap2.c:557: error: implicit declaration of function
+'time_before'
 
-Yup - I found that out yesterday too. Console output is here:
-http://iou.parisc-linux.org/~grundler/console/j6000-2.6.30-parisc_2.6_parenting_failed-01
-http://iou.parisc-linux.org/~grundler/console/j6000-2.6.30-parisc_2.6_parenting_failed-02
+But still including 'linux/jiffies.h'.
 
-but in an IRC conversation it' clear I only dumped the "elmmio" and not
-the regular "lmmio" resource request. Need to dump both.
+Below is the patch.
 
-I'm pretty sure this is a problem of the root bus resources not getting
-setup correctly. I'm not clear on what's wrong. jejb and willy are looking
-at it now as well.
+Signed-off-by: Vimal Singh <vimalsingh@ti.com>
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
 
-thanks,
-grant
+drivers/mtd/nand/omap2.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
+index 0cd76f8..3b6e6ad 100644
+--- a/drivers/mtd/nand/omap2.c
++++ b/drivers/mtd/nand/omap2.c
+@@ -11,6 +11,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/delay.h>
++#include <linux/jiffies.h>
++#include <linux/sched.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/nand.h>
+ #include <linux/mtd/partitions.h>
+@@ -541,7 +543,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
+*chip)
+ 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
+ 							mtd);
+ 	unsigned long timeo = jiffies;
+-	int status, state = this->state;
++	int status = NAND_STATUS_FAIL, state = this->state;
+
+ 	if (state == FL_ERASING)
+ 		timeo += (HZ * 400) / 1000;
+@@ -558,6 +560,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
+*chip)
+ 		status = __raw_readb(this->IO_ADDR_R);
+ 		if (!(status & 0x40))
+ 			break;
++		cond_resched();
+ 	}
+ 	return status;
+ }
+
+
