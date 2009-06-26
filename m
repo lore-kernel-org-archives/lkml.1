@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbZFZT2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbZFZTdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761511AbZFZT2X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 15:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbZFZT2P
+	id S1760696AbZFZTdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 15:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZFZTdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 15:28:15 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:44318 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755765AbZFZT2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 15:28:14 -0400
-Date: Fri, 26 Jun 2009 13:28:17 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Alex Riesen <raa.lkml@gmail.com>, lenb@kernel.org, twmoure@szypr.net,
-       alessandro.suardi@gmail.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH v3 11/12] ACPI: video: convert to acpi_get_pci_dev
-Message-ID: <20090626192817.GD16840@ldl.fc.hp.com>
-References: <20090610194714.28982.51363.stgit@bob.kio> <20090610195600.28982.3404.stgit@bob.kio> <81b0412b0906251538j2614bf91ya2edbaf120796dfc@mail.gmail.com> <20090625230535.GE1723@ldl.fc.hp.com> <81b0412b0906260356p12fd7807y40223175bf785cc0@mail.gmail.com> <81b0412b0906260528j229f7e05i3c473fbdb643a2dd@mail.gmail.com> <20090626121926.12fccba0@jbarnes-g45>
+	Fri, 26 Jun 2009 15:33:44 -0400
+Received: from mail.lang.hm ([64.81.33.126]:58638 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752251AbZFZTdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 15:33:43 -0400
+Date: Fri, 26 Jun 2009 12:32:15 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Al Boldi <a1426z@gawab.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       Lars Marowsky-Bree <lmb@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>, drbd-dev@lists.linbit.com,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [PATCH 00/15] drbd: a block device for HA clusters
+In-Reply-To: <200906262142.30895.a1426z@gawab.com>
+Message-ID: <alpine.DEB.1.10.0906261229170.9159@asgard>
+References: <1246017715-9821-1-git-send-email-philipp.reisner@linbit.com> <200906261843.59635.a1426z@gawab.com> <1246032541.3925.53.camel@mulgrave.site> <200906262142.30895.a1426z@gawab.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626121926.12fccba0@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> 
-> Here's the output from my machine, including ACPI paths (summary of not
-> found stuff at the top):
-> 
-> ...
-> [    0.177188] + Adding \_SB_.PCI0.AGP_
-> [    0.177294] pci_bus 0000:00: I'm a little pci_bus, short and stout...
-> [    0.177407] Searching for 0000:00:01.0...not found
-> ...
-> [    0.179259] + Adding \_SB_.PCI0.EXP2
-> [    0.179364] pci_bus 0000:00: I'm a little pci_bus, short and stout...
-> [    0.179477] Searching for 0000:00:1c.2...not found
-> ...
-> [    0.180128] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.EXP3._PRT]
-> [    0.180200] Starting root bridge search from \_SB_.PCI0.EXP3.EXUP
-> [    0.180310] + Adding \_SB_.PCI0.EXP3.EXUP
-> [    0.180418] + Adding \_SB_.PCI0.EXP3
-> [    0.180523] pci_bus 0000:00: I'm a little pci_bus, short and stout...
-> [    0.180636] Searching for 0000:00:1c.3...found
-> [    0.180787] Searching for 0000:05:00.0...not found
-> ...
-> 
-> So looks like one is an express slot, another is the AGP this machine
-> lacks, and then there's this 05:00.0; not sure what that is.
-> 
-> At any rate, it does appear we have to take care not to assume
-> *everything* in the ACPI tree has an associated PCI dev, since
-> namespaces could be shared accross different platforms with just enable
-> or present bits to mask them out from the initial PCI scan.
+On Fri, 26 Jun 2009, Al Boldi wrote:
 
-Yup, as per our irc discussion, I'm now a lot more confident that
-this was the root cause.
+> James Bottomley wrote:
+>> On Fri, 2009-06-26 at 18:43 +0300, Al Boldi wrote:
+>>> James Bottomley wrote:
+>>>> On Fri, 2009-06-26 at 17:15 +0300, Al Boldi wrote:
+>>>>> Philipp Reisner wrote:
+>>>>>> Short Description
+>>>>>>
+>>>>>>   DRBD is a shared-nothing, synchronously replicated block device.
+>>>>>
+>>>>> What do you mean by "shared-nothing"?
+>>>>
+>>>> If you actually type "shared nothing" into google, the first hit will
+>>>> be the wikipedia article describing this.
+>>>
+>>> Sure, but the point here is to choose a description that is clear and
+>>> self-explanatory, and "shared-nothing" is neither clear nor
+>>> self-explanatory.
+>>
+>> It is clear because everyone agrees on the definition.
+>
+> Everyone involved in the project maybe, but not everyone interested in "a
+> block device for HA clusters".  And you don't want to turn them of by using
+> terminology to explain terminology, especially when it's misleading.  Many
+> OpenSource projects fail merely for this reason.
 
-Troy's original patch is correct, just needs an explanation of
-_why_. :)
+anyone who knows the terminology for HA clusters should understand the 
+term "shared-nothing"
 
-I'll send a patch updating acpi_get_pci_dev() with a comment that
-explains the "why".
+do you really want the full explination to have to be squeezed into this 
+sentance? or even the patch description?
 
-Thanks everyone.
+David Lang
 
-/ac
-
+>> And it is self
+>> explanatory because it's an art term for a well defined concept which
+>> forms one of the building blocks of the nomenclature used in clustering.
+>> Even if you're not familiar with clustering terminology, the definitions
+>> are easy to find via search engines.
+>>
+>> If you want to find useful quibbles, the term synchronously is wrong:
+>> DRBD is capable of both synchronous and asynchronous replication.
+>
+> Ok, so maybe change the description to reflect this capability.
+> Something like:  DRBD is an independent, synch/async replicated block device.
+>
+>
+> Thanks!
+>
+> --
+> Al
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
