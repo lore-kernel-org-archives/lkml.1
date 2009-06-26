@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZFZQ6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZFZRAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbZFZQ6R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZFZQ6G
+	id S1759667AbZFZRAS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758916AbZFZRAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:58:06 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:60873 "EHLO bear.ext.ti.com"
+	Fri, 26 Jun 2009 13:00:06 -0400
+Received: from mga09.intel.com ([134.134.136.24]:58002 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755005AbZFZQ6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:58:06 -0400
-Message-ID: <53729.192.168.10.89.1246035471.squirrel@dbdmail.itg.ti.com>
-Date: Fri, 26 Jun 2009 22:27:51 +0530 (IST)
-Subject: Re: [PATCH][MTD]: fix omap2.c compile failure and warning
-From: "vimal singh" <vimalsingh@ti.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Cc: "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+	id S1758938AbZFZRAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:00:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,297,1243839600"; 
+   d="scan'208";a="425586359"
+Subject: Re: possible recursive locking detected at kmem_cache_free
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+       "rjw@sisk.pl" <rjw@sisk.pl>, "mingo@elte.hu" <mingo@elte.hu>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>
+In-Reply-To: <Pine.LNX.4.64.0906261036080.21067@melkki.cs.Helsinki.FI>
+References: <20090625185942.GA29401@linux-os.sc.intel.com>
+	 <20090625123750.734b7f50.akpm@linux-foundation.org>
+	 <20090625215541.GB29401@linux-os.sc.intel.com>
+	 <Pine.LNX.4.64.0906261036080.21067@melkki.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 09:58:22 -0700
+Message-Id: <1246035502.4534.21747.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Somehow I do not see below errors on compilation:
-drivers/mtd/nand/omap2.c: In function 'omap_wait':
-drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this
-function)
-drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported
-only once
-drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
-drivers/mtd/nand/omap2.c:557: error: implicit declaration of function
-'time_before'
+On Fri, 2009-06-26 at 00:37 -0700, Pekka J Enberg wrote:
+> Hi Venki,
+> 
+> On Thu, 25 Jun 2009, Pallipadi, Venkatesh wrote:
+> > > > Not sure if this has been reported elsewhere. I started seeing this with git
+> > > > kernel from this morning on a system with RedHat EL5 base installation with
+> > > > ext3 root file system. Attached is the config I am using.
+> > > > 
+> > > > Let me know if you need any more details. This seems to be at every boot. I
+> > > > am trying the bisect right now.
+> > > > 
+> > > 
+> > > Thanks.  Let's cc Pekka.
+> > > 
+> > 
+> > git bisect result.
+> 
+> Thanks! I think I just broke lockdep annotations for slab. Does this patch 
+> fix things?
+> 
 
-But still including 'linux/jiffies.h'.
+Yes. This patch helps.
 
-Below is the patch.
+Thanks,
+Venki
 
-Signed-off-by: Vimal Singh <vimalsingh@ti.com>
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-
-diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
-index 0cd76f8..3b6e6ad 100644
---- a/drivers/mtd/nand/omap2.c
-+++ b/drivers/mtd/nand/omap2.c
-@@ -11,6 +11,8 @@
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
-+#include <linux/jiffies.h>
-+#include <linux/sched.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/nand.h>
- #include <linux/mtd/partitions.h>
-@@ -541,7 +543,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
-*chip)
- 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
- 							mtd);
- 	unsigned long timeo = jiffies;
--	int status, state = this->state;
-+	int status = NAND_STATUS_FAIL, state = this->state;
-
- 	if (state == FL_ERASING)
- 		timeo += (HZ * 400) / 1000;
-@@ -558,6 +560,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
-*chip)
- 		status = __raw_readb(this->IO_ADDR_R);
- 		if (!(status & 0x40))
- 			break;
-+		cond_resched();
- 	}
- 	return status;
- }
-
-
+> 			Pekka
+> 
+> diff --git a/mm/slab.c b/mm/slab.c
+> index e74a16e..37ee532 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -1544,9 +1544,6 @@ void __init kmem_cache_init(void)
+>  	}
+>  
+>  	g_cpucache_up = EARLY;
+> -
+> -	/* Annotate slab for lockdep -- annotate the malloc caches */
+> -	init_lock_keys();
+>  }
+>  
+>  void __init kmem_cache_init_late(void)
+> @@ -1563,6 +1560,9 @@ void __init kmem_cache_init_late(void)
+>  	/* Done! */
+>  	g_cpucache_up = FULL;
+>  
+> +	/* Annotate slab for lockdep -- annotate the malloc caches */
+> +	init_lock_keys();
+> +
+>  	/*
+>  	 * Register a cpu startup notifier callback that initializes
+>  	 * cpu_cache_get for all new cpus
 
