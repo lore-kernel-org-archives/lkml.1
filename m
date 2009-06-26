@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZFZAkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZFZAoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZFZAkm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 20:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZFZAke
+	id S1753145AbZFZAoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 20:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZFZAn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 20:40:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54414 "EHLO hera.kernel.org"
+	Thu, 25 Jun 2009 20:43:58 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60208 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbZFZAkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 20:40:33 -0400
-Message-ID: <4A4418EA.9000705@kernel.org>
-Date: Fri, 26 Jun 2009 09:40:10 +0900
+	id S1752100AbZFZAn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 20:43:57 -0400
+Message-ID: <4A4419AA.2040400@kernel.org>
+Date: Fri, 26 Jun 2009 09:43:22 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, linux-arch@vger.kernel.org, mingo@elte.hu,
-       tglx@linutronix.de, cl@linux-foundation.org
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <20090625000202.GR6760@one.firstfloor.org> <4A42C131.6040007@zytor.com> <20090625091939.GS6760@one.firstfloor.org> <4A43871F.9030507@zytor.com> <20090625195408.GW6760@one.firstfloor.org> <4A43DAFD.90409@zytor.com> <20090625202642.GX6760@one.firstfloor.org>
-In-Reply-To: <20090625202642.GX6760@one.firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: maximilian attems <max@stro.at>, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com, ink@jurassic.park.msu.ru
+Subject: Re: >= 2.6.30 broken alpha smp build
+References: <20090625090842.GA17936@stro.at> <20090625115423.6a31b49c.akpm@linux-foundation.org>
+In-Reply-To: <20090625115423.6a31b49c.akpm@linux-foundation.org>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 00:40:13 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 00:43:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> I don't know why, but in the configuration I saw each percpu area was
->> something like 1.8 MB.
+Andrew Morton wrote:
+> This is the
 > 
-> That sounds like something that needs to be investigated and fixed then.
-> In a sense per cpu space is precious like stack space and shouldn't 
-> be wasted.
+> #define PER_CPU_ATTRIBUTES	__used
+> 
+> in arch/alpha/include/asm/percpu.h, added by 
+> 
+> commit 9267b4b3880d00dc2dab90f1d817c856939114f7
+> Author:     Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> AuthorDate: Sat Jun 21 03:25:39 2008 +0400
+> Commit:     Linus Torvalds <torvalds@linux-foundation.org>
+> CommitDate: Fri Jun 20 16:46:10 2008 -0700
+> 
+>     alpha: fix module load failures on smp (bug #10926)
+> 
+> There's no indication in the changelog why this was added and afacit no
+> other architectures do it.  So I'm at a loss to help here. 
 
-The large percpu space is most likely from lockdep.
+The __used attribute is dropped by a patch in percpu patchset as it
+caused build warning on my test builds and wasn't even effective
+as-was (overriden by later NULL definition).  Ivan, any ideas why it's
+there?
 
 Thanks.
 
