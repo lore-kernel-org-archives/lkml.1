@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbZFZHgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbZFZHhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755028AbZFZHgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZFZHgY
+	id S1753517AbZFZHhd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZFZHh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:36:24 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59118 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbZFZHgY (ORCPT
+	Fri, 26 Jun 2009 03:37:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38403 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbZFZHhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:36:24 -0400
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090626072350.GI14078@elte.hu>
-References: <20090624131104.705c828d@skybase>
-	 <20090624112929.GB2079@linux-sh.org> <20090624142828.7c6a2337@skybase>
-	 <20090624123416.GB9510@linux-sh.org> <20090624124542.GB32306@elte.hu>
-	 <20090624131440.GA9700@linux-sh.org> <20090624132447.GD6224@elte.hu>
-	 <1245999685.31755.157.camel@twins>  <20090626072350.GI14078@elte.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 26 Jun 2009 09:36:32 +0200
-Message-Id: <1246001792.31755.176.camel@twins>
+	Fri, 26 Jun 2009 03:37:25 -0400
+Date: Fri, 26 Jun 2009 10:37:25 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "rjw@sisk.pl" <rjw@sisk.pl>, mingo@elte.hu, cl@linux-foundation.org,
+       npiggin@suse.de, a.p.zijlstra@chello.nl
+Subject: Re: possible recursive locking detected at kmem_cache_free
+In-Reply-To: <20090625215541.GB29401@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0906261036080.21067@melkki.cs.Helsinki.FI>
+References: <20090625185942.GA29401@linux-os.sc.intel.com>
+ <20090625123750.734b7f50.akpm@linux-foundation.org>
+ <20090625215541.GB29401@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-26 at 09:23 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2009-06-24 at 15:24 +0200, Ingo Molnar wrote:
+Hi Venki,
+
+On Thu, 25 Jun 2009, Pallipadi, Venkatesh wrote:
+> > > Not sure if this has been reported elsewhere. I started seeing this with git
+> > > kernel from this morning on a system with RedHat EL5 base installation with
+> > > ext3 root file system. Attached is the config I am using.
 > > > 
-> > > [ And long-term analysis ('perf stat' type of runs) dont need IRQs 
-> > >   anyway - perfcounters reads outs the counts and summarizes them 
-> > >   across the measured workload. ]
+> > > Let me know if you need any more details. This seems to be at every boot. I
+> > > am trying the bisect right now.
+> > > 
 > > 
-> > If the counter width is less than 64 bits we do need to have some 
-> > interrupt to read them from before they cycle so we can accumulate 
-> > the deltas into a proper u64.
+> > Thanks.  Let's cc Pekka.
+> > 
 > 
-> Yeah - but even that can be driven from some housekeeping hrtimer.
+> git bisect result.
 
-Oh absolutely, but its one of those things one should not forget to do.
+Thanks! I think I just broke lockdep annotations for slab. Does this patch 
+fix things?
 
-> > But for proper 64 bit hardware counters there is indeed no need 
-> > for that.
-> 
-> Indeed - although they are rare.
+			Pekka
 
-Paul Mundt mentioned he had some.
+diff --git a/mm/slab.c b/mm/slab.c
+index e74a16e..37ee532 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -1544,9 +1544,6 @@ void __init kmem_cache_init(void)
+ 	}
+ 
+ 	g_cpucache_up = EARLY;
+-
+-	/* Annotate slab for lockdep -- annotate the malloc caches */
+-	init_lock_keys();
+ }
+ 
+ void __init kmem_cache_init_late(void)
+@@ -1563,6 +1560,9 @@ void __init kmem_cache_init_late(void)
+ 	/* Done! */
+ 	g_cpucache_up = FULL;
+ 
++	/* Annotate slab for lockdep -- annotate the malloc caches */
++	init_lock_keys();
++
+ 	/*
+ 	 * Register a cpu startup notifier callback that initializes
+ 	 * cpu_cache_get for all new cpus
