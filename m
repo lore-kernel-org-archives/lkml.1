@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZFZJvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZFZKDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZFZJvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 05:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZFZJvX
+	id S1753931AbZFZKDU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 06:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZFZKDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 05:51:23 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:52031 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbZFZJvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 05:51:21 -0400
-Date: Fri, 26 Jun 2009 10:51:16 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Minkyu Kang <mk7.kang@samsung.com>, linux-kernel@vger.kernel.org,
-       linux-i2c@vger.kernel.org, lm-sensors@lm-sensors.org,
-       suchang.woo@samsung.com, kyungmin.park@samsung.com
-Message-ID: <20090626095116.GD5415@sirena.org.uk>
-References: <4A448926.1030701@samsung.com>
- <1246007760.3067.5.camel@hpdv5.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246007760.3067.5.camel@hpdv5.satnam>
-X-Cookie: You have no real enemies.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] hwmon: add GP2A002 proximity/ambient sensor
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Fri, 26 Jun 2009 06:03:12 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:58216 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750793AbZFZKDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 06:03:11 -0400
+Subject: Re: [PATCH] LED: Reply-To: use correct name for
+	/sys/devices/virtual/leds/ entries
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Greg KH <greg@kroah.com>
+Cc: Guennadi Liakhovetski <lg@denx.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090626024636.GA18329@kroah.com>
+References: <20090624223343.GA17235@kroah.com>
+	 <1245927475.6001.38.camel@dax.rpnet.com> <20090626024636.GA18329@kroah.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 11:01:27 +0100
+Message-Id: <1246010487.6003.4.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 02:46:00PM +0530, Jaswinder Singh Rajput wrote:
+On Thu, 2009-06-25 at 19:46 -0700, Greg KH wrote:
+> On Thu, Jun 25, 2009 at 11:57:55AM +0100, Richard Purdie wrote:
+> > On Wed, 2009-06-24 at 15:33 -0700, Greg KH wrote:
+> > > From: Olaf Hering <olh@suse.de>
+> > > 
+> > > This is needed to get kde-powersave to work properly on some g4
+> > > powerbooks.
+> > > 
+> > > From: Olaf Hering <olh@suse.de>
+> > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > I'm ok with this apart from:
+> > 
+> > > --- a/drivers/leds/ledtrig-default-on.c
+> > > +++ b/drivers/leds/ledtrig-default-on.c
+> > > @@ -23,7 +23,7 @@ static void defon_trig_activate(struct l
+> > >  }
+> > >  
+> > >  static struct led_trigger defon_led_trigger = {
+> > > -	.name     = "default-on",
+> > > +	.name     = "default::on",
+> > >  	.activate = defon_trig_activate,
+> > >  };
+> > 
+> > which doesn't seem to match the patch description. Why does the trigger
+> > name need to be changed?
+> 
+> I really don't know, I took this patch from the suse tree, and Olaf is
+> gone and I can't ask him :(
+> 
+> If you don't think it is needed/correct, please drop that part.  Or I
+> can redo it without it.
 
-> I am curious what is the use of include/linux/gp2ap002.h, it only have
-> gp2ap002_platform_data structure which you can keep in your source file
-> the only file which is using it.
+I'll just drop that bit. As far as I can see it would just break any
+users of that trigger for no good reason...
 
-Platform data is data which is passed in from the board-specific code
-for the system (which will live under arch) to configure the driver.
+Cheers,
+
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
