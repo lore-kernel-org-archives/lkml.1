@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZFZIpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483AbZFZIqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZFZIpZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZFZIpN
+	id S1757483AbZFZIqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZFZIqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:45:13 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55631 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752028AbZFZIpM (ORCPT
+	Fri, 26 Jun 2009 04:46:09 -0400
+Received: from mail-yx0-f203.google.com ([209.85.210.203]:59080 "EHLO
+	mail-yx0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754021AbZFZIqI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:45:12 -0400
-Subject: Re: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem
- in sl[aou]b
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: paulmck@linux.vnet.ibm.com
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cl@linux-foundation.org, jdb@comx.dk,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090625220837.GD8852@linux.vnet.ibm.com>
-References: <20090625193137.GA16861@linux.vnet.ibm.com>
-	 <1245965239.21085.393.camel@calx>
-	 <20090625220837.GD8852@linux.vnet.ibm.com>
-Date: Fri, 26 Jun 2009 11:45:13 +0300
-Message-Id: <1246005913.27533.21.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 26 Jun 2009 04:46:08 -0400
+X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Fri, 26 Jun 2009 04:46:07 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=jGXFFMwjBXN/cu07qxWMjfJFXl7+/koiroSP6erinU1wDIxPrhfprYfEAWAyR7oFrB
+         nXE2/k91A+WCqNHOColdC5mYL2tZ9P5mjFPRY6xuqGvjfrGsM8LBO1o42w79M51Gl3PZ
+         Hg1t/a076XE0aW0QwrQajG1yLRRl2x5P++bxE=
+MIME-Version: 1.0
+In-Reply-To: <42a6d9690906260128q46c092aqf29aa6d6e77b9ccb@mail.gmail.com>
+References: <42a6d9690906260128q46c092aqf29aa6d6e77b9ccb@mail.gmail.com>
+Date: Fri, 26 Jun 2009 16:39:22 +0800
+Message-ID: <42a6d9690906260139l1d54ddcex88be0527747f5af8@mail.gmail.com>
+Subject: SG_DXFER_TO_FROM_DEV does not copy user buffer to driver buffer in 
+	linux 2.6.28 and later?
+From: zhou sf <sxzzsf@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 15:08 -0700, Paul E. McKenney wrote:
-> On Thu, Jun 25, 2009 at 04:27:19PM -0500, Matt Mackall wrote:
-> > On Thu, 2009-06-25 at 12:31 -0700, Paul E. McKenney wrote:
-> > > Hello!
-> > > 
-> > > Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather
-> > > than rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result
-> > > in RCU callbacks accessing a kmem_cache after it had been destroyed.
-> > > 
-> > > The following untested (might not even compile) patch proposes a fix.
-> > 
-> > Acked-by: Matt Mackall <mpm@selenic.com>
-> > 
-> > Nick, you'll want to make sure you get this in SLQB.
-> > 
-> > > Reported-by: Jesper Dangaard Brouer <jdb@comx.dk>
-> 
-> And I seem to have blown Jesper's email address (apologies, Jesper!), so:
-> 
-> Reported-by: Jesper Dangaard Brouer <hawk@comx.dk>
+---------- Forwarded message ----------
+From: zhou sf <sxzzsf@gmail.com>
+Date: 2009/6/26
+Subject: SG_DXFER_TO_FROM_DEV does not copy user buffer to driver
+buffer in linux 2.6.28 and later?
+To: majordomo@vger.kernel.org
 
-Compiles and boots here so I went ahead and applied the patch. ;) Thanks
-a lot Paul!
 
-			Pekka
+Test with the following program, and dump the data buf at queuecommand
+of the driver, found the data is something like:
+"00 00 00 00 ff 53 4d 42 2e 00 00 00 00 80 01 c0 00 00 00 00 00 00 00
+00 00 00 00 00 02 20 4a ..."
+While before 2.6.28, it is "ec ec ec ec ..." as expected.
 
+
+#include <string.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <scsi/sg.h>
+
+int main(int argc, char* argv[])
+{
+       int fd;
+       sg_io_hdr_t io_hdr;
+       int ret;
+
+       unsigned char sensebuf[32], cdb[16], outbuf[256];
+
+       if ((argc!=2) || (fd = open(argv[1], O_RDWR)) < 0) {
+               return -1;
+       }
+
+       memset(&io_hdr, 0, sizeof(sg_io_hdr_t));
+       memset(cdb, 0, sizeof(cdb));
+       memset(outbuf, 0xec, sizeof(outbuf));
+       memset(sensebuf, 0xec, sizeof(sensebuf));
+
+       io_hdr.interface_id = 'S';
+
+       io_hdr.cmdp = cdb;
+       io_hdr.cmd_len = sizeof(cdb);
+
+       io_hdr.sbp = sensebuf;
+       io_hdr.mx_sb_len = sizeof(sensebuf);
+
+       io_hdr.dxferp = outbuf;
+       io_hdr.dxfer_len = sizeof(outbuf);
+       io_hdr.dxfer_direction = SG_DXFER_TO_FROM_DEV;
+
+       io_hdr.timeout = 20000;
+
+       ret = ioctl(fd, SG_IO, &io_hdr);
+       return 0;
+}
