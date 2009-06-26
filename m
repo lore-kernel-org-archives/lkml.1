@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZFZIOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZFZIQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbZFZIOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFZIOA
+	id S1754340AbZFZIQl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751910AbZFZIQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:14:00 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55434 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755699AbZFZIN7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:13:59 -0400
-Message-ID: <4A44833F.8040308@cn.fujitsu.com>
-Date: Fri, 26 Jun 2009 16:13:51 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: [PATCH 2/2] io-controller: make rt preemption happen in the whole
- hierarchy
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com> <4A3F3648.7080007@cn.fujitsu.com> <20090622172123.GE15600@redhat.com> <4A4079B8.4020402@cn.fujitsu.com> <20090623140250.GA4262@redhat.com> <4A41EFE1.5050101@cn.fujitsu.com>
-In-Reply-To: <4A41EFE1.5050101@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jun 2009 04:16:26 -0400
+Received: from mail-pz0-f202.google.com ([209.85.222.202]:58742 "EHLO
+	mail-pz0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbZFZIQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 04:16:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=DgkdBRs5ZC9JBCFMoOHxNcOY4vxXi2QZjWLiJHdth8It4qAEg/dbZ6gAzmiWJzar2M
+         NIxzuUxbZdz5f2/mgJkVzwb0A2JKGvZoRg4+uz5cVJuE/oJL8LoKcxrnyjWTtJpte5nJ
+         D97eelw7gV5chEpk2KLb2a2w9wO1WXYJX/MF4=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Wu Zhangjin <wuzj@lemote.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH -rt] softirq: fix undefined rate_limit in softirq_check_pending_idle
+Date: Fri, 26 Jun 2009 15:46:13 +0800
+Message-Id: <e1ad7dd41b964ad729595fc97ad8c4b26a119de4.1246002312.git.wuzj@lemote.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-let rt queue preempt non-rt queue if needed.
-Make sure comparision happens at the same level.
+From: Wu Zhangjin <wuzj@lemote.com>
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+on !PREEMPT_RT, there is a defined ratelimit in
+softirq_check_pending_idel(), but used as rate_limit, so, defining
+rate_limit instead of ratelimit will fix it.
+
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
 ---
- block/elevator-fq.c |   28 +++++++++++++++++++++++++++-
- 1 files changed, 27 insertions(+), 1 deletions(-)
+ kernel/softirq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 1d4ec1f..21d38f5 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -3742,6 +3742,31 @@ int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
- 	return ret;
- }
- 
-+static int check_rt_preemption(struct io_queue *ioq)
-+{
-+	struct hlist_node *node;
-+	struct hlist_head *hhead = &ioq->efqd->rt_ioq_list;
-+	struct io_queue *rt_ioq;
-+	struct io_entity *entity = &ioq->entity;
-+	struct io_entity *new_entity;
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(rt_ioq, node, hhead, rt_node) {
-+		new_entity = &rt_ioq->entity;
-+
-+		bfq_find_matching_entity(&entity, &new_entity);
-+
-+		if (new_entity->ioprio_class == IOPRIO_CLASS_RT &&
-+		    entity->ioprio_class != IOPRIO_CLASS_RT) {
-+			rcu_read_unlock();
-+			return 1;
-+		}
-+	}
-+	rcu_read_unlock();
-+
-+	return 0;
-+}
-+
- /* Common layer function to select the next queue to dispatch from */
- void *elv_fq_select_ioq(struct request_queue *q, int force)
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 00b4638..38b44c9 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -155,9 +155,9 @@ void softirq_check_pending_idle(void)
+  */
+ void softirq_check_pending_idle(void)
  {
-@@ -3823,7 +3848,8 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
- 	 */
- 	iog = ioq_to_io_group(ioq);
+-	static int ratelimit;
++	static int rate_limit;
  
--	if (!elv_ioq_class_rt(ioq) && iog->busy_rt_queues) {
-+	if (!elv_ioq_class_rt(ioq) &&
-+	    (iog->busy_rt_queues || check_rt_preemption(ioq))) {
- 		/*
- 		 * We simulate this as cfqq timed out so that it gets to bank
- 		 * the remaining of its time slice.
+-	if (ratelimit < 10) {
++	if (rate_limit < 10) {
+ 		printk(KERN_ERR "NOHZ: local_softirq_pending %02x\n",
+ 		       local_softirq_pending());
+ 		rate_limit++;
 -- 
-1.5.4.rc3
-
+1.6.0.4
 
