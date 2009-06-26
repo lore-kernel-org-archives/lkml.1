@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZFZHry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZFZHuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZFZHry (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZFZHrr
+	id S1752546AbZFZHuk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFZHuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:47:47 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:49415 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753707AbZFZHrq (ORCPT
+	Fri, 26 Jun 2009 03:50:32 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:17399
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751479AbZFZHub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:47:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=i5A+DX69LrSfaR64LPPf1ZP3OXZ7Xdeg2FticoFSiNpAtkaH5GbULaf6GNErXZABev
-         PWzhnFvbFRggF1X0B8Nxpx8RERXp0VAznhy5wBN6PAzACQmM6p6GixTJPPUq8LThahhD
-         xaZpTa157hWAvnsPf9nXJHA0OWeEinED4jaOY=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: jcm@redhat.com, Wu Zhangjin <wuzj@lemote.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH -rt] hwlat_detector: add dependence of RING_BUFFER
-Date: Fri, 26 Jun 2009 15:47:26 +0800
-Message-Id: <b9596d9e4b8ddcdb2e710873fb2086d3370ed9ff.1246002312.git.wuzj@lemote.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <e1ad7dd41b964ad729595fc97ad8c4b26a119de4.1246002312.git.wuzj@lemote.com>
-References: <e1ad7dd41b964ad729595fc97ad8c4b26a119de4.1246002312.git.wuzj@lemote.com>
+	Fri, 26 Jun 2009 03:50:31 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvYBAMMaREp8qN0Z/2dsb2JhbAAIz1OEDQWBNQ
+X-IronPort-AV: E=Sophos;i="4.42,295,1243785600"; 
+   d="scan'208";a="469202895"
+Subject: Re: [PATCH] favr32: improve touchscreen response
+From: Ben Nizette <ben@niasdigital.com>
+To: "haavard.skinnemoen" <haavard.skinnemoen@atmel.com>
+Cc: kernel <kernel@avr32linux.org>,
+       "Egtvedt, Hans-Christian" <Hans-Christian.Egtvedt@atmel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1240195013.24329.38.camel@linux-51e8.site>
+References: <1240195013.24329.38.camel@linux-51e8.site>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 17:49:37 +1000
+Message-Id: <1246002577.9414.62.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzj@lemote.com>
 
-driver/misc/hwlat_detector.c needs the ring_buffer_* functions, which
-are defined in kernel/trace/ring_buffer.c, so, hwlat_detector is
-dependent on RING_BUFFER.
+Hi Haavard,
 
-Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
----
- drivers/misc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+This has hce's ack, any chance of getting it in .31?
 
-diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
-index 174b99e..557cbb1 100644
---- a/drivers/misc/Kconfig
-+++ b/drivers/misc/Kconfig
-@@ -78,7 +78,7 @@ config IBM_ASM
+Thx,
+	--Ben.
+
+On Mon, 2009-04-20 at 12:36 +1000, Ben Nizette wrote:
+> The ezLCD+101 board (to which an favr-32 is fitted) has a long,
+> unshielded, nasty lead between the touch panel and the ads7843 touch
+> controller.  In order to get satisfactory response then, we need to
+> employ every noise-reduction trick in the driver's arsenal.  After
+> extensive fiddling I've found some good settings:
+> 
+> 1) We keep vref on all the time to dramatically reduce settling times
+> (at the cost of a tiny increase in power consumption).
+> 
+> 2) Despite 1 the settling time is still non-zero.  500uS is plenty of
+> time for the signals to settle
+> 
+> 3) Despite 1 and 2 there's still a little bit of noise around.  By
+> setting a pen recheck delay we make the panel feel less touchy and
+> twitchy.
+> 
+> Someone with more time and patience myself might be able to tune this
+> numbers further but these settings are now perfectly acceptable for
+> normal use.
+> 
+> Tested on ezLCD+101 though should only improve response on other ezLCD+/
+> favr-32 boards too.
+> 
+> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> 
+> ---
+>  arch/avr32/boards/favr-32/setup.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
+> index 58203d1..f1152fa 100644
+> --- a/arch/avr32/boards/favr-32/setup.c
+> +++ b/arch/avr32/boards/favr-32/setup.c
+> @@ -72,6 +72,10 @@ static struct ads7846_platform_data ads7843_data = {
+>  	.debounce_max		= 20,
+>  	.debounce_rep		= 4,
+>  	.debounce_tol		= 5,
+> +	
+> +	.keep_vref_on		= true,
+> +	.settle_delay_usecs	= 500,
+> +	.penirq_recheck_delay_usecs = 100,
+>  };
  
- config HWLAT_DETECTOR
- 	tristate "Testing module to detect hardware-induced latencies"
--	depends on DEBUG_FS
-+	depends on DEBUG_FS && RING_BUFFER
- 	default m
- 	---help---
- 	  A simple hardware latency detector. Use this module to detect
--- 
-1.6.0.4
 
