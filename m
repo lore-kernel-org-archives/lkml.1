@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760964AbZFZSRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbZFZSVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760964AbZFZSRn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZFZSRe
+	id S1759396AbZFZSVz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbZFZSVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:17:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46575
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753169AbZFZSRd (ORCPT
+	Fri, 26 Jun 2009 14:21:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44689 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbZFZSVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:17:33 -0400
-Date: Fri, 26 Jun 2009 11:17:38 -0700 (PDT)
-Message-Id: <20090626.111738.141246987.davem@davemloft.net>
-To: davidel@xmailserver.org
-Cc: oleg@redhat.com, eric.dumazet@gmail.com, jolsa@redhat.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, htejun@gmail.com
-Subject: Re: [PATCH] net: fix race in the receive/select
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.1.10.0906261111230.16400@makko.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com>
-	<20090626145027.GA6534@redhat.com>
-	<alpine.DEB.1.10.0906261111230.16400@makko.or.mcafeemobile.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 26 Jun 2009 14:21:46 -0400
+Subject: RE: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
+ Mapping Support
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: "'FUJITA Tomonori'" <fujita.tomonori@lab.ntt.co.jp>,
+       "'chrisw@redhat.com'" <chrisw@redhat.com>,
+       "'torvalds@linux-foundation.org'" <torvalds@linux-foundation.org>,
+       "'akpm@linux-foundation.org'" <akpm@linux-foundation.org>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
+In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B0216BF5@orsmsx505.amr.corp.intel.com>
+References: <20090625003841.GA12226@linux-os.sc.intel.com>
+	 <20090625095643F.fujita.tomonori@lab.ntt.co.jp>
+	 <20090625041605.GA9330@linux-os.sc.intel.com>
+	 <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
+	 <1245913886.17089.91.camel@macbook.infradead.org>
+	 <1245966743.30355.42.camel@macbook.infradead.org>
+	 <A6AD88C3F2289247BE726C37303E1EB8B0216BF5@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 19:21:28 +0100
+Message-Id: <1246040488.663.51.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Davide Libenzi <davidel@xmailserver.org>
-Date: Fri, 26 Jun 2009 11:12:15 -0700 (PDT)
-
-> On Fri, 26 Jun 2009, Oleg Nesterov wrote:
+On Thu, 2009-06-25 at 14:56 -0700, Yu, Fenghua wrote:
 > 
->> Perhaps we can add
->> 
->> 	void sock_poll_wait(struct file *file, struct sock *sk, poll_table *pt)
->> 	{
->> 		if (pt) {
->> 			poll_wait(file, sk->sk_sleep, pt);
->> 			/*
->> 			 * fat comment
->> 			 */
->> 			smp_mb(); // or smp_mb__after_unlock();
->> 		}
->> 	}
+> >(Fenghua, why are we doing the whole setup per pci dev anyway -- why
+> not
+> >set up the page tables once and point all devices at the same page
+> >tables?)
+> >
 > 
-> That'd be fine IMHO. Are DaveM and Eric OK?
+> That's what the ia64 fix patch does...the first pci device set up the
+> page table. Then all following pci devices use that page table by
+> setting up the context mapping.
 
-No objections from me.
+I've sorted that out separately -- it's not necessarily part of this
+fix, although it _would_ be nice to have it in 2.6.31, since your
+original 1:1 mapping patch is quite slow (and takes quite a lot of
+memory) without it.
+
+This time, I _am_ going to let it bake in linux-next for a while first
+though.
+
+Until Linus pulls the IA64 build fix from the real iommu-2.6.git tree,
+I've put this into git://git.infradead.org/~dwmw2/iommu-pt.git
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
