@@ -1,41 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZFZXdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZFZXqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbZFZXdb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 19:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZFZXdW
+	id S1755092AbZFZXqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 19:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZFZXq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 19:33:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55000 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZFZXdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 19:33:22 -0400
-Date: Fri, 26 Jun 2009 22:18:29 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, earl_chew@agilent.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Q: do_coredump() && d_unhashed()
-Message-ID: <20090626201829.GA25976@redhat.com>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090626180222.GD7337@hmsreliant.think-freely.org> <20090626165908.GB12063@redhat.com> <20090626202411.GH7337@hmsreliant.think-freely.org> <20090626191418.GA22603@redhat.com> <20090626191602.GC22603@redhat.com>
+	Fri, 26 Jun 2009 19:46:26 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:42173 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbZFZXq0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 19:46:26 -0400
+To: "Pan\, Jacob jun" <jacob.jun.pan@intel.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
+	<m1ab3ubx4q.fsf@fess.ebiederm.org>
+	<43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 26 Jun 2009 16:46:24 -0700
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com> (Jacob jun Pan's message of "Fri\, 26 Jun 2009 16\:24\:22 -0700")
+Message-ID: <m163eieey7.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626191602.GC22603@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jacob.jun.pan@intel.com, hpa@linux.intel.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Pan\, Jacob jun" <jacob.jun.pan@intel.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/26, Oleg Nesterov wrote:
+"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
+
+>>-----Original Message-----
+>>From: Eric W. Biederman [mailto:ebiederm@xmission.com]
+>>Sent: Friday, June 26, 2009 12:42 PM
+>>To: Pan, Jacob jun
+>>Cc: linux-kernel@vger.kernel.org; H. Peter Anvin
+>>Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+>>
+>>"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
+>>
+>>>>From 82d64ca4f963d2e205326534aff0c77d9bfa5858 Mon Sep 17 00:00:00 2001
+>>> From: Jacob Pan <jacob.jun.pan@intel.com>
+>>> Date: Fri, 12 Jun 2009 02:16:05 -0700
+>>> Subject: [PATCH] x86/apic: support moorestown interrupt subsystem
+>>>
+>>> This patch uses platform flags to selectively enable apic related setup
+>>> code.
+>>>
+>>> Since moorestown does not have legacy timer or PIC, the only system
+>>> timer irqs are routed via ioapic. Early timer ioapic enabling is also
+>>> added to allow boot time timing services.
+>>
+>>This patch is horribly wrong.   We should not have a moorestown specific
+>>hack  we should not do early timer ioapic on everything that supports
+>>it which is most x86 machines since apics became common.
+>>
+> [[JPAN]] maybe I misunderstood. But I am doing the special early timer ioapic
+> setup in x86_quirks, so it is not for every platform.
 >
-> do_coredump() does a lot of file checks which are only needed when !ispipe,
+>>At which point moorestown support should just be a little work somewhere
+>>in the table parsers.
+>>
+> [[JPAN]] can you elaborate a little? I was hoping to move APIC initialization earlier so that I don't have to have the special treatment for system timer.
+> But it seems require early memory allocator.
 
-I wonder why do we check d_unhashed() after filp_open() ?
+We have early memory allocators.  And we are not talking super
+early.  Just at the point init_IRQ is called.
 
-Also, we are doing filp_open(O_CREAT | 2 | O_NOFOLLOW | O_LARGEFILE), this
-2 == O_RDWR looks very strange.
+> [[JPAN]] Moorestown does not have 8259, even IOAPIC is emulated by FW. Are you
+> saying we should try to completely separate 8259 instead of use if(8259) here
+> and there in the IOAPIC code? T
 
-Oleg.
+Yes, completely separate out the 8259.  I believe that complete
+separation will come for free if you move the ioapic earlier.
 
+What kind of PIC is native?
+
+Eric
