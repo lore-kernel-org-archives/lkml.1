@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZFZDVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZFZD6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZFZDVb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 23:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284AbZFZDVZ
+	id S1753313AbZFZD6x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 23:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbZFZD6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 23:21:25 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:58177 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752443AbZFZDVY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 23:21:24 -0400
-Message-ID: <4A443EB5.40300@snapgear.com>
-Date: Fri, 26 Jun 2009 13:21:25 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: uClinux development list <uclinux-dev@uclinux.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [uClinux-dev] 	Coldfire 5271 hitting BUG_ON(page_count(buddy)
- != 0);
-References: <20090625154343.GA10189@csclub.uwaterloo.ca>
-In-Reply-To: <20090625154343.GA10189@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 25 Jun 2009 23:58:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48650 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751522AbZFZD6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 23:58:42 -0400
+Date: Fri, 26 Jun 2009 13:58:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Arnd Bergmann <arnd@arndb.de>
+Subject: linux-next: manual merge of the tip tree with the ttydev tree
+Message-Id: <20090626135835.f60b2968.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Jun_2009_13_58_35_+1000_lXJFZ/pRt9iqvNG8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lennart,
+--Signature=_Fri__26_Jun_2009_13_58_35_+1000_lXJFZ/pRt9iqvNG8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Lennart Sorensen wrote:
-> I am hitting a memory management bug and I would love some hints as to
-> how to track down the bug and fix it.
-> 
-> The bug hit is line 423 of page_alloc.c which is:
-> 
-> BUG_ON(page_count(buddy) != 0);
-> 
-> The function it is part of is:
-> 
-> static inline int page_is_buddy(struct page *page, struct page *buddy,
->                                                                 int order)
-> {
->         if (!pfn_valid_within(page_to_pfn(buddy)))
->                 return 0;
-> 
->         if (page_zone_id(page) != page_zone_id(buddy))
->                 return 0;
-> 
->         if (PageBuddy(buddy) && page_order(buddy) == order) {
->                 BUG_ON(page_count(buddy) != 0);
->                 return 1;
->         }
->         return 0;
-> }
-> 
-> I am seeing this both with 2.6.29.1 and 2.6.30 so far.  I unfortunately
-> haven't poked much at the memory management code, so I am not even sure
-> what this is supposed to be doing.  The cpu us a coldfire 5271.
-> 
-> I also see crashes causing the kernel to dump lots of hex values.
-> Building the kernel with debug enabled unfortunately seems to move things
-> around enough to make it just lock up instead without any output.
+Hi all,
 
-What are you doing at the time you get this?
-Or is it at bootup?
+Today's linux-next merge of the tip tree got a conflict in
+arch/x86/include/asm/termios.h between commit
+9d5eecbefea1142a640bb01426fa6e332a5a9e54 ("tty-x86-termios-clean") from
+the ttydev tree and commits 69d5ffdaad7b77b97229b55c36afb20e5bebd29e
+("x86: convert termios.h to the asm-generic version") and
+73a2d096fdf23aa841f7595d114a11ec85a85e4d ("x86: remove all now-duplicate
+header files") from the tip tree.
 
-Regards
-Greg
+I just used the version from the tip tree as the ttydev changes are
+trivial.  Alan, I think you might as well just drop that patch as the tip
+tree is rewriting that file completely (converting it to use the
+asm-generic version).
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+--Signature=_Fri__26_Jun_2009_13_58_35_+1000_lXJFZ/pRt9iqvNG8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpER2sACgkQjjKRsyhoI8zggQCgpIhDcHw5jxD4PN+9eq52dXhc
+Rz8An20N6XfXywEVdF9GsXP8qokHDW1m
+=hpg8
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Jun_2009_13_58_35_+1000_lXJFZ/pRt9iqvNG8--
