@@ -1,73 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbZFZKDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZFZKOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753931AbZFZKDU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 06:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZFZKDM
+	id S1754911AbZFZKOy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 06:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZFZKOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 06:03:12 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:58216 "EHLO dan.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbZFZKDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 06:03:11 -0400
-Subject: Re: [PATCH] LED: Reply-To: use correct name for
-	/sys/devices/virtual/leds/ entries
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Greg KH <greg@kroah.com>
-Cc: Guennadi Liakhovetski <lg@denx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090626024636.GA18329@kroah.com>
-References: <20090624223343.GA17235@kroah.com>
-	 <1245927475.6001.38.camel@dax.rpnet.com> <20090626024636.GA18329@kroah.com>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 11:01:27 +0100
-Message-Id: <1246010487.6003.4.camel@dax.rpnet.com>
+	Fri, 26 Jun 2009 06:14:45 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48071 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751074AbZFZKOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 06:14:44 -0400
+Date: Fri, 26 Jun 2009 11:16:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
+Message-ID: <20090626111603.758ec7fb@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090626093859.GA12571@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+	<20090626071955.GG14078@elte.hu>
+	<20090626101310.4110a290@lxorguk.ukuu.org.uk>
+	<20090626093859.GA12571@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 19:46 -0700, Greg KH wrote:
-> On Thu, Jun 25, 2009 at 11:57:55AM +0100, Richard Purdie wrote:
-> > On Wed, 2009-06-24 at 15:33 -0700, Greg KH wrote:
-> > > From: Olaf Hering <olh@suse.de>
-> > > 
-> > > This is needed to get kde-powersave to work properly on some g4
-> > > powerbooks.
-> > > 
-> > > From: Olaf Hering <olh@suse.de>
-> > > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > I'm ok with this apart from:
-> > 
-> > > --- a/drivers/leds/ledtrig-default-on.c
-> > > +++ b/drivers/leds/ledtrig-default-on.c
-> > > @@ -23,7 +23,7 @@ static void defon_trig_activate(struct l
-> > >  }
-> > >  
-> > >  static struct led_trigger defon_led_trigger = {
-> > > -	.name     = "default-on",
-> > > +	.name     = "default::on",
-> > >  	.activate = defon_trig_activate,
-> > >  };
-> > 
-> > which doesn't seem to match the patch description. Why does the trigger
-> > name need to be changed?
+> It's an entirely legitimate question, given that many other current 
+> modern subarchitectures detect themselves based on PCI config space 
+> early accesses or (sometimes) BIOS data structures - and that both 
+> of those methods are better than using boot flags.
+
+The flags are passed by the boot loader which is the one thing that knows
+what the platform is only deeply embedded hardware. See the ARM and PPC
+ports.
+
+> > - Embedded x86 like devices are going to regularly occur without 
+> > any PCI
 > 
-> I really don't know, I took this patch from the suse tree, and Olaf is
-> gone and I can't ask him :(
+> This proposed Intel subarchitecture comes with PCI support, 
+> obviously.
+
+And this is relevant to the fact there will be systems without PCI how ?
+
+> > - You need to know the platform in order to know how to access any
+> >   PCI bus that may or may not hypothetically exist.
 > 
-> If you don't think it is needed/correct, please drop that part.  Or I
-> can redo it without it.
+> Uhm, not really.
 
-I'll just drop that bit. As far as I can see it would just break any
-users of that trigger for no good reason...
+Uhm yes really
 
-Cheers,
+> Have a look at arch/x86/kernel/early-quirks.c. All you generally 
+> need to know is a PCI ID that sits on the root bus.
 
-Richard
+How will you probe the root bus without knowing what the PCI
+configuration mechanism is for your platform
 
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+> Early PCI ID checks are typical and robust way to identify 'weird' 
+> subarchitectures. Sometimes we do it via BIOS data structures. Only 
+> as a last option do we want to use boot loader mechanisms - it's the 
+> most inflexible one really.
+
+SFI doesn't indicate MRST
+> 
+> Furtherore, Moorestown comes with SFI and there sure can be a BIOS 
+> table that describes the platform properly. We can read such tables 
+> very early during bootup, well before platform devices are set up.
+
+But they don't tell you what the platform is. Again see every platform we
+currently support which has deeply embedded forms. There is a reason they
+went that way and it includes fifteen years of finding out which ways
+don't work for all cases. For example if you don't have standard PC like
+firmware and you go looking for SFI or ACPI will your box stay up ?
+
+It's also kind of irrelevant to the flags anyway - you need the boot
+flags whether the platform comes from the bootloader or divine
+intervention somewhere early in probing.
+
+There is a more general question which is whether the flags are better
+than the PPC style approach of having a machine vector and putting them
+in that so you just do
+
+	platform_ops = platform_ops_table[our_platform]
+
+and use
+	platform_ops->
+
+for the various methods such as EBDA and which timer methods to use
+
+
 
