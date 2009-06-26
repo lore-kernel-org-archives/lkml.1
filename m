@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbZFZW7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756733AbZFZXAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbZFZW7T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZFZW7I
+	id S1756733AbZFZXAS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 19:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZFZXAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:59:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46926 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501AbZFZW7I (ORCPT
+	Fri, 26 Jun 2009 19:00:07 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:34149 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752501AbZFZXAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:59:08 -0400
-Message-ID: <4A4550FD.7020806@zytor.com>
-Date: Fri, 26 Jun 2009 15:51:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 26 Jun 2009 19:00:06 -0400
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
+References: <20090626143652.GB6281@localdomain.by>
+	<20090626144949.GA24173@suse.de>
+	<20090626222937.GA3858@localdomain.by>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 26 Jun 2009 16:00:04 -0700
+In-Reply-To: <20090626222937.GA3858@localdomain.by> (Sergey Senozhatsky's message of "Sat\, 27 Jun 2009 01\:29\:37 +0300")
+Message-ID: <m17hyyfvnv.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, benh@kernel.crashing.org,
-       paulus@samba.org
-Subject: Re: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up
- usr/
-References: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org> <1245569547.2480.18.camel@ht.satnam> <20090626222112.GB27048@uranus.ravnborg.org> <4A454A69.4050301@zytor.com> <20090626224321.GA27310@uranus.ravnborg.org>
-In-Reply-To: <20090626224321.GA27310@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: sergey.senozhatsky@mail.by, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org, gregkh@suse.de
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> 
-> My concern is that we may decide to carry files in certain formats
-> in the kernel source.
-> And I see a tendency to add more and more file extensions to the
-> top-level .gitignore file.
-> 
-> It is fine as long as this is files that are:
-> 1) either generated in a lot of places
-> 2) or generated in the top-level directory
-> 
-> But files that we generate in a few arch/*/boot/ directories
-> does not belong in the top-level .gitignore file.
-> We should keep the ignore rules close to where they apply,
-> even if this may cause us to add a few more lines
-> to the relevant .gitignore files.
-> 
+Sergey Senozhatsky <sergey.senozhatsky@mail.by> writes:
 
-Honestly, I think this is ridiculous.  A single well-maintained
-.gitignore file is a *service* to the whole tree, and the last thing we
-want is git to behave differently in different subdirectories.
+> On (06/26/09 07:49), Greg KH wrote:
+>> Date: Fri, 26 Jun 2009 07:49:49 -0700
+>> From: Greg KH <gregkh@suse.de>
+>> To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+>> Cc: Kay Sievers <kay.sievers@vrfy.org>,
+>> 	"Eric W. Biederman" <ebiederm@xmission.com>,
+>> 	linux-kernel@vger.kernel.org
+>> Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+>> User-Agent: Mutt/1.5.19 (2009-01-05)
+>> 
+>> On Fri, Jun 26, 2009 at 05:36:52PM +0300, Sergey Senozhatsky wrote:
+>> > Hello.
+>> > I suppose this patch fixes memory leak in kobject.c
+>> > Correct me if I'm wrong.
+>> > Thanks.
+>> > -----------
+>> > 
+>> > Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
+>> > 
+>> > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+>> > ---
+>> > diff --git a/lib/kobject.c b/lib/kobject.c
+>> > index b512b74..922cd8c 100644
+>> > --- a/lib/kobject.c
+>> > +++ b/lib/kobject.c
+>> > @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+>> >  		return 0;
+>> >  
+>> >  	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+>> > -	if (!kobj->name)
+>> > +	if (!kobj->name) {
+>> > +		kfree(old_name);
+>> >  		return -ENOMEM;
+>> > +	}
+>> 
+>> We've been through this before (search lkml archives).  If kvasprintf
+>> fails, then we don't want to free old_name, as the caller might want to
+>> do something with it.
+>> 
+> Hello Greg,
+>
+> int kobject_set_name_vargs.... {
+> 	const char *old_name = kobj->name;
+>
+> old_name is local variable.
+>
+> In the following lines we overwrite kobject->name.
+>
+> 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> 	if (!kobj->name)
+> 		return -ENOMEM;
+>
+> It's not clear to me how we can do anything (including kfree) with old_name after 'return -ENOMEM'.
 
-It is *much better* to have global rules, and add exceptions out in the
-leaves of the tree where they apply.  The question that the global
-.gitignore should answer is:
+My feel is that if we fail we should restore kobject->name to old_name.
 
-"If I have a file of type X, is the user *likely* to want to actually
-want it in the tree?"
+That should also prevent the leak without getting us into trouble elsewhere.
 
-In the case of *.gz *.bz2 *.lzma or *.cpio, I think the answer is a
-resounding "no".  Almost every architecture uses compressed files at
-some stage of its boot, and it's *always* a generated file.  A
-non-generated file is probably a patch being handled by a developer, not
-something that is meant to be in the tree.
+Eric
 
-I'm not saying we wouldn't *ever* want to have compressed binary blobs
-in the tree -- there are actually a handful of reasons to do so -- but
-*those are the exceptions*, and therefore should be using !-rules in
-their respective .gitignores, instead of requiring that the entire tree
-suffers from less sensible defaults.
-
-	-hpa
