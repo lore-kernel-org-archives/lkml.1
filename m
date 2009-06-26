@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbZFZOwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbZFZPAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbZFZOwF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZFZOv6
+	id S1758540AbZFZPAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFZPAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:51:58 -0400
-Received: from ru.mvista.com ([213.79.90.228]:10872 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752004AbZFZOv5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:51:57 -0400
-Date: Fri, 26 Jun 2009 18:51:59 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Miller <davem@davemloft.net>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] sky2: Fix checksum endianness
-Message-ID: <20090626145159.GA2242@oksana.dev.rtsoft.ru>
+	Fri, 26 Jun 2009 11:00:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33698 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751190AbZFZPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:00:25 -0400
+Date: Fri, 26 Jun 2009 07:49:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+Message-ID: <20090626144949.GA24173@suse.de>
+References: <20090626143652.GB6281@localdomain.by>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090626143652.GB6281@localdomain.by>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sky2 driver on PowerPC targets floods kernel log with following errors:
+On Fri, Jun 26, 2009 at 05:36:52PM +0300, Sergey Senozhatsky wrote:
+> Hello.
+> I suppose this patch fixes memory leak in kobject.c
+> Correct me if I'm wrong.
+> Thanks.
+> -----------
+> 
+> Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
+> 
+> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> ---
+> diff --git a/lib/kobject.c b/lib/kobject.c
+> index b512b74..922cd8c 100644
+> --- a/lib/kobject.c
+> +++ b/lib/kobject.c
+> @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+>  		return 0;
+>  
+>  	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+> -	if (!kobj->name)
+> +	if (!kobj->name) {
+> +		kfree(old_name);
+>  		return -ENOMEM;
+> +	}
 
-  eth1: hw csum failure.
-  Call Trace:
-  [ef84b8a0] [c00075e4] show_stack+0x50/0x160 (unreliable)
-  [ef84b8d0] [c02fa178] netdev_rx_csum_fault+0x3c/0x5c
-  [ef84b8f0] [c02f6920] __skb_checksum_complete_head+0x7c/0x84
-  [ef84b900] [c02f693c] __skb_checksum_complete+0x14/0x24
-  [ef84b910] [c0337e08] tcp_v4_rcv+0x4c8/0x6f8
-  [ef84b940] [c031a9c8] ip_local_deliver+0x98/0x210
-  [ef84b960] [c031a788] ip_rcv+0x38c/0x534
-  [ef84b990] [c0300338] netif_receive_skb+0x260/0x36c
-  [ef84b9c0] [c025de00] sky2_poll+0x5dc/0xcf8
-  [ef84ba20] [c02fb7fc] net_rx_action+0xc0/0x144
+We've been through this before (search lkml archives).  If kvasprintf
+fails, then we don't want to free old_name, as the caller might want to
+do something with it.
 
-The NIC is Yukon-2 EC chip revision 1.
+Or something along those lines, I can't remember the exact reasoning
+this early in the morning.
 
-Converting checksum field from le16 to CPU byte order fixes the issue.
+Kay, do you remember?
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/net/sky2.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+thanks,
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 7681d28..daf961a 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -2495,7 +2495,7 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
- 			if (likely(status >> 16 == (status & 0xffff))) {
- 				skb = sky2->rx_ring[sky2->rx_next].skb;
- 				skb->ip_summed = CHECKSUM_COMPLETE;
--				skb->csum = status & 0xffff;
-+				skb->csum = le16_to_cpu(status);
- 			} else {
- 				printk(KERN_NOTICE PFX "%s: hardware receive "
- 				       "checksum problem (status = %#x)\n",
--- 
-1.6.3.1
+greg k-h
