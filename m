@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZFZRTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZFZRYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbZFZRTt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZFZRTi
+	id S1760867AbZFZRYm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbZFZRYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:19:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57934 "EHLO mx2.redhat.com"
+	Fri, 26 Jun 2009 13:24:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41546 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754546AbZFZRTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:19:37 -0400
-Date: Fri, 26 Jun 2009 13:19:33 -0400
-From: Dave Jones <davej@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org
-Subject: kmemleak reports firmware loader funnies in iwlwifi
-Message-ID: <20090626171933.GA23170@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org,
-	Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1750720AbZFZRYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:24:34 -0400
+Date: Sat, 27 Jun 2009 03:24:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: linux-next: Tree for June 26 (cyclades)
+Message-Id: <20090627032430.2c63249a.sfr@canb.auug.org.au>
+In-Reply-To: <4A44F18D.2000608@oracle.com>
+References: <20090626154605.ac73b738.sfr@canb.auug.org.au>
+	<4A44F18D.2000608@oracle.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sat__27_Jun_2009_03_24_30_+1000_IUpvxZ+yFI5qJTLB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After enabling kmemleak in the Fedora rawhide kernels, we've mostly
-seen a flood of what appear to be false positives, but the below looks
-really suspect..
+--Signature=_Sat__27_Jun_2009_03_24_30_+1000_IUpvxZ+yFI5qJTLB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-https://bugzilla.redhat.com/show_bug.cgi?id=507971
+On Fri, 26 Jun 2009 09:04:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> w=
+rote:
+>
+> drivers/char/cyclades.c:3332: error: assignment of read-only location
+>=20
+> (it's const)
 
-Here's the summary... 
+Caused by commit 93d671fe9bcceb522c922223f836f9c54873b866
+("tty-cyclades-cleanup") from the ttydev tree.
 
+Adding cc's.
 
-iwlagn 0000:03:00.0: loaded firmware version 8.24.2.12
-kmemleak: Freeing unknown object at 0xffffc90018070000
-Pid: 1034, comm: NetworkManager Not tainted 2.6.31-0.25.rc0.git22.fc12.x86_64
-#1
-Call Trace:
- [<ffffffff81139f74>] delete_object+0x5b/0x13b
- [<ffffffff8113b012>] kmemleak_free+0x5b/0xb5
- [<ffffffff8111dc51>] vfree+0x40/0x68
- [<ffffffff813485e6>] release_firmware+0x49/0x6c
- [<ffffffffa021997c>] ? iwl_mac_start+0xc5c/0x106b [iwlagn]
- [<ffffffffa0219adc>] iwl_mac_start+0xdbc/0x106b [iwlagn]
- [<ffffffff8109df9b>] ? __module_text_address+0x25/0x85
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Sat__27_Jun_2009_03_24_30_+1000_IUpvxZ+yFI5qJTLB
+Content-Type: application/pgp-signature
 
-So it appears to be vfree'ing something that it had no knowledge of ever allocating.
-afaict _request_firmware only vmallocs when it's using a firmware image built into
-the driver, which isn't the case here, so I'm not sure why we end up trying
-to vfree instead of kfree when we call release_firmware
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-anyone know what's going on here?
+iEYEARECAAYFAkpFBE4ACgkQjjKRsyhoI8yEMgCeJ1LKhEkvo8tRZhscMfwtcD+G
+02YAnjiIGt8LAPK8anyS+EOIsVMiqN04
+=Y+/Y
+-----END PGP SIGNATURE-----
 
-	Dave
+--Signature=_Sat__27_Jun_2009_03_24_30_+1000_IUpvxZ+yFI5qJTLB--
