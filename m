@@ -1,98 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZFZOpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZFZOsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760668AbZFZOpm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbZFZOpg
+	id S1760308AbZFZOsH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 10:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754222AbZFZOr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:45:36 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:40213 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754222AbZFZOpf (ORCPT
+	Fri, 26 Jun 2009 10:47:56 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:62042 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbZFZOr4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:45:35 -0400
+	Fri, 26 Jun 2009 10:47:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type;
-        b=T8YSbYfdQGUWqkzC98wBf0LaVk0RGUAC+Cb9h19DAt8jF3pp0oE/4pTXrn3ztzMAHK
-         MakE6HpmrBajvd7AJgtpcmnPcRQUQbfQdssxt4ulQ8BHMifO+b4y5eQSJIAq6/MB8vgR
-         oCPLB4MKccSO3E3mLPvJJxrmxBNV9WmiBKvMg=
-Date: Fri, 26 Jun 2009 16:44:20 +0200 (CEST)
-From: "rubenatch@gmail.com" <rubenatch@gmail.com>
-X-X-Sender: root@localhost
-To: jkosina@suse.cz
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCHv2] Adding rumble support to Thrustmaster Dual Trigger 3-in-1
- devices
-Message-ID: <alpine.DEB.2.00.0906261639570.17888@localhost>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MEPx/ld+KIDuorzNm27OeiN9Po9Oh+aKdH+9bHTXB1Qbm9nmGOkboSfx3O6AVSNSze
+         eM5cMf7XfyJVkKIrraFJkS3fk2ALNbIVXfDhjKt7Le5Zzyoo5FJs6QV4rBQBKhaFOp1R
+         Z1aHHsbcXweDqMb4hXPrkkmG5A1y3J0lGtlto=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-2063028922-1246027534=:17888"
+In-Reply-To: <b08bcbf50906260735q6af6522dl6f1bb407f68a801e@mail.gmail.com>
+References: <b08bcbf50906260704s11181158r27d88e2dd518b1e9@mail.gmail.com>
+	 <20090626150856.7b5fafb2@lxorguk.ukuu.org.uk>
+	 <b08bcbf50906260735q6af6522dl6f1bb407f68a801e@mail.gmail.com>
+Date: Fri, 26 Jun 2009 20:17:57 +0530
+Message-ID: <1f808b4a0906260747i610b68bej2eaeb87d72e24c08@mail.gmail.com>
+Subject: Re: Kernel hard_start_xmit performance vs SOCK_RAW performance
+From: Peter Chacko <peterchacko35@gmail.com>
+To: Gallus <gall.cwpl@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Did you try using PACKET socket interface  from your module  ?
+(essentially as fast as hard-start-transmit() path ...there will be
+tools that can be used for this purpose....I am not sure of any such
+tool though...:-) you need to skip the scheduling (qdiscs) path also..
 
---8323328-2063028922-1246027534=:17888
-Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+I think, Linux-net mailing list would be more appropriate to have this
+discussion.
 
+Thanks,
+Peter
 
-From: Rubén Aós Garralda <rubenatch@gmail.com>
+NetDiox computing systems
+Bangalore-india
+www.netdiox.com
+080 2664 0708
 
-This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads (in
-both PC and PS3 modes). It uses the same code as Thrustmaster FireStorm 
-Dual Power 2/3, so it only modifies hid-core.c (to put the devices in the 
-"forbidden list" and hid-tmff.c to add the new USB IDs.
-
----
-
-Latest patch was BAAAAAD (it had a missing end of comment), please 
-discard. New patch:
-
-diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c linux-source-test/drivers/hid/hid-core.c
---- linux-source-2.6.30/drivers/hid/hid-core.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-core.c	2009-06-26 15:33:48.000000000 +0200
-@@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS, USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
-+       	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED, USB_DEVICE_ID_TOPSEED_CYBERLINK) },
-diff -uprN linux-source-2.6.30/drivers/hid/hid-tmff.c linux-source-test/drivers/hid/hid-tmff.c
---- linux-source-2.6.30/drivers/hid/hid-tmff.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-tmff.c	2009-06-26 15:35:27.000000000 +0200
-@@ -236,7 +236,11 @@ err:
-  static const struct hid_device_id tm_devices[] = {
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300),
-  		.driver_data = (unsigned long)ff_rumble },
--	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),	/* FireStorm Dual Power 2 (and 3) */
-+		.driver_data = (unsigned long)ff_rumble },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323),	/* Dual Trigger 3-in-1 (PC Mode) */
-+		.driver_data = (unsigned long)ff_rumble },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324),	/* Dual Trigger 3-in-1 (PS3 Mode) */
-  		.driver_data = (unsigned long)ff_rumble },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),	/* FGT Rumble Force Wheel */
-  		.driver_data = (unsigned long)ff_rumble },
-diff -uprN linux-source-2.6.30/drivers/hid/Kconfig linux-source-test/drivers/hid/Kconfig
---- linux-source-2.6.30/drivers/hid/Kconfig	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/Kconfig	2009-06-26 15:58:15.000000000 +0200
-@@ -268,8 +268,9 @@ config THRUSTMASTER_FF
-  	depends on USB_HID
-  	select INPUT_FF_MEMLESS
-  	help
--	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or
--	  a THRUSTMASTER Ferrari GT Rumble Force or Force Feedback Wheel.
-+	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or 3,
-+	  a THRUSTMASTER Dual Trigger 3-in-1 or a THRUSTMASTER Ferrari GT
-+	  Rumble Force or Force Feedback Wheel.
-
-  config ZEROPLUS_FF
-  	tristate "Zeroplus based game controller support"
---8323328-2063028922-1246027534=:17888--
+On Fri, Jun 26, 2009 at 8:05 PM, Gallus<gall.cwpl@gmail.com> wrote:
+> 2009/6/26 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+>> On Fri, 26 Jun 2009 16:04:04 +0200
+>> Gallus <gall.cwpl@gmail.com> wrote:
+>>
+>>> Hi,
+>>> what path would you choose to rapidly generate packets
+>>
+>> Documentation/networking/pktgen.txt
+>
+> Thank you Alan for the answer.
+>
+> However, my goal is to generate packets with certain *content* in them.
+>
+> --
+> Regards,
+> Gallus
+> please CC me
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
