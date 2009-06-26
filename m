@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZFZAU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZFZA1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZFZAU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 20:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZFZAUR
+	id S1753280AbZFZA1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 20:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZFZA1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 20:20:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55436 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751523AbZFZAUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 20:20:16 -0400
-Date: Thu, 25 Jun 2009 17:20:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-06-25-15-49 uploaded
-Message-Id: <20090625172012.6d05eb1a.akpm@linux-foundation.org>
-In-Reply-To: <4A440D59.50400@oracle.com>
-References: <200906252249.n5PMnaPt016847@imap1.linux-foundation.org>
-	<4A440D59.50400@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 25 Jun 2009 20:27:40 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63113 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751411AbZFZA1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 20:27:40 -0400
+Message-ID: <4A4415EA.4090201@cn.fujitsu.com>
+Date: Fri, 26 Jun 2009 08:27:22 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] io-controller: do some changes of io.policy interface
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-19-git-send-email-vgoyal@redhat.com> <6599ad830906241452t76e64815s7d68a22a6e746a59@mail.gmail.com> <4A435038.60406@cn.fujitsu.com> <20090625125513.GA25439@redhat.com>
+In-Reply-To: <20090625125513.GA25439@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009 16:50:49 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Vivek Goyal wrote:
+...
+> 
+> Hi Gui,
+> 
+> Thanks for the patch. "unsigned long" for ioprio_class is too big. How
+> about using "unsigned short"? I noticed that in io_cgroup also we are
+> using "unsigned long". I will fix that.
+> 
+> For storing weight now we are planning to use "unsigned int". Can you
+> please switch to that.
 
-> akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-06-25-15-49 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> 
-> 
-> shrink_slab-handle-bad-shrinkers.patch:
-> 
-> mm/vmscan.c: In function 'do_try_to_free_pages':
-> mm/vmscan.c:1697: error: too few arguments to function 'disable_swap_token'
-> mm/vmscan.c: In function 'balance_pgdat':
-> mm/vmscan.c:1869: error: too few arguments to function 'disable_swap_token'
-> mm/vmscan.c: In function '__zone_reclaim':
-> mm/vmscan.c:2425: error: too few arguments to function 'disable_swap_token'
+  Sure, i'll post another patch to switch to that.
 
-eh, OK, thanks, I'll drop it.
+> 
+> Thanks
+> Vivek
+> 
+> 
+> 
+
+-- 
+Regards
+Gui Jianfeng
+
