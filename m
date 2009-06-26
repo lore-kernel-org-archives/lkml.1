@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759020AbZFZRMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbZFZROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759020AbZFZRMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZFZRMU
+	id S1760047AbZFZROR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZFZROG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:12:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55550 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508AbZFZRMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:12:19 -0400
-Date: Fri, 26 Jun 2009 15:57:42 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
-       netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
-       Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] net: fix race in the receive/select
-Message-ID: <20090626135742.GB3845@redhat.com>
-References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com> <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 26 Jun 2009 13:14:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbZFZROF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:14:05 -0400
+Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
+From: David Woodhouse <dwmw2@infradead.org>
+To: vimal singh <vimalsingh@ti.com>
+Cc: "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "david-b@pacbell.net" <david-b@pacbell.net>
+In-Reply-To: <57946.192.168.10.89.1246035773.squirrel@dbdmail.itg.ti.com>
+References: <53729.192.168.10.89.1246035472.squirrel@dbdmail.itg.ti.com>
+	 <57946.192.168.10.89.1246035773.squirrel@dbdmail.itg.ti.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 18:14:02 +0100
+Message-Id: <1246036442.663.47.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/25, Davide Libenzi wrote:
->
-> Not all the code that uses add_wait_queue() does need to have the MB,
-> like code that does the most common pattern:
->
-> xxx_poll(...) {
-> 	poll_wait(...);
-> 	lock();
-> 	flags = calc_flags(->status);
-> 	unlock();
-> 	return flags;
-> }
->
-> xxx_update(...) {
-> 	lock();
-> 	->status = ...;
-> 	unlock();
-> 	if (waitqueue_active())
-> 		wake_up();
-> }
->
-> It's the code that does the lockless flags calculation in ->poll that
-> might need it.
+On Fri, 2009-06-26 at 22:32 +0530, vimal singh wrote:
+> Somehow I do not see below errors on compilation:
+> drivers/mtd/nand/omap2.c: In function 'omap_wait':
+> drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this
+> function)
+> drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported
+> only once
+> drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
+> drivers/mtd/nand/omap2.c:557: error: implicit declaration of function
+> 'time_before'
+> 
+> But still including 'linux/jiffies.h'.
+> 
+> Below is the patch.
 
-And if we remove waitqueue_active() in xxx_update(), then lock/unlock is
-not needed too.
+The 'status' you return in the case that you _have_ gone through the
+loop is still wrong though, isn't it?
 
-If xxx_poll() takes q->lock first, it can safely miss the changes in ->status
-and schedule(): xxx_update() will take q->lock, notice the sleeper and wake
-it up (ok, it will set ->triggered but this doesn't matter).
-
-If xxx_update() takes q->lock first, xxx_poll() must see the changes in
-status after poll_wait()->unlock(&q->lock) (in fact, after lock, not unlock).
-
-Oleg.
+-- 
+dwmw2
 
