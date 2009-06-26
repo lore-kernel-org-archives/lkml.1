@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760929AbZFZOsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbZFZOwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760929AbZFZOsw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 10:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760866AbZFZOsi
+	id S1760886AbZFZOwF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 10:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZFZOv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 10:48:38 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:17818 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760852AbZFZOsf (ORCPT
+	Fri, 26 Jun 2009 10:51:58 -0400
+Received: from ru.mvista.com ([213.79.90.228]:10872 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752004AbZFZOv5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 10:48:35 -0400
-To: Neil Brown <neilb@suse.de>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       "Mike Snitzer" <snitzer@redhat.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Alasdair G Kergon" <agk@redhat.com>, jens.axboe@oracle.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-raid@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "device-mapper development" <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out  of the 'queue' sysfs directory.
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <19010.62951.886231.96622@notabene.brown>
-	<yq11vp8spxo.fsf@sermon.lab.mkp.net>
-	<125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
-	<yq1k530qkm7.fsf@sermon.lab.mkp.net>
-	<19012.47077.328965.919868@notabene.brown>
-Date: Fri, 26 Jun 2009 10:48:03 -0400
-In-Reply-To: <19012.47077.328965.919868@notabene.brown> (Neil Brown's message
-	of "Fri, 26 Jun 2009 21:58:29 +1000")
-Message-ID: <yq1ws6znja4.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 26 Jun 2009 10:51:57 -0400
+Date: Fri, 26 Jun 2009 18:51:59 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Miller <davem@davemloft.net>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] sky2: Fix checksum endianness
+Message-ID: <20090626145159.GA2242@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010201.4A44DFA7.0200:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Neil" == Neil Brown <neilb@suse.de> writes:
+sky2 driver on PowerPC targets floods kernel log with following errors:
 
-Neil> Providing the fields are clearly and unambiguously documented so
-Neil> that it I can use the documentation to verify the implementation
-Neil> (in md at least), I will be satisfied.
+  eth1: hw csum failure.
+  Call Trace:
+  [ef84b8a0] [c00075e4] show_stack+0x50/0x160 (unreliable)
+  [ef84b8d0] [c02fa178] netdev_rx_csum_fault+0x3c/0x5c
+  [ef84b8f0] [c02f6920] __skb_checksum_complete_head+0x7c/0x84
+  [ef84b900] [c02f693c] __skb_checksum_complete+0x14/0x24
+  [ef84b910] [c0337e08] tcp_v4_rcv+0x4c8/0x6f8
+  [ef84b940] [c031a9c8] ip_local_deliver+0x98/0x210
+  [ef84b960] [c031a788] ip_rcv+0x38c/0x534
+  [ef84b990] [c0300338] netif_receive_skb+0x260/0x36c
+  [ef84b9c0] [c025de00] sky2_poll+0x5dc/0xcf8
+  [ef84ba20] [c02fb7fc] net_rx_action+0xc0/0x144
 
-The current sysfs documentation says:
+The NIC is Yukon-2 EC chip revision 1.
 
-/sys/block/<disk>/queue/minimum_io_size:
-[...] For RAID arrays it is often the stripe chunk size.
+Converting checksum field from le16 to CPU byte order fixes the issue.
 
-/sys/block/<disk>/queue/optimal_io_size:
-[...] For RAID devices it is usually the stripe width or the internal
-block size.
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/net/sky2.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The latter should be "internal track size".  But in the context of MD I
-think those two definitions are crystal clear.
-
-
-As far as making the application of these values more obvious I propose
-the following:
-
-What:		/sys/block/<disk>/queue/minimum_io_size
-Date:		April 2009
-Contact:	Martin K. Petersen <martin.petersen@oracle.com>
-Description:
-		Storage devices may report a granularity or minimum I/O
-		size which is the device's preferred unit of I/O.
-		Requests smaller than this may incur a significant
-		performance penalty.
-
-		For disk drives this value corresponds to the physical
-		block size. For RAID devices it is usually the stripe
-		chunk size.
-
-		A properly aligned multiple of minimum_io_size is the
-		preferred request size for workloads where a high number
-		of I/O operations is desired.
-
-
-What:		/sys/block/<disk>/queue/optimal_io_size
-Date:		April 2009
-Contact:	Martin K. Petersen <martin.petersen@oracle.com>
-Description:
-		Storage devices may report an optimal transfer length or
-		streaming I/O size which is the device's preferred unit
-		of sustained I/O.  This value is a multiple of the
-		device's minimum_io_size.
-
-		optimal_io_size is rarely reported for disk drives. For
-		RAID devices it is usually the stripe width or the
-		internal track size.
-
-		A properly aligned multiple of optimal_io_size is the
-		preferred request size for workloads where sustained
-		throughput is desired.
-
-After contemplating for a bit I think I prefer to keep them I/O
-direction agnostic.  Granted, the potential penalties mostly apply to
-writes.  But I think the application of the values apply to reads as
-well.  They will in a hw RAID context for sure.
-
-
-Neil> I'm looking forward to seeing how you justify the name
-Neil> "physical_block_size" in a way the encompasses possibilities like
-Neil> a device that stripes over a heterogeneous set of disk drives ;-)
-
-I explained that in my mails yesterday.  But that is of no concern to
-MD.
-
+diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
+index 7681d28..daf961a 100644
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -2495,7 +2495,7 @@ static int sky2_status_intr(struct sky2_hw *hw, int to_do, u16 idx)
+ 			if (likely(status >> 16 == (status & 0xffff))) {
+ 				skb = sky2->rx_ring[sky2->rx_next].skb;
+ 				skb->ip_summed = CHECKSUM_COMPLETE;
+-				skb->csum = status & 0xffff;
++				skb->csum = le16_to_cpu(status);
+ 			} else {
+ 				printk(KERN_NOTICE PFX "%s: hardware receive "
+ 				       "checksum problem (status = %#x)\n",
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+1.6.3.1
