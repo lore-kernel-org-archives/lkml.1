@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZFZJoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZFZJpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZFZJoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 05:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZFZJoH
+	id S1755172AbZFZJpc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 05:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbZFZJpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 05:44:07 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:38593 "EHLO slimlogic.co.uk"
+	Fri, 26 Jun 2009 05:45:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58274 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbZFZJoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 05:44:06 -0400
-Subject: Re: da9030: ldo11 ignores disable
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>,
-       mike.rapoport@gmail.com, eric miao <eric.y.miao@gmail.com>
-In-Reply-To: <4A439A2B.2020706@cam.ac.uk>
-References: <4A439A2B.2020706@cam.ac.uk>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 10:44:05 +0100
-Message-Id: <1246009446.30631.27.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1751225AbZFZJpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 05:45:25 -0400
+Date: Fri, 26 Jun 2009 11:45:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: Re: [PATCH 2/9] x86: introduce a set of platform feature flags
+Message-ID: <20090626094514.GB12571@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E1@orsmsx508.amr.corp.intel.com> <20090626072218.GH14078@elte.hu> <20090626101446.114edbe2@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090626101446.114edbe2@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 15:39 +0000, Jonathan Cameron wrote:
-> Hi All,
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > Whether a given platform has a 'standard PC' or some custom 
+> > driver then depends on that driver's init sequence - it's not a 
+> > central thing.
 > 
-> Whilst testing a regulator machine config I've run into a weird issue.
-> 
-> The preliminary data sheet I have suggests that there are two enable
-> registers
-> for ldo11 but neither rctl22 or rctl11 seems to have any effect (on
-> their own
-> or both cleared together). I can change the voltage just fine, but not
-> actually turn it off.
-> 
-> Anyone come across this problem or have any idea what is going on?
+> How exactly do you propose to handle boot memory allocation (eg 
+> EBDA) with a driver ? Perhaps you can explain "driverize" as it 
+> isn't in any dictionary and I'm not at all clear what you are on 
+> about ?
 
-I've come across something similar in the past with two enable bits
-causing I2C register cache coherency issues. The cache bits became out
-of sync with reality and stopped some I2C writes happening.
+Which bit is not clear? We've been continuously 'driverizing' the 
+jumbled mess of x86 platform support code in the past ~1-2 years. 
+Things like x86_quirks or struct apic and other similar code 
+restructuring and cleanups. They are (of course) not classic 'driver 
+core' drivers (many of the core kernel facilities are not available 
+yet at this early stage), but properly abstracted, function vector 
+driven approaches are still a must.
 
-Another option is that your hardware config doesn't allow ldo11 to be
-disabled ?
+This series of patches increases the mess in that area, and that's a 
+step backwards. It sprinkles the code with a fair amount of 'if 
+(feature_x)' conditions instead of cleanly separating out proper 
+abstractions.
 
-HTH
-
-Liam
-
+	Ingo
