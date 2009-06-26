@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760439AbZFZSGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZFZSLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760439AbZFZSGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbZFZSG1
+	id S1756521AbZFZSLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZFZSLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:06:27 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:59896 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755828AbZFZSG0 (ORCPT
+	Fri, 26 Jun 2009 14:11:47 -0400
+Received: from smtpauth00.csee.onr.siteprotect.com ([64.26.60.144]:57167 "EHLO
+	smtpauth00.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753132AbZFZSLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:06:26 -0400
-Date: Fri, 26 Jun 2009 14:06:28 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [linux-pm] [patch update] PM: Introduce core framework for
- run-time PM of I/O devices (rev. 5)
-In-Reply-To: <200906252358.56909.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906261155160.2965-100000@iolanthe.rowland.org>
+	Fri, 26 Jun 2009 14:11:47 -0400
+Date: Fri, 26 Jun 2009 14:22:40 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: Ingo Molnar <mingo@elte.hu>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: performance counter 20% error finding retired instruction count
+In-Reply-To: <20090624151010.GA12799@elte.hu>
+Message-ID: <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
+References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
+ <20090624151010.GA12799@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 25 Jun 2009, Rafael J. Wysocki wrote:
+On Wed, 24 Jun 2009, Ingo Molnar wrote:
+> * Vince Weaver <vince@deater.net> wrote:
+>
+> Those ~2100 instructions are executed by your app: as the ELF
+> dynamic loader starts up your test-app.
+>
+> If you have some tool that reports less than that then that tool is
+> not being truthful about the true overhead of your application.
 
-> > The whole business about the runtime_notify and RPM_NOTIFY flags is 
-> > impenetrable.  My suggestion: Rename runtime_notify to notify_pending 
-> > and eliminate RPM_NOTIFY.  Then make sure that notify_pending is set 
-> > whenever a notify work item is queued.
-> 
-> I was going to do exactly that, but I realized it wouldn't work in general,
-> because ->runtime_idle() could run __pm_runtime_suspend() in theory.
+Wait a second... my application is a statically linked binary.  There is 
+no ELF dynamic loader involved at all.
 
-I'll cut this short by noting the dilemma.  If the runtime_idle 
-callback does a synchronous suspend, and __pm_runtime_suspend sees the 
-status is already RPM_SUSPENDING, then it will wait for the suspend to 
-finish.  Hence it's not safe to do cancel_work_sync from within 
-__pm_runtime_suspend; it might deadlock.
+On further investigation, all of the overhead comes _entirely_ from the 
+perf utility.  This is overhead and instructions that would not occur when 
+not using the perf utility.
 
-It occurs to me that the problem would be solved if were a cancel_work
-routine.  In the same vein, it ought to be possible for
-cancel_delayed_work to run in interrupt context.  I'll see what can be
-done.
+>From the best I can tell digging through the perf sources, the performance 
+counters are set up and started in userspace, but instead of doing an 
+immediate clone/exec, thousands of instructions worth of other stuff is 
+done by perf in between.
 
-What do you think about adding a version of pm_runtime_put that would 
-call pm_runtime_idle directly when the counter reaches 0, instead of 
-queuing an idle request?  I feel that drivers should have a choice 
-about which sort of notification to use.
+Ther "perfmon" util, plus linux-user simulators like qemu and valgrind do 
+things properly.  perf can't it seems, and it seems to be a limitation of 
+the new performance counter infrastructure.
 
 
-> > And don't forget to decrement the parent's child_count again if the resume
-> > fails.
-> 
-> I didn't _forget_it, because the device can't be RPM_SUSPENDED after
-> __pm_runtime_resume().
+Vince
 
-You're right; that fact escaped me.
+PS.  Why is the perf code littered with many many  __MINGW32__ defined?
+      Should this be in the kernel tree?  It makes the code really hard
+      to follow.  Are there plans to port perf to windows?
 
-> > In __pm_runtime_suspend, you should decrement the parent's child_count
-> > before releasing the child's lock.
-> 
-> Why exactly is that necessary?
-
-I guess it isn't.  But it won't hurt to keep the parent's counter
-synchronized with the child's state as closely as possible.
-
-Alan Stern
 
