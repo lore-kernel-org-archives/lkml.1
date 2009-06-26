@@ -1,163 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZFZHTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZFZHUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757128AbZFZHTd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZFZHT0
+	id S1757293AbZFZHUM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:20:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZFZHUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:19:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37181 "EHLO gate.crashing.org"
+	Fri, 26 Jun 2009 03:20:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50229 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797AbZFZHTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:19:25 -0400
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 17:19:12 +1000
-Message-Id: <1246000752.22312.32.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1750964AbZFZHUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 03:20:03 -0400
+Date: Fri, 26 Jun 2009 09:19:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
+Message-ID: <20090626071955.GG14078@elte.hu>
+References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus !
 
-I would have hoped to get that stuff in before -rc1 but heh, I got sick
-for a couple of days, a distracted by some other stuff for a couple more
-and here we are, I missed it :-)
+* Pan, Jacob jun <jacob.jun.pan@intel.com> wrote:
 
-Anyway, here are a bunch of relatively small ppc bits, almost all are
-bug fixes, mostly regressions, with the notable exception of one patch
-which I decided was worth taking a chance, which is the addition of
-lockdep/irqtrace support for ppc32 which has been around for 2 or 3
-weeks and seems to be working well (it already found a couple of
-bugs !).
+> >From 365e3a59c34055490f137af2da281d4305535237 Mon Sep 17 00:00:00 2001
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Thu, 11 Jun 2009 09:42:42 -0700
+> Subject: [PATCH] x86/moorestown: add moorestown platform flags
+> 
+> This patch adds some new features to the x86 platform feature flags.
+> 
+> These new features are first introduced in Intel Moorestown platform but
+> may continue to be present in the next generations.
+> 
+> Feature flags are initialized based on HW subarchitecture ID provided
+> by the FW via boot protocol.
+> 
+> Signed-off-by: Jacob Pan <jacob.jun.pan@intel.com>
+> ---
+>  arch/x86/Kconfig                        |   13 ++++++++++++-
+>  arch/x86/include/asm/platform_feature.h |    2 ++
+>  arch/x86/kernel/platform_info.c         |   12 +++++++++++-
+>  3 files changed, 25 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index d1430ef..c48c291 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1658,7 +1658,18 @@ config CMDLINE_OVERRIDE
+>  
+>  	  This is used to work around broken boot loaders.  This should
+>  	  be set to 'N' under normal conditions.
+> -
+> +config MRST
+> +	bool "Moorestown MID platform"
+> +	default n
+> +	depends on X86_32
+> +	select SFI
+> +	help
+> +	  Moorestown is Intel's Low Power Intel Architecture (LPIA) based Moblin
+> +	  Internet Device(MID) platform. Moorestown consists of two chips:
+> +	  Lincroft (CPU core, graphics, and memory controller) and Langwell IOH.
+> +	  Unlike standard x86 PCs, Moorestown does not have many legacy devices
+> +	  nor standard legacy replacement devices/features. e.g. Moorestown does
+> +	  not contain i8259, i8254, HPET, legacy BIOS, most of the io ports.
+>  endmenu
+>  
+>  config ARCH_ENABLE_MEMORY_HOTPLUG
+> diff --git a/arch/x86/include/asm/platform_feature.h b/arch/x86/include/asm/platform_feature.h
+> index bcadda5..026bdc7 100644
+> --- a/arch/x86/include/asm/platform_feature.h
+> +++ b/arch/x86/include/asm/platform_feature.h
+> @@ -45,6 +45,8 @@
+>  #define X86_PLATFORM_FEATURE_ACPI		(0*32+8) /* has ACPI support */
+>  #define X86_PLATFORM_FEATURE_SFI		(0*32+9) /* has SFI support */
+>  #define X86_PLATFORM_FEATURE_8042		(0*32+10) /* i8042 KBC */
+> +#define X86_PLATFORM_FEATURE_APBT		(0*32+11) /* APB timer */
+> +#define X86_PLATFORM_FEATURE_VRTC		(0*32+12) /* virtual RTC */
+>  
+>  extern __u32 platform_feature[N_PLATFORM_CAPINTS];
+>  extern const char *const
+> diff --git a/arch/x86/kernel/platform_info.c b/arch/x86/kernel/platform_info.c
+> index b39898a..3021ea9 100644
+> --- a/arch/x86/kernel/platform_info.c
+> +++ b/arch/x86/kernel/platform_info.c
+> @@ -105,7 +105,17 @@ static int __init sysfs_platforminfo_init(void)
+>  }
+>  arch_initcall(sysfs_platforminfo_init);
+>  
+> +/* Initialize a set of default feature flags based on subarch IDs
+> + * Currently, only MRST platform has non-X86 PC standard feature set.
+> + */
 
+please use the customary comment style:
 
-The following changes since commit 987fed3bf6982f2627d4fa242caa9026ef61132a:
-  Linus Torvalds (1):
-        Merge branch 'drm-fixes' of git://git.kernel.org/.../airlied/drm-2.6
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
 
-are available in the git repository at:
+specified in Documentation/CodingStyle.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+>  void platform_feature_init_default(int subarch_id)
+>  {
+> -	printk(KERN_INFO "Use default X86 platform feature set\n");
+> +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
+> +		if (subarch_id == X86_SUBARCH_MRST) {
+> +			setup_mrst_default_feature();
+> +			return;
+> +		}
+> +	} else {
+> +		printk(KERN_INFO "Use default X86 platform feature set\n");
+> +	}
+>  }
 
-Adrian Reber (1):
-      powerpc/rtas: Fix watchdog driver temperature read functionality
+Why dont we have some clean and robust PCI config space based 
+enumeration instead of this boot ID based thing?
 
-Anton Vorontsov (1):
-      powerpc/85xx: Make eSDHC 1-bit only transfer mode default for MPC8569E-MDS
-
-Benjamin Herrenschmidt (13):
-      powerpc/mpic: Fix mapping of "DCR" based MPIC variants
-      powerpc/pmac: Fix issues with PowerMac "PowerSurge" SMP
-      powerpc/mm: Make k(un)map_atomic out of line
-      powerpc/pmac: Fix DMA ops for MacIO devices
-      powerpc: Map more memory early on 601 processors
-      powerpc: Add irqtrace support for 32-bit powerpc
-      powerpc/rtas: Turn rtas lock into a raw spinlock
-      powerpc: Use one common impl. of RTAS timebase sync and use raw spinlock
-      powerpc/pasemi: Use raw spinlock in SMP TB sync
-      powerpc/of: Fix usage of dev_set_name() in of_device_alloc()
-      powerpc/440: Fix warning early debug code
-      powerpc/mm: Fix potential access to freed pages when using hugetlbfs
-      Merge commit 'kumar/next' into merge
-
-Gerhard Pircher (1):
-      powerpc/amigaone: Limit ISA I/O range to 4k in the device tree
-
-Huang Weiyi (1):
-      powerpc/85xx: remove duplicated #include
-
-Jon Smirl (1):
-      powerpc: Have git ignore generated files from dtc compile
-
-Kumar Gala (6):
-      powerpc/cpm1: Remove IMAP_ADDR
-      powerpc/85xx: Stop using ppc_md.init on socrates
-      powerpc/85xx: Fix issue found by lockdep trace in smp_85xx_kick_cpu
-      powerpc: Refactor device tree binding
-      powerpc: Fix output from show_regs
-      powerpc: Fix mpic alloc warning
-
-Michael Ellerman (1):
-      powerpc: Swiotlb breaks pseries
-
-Randy Vinson (1):
-      powerpc/85xx: Fix FSL RapidIO probing on MDS boards
-
-Sean MacLennan (1):
-      powerpc/warp: Platform fix for i2c change
-
-Sonny Rao (2):
-      powerpc/BSR: add 4096 byte BSR size
-      powerpc/BSR: Fix BSR to allow mmap of small BSR on 64k kernel
-
-Timur Tabi (1):
-      powerpc/qe: add polling timeout to qe_issue_cmd()
-
- Documentation/powerpc/booting-without-of.txt     | 1168 +---------------------
- Documentation/powerpc/dts-bindings/4xx/emac.txt  |  148 +++
- Documentation/powerpc/dts-bindings/gpio/gpio.txt |   50 +
- Documentation/powerpc/dts-bindings/gpio/mdio.txt |   19 +
- Documentation/powerpc/dts-bindings/marvell.txt   |  521 ++++++++++
- Documentation/powerpc/dts-bindings/phy.txt       |   25 +
- Documentation/powerpc/dts-bindings/spi-bus.txt   |   57 ++
- Documentation/powerpc/dts-bindings/usb-ehci.txt  |   25 +
- Documentation/powerpc/dts-bindings/xilinx.txt    |  295 ++++++
- arch/powerpc/Kconfig                             |    1 -
- arch/powerpc/boot/.gitignore                     |   10 +
- arch/powerpc/boot/dts/amigaone.dts               |    4 +-
- arch/powerpc/boot/dts/mpc8569mds.dts             |    1 +
- arch/powerpc/include/asm/cpm1.h                  |    2 -
- arch/powerpc/include/asm/dma-mapping.h           |   24 +-
- arch/powerpc/include/asm/highmem.h               |   57 +-
- arch/powerpc/include/asm/hw_irq.h                |   20 +-
- arch/powerpc/include/asm/pte-hash64-64k.h        |    3 +-
- arch/powerpc/include/asm/rtas.h                  |    5 +-
- arch/powerpc/kernel/entry_32.S                   |  127 +++-
- arch/powerpc/kernel/head_32.S                    |   17 +-
- arch/powerpc/kernel/of_device.c                  |    2 +-
- arch/powerpc/kernel/process.c                    |    2 +-
- arch/powerpc/kernel/rtas.c                       |   69 ++-
- arch/powerpc/kernel/setup_32.c                   |    2 +
- arch/powerpc/kernel/smp.c                        |    3 +-
- arch/powerpc/kernel/udbg_16550.c                 |    2 +-
- arch/powerpc/mm/Makefile                         |    1 +
- arch/powerpc/mm/highmem.c                        |   77 ++
- arch/powerpc/platforms/44x/warp.c                |   44 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c        |    1 +
- arch/powerpc/platforms/85xx/smp.c                |    9 +-
- arch/powerpc/platforms/85xx/socrates.c           |    6 +-
- arch/powerpc/platforms/85xx/xes_mpc85xx.c        |    1 -
- arch/powerpc/platforms/cell/smp.c                |   30 +-
- arch/powerpc/platforms/chrp/smp.c                |   33 +-
- arch/powerpc/platforms/pasemi/setup.c            |   15 +-
- arch/powerpc/platforms/powermac/setup.c          |   41 +-
- arch/powerpc/platforms/powermac/smp.c            |  166 ++--
- arch/powerpc/platforms/pseries/smp.c             |   30 +-
- arch/powerpc/sysdev/mpic.c                       |   34 +-
- arch/powerpc/sysdev/qe_lib/qe.c                  |    9 +-
- drivers/char/bsr.c                               |   42 +-
- drivers/macintosh/macio_asic.c                   |   11 +
- drivers/watchdog/wdrtas.c                        |    8 +-
- scripts/dtc/.gitignore                           |    5 +
- 46 files changed, 1691 insertions(+), 1531 deletions(-)
- create mode 100644 Documentation/powerpc/dts-bindings/4xx/emac.txt
- create mode 100644 Documentation/powerpc/dts-bindings/gpio/gpio.txt
- create mode 100644 Documentation/powerpc/dts-bindings/gpio/mdio.txt
- create mode 100644 Documentation/powerpc/dts-bindings/marvell.txt
- create mode 100644 Documentation/powerpc/dts-bindings/phy.txt
- create mode 100644 Documentation/powerpc/dts-bindings/spi-bus.txt
- create mode 100644 Documentation/powerpc/dts-bindings/usb-ehci.txt
- create mode 100644 Documentation/powerpc/dts-bindings/xilinx.txt
- create mode 100644 arch/powerpc/mm/highmem.c
- create mode 100644 scripts/dtc/.gitignore
-
-
-
+	Ingo
