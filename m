@@ -1,44 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbZFZMrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZFZMqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759738AbZFZMrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 08:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbZFZMrG
+	id S1757851AbZFZMqY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 08:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZFZMqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 08:47:06 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:42954 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753491AbZFZMrF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 08:47:05 -0400
-Date: Fri, 26 Jun 2009 16:47:05 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, maximilian attems <max@stro.at>,
-       linux-kernel@vger.kernel.org, dhowells@redhat.com
-Subject: Re: >= 2.6.30 broken alpha smp build
-Message-ID: <20090626124705.GA25147@jurassic.park.msu.ru>
-References: <20090625090842.GA17936@stro.at> <20090625115423.6a31b49c.akpm@linux-foundation.org> <4A4419AA.2040400@kernel.org>
+	Fri, 26 Jun 2009 08:46:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52013 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751983AbZFZMqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 08:46:15 -0400
+Date: Fri, 26 Jun 2009 08:39:19 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 2/2] io-controller: make rt preemption happen in the
+	whole hierarchy
+Message-ID: <20090626123919.GA9785@redhat.com>
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com> <4A3F3648.7080007@cn.fujitsu.com> <20090622172123.GE15600@redhat.com> <4A4079B8.4020402@cn.fujitsu.com> <20090623140250.GA4262@redhat.com> <4A41EFE1.5050101@cn.fujitsu.com> <4A44833F.8040308@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4419AA.2040400@kernel.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <4A44833F.8040308@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 09:43:22AM +0900, Tejun Heo wrote:
-> The __used attribute is dropped by a patch in percpu patchset as it
-> caused build warning on my test builds and wasn't even effective
-> as-was (overriden by later NULL definition).  Ivan, any ideas why it's
-> there?
+On Fri, Jun 26, 2009 at 04:13:51PM +0800, Gui Jianfeng wrote:
+> let rt queue preempt non-rt queue if needed.
+> Make sure comparision happens at the same level.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/elevator-fq.c |   28 +++++++++++++++++++++++++++-
+>  1 files changed, 27 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 1d4ec1f..21d38f5 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -3742,6 +3742,31 @@ int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
+>  	return ret;
+>  }
+>  
+> +static int check_rt_preemption(struct io_queue *ioq)
+> +{
+> +	struct hlist_node *node;
+> +	struct hlist_head *hhead = &ioq->efqd->rt_ioq_list;
+> +	struct io_queue *rt_ioq;
+> +	struct io_entity *entity = &ioq->entity;
+> +	struct io_entity *new_entity;
+> +
+> +	rcu_read_lock();
+> +	hlist_for_each_entry_rcu(rt_ioq, node, hhead, rt_node) {
+> +		new_entity = &rt_ioq->entity;
+> +
+> +		bfq_find_matching_entity(&entity, &new_entity);
+> +
+> +		if (new_entity->ioprio_class == IOPRIO_CLASS_RT &&
+> +		    entity->ioprio_class != IOPRIO_CLASS_RT) {
+> +			rcu_read_unlock();
+> +			return 1;
+> +		}
+> +	}
+> +	rcu_read_unlock();
+> +
+> +	return 0;
+> +}
+> +
+>  /* Common layer function to select the next queue to dispatch from */
+>  void *elv_fq_select_ioq(struct request_queue *q, int force)
+>  {
+> @@ -3823,7 +3848,8 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+>  	 */
+>  	iog = ioq_to_io_group(ioq);
+>  
+> -	if (!elv_ioq_class_rt(ioq) && iog->busy_rt_queues) {
+> +	if (!elv_ioq_class_rt(ioq) &&
+> +	    (iog->busy_rt_queues || check_rt_preemption(ioq))) {
+>  		/*
 
-It was intended for suppressing the compiler warnings about "unused"
-static per-cpu variables, as they were only referenced inside the asm code.
+Hi Gui,
 
-Now it seems to be broken with DECLARE_PER_CPU thing, so I think your
-patch that kills __used attribute should go in as a compile fix ASAP -
-we can live with a few compile warnings until the rest of percpu patchset
-gets merged.
+I am not able to understand why do we need above changes?
 
-Ivan.
+BFQ scheduler already takes care of selecting an RT queue for dispatch (if
+the queue is entitled to).
+
+In case a new RT queue backlogged while a BE queue is being served, we
+do preemtion check to make sure RT queue gets to run as soon as possible.
+
+In fact I think that busy_rt_queues infrastructure is also redundant and
+I plan to get rid of it. 
+
+Can you please help me understand what use case are you addressing with
+above patch?
+
+Thanks
+Vivek
