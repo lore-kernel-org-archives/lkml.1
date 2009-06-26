@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbZFZROR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZFZRSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760047AbZFZROR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZFZROG
+	id S1759434AbZFZRSz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZFZRSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:14:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56211 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZFZROF (ORCPT
+	Fri, 26 Jun 2009 13:18:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:5198 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751269AbZFZRSr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:14:05 -0400
-Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-From: David Woodhouse <dwmw2@infradead.org>
-To: vimal singh <vimalsingh@ti.com>
-Cc: "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>
-In-Reply-To: <57946.192.168.10.89.1246035773.squirrel@dbdmail.itg.ti.com>
-References: <53729.192.168.10.89.1246035472.squirrel@dbdmail.itg.ti.com>
-	 <57946.192.168.10.89.1246035773.squirrel@dbdmail.itg.ti.com>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 18:14:02 +0100
-Message-Id: <1246036442.663.47.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 26 Jun 2009 13:18:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,297,1243839600"; 
+   d="scan'208";a="528124921"
+From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       "Brown, Len" <len.brown@intel.com>, "Tang, Feng" <feng.tang@intel.com>
+Date: Fri, 26 Jun 2009 10:18:50 -0700
+Subject: RE: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+Thread-Topic: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+Thread-Index: Acn2LMViSOIjpnDrTHSmuNm9e07V/AAVRaQA
+Message-ID: <43F901BD926A4E43B106BF17856F0755641A44CB@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
+ <20090626070720.GB14078@elte.hu>
+In-Reply-To: <20090626070720.GB14078@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-26 at 22:32 +0530, vimal singh wrote:
-> Somehow I do not see below errors on compilation:
-> drivers/mtd/nand/omap2.c: In function 'omap_wait':
-> drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this
-> function)
-> drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported
-> only once
-> drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
-> drivers/mtd/nand/omap2.c:557: error: implicit declaration of function
-> 'time_before'
-> 
-> But still including 'linux/jiffies.h'.
-> 
-> Below is the patch.
-
-The 'status' you return in the case that you _have_ gone through the
-loop is still wrong though, isn't it?
-
--- 
-dwmw2
-
+>> -#ifdef CONFIG_ACPI
+>> +#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
+>
+>Please add a new helper non-interactive Kconfig symbol instead of
+>increasing the #ifdef jungle.
+>
+[[JPAN]] I agreed, maybe this should be part of the SFI patch or already have similar plans?
