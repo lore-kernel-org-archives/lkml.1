@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbZFZQfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbZFZQnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbZFZQfq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZFZQfj
+	id S1753634AbZFZQnK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 12:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZFZQm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:35:39 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3490 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbZFZQfi (ORCPT
+	Fri, 26 Jun 2009 12:42:57 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42076 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750951AbZFZQm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:35:38 -0400
-Subject: Re: [PATCH 18/19] drivers/video: Use PCI_VDEVICE
-From: Joe Perches <joe@perches.com>
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Russell King <linux@arm.linux.org.uk>,
-       Antonino Daplas <adaplas@gmail.com>,
-       Petr Vandrovec <vandrove@vc.cvut.cz>,
-       Thomas Winischhofer <thomas@winischhofer.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20090626095454.GH9980@sci.fi>
-References: <cover.1245906151.git.joe@perches.com>
-	 <198c226b3dfd003881e7f95b3fbbc8d433804b01.1245906153.git.joe@perches.com>
-	 <20090626095454.GH9980@sci.fi>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 26 Jun 2009 09:35:26 -0700
-Message-Id: <1246034126.18587.19.camel@Joe-Laptop.home>
+	Fri, 26 Jun 2009 12:42:56 -0400
+Date: Fri, 26 Jun 2009 17:44:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 26 (cyclades)
+Message-ID: <20090626174414.12ce9291@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A44F18D.2000608@oracle.com>
+References: <20090626154605.ac73b738.sfr@canb.auug.org.au>
+	<4A44F18D.2000608@oracle.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-26 at 12:54 +0300, Ville Syrjälä wrote:
-> Perhaps there should be a PCI_VDDEVICE() or something for this type of
-> stuff? Would make things even shorter.
+On Fri, 26 Jun 2009 09:04:29 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-drivers/edac/edac_core.h has:
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090625:
+> 
+> 
+> drivers/char/cyclades.c:3332: error: assignment of read-only location
 
-#define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
-	PCI_DEVICE_ID_ ## vend ## _ ## dev
-
-Try submitting a patch and see what happens...
-
-> Also PCI_VDEVICE() does not use named initializers for some reason.
-> Might be worth fixing.
-
-Perhaps that's to avoid mixing named and unnamed initializers.
-
-> It seems your script missed atyfb. It could use PCI_VDEVICE() too.
-
-Can you show an example please?
-
+Fixed
