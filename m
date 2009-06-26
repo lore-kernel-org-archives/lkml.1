@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbZFZVNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbZFZVQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbZFZVNh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 17:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZFZVN3
+	id S1760647AbZFZVQc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 17:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZFZVQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 17:13:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33056 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751723AbZFZVN2 (ORCPT
+	Fri, 26 Jun 2009 17:16:24 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:19376 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZFZVQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 17:13:28 -0400
-Date: Fri, 26 Jun 2009 17:13:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906262246.39464.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
+	Fri, 26 Jun 2009 17:16:24 -0400
+Date: Fri, 26 Jun 2009 15:16:26 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Troy Moure <twmoure@szypr.net>,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ACPI: update acpi_get_pci_dev() comments
+Message-ID: <20090626211626.GB980@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009, Rafael J. Wysocki wrote:
+Recent commit 412af978 (ACPI: video: prevent NULL deref in
+acpi_get_pci_dev()) was added to prevent a boot oops.
 
-> > It occurs to me that the problem would be solved if were a cancel_work
-> > routine.  In the same vein, it ought to be possible for
-> > cancel_delayed_work to run in interrupt context.  I'll see what can be
-> > done.
-> 
-> Having looked at the workqueue code I'm not sure if there's a way to implement
-> that in a non-racy way.  Which may be the reason why there are no such
-> functions already. :-)
+Update the implementation with some notes and analysis as to why
+the fix is correct.
 
-Well, I'll give it a try.
-
-Speaking of races, have you noticed that the way power.work_done gets 
-used is racy?  You can't wait for the completion before releasing the 
-lock, but then anything could happen.
-
-A safer approach would be to use a wait_queue.
-
-> In the meantime I reworked the patch (below) to use more RPM_* flags and I
-> removed the runtime_break and runtime_notify bits from it.  Also added some
-> comments to explain some non-obvious steps (hope that helps).
-> 
-> I also added the pm_runtime_put_atomic() and pm_runtime_put() as per the
-> comment above.
-> 
-> It seems to be a bit cleaner this way, but that's my personal view. :-)
-
-I'll look at it over the weekend.  And I'll try to see if proper 
-cancel_work and cancel_delayed_work functions can help clean it up.
-
-Alan Stern
-
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Troy Moure <twmoure@szypr.net>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 55b5b90..570f32e 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -344,6 +344,16 @@ struct acpi_handle_node {
+  * function returns a pointer to its data structure.  The caller must
+  * decrement the reference count by calling pci_dev_put().
+  * If no device is found, %NULL is returned.
++ *
++ * XXX: You may be surprised at the results if you call this interface
++ * with a handle to a PCI root bridge and expect to get a pci_dev back.
++ * The PCI specification does not require a PCI root bridge to present
++ * configuration space, and thus may not have a valid associated pci_dev.
++ *
++ * [nb, all P2P bridges _are_ required to present configuration space]
++ *
++ * A PCI root bridge that presents config space is referred to as
++ * "materialized"; its converse is "non-materialized".
+  */
+ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ {
+@@ -385,6 +395,11 @@ struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
+ 	 * Now, walk back down the PCI device tree until we return to our
+ 	 * original handle. Assumes that everything between the PCI root
+ 	 * bridge and the device we're looking for must be a P2P bridge.
++	 *
++	 * Note! It's possible for ACPI to describe a non-existent PCI device
++	 * due to either hotplug or a namespace shared across different
++	 * platforms with just enable or present bits to mask them out from
++	 * the initial PCI scan. So take care to check for a NULL pdev.
+ 	 */
+ 	list_for_each_entry(node, &device_list, node) {
+ 		acpi_handle hnd = node->handle;
