@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbZFZQVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760782AbZFZQXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbZFZQVW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZFZQVP
+	id S1760782AbZFZQXi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 12:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZFZQXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:21:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52751 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750698AbZFZQVO (ORCPT
+	Fri, 26 Jun 2009 12:23:30 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57662
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750698AbZFZQX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:21:14 -0400
-Date: Fri, 26 Jun 2009 09:20:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using
- pipes in core_pattern
-Message-Id: <20090626092001.32e35e17.akpm@linux-foundation.org>
-In-Reply-To: <20090626104804.GA7337@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090625163050.d6a71a13.akpm@linux-foundation.org>
-	<20090626104804.GA7337@hmsreliant.think-freely.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 26 Jun 2009 12:23:29 -0400
+Date: Fri, 26 Jun 2009 09:23:33 -0700 (PDT)
+Message-Id: <20090626.092333.104882157.davem@davemloft.net>
+To: petkovbb@googlemail.com
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ide-cd: handle fragmented packet commands gracefully
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090626081958.GA15449@liondog.tnic>
+References: <1245574527-2104-1-git-send-email-petkovbb@gmail.com>
+	<200906221150.22992.bzolnier@gmail.com>
+	<20090626081958.GA15449@liondog.tnic>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009 06:48:04 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
+From: Borislav Petkov <petkovbb@googlemail.com>
+Date: Fri, 26 Jun 2009 10:19:58 +0200
 
-> > > --- a/kernel/sysctl.c
-> > > +++ b/kernel/sysctl.c
-> > > @@ -75,6 +75,7 @@ extern int max_threads;
-> > >  extern int core_uses_pid;
-> > >  extern int suid_dumpable;
-> > >  extern char core_pattern[];
-> > > +extern unsigned int core_pipe_limit;
-> > 
-> > Bah.
-> > 
-> > We should fix this one day.
-> > 
-> Is there a particular way you'd like to see it fixed?
+> Hi David,
+> 
+> On Mon, Jun 22, 2009 at 11:50:22AM +0200, Bartlomiej Zolnierkiewicz wrote:
+>> On Sunday 21 June 2009 10:55:27 Borislav Petkov wrote:
+>> > There are some devices in the wild that clear the DRQ bit during the
+>> > last word of a packet command and therefore could use a "second chance"
+>> > for that last word of data to be xferred instead of simply failing the
+>> > request. Do that by attempting to suck in those last bytes in PIO mode.
+>> > 
+>> > In addition, the ATA_ERR bit has to be cleared for we cannot be sure the
+>> > data is valid otherwise.
+>> > 
+>> > See http://bugzilla.kernel.org/show_bug.cgi?id=13399 for details.
+>> > 
+>> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+>> 
+>> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> can you pick that one too, please. I can't seem to find it on patchwork.
 
-Not in the context of this patch.
+Yep, I'll dig into the archives to get it, I had this on my TODO
+list.
 
-One way would be to add a new sysctl-externs.h and then put all the
-declarations in there.  That file gets included by sysctl.c and by each
-file which shares a global with sysctl.c
-
-
+Thanks!
