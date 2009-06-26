@@ -1,270 +1,666 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbZFZNxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbZFZN7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759392AbZFZNxN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 09:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758454AbZFZNxA
+	id S1758750AbZFZN7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 09:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbZFZN7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 09:53:00 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52601 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755929AbZFZNw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 09:52:59 -0400
-Message-ID: <4A44D2B5.90302@novell.com>
-Date: Fri, 26 Jun 2009 09:52:53 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3] slow-work: add (module*)work->owner to fix races	with
- module clients
-References: <20090625014520.449.98923.stgit@dev.haskins.net> <4A44B86D.6010301@novell.com> <20090626132819.GA5939@redhat.com>
-In-Reply-To: <20090626132819.GA5939@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5F56ACD153C9C5DCC847163F"
+	Fri, 26 Jun 2009 09:59:39 -0400
+Received: from nox.protox.org ([88.191.38.29]:59009 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753948AbZFZN7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 09:59:38 -0400
+Subject: Re: TTM page pool allocator
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: thomas@shipmail.org, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+In-Reply-To: <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
+References: <1245931298.13359.8.camel@localhost.localdomain>
+	 <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-34xQy7F4ZkZpyQgzTXW3"
+Date: Fri, 26 Jun 2009 15:59:35 +0200
+Message-Id: <1246024775.2371.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5F56ACD153C9C5DCC847163F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Michael S. Tsirkin wrote:
-> On Fri, Jun 26, 2009 at 08:00:45AM -0400, Gregory Haskins wrote:
->  =20
->> Gregory Haskins wrote:
->>    =20
->>> (Try 3: applies to Linus' git master:626f380d)
->>>
->>> [ Changelog:
->>>
->>>     v3:
->>>         *) moved (module*)owner to slow_work_ops=20
->>>         *) removed useless barrier()
->>> 	*) updated documentation/comments=20
->>>
->>>     v2:
->>> 	*) cache "owner" value to prevent invalid access after put_ref
->>>
->>>     v1:
->>> 	*) initial release
->>> ]
->>>
->>>  =20
->>>      =20
->> (I know there were several versions of this patch floating around.  Th=
-is
->> was compounded by the fact that I had also originally submitted it as
->> part of a larger series against KVM and those problems I had with my
->> mailer.  But FWIW: This is the latest version to consider for merging =
-to
->> mainline.  I've CC'd Michael Tsirkin who has reviewed this patch.=20
->> Perhaps I can prod an Acked-by/Reviewed-by tag out of him ;) )
->>
->> Kind Regards,
->> -Greg
->>    =20
->
-> The race itself seems to be real, and the patch looks good to me.
-> There's ongoing discussion on whether KVM needs to use slow-work,
-> but there are other modular users which will benefit from this.
->
-> Reviewed-by: Michael S. Tsirkin <mst@redhat.com>
->
-> By the way: I think you also need to update all users, which include
-> at least GFS2 and fscache, to init the owner field.
->  =20
+--=-34xQy7F4ZkZpyQgzTXW3
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Good catch!  That was a side effect of v3 since v2 used to have the
-owner in the slow_work and do the init implicitly in slow_work_init().=20
-Should I respin a v4 with those new hunks, or should we patch those
-separately?
+On Fri, 2009-06-26 at 10:00 +1000, Dave Airlie wrote:
+> On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org> wrote:
+> > Hi,
+> >
+> > Thomas i attach a reworked page pool allocator based on Dave works,
+> > this one should be ok with ttm cache status tracking. It definitely
+> > helps on AGP system, now the bottleneck is in mesa vertex's dma
+> > allocation.
+> >
+> 
+> My original version kept a list of wb pages as well, this proved to be
+> quite a useful
+> optimisation on my test systems when I implemented it, without it I
+> was spending ~20%
+> of my CPU in getting free pages, granted I always used WB pages on
+> PCIE/IGP systems.
+> 
+> Another optimisation I made at the time was around the populate call,
+> (not sure if this
+> is what still happens):
+> 
+> Allocate a 64K local BO for DMA object.
+> Write into the first 5 pages from userspace - get WB pages.
+> Bind to GART, swap those 5 pages to WC + flush.
+> Then populate the rest with WC pages from the list.
+> 
+> Granted I think allocating WC in the first place from the pool might
+> work just as well since most of the DMA buffers are write only.
+> 
+> Dave.
+> --
 
--Greg
->  =20
->>> -------------------------
->>>
->>> slow-work: add (module*)work->owner to fix races with module clients
->>>
->>> The slow_work facility was designed to use reference counting instead=
- of
->>> barriers for synchronization.  The reference counting mechanism is
->>> implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
->>> problematic for module use of the slow_work facility because it is
->>> impossible to synchronize against the .text installed in the callback=
-s:
->>> There is no way to ensure that the slow-work threads have completely
->>> exited the .text in question and rmmod may yank it out from under the=
+Attached a new version of the patch, which integrate changes discussed.
 
->>> slow_work thread.
->>>
->>> This patch attempts to address this issue by mapping "struct module* =
-owner"
->>> to the slow_work_ops item, and maintaining a module reference
->>> count coincident with the more externally visible reference count.  S=
-ince
->>> the slow_work facility is resident in kernel, it should be a race-fre=
-e
->>> location to issue a module_put() call.  This will ensure that modules=
+Cheers,
+Jerome
 
->>> can properly cleanup before exiting.
->>>
->>> A module_get()/module_put() pair on slow_work_enqueue() and the subse=
-quent
->>> dequeue technically adds the overhead of the atomic operations for ev=
-ery
->>> work item scheduled.  However, slow_work is designed for deferring
->>> relatively long-running and/or sleepy tasks to begin with, so this
->>> overhead will hopefully be negligible.
->>>
->>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->>> CC: David Howells <dhowells@redhat.com>
->>> ---
->>>
->>>  Documentation/slow-work.txt |    6 +++++-
->>>  include/linux/slow-work.h   |    3 +++
->>>  kernel/slow-work.c          |   20 +++++++++++++++++++-
->>>  3 files changed, 27 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.tx=
-t
->>> index ebc50f8..2a38878 100644
->>> --- a/Documentation/slow-work.txt
->>> +++ b/Documentation/slow-work.txt
->>> @@ -80,6 +80,7 @@ Slow work items may then be set up by:
->>>   (2) Declaring the operations to be used for this item:
->>> =20
->>>  	struct slow_work_ops myitem_ops =3D {
->>> +	        .owner   =3D THIS_MODULE,
->>>  		.get_ref =3D myitem_get_ref,
->>>  		.put_ref =3D myitem_put_ref,
->>>  		.execute =3D myitem_execute,
->>> @@ -102,7 +103,10 @@ A suitably set up work item can then be enqueued=
- for processing:
->>>  	int ret =3D slow_work_enqueue(&myitem);
->>> =20
->>>  This will return a -ve error if the thread pool is unable to gain a =
-reference
->>> -on the item, 0 otherwise.
->>> +on the item, 0 otherwise.  Loadable modules may only enqueue work if=
- at least
->>> +one reference to the module is known to be held.  The slow-work infr=
-astructure
->>> +will acquire a reference to the module and hold it until after the i=
-tem's
->>> +reference is dropped, assuring the stability of the callback.
->>> =20
->>> =20
->>>  The items are reference counted, so there ought to be no need for a =
-flush
->>> diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
->>> index b65c888..1382918 100644
->>> --- a/include/linux/slow-work.h
->>> +++ b/include/linux/slow-work.h
->>> @@ -17,6 +17,7 @@
->>>  #ifdef CONFIG_SLOW_WORK
->>> =20
->>>  #include <linux/sysctl.h>
->>> +#include <linux/module.h>
->>> =20
->>>  struct slow_work;
->>> =20
->>> @@ -24,6 +25,8 @@ struct slow_work;
->>>   * The operations used to support slow work items
->>>   */
->>>  struct slow_work_ops {
->>> +	struct module *owner;
->>> +
->>>  	/* get a ref on a work item
->>>  	 * - return 0 if successful, -ve if not
->>>  	 */
->>> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
->>> index 09d7519..18dee34 100644
->>> --- a/kernel/slow-work.c
->>> +++ b/kernel/slow-work.c
->>> @@ -145,6 +145,15 @@ static unsigned slow_work_calc_vsmax(void)
->>>  	return min(vsmax, slow_work_max_threads - 1);
->>>  }
->>> =20
->>> +static void slow_work_put(struct slow_work *work)
->>> +{
->>> +	/* cache values that are needed during/after pointer invalidation *=
-/
->>> +	struct module *owner =3D work->ops->owner;
->>> +
->>> +	work->ops->put_ref(work);
->>> +	module_put(owner);
->>> +}
->>> +
->>>  /*
->>>   * Attempt to execute stuff queued on a slow thread.  Return true if=
- we managed
->>>   * it, false if there was nothing to do.
->>> @@ -219,7 +228,7 @@ static bool slow_work_execute(void)
->>>  		spin_unlock_irq(&slow_work_queue_lock);
->>>  	}
->>> =20
->>> -	work->ops->put_ref(work);
->>> +	slow_work_put(work);
->>>  	return true;
->>> =20
->>>  auto_requeue:
->>> @@ -299,6 +308,14 @@ int slow_work_enqueue(struct slow_work *work)
->>>  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
->>>  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
->>>  		} else {
->>> +			/*
->>> +			 * Callers must ensure that their module has at least
->>> +			 * one reference held while the work is enqueued.  We
->>> +			 * will acquire another reference here and drop it
->>> +			 * once we do the last ops->put_ref()
->>> +			 */
->>> +			__module_get(work->ops->owner);
->>> +
->>>  			if (work->ops->get_ref(work) < 0)
->>>  				goto cant_get_ref;
->>>  			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
->>> @@ -313,6 +330,7 @@ int slow_work_enqueue(struct slow_work *work)
->>>  	return 0;
->>> =20
->>>  cant_get_ref:
->>> +	module_put(work->ops->owner);
->>>  	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
->>>  	return -EAGAIN;
->>>  }
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>  =20
->>>      =20
->>    =20
->
->
->  =20
+--=-34xQy7F4ZkZpyQgzTXW3
+Content-Disposition: attachment; filename="0001-ttm-add-pool-wc-uc-page-allocator.patch"
+Content-Type: text/x-patch; name="0001-ttm-add-pool-wc-uc-page-allocator.patch"; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+>From 9083e5466a7b81edcc989ac22d6ccdebef63116d Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Wed, 24 Jun 2009 16:31:43 +1000
+Subject: [PATCH] ttm: add pool wc/uc page allocator
+
+On AGP system we might allocate/free routinely uncached or wc memory,
+changing page from cached (wb) to uc or wc is very expensive and involves
+a lot of flushing. To improve performance this allocator use a pool
+of uc,wc pages.
+
+Currently each pool (wc, uc) is 256 pages big, improvement would be
+to tweak this according to memory pressure so we can give back memory
+to system.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+---
+ drivers/gpu/drm/ttm/Makefile         |    2 +-
+ drivers/gpu/drm/ttm/ttm_memory.c     |    3 +
+ drivers/gpu/drm/ttm/ttm_page_alloc.c |  352 ++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/ttm/ttm_page_alloc.h |   34 ++++
+ drivers/gpu/drm/ttm/ttm_tt.c         |   50 ++++--
+ include/drm/ttm/ttm_bo_driver.h      |    6 +
+ 6 files changed, 434 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/gpu/drm/ttm/ttm_page_alloc.c
+ create mode 100644 drivers/gpu/drm/ttm/ttm_page_alloc.h
+
+diff --git a/drivers/gpu/drm/ttm/Makefile b/drivers/gpu/drm/ttm/Makefile
+index b0a9de7..93e002c 100644
+--- a/drivers/gpu/drm/ttm/Makefile
++++ b/drivers/gpu/drm/ttm/Makefile
+@@ -3,6 +3,6 @@
+ 
+ ccflags-y := -Iinclude/drm
+ ttm-y := ttm_agp_backend.o ttm_memory.o ttm_tt.o ttm_bo.o \
+-	ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o
++	ttm_bo_util.o ttm_bo_vm.o ttm_module.o ttm_global.o ttm_page_alloc.o
+ 
+ obj-$(CONFIG_DRM_TTM) += ttm.o
+diff --git a/drivers/gpu/drm/ttm/ttm_memory.c b/drivers/gpu/drm/ttm/ttm_memory.c
+index 87323d4..6da4a08 100644
+--- a/drivers/gpu/drm/ttm/ttm_memory.c
++++ b/drivers/gpu/drm/ttm/ttm_memory.c
+@@ -32,6 +32,7 @@
+ #include <linux/mm.h>
+ #include <linux/module.h>
+ 
++#include "ttm_page_alloc.h"
+ #define TTM_PFX "[TTM] "
+ #define TTM_MEMORY_ALLOC_RETRIES 4
+ 
+@@ -124,6 +125,7 @@ int ttm_mem_global_init(struct ttm_mem_global *glob)
+ 	printk(KERN_INFO TTM_PFX "TTM available object memory: %llu MiB\n",
+ 	       glob->max_memory >> 20);
+ 
++	ttm_page_alloc_init();
+ 	return 0;
+ }
+ EXPORT_SYMBOL(ttm_mem_global_init);
+@@ -135,6 +137,7 @@ void ttm_mem_global_release(struct ttm_mem_global *glob)
+ 	flush_workqueue(glob->swap_queue);
+ 	destroy_workqueue(glob->swap_queue);
+ 	glob->swap_queue = NULL;
++	ttm_page_alloc_fini();
+ }
+ EXPORT_SYMBOL(ttm_mem_global_release);
+ 
+diff --git a/drivers/gpu/drm/ttm/ttm_page_alloc.c b/drivers/gpu/drm/ttm/ttm_page_alloc.c
+new file mode 100644
+index 0000000..860541f
+--- /dev/null
++++ b/drivers/gpu/drm/ttm/ttm_page_alloc.c
+@@ -0,0 +1,352 @@
++/*
++ * Copyright (c) Red Hat Inc.
++
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sub license,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial portions
++ * of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Authors: Dave Airlie <airlied@redhat.com>
++ */
++
++/* simple list based uncached page allocator
++ * - Add chunks of 1MB to the allocator at a time.
++ * - Use page->lru to keep a free list
++ * - doesn't track currently in use pages
++ *
++ *  TODO: Add shrinker support
++ */
++
++#include <linux/list.h>
++#include <linux/mutex.h>
++#include <linux/mm_types.h>
++#include <asm/cacheflush.h>
++#include <ttm/ttm_module.h>
++#include <ttm/ttm_bo_driver.h>
++#include "ttm_page_alloc.h"
++
++#ifdef TTM_HAS_AGP
++#include <asm/agp.h>
++#endif
++
++#define NUM_PAGES_TO_ADD 128
++
++
++struct ttm_page_alloc_usage {
++	int total_uc_pages;
++	int total_wc_pages;
++	int total_wb_pages;
++	int total_hm_pages;
++	int count_uc_pages;
++	int count_wc_pages;
++	int count_wb_pages;
++	int count_hm_pages;
++};
++
++static struct page *wb_pages[NUM_PAGES_TO_ADD];
++static struct page *wc_pages[NUM_PAGES_TO_ADD];
++static struct page *uc_pages[NUM_PAGES_TO_ADD];
++static struct page *hm_pages[NUM_PAGES_TO_ADD];
++static struct mutex page_alloc_mutex;
++static int page_alloc_inited;
++struct ttm_page_alloc_usage ttm_page_alloc;
++
++
++static inline void ttm_page_put(struct page *page, bool setwb)
++{
++#ifdef CONFIG_X86
++	if (setwb && !PageHighMem(page)) {
++		set_memory_wb((unsigned long)page_address(page), 1);
++	}
++#else
++#ifdef TTM_HAS_AGP
++	if (setwb) {
++		/* This is a generic interface on non x86 to handle
++		 * wc/uc page */
++		unmap_page_from_agp(page);
++	}
++#endif
++#endif
++	put_page(page);
++	__free_page(page);
++}
++
++static void ttm_release_all_pages(struct page **pages, int count, bool setwb)
++{
++	int i;
++
++	for (i = 0; i < count; i++) {
++		ttm_page_put(pages[i], setwb);
++		pages[i] = NULL;
++	}
++}
++
++static int ttm_add_pages_locked(int flags)
++{
++	struct page *page;
++	int gfp_flags = GFP_HIGHUSER;
++	int i, cflag, r;
++
++	cflag = (flags & TTM_PAGE_FLAG_CACHE_MASK) >> TTM_PAGE_FLAG_CACHE_SHIFT;
++	if (flags & TTM_PAGE_FLAG_ZERO_ALLOC)
++		gfp_flags |= __GFP_ZERO;
++	if (flags & TTM_PAGE_FLAG_DMA32)
++		gfp_flags |= GFP_DMA32;
++	switch (cflag) {
++	case TTM_PAGE_FLAG_CACHE_UC:
++		for (i = ttm_page_alloc.count_uc_pages; i < NUM_PAGES_TO_ADD; i++) {
++			page = alloc_page(gfp_flags);
++			if (!page) {
++				printk(KERN_ERR TTM_PFX "unable to get page %d\n", i);
++				return i;
++			}
++			get_page(page);
++#ifdef CONFIG_X86
++			if (!PageHighMem(page)) {
++				uc_pages[ttm_page_alloc.count_uc_pages++] = page;
++				ttm_page_alloc.total_uc_pages++;
++			} else {
++				if (ttm_page_alloc.count_hm_pages < NUM_PAGES_TO_ADD) {
++					hm_pages[ttm_page_alloc.count_hm_pages++] = page;
++					ttm_page_alloc.total_hm_pages++;
++				} else {
++					put_page(page);
++					__free_page(page);
++				}
++			}
++#else
++#ifdef TTM_HAS_AGP
++			map_page_into_agp(page);
++#endif
++#endif
++		}
++#ifdef CONFIG_X86
++		r = set_pages_array_uc(uc_pages, ttm_page_alloc.count_uc_pages);
++		if (r) {
++			/* On error we don't need to set page back to WB.
++			 * Or should we do that to be extra safe ?
++			 */
++			ttm_release_all_pages(uc_pages, ttm_page_alloc.count_uc_pages, false);
++			return r;
++		}
++#endif
++		ttm_tt_cache_flush(uc_pages, ttm_page_alloc.count_uc_pages);
++		break;
++	case TTM_PAGE_FLAG_CACHE_WC:
++		for (i = ttm_page_alloc.count_wc_pages; i < NUM_PAGES_TO_ADD; i++) {
++			page = alloc_page(gfp_flags);
++			if (!page) {
++				printk(KERN_ERR TTM_PFX "unable to get page %d\n", i);
++				return i;
++			}
++			get_page(page);
++#ifdef CONFIG_X86
++			if (!PageHighMem(page)) {
++				wc_pages[ttm_page_alloc.count_wc_pages++] = page;
++				set_memory_wc((unsigned long)page_address(page), 1);
++				ttm_page_alloc.total_wc_pages++;
++			} else {
++				if (ttm_page_alloc.count_hm_pages < NUM_PAGES_TO_ADD) {
++					hm_pages[ttm_page_alloc.count_hm_pages++] = page;
++					ttm_page_alloc.total_hm_pages++;
++				} else {
++					put_page(page);
++					__free_page(page);
++				}
++			}
++#else
++#ifdef TTM_HAS_AGP
++			map_page_into_agp(page);
++#endif
++#endif
++		}
++		ttm_tt_cache_flush(wc_pages, ttm_page_alloc.count_wc_pages);
++		break;
++	case TTM_PAGE_FLAG_CACHE_WB:
++		for (i = ttm_page_alloc.count_wb_pages; i < NUM_PAGES_TO_ADD; i++) {
++			page = alloc_page(gfp_flags);
++			if (!page) {
++				printk(KERN_ERR TTM_PFX "unable to get page %d\n", i);
++				return i;
++			}
++			get_page(page);
++#ifdef CONFIG_X86
++			if (!PageHighMem(page)) {
++				wb_pages[ttm_page_alloc.count_wb_pages++] = page;
++				ttm_page_alloc.total_wb_pages++;
++			} else {
++				if (ttm_page_alloc.count_hm_pages < NUM_PAGES_TO_ADD) {
++					hm_pages[ttm_page_alloc.count_hm_pages++] = page;
++					ttm_page_alloc.total_hm_pages++;
++				} else {
++					put_page(page);
++					__free_page(page);
++				}
++			}
++#endif
++		}
++		break;
++	default:
++		printk(KERN_ERR TTM_PFX "Wrong caching flags %d'n", cflag);
++		return 0;
++	}
++	return i;
++}
++
++struct page *ttm_get_page(int flags)
++{
++	struct page *page = NULL;
++	int ret;
++	struct page **pages;
++	int *count_pages;
++	int cflag;
++	int gfp_flags = GFP_HIGHUSER;
++
++	if (flags & TTM_PAGE_FLAG_ZERO_ALLOC)
++		gfp_flags |= __GFP_ZERO;
++	if (flags & TTM_PAGE_FLAG_DMA32)
++		gfp_flags |= GFP_DMA32;
++	cflag = (flags & TTM_PAGE_FLAG_CACHE_MASK) >> TTM_PAGE_FLAG_CACHE_SHIFT;
++	switch (cflag) {
++	case TTM_PAGE_FLAG_CACHE_UC:
++		pages = uc_pages;
++		count_pages = &ttm_page_alloc.count_uc_pages;
++		break;
++	case TTM_PAGE_FLAG_CACHE_WC:
++		pages = wc_pages;
++		count_pages = &ttm_page_alloc.count_wc_pages;
++		break;
++	case TTM_PAGE_FLAG_CACHE_WB:
++	default:
++		pages = wb_pages;
++		count_pages = &ttm_page_alloc.count_wb_pages;
++		break;
++	}
++
++	mutex_lock(&page_alloc_mutex);
++	if (!(*count_pages) && !ttm_page_alloc.count_hm_pages) {
++		ret = ttm_add_pages_locked(flags);
++		if (ret == 0) {
++			mutex_unlock(&page_alloc_mutex);
++			return NULL;
++		}
++	}
++	if (ttm_page_alloc.count_hm_pages) {
++		page = hm_pages[--ttm_page_alloc.count_hm_pages];
++	} else {
++		page = pages[--(*count_pages)];
++	}
++	mutex_unlock(&page_alloc_mutex);
++	return page;
++}
++
++void ttm_put_page(struct page *page, int flags)
++{
++	struct page **pages;
++	int *count_pages;
++	int cflag;
++	bool setwb;
++
++	if (PageHighMem(page)) {
++		mutex_lock(&page_alloc_mutex);
++		if (ttm_page_alloc.count_hm_pages < NUM_PAGES_TO_ADD) {
++			hm_pages[ttm_page_alloc.count_hm_pages++] = page;
++			ttm_page_alloc.total_hm_pages++;
++			mutex_unlock(&page_alloc_mutex);
++			return;
++		} else {
++			put_page(page);
++			__free_page(page);
++			mutex_unlock(&page_alloc_mutex);
++			return;
++		}
++	}
++
++	cflag = (flags & TTM_PAGE_FLAG_CACHE_MASK) >> TTM_PAGE_FLAG_CACHE_SHIFT;
++	switch (cflag) {
++	case TTM_PAGE_FLAG_CACHE_UC:
++		pages = uc_pages;
++		count_pages = &ttm_page_alloc.count_uc_pages;
++		setwb = true;
++		break;
++	case TTM_PAGE_FLAG_CACHE_WC:
++		pages = wc_pages;
++		count_pages = &ttm_page_alloc.count_wc_pages;
++		setwb = true;
++		break;
++	case TTM_PAGE_FLAG_CACHE_WB:
++	default:
++		pages = wb_pages;
++		count_pages = &ttm_page_alloc.count_wb_pages;
++		setwb = false;
++		break;
++	}
++
++	mutex_lock(&page_alloc_mutex);
++	if ((*count_pages) >= NUM_PAGES_TO_ADD) {
++		ttm_page_put(page, setwb);
++		mutex_unlock(&page_alloc_mutex);
++		return;
++	}
++	pages[(*count_pages)++] = page;
++	mutex_unlock(&page_alloc_mutex);
++}
++
++int ttm_page_alloc_init(void)
++{
++	int i;
++
++	if (page_alloc_inited)
++		return 0;
++
++	for (i = 0; i < NUM_PAGES_TO_ADD; i++) {
++		wb_pages[i] = NULL;
++		wc_pages[i] = NULL;
++		uc_pages[i] = NULL;
++		hm_pages[i] = NULL;
++	}
++	ttm_page_alloc.total_uc_pages = 0;
++	ttm_page_alloc.total_wc_pages = 0;
++	ttm_page_alloc.total_wb_pages = 0;
++	ttm_page_alloc.total_hm_pages = 0;
++	ttm_page_alloc.count_uc_pages = 0;
++	ttm_page_alloc.count_wc_pages = 0;
++	ttm_page_alloc.count_wb_pages = 0;
++	ttm_page_alloc.count_hm_pages = 0;
++	mutex_init(&page_alloc_mutex);
++	page_alloc_inited = 1;
++	return 0;
++}
++
++void ttm_page_alloc_fini(void)
++{
++	if (!page_alloc_inited)
++		return;
++
++	ttm_release_all_pages(wc_pages, ttm_page_alloc.total_wc_pages, true);
++	ttm_release_all_pages(wb_pages, ttm_page_alloc.total_wb_pages, true);
++	ttm_release_all_pages(uc_pages, ttm_page_alloc.total_uc_pages, true);
++	ttm_page_alloc.total_uc_pages = 0;
++	ttm_page_alloc.total_wc_pages = 0;
++	ttm_page_alloc.total_wb_pages = 0;
++	ttm_page_alloc.total_hm_pages = 0;
++	ttm_page_alloc.count_uc_pages = 0;
++	ttm_page_alloc.count_wc_pages = 0;
++	ttm_page_alloc.count_wb_pages = 0;
++	ttm_page_alloc.count_hm_pages = 0;
++	page_alloc_inited = 0;
++}
+diff --git a/drivers/gpu/drm/ttm/ttm_page_alloc.h b/drivers/gpu/drm/ttm/ttm_page_alloc.h
+new file mode 100644
+index 0000000..3d079a8
+--- /dev/null
++++ b/drivers/gpu/drm/ttm/ttm_page_alloc.h
+@@ -0,0 +1,34 @@
++/*
++ * Copyright (c) Red Hat Inc.
++
++ * Permission is hereby granted, free of charge, to any person obtaining a
++ * copy of this software and associated documentation files (the "Software"),
++ * to deal in the Software without restriction, including without limitation
++ * the rights to use, copy, modify, merge, publish, distribute, sub license,
++ * and/or sell copies of the Software, and to permit persons to whom the
++ * Software is furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice (including the
++ * next paragraph) shall be included in all copies or substantial portions
++ * of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
++ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Authors: Dave Airlie <airlied@redhat.com>
++ */
++
++#ifndef TTM_PAGE_ALLOC
++#define TTM_PAGE_ALLOC
++
++void ttm_put_page(struct page *page, int flags);
++struct page *ttm_get_page(int flags);
++int ttm_page_alloc_init(void);
++void ttm_page_alloc_fini(void);
++
++#endif
+diff --git a/drivers/gpu/drm/ttm/ttm_tt.c b/drivers/gpu/drm/ttm/ttm_tt.c
+index 75dc8bd..6402ec9 100644
+--- a/drivers/gpu/drm/ttm/ttm_tt.c
++++ b/drivers/gpu/drm/ttm/ttm_tt.c
+@@ -37,6 +37,7 @@
+ #include "ttm/ttm_module.h"
+ #include "ttm/ttm_bo_driver.h"
+ #include "ttm/ttm_placement.h"
++#include "ttm_page_alloc.h"
+ 
+ static int ttm_tt_swapin(struct ttm_tt *ttm);
+ 
+@@ -131,10 +132,10 @@ static void ttm_tt_free_page_directory(struct ttm_tt *ttm)
+ 
+ static struct page *ttm_tt_alloc_page(unsigned page_flags)
+ {
+-	if (page_flags & TTM_PAGE_FLAG_ZERO_ALLOC)
+-		return alloc_page(GFP_HIGHUSER | __GFP_ZERO);
++	struct page *page;
+ 
+-	return alloc_page(GFP_HIGHUSER);
++	page = ttm_get_page(page_flags);
++	return page;
+ }
+ 
+ static void ttm_tt_free_user_pages(struct ttm_tt *ttm)
+@@ -179,10 +180,23 @@ static struct page *__ttm_tt_get_page(struct ttm_tt *ttm, int index)
+ 	struct page *p;
+ 	struct ttm_bo_device *bdev = ttm->bdev;
+ 	struct ttm_mem_global *mem_glob = bdev->mem_glob;
++	unsigned cache_flag;
+ 	int ret;
+ 
++	ttm->page_flags &= ~TTM_PAGE_FLAG_CACHE_MASK;
++	switch (ttm->caching_state) {
++	case tt_uncached:
++		cache_flag = TTM_PAGE_FLAG_CACHE_UC << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	case tt_wc:
++		cache_flag = TTM_PAGE_FLAG_CACHE_WC << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	default:
++		cache_flag = TTM_PAGE_FLAG_CACHE_WB << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	}
+ 	while (NULL == (p = ttm->pages[index])) {
+-		p = ttm_tt_alloc_page(ttm->page_flags);
++		p = ttm_tt_alloc_page(ttm->page_flags | cache_flag);
+ 
+ 		if (!p)
+ 			return NULL;
+@@ -290,10 +304,10 @@ static int ttm_tt_set_caching(struct ttm_tt *ttm,
+ 	if (ttm->caching_state == c_state)
+ 		return 0;
+ 
+-	if (c_state != tt_cached) {
+-		ret = ttm_tt_populate(ttm);
+-		if (unlikely(ret != 0))
+-			return ret;
++	if (ttm->state == tt_unpopulated) {
++		/* Change caching but don't populate */
++		ttm->caching_state = c_state;
++		return 0;
+ 	}
+ 
+ 	if (ttm->caching_state == tt_cached)
+@@ -343,21 +357,33 @@ static void ttm_tt_free_alloced_pages(struct ttm_tt *ttm)
+ 	int i;
+ 	struct page *cur_page;
+ 	struct ttm_backend *be = ttm->be;
++	unsigned cache_flag;
+ 
+ 	if (be)
+ 		be->func->clear(be);
+-	(void)ttm_tt_set_caching(ttm, tt_cached);
++	switch (ttm->caching_state) {
++	case tt_uncached:
++		cache_flag = TTM_PAGE_FLAG_CACHE_UC << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	case tt_wc:
++		cache_flag = TTM_PAGE_FLAG_CACHE_WC << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	default:
++		cache_flag = TTM_PAGE_FLAG_CACHE_WB << TTM_PAGE_FLAG_CACHE_SHIFT;
++		break;
++	}
+ 	for (i = 0; i < ttm->num_pages; ++i) {
+ 		cur_page = ttm->pages[i];
+ 		ttm->pages[i] = NULL;
+ 		if (cur_page) {
+-			if (page_count(cur_page) != 1)
++			if (page_count(cur_page) != 2)
+ 				printk(KERN_ERR TTM_PFX
+ 				       "Erroneous page count. "
+-				       "Leaking pages.\n");
++				       "Leaking pages (%d).\n",
++				       page_count(cur_page));
++			ttm_put_page(cur_page, cache_flag);
+ 			ttm_mem_global_free(ttm->bdev->mem_glob, PAGE_SIZE,
+ 					    PageHighMem(cur_page));
+-			__free_page(cur_page);
+ 		}
+ 	}
+ 	ttm->state = tt_unpopulated;
+diff --git a/include/drm/ttm/ttm_bo_driver.h b/include/drm/ttm/ttm_bo_driver.h
+index 62ed733..0dac8a8 100644
+--- a/include/drm/ttm/ttm_bo_driver.h
++++ b/include/drm/ttm/ttm_bo_driver.h
+@@ -121,6 +121,12 @@ struct ttm_backend {
+ #define TTM_PAGE_FLAG_SWAPPED         (1 << 4)
+ #define TTM_PAGE_FLAG_PERSISTANT_SWAP (1 << 5)
+ #define TTM_PAGE_FLAG_ZERO_ALLOC      (1 << 6)
++#define TTM_PAGE_FLAG_DMA32           (1 << 7)
++#define TTM_PAGE_FLAG_CACHE_MASK      (3 << 8)
++#define TTM_PAGE_FLAG_CACHE_SHIFT     8
++#define TTM_PAGE_FLAG_CACHE_UC        0
++#define TTM_PAGE_FLAG_CACHE_WC        1
++#define TTM_PAGE_FLAG_CACHE_WB        2
+ 
+ enum ttm_caching_state {
+ 	tt_uncached,
+-- 
+1.6.2.2
 
 
+--=-34xQy7F4ZkZpyQgzTXW3--
 
---------------enig5F56ACD153C9C5DCC847163F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpE0rUACgkQlOSOBdgZUxmyMACeIP8K2EhDHnJBHWYnmrtPcwCF
-N8cAn3yqxzxEtfGDLWSQWKRhcgu8I9v9
-=2t68
------END PGP SIGNATURE-----
-
---------------enig5F56ACD153C9C5DCC847163F--
