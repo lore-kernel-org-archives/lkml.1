@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750987AbZFZEBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZFZEPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750987AbZFZEBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 00:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750699AbZFZEBl
+	id S1752884AbZFZEPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 00:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZFZEPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 00:01:41 -0400
-Received: from exchtp08.via.com.tw ([61.66.243.7]:30336 "EHLO
-	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbZFZEBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 00:01:41 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: CONFIG_FB_VIA made the screen go black
-Date: Fri, 26 Jun 2009 12:01:36 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8097809F4@exchtp03.taipei.via.com.tw>
-In-Reply-To: <19f34abd0906181050xe30f581qef43e4fe759fdbd8@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: CONFIG_FB_VIA made the screen go black
-Thread-Index: AcnwPm2ScXT/eQGgRfez8niYP7vTegF0wBTw
-From: <JosephChan@via.com.tw>
-To: <vegard.nossum@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 26 Jun 2009 04:01:38.0001 (UTC) FILETIME=[CDD6A410:01C9F612]
+	Fri, 26 Jun 2009 00:15:22 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35577 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbZFZEPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 00:15:21 -0400
+Date: Fri, 26 Jun 2009 14:15:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jeff Dike <jdike@addtoit.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Boaz Harrosh <bharrosh@panasas.com>, Paul Menage <menage@google.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
+Message-Id: <20090626141515.c45bb6bf.sfr@canb.auug.org.au>
+In-Reply-To: <20090626024802.GA17655@c2.user-mode-linux.org>
+References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
+	<4A3F4448.30502@panasas.com>
+	<20090622085735.GB6499@cr0.nay.redhat.com>
+	<20090622205226.fee30ba8.sfr@canb.auug.org.au>
+	<20090625104901.GG6374@cr0.nay.redhat.com>
+	<20090625145155.GA6383@c2.user-mode-linux.org>
+	<20090626120111.ef8622ba.sfr@canb.auug.org.au>
+	<20090626024802.GA17655@c2.user-mode-linux.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__26_Jun_2009_14_15_15_+1000_Pj9QeQ_=DAHHBFON"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5Q42Q54027195
 
+--Signature=_Fri__26_Jun_2009_14_15_15_+1000_Pj9QeQ_=DAHHBFON
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> It seems that I was unfortunate and managed to get CONFIG_FB_VIA=y in my config. 
-> The result is that during boot, when via_fb loads, the screen goes black. 
-> I put CONFIG_FB_VIA=n as the > only change to my config and the screen works again.
-> Actually, just before going black, a few lines (I mean pixel rows) would shortly flicker or move up and down the screen.
+Hi Jeff,
 
-We will check this later.
+On Thu, 25 Jun 2009 22:48:02 -0400 Jeff Dike <jdike@addtoit.com> wrote:
+>
+> defconfig is good - that's my normal test config.
+>=20
+> > Currently plain "make ARCH=3Dum" on PowerPC doesn't appear to work.
+>=20
+> No, it won't.
 
-> I don't actually have a VIA card:
+OK, thanks.
 
-Is there any idea that you have to ENABLE viafb if you don't have VIA GFX chips?
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+For reference, the result of our nightly builds (for UML) can be found
+here: http://kisskb.ellerman.id.au/kisskb/compiler/26/ (we are only
+building Linus' tree and linux-next).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__26_Jun_2009_14_15_15_+1000_Pj9QeQ_=DAHHBFON
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpES1MACgkQjjKRsyhoI8yraQCeKuG0jrFEhCDYQ4o/QgTKB2Ws
+KB0AnAivvTrLAEdWls/QFbatWyPQjZaa
+=SB9W
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__26_Jun_2009_14_15_15_+1000_Pj9QeQ_=DAHHBFON--
