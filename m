@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZFZIAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZFZIKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbZFZIAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 04:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFZIAb
+	id S1753721AbZFZIKl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZFZIKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 04:00:31 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:42818 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZFZIAa (ORCPT
+	Fri, 26 Jun 2009 04:10:25 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:58087 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZFZIKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 04:00:30 -0400
+	Fri, 26 Jun 2009 04:10:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bar7IU5j7Qn4u4tM5jXOCOcZclzRjMeX1Fk9hh51pGNpxw7jlKgo7T9QF+uZDpmehj
-         gITfvqpDyLNQNUOeqpCfAlbJbwZ3JVfJXUkPzF2MJ1Wzv2foQiqQovHvoqLS1o58lAh4
-         u9hColLyaQqakg3T0BMgHjEspLEE/RO0YNm+s=
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vj8VuYybx0ai5MkAy5cWLSUbYPSRzDzkaAB0+uQWZgK3/gv1CAAT0WOA512p3AhKpC
+         JPcAu6XWBONoJz98111gaDoWQyDMu+bikwYDUyVwdTBS3qMyNZt987wuSSqTjgAkVf7d
+         Z7Zc+Hx8D3GfRvghrBAQjrdPXn7JuBYroem5I=
+Date: Fri, 26 Jun 2009 08:10:19 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090626081018.GC5204@ff.dom.local>
+References: <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626054230.GA5204@ff.dom.local>
 MIME-Version: 1.0
-In-Reply-To: <20090625091002.0b8203a7@lxorguk.ukuu.org.uk>
-References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com>
-	 <20090625091002.0b8203a7@lxorguk.ukuu.org.uk>
-Date: Fri, 26 Jun 2009 10:00:32 +0200
-Message-ID: <1158166a0906260100q79475523l546cddde2c0ca03@mail.gmail.com>
-Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not 
-	mounted
-From: Denys Vlasenko <vda.linux@googlemail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@zeniv.linux.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier@gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090626054230.GA5204@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 10:10 AM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
->> With this patch, it is possible to execute /proc/self/exe
->> even if /proc is not mounted. In the below example,
->> ./sh is a static shell binary:
->
-> What if the user has procfs mounted somewherelse, what if they are in a
-> chroot where you don't want them to patch the binary and re-exec it ?
->
-> It would be far far cleaner for NOMMU to have a NOMMU private "reexec()"
-> call that didn't rely on procfs or hacking names into the kernel.
->
-> So NAK
+On Fri, Jun 26, 2009 at 05:42:30AM +0000, Jarek Poplawski wrote:
+> On 26-06-2009 05:14, Davide Libenzi wrote:
+> > On Fri, 26 Jun 2009, Eric Dumazet wrote:
+> > 
+> >> I wont argue with you David, just try to correct bugs.
+> >>
+> >> fs/ext4/ioctl.c line 182
+> >>
+> >> 	set_current_state(TASK_INTERRUPTIBLE);
+> >> 	add_wait_queue(&EXT4_SB(sb)->ro_wait_queue, &wait);
+> >> 	if (timer_pending(&EXT4_SB(sb)->turn_ro_timer)) {
+> >> 		schedule();
+> >>
+> >> Another example of missing barrier after add_wait_queue()
+> >>
+> >> Because add_wait_queue() misses a barrier, we have to add one after each call.
+> >>
+> >> Maybe it would be safer to add barrier in add_wait_queue() itself, not in _pollwait().
+> > 
+> > Not all the code that uses add_wait_queue() does need to have the MB,
+> > like code that does the most common pattern:
+> > 
+> > xxx_poll(...) {
+> > 	poll_wait(...);
+> > 	lock();
+> > 	flags = calc_flags(->status);
+> > 	unlock();
+> > 	return flags;
+> > }
+> > 
+> > xxx_update(...) {
+> > 	lock();
+> > 	->status = ...;
+> > 	unlock();
+> > 	if (waitqueue_active())
+> > 		wake_up();
+> > }
+> > 
+> > It's the code that does the lockless flags calculation in ->poll that 
+> > might need it.
+> > I dunno what the amount of changes are, but cross-matching MB across 
+> > subsystems does not look nice.
+> > IMHO that's a detail of the subsystem locking, and should be confined 
+> > inside the subsystem itself.
+> > No?
+> 
+> How about poll_wait_mb() and waitqueue_active_mb() (with mb and
+> additional check for NULL of wait_queue_head)?
 
-I am ok with it. Are other people ok with adding a syscall
-just for this purpose? Al?
---
-vda
+Hmm... But considering Eric's arguments I see it would be hard
+/impossible to do it with the current api, so let's forget.
+
+Jarek P.
