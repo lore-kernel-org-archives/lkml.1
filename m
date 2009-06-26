@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZFZRSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZFZRTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759434AbZFZRSz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 13:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbZFZRSs
+	id S1759891AbZFZRTt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 13:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZFZRTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 13:18:48 -0400
-Received: from mga02.intel.com ([134.134.136.20]:5198 "EHLO mga02.intel.com"
+	Fri, 26 Jun 2009 13:19:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57934 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751269AbZFZRSr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 13:18:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,297,1243839600"; 
-   d="scan'208";a="528124921"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>,
-       "Brown, Len" <len.brown@intel.com>, "Tang, Feng" <feng.tang@intel.com>
-Date: Fri, 26 Jun 2009 10:18:50 -0700
-Subject: RE: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
-Thread-Topic: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
-Thread-Index: Acn2LMViSOIjpnDrTHSmuNm9e07V/AAVRaQA
-Message-ID: <43F901BD926A4E43B106BF17856F0755641A44CB@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
- <20090626070720.GB14078@elte.hu>
-In-Reply-To: <20090626070720.GB14078@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1754546AbZFZRTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 13:19:37 -0400
+Date: Fri, 26 Jun 2009 13:19:33 -0400
+From: Dave Jones <davej@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org
+Subject: kmemleak reports firmware loader funnies in iwlwifi
+Message-ID: <20090626171933.GA23170@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	linux-kernel@vger.kernel.org,
+	Catalin Marinas <catalin.marinas@arm.com>, netdev@vger.kernel.org
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> -#ifdef CONFIG_ACPI
->> +#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
->
->Please add a new helper non-interactive Kconfig symbol instead of
->increasing the #ifdef jungle.
->
-[[JPAN]] I agreed, maybe this should be part of the SFI patch or already have similar plans?
+After enabling kmemleak in the Fedora rawhide kernels, we've mostly
+seen a flood of what appear to be false positives, but the below looks
+really suspect..
+
+https://bugzilla.redhat.com/show_bug.cgi?id=507971
+
+Here's the summary... 
+
+
+iwlagn 0000:03:00.0: loaded firmware version 8.24.2.12
+kmemleak: Freeing unknown object at 0xffffc90018070000
+Pid: 1034, comm: NetworkManager Not tainted 2.6.31-0.25.rc0.git22.fc12.x86_64
+#1
+Call Trace:
+ [<ffffffff81139f74>] delete_object+0x5b/0x13b
+ [<ffffffff8113b012>] kmemleak_free+0x5b/0xb5
+ [<ffffffff8111dc51>] vfree+0x40/0x68
+ [<ffffffff813485e6>] release_firmware+0x49/0x6c
+ [<ffffffffa021997c>] ? iwl_mac_start+0xc5c/0x106b [iwlagn]
+ [<ffffffffa0219adc>] iwl_mac_start+0xdbc/0x106b [iwlagn]
+ [<ffffffff8109df9b>] ? __module_text_address+0x25/0x85
+
+
+So it appears to be vfree'ing something that it had no knowledge of ever allocating.
+afaict _request_firmware only vmallocs when it's using a firmware image built into
+the driver, which isn't the case here, so I'm not sure why we end up trying
+to vfree instead of kfree when we call release_firmware
+
+anyone know what's going on here?
+
+	Dave
