@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZFZQTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbZFZQVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbZFZQTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 12:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbZFZQTD
+	id S1758099AbZFZQVW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 12:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZFZQVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 12:19:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53728 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbZFZQTD (ORCPT
+	Fri, 26 Jun 2009 12:21:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52751 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750698AbZFZQVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 12:19:03 -0400
-Subject: RE: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Singh, Vimal" 
-	<IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com>
-Cc: "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
-       "jzhang@ti.com" <jzhang@ti.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>
-In-Reply-To: <19F8576C6E063C45BE387C64729E739404321C60D1@dbde02.ent.ti.com>
-References: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
-	 ,<1246028984.663.9.camel@macbook.infradead.org>
-	 <19F8576C6E063C45BE387C64729E739404321C60D1@dbde02.ent.ti.com>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 17:18:59 +0100
-Message-Id: <1246033139.663.35.camel@macbook.infradead.org>
+	Fri, 26 Jun 2009 12:21:14 -0400
+Date: Fri, 26 Jun 2009 09:20:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, earl_chew@agilent.com,
+       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using
+ pipes in core_pattern
+Message-Id: <20090626092001.32e35e17.akpm@linux-foundation.org>
+In-Reply-To: <20090626104804.GA7337@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+	<20090625163050.d6a71a13.akpm@linux-foundation.org>
+	<20090626104804.GA7337@hmsreliant.think-freely.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-26 at 21:15 +0530, Singh, Vimal wrote:
-> 
-> That's correct David. I think 'cond_resched()' would be fine here.
+On Fri, 26 Jun 2009 06:48:04 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 
-Got a patch? I have you down as the person responsible for this driver,
-given that jzhang@ti.com is bouncing... 
+> > > --- a/kernel/sysctl.c
+> > > +++ b/kernel/sysctl.c
+> > > @@ -75,6 +75,7 @@ extern int max_threads;
+> > >  extern int core_uses_pid;
+> > >  extern int suid_dumpable;
+> > >  extern char core_pattern[];
+> > > +extern unsigned int core_pipe_limit;
+> > 
+> > Bah.
+> > 
+> > We should fix this one day.
+> > 
+> Is there a particular way you'd like to see it fixed?
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Not in the context of this patch.
+
+One way would be to add a new sysctl-externs.h and then put all the
+declarations in there.  That file gets included by sysctl.c and by each
+file which shares a global with sysctl.c
+
 
