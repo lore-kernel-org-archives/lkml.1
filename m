@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757381AbZFZH1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757231AbZFZH2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757381AbZFZH1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFZH1m
+	id S1757231AbZFZH2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 03:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZFZH2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:27:42 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55389 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbZFZH1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:27:42 -0400
-Date: Fri, 26 Jun 2009 16:26:39 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: register_timer_hook use in arch/sh/oprofile
-Message-ID: <20090626072638.GA21610@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090624131104.705c828d@skybase> <20090624112929.GB2079@linux-sh.org> <20090624142828.7c6a2337@skybase> <20090624123416.GB9510@linux-sh.org> <20090624124542.GB32306@elte.hu> <20090624131440.GA9700@linux-sh.org> <20090624132447.GD6224@elte.hu> <1245999685.31755.157.camel@twins> <20090626072350.GI14078@elte.hu>
+	Fri, 26 Jun 2009 03:28:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55636 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751901AbZFZH2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 03:28:33 -0400
+Date: Fri, 26 Jun 2009 07:27:53 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A443D59.4080307@cn.fujitsu.com>
+References: <4A443D59.4080307@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] ftrace: Fix the output of profile
+Message-ID: <tip-0296e4254f3318e0dcad9706fa1daf8e5addc1e9@git.kernel.org>
+Git-Commit-ID: 0296e4254f3318e0dcad9706fa1daf8e5addc1e9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090626072350.GI14078@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 07:27:54 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 09:23:50AM +0200, Ingo Molnar wrote:
-> 
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2009-06-24 at 15:24 +0200, Ingo Molnar wrote:
-> > > 
-> > > [ And long-term analysis ('perf stat' type of runs) dont need IRQs 
-> > >   anyway - perfcounters reads outs the counts and summarizes them 
-> > >   across the measured workload. ]
-> > 
-> > If the counter width is less than 64 bits we do need to have some 
-> > interrupt to read them from before they cycle so we can accumulate 
-> > the deltas into a proper u64.
-> 
-> Yeah - but even that can be driven from some housekeeping hrtimer.
-> 
-> > But for proper 64 bit hardware counters there is indeed no need 
-> > for that.
-> 
-> Indeed - although they are rare.
-> 
-We have both full 64-bit counters as well as 48-bit, although they do
-both at least set an overflow bit that can be looked at, even if there is
-no exception associated with it. Optionally they can be split up in to
-multiple 32-bit counters and half of them handed over to the bus
-controller.
+Commit-ID:  0296e4254f3318e0dcad9706fa1daf8e5addc1e9
+Gitweb:     http://git.kernel.org/tip/0296e4254f3318e0dcad9706fa1daf8e5addc1e9
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Fri, 26 Jun 2009 11:15:37 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 26 Jun 2009 09:25:42 +0200
+
+ftrace: Fix the output of profile
+
+The first entry of the ftrace profile was always skipped when
+reading trace_stat/functionX.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4A443D59.4080307@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/trace/ftrace.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 71a52c1..f3716bf 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -291,7 +291,9 @@ function_stat_next(void *v, int idx)
+ 	pg = (struct ftrace_profile_page *)((unsigned long)rec & PAGE_MASK);
+ 
+  again:
+-	rec++;
++	if (idx != 0)
++		rec++;
++
+ 	if ((void *)rec >= (void *)&pg->records[pg->index]) {
+ 		pg = pg->next;
+ 		if (!pg)
