@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZFZHuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZFZIAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752546AbZFZHuk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 03:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFZHuc
+	id S1754361AbZFZIAk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 04:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZFZIAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 03:50:32 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:17399
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751479AbZFZHub (ORCPT
+	Fri, 26 Jun 2009 04:00:31 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:42818 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbZFZIAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 03:50:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvYBAMMaREp8qN0Z/2dsb2JhbAAIz1OEDQWBNQ
-X-IronPort-AV: E=Sophos;i="4.42,295,1243785600"; 
-   d="scan'208";a="469202895"
-Subject: Re: [PATCH] favr32: improve touchscreen response
-From: Ben Nizette <ben@niasdigital.com>
-To: "haavard.skinnemoen" <haavard.skinnemoen@atmel.com>
-Cc: kernel <kernel@avr32linux.org>,
-       "Egtvedt, Hans-Christian" <Hans-Christian.Egtvedt@atmel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1240195013.24329.38.camel@linux-51e8.site>
-References: <1240195013.24329.38.camel@linux-51e8.site>
-Content-Type: text/plain
-Date: Fri, 26 Jun 2009 17:49:37 +1000
-Message-Id: <1246002577.9414.62.camel@linux-51e8.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Fri, 26 Jun 2009 04:00:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bar7IU5j7Qn4u4tM5jXOCOcZclzRjMeX1Fk9hh51pGNpxw7jlKgo7T9QF+uZDpmehj
+         gITfvqpDyLNQNUOeqpCfAlbJbwZ3JVfJXUkPzF2MJ1Wzv2foQiqQovHvoqLS1o58lAh4
+         u9hColLyaQqakg3T0BMgHjEspLEE/RO0YNm+s=
+MIME-Version: 1.0
+In-Reply-To: <20090625091002.0b8203a7@lxorguk.ukuu.org.uk>
+References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com>
+	 <20090625091002.0b8203a7@lxorguk.ukuu.org.uk>
+Date: Fri, 26 Jun 2009 10:00:32 +0200
+Message-ID: <1158166a0906260100q79475523l546cddde2c0ca03@mail.gmail.com>
+Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not 
+	mounted
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Frysinger <vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 25, 2009 at 10:10 AM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
+>> With this patch, it is possible to execute /proc/self/exe
+>> even if /proc is not mounted. In the below example,
+>> ./sh is a static shell binary:
+>
+> What if the user has procfs mounted somewherelse, what if they are in a
+> chroot where you don't want them to patch the binary and re-exec it ?
+>
+> It would be far far cleaner for NOMMU to have a NOMMU private "reexec()"
+> call that didn't rely on procfs or hacking names into the kernel.
+>
+> So NAK
 
-Hi Haavard,
-
-This has hce's ack, any chance of getting it in .31?
-
-Thx,
-	--Ben.
-
-On Mon, 2009-04-20 at 12:36 +1000, Ben Nizette wrote:
-> The ezLCD+101 board (to which an favr-32 is fitted) has a long,
-> unshielded, nasty lead between the touch panel and the ads7843 touch
-> controller.  In order to get satisfactory response then, we need to
-> employ every noise-reduction trick in the driver's arsenal.  After
-> extensive fiddling I've found some good settings:
-> 
-> 1) We keep vref on all the time to dramatically reduce settling times
-> (at the cost of a tiny increase in power consumption).
-> 
-> 2) Despite 1 the settling time is still non-zero.  500uS is plenty of
-> time for the signals to settle
-> 
-> 3) Despite 1 and 2 there's still a little bit of noise around.  By
-> setting a pen recheck delay we make the panel feel less touchy and
-> twitchy.
-> 
-> Someone with more time and patience myself might be able to tune this
-> numbers further but these settings are now perfectly acceptable for
-> normal use.
-> 
-> Tested on ezLCD+101 though should only improve response on other ezLCD+/
-> favr-32 boards too.
-> 
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
-> 
-> ---
->  arch/avr32/boards/favr-32/setup.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/avr32/boards/favr-32/setup.c b/arch/avr32/boards/favr-32/setup.c
-> index 58203d1..f1152fa 100644
-> --- a/arch/avr32/boards/favr-32/setup.c
-> +++ b/arch/avr32/boards/favr-32/setup.c
-> @@ -72,6 +72,10 @@ static struct ads7846_platform_data ads7843_data = {
->  	.debounce_max		= 20,
->  	.debounce_rep		= 4,
->  	.debounce_tol		= 5,
-> +	
-> +	.keep_vref_on		= true,
-> +	.settle_delay_usecs	= 500,
-> +	.penirq_recheck_delay_usecs = 100,
->  };
- 
-
+I am ok with it. Are other people ok with adding a syscall
+just for this purpose? Al?
+--
+vda
