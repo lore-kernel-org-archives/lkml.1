@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbZFZPBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZFZPJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbZFZPBG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZFZPA7
+	id S1754293AbZFZPJK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZFZPI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:00:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39560 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752081AbZFZPA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:00:58 -0400
-Date: Fri, 26 Jun 2009 17:00:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
-Message-ID: <20090626150051.GA22223@elte.hu>
-References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com> <20090626071955.GG14078@elte.hu> <20090626101310.4110a290@lxorguk.ukuu.org.uk> <20090626093859.GA12571@elte.hu> <20090626111603.758ec7fb@lxorguk.ukuu.org.uk> <20090626110429.GB12446@elte.hu>
+	Fri, 26 Jun 2009 11:08:57 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:49529 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbZFZPI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:08:57 -0400
+Date: Fri, 26 Jun 2009 16:08:51 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Message-ID: <20090626150849.GA5504@sirena.org.uk>
+References: <1245961793.10360.26.camel@brutus>
+ <20090625233723.GA13150@sirena.org.uk>
+ <1245996263.10360.122.camel@brutus>
+ <20090626105550.GE5415@sirena.org.uk>
+ <1246019192.10360.202.camel@brutus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090626110429.GB12446@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1246019192.10360.202.camel@brutus>
+X-Cookie: Reply hazy, ask again later.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH] PCAP regulator driver (for 2.6.32).
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 26, 2009 at 09:26:32AM -0300, Daniel Ribeiro wrote:
+> Em Sex, 2009-06-26 às 11:55 +0100, Mark Brown escreveu:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> > You need to either do that or add an API allowing consumers to claim a
+> > regulator for exclusive use.  If the regulator is claimed for exclusive
+> > use then other consumers wouldn't be able to access it and there would
+> > be no issue with interfering with other users.
 
-> And? There's an obvious quality difference between various 
-> platform enumeration methods - and we strive for the highest 
-> quality methods.
-> 
-> Using boot flags is one of the lowest quality enumeration methods 
-> and the fact that there's precedence for it in other architectures 
-> is not a technical reason to make the same mistakes on x86 too.
-> 
-> Especially here where there's two other enumeration methods easily 
-> available: SFI and PCI. Any of those suffices.
+> I'm not proposing an API for exclusive use. Allowing the enable bit to
+> be turn off case use_count is 0 shouldn't break regulator sharing for
+> other consumers, as far as the regulator framework is concerned there
+> are no other consumers.
 
-btw., the "I am MRST" bootstrap info is certainly doable via a 
-bootloader flag as well, if this platform is _so_ deprived of basic 
-PC features that it has no other channel of information. Especially 
-if it has no BIOS and if the bootloader provides the memory map as 
-well - which seems to be the case here.
+What breaks things for non-exclusive use is that the driver is doing a
+disable when it didn't do the corresponding enable.  This means that if
+whatever did the enable still cares about the device being enabled then
+it will get upset.  The reason the regulator API complains here is to 
+help catch problems in drivers rather than because it itself will fall
+over.
 
-I can understand the PCI ID space being potentially awkward (if many 
-models with mismatching PCI IDs are planned) - so it's certainly 
-possible that the only thing that remains in the end is the 
-bootloader provided flag - no matter how sucky that may be.
+> What about increasing use_count at regulator_get() if the regulator is
+> already on and use_count == 0? If a consumer requests a regulator that
+> was previously ON, then there is no reason for it to enable/disable it.
+> If it is requested, and its already ON, then the regulator framework can
+> assume it is already being used.
 
-So i am not trying to make a bigger deal out of this than it really 
-deserves and this is not a showstopper in my eyes - but this is 
-really an exceptional case and shouldnt be the glory model for how 
-ultra embedded should be done on x86 ...
+Think about the shared use case here.  If the regulator is enabled when
+a consumer starts then the consumer can't tell if this was because the
+regulator happened to be left on at system startup or if it was because
+some other user of the regulator has enabled it.  This means that none
+of the consumers can ever drop that use count so it's stuck there and
+the regulator can never actually be disabled.
 
-	Ingo
+> If the above is not possible, then regulator_is_enabled() doesn't match
+> regulator_enable()/regulator_disable() pair. Maybe the API should make
+> this clear?
+
+Frankly I'm not sure how much any documentation is going to help here.
+There's already a note about the fact that the regulator might've been
+enabled elsewhere, it could be strengthened a bit but it still relies on
+people reading it.
+
+Fundamentally, if your consumer is trying to explicitly force the
+regulator off then it's not able to cope with the regulator being
+shared.  I suspect that if someone does add a non-shared API then the
+problem will go away, half the problem is with consumers thinking they
+have exclusive use of the regulator.
