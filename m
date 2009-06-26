@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZFZNWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757891AbZFZNXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbZFZNWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 09:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbZFZNWE
+	id S1757891AbZFZNXf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 09:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZFZNX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 09:22:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:2428 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbZFZNWD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 09:22:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=lzWRXqblpSWq0+vAXFY63KsCxhtV3hzwLZGeXSYx3ZMUB5VrO+HxOAKBsa4JJ4opFF
-         aOb8sxZ2hFnRBXSeOctfbQLXlMTaIiaEaTuiwetR8maali+SVUArNH/R5sCvrNGycNoH
-         dPi8K5arTrebBZ5EtQhBRYH6gbaRIiJAqbMSc=
-From: tom.leiming@gmail.com
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-Date: Fri, 26 Jun 2009 21:21:49 +0800
-Message-Id: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Fri, 26 Jun 2009 09:23:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45012 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754946AbZFZNXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 09:23:24 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Date: Fri, 26 Jun 2009 23:23:17 +1000 (EST)
+Message-ID: <f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name>
+In-Reply-To: <20090626125037.GO23611@kernel.dk>
+References: <19010.62951.886231.96622@notabene.brown>
+    <yq11vp8spxo.fsf@sermon.lab.mkp.net>
+    <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
+    <20090625194015.GB31415@kernel.dk>
+    <19012.49673.454853.975682@notabene.brown>
+    <20090626125037.GO23611@kernel.dk>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out 
+     of the 'queue' sysfs directory.
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       "Mike Snitzer" <snitzer@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Alasdair G Kergon" <agk@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "device-mapper development" <dm-devel@redhat.com>
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Fri, June 26, 2009 10:50 pm, Jens Axboe wrote:
+> On Fri, Jun 26 2009, Neil Brown wrote:
+>> Every block device has a 'gendisk' (aka generic disk).
+>> Every block device also (currently) has a request_queue.
+>
+> I don't know why you keep saying currently. It has always had a queue,
+> and I don't see a good reason why that should change for "special" block
+> devices like md/dm/loop/whatnot.
 
-drivers/mtd/nand/omap2.c: In function 'omap_wait':
-drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this function)
-drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported only once
-drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
-drivers/mtd/nand/omap2.c:557: error: implicit declaration of function 'time_before'
+I say "currently" because I'm planning to create patches to make it
+optional, and I want to get you used to the idea :-)
 
-......
+And md/dm/loop/whatnot are not "special" block devices, any more than
+scsi/ide are "special" block devices.  They are all just block devices.
+They use different mechanisms, but each is just as valid as the other.
 
-drivers/mtd/nand/omap2.c: In function 'omap_wait':
-drivers/mtd/nand/omap2.c:545: warning: 'status' may be used uninitialized in this function
+The current code makes 'struct request' based block devices in to
+first-class citizens, and all the rest are second class (having to
+tag our data structures on ->queue data and/or ->private_data).
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- drivers/mtd/nand/omap2.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+I just want all block devices to be equal.
 
-diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
-index 0cd76f8..2905c79 100644
---- a/drivers/mtd/nand/omap2.c
-+++ b/drivers/mtd/nand/omap2.c
-@@ -15,6 +15,7 @@
- #include <linux/mtd/nand.h>
- #include <linux/mtd/partitions.h>
- #include <linux/io.h>
-+#include <linux/jiffies.h>
- 
- #include <asm/dma.h>
- 
-@@ -541,7 +542,8 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
- 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
- 							mtd);
- 	unsigned long timeo = jiffies;
--	int status, state = this->state;
-+	int state = this->state;
-+	int status = 0;
- 
- 	if (state == FL_ERASING)
- 		timeo += (HZ * 400) / 1000;
--- 
-1.6.0.GIT
+NeilBrown
 
