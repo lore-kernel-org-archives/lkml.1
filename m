@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753971AbZFZCxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZFZDGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753971AbZFZCxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 22:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbZFZCxf
+	id S1755157AbZFZDGP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 23:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZFZDGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 22:53:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45710 "EHLO smtps.tip.net.au"
+	Thu, 25 Jun 2009 23:06:00 -0400
+Received: from cmpxchg.org ([85.214.51.133]:58141 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752242AbZFZCxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 22:53:34 -0400
-Date: Fri, 26 Jun 2009 12:53:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       NeilBrown <neilb@suse.de>
-Subject: linux-next: block tree build failure
-Message-Id: <20090626125331.89c689f2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1751893AbZFZDGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 23:06:00 -0400
+Date: Fri, 26 Jun 2009 05:02:28 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-06-25-15-49 uploaded
+Message-ID: <20090626030228.GA9279@cmpxchg.org>
+References: <200906252249.n5PMnaPt016847@imap1.linux-foundation.org> <4A440D59.50400@oracle.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__26_Jun_2009_12_53_31_+1000_J_SIOY2nSiBHFCjq"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A440D59.50400@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__26_Jun_2009_12_53_31_+1000_J_SIOY2nSiBHFCjq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jun 25, 2009 at 04:50:49PM -0700, Randy Dunlap wrote:
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-06-25-15-49 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> 
+> 
+> shrink_slab-handle-bad-shrinkers.patch:
+> 
+> mm/vmscan.c: In function 'do_try_to_free_pages':
+> mm/vmscan.c:1697: error: too few arguments to function 'disable_swap_token'
+> mm/vmscan.c: In function 'balance_pgdat':
+> mm/vmscan.c:1869: error: too few arguments to function 'disable_swap_token'
+> mm/vmscan.c: In function '__zone_reclaim':
+> mm/vmscan.c:2425: error: too few arguments to function 'disable_swap_token'
 
-Hi Jens,
+Sorry, my fault - `make CONFIG_SWAP=n` didn't work as I assumed.  The
+patch Randy pointed out seems unrelated to this, though...?
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+---
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: mm: make swap token dummies static inlines fix
 
-block/blk-core.c: In function '__make_request':
-block/blk-core.c:1179: error: expected ';' before 'return'
+disable_swap_token() doesn't take an argument.  This fixes the
+!CONFIG_SWAP dummy.
 
-Caused by commit 6cf2a6c8d01514e86a8d38e4eeed402378b635dc ("Restore
-barrier support for md and probably other virtual devices") which I have
-reverted for today.
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__26_Jun_2009_12_53_31_+1000_J_SIOY2nSiBHFCjq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpEOCsACgkQjjKRsyhoI8xPCwCfXNr7+EWwLKTVu+VWAmVuSY5U
-toMAoIN8IaMNlfmZoXLT9st+blmQnWIb
-=IXib
------END PGP SIGNATURE-----
-
---Signature=_Fri__26_Jun_2009_12_53_31_+1000_J_SIOY2nSiBHFCjq--
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 9b02f33..6c990e6 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -432,7 +432,7 @@ static inline int has_swap_token(struct mm_struct *mm)
+ 	return 0;
+ }
+ 
+-static inline void disable_swap_token(struct mm_struct *mm)
++static inline void disable_swap_token(void)
+ {
+ }
+ 
