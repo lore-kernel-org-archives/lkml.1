@@ -1,97 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZFZXqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZFZXsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZFZXqe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 19:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZFZXq0
+	id S1756222AbZFZXsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 19:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752742AbZFZXss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 19:46:26 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:42173 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbZFZXq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 19:46:26 -0400
-To: "Pan\, Jacob jun" <jacob.jun.pan@intel.com>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
-	<m1ab3ubx4q.fsf@fess.ebiederm.org>
-	<43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 26 Jun 2009 16:46:24 -0700
-In-Reply-To: <43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com> (Jacob jun Pan's message of "Fri\, 26 Jun 2009 16\:24\:22 -0700")
-Message-ID: <m163eieey7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 26 Jun 2009 19:48:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39418 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752616AbZFZXsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 19:48:47 -0400
+Date: Fri, 26 Jun 2009 22:33:54 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       earl_chew@agilent.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/2] do_coredump: factor out put_cred() calls
+Message-ID: <20090626203354.GB25976@redhat.com>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090626180222.GD7337@hmsreliant.think-freely.org> <20090626165908.GB12063@redhat.com> <20090626202411.GH7337@hmsreliant.think-freely.org> <20090626191418.GA22603@redhat.com> <20090626191455.GB22603@redhat.com> <20090626224054.162F8425A8@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: jacob.jun.pan@intel.com, hpa@linux.intel.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Pan\, Jacob jun" <jacob.jun.pan@intel.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090626224054.162F8425A8@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
-
->>-----Original Message-----
->>From: Eric W. Biederman [mailto:ebiederm@xmission.com]
->>Sent: Friday, June 26, 2009 12:42 PM
->>To: Pan, Jacob jun
->>Cc: linux-kernel@vger.kernel.org; H. Peter Anvin
->>Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
->>
->>"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
->>
->>>>From 82d64ca4f963d2e205326534aff0c77d9bfa5858 Mon Sep 17 00:00:00 2001
->>> From: Jacob Pan <jacob.jun.pan@intel.com>
->>> Date: Fri, 12 Jun 2009 02:16:05 -0700
->>> Subject: [PATCH] x86/apic: support moorestown interrupt subsystem
->>>
->>> This patch uses platform flags to selectively enable apic related setup
->>> code.
->>>
->>> Since moorestown does not have legacy timer or PIC, the only system
->>> timer irqs are routed via ioapic. Early timer ioapic enabling is also
->>> added to allow boot time timing services.
->>
->>This patch is horribly wrong.   We should not have a moorestown specific
->>hack  we should not do early timer ioapic on everything that supports
->>it which is most x86 machines since apics became common.
->>
-> [[JPAN]] maybe I misunderstood. But I am doing the special early timer ioapic
-> setup in x86_quirks, so it is not for every platform.
+On 06/26, Roland McGrath wrote:
 >
->>At which point moorestown support should just be a little work somewhere
->>in the table parsers.
->>
-> [[JPAN]] can you elaborate a little? I was hoping to move APIC initialization earlier so that I don't have to have the special treatment for system timer.
-> But it seems require early memory allocator.
+> >  	if (!binfmt || !binfmt->core_dump)
+> > -		goto fail;
+> > +		goto out;
+> [...]
+> > +out:
+> >  	return;
+> >  }
+>
+> If the label does nothing, just use "return" instead of goto.
 
-We have early memory allocators.  And we are not talking super
-early.  Just at the point init_IRQ is called.
+But this is what the current code does, I just renamed "fail" to "out"
+to make sure I didn't miss a goto.
 
-> [[JPAN]] Moorestown does not have 8259, even IOAPIC is emulated by FW. Are you
-> saying we should try to completely separate 8259 instead of use if(8259) here
-> and there in the IOAPIC code? T
+And in fact I am not sure return is better, "goto out" looks more
+consistent to me.
 
-Yes, completely separate out the 8259.  I believe that complete
-separation will come for free if you move the ioapic earlier.
+But OK, please find the updated patch below.
 
-What kind of PIC is native?
+--------------------------------------------------------------------------
+[PATCH 1/2] do_coredump: factor out put_cred() calls
 
-Eric
+Given that do_coredump() calls put_cred() on exit path, it is a bit ugly
+to do put_cred() + "goto fail" twice, just add the new "fail_creds" label.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+--- WAIT/fs/exec.c~CD_1_PUT_CRED	2009-06-15 12:48:28.000000000 +0200
++++ WAIT/fs/exec.c	2009-06-26 22:30:28.000000000 +0200
+@@ -1732,13 +1732,11 @@ void do_coredump(long signr, int exit_co
+ 
+ 	binfmt = current->binfmt;
+ 	if (!binfmt || !binfmt->core_dump)
+-		goto fail;
++		return;
+ 
+ 	cred = prepare_creds();
+-	if (!cred) {
+-		retval = -ENOMEM;
+-		goto fail;
+-	}
++	if (!cred)
++		return;
+ 
+ 	down_write(&mm->mmap_sem);
+ 	/*
+@@ -1746,8 +1744,7 @@ void do_coredump(long signr, int exit_co
+ 	 */
+ 	if (mm->core_state || !get_dumpable(mm)) {
+ 		up_write(&mm->mmap_sem);
+-		put_cred(cred);
+-		goto fail;
++		goto fail_creds;
+ 	}
+ 
+ 	/*
+@@ -1761,10 +1758,8 @@ void do_coredump(long signr, int exit_co
+ 	}
+ 
+ 	retval = coredump_wait(exit_code, &core_state);
+-	if (retval < 0) {
+-		put_cred(cred);
+-		goto fail;
+-	}
++	if (retval < 0)
++		goto fail_creds;
+ 
+ 	old_cred = override_creds(cred);
+ 
+@@ -1862,9 +1857,8 @@ fail_unlock:
+ 	if (helper_argv)
+ 		argv_free(helper_argv);
+ 
++	coredump_finish(mm);
+ 	revert_creds(old_cred);
++fail_creds:
+ 	put_cred(cred);
+-	coredump_finish(mm);
+-fail:
+-	return;
+ }
+
