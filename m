@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZFZBIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZFZBMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbZFZBIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 25 Jun 2009 21:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZFZBIK
+	id S1753263AbZFZBMn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 25 Jun 2009 21:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZFZBMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 25 Jun 2009 21:08:10 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50032 "EHLO smtps.tip.net.au"
+	Thu, 25 Jun 2009 21:12:35 -0400
+Received: from thunk.org ([69.25.196.29]:44089 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbZFZBIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 25 Jun 2009 21:08:09 -0400
-Date: Fri, 26 Jun 2009 11:08:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Menage <menage@google.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>,
-       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
-       linux-kernel@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [uml-devel] [PATCH] UML: Fix some apparent bitrot
-Message-Id: <20090626110807.19fa161c.sfr@canb.auug.org.au>
-In-Reply-To: <6599ad830906250106q2807c72ci21e95b02448ec4f7@mail.gmail.com>
-References: <20090620005524.25582.69677.stgit@menage.mtv.corp.google.com>
-	<4A3F4448.30502@panasas.com>
-	<20090625135901.a028512d.sfr@canb.auug.org.au>
-	<4A432DD4.3010905@panasas.com>
-	<6599ad830906250106q2807c72ci21e95b02448ec4f7@mail.gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__26_Jun_2009_11_08_07_+1000_t9SnuWg/_WlTw1M2"
+	id S1752306AbZFZBMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 25 Jun 2009 21:12:34 -0400
+Date: Thu, 25 Jun 2009 21:11:55 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Andreas Dilger <adilger@sun.com>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de, linux-ext4@vger.kernel.org
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090626011155.GI6472@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>, Andreas Dilger <adilger@sun.com>,
+	David Rientjes <rientjes@google.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	penberg@cs.helsinki.fi, arjan@infradead.org,
+	linux-kernel@vger.kernel.org, cl@linux-foundation.org,
+	npiggin@suse.de, linux-ext4@vger.kernel.org
+References: <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com> <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A43F60D.2040801@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__26_Jun_2009_11_08_07_+1000_t9SnuWg/_WlTw1M2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jun 25, 2009 at 05:11:25PM -0500, Eric Sandeen wrote:
+> 
+> ecryptfs used to do kmalloc(PAGE_CACHE_SIZE) & virt_to_page on that, and
+> with SLUB + slub debug, that gave back non-aligned memory, causing
+> eventual corruption ...
 
-Hi Paul,
+Grumble.  Any chance we could add an kmem_cache option which requires
+the memory to be aligned?  Otherwise we could rewrite our own sub-page
+allocator in ext4 that only handled aligned filesystem block sizes
+(i.e., 1k, 2k, 4k, etc.) but that would be really silly and be extra
+code that really should be done once at core functionality.
 
-On Thu, 25 Jun 2009 01:06:27 -0700 Paul Menage <menage@google.com> wrote:
->
-> I split it out into two patches and sent them about an hour ago. (One
-> for mmu_context.h sent to Rusty and one for the other two fixes, sent
-> to Linus)
-
-Thanks for that.  I see Linus has taken his.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__26_Jun_2009_11_08_07_+1000_t9SnuWg/_WlTw1M2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpEH3cACgkQjjKRsyhoI8wTTQCfYMysBq73UD48BUknm9vXEdNt
-1OAAoLc5VHUsQ9M5rZ0eDtiz0qzMJ890
-=csOw
------END PGP SIGNATURE-----
-
---Signature=_Fri__26_Jun_2009_11_08_07_+1000_t9SnuWg/_WlTw1M2--
+     	  	 	   	     	- Ted
