@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbZFZLVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZFZLYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757496AbZFZLVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 07:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbZFZLVm
+	id S1754293AbZFZLYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 07:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZFZLYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 07:21:42 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:20988 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753820AbZFZLVl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 07:21:41 -0400
-X-SpamScore: 4
-X-BigFish: VPS4(zzzz1202hzzz32i6bh6di43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KLUFJU-01-MSD-01
-Date: Fri, 26 Jun 2009 13:21:31 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] AMD64 EDAC fixes
-Message-ID: <20090626112131.GA1265@aftab>
+	Fri, 26 Jun 2009 07:24:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48107 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752825AbZFZLYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 07:24:11 -0400
+Date: Fri, 26 Jun 2009 14:23:31 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: avi@redhat.com, Davide Libenzi <davidel@xmailserver.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 3/3] eventfd: add internal reference counting to fix
+	notifier race conditions
+Message-ID: <20090626112331.GA4950@redhat.com>
+References: <20090619183534.31118.30934.stgit@dev.haskins.net> <200906241255.54709.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906241154350.30928@makko.or.mcafeemobile.com> <200906252112.24730.rusty@rustcorp.com.au> <alpine.DEB.1.10.0906250922530.9517@makko.or.mcafeemobile.com> <4A43B4A6.8050001@novell.com> <20090625182636.GA3239@redhat.com> <4A43C4C5.4040404@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4A43C4C5.4040404@novell.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
-X-OriginalArrivalTime: 26 Jun 2009 11:21:32.0511 (UTC) FILETIME=[42313EF0:01C9F650]
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Thu, Jun 25, 2009 at 02:41:09PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Thu, Jun 25, 2009 at 01:32:22PM -0400, Gregory Haskins wrote:
+> >   
+> >> Please take a close look at it and consider for merging, if you would.
+> >>     
+> >
+> > With all the incremental patching, I kind of lost track of what the
+> > complete file would look like.  Is there a git tree I could pull?
+> >
+> >   
+> 
+> Ask and ye shall receive :)
+> 
+> git pull
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/ghaskins/linux-2.6-hacks.git
+> kvm/irqfd
+> 
+> If you dont have a kernel.org account, it should rsync to the
+> gitweb/git: server soon, in which case
+> s|ssh://master|git://git should get you the proper path.
+> 
+> Note that there is one additional race that I found that is not included
+> in that tree in the slow-work infrastructure.  You can find my latest
+> submission to David Howells to resolve that issue here:
+> 
+> http://patchwork.kernel.org/patch/32287/
+> 
+> Thanks Michael!
+> -Greg
+> 
 
-please pull the following amd64 EDAC fixlets.
-
-Thanks.
-
-The following changes since commit 28d0325ce6e0a52f53d8af687e6427fee59004d3:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc1
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
-
-Borislav Petkov (3):
-      amd64_edac: check only ECC bit in amd64_determine_edac_cap
-      amd64_edac: fix ecc_enable_override handling
-      amd64_edac: misc small cleanups
-
- drivers/edac/amd64_edac.c |   25 +++++++++++++++----------
- drivers/edac/amd64_edac.h |    2 +-
- 2 files changed, 16 insertions(+), 11 deletions(-)
-
+Yes, I saw that. I agree your patch solves that issue.
 
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+MST
