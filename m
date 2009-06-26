@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbZFZWcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZFZWcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbZFZWcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 18:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZFZWb7
+	id S1756135AbZFZWcl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZFZWcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 18:31:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35294 "EHLO hera.kernel.org"
+	Fri, 26 Jun 2009 18:32:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60143 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750875AbZFZWb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 18:31:58 -0400
-Subject: Re: [PATCH] gitignore: add *.bz2 and *.cpio to top-level; clean up
- usr/
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, benh@kernel.crashing.org,
-       paulus@samba.org
-In-Reply-To: <20090626222112.GB27048@uranus.ravnborg.org>
-References: <200906202056.n5KKuc9o013960@tazenda.hos.anvin.org>
-	 <1245569547.2480.18.camel@ht.satnam>
-	 <20090626222112.GB27048@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 04:01:28 +0530
-Message-Id: <1246055488.2988.19.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1750875AbZFZWcb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:32:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 6)
+Date: Sat, 27 Jun 2009 00:32:44 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906261707260.4155-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906270032.45290.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-27 at 00:21 +0200, Sam Ravnborg wrote:
-> On Sun, Jun 21, 2009 at 01:02:27PM +0530, Jaswinder Singh Rajput wrote:
-> > 
-> > On Sat, 2009-06-20 at 13:52 -0700, H. Peter Anvin wrote:
-> > > Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-> > > with *.gz and *.lzma which are already there.  Remove specific rules
-> > > in usr/gitignore, since they are now covered by the global rules.
-> > > 
-> > > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > > Cc: Sam Ravnborg <sam@ravnborg.org>
-> > 
-> > It seems this is based on my patch :
-> > 
-> > [PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
-> > 
-> > And you forget to CC me ;-)
-> > 
-> > Are you trying to do this, fill signed-off-by and enjoy :
-> > 
-> > [PATCH] Add *.bz2 and *.cpio to the top-level gitignore file, for consistency
-> >  with *.gz and *.lzma which are already there.  Remove specific rules
-> >  in other gitignores, since they are now covered by the global rules.
+On Friday 26 June 2009, Alan Stern wrote:
+> On Fri, 26 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> I would prefer to have *.gz and *.lzma pushed out to the
-> directories where it matters.
-> There global ignore rules will bite us one day.
+> > > It occurs to me that the problem would be solved if were a cancel_work
+> > > routine.  In the same vein, it ought to be possible for
+> > > cancel_delayed_work to run in interrupt context.  I'll see what can be
+> > > done.
+> > 
+> > Having looked at the workqueue code I'm not sure if there's a way to implement
+> > that in a non-racy way.  Which may be the reason why there are no such
+> > functions already. :-)
 > 
-> So I did not apply neither this nor Peter's original patch.
+> Well, I'll give it a try.
 > 
+> Speaking of races, have you noticed that the way power.work_done gets 
+> used is racy?
 
-Ok and what about :
+Not really. :-)
 
-[PATCH] gitignore usr/initramfs_data.cpio.bz2 and usr/initramfs_data.cpio.lzma
+> You can't wait for the completion before releasing the 
+> lock, but then anything could happen.
+> 
+> A safer approach would be to use a wait_queue.
 
-Thanks,
---
-JSR
+I'm not sure what you mean exactly.  What's the race?
 
+> > In the meantime I reworked the patch (below) to use more RPM_* flags and I
+> > removed the runtime_break and runtime_notify bits from it.  Also added some
+> > comments to explain some non-obvious steps (hope that helps).
+> > 
+> > I also added the pm_runtime_put_atomic() and pm_runtime_put() as per the
+> > comment above.
+> > 
+> > It seems to be a bit cleaner this way, but that's my personal view. :-)
+> 
+> I'll look at it over the weekend.  And I'll try to see if proper 
+> cancel_work and cancel_delayed_work functions can help clean it up.
+
+Great, thanks!
+
+Best,
+Rafael
