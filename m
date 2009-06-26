@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbZFZPwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbZFZPxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbZFZPwk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZFZPwc
+	id S1759811AbZFZPxP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758450AbZFZPwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:52:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55618 "EHLO hera.kernel.org"
+	Fri, 26 Jun 2009 11:52:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55623 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZFZPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:52:31 -0400
-Date: Fri, 26 Jun 2009 15:51:48 GMT
+	id S1756129AbZFZPwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 11:52:43 -0400
+Date: Fri, 26 Jun 2009 15:52:02 GMT
 From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -19,311 +19,223 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com,
        a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
-References: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Prepare a small callchain framework
-Message-ID: <tip-8cb76d99d715741637b6d0884f389e17e9cb05d2@git.kernel.org>
-Git-Commit-ID: 8cb76d99d715741637b6d0884f389e17e9cb05d2
+In-Reply-To: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
+References: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf report: Print sorted callchains per histogram entries
+Message-ID: <tip-f55c555226b1010b249730ec6b232e5470286950@git.kernel.org>
+Git-Commit-ID: f55c555226b1010b249730ec6b232e5470286950
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 15:51:50 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 26 Jun 2009 15:52:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8cb76d99d715741637b6d0884f389e17e9cb05d2
-Gitweb:     http://git.kernel.org/tip/8cb76d99d715741637b6d0884f389e17e9cb05d2
+Commit-ID:  f55c555226b1010b249730ec6b232e5470286950
+Gitweb:     http://git.kernel.org/tip/f55c555226b1010b249730ec6b232e5470286950
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Fri, 26 Jun 2009 16:28:00 +0200
+AuthorDate: Fri, 26 Jun 2009 16:28:01 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 26 Jun 2009 16:47:00 +0200
+CommitDate: Fri, 26 Jun 2009 16:47:01 +0200
 
-perf_counter tools: Prepare a small callchain framework
+perf report: Print sorted callchains per histogram entries
 
-We plan to display the callchains depending on some user-configurable
-parameters.
+Use the newly created callchains radix tree to gather the chains stats
+from the recorded events and then print the callchains for all of them,
+sorted by hits, using the "-c" parameter with perf report.
 
-To gather the callchains stats from the recorded stream in a fast way,
-this patch introduces an ad hoc radix tree adapted for callchains and also
-a rbtree to sort these callchains once we have gathered every events
-from the stream.
+Example:
+
+ 66.15%  [k] atm_clip_exit
+            63.08%
+                0xffffffffffffff80
+                0xffffffff810196a8
+                0xffffffff810c14c8
+                0xffffffff8101a79c
+                0xffffffff810194f3
+                0xffffffff8106ab7f
+                0xffffffff8106abe5
+                0xffffffff8106acde
+                0xffffffff8100d94b
+                0xffffffff8153e7ea
+                [...]
+
+             1.54%
+                0xffffffffffffff80
+                0xffffffff810196a8
+                0xffffffff810c14c8
+                0xffffffff8101a79c
+		[...]
+
+Symbols are not yet resolved.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1246026481-8314-2-git-send-email-fweisbec@gmail.com>
+LKML-Reference: <1246026481-8314-3-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/Makefile         |    1 +
- tools/perf/builtin-report.c |    5 -
- tools/perf/perf.h           |    5 +
- tools/perf/util/callchain.c |  174 +++++++++++++++++++++++++++++++++++++++++++
- tools/perf/util/callchain.h |   33 ++++++++
- 5 files changed, 213 insertions(+), 5 deletions(-)
+ tools/perf/builtin-report.c |   82 +++++++++++++++++++++++++++++++++++++------
+ 1 files changed, 71 insertions(+), 11 deletions(-)
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index d3887ed..1c1296d 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -329,6 +329,7 @@ LIB_OBJS += util/symbol.o
- LIB_OBJS += util/color.o
- LIB_OBJS += util/pager.o
- LIB_OBJS += util/header.o
-+LIB_OBJS += util/callchain.o
- 
- BUILTIN_OBJS += builtin-annotate.o
- BUILTIN_OBJS += builtin-help.o
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 681c223..28d1cb2 100644
+index 28d1cb2..ed391db 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -62,11 +62,6 @@ struct ip_event {
- 	unsigned char __more_data[];
+@@ -15,6 +15,7 @@
+ #include "util/rbtree.h"
+ #include "util/symbol.h"
+ #include "util/string.h"
++#include "util/callchain.h"
+ 
+ #include "perf.h"
+ #include "util/header.h"
+@@ -52,6 +53,7 @@ static char		*parent_pattern = default_parent_pattern;
+ static regex_t		parent_regex;
+ 
+ static int		exclude_other = 1;
++static int		callchain;
+ 
+ static u64		sample_type;
+ 
+@@ -488,17 +490,19 @@ static size_t threads__fprintf(FILE *fp)
+ static struct rb_root hist;
+ 
+ struct hist_entry {
+-	struct rb_node	 rb_node;
+-
+-	struct thread	 *thread;
+-	struct map	 *map;
+-	struct dso	 *dso;
+-	struct symbol	 *sym;
+-	struct symbol	 *parent;
+-	u64		 ip;
+-	char		 level;
+-
+-	u64		 count;
++	struct rb_node		rb_node;
++
++	struct thread		*thread;
++	struct map		*map;
++	struct dso		*dso;
++	struct symbol		*sym;
++	struct symbol		*parent;
++	u64			ip;
++	char			level;
++	struct callchain_node	callchain;
++	struct rb_root		sorted_chain;
++
++	u64			count;
  };
  
--struct ip_callchain {
--	u64 nr;
--	u64 ips[0];
--};
--
- struct mmap_event {
- 	struct perf_event_header header;
- 	u32 pid, tid;
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index 16c84fd..a49842b 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -66,4 +66,9 @@ sys_perf_counter_open(struct perf_counter_attr *attr,
- #define MAX_COUNTERS			256
- #define MAX_NR_CPUS			256
+ /*
+@@ -769,6 +773,48 @@ hist_entry__collapse(struct hist_entry *left, struct hist_entry *right)
+ }
  
-+struct ip_callchain {
-+	u64 nr;
-+	u64 ips[0];
-+};
-+
- #endif
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-new file mode 100644
-index 0000000..ad3c285
---- /dev/null
-+++ b/tools/perf/util/callchain.c
-@@ -0,0 +1,174 @@
-+/*
-+ * Copyright (C) 2009, Frederic Weisbecker <fweisbec@gmail.com>
-+ *
-+ * Handle the callchains from the stream in an ad-hoc radix tree and then
-+ * sort them in an rbtree.
-+ *
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <stdbool.h>
-+#include <errno.h>
-+
-+#include "callchain.h"
-+
-+
-+static void rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
+ static size_t
++callchain__fprintf(FILE *fp, struct callchain_node *self, u64 total_samples)
 +{
-+	struct rb_node **p = &root->rb_node;
-+	struct rb_node *parent = NULL;
-+	struct callchain_node *rnode;
++	struct callchain_list *chain;
++	size_t ret = 0;
 +
-+	while (*p) {
-+		parent = *p;
-+		rnode = rb_entry(parent, struct callchain_node, rb_node);
-+
-+		if (rnode->hit < chain->hit)
-+			p = &(*p)->rb_left;
-+		else
-+			p = &(*p)->rb_right;
-+	}
-+
-+	rb_link_node(&chain->rb_node, parent, p);
-+	rb_insert_color(&chain->rb_node, root);
-+}
-+
-+/*
-+ * Once we get every callchains from the stream, we can now
-+ * sort them by hit
-+ */
-+void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
-+{
-+	struct callchain_node *child;
-+
-+	list_for_each_entry(child, &node->children, brothers)
-+		sort_chain_to_rbtree(rb_root, child);
-+
-+	if (node->hit)
-+		rb_insert_callchain(rb_root, node);
-+}
-+
-+static struct callchain_node *create_child(struct callchain_node *parent)
-+{
-+	struct callchain_node *new;
-+
-+	new = malloc(sizeof(*new));
-+	if (!new) {
-+		perror("not enough memory to create child for code path tree");
-+		return NULL;
-+	}
-+	new->parent = parent;
-+	INIT_LIST_HEAD(&new->children);
-+	INIT_LIST_HEAD(&new->val);
-+	list_add_tail(&new->brothers, &parent->children);
-+
-+	return new;
-+}
-+
-+static void
-+fill_node(struct callchain_node *node, struct ip_callchain *chain, int start)
-+{
-+	int i;
-+
-+	for (i = start; i < chain->nr; i++) {
-+		struct callchain_list *call;
-+
-+		call = malloc(sizeof(*chain));
-+		if (!call) {
-+			perror("not enough memory for the code path tree");
-+			return;
-+		}
-+		call->ip = chain->ips[i];
-+		list_add_tail(&call->list, &node->val);
-+	}
-+	node->val_nr = i - start;
-+}
-+
-+static void add_child(struct callchain_node *parent, struct ip_callchain *chain)
-+{
-+	struct callchain_node *new;
-+
-+	new = create_child(parent);
-+	fill_node(new, chain, parent->val_nr);
-+
-+	new->hit = 1;
-+}
-+
-+static void
-+split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
-+		struct callchain_list *to_split, int idx)
-+{
-+	struct callchain_node *new;
-+
-+	/* split */
-+	new = create_child(parent);
-+	list_move_tail(&to_split->list, &new->val);
-+	new->hit = parent->hit;
-+	parent->hit = 0;
-+	parent->val_nr = idx;
-+
-+	/* create the new one */
-+	add_child(parent, chain);
-+}
-+
-+static int
-+__append_chain(struct callchain_node *root, struct ip_callchain *chain,
-+		int start);
-+
-+static int
-+__append_chain_children(struct callchain_node *root, struct ip_callchain *chain)
-+{
-+	struct callchain_node *rnode;
-+
-+	/* lookup in childrens */
-+	list_for_each_entry(rnode, &root->children, brothers) {
-+		int ret = __append_chain(rnode, chain, root->val_nr);
-+		if (!ret)
-+			return 0;
-+	}
-+	return -1;
-+}
-+
-+static int
-+__append_chain(struct callchain_node *root, struct ip_callchain *chain,
-+		int start)
-+{
-+	struct callchain_list *cnode;
-+	int i = start;
-+	bool found = false;
-+
-+	/* lookup in the current node */
-+	list_for_each_entry(cnode, &root->val, list) {
-+		if (cnode->ip != chain->ips[i++])
-+			break;
-+		if (!found)
-+			found = true;
-+		if (i == chain->nr)
-+			break;
-+	}
-+
-+	/* matches not, relay on the parent */
-+	if (!found)
-+		return -1;
-+
-+	/* we match only a part of the node. Split it and add the new chain */
-+	if (i < root->val_nr) {
-+		split_add_child(root, chain, cnode, i);
++	if (!self)
 +		return 0;
++
++	ret += callchain__fprintf(fp, self->parent, total_samples);
++
++
++	list_for_each_entry(chain, &self->val, list)
++		ret += fprintf(fp, "                %p\n", (void *)chain->ip);
++
++	return ret;
++}
++
++static size_t
++hist_entry_callchain__fprintf(FILE *fp, struct hist_entry *self,
++			      u64 total_samples)
++{
++	struct rb_node *rb_node;
++	struct callchain_node *chain;
++	size_t ret = 0;
++
++	rb_node = rb_first(&self->sorted_chain);
++	while (rb_node) {
++		double percent;
++
++		chain = rb_entry(rb_node, struct callchain_node, rb_node);
++		percent = chain->hit * 100.0 / total_samples;
++		ret += fprintf(fp, "           %6.2f%%\n", percent);
++		ret += callchain__fprintf(fp, chain, total_samples);
++		ret += fprintf(fp, "\n");
++		rb_node = rb_next(rb_node);
 +	}
 +
-+	/* we match 100% of the path, increment the hit */
-+	if (i == root->val_nr) {
-+		root->hit++;
-+		return 0;
++	return ret;
++}
++
++
++static size_t
+ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
+ {
+ 	struct sort_entry *se;
+@@ -808,6 +854,9 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, u64 total_samples)
+ 
+ 	ret += fprintf(fp, "\n");
+ 
++	if (callchain)
++		hist_entry_callchain__fprintf(fp, self, total_samples);
++
+ 	return ret;
+ }
+ 
+@@ -892,6 +941,7 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
+ 		.level	= level,
+ 		.count	= count,
+ 		.parent = NULL,
++		.sorted_chain = RB_ROOT
+ 	};
+ 	int cmp;
+ 
+@@ -934,6 +984,8 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
+ 
+ 		if (!cmp) {
+ 			he->count += count;
++			if (callchain)
++				append_chain(&he->callchain, chain);
+ 			return 0;
+ 		}
+ 
+@@ -947,6 +999,10 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
+ 	if (!he)
+ 		return -ENOMEM;
+ 	*he = entry;
++	if (callchain) {
++		callchain_init(&he->callchain);
++		append_chain(&he->callchain, chain);
 +	}
+ 	rb_link_node(&he->rb_node, parent, p);
+ 	rb_insert_color(&he->rb_node, &hist);
+ 
+@@ -1023,6 +1079,9 @@ static void output__insert_entry(struct hist_entry *he)
+ 	struct rb_node *parent = NULL;
+ 	struct hist_entry *iter;
+ 
++	if (callchain)
++		sort_chain_to_rbtree(&he->sorted_chain, &he->callchain);
 +
-+	return __append_chain_children(root, chain);
-+}
-+
-+void append_chain(struct callchain_node *root, struct ip_callchain *chain)
-+{
-+	if (__append_chain_children(root, chain) == -1)
-+		add_child(root, chain);
-+}
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-new file mode 100644
-index 0000000..fa1cd2f
---- /dev/null
-+++ b/tools/perf/util/callchain.h
-@@ -0,0 +1,33 @@
-+#ifndef __PERF_CALLCHAIN_H
-+#define __PERF_CALLCHAIN_H
-+
-+#include "../perf.h"
-+#include "list.h"
-+#include "rbtree.h"
-+
-+
-+struct callchain_node {
-+	struct callchain_node	*parent;
-+	struct list_head	brothers;
-+	struct list_head 	children;
-+	struct list_head 	val;
-+	struct rb_node		rb_node;
-+	int			val_nr;
-+	int			hit;
-+};
-+
-+struct callchain_list {
-+	unsigned long		ip;
-+	struct list_head	list;
-+};
-+
-+static inline void callchain_init(struct callchain_node *node)
-+{
-+	INIT_LIST_HEAD(&node->brothers);
-+	INIT_LIST_HEAD(&node->children);
-+	INIT_LIST_HEAD(&node->val);
-+}
-+
-+void append_chain(struct callchain_node *root, struct ip_callchain *chain);
-+void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node);
-+#endif
+ 	while (*p != NULL) {
+ 		parent = *p;
+ 		iter = rb_entry(parent, struct hist_entry, rb_node);
+@@ -1599,6 +1658,7 @@ static const struct option options[] = {
+ 		   "regex filter to identify parent, see: '--sort parent'"),
+ 	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
+ 		    "Only display entries with parent-match"),
++	OPT_BOOLEAN('c', "callchain", &callchain, "Display callchains"),
+ 	OPT_END()
+ };
+ 
