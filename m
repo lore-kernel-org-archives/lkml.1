@@ -1,108 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757851AbZFZMqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbZFZMtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757851AbZFZMqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 08:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZFZMqQ
+	id S1760011AbZFZMtx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 08:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757027AbZFZMtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 08:46:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52013 "EHLO mx2.redhat.com"
+	Fri, 26 Jun 2009 08:49:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:38095 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751983AbZFZMqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 08:46:15 -0400
-Date: Fri, 26 Jun 2009 08:39:19 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 2/2] io-controller: make rt preemption happen in the
-	whole hierarchy
-Message-ID: <20090626123919.GA9785@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-21-git-send-email-vgoyal@redhat.com> <4A3F3648.7080007@cn.fujitsu.com> <20090622172123.GE15600@redhat.com> <4A4079B8.4020402@cn.fujitsu.com> <20090623140250.GA4262@redhat.com> <4A41EFE1.5050101@cn.fujitsu.com> <4A44833F.8040308@cn.fujitsu.com>
+	id S1756758AbZFZMtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 08:49:45 -0400
+Date: Fri, 26 Jun 2009 10:18:03 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kamezawa.hiroyuki@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       lizf@cn.fujitsu.com, menage@google.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memcg: add commens for expaing memory barrier (Was Re:
+	Low overhead patches for the memory cgroup controller (v5)
+Message-ID: <20090626044803.GG8642@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090615043900.GF23577@balbir.in.ibm.com> <20090622154343.9cdbf23a.akpm@linux-foundation.org> <20090623090116.556d4f97.kamezawa.hiroyu@jp.fujitsu.com> <20090626095745.01cef410.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A44833F.8040308@cn.fujitsu.com>
+In-Reply-To: <20090626095745.01cef410.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 04:13:51PM +0800, Gui Jianfeng wrote:
-> let rt queue preempt non-rt queue if needed.
-> Make sure comparision happens at the same level.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-26 09:57:45]:
+
+> On Tue, 23 Jun 2009 09:01:16 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > Do we still need the smp_wmb()?
+> > > 
+> > > It's hard to say, because we forgot to document it :(
+> > > 
+> > Sorry for lack of documentation.
+> > 
+> > pc->mem_cgroup should be visible before SetPageCgroupUsed(). Othrewise,
+> > A routine believes USED bit will see bad pc->mem_cgroup.
+> > 
+> > I'd like to  add a comment later (againt new mmotm.)
+> > 
 > 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> Ok, it's now.
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Add comments for the reason of smp_wmb() in mem_cgroup_commit_charge().
+> 
+> Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > ---
->  block/elevator-fq.c |   28 +++++++++++++++++++++++++++-
->  1 files changed, 27 insertions(+), 1 deletions(-)
+>  mm/memcontrol.c |    7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 1d4ec1f..21d38f5 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -3742,6 +3742,31 @@ int elv_iosched_expire_ioq(struct request_queue *q, int slice_expired,
->  	return ret;
->  }
->  
-> +static int check_rt_preemption(struct io_queue *ioq)
-> +{
-> +	struct hlist_node *node;
-> +	struct hlist_head *hhead = &ioq->efqd->rt_ioq_list;
-> +	struct io_queue *rt_ioq;
-> +	struct io_entity *entity = &ioq->entity;
-> +	struct io_entity *new_entity;
-> +
-> +	rcu_read_lock();
-> +	hlist_for_each_entry_rcu(rt_ioq, node, hhead, rt_node) {
-> +		new_entity = &rt_ioq->entity;
-> +
-> +		bfq_find_matching_entity(&entity, &new_entity);
-> +
-> +		if (new_entity->ioprio_class == IOPRIO_CLASS_RT &&
-> +		    entity->ioprio_class != IOPRIO_CLASS_RT) {
-> +			rcu_read_unlock();
-> +			return 1;
-> +		}
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	return 0;
-> +}
-> +
->  /* Common layer function to select the next queue to dispatch from */
->  void *elv_fq_select_ioq(struct request_queue *q, int force)
->  {
-> @@ -3823,7 +3848,8 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
->  	 */
->  	iog = ioq_to_io_group(ioq);
->  
-> -	if (!elv_ioq_class_rt(ioq) && iog->busy_rt_queues) {
-> +	if (!elv_ioq_class_rt(ioq) &&
-> +	    (iog->busy_rt_queues || check_rt_preemption(ioq))) {
->  		/*
+> Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Jun25/mm/memcontrol.c
+> @@ -1134,6 +1134,13 @@ static void __mem_cgroup_commit_charge(s
+>  	}
+> 
+>  	pc->mem_cgroup = mem;
+> +	/*
+> + 	 * We access a page_cgroup asynchronously without lock_page_cgroup().
+> + 	 * Especially when a page_cgroup is taken from a page, pc->mem_cgroup
+> + 	 * is accessed after testing USED bit. To make pc->mem_cgroup visible
+> + 	 * before USED bit, we need memory barrier here.
+> + 	 * See mem_cgroup_add_lru_list(), etc.
+> + 	 */
 
-Hi Gui,
 
-I am not able to understand why do we need above changes?
+I don't think this is sufficient, since in
+mem_cgroup_get_reclaim_stat_from_page() we say we need this since we
+set used bit without atomic operation. The used bit is now atomically
+set. I think we need to reword other comments as well.
+ 
 
-BFQ scheduler already takes care of selecting an RT queue for dispatch (if
-the queue is entitled to).
-
-In case a new RT queue backlogged while a BE queue is being served, we
-do preemtion check to make sure RT queue gets to run as soon as possible.
-
-In fact I think that busy_rt_queues infrastructure is also redundant and
-I plan to get rid of it. 
-
-Can you please help me understand what use case are you addressing with
-above patch?
-
-Thanks
-Vivek
+-- 
+	Balbir
