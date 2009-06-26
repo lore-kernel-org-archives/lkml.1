@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZFZSpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZFZSqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755688AbZFZSpz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 14:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZFZSpq
+	id S1760079AbZFZSqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 14:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZFZSqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 14:45:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38485 "EHLO mx2.mail.elte.hu"
+	Fri, 26 Jun 2009 14:46:12 -0400
+Received: from THUNK.ORG ([69.25.196.29]:36188 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751248AbZFZSpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 14:45:46 -0400
-Date: Fri, 26 Jun 2009 20:45:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Subject: Re: [PATCH 3/9] x86/moorestown: add moorestown platform flags
-Message-ID: <20090626184536.GA30885@elte.hu>
-References: <43F901BD926A4E43B106BF17856F07556412B7E2@orsmsx508.amr.corp.intel.com> <20090626071955.GG14078@elte.hu> <20090626095119.15067a53@jbarnes-g45>
+	id S1751432AbZFZSqL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 14:46:11 -0400
+Date: Fri, 26 Jun 2009 14:45:22 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: mtk.manpages@gmail.com, jean-noel.cordenner@bull.net, cmm@us.ibm.com,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-man <linux-man@vger.kernel.org>, mk <michael.kerrisk@gmail.com>
+Subject: Re: MS_I_VERSION added in 2.6.25
+Message-ID: <20090626184522.GF7182@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>, mtk.manpages@gmail.com,
+	jean-noel.cordenner@bull.net, cmm@us.ibm.com,
+	lkml <linux-kernel@vger.kernel.org>,
+	linux-man <linux-man@vger.kernel.org>,
+	mk <michael.kerrisk@gmail.com>
+References: <cfd18e0f0906252346v53594fb5u2b2bd630b12ded8e@mail.gmail.com> <20090626171144.GA2282@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090626095119.15067a53@jbarnes-g45>
+In-Reply-To: <20090626171144.GA2282@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Fri, 26 Jun 2009 09:19:55 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> > >  void platform_feature_init_default(int subarch_id)
-> > >  {
-> > > -	printk(KERN_INFO "Use default X86 platform feature set\n");
-> > > +	if ((subarch_id >= 0) && (subarch_id < N_X86_SUBARCHS)) {
-> > > +		if (subarch_id == X86_SUBARCH_MRST) {
-> > > +			setup_mrst_default_feature();
-> > > +			return;
-> > > +		}
-> > > +	} else {
-> > > +		printk(KERN_INFO "Use default X86 platform feature
-> > > set\n");
-> > > +	}
-> > >  }
+On Fri, Jun 26, 2009 at 01:11:44PM -0400, Christoph Hellwig wrote:
+> On Fri, Jun 26, 2009 at 08:46:34AM +0200, Michael Kerrisk wrote:
+> > Hi,
 > > 
-> > Why dont we have some clean and robust PCI config space based 
-> > enumeration instead of this boot ID based thing?
+> > Linux 2.6.25 added the MS_I_VERSION flag for inode versioning. Some
+> > text on this should be added to the mount(2) man page. Could someone
+> > of you provide a short description of
+> > 
+> > * What inode versions are used for
 > 
-> MRST has special PCI support that depends on having the platform 
-> identified already, so if you want to use something other than a 
-> flag here, maybe we could use an SFI string instead.
+> I don't think it should be documented.  It should never have been a
+> user-visible option to start with and I'm eventually going to fix that.
+> 
+> The correct way to do this would be a feature flag in the superblock.
 
-An SFI flag would be nicer than any PCI space method i guess - if it 
-can be accessed early enough.
+Agreed, the intention was this was something which NFSv4 would request
+of the filesystem, by flipping a bit.  I don't see a good reason why a
+user would ever want to explicit request 64-bit version numbers, since
+they're not even visible to userspace.
 
-	Ingo
+						- Ted
