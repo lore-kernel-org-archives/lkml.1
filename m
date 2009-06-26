@@ -1,109 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbZFZXNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZFZXS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616AbZFZXNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 19:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZFZXNN
+	id S1754463AbZFZXS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 19:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZFZXST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 19:13:13 -0400
-Received: from mail.open.by ([193.232.92.17]:54904 "EHLO post.open.by"
+	Fri, 26 Jun 2009 19:18:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51561 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752005AbZFZXNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 19:13:12 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000003
-X-SpamTest-Info: Profiles 8849 [Jun 27 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-X-SpamTest-Group-ID: 00000000
-Date: Sat, 27 Jun 2009 02:14:50 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>, Greg KH <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kobject_set_name_vargs memory leak
-Message-ID: <20090626231450.GC3858@localdomain.by>
-References: <20090626143652.GB6281@localdomain.by>
- <20090626144949.GA24173@suse.de>
- <20090626222937.GA3858@localdomain.by>
- <m17hyyfvnv.fsf@fess.ebiederm.org>
+	id S1752129AbZFZXSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 19:18:18 -0400
+Message-ID: <4A4557B2.7080600@redhat.com>
+Date: Fri, 26 Jun 2009 19:20:18 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m17hyyfvnv.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [RFC][ PATCH -tip v2 0/7] kprobes: Kprobes jump optimization
+ support
+References: <20090622212255.5384.53732.stgit@localhost.localdomain> <87vdmn179n.fsf@basil.nowhere.org> <4A40DDAD.6020202@redhat.com> <87bpoe29jo.fsf@basil.nowhere.org> <4A4110A3.2060808@redhat.com> <20090623203738.GG6760@one.firstfloor.org>
+In-Reply-To: <20090623203738.GG6760@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/26/09 16:00), Eric W. Biederman wrote:
-> >> > Fix memory leak when kobject_set_name_vargs returns -ENOMEM.
-> >> > 
-> >> > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-> >> > ---
-> >> > diff --git a/lib/kobject.c b/lib/kobject.c
-> >> > index b512b74..922cd8c 100644
-> >> > --- a/lib/kobject.c
-> >> > +++ b/lib/kobject.c
-> >> > @@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
-> >> >  		return 0;
-> >> >  
-> >> >  	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
-> >> > -	if (!kobj->name)
-> >> > +	if (!kobj->name) {
-> >> > +		kfree(old_name);
-> >> >  		return -ENOMEM;
-> >> > +	}
-> >> 
-> >> We've been through this before (search lkml archives).  If kvasprintf
-> >> fails, then we don't want to free old_name, as the caller might want to
-> >> do something with it.
-> >> 
-> > Hello Greg,
-> >
-> > int kobject_set_name_vargs.... {
-> > 	const char *old_name = kobj->name;
-> >
-> > old_name is local variable.
-> >
-> > In the following lines we overwrite kobject->name.
-> >
-> > 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
-> > 	if (!kobj->name)
-> > 		return -ENOMEM;
-> >
-> > It's not clear to me how we can do anything (including kfree) with old_name after 'return -ENOMEM'.
+Andi Kleen wrote:
+> On Tue, Jun 23, 2009 at 01:28:03PM -0400, Masami Hiramatsu wrote:
+>> Hmm, would you know what is the actual name of that section and option?
 > 
-> My feel is that if we fail we should restore kobject->name to old_name.
+> -freorder-blocks-and-partition
 > 
-> That should also prevent the leak without getting us into trouble elsewhere.
-> 
-> Eric
-> 
-Or work with 'new_name' and overwrite kobject->name only 'if(new_name)'.
-I thought about restoring. ( Blue or Red Pill? :) )
+> .text.unlikely
 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index b512b74..d6b1502 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -222,8 +222,10 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
- 		return 0;
- 
- 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
--	if (!kobj->name)
-+	if (!kobj->name) {
-+		kobj->name = old_name;
- 		return -ENOMEM;
-+	}
- 
- 	/* ewww... some of these buggers have '/' in the name ... */
- 	while ((s = strchr(kobj->name, '/')))
+Hi Andi,
 
+I've built my kernel with -freorder-blocks-and-partition, and
+I saw that .text.unlikely contains whole functions, not
+pieces of codes. In that case, it doesn't generate jumps which
+jump to the middle of other functions.
 
-	Sergey
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
