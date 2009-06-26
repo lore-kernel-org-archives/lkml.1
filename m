@@ -1,89 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZFZPJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbZFZPJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbZFZPJK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZFZPI5
+	id S1759515AbZFZPJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 11:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbZFZPJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:08:57 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:49529 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZFZPI5 (ORCPT
+	Fri, 26 Jun 2009 11:09:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:57908 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbZFZPJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:08:57 -0400
-Date: Fri, 26 Jun 2009 16:08:51 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Message-ID: <20090626150849.GA5504@sirena.org.uk>
-References: <1245961793.10360.26.camel@brutus>
- <20090625233723.GA13150@sirena.org.uk>
- <1245996263.10360.122.camel@brutus>
- <20090626105550.GE5415@sirena.org.uk>
- <1246019192.10360.202.camel@brutus>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1246019192.10360.202.camel@brutus>
-X-Cookie: Reply hazy, ask again later.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH] PCAP regulator driver (for 2.6.32).
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Fri, 26 Jun 2009 11:09:48 -0400
+Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
+From: David Woodhouse <dwmw2@infradead.org>
+To: tom.leiming@gmail.com, jzhang@ti.com, vimalsingh@ti.com
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       david-b@pacbell.net
+In-Reply-To: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
+References: <1246022509-16194-1-git-send-email-tom.leiming@gmail.com>
+Content-Type: text/plain
+Date: Fri, 26 Jun 2009 16:09:44 +0100
+Message-Id: <1246028984.663.9.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 09:26:32AM -0300, Daniel Ribeiro wrote:
-> Em Sex, 2009-06-26 às 11:55 +0100, Mark Brown escreveu:
+On Fri, 2009-06-26 at 21:21 +0800, tom.leiming@gmail.com wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
+> 
+> drivers/mtd/nand/omap2.c: In function 'omap_wait':
+> drivers/mtd/nand/omap2.c:543: error: 'jiffies' undeclared (first use in this function)
+> drivers/mtd/nand/omap2.c:543: error: (Each undeclared identifier is reported only once
+> drivers/mtd/nand/omap2.c:543: error: for each function it appears in.)
+> drivers/mtd/nand/omap2.c:557: error: implicit declaration of function 'time_before'
 
-> > You need to either do that or add an API allowing consumers to claim a
-> > regulator for exclusive use.  If the regulator is claimed for exclusive
-> > use then other consumers wouldn't be able to access it and there would
-> > be no issue with interfering with other users.
+OK.
 
-> I'm not proposing an API for exclusive use. Allowing the enable bit to
-> be turn off case use_count is 0 shouldn't break regulator sharing for
-> other consumers, as far as the regulator framework is concerned there
-> are no other consumers.
+> ......
+> 
+> drivers/mtd/nand/omap2.c: In function 'omap_wait':
+> drivers/mtd/nand/omap2.c:545: warning: 'status' may be used uninitialized in this function
 
-What breaks things for non-exclusive use is that the driver is doing a
-disable when it didn't do the corresponding enable.  This means that if
-whatever did the enable still cares about the device being enabled then
-it will get upset.  The reason the regulator API complains here is to 
-help catch problems in drivers rather than because it itself will fall
-over.
+Hm, why do you set it to zero? In the (fairly unlikely) case where you
+never go through the loop at all, because you're preempted until the
+timeout has completed, what value do you want it to return?
 
-> What about increasing use_count at regulator_get() if the regulator is
-> already on and use_count == 0? If a consumer requests a regulator that
-> was previously ON, then there is no reason for it to enable/disable it.
-> If it is requested, and its already ON, then the regulator framework can
-> assume it is already being used.
+Don't just make changes by bashing on the keyboard until the compiler
+shuts up; please apply brain.
 
-Think about the shared use case here.  If the regulator is enabled when
-a consumer starts then the consumer can't tell if this was because the
-regulator happened to be left on at system startup or if it was because
-some other user of the regulator has enabled it.  This means that none
-of the consumers can ever drop that use count so it's stuck there and
-the regulator can never actually be disabled.
+That way, I think you'll notice that the return value from this function
+is completely screwed anyway.... Vimal? Shouldn't it be returning
+NAND_STATUS_FAIL in the failure case, not a value read directly from the
+hardware register? And shouldn't there be a cpu_relax() (or even
+schedule) in there too?
 
-> If the above is not possible, then regulator_is_enabled() doesn't match
-> regulator_enable()/regulator_disable() pair. Maybe the API should make
-> this clear?
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+> ---
+>  drivers/mtd/nand/omap2.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
+> index 0cd76f8..2905c79 100644
+> --- a/drivers/mtd/nand/omap2.c
+> +++ b/drivers/mtd/nand/omap2.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/mtd/nand.h>
+>  #include <linux/mtd/partitions.h>
+>  #include <linux/io.h>
+> +#include <linux/jiffies.h>
+>  
+>  #include <asm/dma.h>
+>  
+> @@ -541,7 +542,8 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip *chip)
+>  	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
+>  							mtd);
+>  	unsigned long timeo = jiffies;
+> -	int status, state = this->state;
+> +	int state = this->state;
+> +	int status = 0;
+>  
+>  	if (state == FL_ERASING)
+>  		timeo += (HZ * 400) / 1000;
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-Frankly I'm not sure how much any documentation is going to help here.
-There's already a note about the fact that the regulator might've been
-enabled elsewhere, it could be strengthened a bit but it still relies on
-people reading it.
-
-Fundamentally, if your consumer is trying to explicitly force the
-regulator off then it's not able to cope with the regulator being
-shared.  I suspect that if someone does add a non-shared API then the
-problem will go away, half the problem is with consumers thinking they
-have exclusive use of the regulator.
