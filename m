@@ -1,291 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbZFZVts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZFZWCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761653AbZFZVts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 17:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZFZVtj
+	id S1754737AbZFZWCW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 18:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZFZWCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 17:49:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60000 "EHLO ogre.sisk.pl"
+	Fri, 26 Jun 2009 18:02:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60041 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751287AbZFZVti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 17:49:38 -0400
+	id S1750875AbZFZWCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 18:02:12 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
+To: Magnus Damm <magnus.damm@gmail.com>
 Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
-Date: Fri, 26 Jun 2009 23:49:41 +0200
+Date: Sat, 27 Jun 2009 00:02:30 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rjw; KDE/4.2.4; x86_64; ; )
-Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Oliver Neukum <oliver@neukum.org>, Magnus Damm <magnus.damm@gmail.com>,
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org, Oliver Neukum <oliver@neukum.org>,
        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
        Greg KH <gregkh@suse.de>, Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.44L0.0906241724020.22054-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906241724020.22054-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0906231303390.3209-100000@iolanthe.rowland.org> <200906242124.05511.rjw@sisk.pl> <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
+In-Reply-To: <aec7e5c30906250757m437df51fla032afbadc0261f8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906262349.42851.rjw@sisk.pl>
+Message-Id: <200906270002.32030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009, Alan Stern wrote:
-> On Wed, 24 Jun 2009, Rafael J. Wysocki wrote:
+On Thursday 25 June 2009, Magnus Damm wrote:
+> On Thu, Jun 25, 2009 at 4:24 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 5)
+> >
+> > Introduce a core framework for run-time power management of I/O
+> > devices.  Add device run-time PM fields to 'struct dev_pm_info'
+> > and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+> > a run-time PM workqueue and define some device run-time PM helper
+> > functions at the core level.  Document all these things.
+> >
+> > Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > +config PM_RUNTIME
-> > +	bool "Run-time PM core functionality"
-> > +	depends on PM
-> > +	---help---
-> > +	  Enable functionality allowing I/O devices to be put into energy-saving
-> > +	  (low power) states at run time (or autosuspended) after a specified
-> > +	  period of inactivity and woken up in response to a hardware-generated
-> > +	  wake-up event or a driver's request.
-> > +
-> > +	  Hardware support is generally required for this functionality to work
-> > +	  and the bus type drivers of the buses the devices are on are
-> > +	  responsibile for the actual handling of the autosuspend requests and
+> Hi Rafael,
 > 
-> s/ibile/ible/
+> Thanks for your work on this. I've built some code for SuperH on top
+> of this today, and with that behind me I have a few questions and a
+> little bit of code feedback.
 > 
-> > @@ -165,6 +168,28 @@ typedef struct pm_message {
-> >   * It is allowed to unregister devices while the above callbacks are being
-> >   * executed.  However, it is not allowed to unregister a device from within any
-> >   * of its own callbacks.
-> > + *
-> > + * There also are the following callbacks related to run-time power management
-> > + * of devices:
-> > + *
-> > + * @runtime_suspend: Prepare the device for a condition in which it won't be
-> > + *	able to communicate with the CPU(s) and RAM due to power management.
-> > + *	This need not mean that the device should be put into a low power state.
-> > + *	For example, if the device is behind a link which is about to be turned
-> > + *	off, the device may remain at full power.  Still, if the device does go
+> Questions:
 > 
-> s/Still, if/If/ -- the word "Still" seems a little odd in this context.
+> 1) Which functions are device drivers supposed to use?
 > 
-> > + *	to low power and if device_may_wakeup(dev) is true, remote wake-up
-> > + *	(i.e. hardware mechanism allowing the device to request a change of its
+> I simply added pm_runtime_resume() and pm_runtime_suspend() where
+> clk_enable() and clk_disable() normally are used. In interrupt
+> handlers I used pm_request_suspend() instead of pm_runtime_suspend().
 > 
-> s/i.e. /i.e., a /
+> I'm not sure if the v5 patch does the right thing around
+> really_probe() like Alan pointed out.
+
+Yes, Alan was right.  V6 doesn't address that, but V7 will. :-)
+
+> Basically, I'd like to be able to call my bus callback for
+> ->runtime_resume() from the driver probe(), but power.resume_count seems
+> stuck at 1 which leads to pm_runtime_resume() returning -EAGAIN before
+> invoking the bus callback.
 > 
-> > + *	power state, such as PCI PME) should be enabled for it.
-> > + *
-> > + * @runtime_resume: Put the device into the fully active state in response to a
-> > + *	wake-up event generated by hardware or at a request of software.  If
+> This leads to question number two...
 > 
-> s/at a request/at the request/
+> 2) What's the default state in probe()?
+
+Currently, it's 'active', but runtime_disabled is set.  I'm open to
+suggestions, though.
+
+> We touched this subject briefly before. I'd like to compare the
+> Runtime PM default state with the clock framework default state. The
+> clock framework requires you to use clk_enable() to enable the clock
+> to a hardware block before it is allowed to access the hardware
+> registers. At least that's how we handle stop bits on SuperH. So
+> clocks come up disabled from boot and should be enabled and disabled
+> by the device driver to save power.
 > 
-> > + *	necessary, put the device into the full power state and restore its
-> > + *	registers, so that it is fully operational.
+> I'd like to change our Module Stop Bits code on SuperH (once again)
+> from being handled by the clock framework to being managed by the
+> Runtime PM framework. Having the clock framework deal with the stop
+> bits works fine today, they are off by default after boot, and the
+> driver often enables the clock with clk_enable() in probe() or
+> hopefully in some more finegrained fashion.
 > 
+> I'm not sure how the Module Stop Bits should fit with the Runtime PM
+> code though. The default state for a device at probe() time seems to
+> be RPM_ACTIVE. Should drivers call pm_runtime_enable() to enable
+> Runtime PM?
+
+That's the idea.
+
+> One part of me likes the idea that Runtime PM-enabled drivers start in
+> RPM_SUSPENDED so they are forced to put pm_runtime_resume() before
+> actually using the hardware. This makes the Runtime PM behaviour
+> pretty close to the clock framework.
 > 
-> > + * RPM_ACTIVE		Device is fully operational, no run-time PM requests are
-> > + *			pending for it.
-> > + *
-> > + * RPM_IDLE		It has been requested that the device be suspended.
-> > + *			Suspend request has been put into the run-time PM
-> > + *			workqueue and it's pending execution.
-> > + *
-> > + * RPM_SUSPENDING	Device bus type's ->runtime_suspend() callback is being
-> > + *			executed.
-> > + *
-> > + * RPM_SUSPENDED	Device bus type's ->runtime_suspend() callback has
-> > + *			completed successfully.  The device is regarded as
-> > + *			suspended.
-> > + *
-> > + * RPM_WAKE		It has been requested that the device be woken up.
-> > + *			Resume request has been put into the run-time PM
-> > + *			workqueue and it's pending execution.
-> > + *
-> > + * RPM_RESUMING		Device bus type's ->runtime_resume() callback is being
-> > + *			executed.
+> If you dislike starting from RPM_SUSPENDED (most likely) then I wonder
+> how I should set the state to RPM_SUSPENDED in the driver. I'd like to
+> make sure that pm_runtime_resume() can invoke the bus callback so the
+> hardware can be turned on for the first time somehow. Should I do a
+> dummy suspend?
+
+Hmm, good question.
+
+While run-time PM is disabled (power.runtime_disabled is set), which is the
+case in the initial state, you can just change power.runtime_status to
+RPM_SUSPENDED and nothing wrong happens as long as that reflects the actual
+status of the device.
+
+I'll add a helper function for that.
+
+> 3) Should drivers use pm_suspend_ignore_children(dev, true)?
 > 
-> Remember to add RPM_NOTIFY.
-> 
-> 
+> It turns out that I can't suspend my I2C master driver out of the box
+> since it becomes the parent of all slaves on the I2C bus. The I2C
+> master driver is just a platform driver, and the children are I2C
+> devices (90% sure). I want to do Runtime PM regardless if the child
+> devices are suspended or not, I guess I should use
+> pm_suspend_ignore_children(dev, true) then?
+
+Yes, that's the idea.
+
 > > +/**
-> > + * __pm_get_child - Increment the counter of unsuspended children of a device.
-> > + * @dev: Device to handle;
-> > + */
-> > +static void __pm_get_child(struct device *dev)
-> > +{
-> > +	atomic_inc(&dev->power.child_count);
-> > +}
-> > +
-> > +/**
-> > + * __pm_put_child - Decrement the counter of unsuspended children of a device.
-> > + * @dev: Device to handle;
-> > + */
-> > +static void __pm_put_child(struct device *dev)
-> > +{
-> > +	if (!atomic_add_unless(&dev->power.child_count, -1, 0))
-> > +		dev_WARN(dev, "Unbalanced counter decrementation");
-> > +}
-> 
-> I think we don't need this dev_WARN.  It should be straightforward to
-> verify that the increments and decrements balance correctly, and the
-> child_count field isn't manipulated by drivers.
-> 
-> In fact, these don't need to be separate routines at all.  Just call
-> atomic_inc or atomic_dec directly.
-> 
-> > +
-> > +/**
-> > + * __pm_runtime_suspend - Run a device bus type's runtime_suspend() callback.
-> > + * @dev: Device to suspend.
+> > + * __pm_runtime_resume - Run a device bus type's runtime_resume() callback.
+> > + * @dev: Device to resume.
 > > + * @sync: If unset, the funtion has been called via pm_wq.
 > > + *
-> > + * Check if the run-time PM status of the device is appropriate and run the
-> > + * ->runtime_suspend() callback provided by the device's bus type.  Update the
-> > + * run-time PM flags in the device object to reflect the current status of the
-> > + * device.
+> > + * Check if the device is really suspended and run the ->runtime_resume()
+> > + * callback provided by the device's bus type driver.  Update the run-time PM
+> > + * flags in the device object to reflect the current status of the device.  If
+> > + * runtime suspend is in progress while this function is being run, wait for it
+> > + * to finish before resuming the device.  If runtime suspend is scheduled, but
+> > + * it hasn't started yet, cancel it and we're done.
 > > + */
-> > +int __pm_runtime_suspend(struct device *dev, bool sync)
+> > +int __pm_runtime_resume(struct device *dev, bool sync)
 > > +{
-> > +	struct device *parent = NULL;
-> > +	unsigned long flags;
-> > +	int error = -EINVAL;
+> [snip]
+> > +}
+> > +EXPORT_SYMBOL_GPL(pm_runtime_resume);
 > 
-> Remove the initializer.
-> 
-> > +
-> > +	might_sleep();
-> > +
-> > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > +
-> > + repeat:
-> > +	if (dev->power.runtime_status == RPM_ERROR) {
-> 
-> Insert:		error = -EINVAL;
-> 
-> > +		goto out;
-> > +	} else if (dev->power.runtime_status & RPM_SUSPENDED) {
-> 
-> ...
-> 
-> 
-> > +void pm_runtime_put(struct device *dev)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > +
-> > +	if (!__pm_runtime_put(dev)) {
-> > +		dev_WARN(dev, "Unbalanced counter decrementation");
-> 
-> "decrementation" isn't a word -- or if it is, it shouldn't be.  :-)  
-> Just use "decrement".  Similarly in other places.
-> 
+> You're missing "__" here unless you're aiming for something very exotic. =)
+
+Ah, thanks!
+
 > > +/**
-> > + * pm_runtime_add - Update run-time PM fields of a device while adding it.
-> > + * @dev: Device object being added to device hierarchy.
+> > + * pm_runtime_work - Run __pm_runtime_resume() for a device.
+> > + * @work: Work structure used for scheduling the execution of this function.
+> > + *
+> > + * Use @work to get the device object the resume has been scheduled for and run
+> > + * __pm_runtime_resume() for it.
 > > + */
-> > +void pm_runtime_add(struct device *dev)
+> > +static void pm_runtime_work(struct work_struct *work)
 > > +{
-> > +	dev->power.runtime_notify = false;
-> > +	INIT_DELAYED_WORK(&dev->power.suspend_work, pm_runtime_suspend_work);
-> 
-> Doesn't INIT_DELAYED_WORK belong in pm_runtime_init?
-> Do we want the bus subsystem to be responsible for doing:
-> 
-> 	dev->power.runtime_disabled = false;
-> 	pm_runtime_put(dev);
-> 
-> after calling device_add?  Or should device_add do it?
-> 
-> 
-> > Index: linux-2.6/include/linux/pm_runtime.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/include/linux/pm_runtime.h
-> 
-> > +static inline struct device *suspend_work_to_device(struct work_struct *work)
-> > +{
-> > +	struct delayed_work *dw = to_delayed_work(work);
-> > +	struct dev_pm_info *dpi;
-> > +
-> > +	dpi = container_of(dw, struct dev_pm_info, suspend_work);
-> > +	return container_of(dpi, struct device, power);
+> > +       __pm_runtime_resume(work_to_device(work), false);
 > > +}
 > 
-> You don't need to iterate container_of like this.  You can do:
-> 
-> 	return container_of(dw, struct device, power.suspend_work);
-> 
-> > +
-> > +static inline struct device *work_to_device(struct work_struct *work)
-> > +{
-> > +	struct dev_pm_info *dpi;
-> > +
-> > +	dpi = container_of(work, struct dev_pm_info, work);
-> > +	return container_of(dpi, struct device, power);
-> > +}
-> 
-> Similarly here.
-> 
-> These two routines aren't used outside of runtime.c.  They should be
-> moved into that file.  The same goes for pm_children_suspended and
-> pm_suspend_possible.
-> 
-> > +
-> > +static inline void __pm_runtime_get(struct device *dev)
-> > +{
-> > +	atomic_inc(&dev->power.resume_count);
-> > +}
-> 
-> Why introduce __pm_runtime_get?  Just make this pm_runtime_get.
-> 
-> > +static inline void pm_runtime_remove(struct device *dev)
-> > +{
-> > +	pm_runtime_disable(dev);
-> > +}
-> 
-> You forgot to decrement the parent's child_count if dev isn't
-> suspended (and then do a idle_notify on the parent).  Because of this 
-> additional complexity, don't inline the routine.
-> 
-> > Index: linux-2.6/drivers/base/dd.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/base/dd.c
-> > +++ linux-2.6/drivers/base/dd.c
-> > @@ -23,6 +23,7 @@
-> >  #include <linux/kthread.h>
-> >  #include <linux/wait.h>
-> >  #include <linux/async.h>
-> > +#include <linux/pm_runtime.h>
-> >  
-> >  #include "base.h"
-> >  #include "power/power.h"
-> > @@ -202,8 +203,12 @@ int driver_probe_device(struct device_dr
-> >  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
-> >  		 drv->bus->name, __func__, dev_name(dev), drv->name);
-> >  
-> > +	pm_runtime_disable(dev);
-> > +
-> >  	ret = really_probe(dev, drv);
-> >  
-> > +	pm_runtime_enable(dev);
-> > +
-> 
-> Shouldn't we guarantee that a device isn't probed while it is in a
-> suspended state?  So this should be
-> 
-> 	pm_runtime_get(dev);
-> 	ret = pm_runtime_resume(dev);
-> 	if (ret == 0)
-> 		ret = really_probe(dev, drv);
-> 	pm_runtime_put(dev);	
-> 
-> It might be nice to have a simple combined pm_runtime_get_and_resume
-> for this sort of situation.
+> Anything wrong with the name pm_runtime_resume_work()?
 
-Just to clarify, the last version of the patch I sent didn't address the
-comments from this, but this was not because I didn't agree with them, but
-I was just focusing on simplifying drivers/base/power/resume.c .
+Not at all. :-)  Just switched to that.
 
-I'll address them in the next version.
+> Looking forward to v6, I'll switch task now, will be back to this late Monday.
+
+Well, V6 was already sent, but unfortunately it didn't address your comments.
+I'll send V7 during the weekend.
 
 Best,
 Rafael
