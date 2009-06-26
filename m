@@ -1,123 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761686AbZFZTiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbZFZTmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761686AbZFZTiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 15:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761101AbZFZTh7
+	id S1756185AbZFZTmN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 15:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZFZTl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 15:37:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58089 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756690AbZFZTh6 (ORCPT
+	Fri, 26 Jun 2009 15:41:59 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:58412 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbZFZTl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 15:37:58 -0400
-Date: Fri, 26 Jun 2009 12:37:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, earl_chew@agilent.com, oleg@redhat.com,
-       alan@lxorguk.ukuu.org.uk, andi@firstfloor.org
-Subject: Re: [PATCH 1/2] exec: Make do_coredump more robust and safer when
- using pipes in core_pattern: recursive dump detection
-Message-Id: <20090626123723.9b6f88c2.akpm@linux-foundation.org>
-In-Reply-To: <20090626180222.GD7337@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090625163050.d6a71a13.akpm@linux-foundation.org>
-	<20090626180222.GD7337@hmsreliant.think-freely.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 26 Jun 2009 15:41:58 -0400
+To: "Pan\, Jacob jun" <jacob.jun.pan@intel.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>
+References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 26 Jun 2009 12:41:57 -0700
+In-Reply-To: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com> (Jacob jun Pan's message of "Thu\, 25 Jun 2009 17\:15\:20 -0700")
+Message-ID: <m1ab3ubx4q.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jacob.jun.pan@intel.com, hpa@linux.intel.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Pan\, Jacob jun" <jacob.jun.pan@intel.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009 14:02:22 -0400
-Neil Horman <nhorman@tuxdriver.com> wrote:
+"Pan, Jacob jun" <jacob.jun.pan@intel.com> writes:
 
-> 
-> core_pattern: Change how we detect recursive dumps with core_pattern pipes
-> 
-> Change how we detect recursive dumps.  Currently we have a mechanism by which
-> we try to compare pathnames of the crashing process to the core_pattern path.
-> This is broken for a dozen reasons, and just doesn't work in any sort of robust
-> way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
-> apps set RLIMIT_CORE to zero, we don't write out core files for any process with
-> that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
-> translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
-> prevents infinite recursion in the event that the core_pattern process itself
-> crashes.
-> 
+>>From 82d64ca4f963d2e205326534aff0c77d9bfa5858 Mon Sep 17 00:00:00 2001
+> From: Jacob Pan <jacob.jun.pan@intel.com>
+> Date: Fri, 12 Jun 2009 02:16:05 -0700
+> Subject: [PATCH] x86/apic: support moorestown interrupt subsystem
+>
+> This patch uses platform flags to selectively enable apic related setup
+> code.
+>
+> Since moorestown does not have legacy timer or PIC, the only system
+> timer irqs are routed via ioapic. Early timer ioapic enabling is also
+> added to allow boot time timing services.
 
-The patch appears to be against 2.6.30 or something.  I get rejects due
-to some other patch in exec.c which was added three weeks ago.  Please
-don't do that :(
+This patch is horribly wrong.   We should not have a moorestown specific
+hack  we should not do early timer ioapic on everything that supports
+it which is most x86 machines since apics became common.
 
-> 
-> 
-> exec.c |   32 +++++++++++++++++++-------------
-> 1 file changed, 19 insertions(+), 13 deletions(-)
-> 
-> diff --git a/fs/exec.c b/fs/exec.c
-> index ebe359f..163cfa7 100644
-> --- a/fs/exec.c
-> +++ b/fs/exec.c
-> @@ -1802,22 +1802,28 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
->  		goto fail_unlock;
->  
->   	if (ispipe) {
-> -		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
-> -		/* Terminate the string before the first option */
-> -		delimit = strchr(corename, ' ');
-> -		if (delimit)
-> -			*delimit = '\0';
-> -		delimit = strrchr(helper_argv[0], '/');
-> -		if (delimit)
-> -			delimit++;
-> -		else
-> -			delimit = helper_argv[0];
-> -		if (!strcmp(delimit, current->comm)) {
-> -			printk(KERN_NOTICE "Recursive core dump detected, "
-> -					"aborting\n");
-> +		if (core_limit == 0) {
-> +			 /*
-> +			 * Normally core limits are irrelevant to pipes, since
-> +			 * we're not writing to the file system, but we use
-> +			 * core_limit of 0 here as a speacial value. Any
-> +			 * non-zero limit gets set to RLIM_INFINITY below, but
-> +			 * a limit of 0 skips the dump.  This is a consistent
-> +			 * way to catch recursive crashes.  We can still crash
-> +			 * if the core_pattern binary sets RLIM_CORE =  !0
-> +			 * but it runs as root, and can do lots of stupid things
-> +			 * Note that we use task_tgid_vnr here to grab the pid of the
-> +			 * process group leader.  That way we get the right pid if a thread
-> +			 * in a multi-threaded core_pattern process dies.
-> +			 */
-> +			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
-> +			       task_tgid_vnr(current), current->comm);
-> +			printk(KERN_WARNING "Aborting core\n");
->  			goto fail_unlock;
->  		}
+At which point moorestown support should just be a little work somewhere
+in the table parsers.
 
-A few cosmetic things:
+If you can't compile out the 8259 support code this has been factored
+wrong. 
 
-- The asterisks don't line up in the comment block.  Normally we'll do
+There are a handful of legacy systems with mptables that run in ioapic
+mode yet use the timer and sometimes a couple of other devices on
+the 8259 PIC.  Handling that case will complicate things a bit.
 
-	/*
-	 *
-	 *
+Hopefully it will be easier now to properly rework the code.  When
+I tried it.  Linus's laptop died somewhere half way through bootup.
+So we had to revert the support.
 
-  rather than
+In summary if moorestown does not have an 8259 PIC it is time to remove
+this long standing deficiency of the x86 ioapic code, not hack around
+it.
 
-	/*
-	*
-	*
-
-- The comment overflows 80 columns and makes a mess.
-
-- Would it not be neater to do this check in a separate function? 
-  Then the comment block can go above the function rather than being
-  all scrunched to the right and do_coredump() (which is already >150
-  lines) just gets
-
-	if (ispipe) {
-+		if (core_limit_is_zero())
-+			goto fail_unlock;
+Eric
