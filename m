@@ -1,93 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755771AbZF0Mtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZF0M6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755771AbZF0Mtn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 08:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbZF0Mt2
+	id S1755044AbZF0M6L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 08:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZF0M56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 08:49:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40364 "EHLO mx2.suse.de"
+	Sat, 27 Jun 2009 08:57:58 -0400
+Received: from cmpxchg.org ([85.214.51.133]:33185 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbZF0Mt0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 08:49:26 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Sat, 27 Jun 2009 22:50:05 +1000
-MIME-Version: 1.0
+	id S1751810AbZF0M55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 08:57:57 -0400
+Date: Sat, 27 Jun 2009 14:54:12 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, "riel@redhat.com" <riel@redhat.com>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Subject: Re: Found the commit that causes the OOMs
+Message-ID: <20090627125412.GA1667@cmpxchg.org>
+References: <3901.1245848839@redhat.com> <20090624023251.GA16483@localhost> <20090620043303.GA19855@localhost> <32411.1245336412@redhat.com> <20090517022327.280096109@intel.com> <2015.1245341938@redhat.com> <20090618095729.d2f27896.akpm@linux-foundation.org> <7561.1245768237@redhat.com> <26537.1246086769@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19014.5501.31618.7897@notabene.brown>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Mike Snitzer <snitzer@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
-	of the 'queue' sysfs directory.
-In-Reply-To: message from Jens Axboe on Friday June 26
-References: <19010.62951.886231.96622@notabene.brown>
-	<yq11vp8spxo.fsf@sermon.lab.mkp.net>
-	<125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
-	<20090625194015.GB31415@kernel.dk>
-	<19012.49673.454853.975682@notabene.brown>
-	<20090626125037.GO23611@kernel.dk>
-	<7c458f2470811a877dd60203b9bbb7ac.squirrel@neil.brown.name>
-	<771af936681abb7ddc2191eb5b6b68d0.squirrel@neil.brown.name>
-	<20090626134954.GS23611@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <26537.1246086769@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday June 26, jens.axboe@oracle.com wrote:
-> On Fri, Jun 26 2009, NeilBrown wrote:
-> > Do you have a good reason for them going in /queue?
+On Sat, Jun 27, 2009 at 08:12:49AM +0100, David Howells wrote:
 > 
-> Do you have a good reason for moving them? Im my opinion that makes the
-> separation between ->make_request_fn and ->request_fn devices bigger.
+> I've managed to bisect things to find the commit that causes the OOMs.  It's:
+> 
+> 	commit 69c854817566db82c362797b4a6521d0b00fe1d8
+> 	Author: MinChan Kim <minchan.kim@gmail.com>
+> 	Date:   Tue Jun 16 15:32:44 2009 -0700
+> 
+> 	    vmscan: prevent shrinking of active anon lru list in case of no swap space V3
+> 
+> 	    shrink_zone() can deactivate active anon pages even if we don't have a
+> 	    swap device.  Many embedded products don't have a swap device.  So the
+> 	    deactivation of anon pages is unnecessary.
+> 
+> 	    This patch prevents unnecessary deactivation of anon lru pages.  But, it
+> 	    don't prevent aging of anon pages to swap out.
+> 
+> 	    Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> 	    Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 	    Cc: Johannes Weiner <hannes@cmpxchg.org>
+> 	    Acked-by: Rik van Riel <riel@redhat.com>
+> 	    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> 	    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> 
+> This exhibits the problem.  The previous commit:
+> 
+> 	commit 35282a2de4e5e4e173ab61aa9d7015886021a821
+> 	Author: Brice Goglin <Brice.Goglin@ens-lyon.org>
+> 	Date:   Tue Jun 16 15:32:43 2009 -0700
+> 
+> 	    migration: only migrate_prep() once per move_pages()
+> 
+> survives 16 iterations of the LTP syscall testsuite without exhibiting the
+> problem.
 
-Yes, I have a good reason.
+Here is the patch in question:
 
-Put succinctly:  I have a reason for reverting the change to make
-/queue visible in md/dm devices:  It contains mostly fields that are
-irrelevant to those devices.
-Given that, I have a reason for moving the new fields:  So that can be
-visible for md/dm/loop/etc devices.
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 7592d8e..879d034 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1570,7 +1570,7 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+ 	 */
+-	if (inactive_anon_is_low(zone, sc))
++	if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
+ 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+ 
+ 	throttle_vm_writeout(sc->gfp_mask);
 
-More verbosely:
-Currently (i.e. 2.6.30 and earlier) every block device has a device
-directory in /sys/devices.  e.g. "sda".  It contains attributes that
-are generally applicable to any block device (size, ro etc).
+When this was discussed, I think we missed that nr_swap_pages can
+actually get zero on swap systems as well and this should have been
+total_swap_pages - otherwise we also stop balancing the two anon lists
+when swap is _full_ which was not the intention of this change at all.
 
-Some devices, which use the __make_request driver/layer, have a
-'queue' directory with attributes that are specific to the
-implementation of __make_request and related code.
-Other devices, which make use of the md_make_request driver/layer,
-have an 'md' directory with attributes that are specific to that
-implementation.
-Other devices have no such directory (relevant values are managed
-exclusively via ioctls).
+[ There is another one hiding in shrink_zone() that does the same - it
+was moved from get_scan_ratio() and is pretty old but we still kept
+the inactive/active ratio halfway sane without MinChan's patch. ]
 
-We are adding a number of attributes that are generally applicable to
-all block devices.
-Given the above description of the current state, it seems natural for
-the new attributes to go in the device directory -
-e.g. sda/new-attribute.
-This is exactly what has been done for 'alignment_offset'.
-The same should be done for physical_block_size, minimum_io_size, and
-optimal_io_size.
-Introducing the 'queue' directory - which mostly contains fields
-completely irrelevant to non- __make_request drivers - just to store
-some values that can easily go elsewhere doesn't seem to make sense to
-me.
+This is from your OOM-run dmesg, David:
 
-As for increasing the "separation between ->make_request_fn and
-->request_fn devices", I don't think that is a useful way to look at
-the devices, as I detail in my other Email.
+  Adding 32k swap on swapfile22.  Priority:-21 extents:1 across:32k
+  Adding 32k swap on swapfile23.  Priority:-22 extents:1 across:32k
+  Adding 32k swap on swapfile24.  Priority:-23 extents:3 across:44k
+  Adding 32k swap on swapfile25.  Priority:-24 extents:1 across:32k
 
-Thanks,
-NeilBrown
+So we actually have swap?  Or are those removed again before the OOM?
+
+If not, I think we let the anon lists rot while swap is full and when
+some swap space gets freed up and we should be able to evict anon
+pages again, we don't find any candidates.  The following patch should
+improve on that.
+
+If it's not true for your particular situation, I think we still need
+it for the scenario described above.
+
+---
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: vmscan: keep balancing anon lists on swap-full conditions
+
+Page reclaim doesn't scan and balance the anon LRU lists when
+nr_swap_pages is zero to save the scan overhead for swapless systems.
+
+Unfortunately, this variable can reach zero when all present swap
+space is occupied as well and we don't want to stop balancing in that
+case or we encounter an unreclaimable mess of anon lists when swap
+space gets freed up and we are theoretically in the position to page
+out again.
+
+Use the total_swap_pages variable to have a better indicator when to
+scan the anon LRU lists.
+
+We still might have unbalanced anon lists when swap space is added
+during run time but it is a a less dynamic change in state and we
+still save the scanning overhead for CONFIG_SWAP systems that never
+actually set up swap space.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+---
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 5415526..5ea7fc3 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1524,7 +1524,7 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	int noswap = 0;
+ 
+ 	/* If we have no swap space, do not bother scanning anon pages. */
+-	if (!sc->may_swap || (nr_swap_pages <= 0)) {
++	if (!sc->may_swap || (total_swap_pages <= 0)) {
+ 		noswap = 1;
+ 		percent[0] = 0;
+ 		percent[1] = 100;
+@@ -1578,7 +1578,7 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+ 	 */
+-	if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
++	if (inactive_anon_is_low(zone, sc) && total_swap_pages > 0)
+ 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+ 
+ 	throttle_vm_writeout(sc->gfp_mask);
