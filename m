@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZF0RCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZF0RSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbZF0RCR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 13:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZF0RCG
+	id S1756318AbZF0RSl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 13:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZF0RSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 13:02:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39776 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Jun 2009 13:18:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36560 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754378AbZF0RCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 13:02:04 -0400
-Date: Sat, 27 Jun 2009 19:01:58 +0200
+	id S1754699AbZF0RSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 13:18:31 -0400
+Date: Sat, 27 Jun 2009 19:17:14 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Pan, Jacob jun" <jacob.jun.pan@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Subject: Re: [PATCH 8/9] x86/apic: match destination id with destination
-	mode
-Message-ID: <20090627170158.GA21595@elte.hu>
-References: <43F901BD926A4E43B106BF17856F07556412B7E7@orsmsx508.amr.corp.intel.com> <20090626071725.GE14078@elte.hu> <m1hby293fh.fsf@fess.ebiederm.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
+       tglx@linutronix.de, hpa@zytor.com, ntl@pobox.com, mel@csn.ul.ie,
+       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
+       rientjes@google.com, containers@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: only clear node_states for 64bit
+Message-ID: <20090627171714.GD21595@elte.hu>
+References: <alpine.DEB.1.10.0906041309230.8080@gentwo.org> <4A2803D1.4070001@kernel.org> <m3bpokiv0u.fsf@pobox.com> <4A3B49BA.40100@kernel.org> <m3prd0havh.fsf@pobox.com> <4A3D7419.8040305@kernel.org> <m3my807ug3.fsf@pobox.com> <4A3FA58A.3010909@kernel.org> <20090626135428.d8f88a70.akpm@linux-foundation.org> <4A4538FE.2090101@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1hby293fh.fsf@fess.ebiederm.org>
+In-Reply-To: <4A4538FE.2090101@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,34 +37,72 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> Ingo Molnar <mingo@elte.hu> writes:
+> Andrew Morton wrote:
+> > On Mon, 22 Jun 2009 08:38:50 -0700
+> > Yinghai Lu <yinghai@kernel.org> wrote:
+> > 
+> >> Nathan reported that
+> >> | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
+> >> | Author: Yinghai Lu <yinghai@kernel.org>
+> >> | Date:   Tue Jun 16 15:33:00 2009 -0700
+> >> |
+> >> |    page-allocator: clear N_HIGH_MEMORY map before we set it again
+> >> |    
+> >> |    SRAT tables may contains nodes of very small size.  The arch code may
+> >> |    decide to not activate such a node.  However, currently the early boot
+> >> |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
+> >> |    active although these nodes have no present pages.
+> >> |    
+> >> |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
+> >>
+> >> the cpuset.mems cgroup attribute on an i386 kvm guest
+> >>
+> >> fix it by only clearing node_states[N_NORMAL_MEMORY] for 64bit only.
+> >> and need to do save/restore for that in find_zone_movable_pfn
+> >>
+> > 
+> > There appear to be some words omitted from this changelog - it doesn't
+> > make sense.
+> > 
+> > I think that perhaps a line got deleted before "the cpuset.mems cgroup
+> > ...".  That was the line which actualy describes the bug which we're
+> > fixing.  Or perhaps it was a single word?  "zeroes".
+> > 
+> > 
+> > I did this:
+> > 
+> > Nathan reported that
+> > : 
+> > : | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
+> > : | Author: Yinghai Lu <yinghai@kernel.org>
+> > : | Date:   Tue Jun 16 15:33:00 2009 -0700
+> > : |
+> > : |    page-allocator: clear N_HIGH_MEMORY map before we set it again
+> > : |
+> > : |    SRAT tables may contains nodes of very small size.  The arch code may
+> > : |    decide to not activate such a node.  However, currently the early boot
+> > : |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
+> > : |    active although these nodes have no present pages.
+> > : |
+> > : |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
+> > : 
 > 
-> > The question here is whether this should layer on top of 
-> > Jeremy's IO-APIC driverization patches. I think it should.
+> "
+> > : unintentionally and incorrectly clears the cpuset.mems cgroup attribute on
+> > : an i386 kvm guest
+> "
+> ==> 
 > 
-> The patch is a bad hack that is totally misdocumented.  A bit like 
-> the Xen apic changes in that respect.
-> 
-> I haven't seen Jeremy's IO-APIC driverization patches.
-> 
-> I am stumped why we need any driverization in this area.  x86_64 
-> and has had for years a mechanism that is perfectly fine for 
-> abstracting this. i386 also has had something similar and last I 
-> looked we just about had that code merged.
+> 32bit assume NORMAL_MEMORY bit and HIGH_MEMORY bit are set for 
+> Node0 always.
 
-We have the local apic abstracted out into struct apic on both 
-32-bit and 64-bit, but not the IO-APIC methods.
+Where in the code is this assumption?
 
-> Xen doesn't have ioapics so it doesn't need us faking writes to 
-> ioapics.  Xen either needs to parse the ioapic tables itself or 
-> Xen needs a proper interface to be given the table information.
-> 
-> I this patch can be replaced by a 2 line change to the apic mode 
-> logic to force us into physflat mode on moorestown.
+> and some code only check if HIGH_MEMORY is there to know if 
+> NORMAL_MEMORY is there.
 
-Yes, probably. I havent looked deeply into all the merits yet, there 
-were so many other structural problems with these patches.
+Which code is that exactly?
 
 	Ingo
