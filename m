@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZF0Jcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZF0JiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754647AbZF0Jcc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 05:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZF0JcX
+	id S1753394AbZF0JiF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 05:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750757AbZF0Jhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 05:32:23 -0400
-Received: from mail.open.by ([193.232.92.17]:63078 "EHLO post.open.by"
+	Sat, 27 Jun 2009 05:37:55 -0400
+Received: from mail.open.by ([193.232.92.17]:58538 "EHLO post.open.by"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753243AbZF0JcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 05:32:22 -0400
+	id S1750730AbZF0Jhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 05:37:54 -0400
 X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000003
+X-SpamTest-Group-ID: 00000000
 X-SpamTest-Info: Profiles 8849 [Jun 27 2009]
 X-SpamTest-Info: helo_type=3
 X-SpamTest-Info: {relay has no DNS name}
@@ -20,14 +20,13 @@ X-SpamTest-SPF: softfail
 X-SpamTest-Status: Not detected
 X-SpamTest-Status-Extended: not_detected
 X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-X-SpamTest-Group-ID: 00000000
-Date: Sat, 27 Jun 2009 12:33:59 +0300
+Date: Sat, 27 Jun 2009 12:39:32 +0300
 From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>, Greg KH <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] kobject_set_name_vargs memory leak
-Message-ID: <20090627093359.GA3342@localdomain.by>
+Message-ID: <20090627093932.GB3342@localdomain.by>
 References: <20090626143652.GB6281@localdomain.by>
  <20090626144949.GA24173@suse.de>
  <20090626232339.GD3858@localdomain.by>
@@ -73,35 +72,13 @@ On (06/26/09 19:10), Eric W. Biederman wrote:
 > Yes.  There does seem to be a good point in there that the code should be:
 > BUG_ON(kobj->name);
 > 
-
 > And otherwise simply not handle old_name at all.
 > 
 
-I run with:
-
-	if (kobj->name) {
-		printk(KERN_ERR "name:%s  fmt:%s\n", kobj->name, fmt);
-		dump_stack();
-	}
-
-I seems ok not to handle old_name.
-
->Dave Young
->I rethought about this problem, does such issue exist really? I means
->that kobject->name != NULL scenario.
->
->there's following comments of this function:
->
-> * This sets the name of the kobject.  If you have already added the
-> * kobject to the system, you must call kobject_rename() in order to
-> * change the name of the kobject
-
-
-Greg, Kay, Eric, what do you think?
-
+Sorry, correct one.
 
 diff --git a/lib/kobject.c b/lib/kobject.c
-index b512b74..fd1983a 100644
+index b512b74..3ab224b 100644
 --- a/lib/kobject.c
 +++ b/lib/kobject.c
 @@ -215,7 +215,6 @@ static int kobject_add_internal(struct kobject *kobj)
@@ -112,7 +89,14 @@ index b512b74..fd1983a 100644
  	char *s;
  
  	if (kobj->name && !fmt)
-
+@@ -229,7 +228,6 @@ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 	while ((s = strchr(kobj->name, '/')))
+ 		s[0] = '!';
+ 
+-	kfree(old_name);
+ 	return 0;
+ }
+ 
 
 > Eric
 > 
