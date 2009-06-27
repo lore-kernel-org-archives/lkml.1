@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZF0Fh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZF0Fkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbZF0Fh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 01:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZF0FhT
+	id S1758008AbZF0Fkk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 01:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbZF0Fkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 01:37:19 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:33024 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752055AbZF0FhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 01:37:18 -0400
-Message-ID: <63536.192.168.10.89.1246081026.squirrel@dbdmail.itg.ti.com>
-In-Reply-To: <57946.192.168.10.89.1246035774.squirrel@dbdmail.itg.ti.com>
-References: <53729.192.168.10.89.1246035472.squirrel@dbdmail.itg.ti.com>
-    <57946.192.168.10.89.1246035774.squirrel@dbdmail.itg.ti.com>
-Date: Sat, 27 Jun 2009 11:07:06 +0530 (IST)
-Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-From: "vimal singh" <vimalsingh@ti.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-Cc: "tom.leiming@gmail.com" <tom.leiming@gmail.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Sat, 27 Jun 2009 01:40:33 -0400
+Received: from 42.mail-out.ovh.net ([213.251.189.42]:48602 "HELO
+	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752012AbZF0Fkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 01:40:33 -0400
+Date: Sat, 27 Jun 2009 07:33:17 +0200
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: "Leo (Hao) Chen" <leochen@broadcom.com>
+Cc: "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v1 3/6][ARM]  new ARM SoC support: BCMRing
+Message-ID: <20090627053317.GG8587@game.jcrosoft.org>
+References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C3@SJEXCHCCR02.corp.ad.broadcom.com>
+ <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broadcom.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broadcom.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Ovh-Tracer-Id: 12739838921815075731
+X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The 'status' you return in the case that you _have_ gone through the
-> loop is still wrong though, isn't it?
-Yes, I have corrected that in below patch. Its my bad, I did not fix it
-previously.
+On 16:29 Fri 26 Jun     , Leo (Hao) Chen wrote:
+> Hi,
+> 
+> This is the third patch.  This big patch contains the core arch code in arch/arm/mach-bcmring directory.
+> Header files in arch/arm/mach-bcmring/include/mach are included as well.
+You need to check your patches with checkpatch.pl as your patches do not respect
+the linux conding style in a lot's of space
 
-Signed-off-by: Vimal Singh <vimalsingh at ti.com>
-Signed-off-by: Ming Lei <tom.leiming at gmail.com>
----
+> 
+> >From 8c38c714343f1cc203c55db8fd28505b1ec4f914 Mon Sep 17 00:00:00 2001
+> From: Leo Chen <leochen@broadcom.com>
+> Date: Fri, 26 Jun 2009 15:46:41 -0700
+> Subject: [PATCH 3/6] add bcmring arch core code and header files
+> 
+a few more details will be nice
+please split a few too it will help for review
 
-diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
-index 0cd76f8..3b6e6ad 100644
---- a/drivers/mtd/nand/omap2.c
-+++ b/drivers/mtd/nand/omap2.c
-@@ -11,6 +11,8 @@
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
-+#include <linux/jiffies.h>
-+#include <linux/sched.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/nand.h>
- #include <linux/mtd/partitions.h>
-@@ -541,7 +543,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
- 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
- 							mtd);
- 	unsigned long timeo = jiffies;
--	int status, state = this->state;
-+	int status = NAND_STATUS_FAIL, state = this->state;
-
- 	if (state == FL_ERASING)
- 		timeo += (HZ * 400) / 1000;
-@@ -558,6 +560,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
- 		status = __raw_readb(this->IO_ADDR_R);
--		if (!(status & 0x40))
-+		if (status & NAND_STATUS_READY)
- 			break;
-+		cond_resched();
- 	}
- 	return status;
- }
-
-
+Best Regards,
+J.
