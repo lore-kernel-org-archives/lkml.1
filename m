@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZF0ST4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZF0S0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbZF0ST4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 14:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZF0STs
+	id S1753332AbZF0S0W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 14:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZF0S0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 14:19:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58453 "EHLO hera.kernel.org"
+	Sat, 27 Jun 2009 14:26:15 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55392 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750720AbZF0STs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 14:19:48 -0400
-Subject: [PATCH -tip] perf stat: memcpy is only required if no event is
- selected and !null_run
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 23:49:09 +0530
-Message-Id: <1246126749.32198.16.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751450AbZF0S0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 14:26:14 -0400
+Date: Sat, 27 Jun 2009 20:26:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in
+	cfq_find_alloc_queue()
+Message-ID: <20090627182617.GX23611@kernel.dk>
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com> <1246007120-24034-3-git-send-email-jens.axboe@oracle.com> <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 26 2009, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+> > never fails without having to ensure free memory.
+> >
+> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > ---
+> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+> >  1 files changed, 67 insertions(+), 57 deletions(-)
+> >
+> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > index c760ae7..91e7e0b 100644
+> > --- a/block/cfq-iosched.c
+> > +++ b/block/cfq-iosched.c
+> > +	/*
+> > +	 * Fallback dummy cfqq for extreme OOM conditions
+> > +	 */
+> > +	struct cfq_queue oom_cfqq;
+> 
+> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+> guess that's not too bad.
+> 
+> > +	/*
+> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+> > +	 * Grab a permanent reference to it, so that the normal code flow
+> > +	 * will not attempt to free it.
+> > +	 */
+> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+> > +	atomic_inc(&cfqd->oom_cfqq.ref);
+> > +
+> 
+> I guess this is so we never try to free it, good.  ;)
+> 
+> One issue I have with this patch is that, if a task happens to run into
+> this condition, there is no way out.  It will always have the oom_cfqq
+> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
 
-Set attrs and nr_counters if no event is selected and !null_run
+Yeah, I fixed that about an hour after posting the patches. See:
 
-Setting of attrs should depend on number of counters,
-so we need to memcpy only for sizeof(default_attrs)
+http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
 
-and set nr_counters as ARRAY_SIZE(default_attrs) in place of hardcoded value
+I didn't post the 3/2 patch though.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- tools/perf/builtin-stat.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 3840a70..3e5ea4e 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -46,7 +46,7 @@
- #include <sys/prctl.h>
- #include <math.h>
- 
--static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
-+static struct perf_counter_attr default_attrs[] = {
- 
-   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK	},
-   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
-@@ -477,16 +477,17 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- {
- 	int status;
- 
--	memcpy(attrs, default_attrs, sizeof(attrs));
--
- 	argc = parse_options(argc, argv, options, stat_usage, 0);
- 	if (!argc)
- 		usage_with_options(stat_usage, options);
- 	if (run_count <= 0 || run_count > MAX_RUN)
- 		usage_with_options(stat_usage, options);
- 
--	if (!null_run && !nr_counters)
--		nr_counters = 8;
-+	/* Set attrs and nr_counters if no event is selected and !null_run */
-+	if (!null_run && !nr_counters) {
-+		memcpy(attrs, default_attrs, sizeof(default_attrs));
-+		nr_counters = ARRAY_SIZE(default_attrs);
-+	}
- 
- 	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
- 	assert(nr_cpus <= MAX_NR_CPUS);
 -- 
-1.6.0.6
-
-
+Jens Axboe
 
