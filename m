@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZF0Pw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbZF0Pww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbZF0Pw1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 11:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZF0PwT
+	id S1753993AbZF0Pww (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 11:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZF0Pwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 11:52:19 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:62500 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbZF0PwS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 11:52:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Uha+RX6l2PjgU9F9VGojgH+GNvhkhxKJaxCYS0mOwBvQxKZYrpN8lAdl95LDGQzkkA
-         DF5fMSbCS+ae9Zgg5S0EBHOl6QMFBmxrkepOa2ewA8531tDHZmNvtPaQDlhCRgeyqMD/
-         5BmYjBv4tLvx+zas/SmR4nn1kHtf3m0RlKwjU=
+	Sat, 27 Jun 2009 11:52:44 -0400
+Received: from tur.go2.pl ([193.17.41.50]:43858 "EHLO tur.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753280AbZF0Pwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 11:52:43 -0400
+From: Zbigniew Luszpinski <zbiggy@o2.pl>
+To: linux-kernel@vger.kernel.org
+Subject: OHCI USB hangs during intensive use, nVidia MCP78S chipset, few questions to help me find the problem.
+Date: Sat, 27 Jun 2009 17:51:21 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; i686; ; )
 MIME-Version: 1.0
-In-Reply-To: <20090627125412.GA1667@cmpxchg.org>
-References: <3901.1245848839@redhat.com> <20090624023251.GA16483@localhost>
-	 <20090620043303.GA19855@localhost> <32411.1245336412@redhat.com>
-	 <20090517022327.280096109@intel.com> <2015.1245341938@redhat.com>
-	 <20090618095729.d2f27896.akpm@linux-foundation.org>
-	 <7561.1245768237@redhat.com> <26537.1246086769@redhat.com>
-	 <20090627125412.GA1667@cmpxchg.org>
-Date: Sun, 28 Jun 2009 00:52:20 +0900
-X-Google-Sender-Auth: 4784b9e577b139d0
-Message-ID: <2f11576a0906270852h520fef19p50b77fd441065f67@mail.gmail.com>
-Subject: Re: Found the commit that causes the OOMs
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: David Howells <dhowells@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906271751.21418.zbiggy@o2.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Here is the patch in question:
->
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 7592d8e..879d034 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1570,7 +1570,7 @@ static void shrink_zone(int priority, struct zone *zone,
->         * Even if we did not try to evict anon pages at all, we want to
->         * rebalance the anon lru active/inactive ratio.
->         */
-> -       if (inactive_anon_is_low(zone, sc))
-> +       if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
->                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->
->        throttle_vm_writeout(sc->gfp_mask);
->
-> When this was discussed, I think we missed that nr_swap_pages can
-> actually get zero on swap systems as well and this should have been
-> total_swap_pages - otherwise we also stop balancing the two anon lists
-> when swap is _full_ which was not the intention of this change at all.
->
-> [ There is another one hiding in shrink_zone() that does the same - it
-> was moved from get_scan_ratio() and is pretty old but we still kept
-> the inactive/active ratio halfway sane without MinChan's patch. ]
->
-> This is from your OOM-run dmesg, David:
->
->  Adding 32k swap on swapfile22.  Priority:-21 extents:1 across:32k
->  Adding 32k swap on swapfile23.  Priority:-22 extents:1 across:32k
->  Adding 32k swap on swapfile24.  Priority:-23 extents:3 across:44k
->  Adding 32k swap on swapfile25.  Priority:-24 extents:1 across:32k
->
-> So we actually have swap?  Or are those removed again before the OOM?
+Hello,
 
-[grep to ltp source file]
+after upgrading my CPU from single core to multicore and mainboard I started 
+to have problem with OHCI USB controller. It hangs during big data transfer 
+(USB hdd drive, pendrive, IRDA dongle or adsl modem). The result of hang is 
+usb device is not responding. This is the only error I found. I would like to 
+learn why it hangs and fix it. I tried kernels 2.6.27-30 and most popular 
+Linux distributions. Adding noapic or acpi=noirq parameter to kernel boot line 
+almost workarounds the problem, disabling tickless kernel: CONFIG_NO_HZ also 
+makes usb ohci hanging a little bit less. Usb 1.1 devices still hangs but 
+seldom: only transferring over 100MiB file to/from usb hdd or downloading 
+CentOS dvd iso from ftp or torrent can hang usb. I do not want to be left with 
+workaround. I want to fix it. Can you tell me how to find the issue and where 
+to look for faulty code? By looking at kernel parameters which cures the usb 
+ohci bug it must be something wrong with IRQs.
 
-ltp/testcases/kernel/syscalls/swapon/swapon03.c makes a lot of swap,
-but it was removed when the test exit.
+Questions which will help me narrowing the source of the problem:
+Can you confirm/deny that Linux usb ohci driver works perfect on multicore 
+Phenom cpu when big data transfer happens (Phenom 9550 reports very welcome)?
+Can you confirm/deny that Linux usb ohci driver works perfect on nVidia MCP78S  
+(Geforce 8200) chipset when big data transfer happens?
+If you have working/non working ohci on your Geforce 8200 mainboard please 
+include detailed information about your system:
+-cpu model (manufacturer, model)
+-mainboard (manufacturer, model, bios version)
 
-Then, When OOM happed, David's system don't have any swap. I don't think
-your patch strike the target, unfortunately.
+I have changed:
+mainboard: Asus A8N-VM CSM (nVidia nForce 6150/430) to:
+mainboard: ASRock K10N78FullHD-hSLI R3.0 (nVidia MCP78S (Geforce8200))
+cpu: Athlon64 3000+ Venice (1 core) to:
+cpu: Phenom 9550 (4 cores)
+mem: 4x256MiB DDR400 (twinbank) to 2x1GiB DDR2 800 CL4 (twinbank)
+
+The previous mainboard works perfectly with usb 1.1 devices. The new one is 
+not. I tried M$ Win XP Pro SP3 and ohci usb works perfectly so new mainboard 
+is not broken - this is software bug in bios or Linux ohci/IRQ on this 
+mainboard.
+All usb 1.1 devices works perfectly with all my previous mainboards so this 
+must be new mainboard incompatibility with Linux up to and including 2.6.30.
+
+Here is my bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=13405
+
+have a nice day,
+Zbigniew Luszpinski
+
