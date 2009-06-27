@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZF0S0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZF0S22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZF0S0W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 14:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZF0S0P
+	id S1752913AbZF0S22 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 14:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZF0S2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 14:26:15 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55392 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbZF0S0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 14:26:14 -0400
-Date: Sat, 27 Jun 2009 20:26:17 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in
-	cfq_find_alloc_queue()
-Message-ID: <20090627182617.GX23611@kernel.dk>
-References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com> <1246007120-24034-3-git-send-email-jens.axboe@oracle.com> <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
+	Sat, 27 Jun 2009 14:28:19 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:54764 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbZF0S2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 14:28:19 -0400
+Date: Sat, 27 Jun 2009 12:28:21 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl,
+	COMMAND_SIZE and scsi_device_type
+Message-ID: <20090627182821.GC5480@parisc-linux.org>
+References: <1246122359.32198.7.camel@hpdv5.satnam> <1246123628.3990.19.camel@mulgrave.site> <1246125388.32198.14.camel@hpdv5.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <1246125388.32198.14.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26 2009, Jeff Moyer wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
-> 
-> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
-> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
-> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
-> > never fails without having to ensure free memory.
-> >
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> > ---
-> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
-> >  1 files changed, 67 insertions(+), 57 deletions(-)
-> >
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index c760ae7..91e7e0b 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > +	/*
-> > +	 * Fallback dummy cfqq for extreme OOM conditions
-> > +	 */
-> > +	struct cfq_queue oom_cfqq;
-> 
-> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
-> guess that's not too bad.
-> 
-> > +	/*
-> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
-> > +	 * Grab a permanent reference to it, so that the normal code flow
-> > +	 * will not attempt to free it.
-> > +	 */
-> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
-> > +	atomic_inc(&cfqd->oom_cfqq.ref);
-> > +
-> 
-> I guess this is so we never try to free it, good.  ;)
-> 
-> One issue I have with this patch is that, if a task happens to run into
-> this condition, there is no way out.  It will always have the oom_cfqq
-> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+On Sat, Jun 27, 2009 at 11:26:28PM +0530, Jaswinder Singh Rajput wrote:
+> > On Sat, 2009-06-27 at 22:35 +0530, Jaswinder Singh Rajput wrote:
+> > > userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
+> > > and scsi_device_type defined in kernel
 
-Yeah, I fixed that about an hour after posting the patches. See:
-
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
-
-I didn't post the 3/2 patch though.
+When did we start exporting include/scsi to userspace?  I thought glibc
+had its own separate definitions.
 
 -- 
-Jens Axboe
-
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
