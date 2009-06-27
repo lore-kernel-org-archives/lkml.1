@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZF0JSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZF0Jcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbZF0JSs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 05:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZF0JSj
+	id S1754647AbZF0Jcc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 05:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZF0JcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 05:18:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40077 "EHLO hera.kernel.org"
+	Sat, 27 Jun 2009 05:32:23 -0400
+Received: from mail.open.by ([193.232.92.17]:63078 "EHLO post.open.by"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbZF0JSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 05:18:38 -0400
-Subject: Re: [PATCH] IDE: ide-taskfile.c fix compilation warning and cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200906262142.43102.bzolnier@gmail.com>
-References: <1245650973.30547.3.camel@ht.satnam>
-	 <200906221250.36318.bzolnier@gmail.com>
-	 <1245986290.3568.1.camel@hpdv5.satnam>
-	 <200906262142.43102.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 14:48:28 +0530
-Message-Id: <1246094308.2961.15.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753243AbZF0JcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 05:32:22 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000003
+X-SpamTest-Info: Profiles 8849 [Jun 27 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+X-SpamTest-Group-ID: 00000000
+Date: Sat, 27 Jun 2009 12:33:59 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>, Greg KH <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+Message-ID: <20090627093359.GA3342@localdomain.by>
+References: <20090626143652.GB6281@localdomain.by>
+ <20090626144949.GA24173@suse.de>
+ <20090626232339.GD3858@localdomain.by>
+ <m18wjeqven.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m18wjeqven.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Bart, David,
-
-On Fri, 2009-06-26 at 21:42 +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Friday 26 June 2009 05:18:10 Jaswinder Singh Rajput wrote:
-> > On Mon, 2009-06-22 at 12:50 +0200, Bartlomiej Zolnierkiewicz wrote:
+On (06/26/09 19:10), Eric W. Biederman wrote:
+> Date: Fri, 26 Jun 2009 19:10:08 -0700
+> From: "Eric W. Biederman" <ebiederm@xmission.com>
+> To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+> Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+> 	linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] kobject_set_name_vargs memory leak
+> User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 > 
-> > > Besides I would suggest splitting the patch on fix and cleanup parts.
-> > 
-> > Here is the cleanup part:
-> > 
-> > [PATCH] IDE: ide-taskfile.c fix style problems
-> > 
-> > Fix trivial style problems:
-> > 
-> > WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
-> > WARNING: space prohibited between function name and open parenthesis '('
-> > WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-> > ERROR: do not use C99 // comments X 2
-> > ERROR: trailing statements should be on next line
-> > ERROR: trailing whitespace
-> > ERROR: switch and case should be at the same indent
-> > WARNING: line over 80 characters
-> > 
-> > total: 5 errors, 4 warnings
-> > 
-> > Also removed dead code
-> > 
-> > Also used pr_err() to avoid line breaks
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Sergey Senozhatsky <sergey.senozhatsky@mail.by> writes:
 > 
-> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > On (06/26/09 07:49), Greg KH wrote:
+> >> We've been through this before (search lkml archives).  If kvasprintf
+> >> fails, then we don't want to free old_name, as the caller might want to
+> >> do something with it.
+> >> 
+> >> Or something along those lines, I can't remember the exact reasoning
+> >> this early in the morning.
+> >> 
+> >> Kay, do you remember?
+> >>
+> > I found.
+> > http://lkml.org/lkml/2009/5/11/11
+> >
+> >>kobject with name set before should not come into this function,
+> >>kobject_rename should be used instead.
+> >
+> > It's just would be safer to kfree or restore I guess.
+> 
+> Yes.  There does seem to be a good point in there that the code should be:
+> BUG_ON(kobj->name);
+> 
 
-Thanks.
+> And otherwise simply not handle old_name at all.
+> 
 
-If you want I can also fix another ide files.
+I run with:
 
-David, is it OK.
+	if (kobj->name) {
+		printk(KERN_ERR "name:%s  fmt:%s\n", kobj->name, fmt);
+		dump_stack();
+	}
 
-Please let me know which tree I should use bart or David.
+I seems ok not to handle old_name.
 
-Thanks,
---
-JSR
+>Dave Young
+>I rethought about this problem, does such issue exist really? I means
+>that kobject->name != NULL scenario.
+>
+>there's following comments of this function:
+>
+> * This sets the name of the kobject.  If you have already added the
+> * kobject to the system, you must call kobject_rename() in order to
+> * change the name of the kobject
 
+
+Greg, Kay, Eric, what do you think?
+
+
+diff --git a/lib/kobject.c b/lib/kobject.c
+index b512b74..fd1983a 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -215,7 +215,6 @@ static int kobject_add_internal(struct kobject *kobj)
+ int kobject_set_name_vargs(struct kobject *kobj, const char *fmt,
+ 				  va_list vargs)
+ {
+-	const char *old_name = kobj->name;
+ 	char *s;
+ 
+ 	if (kobj->name && !fmt)
+
+
+> Eric
+> 
+
+	Sergey
