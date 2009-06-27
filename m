@@ -1,135 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZF0R44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZF0Rw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZF0R44 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 13:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZF0R4q
+	id S1756978AbZF0Rw0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 13:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZF0RwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 13:56:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40375 "EHLO hera.kernel.org"
+	Sat, 27 Jun 2009 13:52:17 -0400
+Received: from genesysrack.ru ([195.178.208.66]:50695 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754769AbZF0R4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 13:56:46 -0400
-Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl,
- COMMAND_SIZE and scsi_device_type
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <1246123628.3990.19.camel@mulgrave.site>
-References: <1246122359.32198.7.camel@hpdv5.satnam>
-	 <1246123628.3990.19.camel@mulgrave.site>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 23:26:28 +0530
-Message-Id: <1246125388.32198.14.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1755661AbZF0RwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 13:52:16 -0400
+Date: Sat, 27 Jun 2009 21:52:09 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Patrick McHardy <kaber@trash.net>, Sam Ravnborg <sam@ravnborg.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] headers_check fix: linux/netfilter/xt_osf.h
+Message-ID: <20090627175209.GA12453@ioremap.net>
+References: <1246120264.32198.2.camel@hpdv5.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246120264.32198.2.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-27 at 12:27 -0500, James Bottomley wrote:
-> All SCSI patches should be cc'd to the SCSI list
+Hi.
+
+On Sat, Jun 27, 2009 at 10:01:04PM +0530, Jaswinder Singh Rajput (jaswinder@kernel.org) wrote:
+> fix the following 'make headers_check' warnings:
 > 
-> On Sat, 2009-06-27 at 22:35 +0530, Jaswinder Singh Rajput wrote:
-> > userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
-> > and scsi_device_type defined in kernel
-> > 
-> > fix the following 'make headers_check' warnings:
-> > 
-> >   usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
-> >   usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  include/scsi/scsi.h |   13 +++++++------
-> >  1 files changed, 7 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-> > index 084478e..7ba5acf 100644
-> > --- a/include/scsi/scsi.h
-> > +++ b/include/scsi/scsi.h
-> > @@ -156,9 +156,6 @@ scsi_varlen_cdb_length(const void *hdr)
-> >  	return ((struct scsi_varlen_cdb_hdr *)hdr)->additional_cdb_length + 8;
-> >  }
-> >  
-> > -extern const unsigned char scsi_command_size_tbl[8];
-> > -#define COMMAND_SIZE(opcode) scsi_command_size_tbl[((opcode) >> 5) & 7]
-> > -
-> >  static inline unsigned
-> >  scsi_command_size(const unsigned char *cmnd)
-> >  {
-> > @@ -166,6 +163,13 @@ scsi_command_size(const unsigned char *cmnd)
-> >  		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
+>   usr/include/linux/netfilter/xt_osf.h:40: found __[us]{8,16,32,64} type without #include <linux/types.h>
 > 
-> Even a simple eyeball inspection of this patch shows that the removal of
-> COMMAND_SIZE above causes this inline function to fail to compile.
-> 
-> If you can't be bothered even to read your own patches or at the very
-> least compile test them, what makes you think I should bother reading
-> anything you send in?
-> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-oops I am sorry, actually it should be RFC I want to check whether I
-need to cover more member under __KERNEL__
+Looks good, thank you.
+Patrick, please apply.
 
-[RFC][PATCH] SCSI: userspace cannot use scsi_command_size_tbl, scsi_device_type and friends
-
-userspace cannot use scsi_command_size_tbl and scsi_device_type defined in kernel
-as well as its friends :
-
-- SCSI_MAX_VARLEN_CDB_SIZE
-- COMMAND_SIZE
-- struct scsi_varlen_cdb_hdr
-- scsi_varlen_cdb_length()
-- scsi_command_size()
-
-fix the following 'make headers_check' warnings:
-
-  usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
-  usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- include/scsi/scsi.h |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index 084478e..5ac0157 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -134,6 +134,7 @@ struct scsi_cmnd;
- #define	ATA_16		      0x85	/* 16-byte pass-thru */
- #define	ATA_12		      0xa1	/* 12-byte pass-thru */
- 
-+#ifdef __KERNEL__
- /*
-  *	SCSI command lengths
-  */
-@@ -166,6 +167,9 @@ scsi_command_size(const unsigned char *cmnd)
- 		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
- }
- 
-+/* Returns a human-readable name for the device */
-+extern const char * scsi_device_type(unsigned type);
-+#endif
- /*
-  *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
-  *  T10/1561-D Revision 4 Draft dated 7th November 2002.
-@@ -281,9 +285,6 @@ enum scsi_protocol {
- 	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
- };
- 
--/* Returns a human-readable name for the device */
--extern const char * scsi_device_type(unsigned type);
--
- /*
-  * standard mode-select header prepended to all mode-select commands
-  */
 -- 
-1.6.0.6
-
-
-
+	Evgeniy Polyakov
