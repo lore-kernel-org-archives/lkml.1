@@ -1,615 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZF0TH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbZF0TMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZF0TH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 15:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZF0THT
+	id S1755384AbZF0TMP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 15:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZF0TMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 15:07:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35925 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZF0THR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 15:07:17 -0400
-Subject: [PATCH -tip RESEND] perf_counter x86: fix cache_event_ids table
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 00:36:48 +0530
-Message-Id: <1246129608.32198.29.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sat, 27 Jun 2009 15:12:10 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:40423 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZF0TMJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 15:12:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JkrVGID4LwNviw6I2vhcighZBZwNXiGRpLgWojdV9bCFipiH0B39D48kqHNjqJh6bY
+         9m0ZBn71ITr3FD9MhAHJmG0BDY5tmdtO45olFupQ2tElq/idZkcFRAJ9rMdrZkmILi4u
+         jrvhUylv/YbmVf4uORxfnUY8y8wxPL7ilWsv0=
+MIME-Version: 1.0
+In-Reply-To: <b6a2187b0906271109q2194cadbv8d20b4bda82bde19@mail.gmail.com>
+References: <4A44EBEE.9070503@numericable.fr>
+	 <200906262139.23367.bzolnier@gmail.com>
+	 <4A45E095.5070608@numericable.fr>
+	 <b6a2187b0906271109q2194cadbv8d20b4bda82bde19@mail.gmail.com>
+Date: Sun, 28 Jun 2009 03:12:11 +0800
+Message-ID: <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
+Subject: Re: [REGRESSION] 2.6.29=>2.6.30 suspend to ram regression (IDE 
+	related)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Etienne Basset <etienne.basset@numericable.fr>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, davem@davemloft.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jun 28, 2009 at 2:09 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
+> On Sat, Jun 27, 2009 at 5:04 PM, Etienne
+> Basset<etienne.basset@numericable.fr> wrote:
+>>>> kernel v2.6.29 suspends to RAM reliably on my computer; v2.6.30 doesn't resume after STR
+>
+> Same problem on Thinkpad X61. STD STR suspended ok. Upon resume,
+> everything "seems" fine for about 100 seconds. Then mouse, keyboard
+> frozen.
+>
+>>>> I tried also 2.6.31-rc1 doesn't work either
+>>>> etienne@etienne-desktop:~/linux-2.6$ git bisect bad
+>>>> 2f0d0fd2a605666d38e290c5c0d2907484352dc4 is first bad commit
+>>>
+>>> Does the following patch fix it?
+>> Yes, it works now
+>
+> Works for me too with the patch.
 
-Fixed followings in cache_event_ids table without changing any logic:
-1. made it easier (3 dimension to 1 dimension array)
-2. make more space for comments
-3. decrease number of lines
-4. fixed style problems
-5. fixed 80 characters issues
+UPDATE ...
 
-Style problems in arch/x86/kernel/cpu/perf_counter.c :
+STR able to resume and works after >100 seconds
 
-Before :
-  total: 492 errors, 32 warnings, 1713 lines checked
-After :
-  total: 0 errors, 10 warnings, 1537 lines checked
+STD able to resume but failed after 100 seconds (could be 300 seconds)
+but eventually failed. Everything seems ok, but mouse and keyboard
+just freezed suddenly. Just haven't really time it enough.
 
-Fixed : 492 errors, 22 warnings and Reduced 176 lines.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/perf_counter.c |  530 ++++++++++++------------------------
- 1 files changed, 177 insertions(+), 353 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index a310d19..8e1f497 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -92,284 +92,154 @@ static u64 intel_pmu_event_map(int event)
-  * ID.
-  */
- 
--#define C(x) PERF_COUNT_HW_CACHE_##x
-+#define PERF_COUNT_HW_CACHE_RESULT_MISSES PERF_COUNT_HW_CACHE_RESULT_MISS
-+#define C(x, y, z) \
-+ ((PERF_COUNT_HW_CACHE_##x * PERF_COUNT_HW_CACHE_OP_MAX *		\
-+   PERF_COUNT_HW_CACHE_RESULT_MAX) + PERF_COUNT_HW_CACHE_RESULT_##z +	\
-+  (PERF_COUNT_HW_CACHE_OP_##y * PERF_COUNT_HW_CACHE_RESULT_MAX))
-+
-+#define PERF_CACHE_MAX \
-+	(PERF_COUNT_HW_CACHE_MAX * PERF_COUNT_HW_CACHE_OP_MAX *		\
-+	 PERF_COUNT_HW_CACHE_RESULT_MAX)
- 
- static u64 __read_mostly hw_cache_event_ids
- 				[PERF_COUNT_HW_CACHE_MAX]
- 				[PERF_COUNT_HW_CACHE_OP_MAX]
- 				[PERF_COUNT_HW_CACHE_RESULT_MAX];
- 
--static const u64 nehalem_hw_cache_event_ids
--				[PERF_COUNT_HW_CACHE_MAX]
--				[PERF_COUNT_HW_CACHE_OP_MAX]
--				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-+static const u64 nehalem_hw_cache_event_ids[PERF_CACHE_MAX] =
- {
-- [ C(L1D) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f40, /* L1D_CACHE_LD.MESI            */
--		[ C(RESULT_MISS)   ] = 0x0140, /* L1D_CACHE_LD.I_STATE         */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f41, /* L1D_CACHE_ST.MESI            */
--		[ C(RESULT_MISS)   ] = 0x0141, /* L1D_CACHE_ST.I_STATE         */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x014e, /* L1D_PREFETCH.REQUESTS        */
--		[ C(RESULT_MISS)   ] = 0x024e, /* L1D_PREFETCH.MISS            */
--	},
-- },
-- [ C(L1I ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0380, /* L1I.READS                    */
--		[ C(RESULT_MISS)   ] = 0x0280, /* L1I.MISSES                   */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0,
--		[ C(RESULT_MISS)   ] = 0x0,
--	},
-- },
-- [ C(LL  ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0324, /* L2_RQSTS.LOADS               */
--		[ C(RESULT_MISS)   ] = 0x0224, /* L2_RQSTS.LD_MISS             */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0c24, /* L2_RQSTS.RFOS                */
--		[ C(RESULT_MISS)   ] = 0x0824, /* L2_RQSTS.RFO_MISS            */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x4f2e, /* LLC Reference                */
--		[ C(RESULT_MISS)   ] = 0x412e, /* LLC Misses                   */
--	},
-- },
-- [ C(DTLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f40, /* L1D_CACHE_LD.MESI   (alias)  */
--		[ C(RESULT_MISS)   ] = 0x0108, /* DTLB_LOAD_MISSES.ANY         */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f41, /* L1D_CACHE_ST.MESI   (alias)  */
--		[ C(RESULT_MISS)   ] = 0x010c, /* MEM_STORE_RETIRED.DTLB_MISS  */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0,
--		[ C(RESULT_MISS)   ] = 0x0,
--	},
-- },
-- [ C(ITLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x01c0, /* INST_RETIRED.ANY_P           */
--		[ C(RESULT_MISS)   ] = 0x20c8, /* ITLB_MISS_RETIRED            */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-- [ C(BPU ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c4, /* BR_INST_RETIRED.ALL_BRANCHES */
--		[ C(RESULT_MISS)   ] = 0x03e8, /* BPU_CLEARS.ANY               */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-+ [C(L1D,  READ,     ACCESS)] = 0x0f40, /* L1D_CACHE_LD.MESI		*/
-+ [C(L1D,  READ,     MISSES)] = 0x0140, /* L1D_CACHE_LD.I_STATE		*/
-+ [C(L1D,  WRITE,    ACCESS)] = 0x0f41, /* L1D_CACHE_ST.MESI		*/
-+ [C(L1D,  WRITE,    MISSES)] = 0x0141, /* L1D_CACHE_ST.I_STATE		*/
-+ [C(L1D,  PREFETCH, ACCESS)] = 0x014e, /* L1D_PREFETCH.REQUESTS		*/
-+ [C(L1D,  PREFETCH, MISSES)] = 0x024e, /* L1D_PREFETCH.MISS		*/
-+
-+ [C(L1I,  READ,     ACCESS)] = 0x0380, /* L1I.READS			*/
-+ [C(L1I,  READ,     MISSES)] = 0x0280, /* L1I.MISSES			*/
-+ [C(L1I,  WRITE,    ACCESS)] = -1,
-+ [C(L1I,  WRITE,    MISSES)] = -1,
-+ [C(L1I,  PREFETCH, ACCESS)] = 0,
-+ [C(L1I,  PREFETCH, MISSES)] = 0,
-+
-+ [C(LL,   READ,     ACCESS)] = 0x0324, /* L2_RQSTS.LOADS		*/
-+ [C(LL,   READ,     MISSES)] = 0x0224, /* L2_RQSTS.LD_MISS		*/
-+ [C(LL,   WRITE,    ACCESS)] = 0x0c24, /* L2_RQSTS.RFOS			*/
-+ [C(LL,   WRITE,    MISSES)] = 0x0824, /* L2_RQSTS.RFO_MISS		*/
-+ [C(LL,   PREFETCH, ACCESS)] = 0x4f2e, /* LLC Reference			*/
-+ [C(LL,   PREFETCH, MISSES)] = 0x412e, /* LLC Misses			*/
-+
-+ [C(DTLB, READ,     ACCESS)] = 0x0f40, /* L1D_CACHE_LD.MESI   (alias)	*/
-+ [C(DTLB, READ,     MISSES)] = 0x0108, /* DTLB_LOAD_MISSES.ANY		*/
-+ [C(DTLB, WRITE,    ACCESS)] = 0x0f41, /* L1D_CACHE_ST.MESI   (alias)	*/
-+ [C(DTLB, WRITE,    MISSES)] = 0x010c, /* MEM_STORE_RETIRED.DTLB_MISS	*/
-+ [C(DTLB, PREFETCH, ACCESS)] = 0,
-+ [C(DTLB, PREFETCH, MISSES)] = 0,
-+
-+ [C(ITLB, READ,     ACCESS)] = 0x01c0, /* INST_RETIRED.ANY_P		*/
-+ [C(ITLB, READ,     MISSES)] = 0x20c8, /* ITLB_MISS_RETIRED		*/
-+ [C(ITLB, WRITE,    ACCESS)] = -1,
-+ [C(ITLB, WRITE,    MISSES)] = -1,
-+ [C(ITLB, PREFETCH, ACCESS)] = -1,
-+ [C(ITLB, PREFETCH, MISSES)] = -1,
-+
-+ [C(BPU,  READ,     ACCESS)] = 0x00c4, /* BR_INST_RETIRED.ALL_BRANCHES	*/
-+ [C(BPU,  READ,     MISSES)] = 0x03e8, /* BPU_CLEARS.ANY		*/
-+ [C(BPU,  WRITE,    ACCESS)] = -1,
-+ [C(BPU,  WRITE,    MISSES)] = -1,
-+ [C(BPU,  PREFETCH, ACCESS)] = -1,
-+ [C(BPU,  PREFETCH, MISSES)] = -1,
- };
- 
--static const u64 core2_hw_cache_event_ids
--				[PERF_COUNT_HW_CACHE_MAX]
--				[PERF_COUNT_HW_CACHE_OP_MAX]
--				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-+static const u64 core2_hw_cache_event_ids[PERF_CACHE_MAX] =
- {
-- [ C(L1D) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f40, /* L1D_CACHE_LD.MESI          */
--		[ C(RESULT_MISS)   ] = 0x0140, /* L1D_CACHE_LD.I_STATE       */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f41, /* L1D_CACHE_ST.MESI          */
--		[ C(RESULT_MISS)   ] = 0x0141, /* L1D_CACHE_ST.I_STATE       */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x104e, /* L1D_PREFETCH.REQUESTS      */
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(L1I ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0080, /* L1I.READS                  */
--		[ C(RESULT_MISS)   ] = 0x0081, /* L1I.MISSES                 */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(LL  ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x4f29, /* L2_LD.MESI                 */
--		[ C(RESULT_MISS)   ] = 0x4129, /* L2_LD.ISTATE               */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x4f2A, /* L2_ST.MESI                 */
--		[ C(RESULT_MISS)   ] = 0x412A, /* L2_ST.ISTATE               */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(DTLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f40, /* L1D_CACHE_LD.MESI  (alias) */
--		[ C(RESULT_MISS)   ] = 0x0208, /* DTLB_MISSES.MISS_LD        */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0f41, /* L1D_CACHE_ST.MESI  (alias) */
--		[ C(RESULT_MISS)   ] = 0x0808, /* DTLB_MISSES.MISS_ST        */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(ITLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c0, /* INST_RETIRED.ANY_P         */
--		[ C(RESULT_MISS)   ] = 0x1282, /* ITLBMISSES                 */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-- [ C(BPU ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c4, /* BR_INST_RETIRED.ANY        */
--		[ C(RESULT_MISS)   ] = 0x00c5, /* BP_INST_RETIRED.MISPRED    */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-+ [C(L1D,  READ,     ACCESS)] = 0x0f40, /* L1D_CACHE_LD.MESI		*/
-+ [C(L1D,  READ,     MISSES)] = 0x0140, /* L1D_CACHE_LD.I_STATE		*/
-+ [C(L1D,  WRITE,    ACCESS)] = 0x0f41, /* L1D_CACHE_ST.MESI		*/
-+ [C(L1D,  WRITE,    MISSES)] = 0x0141, /* L1D_CACHE_ST.I_STATE		*/
-+ [C(L1D,  PREFETCH, ACCESS)] = 0x104e, /* L1D_PREFETCH.REQUESTS		*/
-+ [C(L1D,  PREFETCH, MISSES)] = 0,
-+
-+ [C(L1I,  READ,     ACCESS)] = 0x0080, /* L1I.READS			*/
-+ [C(L1I,  READ,     MISSES)] = 0x0081, /* L1I.MISSES			*/
-+ [C(L1I,  WRITE,    ACCESS)] = -1,
-+ [C(L1I,  WRITE,    MISSES)] = -1,
-+ [C(L1I,  PREFETCH, ACCESS)] = 0,
-+ [C(L1I,  PREFETCH, MISSES)] = 0,
-+
-+ [C(LL,   READ,     ACCESS)] = 0x4f29, /* L2_LD.MESI			*/
-+ [C(LL,   READ,     MISSES)] = 0x4129, /* L2_LD.ISTATE			*/
-+ [C(LL,   WRITE,    ACCESS)] = 0x4f2A, /* L2_ST.MESI			*/
-+ [C(LL,   WRITE,    MISSES)] = 0x412A, /* L2_ST.ISTATE			*/
-+ [C(LL,   PREFETCH, ACCESS)] = 0,
-+ [C(LL,   PREFETCH, MISSES)] = 0,
-+
-+ [C(DTLB, READ,     ACCESS)] = 0x0f40, /* L1D_CACHE_LD.MESI  (alias)	*/
-+ [C(DTLB, READ,     MISSES)] = 0x0208, /* DTLB_MISSES.MISS_LD		*/
-+ [C(DTLB, WRITE,    ACCESS)] = 0x0f41, /* L1D_CACHE_ST.MESI  (alias)	*/
-+ [C(DTLB, WRITE,    MISSES)] = 0x0808, /* DTLB_MISSES.MISS_ST		*/
-+ [C(DTLB, PREFETCH, ACCESS)] = 0,
-+ [C(DTLB, PREFETCH, MISSES)] = 0,
-+
-+ [C(ITLB, READ,     ACCESS)] = 0x00c0, /* INST_RETIRED.ANY_P		*/
-+ [C(ITLB, READ,     MISSES)] = 0x1282, /* ITLBMISSES			*/
-+ [C(ITLB, WRITE,    ACCESS)] = -1,
-+ [C(ITLB, WRITE,    MISSES)] = -1,
-+ [C(ITLB, PREFETCH, ACCESS)] = -1,
-+ [C(ITLB, PREFETCH, MISSES)] = -1,
-+
-+ [C(BPU,  READ,     ACCESS)] = 0x00c4, /* BR_INST_RETIRED.ANY		*/
-+ [C(BPU,  READ,     MISSES)] = 0x00c5, /* BP_INST_RETIRED.MISPRED	*/
-+ [C(BPU,  WRITE,    ACCESS)] = -1,
-+ [C(BPU,  WRITE,    MISSES)] = -1,
-+ [C(BPU,  PREFETCH, ACCESS)] = -1,
-+ [C(BPU,  PREFETCH, MISSES)] = -1,
- };
- 
--static const u64 atom_hw_cache_event_ids
--				[PERF_COUNT_HW_CACHE_MAX]
--				[PERF_COUNT_HW_CACHE_OP_MAX]
--				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-+static const u64 atom_hw_cache_event_ids[PERF_CACHE_MAX] =
- {
-- [ C(L1D) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x2140, /* L1D_CACHE.LD               */
--		[ C(RESULT_MISS)   ] = 0,
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x2240, /* L1D_CACHE.ST               */
--		[ C(RESULT_MISS)   ] = 0,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(L1I ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0380, /* L1I.READS                  */
--		[ C(RESULT_MISS)   ] = 0x0280, /* L1I.MISSES                 */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(LL  ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x4f29, /* L2_LD.MESI                 */
--		[ C(RESULT_MISS)   ] = 0x4129, /* L2_LD.ISTATE               */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x4f2A, /* L2_ST.MESI                 */
--		[ C(RESULT_MISS)   ] = 0x412A, /* L2_ST.ISTATE               */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(DTLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x2140, /* L1D_CACHE_LD.MESI  (alias) */
--		[ C(RESULT_MISS)   ] = 0x0508, /* DTLB_MISSES.MISS_LD        */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x2240, /* L1D_CACHE_ST.MESI  (alias) */
--		[ C(RESULT_MISS)   ] = 0x0608, /* DTLB_MISSES.MISS_ST        */
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(ITLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c0, /* INST_RETIRED.ANY_P         */
--		[ C(RESULT_MISS)   ] = 0x0282, /* ITLB.MISSES                */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-- [ C(BPU ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c4, /* BR_INST_RETIRED.ANY        */
--		[ C(RESULT_MISS)   ] = 0x00c5, /* BP_INST_RETIRED.MISPRED    */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-+ [C(L1D,  READ,     ACCESS)] = 0x2140, /* L1D_CACHE.LD			*/
-+ [C(L1D,  READ,     MISSES)] = 0,
-+ [C(L1D,  WRITE,    ACCESS)] = 0x2240, /* L1D_CACHE.ST			*/
-+ [C(L1D,  WRITE,    MISSES)] = 0,
-+ [C(L1D,  PREFETCH, ACCESS)] = 0,
-+ [C(L1D,  PREFETCH, MISSES)] = 0,
-+
-+ [C(L1I,  READ,     ACCESS)] = 0x0380, /* L1I.READS			*/
-+ [C(L1I,  READ,     MISSES)] = 0x0280, /* L1I.MISSES			*/
-+ [C(L1I,  WRITE,    ACCESS)] = -1,
-+ [C(L1I,  WRITE,    MISSES)] = -1,
-+ [C(L1I,  PREFETCH, ACCESS)] = 0,
-+ [C(L1I,  PREFETCH, MISSES)] = 0,
-+
-+ [C(LL,   READ,     ACCESS)] = 0x4f29, /* L2_LD.MESI			*/
-+ [C(LL,   READ,     MISSES)] = 0x4129, /* L2_LD.ISTATE			*/
-+ [C(LL,   WRITE,    ACCESS)] = 0x4f2A, /* L2_ST.MESI			*/
-+ [C(LL,   WRITE,    MISSES)] = 0x412A, /* L2_ST.ISTATE			*/
-+ [C(LL,   PREFETCH, ACCESS)] = 0,
-+ [C(LL,   PREFETCH, MISSES)] = 0,
-+
-+ [C(DTLB, READ,     ACCESS)] = 0x2140, /* L1D_CACHE_LD.MESI  (alias)	*/
-+ [C(DTLB, READ,     MISSES)] = 0x0508, /* DTLB_MISSES.MISS_LD		*/
-+ [C(DTLB, WRITE,    ACCESS)] = 0x2240, /* L1D_CACHE_ST.MESI  (alias)	*/
-+ [C(DTLB, WRITE,    MISSES)] = 0x0608, /* DTLB_MISSES.MISS_ST		*/
-+ [C(DTLB, PREFETCH, ACCESS)] = 0,
-+ [C(DTLB, PREFETCH, MISSES)] = 0,
-+
-+ [C(ITLB, READ,     ACCESS)] = 0x00c0, /* INST_RETIRED.ANY_P		*/
-+ [C(ITLB, READ,     MISSES)] = 0x0282, /* ITLB.MISSES			*/
-+ [C(ITLB, WRITE,    ACCESS)] = -1,
-+ [C(ITLB, WRITE,    MISSES)] = -1,
-+ [C(ITLB, PREFETCH, ACCESS)] = -1,
-+ [C(ITLB, PREFETCH, MISSES)] = -1,
-+
-+ [C(BPU,  READ,     ACCESS)] = 0x00c4, /* BR_INST_RETIRED.ANY		*/
-+ [C(BPU,  READ,     MISSES)] = 0x00c5, /* BP_INST_RETIRED.MISPRED	*/
-+ [C(BPU,  WRITE,    ACCESS)] = -1,
-+ [C(BPU,  WRITE,    MISSES)] = -1,
-+ [C(BPU,  PREFETCH, ACCESS)] = -1,
-+ [C(BPU,  PREFETCH, MISSES)] = -1,
- };
- 
- static u64 intel_pmu_raw_event(u64 event)
-@@ -390,95 +260,49 @@ static u64 intel_pmu_raw_event(u64 event)
- 	return event & CORE_EVNTSEL_MASK;
- }
- 
--static const u64 amd_hw_cache_event_ids
--				[PERF_COUNT_HW_CACHE_MAX]
--				[PERF_COUNT_HW_CACHE_OP_MAX]
--				[PERF_COUNT_HW_CACHE_RESULT_MAX] =
-+static const u64 amd_hw_cache_event_ids[PERF_CACHE_MAX] =
- {
-- [ C(L1D) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
--		[ C(RESULT_MISS)   ] = 0x0041, /* Data Cache Misses          */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0142, /* Data Cache Refills :system */
--		[ C(RESULT_MISS)   ] = 0,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0267, /* Data Prefetcher :attempts  */
--		[ C(RESULT_MISS)   ] = 0x0167, /* Data Prefetcher :cancelled */
--	},
-- },
-- [ C(L1I ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0080, /* Instruction cache fetches  */
--		[ C(RESULT_MISS)   ] = 0x0081, /* Instruction cache misses   */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0x014B, /* Prefetch Instructions :Load */
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(LL  ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x037D, /* Requests to L2 Cache :IC+DC */
--		[ C(RESULT_MISS)   ] = 0x037E, /* L2 Cache Misses : IC+DC     */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0x017F, /* L2 Fill/Writeback           */
--		[ C(RESULT_MISS)   ] = 0,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(DTLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0040, /* Data Cache Accesses        */
--		[ C(RESULT_MISS)   ] = 0x0046, /* L1 DTLB and L2 DLTB Miss   */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = 0,
--		[ C(RESULT_MISS)   ] = 0,
--	},
-- },
-- [ C(ITLB) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x0080, /* Instruction fecthes        */
--		[ C(RESULT_MISS)   ] = 0x0085, /* Instr. fetch ITLB misses   */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-- [ C(BPU ) ] = {
--	[ C(OP_READ) ] = {
--		[ C(RESULT_ACCESS) ] = 0x00c2, /* Retired Branch Instr.      */
--		[ C(RESULT_MISS)   ] = 0x00c3, /* Retired Mispredicted BI    */
--	},
--	[ C(OP_WRITE) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
--	[ C(OP_PREFETCH) ] = {
--		[ C(RESULT_ACCESS) ] = -1,
--		[ C(RESULT_MISS)   ] = -1,
--	},
-- },
-+ [C(L1D,  READ,     ACCESS)] = 0x0040, /* Data Cache Accesses		*/
-+ [C(L1D,  READ,     MISSES)] = 0x0041, /* Data Cache Misses		*/
-+ [C(L1D,  WRITE,    ACCESS)] = 0x0142, /* Data Cache Refills :system	*/
-+ [C(L1D,  WRITE,    MISSES)] = 0,
-+ [C(L1D,  PREFETCH, ACCESS)] = 0x0267, /* Data Prefetcher :attempts	*/
-+ [C(L1D,  PREFETCH, MISSES)] = 0x0167, /* Data Prefetcher :cancelled	*/
-+
-+ [C(L1I,  READ,     ACCESS)] = 0x0080, /* Instruction cache fetches	*/
-+ [C(L1I,  READ,     MISSES)] = 0x0081, /* Instruction cache misses	*/
-+ [C(L1I,  WRITE,    ACCESS)] = -1,
-+ [C(L1I,  WRITE,    MISSES)] = -1,
-+ [C(L1I,  PREFETCH, ACCESS)] = 0x014B, /* Prefetch Instructions :Load	*/
-+ [C(L1I,  PREFETCH, MISSES)] = 0,
-+
-+ [C(LL,   READ,     ACCESS)] = 0x037D, /* Requests to L2 Cache :IC+DC	*/
-+ [C(LL,   READ,     MISSES)] = 0x037E, /* L2 Cache Misses : IC+DC	*/
-+ [C(LL,   WRITE,    ACCESS)] = 0x017F, /* L2 Fill/Writeback		*/
-+ [C(LL,   WRITE,    MISSES)] = 0,
-+ [C(LL,   PREFETCH, ACCESS)] = 0,
-+ [C(LL,   PREFETCH, MISSES)] = 0,
-+
-+ [C(DTLB, READ,     ACCESS)] = 0x0040, /* Data Cache Accesses		*/
-+ [C(DTLB, READ,     MISSES)] = 0x0046, /* L1 DTLB and L2 DLTB Miss	*/
-+ [C(DTLB, WRITE,    ACCESS)] = 0,
-+ [C(DTLB, WRITE,    MISSES)] = 0,
-+ [C(DTLB, PREFETCH, ACCESS)] = 0,
-+ [C(DTLB, PREFETCH, MISSES)] = 0,
-+
-+ [C(ITLB, READ,     ACCESS)] = 0x0080, /* Instruction fecthes		*/
-+ [C(ITLB, READ,     MISSES)] = 0x0085, /* Instr. fetch ITLB misses	*/
-+ [C(ITLB, WRITE,    ACCESS)] = -1,
-+ [C(ITLB, WRITE,    MISSES)] = -1,
-+ [C(ITLB, PREFETCH, ACCESS)] = -1,
-+ [C(ITLB, PREFETCH, MISSES)] = -1,
-+
-+ [C(BPU,  READ,     ACCESS)] = 0x00c2, /* Retired Branch Instruction	*/
-+ [C(BPU,  READ,     MISSES)] = 0x00c3, /* Retired Mispredicted BI	*/
-+ [C(BPU,  WRITE,    ACCESS)] = -1,
-+ [C(BPU,  WRITE,    MISSES)] = -1,
-+ [C(BPU,  PREFETCH, ACCESS)] = -1,
-+ [C(BPU,  PREFETCH, MISSES)] = -1,
- };
- 
- /*
--- 
-1.6.0.6
-
-
-
+Jeff.
