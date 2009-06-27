@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbZF0Lou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZF0L5C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbZF0Lou (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 07:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZF0Lom
+	id S1755728AbZF0L5C (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 07:57:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZF0L4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 07:44:42 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60937 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZF0Lok (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 07:44:40 -0400
-Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
- Mapping Support
-From: David Woodhouse <dwmw2@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Wright <chrisw@redhat.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, fenghua.yu@intel.com,
-       akpm@linux-foundation.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain>
-References: <20090625003841.GA12226@linux-os.sc.intel.com>
-	 <20090625095643F.fujita.tomonori@lab.ntt.co.jp>
-	 <20090625041605.GA9330@linux-os.sc.intel.com>
-	 <20090625134827W.fujita.tomonori@lab.ntt.co.jp>
-	 <1245913886.17089.91.camel@macbook.infradead.org>
-	 <1245966743.30355.42.camel@macbook.infradead.org>
-	 <20090625234342.GD28176@x200.localdomain>
-	 <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain>
-	 <20090626015205.GE28176@x200.localdomain>
-	 <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 12:44:09 +0100
-Message-Id: <1246103049.663.437.camel@macbook.infradead.org>
+	Sat, 27 Jun 2009 07:56:52 -0400
+Received: from cmpxchg.org ([85.214.51.133]:59846 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751216AbZF0L4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 07:56:51 -0400
+Date: Sat, 27 Jun 2009 13:53:07 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 0/3] make mapped executable pages the first class citizen
+Message-ID: <20090627115306.GA1741@cmpxchg.org>
+References: <7561.1245768237@redhat.com> <20090624023251.GA16483@localhost> <20090624114055.225D.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624114055.225D.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-25 at 19:00 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 25 Jun 2009, Chris Wright wrote:
-> > I tested it on x86; works fine and creates a slightly tighter set of page
-> > tables (matching to e820).  But I don't have an IA-64 box w/ an IOMMU.
+On Wed, Jun 24, 2009 at 11:43:21AM +0900, KOSAKI Motohiro wrote:
+> > On Tue, Jun 23, 2009 at 10:43:57PM +0800, David Howells wrote:
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > David, could you try running this when it occurred again?
+> > > > 
+> > > >         make Documentation/vm/page-types
+> > > >         Documentation/vm/page-types --raw  # run as root
+> > > 
+> > > Okay.  I managed to catch it between the first and second OOMs, and ran the
+> > > command you asked for.
 > > 
-> > It does have one problem, however, the graphics work around code isn't
-> > compiled in on IA-64, so it needs:
+> > Thank you!
+> > 
+> > > 0x0000000000000000	    142261      555  ________________________________	
+> > > 0x0000000000000400	      6797       26  __________B_____________________	buddy
+> > 
+> > The buddy+free numbers are pretty high. 26MB PG_buddy pages means much
+> > more actual free pages. So I bet the 555MB no-flag pages are mostly free pages.
 > 
-> Ok. Sounds like what I want is to get this patch through the ia64 people, 
-> after it has gotten some testing there. Since ia64 is where the current 
-> kernel fails anyway, that sounds like the motivation will be there too.
-> 
-> And there's little point in me merging it until it's been tested to fix 
-> the actual problem we have now.
+> You mean our VM can make OOM although it have 600MB free pages?
 
-Well, the main problem is that the kernel doesn't build -- and it _has_
-been tested to fix that.
-
-As long as the daily linux-next test builds work, nobody really seems to
-_care_ about VT-d on IA64 -- certainly not enough to get me a box when
-they asked me to become VT-d maintainer.
-
-Now that I chase it up, I've received only one test report and that was
-"oh, even 2.6.29 doesn't boot on this box with VT-d enabled".
-
-The patch _does_ fix the build breakage, definitely seems to be doing
-the right thing, and the worst case is that the new feature doesn't work
-on IA64. So I think we should merge it.
-
-I'll bash some heads together and try to get myself some hardware so I
-can actually test it on IA64 -- it looks like we have more problems
-there than the small possibility that the new passthrough feature might
-do the wrong thing (and in fact I suspect all IA64 VT-d hardware is new
-enough to have the _hardware_ passthrough anyway, so won't need this
-identity mapping set up at all).
-
-Please pull Chris's fix from
-	git://git.infradead.org/iommu-2.6.git
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+No, it has 600MB free pages after an OOM - which only means that the
+OOM killer did a good job ;-)
