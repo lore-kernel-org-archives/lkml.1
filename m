@@ -1,196 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZF0Hzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZF0H5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbZF0Hzo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 03:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbZF0Hze
+	id S1753240AbZF0H5U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 03:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZF0H5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 03:55:34 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:34359 "EHLO mgw1.diku.dk"
+	Sat, 27 Jun 2009 03:57:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39727 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751079AbZF0Hzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 03:55:32 -0400
-Date: Sat, 27 Jun 2009 09:55:32 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] drivers/mtd: use BLOCK_NIL
-Message-ID: <Pine.LNX.4.64.0906270954290.2729@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751287AbZF0H5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 03:57:12 -0400
+Subject: Re: [tip:perfcounters/urgent] perf stat: Add -n/--null option to
+ run without counters
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-0cfb7a13b8e4e0afd4b856156ab16a182de7505b@git.kernel.org>
+References: <new-submission>
+	 <tip-0cfb7a13b8e4e0afd4b856156ab16a182de7505b@git.kernel.org>
+Content-Type: text/plain
+Date: Sat, 27 Jun 2009 13:26:24 +0530
+Message-Id: <1246089384.2961.5.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Sat, 2009-06-27 at 04:31 +0000, tip-bot for Ingo Molnar wrote:
+> Commit-ID:  0cfb7a13b8e4e0afd4b856156ab16a182de7505b
+> Gitweb:     http://git.kernel.org/tip/0cfb7a13b8e4e0afd4b856156ab16a182de7505b
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Sat, 27 Jun 2009 06:10:30 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sat, 27 Jun 2009 06:11:24 +0200
+> 
+> perf stat: Add -n/--null option to run without counters
+> 
+> Allow a no-counters run. This can be useful to measure just
+> elapsed wall-clock time - or to assess the raw overhead of perf
+> stat itself, without running any counters.
+> 
 
-Use BLOCK_NIL consistently rather than sometimes 0xffff and sometimes
-BLOCK_NIL.
+Why it better then $ time <command>
 
-The semantic patch that finds this issue is below
-(http://www.emn.fr/x-info/coccinelle/).  On the other hand, the changes
-were made by hand, in part because drivers/mtd/inftlcore.c contains dead
-code that causes spatch to ignore a relevant function.  Specifically, the
-function INFTL_findwriteunit contains a do-while loop, but always takes a
-return that leaves the loop on the first iteration.
+Any way this patch is broken. 
 
-// <smpl>
-@r exists@
-identifier f,C;
-@@
+Why you are allocating :
+memcpy(attrs, default_attrs, sizeof(attrs)); when null_run is set.
 
-f(...) { ... return C; }
+To get better picture and solution, Please check [PATCH] perf stat: fix
+default attrs and nr_counters
 
-@s@
-identifier r.C;
-expression E;
-@@
+which I send in "Re: [PATCH -tip] perf_counter tools: add support to set
+of multiple events in one short" send on Fri, 26 Jun 2009 18:08:40 +0530
 
-#define C E
+Thanks,
 
-@@
-identifier r.f,r.C,I;
-expression s.E;
-@@
+--
+JSR
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> LKML-Reference: <new-submission>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  tools/perf/builtin-stat.c |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+> index 8420ec5..cdcd058 100644
+> --- a/tools/perf/builtin-stat.c
+> +++ b/tools/perf/builtin-stat.c
+> @@ -70,6 +70,7 @@ static int			run_count			=  1;
+>  static int			inherit				=  1;
+>  static int			scale				=  1;
+>  static int			target_pid			= -1;
+> +static int			null_run			=  0;
+>  
+>  static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+>  
+> @@ -461,6 +462,8 @@ static const struct option options[] = {
+>  		    "be more verbose (show counter open errors, etc)"),
+>  	OPT_INTEGER('r', "repeat", &run_count,
+>  		    "repeat command and print average + stddev (max: 100)"),
+> +	OPT_BOOLEAN('n', "null", &null_run,
+> +		    "null run - dont start any counters"),
+>  	OPT_END()
+>  };
+>  
+> @@ -476,7 +479,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
+>  	if (run_count <= 0 || run_count > MAX_RUN)
+>  		usage_with_options(stat_usage, options);
+>  
+> -	if (!nr_counters)
+> +	if (!null_run && !nr_counters)
+>  		nr_counters = 8;
+>  
+>  	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-f(...) {
- <...
-(
-  I
-|
-- E
-+ C
-)
- ...>
-}
-
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/mtd/inftlcore.c |   11 ++++++-----
- drivers/mtd/nftlcore.c  |   16 ++++++++--------
- 2 files changed, 14 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/mtd/inftlcore.c b/drivers/mtd/inftlcore.c
-index 73f0522..d8cf29c 100644
---- a/drivers/mtd/inftlcore.c
-+++ b/drivers/mtd/inftlcore.c
-@@ -226,7 +226,7 @@ static u16 INFTL_findfreeblock(struct INFTLrecord *inftl, int desperate)
- 	if (!desperate && inftl->numfreeEUNs < 2) {
- 		DEBUG(MTD_DEBUG_LEVEL1, "INFTL: there are too few free "
- 			"EUNs (%d)\n", inftl->numfreeEUNs);
--		return 0xffff;
-+		return BLOCK_NIL;
- 	}
- 
- 	/* Scan for a free block */
-@@ -281,7 +281,8 @@ static u16 INFTL_foldchain(struct INFTLrecord *inftl, unsigned thisVUC, unsigned
- 	silly = MAX_LOOPS;
- 	while (thisEUN < inftl->nb_blocks) {
- 		for (block = 0; block < inftl->EraseSize/SECTORSIZE; block ++) {
--			if ((BlockMap[block] != 0xffff) || BlockDeleted[block])
-+			if ((BlockMap[block] != BLOCK_NIL) ||
-+			    BlockDeleted[block])
- 				continue;
- 
- 			if (inftl_read_oob(mtd, (thisEUN * inftl->EraseSize)
-@@ -525,7 +526,7 @@ static inline u16 INFTL_findwriteunit(struct INFTLrecord *inftl, unsigned block)
- 			if (!silly--) {
- 				printk(KERN_WARNING "INFTL: infinite loop in "
- 					"Virtual Unit Chain 0x%x\n", thisVUC);
--				return 0xffff;
-+				return BLOCK_NIL;
- 			}
- 
- 			/* Skip to next block in chain */
-@@ -549,7 +550,7 @@ hitused:
- 			 * waiting to be picked up. We're going to have to fold
- 			 * a chain to make room.
- 			 */
--			thisEUN = INFTL_makefreeblock(inftl, 0xffff);
-+			thisEUN = INFTL_makefreeblock(inftl, BLOCK_NIL);
- 
- 			/*
- 			 * Hopefully we free something, lets try again.
-@@ -631,7 +632,7 @@ hitused:
- 
- 	printk(KERN_WARNING "INFTL: error folding to make room for Virtual "
- 		"Unit Chain 0x%x\n", thisVUC);
--	return 0xffff;
-+	return BLOCK_NIL;
- }
- 
- /*
-diff --git a/drivers/mtd/nftlcore.c b/drivers/mtd/nftlcore.c
-index e3f8495..fb86cac 100644
---- a/drivers/mtd/nftlcore.c
-+++ b/drivers/mtd/nftlcore.c
-@@ -208,7 +208,7 @@ static u16 NFTL_findfreeblock(struct NFTLrecord *nftl, int desperate )
- 	/* Normally, we force a fold to happen before we run out of free blocks completely */
- 	if (!desperate && nftl->numfreeEUNs < 2) {
- 		DEBUG(MTD_DEBUG_LEVEL1, "NFTL_findfreeblock: there are too few free EUNs\n");
--		return 0xffff;
-+		return BLOCK_NIL;
- 	}
- 
- 	/* Scan for a free block */
-@@ -230,11 +230,11 @@ static u16 NFTL_findfreeblock(struct NFTLrecord *nftl, int desperate )
- 			printk("Argh! No free blocks found! LastFreeEUN = %d, "
- 			       "FirstEUN = %d\n", nftl->LastFreeEUN,
- 			       le16_to_cpu(nftl->MediaHdr.FirstPhysicalEUN));
--			return 0xffff;
-+			return BLOCK_NIL;
- 		}
- 	} while (pot != nftl->LastFreeEUN);
- 
--	return 0xffff;
-+	return BLOCK_NIL;
- }
- 
- static u16 NFTL_foldchain (struct NFTLrecord *nftl, unsigned thisVUC, unsigned pendingblock )
-@@ -431,7 +431,7 @@ static u16 NFTL_foldchain (struct NFTLrecord *nftl, unsigned thisVUC, unsigned p
- 
- 	/* add the header so that it is now a valid chain */
- 	oob.u.a.VirtUnitNum = oob.u.a.SpareVirtUnitNum = cpu_to_le16(thisVUC);
--	oob.u.a.ReplUnitNum = oob.u.a.SpareReplUnitNum = 0xffff;
-+	oob.u.a.ReplUnitNum = oob.u.a.SpareReplUnitNum = BLOCK_NIL;
- 
- 	nftl_write_oob(mtd, (nftl->EraseSize * targetEUN) + 8,
- 		       8, &retlen, (char *)&oob.u);
-@@ -515,7 +515,7 @@ static u16 NFTL_makefreeblock( struct NFTLrecord *nftl , unsigned pendingblock)
- 	if (ChainLength < 2) {
- 		printk(KERN_WARNING "No Virtual Unit Chains available for folding. "
- 		       "Failing request\n");
--		return 0xffff;
-+		return BLOCK_NIL;
- 	}
- 
- 	return NFTL_foldchain (nftl, LongestChain, pendingblock);
-@@ -578,7 +578,7 @@ static inline u16 NFTL_findwriteunit(struct NFTLrecord *nftl, unsigned block)
- 				printk(KERN_WARNING
- 				       "Infinite loop in Virtual Unit Chain 0x%x\n",
- 				       thisVUC);
--				return 0xffff;
-+				return BLOCK_NIL;
- 			}
- 
- 			/* Skip to next block in chain */
-@@ -601,7 +601,7 @@ static inline u16 NFTL_findwriteunit(struct NFTLrecord *nftl, unsigned block)
- 			//u16 startEUN = nftl->EUNtable[thisVUC];
- 
- 			//printk("Write to VirtualUnitChain %d, calling makefreeblock()\n", thisVUC);
--			writeEUN = NFTL_makefreeblock(nftl, 0xffff);
-+			writeEUN = NFTL_makefreeblock(nftl, BLOCK_NIL);
- 
- 			if (writeEUN == BLOCK_NIL) {
- 				/* OK, we accept that the above comment is
-@@ -673,7 +673,7 @@ static inline u16 NFTL_findwriteunit(struct NFTLrecord *nftl, unsigned block)
- 
- 	printk(KERN_WARNING "Error folding to make room for Virtual Unit Chain 0x%x\n",
- 	       thisVUC);
--	return 0xffff;
-+	return BLOCK_NIL;
- }
- 
- static int nftl_writeblock(struct mtd_blktrans_dev *mbd, unsigned long block,
