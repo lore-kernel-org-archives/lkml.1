@@ -1,198 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZF0DrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZF0Du4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZF0DrQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 23:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZF0DrF
+	id S1755457AbZF0Du4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 23:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbZF0Dut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 23:47:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:16686 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751288AbZF0DrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 23:47:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,300,1243839600"; 
-   d="scan'208";a="159064657"
-Date: Sat, 27 Jun 2009 11:46:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Ralf Gross <rg@STZ-Softwaretechnik.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: io-scheduler tuning for better read/write ratio
-Message-ID: <20090627034658.GA13551@localhost>
-References: <4A37CB2A.6010209@davidnewall.com> <20090616184027.GB7043@p15145560.pureserver.info> <4A37E7DB.7030100@redhat.com> <20090616185600.GC7043@p15145560.pureserver.info> <x49d494c4u0.fsf@segfault.boston.devel.redhat.com> <x49fxdsl46y.fsf@segfault.boston.devel.redhat.com> <20090622163113.GD12483@p15145560.pureserver.info> <x49hby8jbrd.fsf@segfault.boston.devel.redhat.com> <20090626021905.GA23981@localhost> <20090626104406.GK23611@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090626104406.GK23611@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 26 Jun 2009 23:50:49 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:43146 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751654AbZF0Dus (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 23:50:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=nMt/DFlwOGrCGApxC5GusiKnozaUOUYdkX7zwx2z4Ykn9dLEjii5ULxHAdrwqEEsGJ
+         H6YwX5AhrZZWvxv2qrDa8f29u3rsqEgNy91svw987SvIu2M0vKvhmymOFR2r2VjW1tvO
+         +1VgoWRYz5Fl7jzRq22YqDwWMExGq34W4GwYw=
+Subject: [PATCHv2] PCAP RTC driver (for 2.6.32)
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
+       sameo@linux.intel.com
+In-Reply-To: <20090626171216.7381f186.akpm@linux-foundation.org>
+References: <1245962749.10360.42.camel@brutus>
+	 <20090626132310.60665a98.akpm@linux-foundation.org>
+	 <1246060658.10360.336.camel@brutus>
+	 <20090626171216.7381f186.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DsjR/Jc8REYPis1wwvp9"
+Date: Sat, 27 Jun 2009 00:50:33 -0300
+Message-Id: <1246074633.10360.432.camel@brutus>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 06:44:06PM +0800, Jens Axboe wrote:
-> On Fri, Jun 26 2009, Wu Fengguang wrote:
-> > On Tue, Jun 23, 2009 at 03:42:46AM +0800, Jeff Moyer wrote:
-> > > Ralf Gross <rg@STZ-Softwaretechnik.com> writes:
-> > > 
-> > > > Jeff Moyer schrieb:
-> > > >> Jeff Moyer <jmoyer@redhat.com> writes:
-> > > >> 
-> > > >> > Ralf Gross <rg@stz-softwaretechnik.com> writes:
-> > > >> >
-> > > >> >> Casey Dahlin schrieb:
-> > > >> >>> On 06/16/2009 02:40 PM, Ralf Gross wrote:
-> > > >> >>> > David Newall schrieb:
-> > > >> >>> >> Ralf Gross wrote:
-> > > >> >>> >>> write throughput is much higher than the read throughput (40 MB/s
-> > > >> >>> >>> read, 90 MB/s write).
-> > > >> >>> > 
-> > > >> >>> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
-> > > >> >>> > to the device at the same time.
-> > > >> >>> > 
-> > > >> >>> > Ralf
-> > > >> >>> 
-> > > >> >>> How specifically are you testing? It could depend a lot on the
-> > > >> >>> particular access patterns you're using to test.
-> > > >> >>
-> > > >> >> I did the basic tests with tiobench. The real test is a test backup
-> > > >> >> (bacula) with 2 jobs that create 2 30 GB spool files on that device.
-> > > >> >> The jobs partially write to the device in parallel. Depending which
-> > > >> >> spool file reaches the 30 GB first, one starts reading from that file
-> > > >> >> and writing to tape, while to other is still spooling.
-> > > >> >
-> > > >> > We are missing a lot of details, here.  I guess the first thing I'd try
-> > > >> > would be bumping up the max_readahead_kb parameter, since I'm guessing
-> > > >> > that your backup application isn't driving very deep queue depths.  If
-> > > >> > that doesn't work, then please provide exact invocations of tiobench
-> > > >> > that reprduce the problem or some blktrace output for your real test.
-> > > >> 
-> > > >> Any news, Ralf?
-> > > >
-> > > > sorry for the delay. atm there are large backups running and using the
-> > > > raid device for spooling. So I can't do any tests.
-> > > >
-> > > > Re. read ahead: I tested different settings from 8Kb to 65Kb, this
-> > > > didn't help.
-> > > >
-> > > > I'll do some more tests when the backups are done (3-4 more days).
-> > > 
-> > > The default is 128KB, I believe, so it's strange that you would test
-> > > smaller values.  ;)  I would try something along the lines of 1 or 2 MB.
-> > > 
-> > > I'm CCing Fengguang in case he has any suggestions.
-> > 
-> > Jeff, thank you for the forwarding (and sorry for the long delay)!
-> > 
-> > The read:write (or rather sync:async) ratio control is an IO scheduler
-> > feature. CFQ has parameters slice_sync and slice_async for that.
-> > What's more, CFQ will let async IO wait if there are any in flight
-> > sync IO. This is good, but not quite enough. Normally sync IOs come
-> > one by one, with some small idle time window in between. If we only
-> > start dispatching async IOs after the last sync IO has completed for
-> > eg. 1ms, then we may stop the async background write IOs when there
-> > are active sync foreground read IO stream.
-> > 
-> > This simple patch aims to address the writes-push-aside-reads problem.
-> > Ralf, you can try applying this patch and run your workload with this
-> > (huge) CFQ parameter:
-> > 
-> >         echo 1000 > /sys/block/sda/queue/iosched/slice_sync 
-> > 
-> > The patch is based on 2.6.30, but can be trivially backported if you
-> > want to use some old kernel.
-> > 
-> > It may impact overall (sync+async) IO throughput when there are one or
-> > more ongoing sync IO streams, so requires considerable benchmarks and
-> > adjustments.
-> > 
-> > Thanks,
-> > Fengguang
-> > ---
-> > 
-> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> > index a55a9bd..14011b7 100644
-> > --- a/block/cfq-iosched.c
-> > +++ b/block/cfq-iosched.c
-> > @@ -1064,7 +1064,6 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
-> >  	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag)
-> >  		return;
-> >  
-> > -	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
-> >  	WARN_ON(cfq_cfqq_slice_new(cfqq));
-> >  
-> >  	/*
-> > @@ -2175,8 +2174,6 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
-> >  	 * or if we want to idle in case it has no pending requests.
-> >  	 */
-> >  	if (cfqd->active_queue == cfqq) {
-> > -		const bool cfqq_empty = RB_EMPTY_ROOT(&cfqq->sort_list);
-> > -
-> >  		if (cfq_cfqq_slice_new(cfqq)) {
-> >  			cfq_set_prio_slice(cfqd, cfqq);
-> >  			cfq_clear_cfqq_slice_new(cfqq);
-> > @@ -2190,8 +2187,8 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
-> >  		 */
-> >  		if (cfq_slice_used(cfqq) || cfq_class_idle(cfqq))
-> >  			cfq_slice_expired(cfqd, 1);
-> > -		else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq, 1) &&
-> > -			 sync && !rq_noidle(rq))
-> > +		else if (sync && !rq_noidle(rq) &&
-> > +			 !cfq_close_cooperator(cfqd, cfqq, 1))
-> >  			cfq_arm_slice_timer(cfqd);
-> >  	}
-> 
-> What's the purpose of this patch? If you have requests pending you don't
-> want to arm the idle timer and wait, you want to dispatch those.
 
-You are right, please ignore this mindless hacking patch.
+--=-DsjR/Jc8REYPis1wwvp9
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ralf, you can do the read/write ratio in the CFQ scheduler by tuning
-the slice_sync/slice_async parameters.
+RTC driver for PCAP2 PMIC.
 
-For example,
+Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+Signed-off-by: guiming zhuo <gmzhuo@gmail.com>
+Acked-by: Alessandro Zummo <a.zummo@towertech.it>
 
-        echo 10 > /sys//block/sda/queue/iosched/slice_async
-        echo 100 > /sys//block/sda/queue/iosched/slice_sync 
+---
+ drivers/rtc/Kconfig    |    7 ++
+ drivers/rtc/Makefile   |    1 +
+ drivers/rtc/rtc-pcap.c |  224 ++++++++++++++++++++++++++++++++++++++++++++=
+++++
+ 3 files changed, 232 insertions(+), 0 deletions(-)
 
-gives
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 81adbdb..a8e8846 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -759,4 +759,11 @@ config RTC_DRV_PS3
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-ps3.
+=20
++config RTC_DRV_PCAP
++	tristate "PCAP RTC"
++	depends on EZX_PCAP
++	help
++	  If you say Y here you will get support for the RTC found on
++	  the PCAP2 ASIC used on some Motorola phones.
++
+ endif # RTC_CLASS
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 3c0f2b2..450fede 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -52,6 +52,7 @@ obj-$(CONFIG_RTC_DRV_MAX6900)	+=3D rtc-max6900.o
+ obj-$(CONFIG_RTC_DRV_MAX6902)	+=3D rtc-max6902.o
+ obj-$(CONFIG_RTC_DRV_MV)	+=3D rtc-mv.o
+ obj-$(CONFIG_RTC_DRV_OMAP)	+=3D rtc-omap.o
++obj-$(CONFIG_RTC_DRV_PCAP)	+=3D rtc-pcap.o
+ obj-$(CONFIG_RTC_DRV_PCF8563)	+=3D rtc-pcf8563.o
+ obj-$(CONFIG_RTC_DRV_PCF8583)	+=3D rtc-pcf8583.o
+ obj-$(CONFIG_RTC_DRV_PL030)	+=3D rtc-pl030.o
+diff --git a/drivers/rtc/rtc-pcap.c b/drivers/rtc/rtc-pcap.c
+new file mode 100644
+index 0000000..566f4ac
+--- /dev/null
++++ b/drivers/rtc/rtc-pcap.c
+@@ -0,0 +1,224 @@
++/*
++ *  pcap rtc code for Motorola EZX phones
++ *
++ *  Copyright (c) 2008 guiming zhuo <gmzhuo@gmail.com>
++ *  Copyright (c) 2009 Daniel Ribeiro <drwyrm@gmail.com>
++ *
++ *  Based on Motorola's rtc.c Copyright (c) 2003-2005 Motorola
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/mfd/ezx-pcap.h>
++#include <linux/rtc.h>
++#include <linux/platform_device.h>
++
++struct pcap_rtc {
++	struct pcap_chip *pcap;
++	struct rtc_device *rtc;
++};
++
++static irqreturn_t pcap_rtc_irq(int irq, void *_pcap_rtc)
++{
++	struct pcap_rtc *pcap_rtc =3D _pcap_rtc;
++	unsigned long rtc_events;
++
++	if (irq =3D=3D pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_1HZ))
++		rtc_events =3D RTC_IRQF | RTC_UF;
++	else if (irq =3D=3D pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_TODA))
++		rtc_events =3D RTC_IRQF | RTC_AF;
++	else
++		rtc_events =3D 0;
++
++	rtc_update_irq(pcap_rtc->rtc, 1, rtc_events);
++	return IRQ_HANDLED;
++}
++
++static int pcap_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm=
+)
++{
++	struct platform_device *pdev =3D to_platform_device(dev);
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++	struct rtc_time *tm =3D &alrm->time;
++	unsigned long secs;
++	u32 tod;	/* time of day, seconds since midnight */
++	u32 days;	/* days since 1/1/1970 */
++
++	ezx_pcap_read(pcap_rtc->pcap, PCAP_REG_RTC_TODA, &tod);
++	secs =3D tod & PCAP_RTC_TOD_MASK;
++
++	ezx_pcap_read(pcap_rtc->pcap, PCAP_REG_RTC_DAYA, &days);
++	secs +=3D (days & PCAP_RTC_DAY_MASK) * SEC_PER_DAY;
++
++	rtc_time_to_tm(secs, tm);
++
++	return 0;
++}
++
++static int pcap_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
++{
++	struct platform_device *pdev =3D to_platform_device(dev);
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++	struct rtc_time *tm =3D &alrm->time;
++	unsigned long secs;
++	u32 tod, days;
++
++	rtc_tm_to_time(tm, &secs);
++
++	tod =3D secs % SEC_PER_DAY;
++	ezx_pcap_write(pcap_rtc->pcap, PCAP_REG_RTC_TODA, tod);
++
++	days =3D secs / SEC_PER_DAY;
++	ezx_pcap_write(pcap_rtc->pcap, PCAP_REG_RTC_DAYA, days);
++
++	return 0;
++}
++
++static int pcap_rtc_read_time(struct device *dev, struct rtc_time *tm)
++{
++	struct platform_device *pdev =3D to_platform_device(dev);
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++	unsigned long secs;
++	u32 tod, days;
++
++	ezx_pcap_read(pcap_rtc->pcap, PCAP_REG_RTC_TOD, &tod);
++	secs =3D tod & PCAP_RTC_TOD_MASK;
++
++	ezx_pcap_read(pcap_rtc->pcap, PCAP_REG_RTC_DAY, &days);
++	secs +=3D (days & PCAP_RTC_DAY_MASK) * SEC_PER_DAY;
++
++	rtc_time_to_tm(secs, tm);
++
++	return rtc_valid_tm(tm);
++}
++
++static int pcap_rtc_set_mmss(struct device *dev, unsigned long secs)
++{
++	struct platform_device *pdev =3D to_platform_device(dev);
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++	u32 tod, days;
++
++	tod =3D secs % SEC_PER_DAY;
++	ezx_pcap_write(pcap_rtc->pcap, PCAP_REG_RTC_TOD, tod);
++
++	days =3D secs / SEC_PER_DAY;
++	ezx_pcap_write(pcap_rtc->pcap, PCAP_REG_RTC_DAY, days);
++
++	return 0;
++}
++
++static int pcap_rtc_irq_enable(struct device *dev, int pirq, unsigned int =
+en)
++{
++	struct platform_device *pdev =3D to_platform_device(dev);
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++
++	if (en)
++		enable_irq(pcap_to_irq(pcap_rtc->pcap, pirq));
++	else
++		disable_irq(pcap_to_irq(pcap_rtc->pcap, pirq));
++
++	return 0;
++}
++
++static int pcap_rtc_alarm_irq_enable(struct device *dev, unsigned int en)
++{
++	return pcap_rtc_irq_enable(dev, PCAP_IRQ_TODA, en);
++}
++
++static int pcap_rtc_update_irq_enable(struct device *dev, unsigned int en)
++{
++	return pcap_rtc_irq_enable(dev, PCAP_IRQ_1HZ, en);
++}
++
++static const struct rtc_class_ops pcap_rtc_ops =3D {
++	.read_time =3D pcap_rtc_read_time,
++	.read_alarm =3D pcap_rtc_read_alarm,
++	.set_alarm =3D pcap_rtc_set_alarm,
++	.set_mmss =3D pcap_rtc_set_mmss,
++	.alarm_irq_enable =3D pcap_rtc_alarm_irq_enable,
++	.update_irq_enable =3D pcap_rtc_update_irq_enable,
++};
++
++static int __devinit pcap_rtc_probe(struct platform_device *pdev)
++{
++	struct pcap_rtc *pcap_rtc;
++	int timer_irq, alarm_irq;
++	int err =3D -ENOMEM;
++
++	pcap_rtc =3D kmalloc(sizeof(struct pcap_rtc), GFP_KERNEL);
++	if (!pcap_rtc)
++		return err;
++
++	pcap_rtc->pcap =3D platform_get_drvdata(pdev);
++
++	pcap_rtc->rtc =3D rtc_device_register("pcap", &pdev->dev,
++				  &pcap_rtc_ops, THIS_MODULE);
++	if (IS_ERR(pcap_rtc->rtc)) {
++		err =3D PTR_ERR(pcap_rtc->rtc);
++		goto fail_rtc;
++	}
++
++	platform_set_drvdata(pdev, pcap_rtc);
++
++	timer_irq =3D pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_1HZ);
++	alarm_irq =3D pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_TODA);
++
++	err =3D request_irq(timer_irq, pcap_rtc_irq, 0, "RTC Timer", pcap_rtc);
++	if (err)
++		goto fail_timer;
++
++	err =3D request_irq(alarm_irq, pcap_rtc_irq, 0, "RTC Alarm", pcap_rtc);
++	if (err)
++		goto fail_alarm;
++
++	return 0;
++fail_alarm:
++	free_irq(timer_irq, pcap_rtc);
++fail_timer:
++	rtc_device_unregister(pcap_rtc->rtc);
++fail_rtc:
++	kfree(pcap_rtc);
++	return err;
++}
++
++static int __devexit pcap_rtc_remove(struct platform_device *pdev)
++{
++	struct pcap_rtc *pcap_rtc =3D platform_get_drvdata(pdev);
++
++	free_irq(pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_1HZ), pcap_rtc);
++	free_irq(pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_TODA), pcap_rtc);
++	rtc_device_unregister(pcap_rtc->rtc);
++	kfree(pcap_rtc);
++
++	return 0;
++}
++
++static struct platform_driver pcap_rtc_driver =3D {
++	.remove =3D __devexit_p(pcap_rtc_remove),
++	.driver =3D {
++		.name  =3D "pcap-rtc",
++		.owner =3D THIS_MODULE,
++	},
++};
++
++static int __init rtc_pcap_init(void)
++{
++	return platform_driver_probe(&pcap_rtc_driver, pcap_rtc_probe);
++}
++
++static void __exit rtc_pcap_exit(void)
++{
++	platform_driver_unregister(&pcap_rtc_driver);
++}
++
++module_init(rtc_pcap_init);
++module_exit(rtc_pcap_exit);
++
++MODULE_DESCRIPTION("Motorola pcap rtc driver");
++MODULE_AUTHOR("guiming zhuo <gmzhuo@gmail.com>");
++MODULE_LICENSE("GPL");
+--=20
+tg: (943d39a..) ezx/pcap_rtc (depends on: ezx/local/pcap)
 
--dsk/total-
- read  writ
-  66M   25M
-  65M   20M
-  49M   32M
-  84M   19M
-  46M   28M
-  61M   23M
-  55M   25M
-  67M   23M
-  76M   18M
-  46M   31M
-  56M   29M
-  54M   23M
-  76M   20M
+--=20
+Daniel Ribeiro
 
-while 
+--=-DsjR/Jc8REYPis1wwvp9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
+ assinada digitalmente
 
-        echo 10 > /sys//block/sda/queue/iosched/slice_async
-        echo 300 > /sys//block/sda/queue/iosched/slice_sync 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-gives
+iEYEABECAAYFAkpFlwkACgkQw3OYl0G0liTFVgCfWHfqiLgf8O2ngTCxYqrlQUQT
+55wAoIaMh3ZtixCdqcHFRy0vIMpoVyJL
+=er/q
+-----END PGP SIGNATURE-----
 
--dsk/total-
- read  writ
- 102M   11M
-  82M   10M
- 100M   12M
-  86M   10M
-  95M   11M
- 102M 3168k
-  96M   11M
-  88M   10M
-  96M   12M
+--=-DsjR/Jc8REYPis1wwvp9--
 
-However too large slice_sync may not be desirable.
-
-Thanks,
-Fengguang
