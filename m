@@ -1,54 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbZF0Slj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZF0Sz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbZF0Slj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 14:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZF0Sla
+	id S1757218AbZF0Sz1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 14:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZF0SzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 14:41:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34246 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbZF0Sl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 14:41:29 -0400
-Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl,
- COMMAND_SIZE and scsi_device_type
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Smart <James.Smart@Emulex.Com>
-In-Reply-To: <20090627182821.GC5480@parisc-linux.org>
-References: <1246122359.32198.7.camel@hpdv5.satnam>
-	 <1246123628.3990.19.camel@mulgrave.site>
-	 <1246125388.32198.14.camel@hpdv5.satnam>
-	 <20090627182821.GC5480@parisc-linux.org>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 00:10:39 +0530
-Message-Id: <1246128039.32198.17.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Jun 2009 14:55:21 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:46195 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbZF0SzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 14:55:20 -0400
+Date: Sat, 27 Jun 2009 12:55:22 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alessandro Suardi <alessandro.suardi@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       ACPI mailing list <linux-acpi@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [2.6.31-rc1] oops in acpi_get_pci_dev
+Message-ID: <20090627185522.GA24569@ldl.fc.hp.com>
+References: <5a4c581d0906250325q1dd9ca67na9a8c7ecbffe4897@mail.gmail.com> <20090624150217.GD1512@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090624150217.GD1512@ucw.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-27 at 12:28 -0600, Matthew Wilcox wrote:
-> On Sat, Jun 27, 2009 at 11:26:28PM +0530, Jaswinder Singh Rajput wrote:
-> > > On Sat, 2009-06-27 at 22:35 +0530, Jaswinder Singh Rajput wrote:
-> > > > userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
-> > > > and scsi_device_type defined in kernel
+* Pavel Machek <pavel@ucw.cz>:
 > 
-> When did we start exporting include/scsi to userspace?  I thought glibc
-> had its own separate definitions.
-> 
+> I had similar oops here, too, on thinkpad x60. It is interesting: most
+> breakage seems to happen just before -rc1...
 
-commit 9e4f5e29610162fd426366f3b29e3cc6e575b858
-Author: James Smart <James.Smart@Emulex.Com>
-Date:   Thu Mar 26 13:33:19 2009 -0400
+Already fixed in Linus's tree.
 
-    [SCSI] FC Pass Thru support
+Thanks.
 
---
-JSR
-
+/ac
