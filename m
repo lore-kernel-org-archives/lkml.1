@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753975AbZF0WE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZF0WWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753975AbZF0WE6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 18:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZF0WEv
+	id S1754384AbZF0WWV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 18:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbZF0WWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 18:04:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58248 "EHLO hera.kernel.org"
+	Sat, 27 Jun 2009 18:22:04 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:60953 "EHLO d1.icnet.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZF0WEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 18:04:50 -0400
-Date: Sat, 27 Jun 2009 22:04:09 GMT
-From: "tip-bot for H. Peter Anvin" <hpa@zytor.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: grundler@parisc-linux.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       mingo@redhat.com, mikpe@it.uu.se, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       grundler@parisc-linux.org, tglx@linutronix.de, mikpe@it.uu.se
-In-Reply-To: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>
-Subject: [tip:x86/urgent] Revert "x86: cap iomem_resource to addressable physical memory"
-Message-ID: <tip-aadaf6b756031e14c0957aebc63d60f1d9a08524@git.kernel.org>
-Git-Commit-ID: aadaf6b756031e14c0957aebc63d60f1d9a08524
-X-Mailer: tip-git-log-daemon
+	id S1752267AbZF0WWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 18:22:02 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jarkko Nikula <jhnikula@gmail.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] [RFC] ASoC: OMAP: fix OMAP1510 broken PCM pointer callback
+Date: Sun, 28 Jun 2009 00:21:05 +0200
+User-Agent: KMail/1.9.10
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 27 Jun 2009 22:04:19 +0000 (UTC)
+Message-Id: <200906280021.05931.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aadaf6b756031e14c0957aebc63d60f1d9a08524
-Gitweb:     http://git.kernel.org/tip/aadaf6b756031e14c0957aebc63d60f1d9a08524
-Author:     H. Peter Anvin <hpa@zytor.com>
-AuthorDate: Sat, 27 Jun 2009 12:22:27 -0700
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Sat, 27 Jun 2009 14:59:07 -0700
+This patch tries to work around the problem of broken OMAP1510 PCM playback 
+pointer calculation by replacing DMA function call that incorrectly tries to 
+read the value form DMA hardware with a value computed locally from an 
+already maintained variable omap_runtime_data.period_index.
 
-Revert "x86: cap iomem_resource to addressable physical memory"
+Tested on OMAP5910 based Amstrad Delta (E3) using work in progress ASoC 
+driver.
 
-This reverts commit 95ee14e4379c5e19c0897c872350570402014742.
-Mikael Petterson <mikpe@it.uu.se> reported that at least one of his
-systems will not boot as a result.  We have ruled out the detection
-algorithm malfunctioning, so it is not a matter of producing the
-incorrect bitmasks; rather, something in the application of them
-fails.
+Based on linux-2.6-asoc.git v2.6.31-rc1.
 
-Revert the commit until we can root cause and correct this problem.
-
--stable team: this means the underlying commit should be rejected.
-
-Reported-and-isolated-by: Mikael Petterson <mikpe@it.uu.se>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>
-Cc: stable@kernel.org
-Cc: Grant Grundler <grundler@parisc-linux.org>
-
-
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
 ---
- arch/x86/kernel/cpu/common.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+It seems that on OMAP1510, DMA Channel Progress Counter registers 
+(DMA_CPC_CH[0-8]) always contain values derived from DMA channels destination 
+port address, even if constant, and there are no DMA registers available that 
+would follow DMA channels source port address. Because of this limitation, 
+current implementation of omap_get_dma_src_pos() for OMAP1510 is broken and 
+doesn't seem to be easy correctable.
 
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 6b26d4d..f1961c0 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -848,9 +848,6 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
- 	numa_add_cpu(smp_processor_id());
- #endif
--
--	/* Cap the iomem address space to what is addressable on all CPUs */
--	iomem_resource.end &= (1ULL << c->x86_phys_bits) - 1;
- }
+--- linux-2.6.31-rc1/sound/soc/omap/omap-pcm.c.orig	2009-06-27 
+20:20:16.000000000 +0200
++++ linux-2.6.31-rc1/sound/soc/omap/omap-pcm.c	2009-06-27 23:21:42.000000000 
++0200
+@@ -216,12 +216,15 @@ static snd_pcm_uframes_t omap_pcm_pointe
+ 	dma_addr_t ptr;
+ 	snd_pcm_uframes_t offset;
  
- #ifdef CONFIG_X86_64
+-	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
+-		ptr = omap_get_dma_src_pos(prtd->dma_ch);
+-	else
++	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE) {
+ 		ptr = omap_get_dma_dst_pos(prtd->dma_ch);
++		offset = bytes_to_frames(runtime, ptr - runtime->dma_addr);
++	} else if (!(cpu_is_omap1510())) {
++		ptr = omap_get_dma_src_pos(prtd->dma_ch);
++		offset = bytes_to_frames(runtime, ptr - runtime->dma_addr);
++	} else
++		offset = prtd->period_index * runtime->period_size;
+ 
+-	offset = bytes_to_frames(runtime, ptr - runtime->dma_addr);
+ 	if (offset >= runtime->buffer_size)
+ 		offset = 0;
+ 
