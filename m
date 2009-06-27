@@ -1,131 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZF0OJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZF0OJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbZF0OJm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 10:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZF0OIa
+	id S1756639AbZF0OJx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 10:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZF0OIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 10:08:30 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:57562 "EHLO
+	Sat, 27 Jun 2009 10:08:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:64970 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbZF0OIX (ORCPT
+	with ESMTP id S1754933AbZF0OIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 10:08:23 -0400
+	Sat, 27 Jun 2009 10:08:44 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: liqin.chen@sunplusct.com
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 5/6] score: make irq.h definitions local
-Date: Sat, 27 Jun 2009 16:08:17 +0200
-Message-Id: <9b05706a744da939655525eeeae23f1989b434ce.1246111364.git.arnd@arndb.de>
+Subject: [PATCH 4/6] score: cleanups: dead code, 0 as pointer, shadowed variables
+Date: Sat, 27 Jun 2009 16:08:16 +0200
+Message-Id: <c6067472252c1d6155c7c01c93e0d580342cdb29.1246111364.git.arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <cover.1246111364.git.arnd@arndb.de>
 References: <cover.1246111364.git.arnd@arndb.de>
 In-Reply-To: <cover.1246111364.git.arnd@arndb.de>
 References: <cover.1246111364.git.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18+4jVB6y/JRBpE7PnnIS1+sm5m9FH9YPMSlZ5
- 1ENlDMnEXlYPequ41E3nkoBVKZ0vdQML+KzYA/rUID+BSgmjr4
- dAG1yw5MNjHFYJTbeu8Lg==
+X-Provags-ID: V01U2FsdGVkX1/mQY+DHAtTi98EzJp+9T8dOoku0QkuVdWL3Aa
+ pw6YXGFol5dK+QRAR/2zZq/PlR72YvxMRFqQZH5u4VdRuGaoIJ
+ 7pxDerRAtOwisUnJ+FWkA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some internal definitions of the interrupt controller are
-only needed in irq.c, so move them out of the global irq.h
-header. Also add proper __iomem annotations for sparse.
+A few smaller issues found by sparse, some code that was
+never used, two instances of '0' instead of 'NULL' and
+local variables shadowing another one.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/score/include/asm/irq.h |   10 ----------
- arch/score/kernel/irq.c      |   33 +++++++++++++++++++++++----------
- 2 files changed, 23 insertions(+), 20 deletions(-)
+ arch/score/kernel/module.c    |   12 ++++++------
+ arch/score/kernel/signal.c    |    2 +-
+ arch/score/kernel/sys_score.c |   14 +-------------
+ 3 files changed, 8 insertions(+), 20 deletions(-)
 
-diff --git a/arch/score/include/asm/irq.h b/arch/score/include/asm/irq.h
-index 401f670..6edd2a2 100644
---- a/arch/score/include/asm/irq.h
-+++ b/arch/score/include/asm/irq.h
-@@ -18,16 +18,6 @@
+diff --git a/arch/score/kernel/module.c b/arch/score/kernel/module.c
+index 1a62557..4de8d47 100644
+--- a/arch/score/kernel/module.c
++++ b/arch/score/kernel/module.c
+@@ -57,17 +57,17 @@ int apply_relocate(Elf_Shdr *sechdrs, const char *strtab,
+ 	for (i = 0; i < relsec->sh_size / sizeof(Elf32_Rel); i++, rel++) {
+ 		unsigned long loc;
+ 		Elf32_Sym *sym;
+-		s32 offset;
++		s32 r_offset;
  
- #define irq_canonicalize(irq)	(irq)
+-		offset = ELF32_R_SYM(rel->r_info);
+-		if ((offset < 0) ||
+-		    (offset > (symsec->sh_size / sizeof(Elf32_Sym)))) {
++		r_offset = ELF32_R_SYM(rel->r_info);
++		if ((r_offset < 0) ||
++		    (r_offset > (symsec->sh_size / sizeof(Elf32_Sym)))) {
+ 			printk(KERN_ERR "%s: bad relocation, section %d reloc %d\n",
+ 				me->name, relindex, i);
+ 				return -ENOEXEC;
+ 		}
  
--#define P_INT_PNDL		0x95F50000
--#define P_INT_PNDH		0x95F50004
--#define P_INT_PRIORITY_M	0x95F50008
--#define P_INT_PRIORITY_SG0	0x95F50010
--#define P_INT_PRIORITY_SG1	0x95F50014
--#define P_INT_PRIORITY_SG2	0x95F50018
--#define P_INT_PRIORITY_SG3	0x95F5001C
--#define P_INT_MASKL		0x95F50020
--#define P_INT_MASKH		0x95F50024
+-		sym = ((Elf32_Sym *)symsec->sh_addr) + offset;
++		sym = ((Elf32_Sym *)symsec->sh_addr) + r_offset;
+ 
+ 		if ((rel->r_offset < 0) ||
+ 		    (rel->r_offset > dstsec->sh_size - sizeof(u32))) {
+@@ -152,7 +152,7 @@ int apply_relocate_add(Elf_Shdr *sechdrs, const char *strtab,
+ /* Given an address, look for it in the module exception tables. */
+ const struct exception_table_entry *search_module_dbetables(unsigned long addr)
+ {
+-	return 0;
++	return NULL;
+ }
+ 
+ /* Put in dbe list if necessary. */
+diff --git a/arch/score/kernel/signal.c b/arch/score/kernel/signal.c
+index afbfe33..950f87c 100644
+--- a/arch/score/kernel/signal.c
++++ b/arch/score/kernel/signal.c
+@@ -212,7 +212,7 @@ static int setup_rt_frame(struct k_sigaction *ka, struct pt_regs *regs,
+ 
+ 	err |= copy_siginfo_to_user(&frame->rs_info, info);
+ 	err |= __put_user(0, &frame->rs_uc.uc_flags);
+-	err |= __put_user(0, &frame->rs_uc.uc_link);
++	err |= __put_user(NULL, &frame->rs_uc.uc_link);
+ 	err |= __put_user((void __user *)current->sas_ss_sp,
+ 				&frame->rs_uc.uc_stack.ss_sp);
+ 	err |= __put_user(sas_ss_flags(regs->regs[0]),
+diff --git a/arch/score/kernel/sys_score.c b/arch/score/kernel/sys_score.c
+index 5b3cc4e..61aff8a 100644
+--- a/arch/score/kernel/sys_score.c
++++ b/arch/score/kernel/sys_score.c
+@@ -31,10 +31,7 @@
+ #include <linux/syscalls.h>
+ #include <asm/syscalls.h>
+ 
+-unsigned long shm_align_mask = PAGE_SIZE - 1;
+-EXPORT_SYMBOL(shm_align_mask);
 -
- #define IRQ_TIMER (7)		/* Timer IRQ number of SPCT6600 */
+-asmlinkage unsigned
++asmlinkage long 
+ sys_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+ 	  unsigned long flags, unsigned long fd, unsigned long pgoff)
+ {
+@@ -107,15 +104,6 @@ score_execve(struct pt_regs *regs)
+ }
  
- #endif /* _ASM_SCORE_IRQ_H */
-diff --git a/arch/score/kernel/irq.c b/arch/score/kernel/irq.c
-index 55474e8..47647dd 100644
---- a/arch/score/kernel/irq.c
-+++ b/arch/score/kernel/irq.c
-@@ -29,6 +29,19 @@
- 
- #include <asm/io.h>
- 
-+/* the interrupt controller is hardcoded at this address */
-+#define SCORE_PIC		((u32 __iomem __force *)0x95F50000)
-+
-+#define INT_PNDL		0
-+#define INT_PNDH		1
-+#define INT_PRIORITY_M		2
-+#define INT_PRIORITY_SG0	4
-+#define INT_PRIORITY_SG1	5
-+#define INT_PRIORITY_SG2	6
-+#define INT_PRIORITY_SG3	7
-+#define INT_MASKL		8
-+#define INT_MASKH		9
-+
  /*
-  * handles all normal device IRQs
+- * If we ever come here the user sp is bad.  Zap the process right away.
+- * Due to the bad stack signaling wouldn't work.
+- */
+-void bad_stack(void)
+-{
+-	do_exit(SIGSEGV);
+-}
+-
+-/*
+  * Do a system call from kernel instead of calling sys_execve so we
+  * end up with proper pt_regs.
   */
-@@ -44,11 +57,11 @@ static void score_mask(unsigned int irq_nr)
- 	unsigned int irq_source = 63 - irq_nr;
- 
- 	if (irq_source < 32)
--		__raw_writel((__raw_readl((void *)P_INT_MASKL) | \
--			(1 << irq_source)), (void *)P_INT_MASKL);
-+		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKL) | \
-+			(1 << irq_source)), SCORE_PIC + INT_MASKL);
- 	else
--		__raw_writel((__raw_readl((void *)P_INT_MASKH) | \
--			(1 << (irq_source - 32))), (void *)P_INT_MASKH);
-+		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKH) | \
-+			(1 << (irq_source - 32))), SCORE_PIC + INT_MASKH);
- }
- 
- static void score_unmask(unsigned int irq_nr)
-@@ -56,11 +69,11 @@ static void score_unmask(unsigned int irq_nr)
- 	unsigned int irq_source = 63 - irq_nr;
- 
- 	if (irq_source < 32)
--		__raw_writel((__raw_readl((void *)P_INT_MASKL) & \
--			~(1 << irq_source)), (void *)P_INT_MASKL);
-+		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKL) & \
-+			~(1 << irq_source)), SCORE_PIC + INT_MASKL);
- 	else
--		__raw_writel((__raw_readl((void *)P_INT_MASKH) & \
--			~(1 << (irq_source - 32))), (void *)P_INT_MASKH);
-+		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKH) & \
-+			~(1 << (irq_source - 32))), SCORE_PIC + INT_MASKH);
- }
- 
- struct irq_chip score_irq_chip = {
-@@ -88,8 +101,8 @@ void __init init_IRQ(void)
- 		memcpy((void *)target_addr, \
- 			interrupt_exception_vector, IRQ_VECTOR_SIZE);
- 
--	__raw_writel(0xffffffff, (void *)P_INT_MASKL);
--	__raw_writel(0xffffffff, (void *)P_INT_MASKH);
-+	__raw_writel(0xffffffff, SCORE_PIC + INT_MASKL);
-+	__raw_writel(0xffffffff, SCORE_PIC + INT_MASKH);
- 
- 	__asm__ __volatile__(
- 		"mtcr	%0, cr3\n\t"
 -- 
 1.6.3.1
 
