@@ -1,137 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbZF0Txl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbZF0UDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbZF0Txl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 15:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZF0Tx3
+	id S1757144AbZF0UDH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 16:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZF0UC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 15:53:29 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4828 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZF0Tx2 (ORCPT
+	Sat, 27 Jun 2009 16:02:57 -0400
+Received: from [200.117.86.35] ([200.117.86.35]:38918 "EHLO
+	burns.springfield.home" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751257AbZF0UC4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 15:53:28 -0400
-Subject: Re: [PATCH 14/19] drivers/scsi: Use PCI_VDEVICE
-From: Joe Perches <joe@perches.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org, Adam Radford <linuxraid@amcc.com>,
-       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
-       Rik Faith <faith@cs.unc.edu>, Neela Syam Kolli <megaraidlinux@lsi.com>,
-       Willem Riede <osst@riede.org>,
-       Kai =?ISO-8859-1?Q?M=E4kisara?= <Kai.Makisara@kolumbus.fi>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Kurt Garloff <garloff@suse.de>, linux-scsi@vger.kernel.org,
-       osst-users@lists.sourceforge.net
-In-Reply-To: <1246123235.3990.15.camel@mulgrave.site>
-References: <cover.1245906151.git.joe@perches.com>
-	 <079fbc10b41dd4b7f0d381b7e969134184652c95.1245906152.git.joe@perches.com>
-	 <1246123235.3990.15.camel@mulgrave.site>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 12:53:25 -0700
-Message-Id: <1246132405.23023.190.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Jun 2009 16:02:56 -0400
+X-Greylist: delayed 1394 seconds by postgrey-1.27 at vger.kernel.org; Sat, 27 Jun 2009 16:02:55 EDT
+Date: Sat, 27 Jun 2009 16:39:27 -0300
+From: Leandro Lucarella <llucax@gmail.com>
+To: Sven Geggus <lists@fuchsschwanzdomain.de>
+Cc: Mathias Kretschmer <mathias@blx4.net>,
+       "J\. Bruce Fields" <bfields@fieldses.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.29+ NFS-Server Problem "reconnect_path: npd != pd"
+Message-ID: <20090627193927.GB25375@homero.springfield.home>
+References: <20090521142026.GA5566@geggus.net> <20090528202803.GF13860@fieldses.org> <20090528203228.GA6056@geggus.net> <200906191414.02674.mathias@blx4.net> <20090619124611.GA16337@geggus.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090619124611.GA16337@geggus.net>
+X-Paranoid: Just because you're paranoid, don't mean they're not after you.
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-27 at 12:20 -0500, James Bottomley wrote:
-> OK, so there's no description whatsoever how am I supposed to divine the
-> reasons for doing this?
-
-You might look at the 0/19 patch description.
-http://lkml.org/lkml/2009/6/25/21
-
-> Because if I look at an example:
+Sven Geggus, el 19 de junio a las 14:46 me escribiste:
+> Mathias Kretschmer schrieb am Freitag, den 19. Juni um 14:14 Uhr:
 > 
-> > --- a/drivers/scsi/3w-9xxx.c
-> > +++ b/drivers/scsi/3w-9xxx.c
-> > @@ -2278,14 +2278,10 @@ out_disable_device:
-> >  
-> >  /* PCI Devices supported by this driver */
-> >  static struct pci_device_id twa_pci_tbl[] __devinitdata = {
-> > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9000,
-> > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9550SX,
-> > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9650SE,
-> > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9690SA,
-> > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-> > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9000), 0},
-> > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9550SX), 0},
-> > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9650SE), 0},
-> > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9690SA), 0},
+> > For a while my server has been running fine after the upgrade to 2.6.30.
+> > My NFS/diskless desktop worked just fine. Then yesterday evening suddenly the 
+> > first "reconnect_path: npd != pd" messages popped up.  Sometime during the 
+> > night the frequency of those messages showing up increased to > 100 msgs/sec 
+> > in average.
 > 
-> It appears to take PCI matching on vendor device with any subvendor,
-> device and reproduce the results with a macro, which, for good measure
-> pastes PCI_VENDOR_ID on to the first argument but *doesn't* paste
-> PCI_DEVICE_ID on to the second?
-
-A single macro can't use both a named constant and a magic number
-as the second argument.
-
-Today, only about half of the pci device declarations use
-named constants, mostly defined in pci_ids.h
-
-Style 1: PCI_VDEVICE(VENDOR, PCI_DEVICE_ID_<foo>)
-
-$ grep -rP --include=*.[ch] \
-	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
-	wc -l
-351
-
-Style 2: PCI_VDEVICE(VENDOR, 0x<hex#>)
- 
-$ grep -rP --include=*.[ch] \
-	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
-	wc -l
-287
-
-PCI_DEVICE(VENDOR, PCI_DEVICE_ID_<foo>)
-
-$ grep -rP --include=*.[ch] \
-	"\bPCI_DEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
-	wc -l
-373
-
-PCI_DEVICE(VENDOR, 0x<foo>)
-
-$ grep -rP --include=*.[ch] \
-	"\bPCI_DEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
-	wc -l
-320
-
-After this patchset:
-
-$ grep -rP --include=*.[ch] \
-	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
-	wc -l
-831
-
-$ grep -rP --include=*.[ch] \
-	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
-	wc -l
-571
-
-> So it transforms a relatively opaque initialiser which most people would
-> have to look up in pci.h into another relatively opaque initialiser
-> indirected via a macro, so now I have to look up both the structure and
-> the macro to figure out what's going on.
+> More or less the same here. My client machine (2.6.30) however worked just
+> for a few hours. It does however work fine using the older Kernel (2.6.27.x)
+> on the Server.
 > 
-> If that's all it does, I'm having a hard time seeing any actual
-> improvement here.
+> This is also XFS+NFS here. I will also attach the associated .config of the
+> Kernel.
 
-Greater standardization of declarations across multiple files.
+Hi, I want to confirm that I'm still having this problem in 2.6.30. I'm
+using Debian (unstable) too, and the exported fs is XFS.
 
-Do you have a suggestion or preference for another macro name
-for the named constants uses?
+Here is a related bug report:
+http://bugzilla.kernel.org/show_bug.cgi?id=13375
 
-drivers/edac/edac_core.h has:
-
-#define PCI_VEND_DEV(vend, dev) PCI_VENDOR_ID_ ## vend, \
-        PCI_DEVICE_ID_ ## vend ## _ ## dev
-
-cheers, Joe
-
+-- 
+Leandro Lucarella (luca) | Blog colectivo: http://www.mazziblog.com.ar/blog/
+----------------------------------------------------------------------------
+GPG Key: 5F5A8D05 (F8CD F9A7 BF00 5431 4145  104C 949E BFB6 5F5A 8D05)
