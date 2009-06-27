@@ -1,181 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZF0AFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZF0ANG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbZF0AFe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 20:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZF0AFZ
+	id S1755810AbZF0ANG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 20:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZF0AMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 20:05:25 -0400
-Received: from sous-sol.org ([216.99.217.87]:58700 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751646AbZF0AFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 20:05:24 -0400
-Date: Fri, 26 Jun 2009 17:03:47 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Chris Wright <chrisw@redhat.com>, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       iommu@lists.linux-foundation.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2] IA64 Compilation Error Fix for Intel IOMMU Identity
-	Mapping Support
-Message-ID: <20090627000347.GH6729@sequoia.sous-sol.org>
-References: <20090625041605.GA9330@linux-os.sc.intel.com> <20090625134827W.fujita.tomonori@lab.ntt.co.jp> <1245913886.17089.91.camel@macbook.infradead.org> <1245966743.30355.42.camel@macbook.infradead.org> <20090625234342.GD28176@x200.localdomain> <alpine.LFD.2.01.0906251835060.3605@localhost.localdomain> <20090626015205.GE28176@x200.localdomain> <alpine.LFD.2.01.0906251858540.3605@localhost.localdomain> <20090626020854.GG28176@x200.localdomain> <alpine.LFD.2.00.0906261213400.6967@twosheds.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906261213400.6967@twosheds.infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 26 Jun 2009 20:12:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42763 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752791AbZF0AMz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 20:12:55 -0400
+Date: Fri, 26 Jun 2009 17:12:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
+       sameo@linux.intel.com
+Subject: Re: [PATCH] PCAP RTC driver (for 2.6.32).
+Message-Id: <20090626171216.7381f186.akpm@linux-foundation.org>
+In-Reply-To: <1246060658.10360.336.camel@brutus>
+References: <1245962749.10360.42.camel@brutus>
+	<20090626132310.60665a98.akpm@linux-foundation.org>
+	<1246060658.10360.336.camel@brutus>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Woodhouse (dwmw2@infradead.org) wrote:
-> On Thu, 25 Jun 2009, Chris Wright wrote:
+On Fri, 26 Jun 2009 20:57:38 -0300 Daniel Ribeiro <drwyrm@gmail.com> wrote:
+
+> Hi Andrew,
 > 
-> > * Linus Torvalds (torvalds@linux-foundation.org) wrote:
-> >> Ok. Sounds like what I want is to get this patch through the ia64 people,
-> >> after it has gotten some testing there. Since ia64 is where the current
-> >> kernel fails anyway, that sounds like the motivation will be there too.
-> >
-> > Yup, I agree.
+> Em Sex, 2009-06-26 __s 13:23 -0700, Andrew Morton escreveu:
+> > This could be coded more simply:
+> > 
+> > 	unsigned long rtc_events;
+> > 
+> > 	if (irq == pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_1HZ))
+> > 		rtc_events = RTC_IRQF | RTC_UF;
+> > 	else if (irq == pcap_to_irq(pcap_rtc->pcap, PCAP_IRQ_TODA))
+> > 		rtc_events = RTC_IRQF | RTC_AF;
 > 
-> Tony, please could you test what's in git://git.infradead.org/iommu-2.6.git
+> This would make gcc complain about rtc_events being used uninitialized.
+
+So initialise it ;)
+
+It's the "|=" which is strange and a bit misleading - it's a coding
+trick which doesn't reflect what is happening at a functional level.
+
+But it's a minor point.
+
+> > SEC_PER_DAY is defined in include/linux/mfd/ezx-pcap.h.  It should not
+> > be, because it is not specific to that driver and can be used elsewhere
+> > in the kernel.
+> > 
+> > I'd suggest that we
+> > 
+> > - define SECS_PER_DAY in include/linux/time.h
+> > 
+> > - remove the private definitions of SECS_PER_DAY from
+> >   arch/m68k/mac/misc, arch/parisc/include/asm/rtc.h,
+> >   arch/ia64/hp/sim/boot/fw-emu.c, fs/udf/udftime.c, fs/fat/misc.c and
+> >   wherever else it appears, make those files use the common definition
+> > 
+> > - migrate rtc-pcap.c from SEC_PER_DAY over to the common SECS_PER_DAY.
+> > 
+> > - Then do it all again for SECS_PER_MIN and SECS_PER_HOUR.
+> > 
+> > 
+> > What a mess.
 > 
-> It builds, but we'd like to check that it works correctly with iommu=pt on 
-> IA64.
+> I can't work on this right now, but i will be happy to reserve some
+> hours for this next month if nobody else does it before.
 
-In the meantime, I booted this on an IA-64 box (w/out VT-d), forced it
-to call intel_iommu_init() as if it had an IOMMU, and added a small bit
-of debugging.  Looks like it's doing the right thing.
+Well, whatever.  Lots of people could pick up this projectlet.
 
-efi based
-e000000001000000-e000000078000000
-e00000007c000000-e00000007e990000
-e00000007f300000-e00000007fda0000
-e000000100000000-e00000047b7f0000
-e00000047f800000-e00000047fdc0000
-e00000047fe80000-e00000047ffb0000
-zone based
-1000000-100000000
-100000000-47ffb0000
-online node based
-1000000-78000000
-7c000000-7e990000
-7f300000-7fda0000
-100000000-47b7f0000
-47f800000-47fdc0000
-47fe80000-47ffb0000
+> > "tmp" is a poor identifier.  We had an opportunity here to use an
+> > identifier which would communicate useful information to the reader. 
+> > But we blew it and used the information-free "tmp" instead.
+> > 
+> > Something like
+> > 
+> > 	u32 time_of_day;	/* In seconds since midnight */
+> > 
+> > would be nice.  If that is indeed what the variable contains.  How
+> > would I know?  It's called 'tmp" and is undescribed!
+> 
+> Hum.. I used tmp because the variable is reused and it may be "days
+> since 1/1/1970" or "seconds since today's 00:00:00".
 
-The efi based mem walker is returning virtual addresses, Fenghua did
-you test that one?  I'm surprised it worked.
+That's even worse!
 
-This is quite similar to the type of output I see on x86_64 (except the
-e820 map gives phys addrs, of course).
+> I will add some comments to make this clear.
 
-e820 based
-10000-9d800
-100000-bf341000
-bf67e000-bf800000
-100000000-340000000
-zone based
-10000-1000000
-1000000-100000000
-100000000-1c0000000
-1c0000000-340000000
-online node based
-10000-9d000
-100000-bf341000
-bf67e000-bf800000
-100000000-1c0000000
-1c0000000-340000000
+It'd be clearest to create two appropriately-named variables.  This
+shouldn't affect emitted code unless gcc is busted.
 
-thanks,
--chris
----
-debug patch for the really bored...
+> I see that you have already added it to the -mm tree.
 
-Index: linus-2.6/drivers/pci/intel-iommu.c
-===================================================================
---- linus-2.6.orig/drivers/pci/intel-iommu.c
-+++ linus-2.6/drivers/pci/intel-iommu.c
-@@ -3110,10 +3110,66 @@ static int __init init_iommu_sysfs(void)
- }
- #endif	/* CONFIG_PM */
- 
-+#ifdef CONFIG_X86
-+#include <asm/e820.h>
-+static void __init print_memmap(void)
-+{
-+	int i;
-+	printk("e820 based\n");
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *ei = &e820.map[i];
-+
-+		if (ei->type == E820_RAM)
-+			printk("%llx-%llx\n", ei->addr, ei->addr + ei->size);
-+	}
-+}
-+#elif CONFIG_IA64
-+#include <linux/efi.h>
-+static int __init efi_print_map(u64 start, u64 end, void *unused)
-+{
-+	printk("%llx-%llx\n", start, end);
-+	return 0;
-+}
-+
-+static void __init print_memmap(void)
-+{
-+	printk("efi based\n");
-+	efi_memmap_walk(efi_print_map, NULL);
-+}
-+#endif
-+
-+static int __init print_region(unsigned long start_pfn, unsigned long end_pfn,
-+			       void *unused)
-+{
-+	printk("%lx-%lx\n", start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
-+	return 0;
-+}
-+
-+static void __init show_mem_regions(void)
-+{
-+	int  nid;
-+	struct zone *zone;
-+
-+	print_memmap();
-+	printk("zone based\n");
-+	for_each_populated_zone(zone) {
-+		unsigned long zone_end_pfn = zone->zone_start_pfn +
-+					     zone->spanned_pages;
-+		printk("%lx-%lx\n", zone->zone_start_pfn << PAGE_SHIFT,
-+				    zone_end_pfn << PAGE_SHIFT);
-+	}
-+
-+	printk("online node based\n");
-+	for_each_online_node(nid)
-+		work_with_active_regions(nid, print_region, NULL);
-+}
-+
- int __init intel_iommu_init(void)
- {
- 	int ret = 0;
- 
-+	show_mem_regions();
-+
- 	if (dmar_table_init())
- 		return 	-ENODEV;
- 
-Index: linus-2.6/arch/ia64/kernel/pci-dma.c
-===================================================================
---- linus-2.6.orig/arch/ia64/kernel/pci-dma.c
-+++ linus-2.6/arch/ia64/kernel/pci-dma.c
-@@ -47,7 +47,7 @@ extern struct dma_map_ops intel_dma_ops;
- 
- static int __init pci_iommu_init(void)
- {
--	if (iommu_detected)
-+//	if (iommu_detected)
- 		intel_iommu_init();
- 
- 	return 0;
+Yes, I often do that.  To get a bit of early testing and so the whole
+thing doesn't get lost.  Also so that I remember that I've reviewed it
+once.
+
+> Do you prefer an
+> incremental patch to address your comments or should I send a patch to
+> replace the current version?
+
+A replacement is OK at this early stage.  I will turn that into an
+incremental here so that I can see what you did.
+
