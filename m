@@ -1,31 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbZF0DiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZF0DrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755732AbZF0DiN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 23:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZF0Dh7
+	id S1757880AbZF0DrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 23:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZF0DrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 23:37:59 -0400
-Received: from tomts33.bellnexxia.net ([209.226.175.107]:36597 "EHLO
-	tomts33-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751599AbZF0Dh7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 23:37:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj8SAEIwRUrR4q+G/2dsb2JhbACBMI04iRCBcbVhg3gF
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [65.120.57.68]
-From: <rainbowmontessori@bellnet.ca>
-Reply-To: lottclaims@gala.net
-To: <info@winners>
-Subject: comCongratulation
-Date: Fri, 26 Jun 2009 23:37:59 -0400
+	Fri, 26 Jun 2009 23:47:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:16686 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751288AbZF0DrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 26 Jun 2009 23:47:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,300,1243839600"; 
+   d="scan'208";a="159064657"
+Date: Sat, 27 Jun 2009 11:46:58 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Ralf Gross <rg@STZ-Softwaretechnik.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: io-scheduler tuning for better read/write ratio
+Message-ID: <20090627034658.GA13551@localhost>
+References: <4A37CB2A.6010209@davidnewall.com> <20090616184027.GB7043@p15145560.pureserver.info> <4A37E7DB.7030100@redhat.com> <20090616185600.GC7043@p15145560.pureserver.info> <x49d494c4u0.fsf@segfault.boston.devel.redhat.com> <x49fxdsl46y.fsf@segfault.boston.devel.redhat.com> <20090622163113.GD12483@p15145560.pureserver.info> <x49hby8jbrd.fsf@segfault.boston.devel.redhat.com> <20090626021905.GA23981@localhost> <20090626104406.GK23611@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090627033801.FDBR6042.tomts33-srv.bellnexxia.net@toip34-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090626104406.GK23611@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Contact Mr Phil Herald for a sum pay out of 1,230,310 GBP.Provide Your Name:Address:Age:Sex: Occupation:(Email:lottclaims@gala.net) forVerification immediately.
+On Fri, Jun 26, 2009 at 06:44:06PM +0800, Jens Axboe wrote:
+> On Fri, Jun 26 2009, Wu Fengguang wrote:
+> > On Tue, Jun 23, 2009 at 03:42:46AM +0800, Jeff Moyer wrote:
+> > > Ralf Gross <rg@STZ-Softwaretechnik.com> writes:
+> > > 
+> > > > Jeff Moyer schrieb:
+> > > >> Jeff Moyer <jmoyer@redhat.com> writes:
+> > > >> 
+> > > >> > Ralf Gross <rg@stz-softwaretechnik.com> writes:
+> > > >> >
+> > > >> >> Casey Dahlin schrieb:
+> > > >> >>> On 06/16/2009 02:40 PM, Ralf Gross wrote:
+> > > >> >>> > David Newall schrieb:
+> > > >> >>> >> Ralf Gross wrote:
+> > > >> >>> >>> write throughput is much higher than the read throughput (40 MB/s
+> > > >> >>> >>> read, 90 MB/s write).
+> > > >> >>> > 
+> > > >> >>> > Hm, but I get higher read throughput (160-200 MB/s) if I don't write
+> > > >> >>> > to the device at the same time.
+> > > >> >>> > 
+> > > >> >>> > Ralf
+> > > >> >>> 
+> > > >> >>> How specifically are you testing? It could depend a lot on the
+> > > >> >>> particular access patterns you're using to test.
+> > > >> >>
+> > > >> >> I did the basic tests with tiobench. The real test is a test backup
+> > > >> >> (bacula) with 2 jobs that create 2 30 GB spool files on that device.
+> > > >> >> The jobs partially write to the device in parallel. Depending which
+> > > >> >> spool file reaches the 30 GB first, one starts reading from that file
+> > > >> >> and writing to tape, while to other is still spooling.
+> > > >> >
+> > > >> > We are missing a lot of details, here.  I guess the first thing I'd try
+> > > >> > would be bumping up the max_readahead_kb parameter, since I'm guessing
+> > > >> > that your backup application isn't driving very deep queue depths.  If
+> > > >> > that doesn't work, then please provide exact invocations of tiobench
+> > > >> > that reprduce the problem or some blktrace output for your real test.
+> > > >> 
+> > > >> Any news, Ralf?
+> > > >
+> > > > sorry for the delay. atm there are large backups running and using the
+> > > > raid device for spooling. So I can't do any tests.
+> > > >
+> > > > Re. read ahead: I tested different settings from 8Kb to 65Kb, this
+> > > > didn't help.
+> > > >
+> > > > I'll do some more tests when the backups are done (3-4 more days).
+> > > 
+> > > The default is 128KB, I believe, so it's strange that you would test
+> > > smaller values.  ;)  I would try something along the lines of 1 or 2 MB.
+> > > 
+> > > I'm CCing Fengguang in case he has any suggestions.
+> > 
+> > Jeff, thank you for the forwarding (and sorry for the long delay)!
+> > 
+> > The read:write (or rather sync:async) ratio control is an IO scheduler
+> > feature. CFQ has parameters slice_sync and slice_async for that.
+> > What's more, CFQ will let async IO wait if there are any in flight
+> > sync IO. This is good, but not quite enough. Normally sync IOs come
+> > one by one, with some small idle time window in between. If we only
+> > start dispatching async IOs after the last sync IO has completed for
+> > eg. 1ms, then we may stop the async background write IOs when there
+> > are active sync foreground read IO stream.
+> > 
+> > This simple patch aims to address the writes-push-aside-reads problem.
+> > Ralf, you can try applying this patch and run your workload with this
+> > (huge) CFQ parameter:
+> > 
+> >         echo 1000 > /sys/block/sda/queue/iosched/slice_sync 
+> > 
+> > The patch is based on 2.6.30, but can be trivially backported if you
+> > want to use some old kernel.
+> > 
+> > It may impact overall (sync+async) IO throughput when there are one or
+> > more ongoing sync IO streams, so requires considerable benchmarks and
+> > adjustments.
+> > 
+> > Thanks,
+> > Fengguang
+> > ---
+> > 
+> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > index a55a9bd..14011b7 100644
+> > --- a/block/cfq-iosched.c
+> > +++ b/block/cfq-iosched.c
+> > @@ -1064,7 +1064,6 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+> >  	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag)
+> >  		return;
+> >  
+> > -	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
+> >  	WARN_ON(cfq_cfqq_slice_new(cfqq));
+> >  
+> >  	/*
+> > @@ -2175,8 +2174,6 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+> >  	 * or if we want to idle in case it has no pending requests.
+> >  	 */
+> >  	if (cfqd->active_queue == cfqq) {
+> > -		const bool cfqq_empty = RB_EMPTY_ROOT(&cfqq->sort_list);
+> > -
+> >  		if (cfq_cfqq_slice_new(cfqq)) {
+> >  			cfq_set_prio_slice(cfqd, cfqq);
+> >  			cfq_clear_cfqq_slice_new(cfqq);
+> > @@ -2190,8 +2187,8 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
+> >  		 */
+> >  		if (cfq_slice_used(cfqq) || cfq_class_idle(cfqq))
+> >  			cfq_slice_expired(cfqd, 1);
+> > -		else if (cfqq_empty && !cfq_close_cooperator(cfqd, cfqq, 1) &&
+> > -			 sync && !rq_noidle(rq))
+> > +		else if (sync && !rq_noidle(rq) &&
+> > +			 !cfq_close_cooperator(cfqd, cfqq, 1))
+> >  			cfq_arm_slice_timer(cfqd);
+> >  	}
+> 
+> What's the purpose of this patch? If you have requests pending you don't
+> want to arm the idle timer and wait, you want to dispatch those.
 
+You are right, please ignore this mindless hacking patch.
+
+Ralf, you can do the read/write ratio in the CFQ scheduler by tuning
+the slice_sync/slice_async parameters.
+
+For example,
+
+        echo 10 > /sys//block/sda/queue/iosched/slice_async
+        echo 100 > /sys//block/sda/queue/iosched/slice_sync 
+
+gives
+
+-dsk/total-
+ read  writ
+  66M   25M
+  65M   20M
+  49M   32M
+  84M   19M
+  46M   28M
+  61M   23M
+  55M   25M
+  67M   23M
+  76M   18M
+  46M   31M
+  56M   29M
+  54M   23M
+  76M   20M
+
+while 
+
+        echo 10 > /sys//block/sda/queue/iosched/slice_async
+        echo 300 > /sys//block/sda/queue/iosched/slice_sync 
+
+gives
+
+-dsk/total-
+ read  writ
+ 102M   11M
+  82M   10M
+ 100M   12M
+  86M   10M
+  95M   11M
+ 102M 3168k
+  96M   11M
+  88M   10M
+  96M   12M
+
+However too large slice_sync may not be desirable.
+
+Thanks,
+Fengguang
