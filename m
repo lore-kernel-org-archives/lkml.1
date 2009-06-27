@@ -1,91 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZF0Czs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZF0DQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZF0Czs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 22:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbZF0Czj
+	id S1756074AbZF0DQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 23:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZF0DQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 22:55:39 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:35228 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZF0Czi (ORCPT
+	Fri, 26 Jun 2009 23:16:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56542 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZF0DQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 22:55:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer;
-        b=DLhFbAB26QblePEQ3tnsZBX1yJpqUHXwLOwU6pEAoQGFzG/bsUx6St1dfXAU7skGc4
-         v+o4Xaltum7HfqswnNGDztulF/bM7uV7gTJNb10GqgKOPuy9bWlTFoybgxrkYW/bWolc
-         DuwgvWC61eyV4WZ2pAFD1LEtt1WqHrCHnGZ/4=
-Subject: Re: [PATCH 1/2] MMC/pxamci: workaround regulator framework bugs
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Eric Miao <eric.y.miao@gmail.com>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-In-Reply-To: <20090627004814.GB4379@sirena.org.uk>
-References: <1246057668.10360.316.camel@brutus>
-	 <20090627004814.GB4379@sirena.org.uk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-dLIc9PZ+JdOqzGu1pJqk"
-Date: Fri, 26 Jun 2009 23:55:23 -0300
-Message-Id: <1246071323.10360.386.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 26 Jun 2009 23:16:15 -0400
+Date: Fri, 26 Jun 2009 20:15:57 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Jesper Dangaard Brouer <hawk@diku.dk>
+cc: David Miller <davem@davemloft.net>, Jesper Dangaard Brouer <jdb@comx.dk>,
+       paulmck@linux.vnet.ibm.com, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Patrick McHardy <kaber@trash.net>,
+       yoshfuji@linux-ipv6.org, linux-nfs@vger.kernel.org,
+       linux-ext4@vger.kernel.org, catalin.marinas@gmail.com
+Subject: Re: [PATCH 07/10] decnet: Use rcu_barrier() on module unload.
+In-Reply-To: <Pine.LNX.4.64.0906262100210.14848@ask.diku.dk>
+Message-ID: <alpine.DEB.2.01.0906262010091.6439@bogon>
+References: <1245845367.24921.3.camel@localhost.localdomain> <5A680E0A-EFEB-44EA-9F06-F338E6CBD6D1@googlemail.com> <1245930729.24921.67.camel@localhost.localdomain> <20090625.161046.19938291.davem@davemloft.net>
+ <Pine.LNX.4.64.0906262100210.14848@ask.diku.dk>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX193TVNMJDRkntaOy69F9GM9bKmT7E+E5rUkFjT
+ OEhuRM0l8YjrlH3SSf3gI0bIYDPZ+jtigpjnVzojbWeE7UMOFJ
+ 7cw0Kc4j8EyubqJLsGVWA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Jun 2009, Jesper Dangaard Brouer wrote:
+> I'll resubmit the patches to you and netdev, to limit the spam effect...
 
---=-dLIc9PZ+JdOqzGu1pJqk
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Out of curiosity: why was linux-ext4 Cc'ed on these rcu_barrier patches
+(but not other fs-lists but linux-nfs)? I did not see any ../fs/ext4/ 
+changes.
 
-Em S=C3=A1b, 2009-06-27 =C3=A0s 01:48 +0100, Mark Brown escreveu:
-> > +		/*
-> > +		 * When the bootloader leaves a supply active, it's
-> > +		 * initialized with zero usecount ... and we can't
-> > +		 * disable it without first enabling it.  Until the
-> > +		 * framework is fixed, we need a workaround like this
-> > +		 * (which is safe for MMC, but not in general).
->=20
-> This also needs to explain the actual situation, especially the
-> exclusivity reqirement of the MMC core.  It might be worth providing a
-> helper in the MMC core, everything is going to need to be updated to use
-> exclusive get whenever someone implements it.
+Christian.
+-- 
+BOFH excuse #6:
 
-Heh, this patch was copy-n-paste from twl code. I really can't put much
-time on this. :(
-
-> As discussed at some length the regulator API is not going to be changed
-> in the way you demand.  This is not something that it should be easy for
-> standard consumers to do since for standard consumers it normally points
-> out a programming error.
-
-Ok, so I will "fix it" hacking the bootloader to power off the voltage
-regulator before giving control to kernel. Lets hope that the next
-developer that tries to use the regulator framework with a mmc card and
-stumbles on the "regulator already enabled" case has more time to fix it
-properly. :)
-
---=20
-Daniel Ribeiro
-
---=-dLIc9PZ+JdOqzGu1pJqk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
- assinada digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpFihsACgkQw3OYl0G0liRpFQCeN0e4ELfWTtp+rDyejmGJnI1W
-fhoAoJScywWCWUzasbINC/re9c0CCGZ5
-=w9An
------END PGP SIGNATURE-----
-
---=-dLIc9PZ+JdOqzGu1pJqk--
-
+global warming
