@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbZF0Fcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbZF0FfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbZF0Fcw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 01:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZF0Fcp
+	id S1757656AbZF0FfP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 01:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZF0FfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 01:32:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42230 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751546AbZF0Fco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 01:32:44 -0400
-Date: Sat, 27 Jun 2009 07:32:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Vince Weaver <vince@deater.net>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: performance counter 20% error finding retired instruction count
-Message-ID: <20090627053231.GA16200@elte.hu>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy> <1246043554.31755.207.camel@twins>
+	Sat, 27 Jun 2009 01:35:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57101 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbZF0FfC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 01:35:02 -0400
+Message-ID: <4A45AEC5.3060407@zytor.com>
+Date: Fri, 26 Jun 2009 22:31:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246043554.31755.207.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <20090627042556.GA31085@lackof.org>
+In-Reply-To: <20090627042556.GA31085@lackof.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> > PS.  Why is the perf code littered with many many  __MINGW32__ defined?
-> >       Should this be in the kernel tree?  It makes the code really hard
-> >       to follow.  Are there plans to port perf to windows?
+Grant Grundler wrote:
+>>> +
+>>> +	/* Cap the iomem address space to what is addressable on all CPUs */
+>>> +	iomem_resource.end &= (1ULL << c->x86_phys_bits) - 1;
 > 
-> Comes straight from the git sources.. and littered might be a bit 
-> much, I count only 11.
+> Does x86_phys_bits represent the number of address lines/bits handled by
+> the memory controller, coming out of the CPU, or handled by the
+> "north bridge" (IO controller)?
 > 
-> # git grep MING tools/perf | wc -l
-> 11
+
+x86_phys_bits represents the top end of what the processor can address.
+
+> I was assuming all three are the same thing but that might not be true
+> with "QPI" or whatever Intel is calling it's serial interconnect these days.
+> I'm wondering if the addressing capability of the CPU->memory controller
+> might be different than CPU->IO Controller.
 > 
-> But yeah, that might want cleaning up.
+> Parallel interconnects are limited by the number of lines wired to
+> transmit address data and I expect that's where x86_phys_bits originally
+> came from. Chipsets _were_ all designed around those limits.
 
-Indeed. I removed those bits - thanks Vince for reporting it!
+Serial interconnects behave the same way, it's just that the address 
+bits are sent in serial order.  Something is seriously goofy here, and 
+it's probably reasonably straightforward to figure out what.
 
-	Ingo
+	-hpa
+
