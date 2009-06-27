@@ -1,127 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbZF0OJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZF0OJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbZF0OJa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 10:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755795AbZF0OI3
+	id S1756766AbZF0OJm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 10:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbZF0OIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 10:08:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:58820 "EHLO
+	Sat, 27 Jun 2009 10:08:30 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:57562 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbZF0OIV (ORCPT
+	with ESMTP id S1754245AbZF0OIX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 10:08:21 -0400
+	Sat, 27 Jun 2009 10:08:23 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: liqin.chen@sunplusct.com
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 6/6] score: clean up mm/init.c
-Date: Sat, 27 Jun 2009 16:08:18 +0200
-Message-Id: <fbd85b0e26bab0a13dcf860f2c20e86cb0507b61.1246111364.git.arnd@arndb.de>
+Subject: [PATCH 5/6] score: make irq.h definitions local
+Date: Sat, 27 Jun 2009 16:08:17 +0200
+Message-Id: <9b05706a744da939655525eeeae23f1989b434ce.1246111364.git.arnd@arndb.de>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <cover.1246111364.git.arnd@arndb.de>
 References: <cover.1246111364.git.arnd@arndb.de>
 In-Reply-To: <cover.1246111364.git.arnd@arndb.de>
 References: <cover.1246111364.git.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19VuIClYO2gMHlvSxogl2Cm61togPud7f69Fj+
- hyctiWRZZk9lZhboO3kqAIMWxs9PFhDyZAWvOyFIfUZJqVpOCw
- 4/z5iNyNCoN2Ku3EUyfYg==
+X-Provags-ID: V01U2FsdGVkX18+4jVB6y/JRBpE7PnnIS1+sm5m9FH9YPMSlZ5
+ 1ENlDMnEXlYPequ41E3nkoBVKZ0vdQML+KzYA/rUID+BSgmjr4
+ dAG1yw5MNjHFYJTbeu8Lg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-score does not need multiple zero pages, because it does not
-suffer from cache aliasing problems, so simplify that code.
-Also make some functions static and include the appropriate
-header files.
+Some internal definitions of the interrupt controller are
+only needed in irq.c, so move them out of the global irq.h
+header. Also add proper __iomem annotations for sparse.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/score/mm/init.c |   34 ++++++++++------------------------
- 1 files changed, 10 insertions(+), 24 deletions(-)
+ arch/score/include/asm/irq.h |   10 ----------
+ arch/score/kernel/irq.c      |   33 +++++++++++++++++++++++----------
+ 2 files changed, 23 insertions(+), 20 deletions(-)
 
-diff --git a/arch/score/mm/init.c b/arch/score/mm/init.c
-index 7780eec..d496e9f 100644
---- a/arch/score/mm/init.c
-+++ b/arch/score/mm/init.c
-@@ -32,44 +32,30 @@
- #include <linux/pagemap.h>
- #include <linux/proc_fs.h>
- #include <linux/sched.h>
--#include <asm-generic/sections.h>
-+#include <linux/initrd.h>
+diff --git a/arch/score/include/asm/irq.h b/arch/score/include/asm/irq.h
+index 401f670..6edd2a2 100644
+--- a/arch/score/include/asm/irq.h
++++ b/arch/score/include/asm/irq.h
+@@ -18,16 +18,6 @@
  
-+#include <asm/sections.h>
- #include <asm/tlb.h>
+ #define irq_canonicalize(irq)	(irq)
  
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--/*
-- * We have up to 8 empty zeroed pages so we can map one of the right colour
-- * when needed.
-- */
--unsigned long zero_page_mask;
- unsigned long empty_zero_page;
- EXPORT_SYMBOL_GPL(empty_zero_page);
- 
- static struct kcore_list kcore_mem, kcore_vmalloc;
- 
--unsigned long setup_zero_pages(void)
-+static unsigned long setup_zero_page(void)
- {
--	unsigned int order = 0;
--	unsigned long size;
- 	struct page *page;
- 
--	empty_zero_page = __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
-+	empty_zero_page = __get_free_pages(GFP_KERNEL | __GFP_ZERO, 0);
- 	if (!empty_zero_page)
- 		panic("Oh boy, that early out of memory?");
- 
- 	page = virt_to_page((void *) empty_zero_page);
--	split_page(page, order);
--	while (page < virt_to_page((void *) (empty_zero_page +
--					     (PAGE_SIZE << order)))) {
--		SetPageReserved(page);
--		page++;
--	}
+-#define P_INT_PNDL		0x95F50000
+-#define P_INT_PNDH		0x95F50004
+-#define P_INT_PRIORITY_M	0x95F50008
+-#define P_INT_PRIORITY_SG0	0x95F50010
+-#define P_INT_PRIORITY_SG1	0x95F50014
+-#define P_INT_PRIORITY_SG2	0x95F50018
+-#define P_INT_PRIORITY_SG3	0x95F5001C
+-#define P_INT_MASKL		0x95F50020
+-#define P_INT_MASKH		0x95F50024
 -
--	size = PAGE_SIZE << order;
--	zero_page_mask = (size - 1) & PAGE_MASK;
-+	SetPageReserved(page);
+ #define IRQ_TIMER (7)		/* Timer IRQ number of SPCT6600 */
  
--	return 1UL << order;
-+	return 1UL;
+ #endif /* _ASM_SCORE_IRQ_H */
+diff --git a/arch/score/kernel/irq.c b/arch/score/kernel/irq.c
+index 55474e8..47647dd 100644
+--- a/arch/score/kernel/irq.c
++++ b/arch/score/kernel/irq.c
+@@ -29,6 +29,19 @@
+ 
+ #include <asm/io.h>
+ 
++/* the interrupt controller is hardcoded at this address */
++#define SCORE_PIC		((u32 __iomem __force *)0x95F50000)
++
++#define INT_PNDL		0
++#define INT_PNDH		1
++#define INT_PRIORITY_M		2
++#define INT_PRIORITY_SG0	4
++#define INT_PRIORITY_SG1	5
++#define INT_PRIORITY_SG2	6
++#define INT_PRIORITY_SG3	7
++#define INT_MASKL		8
++#define INT_MASKH		9
++
+ /*
+  * handles all normal device IRQs
+  */
+@@ -44,11 +57,11 @@ static void score_mask(unsigned int irq_nr)
+ 	unsigned int irq_source = 63 - irq_nr;
+ 
+ 	if (irq_source < 32)
+-		__raw_writel((__raw_readl((void *)P_INT_MASKL) | \
+-			(1 << irq_source)), (void *)P_INT_MASKL);
++		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKL) | \
++			(1 << irq_source)), SCORE_PIC + INT_MASKL);
+ 	else
+-		__raw_writel((__raw_readl((void *)P_INT_MASKH) | \
+-			(1 << (irq_source - 32))), (void *)P_INT_MASKH);
++		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKH) | \
++			(1 << (irq_source - 32))), SCORE_PIC + INT_MASKH);
  }
  
- #ifndef CONFIG_NEED_MULTIPLE_NODES
-@@ -100,7 +86,7 @@ void __init mem_init(void)
- 	max_mapnr = max_low_pfn;
- 	high_memory = (void *) __va(max_low_pfn << PAGE_SHIFT);
- 	totalram_pages += free_all_bootmem();
--	totalram_pages -= setup_zero_pages();	/* Setup zeroed pages. */
-+	totalram_pages -= setup_zero_page();	/* Setup zeroed pages. */
- 	reservedpages = 0;
+ static void score_unmask(unsigned int irq_nr)
+@@ -56,11 +69,11 @@ static void score_unmask(unsigned int irq_nr)
+ 	unsigned int irq_source = 63 - irq_nr;
  
- 	for (tmp = 0; tmp < max_low_pfn; tmp++)
-@@ -129,7 +115,7 @@ void __init mem_init(void)
+ 	if (irq_source < 32)
+-		__raw_writel((__raw_readl((void *)P_INT_MASKL) & \
+-			~(1 << irq_source)), (void *)P_INT_MASKL);
++		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKL) & \
++			~(1 << irq_source)), SCORE_PIC + INT_MASKL);
+ 	else
+-		__raw_writel((__raw_readl((void *)P_INT_MASKH) & \
+-			~(1 << (irq_source - 32))), (void *)P_INT_MASKH);
++		__raw_writel((__raw_readl(SCORE_PIC + INT_MASKH) & \
++			~(1 << (irq_source - 32))), SCORE_PIC + INT_MASKH);
  }
- #endif /* !CONFIG_NEED_MULTIPLE_NODES */
  
--void free_init_pages(const char *what, unsigned long begin, unsigned long end)
-+static void free_init_pages(const char *what, unsigned long begin, unsigned long end)
- {
- 	unsigned long pfn;
+ struct irq_chip score_irq_chip = {
+@@ -88,8 +101,8 @@ void __init init_IRQ(void)
+ 		memcpy((void *)target_addr, \
+ 			interrupt_exception_vector, IRQ_VECTOR_SIZE);
  
-@@ -150,8 +136,8 @@ void free_init_pages(const char *what, unsigned long begin, unsigned long end)
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
- 	free_init_pages("initrd memory",
--	virt_to_phys((void *) start),
--	virt_to_phys((void *) end));
-+		virt_to_phys((void *) start),
-+		virt_to_phys((void *) end));
- }
- #endif
+-	__raw_writel(0xffffffff, (void *)P_INT_MASKL);
+-	__raw_writel(0xffffffff, (void *)P_INT_MASKH);
++	__raw_writel(0xffffffff, SCORE_PIC + INT_MASKL);
++	__raw_writel(0xffffffff, SCORE_PIC + INT_MASKH);
  
+ 	__asm__ __volatile__(
+ 		"mtcr	%0, cr3\n\t"
 -- 
 1.6.3.1
 
