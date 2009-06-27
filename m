@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbZF0Q06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZF0Qiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756208AbZF0Q06 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 12:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZF0Q0t
+	id S1756458AbZF0Qiv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 12:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbZF0Qin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 12:26:49 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:46315 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754812AbZF0Q0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 12:26:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=De0MK7xKLKuHBG2IQC3Sr0AF5pOPCgoXrSDM8mZCfYG7HVlK8gsgaASeAvHiLo6JIN
-         g8YgpZ+AwjwBkIbbO6PHt06C89qxKjLc2ZKYNnuWqdqLembvpbQyhqZLvyUe8ACymPUx
-         V0MGIpxqvKQ9RMmAt+4WV34e9g2Rc2gjSlkEo=
+	Sat, 27 Jun 2009 12:38:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36233 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754931AbZF0Qim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 12:38:42 -0400
+Date: Sat, 27 Jun 2009 18:38:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3 -tip] perf_counter tools: Add support to set of
+	multiple events in one shot
+Message-ID: <20090627163821.GA17638@elte.hu>
+References: <1246051852.2988.8.camel@hpdv5.satnam> <1246051927.2988.10.camel@hpdv5.satnam> <1246051996.2988.12.camel@hpdv5.satnam>
 MIME-Version: 1.0
-Date: Sat, 27 Jun 2009 09:26:50 -0700
-Message-ID: <1faf47660906270926s38ee652dtf9150febb60b358e@mail.gmail.com>
-Subject: BUG: mmotm-2009-0625-1549 quilt fails at procfs-provide-stack-information-for-threads-v08.patch
-From: "Charles 'Mack' Rhinelander" <mrhinelander@gmail.com>
-To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246051996.2988.12.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When attempting quilt push -a with mmotm-2009-0625-1549, failure at
-procfs-provide-stack-information-for-threads-v08.patch as below. quilt
-enters infinite loop:  "No file to patch.  Skipping patch. \can't find
-file to patch at input line 20" See below.
 
----CUT HERE---
-Applying patch proc-connector-add-event-for-process-becoming-session-leader-checkpatch-fixes.patch
-patching file drivers/connector/cn_proc.c
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Applying patch procfs-provide-stack-information-for-threads-v08.patch
-can't find file to patch at input line 20
-The text leading up to this was:
---------------------------
-|From: Stefani Seibold <stefani@seibold.net>
-|
-|A patch to give a better overview of the userland application stack usage,
-|especially for embedded linux.
-|
-|Currently you are only able to dump the main process/thread stack usage
-|which is showed in /proc/pid/status by the "VmStk" Value.  But you get no
-|information about the consumed stack memory of the the threads.
-|
-|There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which marks
-|the vm mapping where the thread stack pointer reside with "[thread stack
-|xxxxxxxx]".  xxxxxxxx is the maximum size of stack.  This is a value
-|information, because libpthread doesn't set the start of the stack to the
-|top of the mapped area, depending of the pthread usage.
-|
-|A sample output of /proc/<pid>/task/<tid>/maps looks like:
-|
-|08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
-|08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
---------------------------
-No file to patch.  Skipping patch.
-can't find file to patch at input line 20
-No file to patch.  Skipping patch.
-can't find file to patch at input line 20
-<etc.>
+> Add support for HARDWARE and SOFTWARE events :
+>  perf stat -e all-sw-events
+>  perf stat -e sw-events
+>  perf stat -e all-hw-events
+>  perf stat -e hw-events
+
+> +static struct event_type_symbol event_type_symbols[] = {
+> + [PERF_TYPE_HARDWARE]	= { "hw-events",	"all-hw-events",	},
+> + [PERF_TYPE_SOFTWARE]	= { "sw-events",	"all-sw-events",	},
+
+Hm, this really just special-cases and open-codes these. The better 
+solution is what i suggested in my review of your prior patches: 
+regex pattern matching.
+
+	Ingo
