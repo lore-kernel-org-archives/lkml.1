@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZF0EMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZF0ES1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbZF0EMH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 00:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbZF0ELz
+	id S1754154AbZF0ES1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 00:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZF0ESS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 00:11:55 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:46097 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbZF0ELy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 00:11:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=oyrqXH+v6qXkjGGnGjaPKv7Zt84y2QWYxxSRVfTFGqYaKMVI7dxMey/Rq+zPm2c0DX
-         qO7XIs5w6GrwooapjMSt7jZQNc0HVMBtQKR+furAxu3MDNGz7OMnsDJGjGrMGN+dKhWz
-         Q0BU5bHgevrviabPbiZ6gxXk6HH0D89v7kdUo=
-Date: Sat, 27 Jun 2009 13:11:52 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2][mmotm-2009-0625-1549]  prevent to reclaim anon page of
- lumpy reclaim for no swap space
-Message-Id: <20090627131152.519b86ed.minchan.kim@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 27 Jun 2009 00:18:18 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:34426 "EHLO smtp.anarazel.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbZF0ESS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 00:18:18 -0400
+Message-ID: <4A459D85.2080008@anarazel.de>
+Date: Sat, 27 Jun 2009 06:18:13 +0200
+From: Andres Freund <andres@anarazel.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090625 Shredder/3.0b3pre
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@redhat.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Alexander Chiang <achiang@hp.com>
+CC: Thomas Renninger <trenn@suse.de>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [BUG] GM45 blanks shortly after boot in 2.6.30-git
+References: <4A43359F.3030208@anarazel.de>
+In-Reply-To: <4A43359F.3030208@anarazel.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since v1. 
- * fix - prevent anon page which already don't have swap slot
-	 (by Rik van Riel suggestion)
- * change some comment
+On 06/25/2009 10:30 AM, Andres Freund wrote:
+> Hi,
+>
+> Somewhere between:
+> 03347e2592078a90df818670fddf97a33eec70fb (2.6.30 + 5415 commits)
+> and
+> c82e6d450fda56cb2d4f68534173d3cd11b32f9f (2.6.30 + 8722 commits)
+> my Laptop (Lenovo T500) with an Intel GM45 graphics card blanks display
+> during boot (before starting with initramfs) , stops responding to
+> anything (i.e. no caps-lock light) and shows no further activity (i.e.
+> no hdd activity).
+>
+> Before the blank I did not see any sign of a backtrace or similar, but
+> its hard to say there wasn't any. Unfortunately atm I don't have another
+> computer nearby, so I could not get a network console output yet.
+>
+> If you don't have a quick idea I will either get nearby another computer
+> to get a trace or start bisecting.
+I have not yet had access to another computer (so no trace yet) but I 
+bisected it to this very innocent looking commit:
+1e4cffe78e1decd937c7b78410eec87da6b87954 : ACPI: video: convert to 
+acpi_get_pci_dev
 
-== CUT HERE ==
+Hope I added the correct CC's
 
-This patch prevent to reclaim anon page in case of no swap space.
+Andres
 
-VM already prevent to reclaim anon page in various place.
-But it doesnt't prevent it for lumpy reclaim.
-
-It shuffles lru list unnecessary so that it is pointless.
-
-__isolate_lru_page is called on slow path so that some condition
-check could be not critical about performance.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
---- mm/vmscan.c.orig	2009-06-27 12:30:41.000000000 +0900
-+++ mm/vmscan.c	2009-06-27 12:32:00.000000000 +0900
-@@ -830,7 +830,13 @@ int __isolate_lru_page(struct page *page
- 	 * When this function is being called for lumpy reclaim, we
- 	 * initially look into all LRU pages, active, inactive and
- 	 * unevictable; only give shrink_page_list evictable pages.
-+	 *
-+	 * If we don't have enough swap space, reclaiming of anon page
-+	 * which don't already have a swap slot is pointless.
- 	 */
-+	if (nr_swap_pages <= 0 && (PageAnon(page) && !PageSwapCache(page)))
-+		return ret;
-+
- 	if (PageUnevictable(page))
- 		return ret;
- 
-
--- 
-Kinds Regards,
-Minchan Kim 
+PS: bad Headache + no tiredness is a good combination to do bisecting ;-)
