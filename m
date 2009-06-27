@@ -1,197 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbZF0UmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZF0U47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbZF0UmR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 16:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZF0UmH
+	id S1757218AbZF0U47 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 16:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752395AbZF0U4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 16:42:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48403 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbZF0UmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 16:42:06 -0400
-Message-ID: <4A4683B2.106@kernel.org>
-Date: Sat, 27 Jun 2009 13:40:18 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
-       tglx@linutronix.de, hpa@zytor.com, ntl@pobox.com, mel@csn.ul.ie,
-       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
-       rientjes@google.com, containers@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: only clear node_states for 64bit
-References: <alpine.DEB.1.10.0906041309230.8080@gentwo.org> <4A2803D1.4070001@kernel.org> <m3bpokiv0u.fsf@pobox.com> <4A3B49BA.40100@kernel.org> <m3prd0havh.fsf@pobox.com> <4A3D7419.8040305@kernel.org> <m3my807ug3.fsf@pobox.com> <4A3FA58A.3010909@kernel.org> <20090626135428.d8f88a70.akpm@linux-foundation.org> <4A4538FE.2090101@kernel.org> <20090627171714.GD21595@elte.hu>
-In-Reply-To: <20090627171714.GD21595@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Jun 2009 16:56:48 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45349 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750840AbZF0U4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 16:56:47 -0400
+Subject: Re: [PATCH 14/19] drivers/scsi: Use PCI_VDEVICE
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Adam Radford <linuxraid@amcc.com>,
+       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       Rik Faith <faith@cs.unc.edu>, Neela Syam Kolli <megaraidlinux@lsi.com>,
+       Willem Riede <osst@riede.org>,
+       Kai =?ISO-8859-1?Q?M=E4kisara?= <Kai.Makisara@kolumbus.fi>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Kurt Garloff <garloff@suse.de>, linux-scsi@vger.kernel.org,
+       osst-users@lists.sourceforge.net
+In-Reply-To: <1246132405.23023.190.camel@Joe-Laptop.home>
+References: <cover.1245906151.git.joe@perches.com>
+	 <079fbc10b41dd4b7f0d381b7e969134184652c95.1245906152.git.joe@perches.com>
+	 <1246123235.3990.15.camel@mulgrave.site>
+	 <1246132405.23023.190.camel@Joe-Laptop.home>
+Content-Type: text/plain
+Date: Sat, 27 Jun 2009 15:56:45 -0500
+Message-Id: <1246136205.3990.70.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Yinghai Lu <yinghai@kernel.org> wrote:
+On Sat, 2009-06-27 at 12:53 -0700, Joe Perches wrote:
+> On Sat, 2009-06-27 at 12:20 -0500, James Bottomley wrote:
+> > OK, so there's no description whatsoever how am I supposed to divine the
+> > reasons for doing this?
 > 
->> Andrew Morton wrote:
->>> On Mon, 22 Jun 2009 08:38:50 -0700
->>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> Nathan reported that
->>>> | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
->>>> | Author: Yinghai Lu <yinghai@kernel.org>
->>>> | Date:   Tue Jun 16 15:33:00 2009 -0700
->>>> |
->>>> |    page-allocator: clear N_HIGH_MEMORY map before we set it again
->>>> |    
->>>> |    SRAT tables may contains nodes of very small size.  The arch code may
->>>> |    decide to not activate such a node.  However, currently the early boot
->>>> |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
->>>> |    active although these nodes have no present pages.
->>>> |    
->>>> |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
->>>>
->>>> the cpuset.mems cgroup attribute on an i386 kvm guest
->>>>
->>>> fix it by only clearing node_states[N_NORMAL_MEMORY] for 64bit only.
->>>> and need to do save/restore for that in find_zone_movable_pfn
->>>>
->>> There appear to be some words omitted from this changelog - it doesn't
->>> make sense.
->>>
->>> I think that perhaps a line got deleted before "the cpuset.mems cgroup
->>> ...".  That was the line which actualy describes the bug which we're
->>> fixing.  Or perhaps it was a single word?  "zeroes".
->>>
->>>
->>> I did this:
->>>
->>> Nathan reported that
->>> : 
->>> : | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
->>> : | Author: Yinghai Lu <yinghai@kernel.org>
->>> : | Date:   Tue Jun 16 15:33:00 2009 -0700
->>> : |
->>> : |    page-allocator: clear N_HIGH_MEMORY map before we set it again
->>> : |
->>> : |    SRAT tables may contains nodes of very small size.  The arch code may
->>> : |    decide to not activate such a node.  However, currently the early boot
->>> : |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
->>> : |    active although these nodes have no present pages.
->>> : |
->>> : |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
->>> : 
->> "
->>> : unintentionally and incorrectly clears the cpuset.mems cgroup attribute on
->>> : an i386 kvm guest
->> "
->> ==> 
->>
->> 32bit assume NORMAL_MEMORY bit and HIGH_MEMORY bit are set for 
->> Node0 always.
+> You might look at the 0/19 patch description.
+> http://lkml.org/lkml/2009/6/25/21
+
+That's not really an adequate admonishment because it didn't go to the
+list I'm looking at these on, so it's hard to find but more importantly
+anyone doing a git log through our sources at a later time will be
+incredibly hard pressed to find it either.  the 0/X is supposed to be a
+preamble, not a substitute for patch descriptions.  If you plan on
+rolling all these patches up with the 0/19 as the description, that's
+fine, but I'd have still liked to see the description accompanying the
+patch to the list you sent it to.
+
+> > Because if I look at an example:
+> > 
+> > > --- a/drivers/scsi/3w-9xxx.c
+> > > +++ b/drivers/scsi/3w-9xxx.c
+> > > @@ -2278,14 +2278,10 @@ out_disable_device:
+> > >  
+> > >  /* PCI Devices supported by this driver */
+> > >  static struct pci_device_id twa_pci_tbl[] __devinitdata = {
+> > > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9000,
+> > > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+> > > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9550SX,
+> > > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+> > > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9650SE,
+> > > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+> > > -	{ PCI_VENDOR_ID_3WARE, PCI_DEVICE_ID_3WARE_9690SA,
+> > > -	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+> > > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9000), 0},
+> > > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9550SX), 0},
+> > > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9650SE), 0},
+> > > +	{ PCI_VDEVICE(3WARE, PCI_DEVICE_ID_3WARE_9690SA), 0},
+> > 
+> > It appears to take PCI matching on vendor device with any subvendor,
+> > device and reproduce the results with a macro, which, for good measure
+> > pastes PCI_VENDOR_ID on to the first argument but *doesn't* paste
+> > PCI_DEVICE_ID on to the second?
 > 
-> Where in the code is this assumption?
-
-in mm/page_alloc.c
-/*
- * Array of node states.
- */
-nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
-        [N_POSSIBLE] = NODE_MASK_ALL,
-        [N_ONLINE] = { { [0] = 1UL } },
-#ifndef CONFIG_NUMA
-        [N_NORMAL_MEMORY] = { { [0] = 1UL } },
-#ifdef CONFIG_HIGHMEM
-        [N_HIGH_MEMORY] = { { [0] = 1UL } },
-#endif
-        [N_CPU] = { { [0] = 1UL } },
-#endif  /* NUMA */
-};
-EXPORT_SYMBOL(node_states);
-
-for x86 64bit, we clear POSSIBLE and ONLINE in arch/x86/mm/numa_64.c::initmem_init
-and this patch clear NORMAL in arch/x86/mm/init_64.c::paging_init
-
-for x86 32bit: ONLINE get cleared in get_memcfg_from_srat()
-and NORMAL and HIGH_MEMORY are not cleared
-before try to set new in mm/page_alloc.c::free_area_init_nodes
-
+> A single macro can't use both a named constant and a magic number
+> as the second argument.
 > 
->> and some code only check if HIGH_MEMORY is there to know if 
->> NORMAL_MEMORY is there.
+> Today, only about half of the pci device declarations use
+> named constants, mostly defined in pci_ids.h
 > 
-> Which code is that exactly?
+> Style 1: PCI_VDEVICE(VENDOR, PCI_DEVICE_ID_<foo>)
 > 
-with grep:
-arch/x86/mm/init_64.c:	nodes_clear(node_states[N_NORMAL_MEMORY]);
-drivers/base/node.c:	return print_nodes_state(N_NORMAL_MEMORY, buf);
-include/linux/nodemask.h:	N_NORMAL_MEMORY,	/* The node has regular memory */
-include/linux/nodemask.h:	N_HIGH_MEMORY = N_NORMAL_MEMORY,
-mm/memcontrol.c:	if (!node_state(node, N_NORMAL_MEMORY))
-mm/page_alloc.c:	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
-mm/page_alloc.c:			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:		for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:		for_each_node_state(node, N_NORMAL_MEMORY) {
-mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY)
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
+> 	wc -l
+> 351
+> 
+> Style 2: PCI_VDEVICE(VENDOR, 0x<hex#>)
+>  
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
+> 	wc -l
+> 287
+> 
+> PCI_DEVICE(VENDOR, PCI_DEVICE_ID_<foo>)
+> 
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_DEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
+> 	wc -l
+> 373
+> 
+> PCI_DEVICE(VENDOR, 0x<foo>)
+> 
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_DEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
+> 	wc -l
+> 320
+> 
+> After this patchset:
+> 
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*PCI_DEVICE_ID" * | \
+> 	wc -l
+> 831
+> 
+> $ grep -rP --include=*.[ch] \
+> 	"\bPCI_VDEVICE\s*\(\s*\w+\s*,\s*0[xX][0-9a-fA-F]{1,4}" * | \
+> 	wc -l
+> 571
+> 
+> > So it transforms a relatively opaque initialiser which most people would
+> > have to look up in pci.h into another relatively opaque initialiser
+> > indirected via a macro, so now I have to look up both the structure and
+> > the macro to figure out what's going on.
+> > 
+> > If that's all it does, I'm having a hard time seeing any actual
+> > improvement here.
+> 
+> Greater standardization of declarations across multiple files.
 
-Documentation/cgroups/cpusets.txt:automatically tracks the value of node_states[N_HIGH_MEMORY]--i.e.,
-Documentation/memory-hotplug.txt:status_change_nid is set node id when N_HIGH_MEMORY of nodemask is (will be)
-arch/ia64/kernel/uncached.c:		if (!node_state(nid, N_HIGH_MEMORY))
-drivers/base/node.c:	return print_nodes_state(N_HIGH_MEMORY, buf);
-include/linux/cpuset.h:#define cpuset_current_mems_allowed (node_states[N_HIGH_MEMORY])
-include/linux/nodemask.h:	N_HIGH_MEMORY,		/* The node has regular or high memory */
-include/linux/nodemask.h:	N_HIGH_MEMORY = N_NORMAL_MEMORY,
-kernel/cpuset.c: * found any online mems, return node_states[N_HIGH_MEMORY].
-kernel/cpuset.c: * of node_states[N_HIGH_MEMORY].
-kernel/cpuset.c:					node_states[N_HIGH_MEMORY]))
-kernel/cpuset.c:					node_states[N_HIGH_MEMORY]);
-kernel/cpuset.c:		*pmask = node_states[N_HIGH_MEMORY];
-kernel/cpuset.c:	BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
-kernel/cpuset.c:	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
-kernel/cpuset.c:				node_states[N_HIGH_MEMORY]))
-kernel/cpuset.c:		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
-kernel/cpuset.c:						node_states[N_HIGH_MEMORY]);
-kernel/cpuset.c: * Keep top_cpuset.mems_allowed tracking node_states[N_HIGH_MEMORY].
-kernel/cpuset.c: * Call this routine anytime after node_states[N_HIGH_MEMORY] changes.
-kernel/cpuset.c:		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
-kernel/cpuset.c:	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
-kernel/cpuset.c: * subset of node_states[N_HIGH_MEMORY], even if this means going outside the
-mm/memcontrol.c:		for_each_node_state(node, N_HIGH_MEMORY) {
-mm/memory_hotplug.c:		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
-mm/mempolicy.c:	if (!nodes_subset(new, node_states[N_HIGH_MEMORY])) {
-mm/mempolicy.c:	for_each_node_state(nid, N_HIGH_MEMORY) {
-mm/mempolicy.c:		if (!nodes_subset(nodes, node_states[N_HIGH_MEMORY]))
-mm/mempolicy.c:			nodes = node_states[N_HIGH_MEMORY];
-mm/mempolicy.c:			&node_states[N_HIGH_MEMORY], MPOL_MF_STATS, md);
-mm/mempolicy.c:	for_each_node_state(n, N_HIGH_MEMORY)
-mm/migrate.c:			if (!node_state(node, N_HIGH_MEMORY))
-mm/oom_kill.c:	nodemask_t nodes = node_states[N_HIGH_MEMORY];
-mm/page-writeback.c:	for_each_node_state(node, N_HIGH_MEMORY) {
-mm/page_alloc.c:	[N_HIGH_MEMORY] = { { [0] = 1UL } },
-mm/page_alloc.c: * tasks mems_allowed, or node_states[N_HIGH_MEMORY].)
-mm/page_alloc.c:					&node_states[N_HIGH_MEMORY];
-mm/page_alloc.c:	for_each_node_state(n, N_HIGH_MEMORY) {
-mm/page_alloc.c:				(nodes_weight(node_states[N_HIGH_MEMORY]) + 1);
-mm/page_alloc.c: * Populate N_HIGH_MEMORY for calculating usable_nodes.
-mm/page_alloc.c:			node_set_state(early_node_map[i].nid, N_HIGH_MEMORY);
-mm/page_alloc.c:	nodemask_t saved_node_state = node_states[N_HIGH_MEMORY];
-mm/page_alloc.c:	int usable_nodes = nodes_weight(node_states[N_HIGH_MEMORY]);
-mm/page_alloc.c:	for_each_node_state(nid, N_HIGH_MEMORY) {
-mm/page_alloc.c:	node_states[N_HIGH_MEMORY] = saved_node_state;
-mm/page_alloc.c:			node_set_state(nid, N_HIGH_MEMORY);
-mm/vmalloc.c:		for_each_node_state(nr, N_HIGH_MEMORY)
-mm/vmscan.c:		for_each_node_state(nid, N_HIGH_MEMORY) {
-mm/vmscan.c:	for_each_node_state(nid, N_HIGH_MEMORY)
-mm/vmstat.c:	if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
+If this applied to all driver files, I might buy it.  However, if you
+have to match on subvendor/subdevice, you have to write out the whole
+thing anyway.  PCI_VDEVICE() doesn't even give us the scope to expand
+struct pci_device_id because it doesn't (and can't in its current form)
+initialise the fields by name.
 
-for 64bit N_HIGH_MEMORY == NORMAL_MEMORY
+> Do you have a suggestion or preference for another macro name
+> for the named constants uses?
 
-for 32bit, there are more reference to N_HIGH_MEMORY...
+I'm having trouble seeing the actual value of a macro at all.  As I said
+above, it doesn't seem to be an improvement over the bare initialiser
+values.  It seems principally designed to save driver writers from
+typing ... which is fine, but not really if you apply it after the fact.
+It also doesn't seem to have the hallmarks of a true standardisation
+because of all the exceptions.  All it really does do is deprecate the
+bare use of PCI_ANY_ID ... but is that worth all the code churn?
 
-YH
+James
+
 
