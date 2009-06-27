@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZF0CKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZF0CPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758197AbZF0CKX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 22:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZF0CKM
+	id S1756985AbZF0CPH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 22:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZF0CO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 22:10:12 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41624 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754456AbZF0CKK (ORCPT
+	Fri, 26 Jun 2009 22:14:57 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:4377 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754099AbZF0CO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 22:10:10 -0400
-To: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org
-References: <20090626143652.GB6281@localdomain.by>
-	<20090626144949.GA24173@suse.de>
-	<20090626232339.GD3858@localdomain.by>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 26 Jun 2009 19:10:08 -0700
-In-Reply-To: <20090626232339.GD3858@localdomain.by> (Sergey Senozhatsky's message of "Sat\, 27 Jun 2009 02\:23\:39 +0300")
-Message-ID: <m18wjeqven.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: sergey.senozhatsky@mail.by, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org, gregkh@suse.de
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ***;Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-X-Spam-Relay-Country: 
-X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
-	*      [URIs: lkml.org]
-	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] kobject_set_name_vargs memory leak
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Fri, 26 Jun 2009 22:14:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer;
+        b=VOTGCjv3efk3n2nm5UD9yhObGB/p4SNkL9GxihFa9GQUYJka8QA9IQG7MXOmon6bQc
+         biiSuKe2aOBYQd2N7UAE31yjdyheSw6Ok5wO8t4LwiB0ISAfU44uQM3tgaYWWqer56La
+         7oszq0JAgECZy1nWIQrefJTxYrM8fu12WQGxE=
+Subject: Re: [PATCHv2 2/2] PCAP regulator driver (for 2.6.32)
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Eric Miao <eric.y.miao@gmail.com>, David Brownell <david-b@pacbell.net>,
+       Pierre Ossman <pierre@ossman.eu>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20090627010434.GC4379@sirena.org.uk>
+References: <1246057721.10360.318.camel@brutus>
+	 <20090627010434.GC4379@sirena.org.uk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-tsZFbJDFZQpdoekVMBsG"
+Date: Fri, 26 Jun 2009 23:14:43 -0300
+Message-Id: <1246068883.10360.367.camel@brutus>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergey Senozhatsky <sergey.senozhatsky@mail.by> writes:
 
-> On (06/26/09 07:49), Greg KH wrote:
->> We've been through this before (search lkml archives).  If kvasprintf
->> fails, then we don't want to free old_name, as the caller might want to
->> do something with it.
->> 
->> Or something along those lines, I can't remember the exact reasoning
->> this early in the morning.
->> 
->> Kay, do you remember?
->>
-> I found.
-> http://lkml.org/lkml/2009/5/11/11
->
->>kobject with name set before should not come into this function,
->>kobject_rename should be used instead.
->
-> It's just would be safer to kfree or restore I guess.
+--=-tsZFbJDFZQpdoekVMBsG
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Yes.  There does seem to be a good point in there that the code should be:
-BUG_ON(kobj->name);
+Em S=C3=A1b, 2009-06-27 =C3=A0s 02:04 +0100, Mark Brown escreveu:
+> > +	if (vreg->n_voltages =3D=3D 1)
+> > +		return -EINVAL;
+>=20
+> It'd be a little more friendly to check if the supported voltage is in
+> the requested range.  However, that'd only be an issue if constraints
+> allowed voltage changes which is obviously broken so a comment to that
+> effect would be enough.  I wouldn't have mentioned it but...
 
-And otherwise simply not handle old_name at all.
+Ok, I will add a comment.
 
-Eric
+> > +	ezx_pcap_read(pcap, vreg->reg, &tmp);
+> > +	tmp |=3D (1 << vreg->en);
+> > +	ezx_pcap_write(pcap, vreg->reg, tmp);
+>=20
+> This read/modify/write cycle is racy; the individual regulator is locked
+> by the core but this register is shared between all regulators on the
+> chip so if two are being updated at once things will go wrong.  Most of
+> the MFDs have a set_bits() function that does an atomic read/modify/write
+> cycle for cases like this.
+
+Good point, thanks! :)
+
+--=20
+Daniel Ribeiro
+
+--=-tsZFbJDFZQpdoekVMBsG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Esta =?ISO-8859-1?Q?=E9?= uma parte de mensagem
+ assinada digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpFgJIACgkQw3OYl0G0liTlzACcCWjthtvumlYb2rY5+ae+oWhV
+3jgAn3NRTUOXQwLeutiY9fQf1OE6Rq2l
+=MoDa
+-----END PGP SIGNATURE-----
+
+--=-tsZFbJDFZQpdoekVMBsG--
+
