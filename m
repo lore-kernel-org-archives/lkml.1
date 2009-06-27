@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZF0UJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZF0UNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbZF0UJn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 16:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZF0UJe
+	id S1753355AbZF0UNR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 16:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZF0UND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 16:09:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40341 "EHLO
+	Sat, 27 Jun 2009 16:13:03 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58213 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZF0UJd (ORCPT
+	with ESMTP id S1751962AbZF0UNC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 16:09:33 -0400
-Date: Sat, 27 Jun 2009 16:09:33 -0400 (EDT)
+	Sat, 27 Jun 2009 16:13:02 -0400
+Date: Sat, 27 Jun 2009 16:13:04 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Masami Hiramatsu <mhiramat@redhat.com>
@@ -24,12 +24,11 @@ cc: Ingo Molnar <mingo@elte.hu>,
        Christoph Hellwig <hch@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: Re: [RFC][ PATCH -tip v2 2/7] kprobes: introducing generic insn_slot
- framework
-In-Reply-To: <20090622212307.5384.41192.stgit@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0906271558140.12592@gandalf.stny.rr.com>
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212307.5384.41192.stgit@localhost.localdomain>
+       Tim Abbott <tabbott@ksplice.com>, sam@ravnborg.org
+Subject: Re: [RFC][ PATCH -tip v2 3/7] Kbuild: disable gcc crossjumping
+In-Reply-To: <20090622212313.5384.84166.stgit@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0906271611280.12592@gandalf.stny.rr.com>
+References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212313.5384.84166.stgit@localhost.localdomain>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -38,16 +37,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Masami,
+A change like this requires an ACK from Sam Ravnborg.
 
-I'm currently traveling so my responses are very slow this week.
+-- Steve
+
 
 
 On Mon, 22 Jun 2009, Masami Hiramatsu wrote:
 
-> Make insn_slot framework support various size slots.
-> Current insn_slot just supports one-size instruction buffer slot. However,
-> kprobes jump optimization needs larger size buffers.
+> Add CONFIG_DISABLE_CROSSJUMP option which disables gcc's cross-function
+> jumping. This option is required by the kprobes jump optimization.
 > 
 > Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 > Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -62,234 +61,43 @@ On Mon, 22 Jun 2009, Masami Hiramatsu wrote:
 > Cc: Tim Abbott <tabbott@ksplice.com>
 > ---
 > 
->  kernel/kprobes.c |   96 +++++++++++++++++++++++++++++++++---------------------
->  1 files changed, 58 insertions(+), 38 deletions(-)
+>  Makefile          |    4 ++++
+>  lib/Kconfig.debug |    7 +++++++
+>  2 files changed, 11 insertions(+), 0 deletions(-)
 > 
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 0b68fdc..bc9cfd0 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -100,26 +100,38 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
->   * stepping on the instruction on a vmalloced/kmalloced/data page
->   * is a recipe for disaster
->   */
-> -#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
-> -
->  struct kprobe_insn_page {
->  	struct list_head list;
->  	kprobe_opcode_t *insns;		/* Page of instruction slots */
-> -	char slot_used[INSNS_PER_PAGE];
->  	int nused;
->  	int ngarbage;
-> +	char slot_used[1];
-
-I would recommend using [] instead of [1], that would help other 
-developers know that it is a variable array.
-
-
-
-> +};
+> diff --git a/Makefile b/Makefile
+> index 2903e13..f73b139 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -524,6 +524,10 @@ else
+>  KBUILD_CFLAGS	+= -O2
+>  endif
+>  
+> +ifdef CONFIG_DISABLE_CROSSJUMP
+> +KBUILD_CFLAGS	+= -fno-crossjumping
+> +endif
 > +
-> +struct kprobe_insn_cache {
-> +	struct list_head pages;	/* list of kprobe_insn_page */
-> +	size_t insn_size;	/* size of instruction slot */
-> +	int nr_garbage;
->  };
+>  include $(srctree)/arch/$(SRCARCH)/Makefile
 >  
-> +static int slots_per_page(struct kprobe_insn_cache *c)
-> +{
-> +	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
-> +}
+>  ifneq ($(CONFIG_FRAME_WARN),0)
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 8da7467..f88e6b8 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -673,6 +673,13 @@ config FRAME_POINTER
+>  	  larger and slower, but it gives very useful debugging information
+>  	  in case of kernel bugs. (precise oopses/stacktraces/warnings)
+>  
+> +config DISABLE_CROSSJUMP
+> +	bool "Disable cross-function jump optimization"
+> +	help
+> +	  This build option disables cross-function jump optimization
+> +	  (crossjumping) of gcc. Disabling crossjumping might increase
+> +	  kernel binary size a little.
 > +
->  enum kprobe_slot_state {
->  	SLOT_CLEAN = 0,
->  	SLOT_DIRTY = 1,
->  	SLOT_USED = 2,
->  };
->  
-> -static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
-> -static LIST_HEAD(kprobe_insn_pages);
-> -static int kprobe_garbage_slots;
-> -static int collect_garbage_slots(void);
-> +static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
-> +static struct kprobe_insn_cache kprobe_insn_slots = {
-> +	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
-> +	.insn_size = MAX_INSN_SIZE,
-> +	.nr_garbage = 0,
-> +};
-> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
->  
->  static int __kprobes check_safety(void)
->  {
-> @@ -149,32 +161,33 @@ loop_end:
->   * __get_insn_slot() - Find a slot on an executable page for an instruction.
->   * We allocate an executable page if there's no room on existing ones.
->   */
-> -static kprobe_opcode_t __kprobes *__get_insn_slot(void)
-> +static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
->  {
->  	struct kprobe_insn_page *kip;
->  
->   retry:
-> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
-> -		if (kip->nused < INSNS_PER_PAGE) {
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		if (kip->nused < slots_per_page(c)) {
->  			int i;
-> -			for (i = 0; i < INSNS_PER_PAGE; i++) {
-> +			for (i = 0; i < slots_per_page(c); i++) {
->  				if (kip->slot_used[i] == SLOT_CLEAN) {
->  					kip->slot_used[i] = SLOT_USED;
->  					kip->nused++;
-> -					return kip->insns + (i * MAX_INSN_SIZE);
-> +					return kip->insns + (i * c->insn_size);
->  				}
->  			}
-> -			/* Surprise!  No unused slots.  Fix kip->nused. */
-> -			kip->nused = INSNS_PER_PAGE;
-> +			/* kip->nused is broken. */
-> +			BUG();
-
-Does this deserve a bug, or can we get away with a WARN and find a way to 
-fail nicely? Is it already too late to recover?
-
->  		}
->  	}
->  
->  	/* If there are any garbage slots, collect it and try again. */
-> -	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
-> +	if (c->nr_garbage && collect_garbage_slots(c) == 0)
->  		goto retry;
-> -	}
-> +
->  	/* All out of space.  Need to allocate a new page. Use slot 0. */
-> -	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
-> +	kip = kmalloc(sizeof(struct kprobe_insn_page) + slots_per_page(c) - 1,
-
-Why the '- 1'?  Is it because of the char [1] above?
-
-Would be better to make the size of the kprobe_insn_page a macro:
-
-#define KPROBE_INSN_SIZE offsetof(struct kbrobe_insn_page, slot_used)
-
-and then you can do the following:
-
-	kip = kmalloc(KPROBE_INSN_SIZE + slots_per_page(c));
-
--- Steve
-
-
-> +		      GFP_KERNEL);
->  	if (!kip)
->  		return NULL;
->  
-> @@ -189,19 +202,20 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
->  		return NULL;
->  	}
->  	INIT_LIST_HEAD(&kip->list);
-> -	list_add(&kip->list, &kprobe_insn_pages);
-> -	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
-> +	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
->  	kip->slot_used[0] = SLOT_USED;
->  	kip->nused = 1;
->  	kip->ngarbage = 0;
-> +	list_add(&kip->list, &c->pages);
->  	return kip->insns;
->  }
->  
-> +
->  kprobe_opcode_t __kprobes *get_insn_slot(void)
->  {
-> -	kprobe_opcode_t *ret;
-> +	kprobe_opcode_t *ret = NULL;
->  	mutex_lock(&kprobe_insn_mutex);
-> -	ret = __get_insn_slot();
-> +	ret = __get_insn_slot(&kprobe_insn_slots);
->  	mutex_unlock(&kprobe_insn_mutex);
->  	return ret;
->  }
-> @@ -218,7 +232,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
->  		 * so as not to have to set it up again the
->  		 * next time somebody inserts a probe.
->  		 */
-> -		if (!list_is_singular(&kprobe_insn_pages)) {
-> +		if (!list_is_singular(&kip->list)) {
->  			list_del(&kip->list);
->  			module_free(NULL, kip->insns);
->  			kfree(kip);
-> @@ -228,7 +242,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
->  	return 0;
->  }
->  
-> -static int __kprobes collect_garbage_slots(void)
-> +static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
->  {
->  	struct kprobe_insn_page *kip, *next;
->  	int safety;
-> @@ -240,42 +254,48 @@ static int __kprobes collect_garbage_slots(void)
->  	if (safety != 0)
->  		return -EAGAIN;
->  
-> -	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
-> +	list_for_each_entry_safe(kip, next, &c->pages, list) {
->  		int i;
->  		if (kip->ngarbage == 0)
->  			continue;
->  		kip->ngarbage = 0;	/* we will collect all garbages */
-> -		for (i = 0; i < INSNS_PER_PAGE; i++) {
-> +		for (i = 0; i < slots_per_page(c); i++) {
->  			if (kip->slot_used[i] == SLOT_DIRTY &&
->  			    collect_one_slot(kip, i))
->  				break;
->  		}
->  	}
-> -	kprobe_garbage_slots = 0;
-> +	c->nr_garbage = 0;
->  	return 0;
->  }
->  
-> -void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-> +static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
-> +				       kprobe_opcode_t *slot, int dirty)
->  {
->  	struct kprobe_insn_page *kip;
->  
-> -	mutex_lock(&kprobe_insn_mutex);
-> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
-> -		if (kip->insns <= slot &&
-> -		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
-> -			int i = (slot - kip->insns) / MAX_INSN_SIZE;
-> +	list_for_each_entry(kip, &c->pages, list) {
-> +		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
-> +		if (idx >= 0 && idx < slots_per_page(c)) {
-> +			WARN_ON(kip->slot_used[idx] != SLOT_USED);
->  			if (dirty) {
-> -				kip->slot_used[i] = SLOT_DIRTY;
-> +				kip->slot_used[idx] = SLOT_DIRTY;
->  				kip->ngarbage++;
-> +				if (++c->nr_garbage > slots_per_page(c))
-> +					collect_garbage_slots(c);
->  			} else
-> -				collect_one_slot(kip, i);
-> -			break;
-> +				collect_one_slot(kip, idx);
-> +			return;
->  		}
->  	}
-> +	/* Could not free this slot. */
-> +	WARN_ON(1);
-> +}
->  
-> -	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
-> -		collect_garbage_slots();
-> -
-> +void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
-> +{
-> +	mutex_lock(&kprobe_insn_mutex);
-> +	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
->  	mutex_unlock(&kprobe_insn_mutex);
->  }
->  #endif
+>  config BOOT_PRINTK_DELAY
+>  	bool "Delay each boot printk message by N milliseconds"
+>  	depends on DEBUG_KERNEL && PRINTK && GENERIC_CALIBRATE_DELAY
 > 
 > 
 > -- 
