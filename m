@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbZF0BZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbZF0Bsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbZF0BZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 21:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZF0BZr
+	id S1757689AbZF0Bsl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 26 Jun 2009 21:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbZF0Bsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 21:25:47 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:51177 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755410AbZF0BZq (ORCPT
+	Fri, 26 Jun 2009 21:48:30 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40890 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZF0Bs3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 21:25:46 -0400
-Date: Fri, 26 Jun 2009 21:25:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906270032.45290.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906262106490.2995-100000@netrider.rowland.org>
+	Fri, 26 Jun 2009 21:48:29 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org> <4A45405A.1010404@zytor.com>
+	<19013.18894.749105.721881@samba.org>
+Date: Sat, 27 Jun 2009 10:48:25 +0900
+In-Reply-To: <19013.18894.749105.721881@samba.org> (tridge@samba.org's message
+	of "Sat, 27 Jun 2009 08:21:02 +1000")
+Message-ID: <87k52yzbti.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jun 2009, Rafael J. Wysocki wrote:
+tridge@samba.org writes:
 
-> > Speaking of races, have you noticed that the way power.work_done gets 
-> > used is racy?
-> 
-> Not really. :-)
-> 
-> > You can't wait for the completion before releasing the 
-> > lock, but then anything could happen.
-> > 
-> > A safer approach would be to use a wait_queue.
-> 
-> I'm not sure what you mean exactly.  What's the race?
+> hpa wrote:
+>  > However, as such it really should be paired with a "don't even recognize
+>  > the shortname if a longname exists" option.
+>
+> Right, we could just skip the 8.3 name matching and go straight to the
+> longname match in fat_search_long(). I wonder if anyone ever relies on
+> the 8.3 matching when a file has a long name on Linux?
 
-Somebody calls pm_runtime_suspend when a suspend is already in 
-progress.  The routine sees that the status is RPM_SUSPENDING, so it 
-prepares to wait until the suspend is finished.  It drops the lock and 
-calls wait_for_completion.
+Wine or such is using it.
 
-But in between those last two steps, the suspend could finish and 
-a resume could start up.  Then the wait_for_completion wouldn't return 
-until the device was fully resumed!
+>  > It's also questionable IMO if this shouldn't be another FAT superdriver,
+>  > just as we have VFAT, MS-DOS etc. we could have "purevfat".
+>
+> It would be only a few lines of code difference between the two
+> drivers - is it worth the maintainence overhead of splitting it up?
+>
+> Maybe a mount option to ignore 8.3 names for files with long names
+> would be better? Perhaps even the default?
 
-Now I admit this isn't as bad as it sounds.  The same sort of thing
-could happen even if there weren't two suspends going on at the same
-time; a resume could occur between when the routine drops the lock and
-when it returns.  So okay, forget I mentioned it.
+It sounds like to be start of yet another UMSDOS with minimal one. I
+wouldn't like to repeat UMSDOS history, i.e. I think it needs real users
+and developers. If not, I wouldn't like to add.
 
-Alan Stern
-
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
