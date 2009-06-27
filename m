@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991AbZF0Q67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbZF0RVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991AbZF0Q67 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 12:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZF0Q6v
+	id S1757514AbZF0RVU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 13:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbZF0RVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 12:58:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35454 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755603AbZF0Q6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 12:58:51 -0400
-Date: Sat, 27 Jun 2009 18:58:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] perf_counter: powerpc: Add callchain support
-Message-ID: <20090627165845.GA20794@elte.hu>
-References: <19013.44646.549261.100582@cargo.ozlabs.ibm.com> <19013.44722.893263.275594@cargo.ozlabs.ibm.com> <1246091684.31755.210.camel@twins>
+	Sat, 27 Jun 2009 13:21:08 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39915 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbZF0RVH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 13:21:07 -0400
+Date: Sat, 27 Jun 2009 19:21:07 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: tridge@samba.org
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <19013.8005.541836.436991@samba.org>
+Message-ID: <alpine.LSU.2.00.0906271918280.5582@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246091684.31755.210.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0080]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Sat, 27 Jun 2009 05:19:33 +1000, tridge@samba.org wrote:
+>
+>When VFAT_FS_DUALNAMES is disabled we avoid the creation of 8.3
+>short filenames for files on VFAT filesystems that require a long
+>name. The patch uses a pattern of 11 bytes in the directory entry
+>which contains invalid characters such that it cannot be considered
+>to be a valid short filename.
 
-> On Sat, 2009-06-27 at 15:31 +1000, Paul Mackerras wrote:
-> > +       if (regs) {
-> > +               if (current_is_64bit())
-> > +                       perf_callchain_user_64(regs, entry);
-> > +               else
-> > +                       perf_callchain_user_32(regs, entry);
-> > +       }
-> 
-> Ingo do we need 32 on 64 stuff like that too?
-
-hm, indeed.
-
-	Ingo
+Can't we make this a runtime option?
