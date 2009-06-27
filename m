@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbZF0LQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZF0LSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbZF0LQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 07:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZF0LQV
+	id S1753728AbZF0LSk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 07:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbZF0LSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 07:16:21 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56853 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbZF0LQV (ORCPT
+	Sat, 27 Jun 2009 07:18:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:38363 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751216AbZF0LSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 07:16:21 -0400
-Date: Wed, 24 Jun 2009 16:51:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       vapier@gentoo.org
-Subject: Re: [PATCH] allow execve'ing "/proc/self/exe" even if /proc is not
-	mounted
-Message-ID: <20090624145156.GC1512@ucw.cz>
-References: <1158166a0906241600w5f7f4ffcm49d9c849f0c27f72@mail.gmail.com> <20090624162125.a3a9b2c4.akpm@linux-foundation.org> <1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
+	Sat, 27 Jun 2009 07:18:32 -0400
+Date: Sat, 27 Jun 2009 19:18:32 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Sergei Trofimovich <slyich@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Oops] 2.6.31-rc1: tun
+Message-ID: <20090627111832.GA22621@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1158166a0906241649u78c717c4q8aebfe16e6018e78@mail.gmail.com>
+In-Reply-To: <20090625235335.42ba26be@mosly.slynet.org>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.kernel
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-25 01:49:13, Denys Vlasenko wrote:
-> On Thu, Jun 25, 2009 at 1:21 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > On Thu, 25 Jun 2009 01:00:56 +0200
-> > Denys Vlasenko <vda.linux@googlemail.com> wrote:
-> >> In some circumstances running process needs to re-execute
-> >> its image.
-> ...
-> >> More elegant way is to execute /proc/self/exe.
-> >> This works just fine as long as /proc is mounted.
-> >>
-> >> But it breaks if /proc isn't mounted, and this can happen in real-world
-> >> usage. For example, when shell invoked very early in initrd/initramfs.
-> >
-> > Why can't userspace mount /proc before doing the daemonization?
+Sergei Trofimovich <slyich@gmail.com> wrote:
 > 
-> Some people want to unset CONFIG_PROC_FS, and still have
-> working POSIX compatible shell. Coincidentally, NOMMU
-> machines, ones which *require* re-execution of the shell to support that,
-> tent to be the most memory starved machines too (thus most likely
-> to be those where people desire to unset CONFIG_PROC_FS).
+> Updated from 2.6.30 to 2.6.31-rc1
+> 
+> $ uname -a
+> Linux mosly 2.6.31-rc1 #16 SMP PREEMPT Thu Jun 25 22:14:24 EEST 2009 x86_64 Intel(R) Core(TM)2 Duo CPU U7600 @ 1.20GHz GenuineIntel GNU/Linux
+> 
+> All my tun interfaces stopped working. ICMP works but IP(TCP/UDP) does not.
+> Machine started to hang. I tried to reproduce in linux console. You see the .png result.
+> .config attached
 
-And some people want to mount /proc on /xyzzy.
+This patch should help (already merged by davem).
 
-Create minimal PROCMINI fs with just /proc/selv/exe?
+diff --git a/net/ipv4/ip_input.c b/net/ipv4/ip_input.c
+index 490ce20..db46b4b 100644
+--- a/net/ipv4/ip_input.c
++++ b/net/ipv4/ip_input.c
+@@ -440,6 +440,9 @@ int ip_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt,
+ 	/* Remove any debris in the socket control block */
+ 	memset(IPCB(skb), 0, sizeof(struct inet_skb_parm));
+ 
++	/* Must drop socket now because of tproxy. */
++	skb_orphan(skb);
++
+ 	return NF_HOOK(PF_INET, NF_INET_PRE_ROUTING, skb, dev, NULL,
+ 		       ip_rcv_finish);
+ 
+diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
+index c3a07d7..6d6a427 100644
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -139,6 +139,9 @@ int ipv6_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt
+ 
+ 	rcu_read_unlock();
+ 
++	/* Must drop socket now because of tproxy. */
++	skb_orphan(skb);
++
+ 	return NF_HOOK(PF_INET6, NF_INET_PRE_ROUTING, skb, dev, NULL,
+ 		       ip6_rcv_finish);
+ err:
 
-> We can special-case execve(NULL, ...).
-> But I feared people would say this will change previously-buggy
-> userspace code into one acting weirdly; in come cases
-> leading to infinite execve loops. Do you think it's better
-> than "/proc/self/exe"?
-
-Yes. Or... add execme() syscall?
-
-								Pavel
+Cheers,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
