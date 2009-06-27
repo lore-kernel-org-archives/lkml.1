@@ -1,159 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZF0Gh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbZF0GoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758068AbZF0Gh0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 02:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZF0GhO
+	id S1757392AbZF0GoW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 02:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZF0GoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 02:37:14 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:57574 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZF0GhN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 02:37:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=NqanC4/hRKEnWTND9Y32DyxGjq9ZcffYCdeajcCzDitKy/siJyyrMZPaW6Uj+i7tp+
-         mh6A2ZeilDwa8RXH++3U00lHAl9p92HRBRD1P9AieJPy/0R3yDojsaWbgTCR4ZnudzrJ
-         H6QahfUeC1jtM/StOK+uquuwdU+691+czGlCc=
-Date: Sat, 27 Jun 2009 15:35:15 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Subject: [PATCH] x86: cleanup dump_pagetable()
-Message-ID: <20090627063514.GA2834@localhost.localdomain>
+	Sat, 27 Jun 2009 02:44:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36083 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbZF0GoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 02:44:12 -0400
+Date: Sat, 27 Jun 2009 08:44:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vince Weaver <vince@deater.net>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
+Subject: [numbers] perfmon/pfmon overhead of 17%-94%
+Message-ID: <20090627064404.GA19368@elte.hu>
+References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy> <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090627060432.GB16200@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use pgtable access helpers for 32bit version dump_pagetable() and get rid
-of __typeof__() operators. This needs to make pmd_pfn() available for 2-level
-pgtable.
 
-Also, remove some casts for 64bit version dump_pagetable().
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
----
- arch/x86/include/asm/pgtable.h |   10 ++++----
- arch/x86/mm/fault.c            |   51 ++++++++++++++++-----------------------
- 2 files changed, 26 insertions(+), 35 deletions(-)
+> Besides, you compare perfcounters to perfmon (which you seem to be 
+> a contributor of), while in reality perfmon has much, much worse 
+> (and unfixable, because designed-in) measurement overhead.
+> 
+> So why are you criticising perfcounters for a 5000 cycles 
+> measurement overhead while perfmon has huge, _hundreds of 
+> millions_ of cycles measurement overhead (per second) for various 
+> realistic workloads? [ In fact in one of the scheduler-tests 
+> perfmon has a whopping measurement overhead of _nine billion_ 
+> cycles, it increased total runtime of the workload from 3.3 
+> seconds to 6.6 seconds. (!) ]
 
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 3cc06e3..af5481e 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -134,6 +134,11 @@ static inline unsigned long pte_pfn(pte_t pte)
- 	return (pte_val(pte) & PTE_PFN_MASK) >> PAGE_SHIFT;
- }
+Here are the more detailed perfmon/pfmon measurement overhead 
+numbers.
+
+Test system is a "Intel Core2 E6800 @ 2.93GHz", 1 GB of RAM, default 
+Fedora install.
+
+I've measured two workloads:
+
+    hackbench.c         # messaging server benchmark
+    test-1m-pipes.c     # does 1 million pipe ops, similar to lat_pipe
+
+v2.6.28+perfmon patches (v3, full):
+
+    ./hackbench 10
+    0.496400985  seconds time elapsed   ( +-   1.699% )
+
+    pfmon --follow-fork--aggregate-results ./hackbench 10
+    0.580812999  seconds time elapsed   ( +-   2.233% )
+
+I.e. this workload runs 17% slower under pfmon, the measurement 
+overhead is about 1.45 billion cycles.
  
-+static inline unsigned long pmd_pfn(pmd_t pmd)
-+{
-+	return (pmd_val(pmd) & PTE_PFN_MASK) >> PAGE_SHIFT;
-+}
-+
- #define pte_page(pte)	pfn_to_page(pte_pfn(pte))
- 
- static inline int pmd_large(pmd_t pte)
-@@ -422,11 +427,6 @@ static inline pmd_t *pmd_offset(pud_t *pud, unsigned long address)
- 	return (pmd_t *)pud_page_vaddr(*pud) + pmd_index(address);
- }
- 
--static inline unsigned long pmd_pfn(pmd_t pmd)
--{
--	return (pmd_val(pmd) & PTE_PFN_MASK) >> PAGE_SHIFT;
--}
--
- static inline int pud_large(pud_t pud)
- {
- 	return (pud_val(pud) & (_PAGE_PSE | _PAGE_PRESENT)) ==
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index 78a5fff..9bf7e52 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -285,26 +285,25 @@ check_v8086_mode(struct pt_regs *regs, unsigned long address,
- 		tsk->thread.screen_bitmap |= 1 << bit;
- }
- 
--static void dump_pagetable(unsigned long address)
-+static bool low_pfn(unsigned long pfn)
- {
--	__typeof__(pte_val(__pte(0))) page;
-+	return pfn < max_low_pfn;
-+}
- 
--	page = read_cr3();
--	page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
-+static void dump_pagetable(unsigned long address)
-+{
-+	pgd_t *base = __va(read_cr3());
-+	pgd_t *pgd = &base[pgd_index(address)];
-+	pmd_t *pmd;
-+	pte_t *pte;
- 
- #ifdef CONFIG_X86_PAE
--	printk("*pdpt = %016Lx ", page);
--	if ((page >> PAGE_SHIFT) < max_low_pfn
--	    && page & _PAGE_PRESENT) {
--		page &= PAGE_MASK;
--		page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
--							& (PTRS_PER_PMD - 1)];
--		printk(KERN_CONT "*pde = %016Lx ", page);
--		page &= ~_PAGE_NX;
--	}
--#else
--	printk("*pde = %08lx ", page);
-+	printk("*pdpt = %016Lx ", pgd_val(*pgd));
-+	if (!low_pfn(pgd_val(*pgd) >> PAGE_SHIFT) || !pgd_present(*pgd))
-+		goto out;
- #endif
-+	pmd = pmd_offset(pud_offset(pgd, address), address);
-+	printk(KERN_CONT "*pde = %0*Lx ", sizeof(*pmd) * 2, (u64)pmd_val(*pmd));
- 
- 	/*
- 	 * We must not directly access the pte in the highpte
-@@ -312,16 +311,12 @@ static void dump_pagetable(unsigned long address)
- 	 * And let's rather not kmap-atomic the pte, just in case
- 	 * it's allocated already:
- 	 */
--	if ((page >> PAGE_SHIFT) < max_low_pfn
--	    && (page & _PAGE_PRESENT)
--	    && !(page & _PAGE_PSE)) {
--
--		page &= PAGE_MASK;
--		page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
--							& (PTRS_PER_PTE - 1)];
--		printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
--	}
-+	if (!low_pfn(pmd_pfn(*pmd)) || !pmd_present(*pmd) || pmd_large(*pmd))
-+		goto out;
- 
-+	pte = pte_offset_kernel(pmd, address);
-+	printk("*pte = %0*Lx ", sizeof(*pte) * 2, (u64)pte_val(*pte));
-+out:
- 	printk("\n");
- }
- 
-@@ -449,16 +444,12 @@ static int bad_address(void *p)
- 
- static void dump_pagetable(unsigned long address)
- {
--	pgd_t *pgd;
-+	pgd_t *base = __va(read_cr3() & PHYSICAL_PAGE_MASK);
-+	pgd_t *pgd = base + pgd_index(address);
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t *pte;
- 
--	pgd = (pgd_t *)read_cr3();
--
--	pgd = __va((unsigned long)pgd & PHYSICAL_PAGE_MASK);
--
--	pgd += pgd_index(address);
- 	if (bad_address(pgd))
- 		goto bad;
- 
+Furthermore, when running a 'pipe latency benchmark', an app that 
+does one million pipe reads and writes between two tasks (source 
+code attached below), i measured the following perfmon/pfmon 
+overhead:
+
+    ./pipe-test-1m
+    3.344280347  seconds time elapsed   ( +-   0.361% )
+
+    pfmon --follow-fork --aggregate-results ./pipe-test-1m
+    6.508737983  seconds time elapsed   ( +-   0.243% )
+
+That's an about 94% measurement overhead, or about 9.2 _billion_ 
+cycles overhead on this test-system.
+
+These perfmon/pfmon overhead figures are consistently reproducible, 
+and they happen on other test-systems as well, and with other 
+workloads as well. Basically for any app that involves task creation 
+or context-switching, perfmon adds considerable runtime overhead - 
+well beyond the overhead of perfcounters.
+
+	Ingo
+
+-----------------{ pipe-test-1m.c }-------------------->
+
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <linux/unistd.h>
+
+#define LOOPS 1000000
+
+int main (void)
+{
+	unsigned long long t0, t1;
+	int pipe_1[2], pipe_2[2];
+	int m = 0, i;
+
+	pipe(pipe_1);
+	pipe(pipe_2);
+
+	if (!fork()) {
+		for (i = 0; i < LOOPS; i++) {
+			read(pipe_1[0], &m, sizeof(int));
+			write(pipe_2[1], &m, sizeof(int));
+		}
+	} else {
+		for (i = 0; i < LOOPS; i++) {
+			write(pipe_1[1], &m, sizeof(int));
+			read(pipe_2[0], &m, sizeof(int));
+		}
+	}
+
+	return 0;
+}
