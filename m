@@ -1,56 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZF0R3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbZF0ST4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZF0R3O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 13:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbZF0R27
+	id S1752043AbZF0ST4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 14:19:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZF0STs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 13:28:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34691 "EHLO mx2.mail.elte.hu"
+	Sat, 27 Jun 2009 14:19:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58453 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756738AbZF0R26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 13:28:58 -0400
-Date: Sat, 27 Jun 2009 19:28:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Vince Weaver <vince@deater.net>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: performance counter ~0.4% error finding retired instruction
-	count
-Message-ID: <20090627172854.GE21595@elte.hu>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy> <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu> <19013.49344.860564.948905@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19013.49344.860564.948905@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	id S1750720AbZF0STs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 14:19:48 -0400
+Subject: [PATCH -tip] perf stat: memcpy is only required if no event is
+ selected and !null_run
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 27 Jun 2009 23:49:09 +0530
+Message-Id: <1246126749.32198.16.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+Set attrs and nr_counters if no event is selected and !null_run
 
-> Ingo Molnar writes:
-> 
-> > I measured 2000, but generally a few thousand cycles per 
-> > invocation sounds about right.
-> 
-> We could actually do a bit better than we do, fairly easily.  We 
-> could attach the counters to the child after the fork instead of 
-> the parent before the fork, using a couple of pipes for 
-> synchronization.  And there's probably a way to get the dynamic 
-> linker to resolve the execvp call early in the child so we avoid 
-> that overhead.  I think we should be able to get the overhead down 
-> to tens of userspace instructions without doing anything 
-> unnatural.
+Setting of attrs should depend on number of counters,
+so we need to memcpy only for sizeof(default_attrs)
 
-Definitely so.
+and set nr_counters as ARRAY_SIZE(default_attrs) in place of hardcoded value
 
-	Ingo
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ tools/perf/builtin-stat.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 3840a70..3e5ea4e 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -46,7 +46,7 @@
+ #include <sys/prctl.h>
+ #include <math.h>
+ 
+-static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
++static struct perf_counter_attr default_attrs[] = {
+ 
+   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK	},
+   { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
+@@ -477,16 +477,17 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
+ {
+ 	int status;
+ 
+-	memcpy(attrs, default_attrs, sizeof(attrs));
+-
+ 	argc = parse_options(argc, argv, options, stat_usage, 0);
+ 	if (!argc)
+ 		usage_with_options(stat_usage, options);
+ 	if (run_count <= 0 || run_count > MAX_RUN)
+ 		usage_with_options(stat_usage, options);
+ 
+-	if (!null_run && !nr_counters)
+-		nr_counters = 8;
++	/* Set attrs and nr_counters if no event is selected and !null_run */
++	if (!null_run && !nr_counters) {
++		memcpy(attrs, default_attrs, sizeof(default_attrs));
++		nr_counters = ARRAY_SIZE(default_attrs);
++	}
+ 
+ 	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+ 	assert(nr_cpus <= MAX_NR_CPUS);
+-- 
+1.6.0.6
+
+
+
