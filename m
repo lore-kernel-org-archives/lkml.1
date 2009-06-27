@@ -1,84 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757145AbZF0RG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZF0R0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757145AbZF0RG2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 13:06:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZF0RGU
+	id S1756311AbZF0R0s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 13:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbZF0R0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 13:06:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53419 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755418AbZF0RGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 13:06:19 -0400
-Subject: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl,
- COMMAND_SIZE and scsi_device_type
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 27 Jun 2009 22:35:59 +0530
-Message-Id: <1246122359.32198.7.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 27 Jun 2009 13:26:38 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45362 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbZF0R0i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 13:26:38 -0400
+Date: Sat, 27 Jun 2009 19:26:40 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: tridge@samba.org, "H. Peter Anvin" <hpa@zytor.com>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <87k52yzbti.fsf@devron.myhome.or.jp>
+Message-ID: <alpine.LSU.2.00.0906271923490.5890@fbirervta.pbzchgretzou.qr>
+References: <87k52yzbti.fsf@devron.myhome.or.jp>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
-and scsi_device_type defined in kernel
+On Sat, 27 Jun 2009 10:48:25 +0900, OGAWA Hirofumi wrote:
 
-fix the following 'make headers_check' warnings:
+>It sounds like to be start of yet another UMSDOS with minimal one. I 
+>wouldn't like to repeat UMSDOS history, i.e. I think it needs real 
+>users and developers. If not, I wouldn't like to add.
 
-  usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
-  usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- include/scsi/scsi.h |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index 084478e..7ba5acf 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -156,9 +156,6 @@ scsi_varlen_cdb_length(const void *hdr)
- 	return ((struct scsi_varlen_cdb_hdr *)hdr)->additional_cdb_length + 8;
- }
- 
--extern const unsigned char scsi_command_size_tbl[8];
--#define COMMAND_SIZE(opcode) scsi_command_size_tbl[((opcode) >> 5) & 7]
--
- static inline unsigned
- scsi_command_size(const unsigned char *cmnd)
- {
-@@ -166,6 +163,13 @@ scsi_command_size(const unsigned char *cmnd)
- 		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
- }
- 
-+#ifdef __KERNEL__
-+extern const unsigned char scsi_command_size_tbl[8];
-+#define COMMAND_SIZE(opcode) scsi_command_size_tbl[((opcode) >> 5) & 7]
-+
-+/* Returns a human-readable name for the device */
-+extern const char * scsi_device_type(unsigned type);
-+#endif
- /*
-  *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
-  *  T10/1561-D Revision 4 Draft dated 7th November 2002.
-@@ -281,9 +285,6 @@ enum scsi_protocol {
- 	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
- };
- 
--/* Returns a human-readable name for the device */
--extern const char * scsi_device_type(unsigned type);
--
- /*
-  * standard mode-select header prepended to all mode-select commands
-  */
--- 
-1.6.0.6
-
-
-
+And in that regard, there is http://posixovl.sf.net/ for everybody who 
+needs UMSDOS functionality.
