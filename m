@@ -1,47 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbZF0Ljt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbZF0Lke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbZF0Ljt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 07:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbZF0Ljj
+	id S1754963AbZF0Lke (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 07:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZF0Lk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 07:39:39 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:58405 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751216AbZF0Ljj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 07:39:39 -0400
-Date: Sat, 27 Jun 2009 19:39:37 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Sergei Trofimovich <slyich@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org
-Subject: Re: [bisected][Oops] 2.6.31-rc1: tun
-Message-ID: <20090627113937.GA22796@gondor.apana.org.au>
-References: <20090627125354.12623679@mosly.slynet.org>
+	Sat, 27 Jun 2009 07:40:27 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:34549 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751216AbZF0Lk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 07:40:26 -0400
+Date: Sat, 27 Jun 2009 06:40:29 -0500
+From: Robin Holt <holt@sgi.com>
+To: linux-kernel@vger.kernel.org
+Subject: [Patch v2] stop_machine stalls for a considerable period on large
+	cpu count machines.
+Message-ID: <20090627114029.GC6894@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090627125354.12623679@mosly.slynet.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 27, 2009 at 12:53:54PM +0300, Sergei Trofimovich wrote:
->
-> It was rather straightforward to bisect[1]: bad state is nonworking (sometimes Oopsing
-> as you can see in previous email) openvpn.
-> 
-> Reverting commit d55d87fdff8252d0e2f7c28c2d443aee17e9d70f against 
-> v2.6.31-rc1-115-g442ce8a or against v2.6.31-rc1 stabilizes kernel and makes openvpn
-> work again.
+I forgot again on the repost.
 
-Should be fixed already with the patch that I forwarded you in
-the previous email.
+Sorry for the noise,
+Robin
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+----- Forwarded message from Robin Holt <holt@sgi.com> -----
+
+Date: Sat, 27 Jun 2009 06:34:10 -0500
+From: Robin Holt <holt@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mike Travis <travis@sgi.com>, Rusty Russell <rusty@rustcorp.com.au>,
+	Stable Kernel Maintainers <stable@kernel.org>
+Subject: [Patch v2] stop_machine stalls for a considerable period on large
+	cpu count machines.
+
+Mike Travis noted that a 2048 cpu machine booting would take hours
+to get through its modprobes.  We would get numerous back traces from
+stop_cpu indicating they had not serviced interrupts.
+
+A quick code review indicated we have a situation of heavy cacheline
+contention due to the 'state' (read-mostly) and 'thread_ack'
+(write-mostly) variables being located in the same cacheline.
+
+
+Signed-off-by: Robin Holt <holt@sgi.com>
+Cc: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Stable Kernel Maintainers <stable@kernel.org>
+---
+
+My first attempt missed a 'quilt refresh' and did not work.
+
+ kernel/stop_machine.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+
+Index: stop_machine_false_sharing/kernel/stop_machine.c
+===================================================================
+--- stop_machine_false_sharing.orig/kernel/stop_machine.c	2009-06-27 06:30:24.196637521 -0500
++++ stop_machine_false_sharing/kernel/stop_machine.c	2009-06-27 06:30:28.401164425 -0500
+@@ -13,6 +13,13 @@
+ #include <asm/atomic.h>
+ #include <asm/uaccess.h>
+ 
++/*
++ * It is important to keep 'thread_ack' and 'state' in a seperate
++ * cachelines to prevent cacheline sharing between threads updating
++ * thread_ack and other threads spinning on state.
++ */
++static atomic_t thread_ack	____cacheline_aligned;
++
+ /* This controls the threads on each CPU. */
+ enum stopmachine_state {
+ 	/* Dummy starting state for thread. */
+@@ -26,7 +33,7 @@ enum stopmachine_state {
+ 	/* Exit */
+ 	STOPMACHINE_EXIT,
+ };
+-static enum stopmachine_state state;
++static enum stopmachine_state state ____cacheline_aligned;
+ 
+ struct stop_machine_data {
+ 	int (*fn)(void *);
+@@ -36,7 +43,6 @@ struct stop_machine_data {
+ 
+ /* Like num_online_cpus(), but hotplug cpu uses us, so we need this. */
+ static unsigned int num_threads;
+-static atomic_t thread_ack;
+ static DEFINE_MUTEX(lock);
+ /* setup_lock protects refcount, stop_machine_wq and stop_machine_work. */
+ static DEFINE_MUTEX(setup_lock);
+
+----- End forwarded message -----
