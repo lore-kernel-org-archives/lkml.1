@@ -1,101 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZF1VGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZF1VHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZF1VGI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 17:06:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZF1VF5
+	id S1754541AbZF1VHQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 17:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZF1VHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 17:05:57 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:58456 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753140AbZF1VF4 (ORCPT
+	Sun, 28 Jun 2009 17:07:03 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:50865 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755064AbZF1VHB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 17:05:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qda9iCOru5LBsHeFQuaJ/KKa6Wj93XbfNAfrNaH1PO67GiZhuiMqKNBwBBvTFIZ/tR
-         x75oXbQgFmrHor0LKWAgC6KBQlglLn0Yu+jRVus9qVYCBj1JcC0Kw+ocyGwypBCv6ReN
-         C67MErnEP+wtvNwSdz5Yg9m3U8v6wQMxqSooI=
-Date: Sun, 28 Jun 2009 23:05:56 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH 0/2] perfcounter: callchains with perf report
-Message-ID: <20090628210554.GA6267@nowhere>
-References: <1246026481-8314-1-git-send-email-fweisbec@gmail.com> <19013.29199.123045.531291@cargo.ozlabs.ibm.com>
+	Sun, 28 Jun 2009 17:07:01 -0400
+Date: Sun, 28 Jun 2009 17:07:04 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
+ I/O devices (rev. 6)
+In-Reply-To: <200906281225.27596.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906281642500.7576-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19013.29199.123045.531291@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 27, 2009 at 11:12:47AM +1000, Paul Mackerras wrote:
-> Frederic Weisbecker writes:
-> 
-> > Here is a first shot for the sorted callchains per entries handling
-> > with per report.
-> > 
-> > I'll continue to improve it:
-> > 
-> > - symbol resolution
-> > - profit we have a tree to display a better graph hierarchy
-> > - let the user provide a limit for hit percentage, depth, number of
-> >   backtraces, etc...
-> > - better output
-> > - colors
-> > - and so on....
-> 
-> Nice!
-> 
-> I have just about finished doing the kernel piece of callchain support
-> on powerpc.  Because of the way function calls and returns work on
-> powerpc, working out the first one or two return addresses can be
-> tricky.  We potentially have a valid return address in the link
-> register (LR), or in the LR save area in the second stack frame, or
-> both, and you need extra information such as DWARF unwind tables to
-> work out which of those three possibilities you have, in general.
-> This is the case at each point where an interrupt or signal has
-> occurred.
-> 
-> Because I didn't want to go trawling through CFI tables at interrupt
-> time, particularly for user code, I made the kernel save both possible
-> return addresses in the callchain.  For the kernel part of the
-> callchain, I check those two addresses to see if they're valid kernel
-> addresses and set them to 0 if not, or if they're equal.
-> 
-> That means I need to make some changes to builtin-report.c to ignore
-> zero addresses.  I may need to add stuff to look for and use unwind
-> tables as well, if we want completely accurate call chains.
+On Sun, 28 Jun 2009, Rafael J. Wysocki wrote:
+
+> It seems that if we do something like in the appended patch, then
+> cancel_work() and cancel_delayed_work_dequeue() can be used to simplify the
+> $subject patch slightly.
+
+I merged your patch with my own work, leading to the patch below.
+
+There were a bunch of things I didn't like about the existing code,
+particularly cancel_delayed_work.  To start with, it seems like a large
+enough routine that it shouldn't be inlined.  More importantly, it
+foolishly calls del_timer_sync, resulting in the unnecessary
+restriction that it cannot be used in_interrupt.  Finally, although it
+will deactivate a delayed_work's timer, it doesn't even try to remove
+the item from the workqueue if the timer has already expired.
+
+Your cancel_delayed_work_dequeue is better -- so much better that I
+don't see any reason to keep the original cancel_delayed_work at all.  
+I got rid of it and used your routine instead.
+
+I also changed the comments you wrote for cancel_work.  You can see 
+that now they are much more explicit and complete.
+
+The original version of __cancel_work_timer is not safe to use
+in_interrupt.  If it is called from a handler whose IRQ interrupted
+delayed_work_timer_fn, it can loop indefinitely.  Therefore I added a
+check; if it finds that the work_struct is currently being enqueued and
+it is running in_interrupt, it gives up right away.  There are a few
+other improvements too.
+
+Consequently it is now safe to call cancel_work and cancel_delayed_work
+in_interrupt or while holding a spinlock.  This means you can use these
+functions to cancel the various PM runtime work items whenever needed.  
+As a result, you don't need two work_structs in dev_pm_info; a single
+delayed_work will be enough.
+
+Tell me what you think.
+
+Alan Stern
 
 
-Well, I guess I can ignore them in my further patches.
-But wouldn't it be better to discard them from the kernel?
-Unless it's somewhat useful to know we had an unknown entry?
 
+Index: usb-2.6/include/linux/workqueue.h
+===================================================================
+--- usb-2.6.orig/include/linux/workqueue.h
++++ usb-2.6/include/linux/workqueue.h
+@@ -223,24 +223,10 @@ int execute_in_process_context(work_func
+ extern int flush_work(struct work_struct *work);
  
-> The other thing I did is to put PERF_CONTEXT_KERNEL markers in the
-> callchain every time we find an interrupt frame, and PERF_CONTEXT_USER
-> markers every time we find a signal frame, so that userspace knows
-> when it needs to do the unwinding.
-> 
-> Oh, and a third point is that on powerpc the sampled IP recorded if
-> you ask for PERF_SAMPLE_IP won't in general be the same as the first
-> IP in the callchain.  The reason is that the PERF_SAMPLE_IP value
-> points to the instruction that caused the counter overflow whereas the
-> first IP in the callchain tells you where the CPU took the interrupt.
-> That is almost always a few instructions further on, and can be quite
-> a way further on if interrupts were disabled when the counter overflow
-> occur.  In fact we regularly see the PERF_SAMPLE_IP value being in the
-> hypervisor but the first IP in the callchain being in the kernel.
-
-
-Ok.
-
-> 
-> Paul.
+ extern int cancel_work_sync(struct work_struct *work);
+-
+-/*
+- * Kill off a pending schedule_delayed_work().  Note that the work callback
+- * function may still be running on return from cancel_delayed_work(), unless
+- * it returns 1 and the work doesn't re-arm itself. Run flush_workqueue() or
+- * cancel_work_sync() to wait on it.
+- */
+-static inline int cancel_delayed_work(struct delayed_work *work)
+-{
+-	int ret;
+-
+-	ret = del_timer_sync(&work->timer);
+-	if (ret)
+-		work_clear_pending(&work->work);
+-	return ret;
+-}
++extern int cancel_work(struct work_struct *work);
+ 
+ extern int cancel_delayed_work_sync(struct delayed_work *work);
++extern int cancel_delayed_work(struct delayed_work *dwork);
+ 
+ /* Obsolete. use cancel_delayed_work_sync() */
+ static inline
+Index: usb-2.6/kernel/workqueue.c
+===================================================================
+--- usb-2.6.orig/kernel/workqueue.c
++++ usb-2.6/kernel/workqueue.c
+@@ -465,6 +465,7 @@ static int try_to_grab_pending(struct wo
+ {
+ 	struct cpu_workqueue_struct *cwq;
+ 	int ret = -1;
++	unsigned long flags;
+ 
+ 	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+ 		return 0;
+@@ -478,7 +479,7 @@ static int try_to_grab_pending(struct wo
+ 	if (!cwq)
+ 		return ret;
+ 
+-	spin_lock_irq(&cwq->lock);
++	spin_lock_irqsave(&cwq->lock, flags);
+ 	if (!list_empty(&work->entry)) {
+ 		/*
+ 		 * This work is queued, but perhaps we locked the wrong cwq.
+@@ -491,7 +492,7 @@ static int try_to_grab_pending(struct wo
+ 			ret = 1;
+ 		}
+ 	}
+-	spin_unlock_irq(&cwq->lock);
++	spin_unlock_irqrestore(&cwq->lock, flags);
+ 
+ 	return ret;
+ }
+@@ -536,18 +537,26 @@ static void wait_on_work(struct work_str
+ 		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+ }
+ 
+-static int __cancel_work_timer(struct work_struct *work,
++static int __cancel_work_timer(struct work_struct *work, bool wait,
+ 				struct timer_list* timer)
+ {
+ 	int ret;
+ 
+-	do {
+-		ret = (timer && likely(del_timer(timer)));
+-		if (!ret)
+-			ret = try_to_grab_pending(work);
+-		wait_on_work(work);
+-	} while (unlikely(ret < 0));
++	if (timer && likely(del_timer(timer))) {
++		ret = 1;
++		goto done;
++	}
+ 
++	for (;;) {
++		ret = try_to_grab_pending(work);
++		if (likely(ret >= 0))
++			break;
++		if (in_interrupt())
++			return ret;
++	}
++	if (ret == 0 && wait)
++		wait_on_work(work);
++ done:
+ 	work_clear_pending(work);
+ 	return ret;
+ }
+@@ -575,11 +584,43 @@ static int __cancel_work_timer(struct wo
+  */
+ int cancel_work_sync(struct work_struct *work)
+ {
+-	return __cancel_work_timer(work, NULL);
++	return __cancel_work_timer(work, true, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cancel_work_sync);
+ 
+ /**
++ * cancel_work - try to cancel a pending work_struct.
++ * @work: the work_struct to cancel
++ *
++ * Try to cancel a pending work_struct before it starts running.
++ * Upon return, @work may safely be reused if the return value
++ * is 1 or the return value is 0 and the work callback function
++ * doesn't resubmit @work.
++ *
++ * The callback function may be running upon return if the return value
++ * is <= 0; use cancel_work_sync() to wait for the callback function
++ * to finish.
++ *
++ * There's not much point using this routine unless you can guarantee
++ * that neither the callback function nor anything else is in the
++ * process of submitting @work (or is about to do so).  The only good
++ * reason might be that optimistically trying to cancel @work has less
++ * overhead than letting it go ahead and run.
++ *
++ * This routine may be called from interrupt context.
++ *
++ * Returns: 1 if @work was removed from its workqueue,
++ *	    0 if @work was not pending (may be running),
++ *	   -1 if @work was concurrently being enqueued and we were
++ *		called in_interrupt.
++ */
++int cancel_work(struct work_struct *work)
++{
++	return __cancel_work_timer(work, false, NULL);
++}
++EXPORT_SYMBOL_GPL(cancel_work);
++
++/**
+  * cancel_delayed_work_sync - reliably kill off a delayed work.
+  * @dwork: the delayed work struct
+  *
+@@ -590,10 +631,24 @@ EXPORT_SYMBOL_GPL(cancel_work_sync);
+  */
+ int cancel_delayed_work_sync(struct delayed_work *dwork)
+ {
+-	return __cancel_work_timer(&dwork->work, &dwork->timer);
++	return __cancel_work_timer(&dwork->work, true, &dwork->timer);
+ }
+ EXPORT_SYMBOL(cancel_delayed_work_sync);
+ 
++/**
++ * cancel_delayed_work - try to cancel a delayed_work_struct.
++ * @dwork: the delayed_work_struct to cancel
++ *
++ * Try to cancel a pending delayed_work, either by deactivating its
++ * timer or by removing it from its workqueue.  This routine is just
++ * like cancel_work() except that it handles a delayed_work.
++ */
++int cancel_delayed_work(struct delayed_work *dwork)
++{
++	return __cancel_work_timer(&dwork->work, false, &dwork->timer);
++}
++EXPORT_SYMBOL(cancel_delayed_work);
++
+ static struct workqueue_struct *keventd_wq __read_mostly;
+ 
+ /**
 
