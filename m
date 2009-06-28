@@ -1,114 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZF1QOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZF1Q13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756667AbZF1QOO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZF1QOG
+	id S1754348AbZF1Q13 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZF1Q1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:14:06 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49697 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbZF1QOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:14:05 -0400
-Date: Sun, 28 Jun 2009 09:14:11 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: array of pointers with rcu
-Message-ID: <20090628161411.GE7070@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090628132223.GA11856@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090628132223.GA11856@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 28 Jun 2009 12:27:10 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1067 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbZF1Q1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 12:27:07 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 00/62] Remove unnecessary semicolons
+Date: Sun, 28 Jun 2009 09:26:05 -0700
+Message-Id: <cover.1246173664.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 04:22:24PM +0300, Michael S. Tsirkin wrote:
-> Paul,
-> I'd like to implement a static array of pointers with rcu.
-> (Note that Documentation/RCU/arrayRCU.txt addresses only the case of
-> static arrays where the data (rather than a pointer to the data) is
-> located in each array element).
-> The array is implemented today in kvm as follows:
-> 
-> struct kvm_io_bus {
->         int                   dev_count;
-> #define NR_IOBUS_DEVS 6
->         struct kvm_io_device *devs[NR_IOBUS_DEVS];
-> };
-> 
-> It's easy to use rcu_assign_pointer and
-> rcu_dereference to access each value in the array,
-> so that's fine.
-> 
-> However, I also have the dev_count value to handle.
-> This value is usually used in loops like this
-> 
-> for (i = 0; i < bus->dev_count; ++i) {
-> 	... uses bus->devs[i] ...
-> }
+Found by script
+#! /bin/bash
 
-So the count can vary, then.  In other words, someone might change the
-value of ->dev_count from (say) 5 to (say) 2, implicitly invalidating
-the last three ->devs pointers, correct?
+from=";\s*;\s*\n"
+to=";\n"
 
-Of course, this implicit invalidation might happen just after you
-fetched the value of (say) ->devs[3].  Or just after you fetch the
-value of ->dev_count, for that matter.
+for file in $(grep -rP --include=*.[ch] -li $from *) ; do
 
-> I can assign the dev_count value with rcu_assign_pointer and even though
-> it is not a pointer I think it should work fine.  However, to access
-> dev_count I think that rcu_dereference will not do what I want:
-> 
-> #define rcu_dereference(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p);
-> \
->                                 smp_read_barrier_depends(); \
->                                 (_________p1); \
->                                 })
-> 
-> 
-> The use of dev_count is not through a dependency so
-> smp_read_barrier_depends will not be enough on most architectures.
-> 
-> So it seems that what I really need is something like:
-> #define rcu_read_value(p)     ({ \
->                                 typeof(p) _________p1 = ACCESS_ONCE(p);
-> \
->                                 smp_rmb(); \
->                                 (_________p1); \
->                                 })
-> 
-> And maybe
-> #define rcu_assign_value rcu_assign_pointer
-> for symmetry.
-> 
-> Comments?
+    perl -i -e \
+	"local $/; while(<>) { s/$from/$to/g; print; }" $file
 
-Hmmm...
+done
 
-What you would really need to do in the above scheme is to make careful
-use of memory barriers to order the accesses to ->dev_count and the the
-elements of the ->devs[] array.  The usual trick to avoid such memory
-barriers it to dynamically allocate the array, but putting the count
-into a struct that includes the array, so that readers are guaranteed
-to get a value of ->dev_count that matches the ->devs[] array.
+Some false positives removed manually
 
-Of course, you might have other reasons for the array to be statically
-allocated.  In that case, one trick is to statically allocate two
-arrays, each with its own ->dev_count.  Then a size-change update will
-copy from the current array to the new array, set the value of the new
-->dev_count appropriately, and then use rcu_assign_pointer() to cause
-new readers to see the updated array.  In short, use the approach
-described for resizeable arrays in Documentation/RCU/arrayRCU.txt
-even though the physical array stays the same size.
+Joe Perches (62):
+  arch/arm: Remove unnecessary semicolons
+  arch/ia64: Remove unnecessary semicolons
+  arch/m68knommu/kernel/time.c: Remove unnecessary semicolons
+  arch/mips/kernel/vpe.c: Remove unnecessary semicolons
+  arch/powerpc: Remove unnecessary semicolons
+  arch/s390/hypfs/inode.c: Remove unnecessary semicolons
+  arch/s390/kvm/interrupt.c: Remove unnecessary semicolons
+  arch/sh/boards/mach-se/7206/io.c: Remove unnecessary semicolons
+  arch/sparc/kernel/irq_64.c: Remove unnecessary semicolons
+  arch/um/drivers/net_kern.c: Remove unnecessary semicolons
+  arch/x86/kernel/ds.c: Remove unnecessary semicolons
+  drivers/ata: Remove unnecessary semicolons
+  drivers/block: Remove unnecessary semicolons
+  drivers/char/epca.c: Remove unnecessary semicolons
+  drivers/dma/fsldma.c: Remove unnecessary semicolons
+  drivers/dma: Remove unnecessary semicolons
+  drivers/gpu/drm: Remove unnecessary semicolons
+  drivers/hwmon/sht15.c: Remove unnecessary semicolons
+  drivers/ide: Remove unnecessary semicolons
+  drivers/isdn/capi/capiutil.c: Remove unnecessary semicolons
+  drivers/macintosh/rack-meter.c: Remove unnecessary semicolons
+  drivers/media/video/cx18/cx18-fileops.c: Remove unnecessary semicolons
+  drivers/media/video/ivtv/ivtv-driver.c: Remove unnecessary semicolons
+  drivers/media: Remove unnecessary semicolons
+  drivers/mfd/twl4030-irq.c: Remove unnecessary semicolons
+  drivers/mmc/host/imxmmc.c: Remove unnecessary semicolons
+  drivers/net/wireless/ath/ath9k: Remove unnecessary semicolons
+  drivers/net/bnx2x_link.c: Remove unnecessary semicolons
+  drivers/net/igb/igb_main.c: Remove unnecessary semicolons
+  drivers/net/qlge/qlge_main.c: Remove unnecessary semicolons
+  drivers/net/skfp: Remove unnecessary semicolons
+  drivers/net/skge.c: Remove unnecessary semicolons
+  drivers/net/sky2.c: Remove unnecessary semicolons
+  drivers/net: Remove unnecessary semicolons
+  drivers/pci/pcie/aer/ecrc.c: Remove unnecessary semicolons
+  drivers/pcmcia/pcmcia_resource.c: Remove unnecessary semicolons
+  drivers/regulator/pcf50633-regulator.c: Remove unnecessary semicolons
+  drivers/rtc/rtc-omap.c: Remove unnecessary semicolons
+  drivers/s390/block/dasd_eckd.c: Remove unnecessary semicolons
+  drivers/s390/net/netiucv.c: Remove unnecessary semicolons
+  drivers/s390/scsi/zfcp_scsi.c: Remove unnecessary semicolons
+  drivers/scsi/bnx2i/bnx2i_hwi.c: Remove unnecessary semicolons
+  include/scsi/fc/fc_fc2.h: Remove unnecessary semicolons
+  drivers/scsi/lpfc/lpfc_ct.c: Remove unnecessary semicolons
+  drivers/spi: Remove unnecessary semicolons
+  drivers/staging: Remove unnecessary semicolons
+  drivers/usb: Remove unnecessary semicolons
+  drivers/uwb/i1480/i1480u-wlp/netdev.c: Remove unnecessary semicolons
+  drivers/video/cfbcopyarea.c: Remove unnecessary semicolons
+  drivers/video/imxfb.c: Remove unnecessary semicolons
+  drivers/video/s3c2410fb.c: Remove unnecessary semicolons
+  drivers/watchdog/bcm47xx_wdt.c: Remove unnecessary semicolons
+  drivers/xen/balloon.c: Remove unnecessary semicolons
+  fs/autofs/dirhash.c: Remove unnecessary semicolons
+  fs/btrfs/tree-log.c: Remove unnecessary semicolons
+  fs/cifs/cifs_dfs_ref.c: Remove unnecessary semicolons
+  fs/ext4/mballoc.c: Remove unnecessary semicolons
+  fs/nfs/callback_xdr.c: Remove unnecessary semicolons
+  fs/ocfs2/quota_global.c: Remove unnecessary semicolons
+  kernel/trace/trace_hw_branches.c: Remove unnecessary semicolons
+  net/wireless/wext-compat.c: Remove unnecessary semicolons
+  sound: Remove unnecessary semicolons
 
-But again given that you only have six elements, why not just scan the
-whole array unconditionally, using NULL pointers in the ->devs[] elements
-to indicate that the corresponding element is invalid?  Then the normal
-rcu_assign_pointer() and rcu_dereference() will work normally.
+ arch/arm/mach-at91/at91cap9_devices.c              |    2 +-
+ arch/arm/mach-at91/at91sam9rl_devices.c            |    2 +-
+ arch/arm/mach-w90x900/w90p910.c                    |    2 +-
+ arch/arm/plat-mxc/irq.c                            |    2 +-
+ arch/ia64/kernel/esi.c                             |    2 +-
+ arch/ia64/kvm/process.c                            |    6 +++---
+ arch/ia64/kvm/vcpu.c                               |    2 +-
+ arch/ia64/kvm/vtlb.c                               |    4 ++--
+ arch/m68knommu/kernel/time.c                       |    2 +-
+ arch/mips/kernel/vpe.c                             |    2 +-
+ arch/powerpc/mm/tlb_hash64.c                       |    2 +-
+ arch/powerpc/oprofile/cell/vma_map.c               |    2 +-
+ arch/powerpc/platforms/powermac/cpufreq_64.c       |    2 +-
+ arch/powerpc/platforms/powermac/pic.c              |    2 +-
+ arch/powerpc/platforms/ps3/system-bus.c            |    1 -
+ arch/powerpc/sysdev/fsl_rio.c                      |    2 +-
+ arch/powerpc/sysdev/ppc4xx_pci.c                   |    4 ++--
+ arch/s390/hypfs/inode.c                            |    2 +-
+ arch/s390/kvm/interrupt.c                          |    2 +-
+ arch/sh/boards/mach-se/7206/io.c                   |    2 +-
+ arch/sparc/kernel/irq_64.c                         |    2 +-
+ arch/um/drivers/net_kern.c                         |    2 +-
+ arch/x86/kernel/ds.c                               |    2 +-
+ drivers/ata/pata_octeon_cf.c                       |    2 +-
+ drivers/ata/sata_inic162x.c                        |    2 +-
+ drivers/block/DAC960.c                             |    4 ++--
+ drivers/block/swim3.c                              |    2 +-
+ drivers/char/epca.c                                |    2 +-
+ drivers/dma/dmatest.c                              |    2 +-
+ drivers/dma/fsldma.c                               |    2 +-
+ drivers/dma/mv_xor.c                               |    2 +-
+ drivers/gpu/drm/i915/intel_dp.c                    |    2 +-
+ drivers/gpu/drm/radeon/r300.c                      |    4 ++--
+ drivers/hwmon/sht15.c                              |    2 +-
+ drivers/ide/ide-probe.c                            |    2 +-
+ drivers/ide/umc8672.c                              |    4 ++--
+ drivers/isdn/capi/capiutil.c                       |    2 +-
+ drivers/macintosh/rack-meter.c                     |    2 +-
+ drivers/media/dvb/b2c2/flexcop-fe-tuner.c          |    2 +-
+ drivers/media/dvb/dvb-usb/dib0700_devices.c        |    2 +-
+ drivers/media/dvb/frontends/cx24123.c              |    2 +-
+ drivers/media/dvb/frontends/dib0070.c              |    2 +-
+ drivers/media/dvb/frontends/stv0900_sw.c           |    2 +-
+ drivers/media/video/cx18/cx18-fileops.c            |    2 +-
+ drivers/media/video/cx231xx/cx231xx-video.c        |    4 ++--
+ drivers/media/video/cx23885/cx23885.h              |    2 +-
+ drivers/media/video/ivtv/ivtv-driver.c             |    2 +-
+ drivers/mfd/twl4030-irq.c                          |    2 +-
+ drivers/mmc/host/imxmmc.c                          |    2 +-
+ drivers/net/arcnet/arc-rawmode.c                   |    1 -
+ drivers/net/arcnet/capmode.c                       |    1 -
+ drivers/net/bnx2x_link.c                           |    2 +-
+ drivers/net/gianfar_ethtool.c                      |    2 +-
+ drivers/net/ibm_newemac/core.c                     |    8 ++++----
+ drivers/net/igb/igb_main.c                         |    4 ++--
+ drivers/net/ll_temac_main.c                        |    2 +-
+ drivers/net/ni52.c                                 |    4 ++--
+ drivers/net/qlge/qlge_main.c                       |    4 ++--
+ drivers/net/skfp/pcmplc.c                          |    2 +-
+ drivers/net/skfp/pmf.c                             |    8 ++++----
+ drivers/net/skge.c                                 |    2 +-
+ drivers/net/sky2.c                                 |    2 +-
+ drivers/net/vxge/vxge-config.h                     |    2 +-
+ drivers/net/vxge/vxge-main.c                       |    2 +-
+ drivers/net/wireless/ath/ath9k/eeprom.c            |    2 --
+ drivers/net/wireless/ath/ath9k/hw.c                |    2 +-
+ drivers/net/wireless/iwmc3200wifi/rx.c             |    8 ++++----
+ drivers/pci/pcie/aer/ecrc.c                        |    2 +-
+ drivers/pcmcia/pcmcia_resource.c                   |    2 +-
+ drivers/regulator/pcf50633-regulator.c             |    2 +-
+ drivers/rtc/rtc-omap.c                             |    2 +-
+ drivers/s390/block/dasd_eckd.c                     |    2 +-
+ drivers/s390/net/netiucv.c                         |    2 +-
+ drivers/s390/scsi/zfcp_scsi.c                      |    2 +-
+ drivers/scsi/bnx2i/bnx2i_hwi.c                     |    2 +-
+ drivers/scsi/lpfc/lpfc_ct.c                        |    2 +-
+ drivers/spi/omap_uwire.c                           |    2 +-
+ drivers/spi/spi_s3c24xx.c                          |    2 +-
+ .../comedi/drivers/addi-data/APCI1710_Tor.c        |    2 +-
+ .../comedi/drivers/addi-data/hwdrv_apci1500.c      |    2 +-
+ .../comedi/drivers/addi-data/hwdrv_apci1516.c      |    2 +-
+ .../comedi/drivers/addi-data/hwdrv_apci3501.c      |    2 +-
+ drivers/staging/comedi/drivers/amplc_pci230.c      |    2 +-
+ drivers/staging/comedi/drivers/comedi_bond.c       |    2 +-
+ drivers/staging/go7007/go7007-driver.c             |    2 +-
+ drivers/staging/otus/80211core/cmmsta.c            |    2 +-
+ drivers/staging/otus/hal/hpmain.c                  |    2 +-
+ drivers/staging/rt2860/common/cmm_data_2860.c      |    8 ++++----
+ drivers/staging/rt2860/rt_linux.c                  |    2 +-
+ drivers/staging/rt2860/rtmp.h                      |    3 +--
+ drivers/staging/rt2860/sta/aironet.c               |    2 +-
+ drivers/staging/rtl8187se/r8185b_init.c            |    2 +-
+ drivers/staging/rtl8192su/ieee80211/ieee80211_tx.c |    2 +-
+ drivers/staging/rtl8192su/r8192U_core.c            |    6 +++---
+ drivers/staging/rtl8192su/r819xU_phy.c             |    2 +-
+ drivers/staging/vt6655/card.c                      |    2 +-
+ drivers/staging/vt6655/iwctl.c                     |    2 +-
+ drivers/staging/vt6655/wpa2.c                      |    4 ++--
+ drivers/usb/class/cdc-wdm.c                        |    2 --
+ drivers/usb/serial/spcp8x5.c                       |    2 +-
+ drivers/uwb/i1480/i1480u-wlp/netdev.c              |    2 +-
+ drivers/video/cfbcopyarea.c                        |    2 +-
+ drivers/video/imxfb.c                              |    2 +-
+ drivers/video/s3c2410fb.c                          |    2 +-
+ drivers/watchdog/bcm47xx_wdt.c                     |    2 +-
+ drivers/xen/balloon.c                              |    2 +-
+ fs/autofs/dirhash.c                                |    2 +-
+ fs/btrfs/tree-log.c                                |    2 +-
+ fs/cifs/cifs_dfs_ref.c                             |    2 +-
+ fs/ext4/mballoc.c                                  |    2 +-
+ fs/nfs/callback_xdr.c                              |    2 +-
+ fs/ocfs2/quota_global.c                            |    2 +-
+ include/scsi/fc/fc_fc2.h                           |    3 +--
+ kernel/trace/trace_hw_branches.c                   |    2 +-
+ net/wireless/wext-compat.c                         |    2 +-
+ sound/oss/sys_timer.c                              |    3 ---
+ sound/soc/codecs/wm9081.c                          |    2 +-
+ sound/soc/pxa/pxa-ssp.c                            |    2 +-
+ sound/soc/s3c24xx/s3c24xx_uda134x.c                |    2 +-
+ 119 files changed, 139 insertions(+), 151 deletions(-)
 
-							Thanx, Paul
