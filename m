@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760522AbZF1QnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbZF1Qo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760522AbZF1QnN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZF1Q2o
+	id S1758237AbZF1Qo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZF1QaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:28:44 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1191 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928AbZF1Q2W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:28:22 -0400
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Joel Becker <joel.becker@oracle.com>, Mark Fasheh <mfasheh@suse.com>,
-       ocfs2-devel@oss.oracle.com
-Subject: [PATCH 59/62] fs/ocfs2/quota_global.c: Remove unnecessary semicolons
-Date: Sun, 28 Jun 2009 09:27:04 -0700
-Message-Id: <c2fa65670abb3675e51442c2f046af62c7e6195e.1246173683.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1246173664.git.joe@perches.com>
-References: <cover.1246173664.git.joe@perches.com>
+	Sun, 28 Jun 2009 12:30:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52212 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755284AbZF1QaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 12:30:01 -0400
+Date: Sun, 28 Jun 2009 09:29:53 -0700
+From: Greg KH <gregkh@suse.de>
+To: Forest Bond <forest@alittletooquiet.net>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Staging: vt6656 ?
+Message-ID: <20090628162953.GA28389@suse.de>
+References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com> <20090609105101.GB15378@suse.de> <20090609113343.GA13779@alittletooquiet.net> <200906281543.12745.bzolnier@gmail.com> <20090628135731.GA9143@alittletooquiet.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090628135731.GA9143@alittletooquiet.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- fs/ocfs2/quota_global.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Sun, Jun 28, 2009 at 09:57:31AM -0400, Forest Bond wrote:
+> Hi,
+> 
+> On Sun, Jun 28, 2009 at 03:43:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > Hi,
+> > 
+> > On Tuesday 09 June 2009 13:33:43 Forest Bond wrote:
+> > > Hi,
+> > > 
+> > > On Tue, Jun 09, 2009 at 03:51:01AM -0700, Greg KH wrote:
+> > > > On Tue, Jun 09, 2009 at 02:31:30PM +0400, Alexander Beregalov wrote:
+> > > > > Hi Greg, Forest
+> > > > > 
+> > > > > Are you going to merge driver for VT6656 also?
+> > > > 
+> > > > If someone sends me some patches for it, sure, I will.
+> > > 
+> > > I have patches almost ready.  I'll send them by the end of next week at the
+> > > latest.  Busy week here.
+> > 
+> > Did I miss the patch?  There are people already doing cleanups for VT6655
+> > driver (which seems to share a great deal of code with VT6656 driver) so
+> > it would greatly help to get VT6656 merged ASAP and merge the shared code
+> > first to not duplicate efforts.
+> > 
+> > Also if you need some help with integrating the driver or hosting patches
+> > in git tree at kernel.org before Greg picks them up [ he seems to be buried
+> > alive by patches at the moment :) ] I'll be happy to help..
+> 
+> I sent it to Greg about two weeks ago.  I assume it is in his queue somewhere.
+> 
+> Let me know if you think I ought to do something else with them.
 
-diff --git a/fs/ocfs2/quota_global.c b/fs/ocfs2/quota_global.c
-index edfa60c..05ed815 100644
---- a/fs/ocfs2/quota_global.c
-+++ b/fs/ocfs2/quota_global.c
-@@ -143,7 +143,7 @@ static int ocfs2_get_quota_block(struct inode *inode, int block,
- 		err = -EIO;
- 		mlog_errno(err);
- 	}
--	return err;;
-+	return err;
- }
- 
- /* Read data from global quotafile - avoid pagecache and such because we cannot
--- 
-1.6.3.1.10.g659a0.dirty
+Yes, sorry, I am burried in patches right now.  I hope to dig out this
+week...
 
+All them are not lost, don't worry.
+
+thanks,
+
+greg k-h
