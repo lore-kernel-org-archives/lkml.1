@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbZF1Qoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbZF1Qom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760377AbZF1Qoz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbZF1QmZ
+	id S1760732AbZF1Qom (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZF1Qk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:42:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59207 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760241AbZF1QmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:42:24 -0400
-Subject: Re: [PATCH 11/62] arch/x86/kernel/ds.c: Remove unnecessary
- semicolons
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <2d424f9003647310e1d7a8a989d08427bd568a57.1246173680.git.joe@perches.com>
-References: <cover.1246173664.git.joe@perches.com>
-	 <2d424f9003647310e1d7a8a989d08427bd568a57.1246173680.git.joe@perches.com>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 22:10:48 +0530
-Message-Id: <1246207248.4998.1.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jun 2009 12:40:26 -0400
+Received: from storm.alittletooquiet.net ([67.23.28.199]:47093 "EHLO
+	storm.alittletooquiet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759374AbZF1QkY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 12:40:24 -0400
+Date: Sun, 28 Jun 2009 12:40:27 -0400
+From: Forest Bond <forest@alittletooquiet.net>
+To: Greg KH <gregkh@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Staging: vt6656 ?
+Message-ID: <20090628164027.GB9143@alittletooquiet.net>
+References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com> <20090609105101.GB15378@suse.de> <20090609113343.GA13779@alittletooquiet.net> <200906281543.12745.bzolnier@gmail.com> <20090628135731.GA9143@alittletooquiet.net> <20090628162953.GA28389@suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="K8nIJk4ghYZn606h"
+Content-Disposition: inline
+In-Reply-To: <20090628162953.GA28389@suse.de>
+X-PGP-Key: http://www.alittletooquiet.net/media/forest.pubkey.asc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 09:26 -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/x86/kernel/ds.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-> index 48bfe13..8025e2d 100644
-> --- a/arch/x86/kernel/ds.c
-> +++ b/arch/x86/kernel/ds.c
-> @@ -517,7 +517,7 @@ static inline unsigned long bts_get(const char *base, enum bts_field field)
->  
->  static inline void bts_set(char *base, enum bts_field field, unsigned long val)
->  {
-> -	base += (ds_cfg.sizeof_ptr_field * field);;
-> +	base += (ds_cfg.sizeof_ptr_field * field);
->  	(*(unsigned long *)base) = val;
->  }
->  
 
-This is already fix in -tip by :
+--K8nIJk4ghYZn606h
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-commit feaa0457ec8351cae855edc9a3052ac49322538e
-Author: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date:   Sat Jun 20 16:15:40 2009 +0530
+Howdie,
 
-    x86: ds.c fix invalid assignment
+On Sun, Jun 28, 2009 at 09:29:53AM -0700, Greg KH wrote:
+> On Sun, Jun 28, 2009 at 09:57:31AM -0400, Forest Bond wrote:
+> > I sent it to Greg about two weeks ago.  I assume it is in his queue som=
+ewhere.
+> >=20
+> > Let me know if you think I ought to do something else with them.
+>=20
+> Yes, sorry, I am burried in patches right now.  I hope to dig out this
+> week...
 
-Thanks,
---
-JSR
+No need to apologize.  Your work is appreciated!
 
+-Forest
+--=20
+Forest Bond
+http://www.alittletooquiet.net
+http://www.pytagsfs.org
+
+--K8nIJk4ghYZn606h
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFKR5z7RO4fQQdv5AwRAm23AJ4wsxXNrE1WfjrzOPxRhsLYRRhqswCfQWbP
+wLXM6d12iHpdD5tD2LvmiZA=
+=I0ut
+-----END PGP SIGNATURE-----
+
+--K8nIJk4ghYZn606h--
