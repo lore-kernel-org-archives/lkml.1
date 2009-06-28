@@ -1,93 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbZF1N5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbZF1OJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753138AbZF1N5g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 09:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZF1N53
+	id S1752887AbZF1OJr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZF1OJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 09:57:29 -0400
-Received: from storm.alittletooquiet.net ([67.23.28.199]:38659 "EHLO
-	storm.alittletooquiet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbZF1N52 (ORCPT
+	Sun, 28 Jun 2009 10:09:37 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:4676
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751102AbZF1OJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 09:57:28 -0400
-Date: Sun, 28 Jun 2009 09:57:31 -0400
-From: Forest Bond <forest@alittletooquiet.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Staging: vt6656 ?
-Message-ID: <20090628135731.GA9143@alittletooquiet.net>
-References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com> <20090609105101.GB15378@suse.de> <20090609113343.GA13779@alittletooquiet.net> <200906281543.12745.bzolnier@gmail.com>
+	Sun, 28 Jun 2009 10:09:36 -0400
+Message-ID: <4A47799F.5050007@panasas.com>
+Date: Sun, 28 Jun 2009 17:09:35 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
-Content-Disposition: inline
-In-Reply-To: <200906281543.12745.bzolnier@gmail.com>
-X-PGP-Key: http://www.alittletooquiet.net/media/forest.pubkey.asc
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Matthew Wilcox <matthew@wil.cx>, Sam Ravnborg <sam@ravnborg.org>,
+       Benny Halevy <bhalevy@panasas.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Smart <James.Smart@Emulex.Com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
+ and scsi_device_type
+References: <1246122359.32198.7.camel@hpdv5.satnam>	 <1246123628.3990.19.camel@mulgrave.site>	 <1246125388.32198.14.camel@hpdv5.satnam>	 <20090627182821.GC5480@parisc-linux.org>	 <1246128039.32198.17.camel@hpdv5.satnam> <1246197124.4190.5.camel@mulgrave.site>
+In-Reply-To: <1246197124.4190.5.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jun 2009 14:09:39.0817 (UTC) FILETIME=[13857D90:01C9F7FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/28/2009 04:52 PM, James Bottomley wrote:
+> On Sun, 2009-06-28 at 00:10 +0530, Jaswinder Singh Rajput wrote:
+>> On Sat, 2009-06-27 at 12:28 -0600, Matthew Wilcox wrote:
+>>> On Sat, Jun 27, 2009 at 11:26:28PM +0530, Jaswinder Singh Rajput wrote:
+>>>>> On Sat, 2009-06-27 at 22:35 +0530, Jaswinder Singh Rajput wrote:
+>>>>>> userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
+>>>>>> and scsi_device_type defined in kernel
+>>> When did we start exporting include/scsi to userspace?  I thought glibc
+>>> had its own separate definitions.
+>>>
+>> commit 9e4f5e29610162fd426366f3b29e3cc6e575b858
+>> Author: James Smart <James.Smart@Emulex.Com>
+>> Date:   Thu Mar 26 13:33:19 2009 -0400
+>>
+>>     [SCSI] FC Pass Thru support
+> 
+> That's what you get from a simplistic view.
+> 
+> If you look at the full history, scsi.h and sg.h were exported in 2006
+> by the initial commit by David Woodhouse
+> 
+> commit 8555255f0b426858d8648c6206b70eb906cf4ec7
+> Author: David Woodhouse <dwmw2@infradead.org>
+> Date:   Sun Jun 18 12:14:01 2006 +0100
+> 
+>     Add generic Kbuild files for 'make headers_install'
+> 
+> They were unexported again a year later, apparently on grounds of
+> clashing with /usr/include/scsi from glibc:
+> 
+> commit e629a7ddc0188e1bb9e956e698a9bd00c19c9854
+> Author: Olaf Hering <olh@suse.de>
+> Date:   Tue Oct 16 23:27:01 2007 -0700
+> 
+>     do not export /usr/include/scsi in make headers_install
+> 
+> So perhaps the meta question is how are we supposed to resolve this?
+> Glibc ceded it's copy of /usr/include/linux to the kernel headers
+> package, so it looks to be an oversight that it still
+> retains /usr/include/scsi (there's nothing extra in there in glibc
+> beyond what SCSI exports).
+> 
+> James
+> 
+> 
 
---17pEHd4RhPHOinZp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Right! so a good strategy might be to first fix up the header for proper
+user-mode consumption. And then just let glibc eventually drop their scsi.h
+header once enough complains register.
 
-Hi,
+Though out of courtesy someone might send a patch to the glibc maintainers to
+remove that header. Andrew do you have any passed experience with this project?
 
-On Sun, Jun 28, 2009 at 03:43:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
->=20
-> Hi,
->=20
-> On Tuesday 09 June 2009 13:33:43 Forest Bond wrote:
-> > Hi,
-> >=20
-> > On Tue, Jun 09, 2009 at 03:51:01AM -0700, Greg KH wrote:
-> > > On Tue, Jun 09, 2009 at 02:31:30PM +0400, Alexander Beregalov wrote:
-> > > > Hi Greg, Forest
-> > > >=20
-> > > > Are you going to merge driver for VT6656 also?
-> > >=20
-> > > If someone sends me some patches for it, sure, I will.
-> >=20
-> > I have patches almost ready.  I'll send them by the end of next week at=
- the
-> > latest.  Busy week here.
->=20
-> Did I miss the patch?  There are people already doing cleanups for VT6655
-> driver (which seems to share a great deal of code with VT6656 driver) so
-> it would greatly help to get VT6656 merged ASAP and merge the shared code
-> first to not duplicate efforts.
->=20
-> Also if you need some help with integrating the driver or hosting patches
-> in git tree at kernel.org before Greg picks them up [ he seems to be buri=
-ed
-> alive by patches at the moment :) ] I'll be happy to help..
+I agree that Kernel should get back control of this header.
 
-I sent it to Greg about two weeks ago.  I assume it is in his queue somewhe=
-re.
-
-Let me know if you think I ought to do something else with them.
-
-Thanks,
-Forest
---=20
-Forest Bond
-http://www.alittletooquiet.net
-http://www.pytagsfs.org
-
---17pEHd4RhPHOinZp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFKR3bLRO4fQQdv5AwRAvwLAJ9Frf7OkD4iS33nkOksBqKusrH6+ACgs70n
-nwdqLGE+/OUbptXkE5g4kjo=
-=Sp6M
------END PGP SIGNATURE-----
-
---17pEHd4RhPHOinZp--
+Boaz
