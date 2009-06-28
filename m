@@ -1,115 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZF1UqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZF1Uxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZF1UqT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 16:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZF1UqB
+	id S1755939AbZF1Uxd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 16:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZF1UxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 16:46:01 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:45224 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753983AbZF1UqA (ORCPT
+	Sun, 28 Jun 2009 16:53:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34839 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751729AbZF1UxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 16:46:00 -0400
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: tridge@samba.org, john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-References: <19013.8005.541836.436991@samba.org>
-	<m1d48p5dil.fsf@fess.ebiederm.org>
-	<19014.54044.484370.187018@samba.org>
-	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
-	<87ab3sx4ch.fsf@devron.myhome.or.jp>
-	<m1k52wxhki.fsf@fess.ebiederm.org>
-	<1246219994.4190.28.camel@mulgrave.site>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 28 Jun 2009 13:45:57 -0700
-In-Reply-To: <1246219994.4190.28.camel@mulgrave.site> (James Bottomley's message of "Sun\, 28 Jun 2009 15\:13\:14 -0500")
-Message-ID: <m163egw0hm.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: James.Bottomley@HansenPartnership.com, paulmck@linux.vnet.ibm.com, cmm@us.ibm.com, sfrench@us.ibm.com, shaggy@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org, hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org, john.lanza@linux.com, tridge@samba.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;James Bottomley <James.Bottomley@HansenPartnership.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_Sft_Brands_C00 XM_Sft_Brands_C00
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Sun, 28 Jun 2009 16:53:24 -0400
+Date: Sun, 28 Jun 2009 13:52:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       earl_chew@agilent.com, Oleg Nesterov <oleg@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using
+ pipes in core_pattern
+Message-Id: <20090628135235.10f9b153.akpm@linux-foundation.org>
+In-Reply-To: <20090628193112.GA6760@one.firstfloor.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+	<20090625163050.d6a71a13.akpm@linux-foundation.org>
+	<20090626104804.GA7337@hmsreliant.think-freely.org>
+	<20090626092001.32e35e17.akpm@linux-foundation.org>
+	<20090628193112.GA6760@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley <James.Bottomley@HansenPartnership.com> writes:
+On Sun, 28 Jun 2009 21:31:12 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-> On Sun, 2009-06-28 at 12:51 -0700, Eric W. Biederman wrote:
->> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
->> 
->> > tridge@samba.org writes:
->> >
->> >>  > Given what you have said our interpretation of vfat has a bug,
->> >>  > and that small change is a candidate for -stable.  If it could
->> >>  > be it's own patch.
->> >>
->> >> good point. 
->> >>
->> >> Hirofumi-san, would you support putting the last_u change into stable?
->> >
->> > If you want, I have no problem to do. However, I'm not thinking that
->> > part is a bug.  And -stable rule is also "a real bug that bothers
->> > people", but there is even a no bug reporter which tell actual problem.
->> 
->> 
->> Tridge.  Is there any reason to believe that Microsoft will continue
->> to treat Longfilenames without short filenames as valid in vfat?
->> 
->> If this turns into a contest of who can do the silliest things in
->> their vfat code microsoft could easily introduce a stricter directory
->> parser and cause all kinds of grief.
->> 
->> It wouldn't even surprise me if you haven't seen such shenanigans
->> while working on samba.
->
-> If you own the platform, like Microsoft does, there are many things you
-> *could* do to make life difficult for others (like shipping a slightly
-> incompatible version of java, for instance ...).  However, having had
-> one or two consumer and regulatory backlashes from shipping updates
-> primarily designed to hobble what you think of as a competitor, you tend
-> to be much more wary about doing it so openly ... particularly when
-> you're trying to convince a wary customer base that you're the champion
-> of interoperability nowadays.
->
-> The bottom line is that we need to consider the current patch on its
-> merits for evading the vfat patent.  Speculating about what Microsoft
-> might or might not do to retaliate doesn't really help with this.
+> > One way would be to add a new sysctl-externs.h and then put all the
+> > declarations in there.  That file gets included by sysctl.c and by each
+> > file which shares a global with sysctl.c
+> 
+> Long ago I had a experimental patch to put sysctls into a new ELF section. The 
+> you could simply put a DEFINE_SYSCTL(....) into the appropiate source file
+> which defined the variable and most of the tables went.
+> 
+> No externs, no mess, no patch collisions, everything much nicer.
+> 
+> The only problem was that it didn't support the numerical sysctl
+> space, so that would need to be removed first.
+> 
+> It's deprecated for quite some time now:
+> 
+>   if (msg_count < 5) {
+>                 msg_count++;
+>                 printk(KERN_INFO
+>                         "warning: process `%s' used the deprecated sysctl "
+>                         "system call with ", current->comm);
+> 
+> Should it finally go now? If yes I could polish up the old patch again.
+> 
 
-This is a technical question.  Are we really in spec with the patch?
+I suspect that it will be a long time before we can actually remove the
+numerical sysctl support, if ever.  In _theory_ we should support it
+for ever.  But in practice, we could probably remove it with a minimum
+of disruption a few years hence, but it's hard to work this out.
 
-If we are not in spec. If we break things like checkdisk.exe.   Microsoft
-can legitimately say we broke things and take technical measures to avoid
-broken filesystems.  We have dome similar things to close source binary
-modules.
+When was the last time we saw a "warning: process `%s' used the
+obsolete bdflush system call" warning?  A quick google here says 2004. 
+Is that data?  A bit, I guess.
 
-My impression is that this patch puts us on the hairy edge.  If no
-one is generating files without a short filename now.  That may cause
-problems.
-
-All else being equal this is a technically problematic patch as it
-reduces the chances of interoperability.  I am just trying to gage
-what those chances are.
-
-Eric
+Maybe Eric has thought about this issue?
