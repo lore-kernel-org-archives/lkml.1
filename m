@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbZF1Kf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752958AbZF1KjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbZF1Kf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 06:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZF1KfS
+	id S1752958AbZF1KjU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 06:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751804AbZF1KjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 06:35:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33355 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZF1KfR (ORCPT
+	Sun, 28 Jun 2009 06:39:11 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:53971 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbZF1KjK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 06:35:17 -0400
-Date: Sun, 28 Jun 2009 12:05:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.31-rc1
-Message-ID: <20090628100521.GA8673@ucw.cz>
-References: <alpine.LFD.2.01.0906241656030.3605@localhost.localdomain>
+	Sun, 28 Jun 2009 06:39:10 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906241656030.3605@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200906280821.58631.info@gnebu.es>
+References: <200906280821.58631.info@gnebu.es>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sun, 28 Jun 2009 12:37:28 +0200
+Message-ID: <ac3eb2510906280337s57f5a48kc487a85d259f83dd@mail.gmail.com>
+Subject: Re: Kernel 2.6.30 and udevd problem
+To: Alberto Gonzalez <alberto6674@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, Jun 28, 2009 at 08:21, Alberto Gonzalez<alberto6674@gmail.com> wrote:
+> I have recently upgraded my kernel to 2.6.30 and I've noticed that at some
+> point (randomly), udevd would start using a lot of CPU time. Killing the
+> process and starting it with --debug option prints these messages when the
+> problem starts:
+>
+> [22652] event_queue_insert: seq 168515 queued, 'change' 'drm'
 
-> On architectures: ARM, powerpc, mips, sh, x86 are the bulk of it. On ARM, 
-> the bulk is new platforms (u300, freescale stmp, whatever), there seems to 
-> be no end to crazy new arm platforms. On x86 (and at least some degree on 
+Care to run:
+  udevadm monitor
+and provide the output of the event sequence dump?
 
-HW vendors on arm seem to produce all the new, incompatible devices,
-all the time :-(. Arm vendors seem to multiply, and compatibility
-seems to be very low on their list of priorities... and it is only
-getting worse. 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kay
