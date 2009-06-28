@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZF1TmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZF1TuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZF1TmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 15:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZF1TmS
+	id S1753135AbZF1TuI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 15:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZF1Tt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 15:42:18 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:38347 "EHLO
+	Sun, 28 Jun 2009 15:49:57 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:41337 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751102AbZF1TmR (ORCPT
+	with ESMTP id S1752127AbZF1Tt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 15:42:17 -0400
+	Sun, 28 Jun 2009 15:49:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:content-type:content-transfer-encoding;
-        b=GdxIg2bkUJNmtekdjVDzIPQyeO9kUcjTnC3mw6fd7nsmY1E9H8fgaWJgIYKKIB4BYw
-         pp8FwGEh8oac/XU6fqDiZIBjnMlbjcfq+tvPf0lPyeTF2oLMYvS0G3X/Q0yWnwvocpsq
-         WhdcBF0hD+0mQw1eqsE+uqfJXYeFyZZ7jNMkc=
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=if19teteFiP15GvDNL6f91KFerq8hZXZBwpInVYj3hr0gCEbcYpPZoxZ+qouY61f2q
+         Y3lOGbWkB4xF8SwQCW6p7Z86nc8ZGJOWgcxnYFXseSzDJTvoAD/K6yPXtJTDv2FihvdP
+         fsy0DRY2PF2j69IhISuIcNQ8eAQmg2f1ZC7KI=
 MIME-Version: 1.0
-Date: Sun, 28 Jun 2009 21:42:16 +0200
-X-Google-Sender-Auth: 2b200b5291ff4ab7
-Message-ID: <9c30dffe0906281242m1464625ei26ba100dde980f9e@mail.gmail.com>
-Subject: [2.6.31-rc1] oops in __ieee80211_stop_queuedme
-From: Bjarke Istrup Pedersen <gurligebis@gentoo.org>
+Date: Sun, 28 Jun 2009 21:49:59 +0200
+Message-ID: <9c30dffe0906281249md437f08he4d4b065d345803e@mail.gmail.com>
+Subject: [2.6.31-rc1] oops in __ieee80211_stop_queue
+From: Bjarke Istrup Pedersen <gurligebis@gmail.com>
 To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
