@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZF1Uxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbZF1U6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZF1Uxd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 16:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZF1UxZ
+	id S1754231AbZF1U6H (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 16:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZF1U5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 16:53:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34839 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751729AbZF1UxY (ORCPT
+	Sun, 28 Jun 2009 16:57:55 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:54066 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbZF1U5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 16:53:24 -0400
-Date: Sun, 28 Jun 2009 13:52:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       earl_chew@agilent.com, Oleg Nesterov <oleg@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using
- pipes in core_pattern
-Message-Id: <20090628135235.10f9b153.akpm@linux-foundation.org>
-In-Reply-To: <20090628193112.GA6760@one.firstfloor.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090625163050.d6a71a13.akpm@linux-foundation.org>
-	<20090626104804.GA7337@hmsreliant.think-freely.org>
-	<20090626092001.32e35e17.akpm@linux-foundation.org>
-	<20090628193112.GA6760@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Jun 2009 16:57:54 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Arseniy Lartsev <ars3n@yandex.ru>, USB list <linux-usb@vger.kernel.org>
+Subject: Re: PROBLEM: USB ACM device does not work
+Date: Sun, 28 Jun 2009 22:58:07 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <200906282229.35713.ars3n@yandex.ru>
+In-Reply-To: <200906282229.35713.ars3n@yandex.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906282258.08277.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009 21:31:12 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+Am Sonntag, 28. Juni 2009 20:29:26 schrieb Arseniy Lartsev:
+> The reason is that the driver calls usb_submit_urb in acm_start_wb()
+> but doesn't set interval in the urb structure, so it remains zero and
+> causes usb_submit_urb to return -EINVAL. Reading from device also does
 
-> > One way would be to add a new sysctl-externs.h and then put all the
-> > declarations in there.  That file gets included by sysctl.c and by each
-> > file which shares a global with sysctl.c
-> 
-> Long ago I had a experimental patch to put sysctls into a new ELF section. The 
-> you could simply put a DEFINE_SYSCTL(....) into the appropiate source file
-> which defined the variable and most of the tables went.
-> 
-> No externs, no mess, no patch collisions, everything much nicer.
-> 
-> The only problem was that it didn't support the numerical sysctl
-> space, so that would need to be removed first.
-> 
-> It's deprecated for quite some time now:
-> 
->   if (msg_count < 5) {
->                 msg_count++;
->                 printk(KERN_INFO
->                         "warning: process `%s' used the deprecated sysctl "
->                         "system call with ", current->comm);
-> 
-> Should it finally go now? If yes I could polish up the old patch again.
-> 
+That simply does not make sense. Have you confirmed that this check:
 
-I suspect that it will be a long time before we can actually remove the
-numerical sysctl support, if ever.  In _theory_ we should support it
-for ever.  But in practice, we could probably remove it with a minimum
-of disruption a few years hence, but it's hard to work this out.
+	switch (xfertype) {
+	case USB_ENDPOINT_XFER_ISOC:
+	case USB_ENDPOINT_XFER_INT:
+		/* too small? */
+		if (urb->interval <= 0)
+			return -EINVAL;
 
-When was the last time we saw a "warning: process `%s' used the
-obsolete bdflush system call" warning?  A quick google here says 2004. 
-Is that data?  A bit, I guess.
+really triggers?
 
-Maybe Eric has thought about this issue?
+	Regards
+		Oliver
+
