@@ -1,132 +1,936 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbZF1Qxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZF1RDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbZF1Qxi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZF1Qxa
+	id S1754148AbZF1RDY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 13:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755752AbZF1RCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:53:30 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:51322 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbZF1Qx3 convert rfc822-to-8bit (ORCPT
+	Sun, 28 Jun 2009 13:02:55 -0400
+Received: from storm.alittletooquiet.net ([67.23.28.199]:60037 "EHLO
+	storm.alittletooquiet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754880AbZF1RCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:53:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OhC5UrCMsfe3fBL+8vUEZZS4CLYaFf/hp3+UtSCPit/dvGdLK1NRnQE45Gmp1VrMjE
-         jkqqzATY9txEJ3TciofiFb1HubjoDC1p9plrIjfJN/W6qrfJbmmQ4s6oW+3QztuUketI
-         obh/bk56BsE1Xoab/rZ3LsBprT5kLEKiUEabY=
+	Sun, 28 Jun 2009 13:02:50 -0400
+Date: Sun, 28 Jun 2009 13:02:53 -0400
+From: Forest Bond <forest@alittletooquiet.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Woody Suwalski <woodys@xandros.com>,
+       =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>,
+       Harald Welte <HaraldWelte@viatech.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/8] Add includes to drivers/staging/vt6656.
+Message-ID: <20090628170253.GE9143@alittletooquiet.net>
 MIME-Version: 1.0
-In-Reply-To: <20090627153630.GA6803@cmpxchg.org>
-References: <20090624023251.GA16483@localhost> <32411.1245336412@redhat.com>
-	 <20090517022327.280096109@intel.com> <2015.1245341938@redhat.com>
-	 <20090618095729.d2f27896.akpm@linux-foundation.org>
-	 <7561.1245768237@redhat.com> <26537.1246086769@redhat.com>
-	 <20090627125412.GA1667@cmpxchg.org>
-	 <28c262360906270650v6c276591u417d64573ecfba29@mail.gmail.com>
-	 <20090627153630.GA6803@cmpxchg.org>
-Date: Mon, 29 Jun 2009 01:53:32 +0900
-Message-ID: <28c262360906280953r67a8f450s62931bd7fa8d6108@mail.gmail.com>
-Subject: Re: Found the commit that causes the OOMs
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: David Howells <dhowells@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FbmEh7Ek6NM6xKh/"
+Content-Disposition: inline
+In-Reply-To: <200906281759.46152.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 12:36 AM, Johannes Weiner<hannes@cmpxchg.org> wrote:
-> On Sat, Jun 27, 2009 at 10:50:25PM +0900, Minchan Kim wrote:
->> Hi, Hannes.
->>
->> On Sat, Jun 27, 2009 at 9:54 PM, Johannes Weiner<hannes@cmpxchg.org> wrote:
->> > On Sat, Jun 27, 2009 at 08:12:49AM +0100, David Howells wrote:
->> >>
->> >> I've managed to bisect things to find the commit that causes the OOMs.  It's:
->> >>
->> >>       commit 69c854817566db82c362797b4a6521d0b00fe1d8
->> >>       Author: MinChan Kim <minchan.kim@gmail.com>
->> >>       Date:   Tue Jun 16 15:32:44 2009 -0700
->> >>
->> >>           vmscan: prevent shrinking of active anon lru list in case of no swap space V3
->> >>
->> >>           shrink_zone() can deactivate active anon pages even if we don't have a
->> >>           swap device.  Many embedded products don't have a swap device.  So the
->> >>           deactivation of anon pages is unnecessary.
->> >>
->> >>           This patch prevents unnecessary deactivation of anon lru pages.  But, it
->> >>           don't prevent aging of anon pages to swap out.
->> >>
->> >>           Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
->> >>           Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> >>           Cc: Johannes Weiner <hannes@cmpxchg.org>
->> >>           Acked-by: Rik van Riel <riel@redhat.com>
->> >>           Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->> >>           Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->> >>
->> >> This exhibits the problem.  The previous commit:
->> >>
->> >>       commit 35282a2de4e5e4e173ab61aa9d7015886021a821
->> >>       Author: Brice Goglin <Brice.Goglin@ens-lyon.org>
->> >>       Date:   Tue Jun 16 15:32:43 2009 -0700
->> >>
->> >>           migration: only migrate_prep() once per move_pages()
->> >>
->> >> survives 16 iterations of the LTP syscall testsuite without exhibiting the
->> >> problem.
->> >
->> > Here is the patch in question:
->> >
->> > diff --git a/mm/vmscan.c b/mm/vmscan.c
->> > index 7592d8e..879d034 100644
->> > --- a/mm/vmscan.c
->> > +++ b/mm/vmscan.c
->> > @@ -1570,7 +1570,7 @@ static void shrink_zone(int priority, struct zone *zone,
->> >         * Even if we did not try to evict anon pages at all, we want to
->> >         * rebalance the anon lru active/inactive ratio.
->> >         */
->> > -       if (inactive_anon_is_low(zone, sc))
->> > +       if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
->> >                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->> >
->> >        throttle_vm_writeout(sc->gfp_mask);
->> >
->> > When this was discussed, I think we missed that nr_swap_pages can
->> > actually get zero on swap systems as well and this should have been
->> > total_swap_pages - otherwise we also stop balancing the two anon lists
->> > when swap is _full_ which was not the intention of this change at all.
->>
->> At that time we considered it so that we didn't prevent anon list
->> aging for background reclaim.
->> Do you think it is not enough ?
->
-> With a heavy multiprocess anon load, direct reclaimers will likely
-> reuse the reclaimed pages for anon mappings, so you have a handful of
-> processes shuffling pages on the active list and only one thread that
-> tries to balance.  I can imagine that it can not keep up for long.
 
-I agree. :)
-total_swap_pages is better than nr_swap_pages although it isn't
-related this problem.
+--FbmEh7Ek6NM6xKh/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+[Greg: This patch series does not differ from that which you already have.]
+
+Add includes to drivers/staging/vt6656.  These came from the includes direc=
+tory
+in the upstream source archive.  Trailing whitespace was stripped.  This is
+GPL-licensed code.
+
+Signed-off-by: Forest Bond <forest@alittletooquiet.net>
+---
+ drivers/staging/vt6656/device_cfg.h |  146 +++++++++++
+ drivers/staging/vt6656/iocmd.h      |  478 +++++++++++++++++++++++++++++++=
+++++
+ drivers/staging/vt6656/iowpa.h      |  159 ++++++++++++
+ drivers/staging/vt6656/ttype.h      |   11 +-
+ 4 files changed, 791 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/staging/vt6656/device_cfg.h
+ create mode 100644 drivers/staging/vt6656/iocmd.h
+ create mode 100644 drivers/staging/vt6656/iowpa.h
+
+diff --git a/drivers/staging/vt6656/device_cfg.h b/drivers/staging/vt6656/d=
+evice_cfg.h
+new file mode 100644
+index 0000000..c0492bd
+--- /dev/null
++++ b/drivers/staging/vt6656/device_cfg.h
+@@ -0,0 +1,146 @@
++/*
++ * Copyright (c) 1996, 2003 VIA Networking Technologies, Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * File: device_cfg.h
++ *
++ * Purpose: Driver configuration header
++ * Author: Lyndon Chen
++ *
++ * Date: Dec 9, 2005
++ *
++ */
++#ifndef __DEVICE_CONFIG_H
++#define __DEVICE_CONFIG_H
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
++#include <linux/config.h>
++#endif
++
++#include <linux/types.h>
++
++#if !defined(__TTYPE_H__)
++#include "ttype.h"
++#endif
++
++
++
++typedef __u8    UINT8,   *PUINT8;
++typedef __u16   UINT16,  *PUINT16;
++typedef __u32   UINT32,  *PUINT32;
++
++
++#ifndef VOID
++#define VOID            void
++#endif
++
++#ifndef CONST
++#define CONST           const
++#endif
++
++#ifndef STATIC
++#define STATIC          static
++#endif
++
++#ifndef DEF
++#define DEF
++#endif
++
++#ifndef IN
++#define IN
++#endif
++
++#ifndef OUT
++#define OUT
++#endif
++
++typedef
++struct _version {
++    UINT8   major;
++    UINT8   minor;
++    UINT8   build;
++} version_t, *pversion_t;
++
++#ifndef FALSE
++#define FALSE   (0)
++#endif
++
++#ifndef TRUE
++#define TRUE    (!(FALSE))
++#endif
++
++#define VID_TABLE_SIZE      64
++#define MCAST_TABLE_SIZE    64
++#define MCAM_SIZE           32
++#define VCAM_SIZE           32
++#define TX_QUEUE_NO         8
++
++#define DEVICE_NAME         "vntwusb"
++#define DEVICE_FULL_DRV_NAM "VIA Networking Wireless LAN USB Driver"
++
++#ifndef MAJOR_VERSION
++#define MAJOR_VERSION       1
++#endif
++
++#ifndef MINOR_VERSION
++#define MINOR_VERSION       13
++#endif
++
++#ifndef DEVICE_VERSION
++#define DEVICE_VERSION       "1.19_12"
++#endif
++
++//config file
++#include <linux/fs.h>
++#include <linux/fcntl.h>
++#ifndef CONFIG_PATH
++#define CONFIG_PATH            "/etc/vntconfiguration.dat"
++#endif
++
++//Max: 2378=3D2312Payload + 30HD +4CRC + 2Padding + 4Len + 8TSF + 4RSR
++#define PKT_BUF_SZ          2390
++
++
++#define MALLOC(x,y)         kmalloc((x),(y))
++#define FREE(x)             kfree((x))
++#define MAX_UINTS           8
++#define OPTION_DEFAULT      { [0 ... MAX_UINTS-1] =3D -1}
++
++
++
++typedef enum  _chip_type{
++    VT3184=3D1
++} CHIP_TYPE, *PCHIP_TYPE;
++
++
++
++#ifdef VIAWET_DEBUG
++#define ASSERT(x) { \
++    if (!(x)) { \
++        printk(KERN_ERR "assertion %s failed: file %s line %d\n", #x,\
++        __FUNCTION__, __LINE__);\
++        *(int*) 0=3D0;\
++    }\
++}
++#define DBG_PORT80(value)                   outb(value, 0x80)
++#else
++#define ASSERT(x)
++#define DBG_PORT80(value)
++#endif
++
++
++#endif
+diff --git a/drivers/staging/vt6656/iocmd.h b/drivers/staging/vt6656/iocmd.h
+new file mode 100644
+index 0000000..980031c
+--- /dev/null
++++ b/drivers/staging/vt6656/iocmd.h
+@@ -0,0 +1,478 @@
++/*
++ * Copyright (c) 1996, 2003 VIA Networking Technologies, Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * File: iocmd.h
++ *
++ * Purpose: Handles the viawget ioctl private interface functions
++ *
++ * Author: Lyndon Chen
++ *
++ * Date: May 8, 2002
++ *
++ */
++
++#ifndef __IOCMD_H__
++#define __IOCMD_H__
++
++#if !defined(__TTYPE_H__)
++#include "ttype.h"
++#endif
++
++
++/*---------------------  Export Definitions -------------------------*/
++
++#if !defined(DEF)
++#define DEF
++#endif
++
++//typedef int BOOL;
++//typedef uint32_t u32;
++//typedef uint16_t u16;
++//typedef uint8_t u8;
++
++
++// ioctl Command code
++#define MAGIC_CODE	                 0x3142
++#define IOCTL_CMD_TEST	            (SIOCDEVPRIVATE + 0)
++#define IOCTL_CMD_SET			    (SIOCDEVPRIVATE + 1)
++#define IOCTL_CMD_HOSTAPD           (SIOCDEVPRIVATE + 2)
++#define IOCTL_CMD_WPA               (SIOCDEVPRIVATE + 3)
++
++
++typedef enum tagWMAC_CMD {
++
++    WLAN_CMD_BSS_SCAN,
++    WLAN_CMD_BSS_JOIN,
++    WLAN_CMD_DISASSOC,
++    WLAN_CMD_SET_WEP,
++    WLAN_CMD_GET_LINK,
++    WLAN_CMD_GET_LISTLEN,
++    WLAN_CMD_GET_LIST,
++    WLAN_CMD_GET_MIB,
++    WLAN_CMD_GET_STAT,
++    WLAN_CMD_STOP_MAC,
++    WLAN_CMD_START_MAC,
++    WLAN_CMD_AP_START,
++    WLAN_CMD_SET_HOSTAPD,
++    WLAN_CMD_SET_HOSTAPD_STA,
++    WLAN_CMD_SET_802_1X,
++    WLAN_CMD_SET_HOST_WEP,
++    WLAN_CMD_SET_WPA,
++    WLAN_CMD_GET_NODE_CNT,
++    WLAN_CMD_ZONETYPE_SET,
++    WLAN_CMD_GET_NODE_LIST
++
++} WMAC_CMD, DEF* PWMAC_CMD;
++
++typedef enum tagWZONETYPE {
++  ZoneType_USA=3D0,
++  ZoneType_Japan=3D1,
++  ZoneType_Europe=3D2
++}WZONETYPE;
++
++#define ADHOC	0
++#define INFRA	1
++#define BOTH	2
++#define AP	    3
++
++#define ADHOC_STARTED	   1
++#define ADHOC_JOINTED	   2
++
++
++#define PHY80211a 	    0
++#define PHY80211b       1
++#define PHY80211g       2
++
++#define SSID_ID                0
++#define SSID_MAXLEN            32
++#define BSSID_LEN              6
++#define WEP_NKEYS              4
++#define WEP_KEYMAXLEN          29
++#define WEP_40BIT_LEN          5
++#define WEP_104BIT_LEN         13
++#define WEP_232BIT_LEN         16
++
++// Ioctl interface structure
++// Command structure
++//
++#pragma pack(1)
++typedef struct tagSCmdRequest {
++	U8 	    name[16];
++	void	*data;
++	U16	    wResult;
++	U16     wCmdCode;
++} SCmdRequest, *PSCmdRequest;
++
++//
++// Scan
++//
++
++typedef struct tagSCmdScan {
++
++    U8	    ssid[SSID_MAXLEN + 2];
++
++} SCmdScan, *PSCmdScan;
++
++
++//
++// BSS Join
++//
++
++typedef struct tagSCmdBSSJoin {
++
++    U16	    wBSSType;
++    U16     wBBPType;
++    U8	    ssid[SSID_MAXLEN + 2];
++    U32	    uChannel;
++    BOOL    bPSEnable;
++    BOOL    bShareKeyAuth;
++
++} SCmdBSSJoin, *PSCmdBSSJoin;
++
++//
++// Zonetype Setting
++//
++
++typedef struct tagSCmdZoneTypeSet {
++
++ BOOL       bWrite;
++ WZONETYPE  ZoneType;
++
++} SCmdZoneTypeSet, *PSCmdZoneTypeSet;
++
++#ifdef WPA_SM_Transtatus
++typedef struct tagSWPAResult {
++         char	ifname[100];
++         U8		proto;
++         U8   key_mgmt;
++         U8   eap_type;
++         BOOL authenticated;
++} SWPAResult, *PSWPAResult;
++#endif
++
++typedef struct tagSCmdStartAP {
++
++    U16	    wBSSType;
++    U16     wBBPType;
++    U8	    ssid[SSID_MAXLEN + 2];
++    U32 	uChannel;
++    U32     uBeaconInt;
++    BOOL    bShareKeyAuth;
++    U8      byBasicRate;
++
++} SCmdStartAP, *PSCmdStartAP;
++
++
++typedef struct tagSCmdSetWEP {
++
++    BOOL    bEnableWep;
++    U8      byKeyIndex;
++    U8      abyWepKey[WEP_NKEYS][WEP_KEYMAXLEN];
++    BOOL    bWepKeyAvailable[WEP_NKEYS];
++    U32     auWepKeyLength[WEP_NKEYS];
++
++} SCmdSetWEP, *PSCmdSetWEP;
++
++
++
++typedef struct tagSBSSIDItem {
++
++	U32	    uChannel;
++    U8      abyBSSID[BSSID_LEN];
++    U8      abySSID[SSID_MAXLEN + 1];
++    U16	    wBeaconInterval;
++    U16	    wCapInfo;
++    U8      byNetType;
++    BOOL    bWEPOn;
++    U32     uRSSI;
++
++} SBSSIDItem;
++
++
++typedef struct tagSBSSIDList {
++
++	U32		    uItem;
++	SBSSIDItem	sBSSIDList[0];
++} SBSSIDList, *PSBSSIDList;
++
++
++typedef struct tagSNodeItem {
++    // STA info
++    U16            wAID;
++    U8             abyMACAddr[6];
++    U16            wTxDataRate;
++    U16            wInActiveCount;
++    U16            wEnQueueCnt;
++    U16            wFlags;
++    BOOL           bPWBitOn;
++    U8             byKeyIndex;
++    U16            wWepKeyLength;
++    U8            abyWepKey[WEP_KEYMAXLEN];
++    // Auto rate fallback vars
++    BOOL           bIsInFallback;
++    U32            uTxFailures;
++    U32            uTxAttempts;
++    U16            wFailureRatio;
++
++} SNodeItem;
++
++
++typedef struct tagSNodeList {
++
++	U32		    uItem;
++	SNodeItem	sNodeList[0];
++
++} SNodeList, *PSNodeList;
++
++
++typedef struct tagSCmdLinkStatus {
++
++    BOOL    bLink;
++	U16	    wBSSType;
++	U8      byState;
++    U8      abyBSSID[BSSID_LEN];
++    U8      abySSID[SSID_MAXLEN + 2];
++    U32     uChannel;
++    U32     uLinkRate;
++
++} SCmdLinkStatus, *PSCmdLinkStatus;
++
++//
++// 802.11 counter
++//
++typedef struct tagSDot11MIBCount {
++    U32 TransmittedFragmentCount;
++    U32 MulticastTransmittedFrameCount;
++    U32 FailedCount;
++    U32 RetryCount;
++    U32 MultipleRetryCount;
++    U32 RTSSuccessCount;
++    U32 RTSFailureCount;
++    U32 ACKFailureCount;
++    U32 FrameDuplicateCount;
++    U32 ReceivedFragmentCount;
++    U32 MulticastReceivedFrameCount;
++    U32 FCSErrorCount;
++} SDot11MIBCount, DEF* PSDot11MIBCount;
++
++
++
++//
++// statistic counter
++//
++typedef struct tagSStatMIBCount {
++    //
++    // ISR status count
++    //
++    U32   dwIsrTx0OK;
++    U32   dwIsrTx1OK;
++    U32   dwIsrBeaconTxOK;
++    U32   dwIsrRxOK;
++    U32   dwIsrTBTTInt;
++    U32   dwIsrSTIMERInt;
++    U32   dwIsrUnrecoverableError;
++    U32   dwIsrSoftInterrupt;
++    U32   dwIsrRxNoBuf;
++    /////////////////////////////////////
++
++    U32   dwIsrUnknown;               // unknown interrupt count
++
++    // RSR status count
++    //
++    U32   dwRsrFrmAlgnErr;
++    U32   dwRsrErr;
++    U32   dwRsrCRCErr;
++    U32   dwRsrCRCOk;
++    U32   dwRsrBSSIDOk;
++    U32   dwRsrADDROk;
++    U32   dwRsrICVOk;
++    U32   dwNewRsrShortPreamble;
++    U32   dwRsrLong;
++    U32   dwRsrRunt;
++
++    U32   dwRsrRxControl;
++    U32   dwRsrRxData;
++    U32   dwRsrRxManage;
++
++    U32   dwRsrRxPacket;
++    U32   dwRsrRxOctet;
++    U32   dwRsrBroadcast;
++    U32   dwRsrMulticast;
++    U32   dwRsrDirected;
++    // 64-bit OID
++    U32   ullRsrOK;
++
++    // for some optional OIDs (64 bits) and DMI support
++    U32   ullRxBroadcastBytes;
++    U32   ullRxMulticastBytes;
++    U32   ullRxDirectedBytes;
++    U32   ullRxBroadcastFrames;
++    U32   ullRxMulticastFrames;
++    U32   ullRxDirectedFrames;
++
++    U32   dwRsrRxFragment;
++    U32   dwRsrRxFrmLen64;
++    U32   dwRsrRxFrmLen65_127;
++    U32   dwRsrRxFrmLen128_255;
++    U32   dwRsrRxFrmLen256_511;
++    U32   dwRsrRxFrmLen512_1023;
++    U32   dwRsrRxFrmLen1024_1518;
++
++    // TSR0,1 status count
++    //
++    U32   dwTsrTotalRetry[2];        // total collision retry count
++    U32   dwTsrOnceRetry[2];         // this packet only occur one collisi=
+on
++    U32   dwTsrMoreThanOnceRetry[2]; // this packet occur more than one co=
+llision
++    U32   dwTsrRetry[2];             // this packet has ever occur collisi=
+on,
++                                       // that is (dwTsrOnceCollision0 + d=
+wTsrMoreThanOnceCollision0)
++    U32   dwTsrACKData[2];
++    U32   dwTsrErr[2];
++    U32   dwAllTsrOK[2];
++    U32   dwTsrRetryTimeout[2];
++    U32   dwTsrTransmitTimeout[2];
++
++    U32   dwTsrTxPacket[2];
++    U32   dwTsrTxOctet[2];
++    U32   dwTsrBroadcast[2];
++    U32   dwTsrMulticast[2];
++    U32   dwTsrDirected[2];
++
++    // RD/TD count
++    U32   dwCntRxFrmLength;
++    U32   dwCntTxBufLength;
++
++    U8    abyCntRxPattern[16];
++    U8    abyCntTxPattern[16];
++
++    // Software check....
++    U32   dwCntRxDataErr;             // rx buffer data software compare C=
+RC err count
++    U32   dwCntDecryptErr;            // rx buffer data software compare C=
+RC err count
++    U32   dwCntRxICVErr;              // rx buffer data software compare C=
+RC err count
++    U32    idxRxErrorDesc;             // index for rx data error RD
++
++    // 64-bit OID
++    U32   ullTsrOK[2];
++
++    // for some optional OIDs (64 bits) and DMI support
++    U32   ullTxBroadcastFrames[2];
++    U32   ullTxMulticastFrames[2];
++    U32   ullTxDirectedFrames[2];
++    U32   ullTxBroadcastBytes[2];
++    U32   ullTxMulticastBytes[2];
++    U32   ullTxDirectedBytes[2];
++} SStatMIBCount, DEF* PSStatMIBCount;
++
++
++
++
++typedef struct tagSCmdValue {
++
++    U32     dwValue;
++
++} SCmdValue,  *PSCmdValue;
++
++
++//
++// hostapd & viawget ioctl related
++//
++
++
++// VIAGWET_IOCTL_HOSTAPD ioctl() cmd:
++enum {
++	VIAWGET_HOSTAPD_FLUSH =3D 1,
++	VIAWGET_HOSTAPD_ADD_STA =3D 2,
++	VIAWGET_HOSTAPD_REMOVE_STA =3D 3,
++	VIAWGET_HOSTAPD_GET_INFO_STA =3D 4,
++	VIAWGET_HOSTAPD_SET_ENCRYPTION =3D 5,
++	VIAWGET_HOSTAPD_GET_ENCRYPTION =3D 6,
++	VIAWGET_HOSTAPD_SET_FLAGS_STA =3D 7,
++	VIAWGET_HOSTAPD_SET_ASSOC_AP_ADDR =3D 8,
++	VIAWGET_HOSTAPD_SET_GENERIC_ELEMENT =3D 9,
++	VIAWGET_HOSTAPD_MLME =3D 10,
++	VIAWGET_HOSTAPD_SCAN_REQ =3D 11,
++	VIAWGET_HOSTAPD_STA_CLEAR_STATS =3D 12,
++};
++
++
++#define VIAWGET_HOSTAPD_GENERIC_ELEMENT_HDR_LEN \
++((int) (&((struct viawget_hostapd_param *) 0)->u.generic_elem.data))
++
++// Maximum length for algorithm names (-1 for nul termination) used in ioc=
+tl()
++
++
++
++struct viawget_hostapd_param {
++	U32 cmd;
++	U8 sta_addr[6];
++	union {
++		struct {
++			U16 aid;
++			U16 capability;
++			U8 tx_supp_rates;
++		} add_sta;
++		struct {
++			U32 inactive_sec;
++		} get_info_sta;
++		struct {
++			U8 alg;
++			U32 flags;
++			U32 err;
++			U8 idx;
++			U8 seq[8];
++			U16 key_len;
++			U8 key[0];
++		} crypt;
++		struct {
++			U32 flags_and;
++			U32 flags_or;
++		} set_flags_sta;
++		struct {
++			U16 rid;
++			U16 len;
++			U8 data[0];
++		} rid;
++		struct {
++			U8 len;
++			U8 data[0];
++		} generic_elem;
++		struct {
++			U16 cmd;
++			U16 reason_code;
++		} mlme;
++		struct {
++			U8 ssid_len;
++			U8 ssid[32];
++		} scan_req;
++	} u;
++};
++
++
++
++/*---------------------  Export Classes  ----------------------------*/
++
++/*---------------------  Export Variables  --------------------------*/
++
++
++/*---------------------  Export Types  ------------------------------*/
++
++
++/*---------------------  Export Functions  --------------------------*/
++
++
++
++#endif //__IOCMD_H__
+diff --git a/drivers/staging/vt6656/iowpa.h b/drivers/staging/vt6656/iowpa.h
+new file mode 100644
+index 0000000..05f391a
+--- /dev/null
++++ b/drivers/staging/vt6656/iowpa.h
+@@ -0,0 +1,159 @@
++/*
++ * Copyright (c) 1996, 2003 VIA Networking Technologies, Inc.
++ * All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * File: iowpa.h
++ *
++ * Purpose: Handles wpa supplicant ioctl interface
++ *
++ * Author: Lyndon Chen
++ *
++ * Date: May 8, 2002
++ *
++ */
++
++#ifndef __IOWPA_H__
++#define __IOWPA_H__
++
++
++/*---------------------  Export Definitions -------------------------*/
++
++
++#define WPA_IE_LEN 64
++
++
++//WPA related
++/*
++typedef enum { WPA_ALG_NONE, WPA_ALG_WEP, WPA_ALG_TKIP, WPA_ALG_CCMP } wpa=
+_alg;
++typedef enum { CIPHER_NONE, CIPHER_WEP40, CIPHER_TKIP, CIPHER_CCMP,
++	       CIPHER_WEP104 } wpa_cipher;
++typedef enum { KEY_MGMT_802_1X, KEY_MGMT_PSK, KEY_MGMT_NONE,
++	       KEY_MGMT_802_1X_NO_WPA, KEY_MGMT_WPA_NONE } wpa_key_mgmt;
++*/
++
++enum {
++	VIAWGET_SET_WPA =3D 1,
++	VIAWGET_SET_KEY =3D 2,
++	VIAWGET_SET_SCAN =3D 3,
++	VIAWGET_GET_SCAN =3D 4,
++	VIAWGET_GET_SSID =3D 5,
++	VIAWGET_GET_BSSID =3D 6,
++	VIAWGET_SET_DROP_UNENCRYPT =3D 7,
++	VIAWGET_SET_DEAUTHENTICATE =3D 8,
++	VIAWGET_SET_ASSOCIATE =3D 9,
++	VIAWGET_SET_DISASSOCIATE=3D 10
++};
++
++
++enum {
++	VIAWGET_ASSOC_MSG =3D 1,
++	VIAWGET_DISASSOC_MSG =3D 2,
++	VIAWGET_PTK_MIC_MSG =3D 3,
++	VIAWGET_GTK_MIC_MSG =3D 4,
++	VIAWGET_CCKM_ROAM_MSG =3D 5,
++	VIAWGET_DEVICECLOSE_MSG =3D 6
++};
++
++
++
++#pragma pack(1)
++typedef struct viawget_wpa_header {
++	u8 type;
++	u16 req_ie_len;
++	u16 resp_ie_len;
++} viawget_wpa_header;
++
++
++
++struct viawget_wpa_param {
++	u32 cmd;
++	u8 addr[6];
++	union {
++		struct {
++			u8 len;
++			u8 data[0];
++		} generic_elem;
++
++		struct {
++        	u8 bssid[6];
++			u8 ssid[32];
++			u8 ssid_len;
++        	u8 *wpa_ie;
++        	u16 wpa_ie_len;
++        	int pairwise_suite;
++        	int group_suite;
++        	int key_mgmt_suite;
++        	int auth_alg;
++        	int mode;
++                u8 roam_dbm;  //DavidWang
++		} wpa_associate;
++
++		struct {
++	        int alg_name;
++	        u16 key_index;
++	        u16 set_tx;
++	        u8 *seq;
++	        u16 seq_len;
++	        u8 *key;
++	        u16 key_len;
++		} wpa_key;
++
++		struct {
++			u8 ssid_len;
++			u8 ssid[32];
++		} scan_req;
++
++		struct {
++			u16 scan_count;
++			u8 *buf;
++		} scan_results;
++
++	} u;
++
++};
++
++#pragma pack(1)
++struct viawget_scan_result {
++	u8 bssid[6];
++	u8 ssid[32];
++	u16 ssid_len;
++	u8 wpa_ie[WPA_IE_LEN];
++	u16 wpa_ie_len;
++	u8 rsn_ie[WPA_IE_LEN];
++	u16 rsn_ie_len;
++	int freq; // MHz
++	int caps; // e.g. privacy
++	int qual; // signal quality
++	int noise;
++	int level;
++	int maxrate;
++};
++
++
++/*---------------------  Export Classes  ----------------------------*/
++
++/*---------------------  Export Variables  --------------------------*/
++
++
++/*---------------------  Export Types  ------------------------------*/
++
++
++/*---------------------  Export Functions  --------------------------*/
++
++
++
++#endif //__IOWPA_H__
+diff --git a/drivers/staging/vt6656/ttype.h b/drivers/staging/vt6656/ttype.h
+index c91a273..1e72f11 100644
+--- a/drivers/staging/vt6656/ttype.h
++++ b/drivers/staging/vt6656/ttype.h
+@@ -1,5 +1,6 @@
+ /*
+- * File: ttype.h
++ * Copyright (c) 1996, 2003 VIA Networking Technologies, Inc.
++ * All rights reserved.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -15,6 +16,8 @@
+  * with this program; if not, write to the Free Software Foundation, Inc.,
+  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+  *
++ * File: ttype.h
++ *
+  * Purpose: define basic common types and macros
+  *
+  * Author: Tevin Chen
+@@ -50,18 +53,20 @@
+ #define OUT
+ #endif
+=20
+-//2007-0115-04<Add>by MikeLiu
++//2007-0115-05<Add>by MikeLiu
+ #ifndef TxInSleep
+ #define TxInSleep
+ #endif
+=20
++//DavidWang
++
+=20
+ //2007-0814-01<Add>by MikeLiu
+ #ifndef Safe_Close
+ #define Safe_Close
+ #endif
+=20
+-//2008-0131-01<Add>by MikeLiu
++//2008-0131-02<Add>by MikeLiu
+ #ifndef Adhoc_STA
+ #define Adhoc_STA
+ #endif
+--=20
+1.5.6.3
 
 
->
+--=20
+Forest Bond
+http://www.alittletooquiet.net
+http://www.pytagsfs.org
 
+--FbmEh7Ek6NM6xKh/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Kinds regards,
-Minchan Kim
+iD8DBQFKR6I9RO4fQQdv5AwRAvGtAJ9HOSvK2LeD92O//GlDUm/JDvzZrgCeLRAT
+uc4+VZqEFzjRFLGULQrBXX4=
+=nTR5
+-----END PGP SIGNATURE-----
+
+--FbmEh7Ek6NM6xKh/--
