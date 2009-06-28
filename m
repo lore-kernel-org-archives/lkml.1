@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZF1IGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZF1JAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbZF1IGb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 04:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZF1IGH
+	id S1754446AbZF1JAB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 05:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZF1I7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 04:06:07 -0400
-Received: from smtp4.tech.numericable.fr ([82.216.111.40]:45003 "EHLO
-	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbZF1IGE (ORCPT
+	Sun, 28 Jun 2009 04:59:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56622 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbZF1I7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 04:06:04 -0400
-Message-ID: <4A47246A.5060608@numericable.fr>
-Date: Sun, 28 Jun 2009 10:06:02 +0200
-From: Etienne Basset <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 28 Jun 2009 04:59:47 -0400
+Date: Sun, 28 Jun 2009 10:59:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marco Stornelli <marco.stornelli@gmail.com>
+Cc: tim.bird@am.sony.com, jamie@shareable.org,
+       Linux Embedded <linux-embedded@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux FS Devel <linux-fsdevel@vger.kernel.org>,
+       Daniel Walker <dwalker@soe.ucsc.edu>
+Subject: Re: [PATCH 00/14] Pramfs: Persistent and protected ram filesystem
+Message-ID: <20090628085932.GA20169@elf.ucw.cz>
+References: <4a4254e2.09c5660a.109d.46f8@mx.google.com> <4A425907.2060105@gmail.com> <4A42649D.6080509@gmail.com> <20090624175943.GB6618@elf.ucw.cz> <2ea1731b0906242330t5f379322sdff9880788e9b181@mail.gmail.com>
 MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, davem@davemloft.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [REGRESSION] 2.6.29=>2.6.30 suspend to ram regression (IDE 	related)
-References: <4A44EBEE.9070503@numericable.fr>	 <200906262139.23367.bzolnier@gmail.com>	 <4A45E095.5070608@numericable.fr>	 <b6a2187b0906271109q2194cadbv8d20b4bda82bde19@mail.gmail.com> <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
-In-Reply-To: <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2ea1731b0906242330t5f379322sdff9880788e9b181@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> On Sun, Jun 28, 2009 at 2:09 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
->> On Sat, Jun 27, 2009 at 5:04 PM, Etienne
->> Basset<etienne.basset@numericable.fr> wrote:
->>>>> kernel v2.6.29 suspends to RAM reliably on my computer; v2.6.30 doesn't resume after STR
->> Same problem on Thinkpad X61. STD STR suspended ok. Upon resume,
->> everything "seems" fine for about 100 seconds. Then mouse, keyboard
->> frozen.
->>
->>>>> I tried also 2.6.31-rc1 doesn't work either
->>>>> etienne@etienne-desktop:~/linux-2.6$ git bisect bad
->>>>> 2f0d0fd2a605666d38e290c5c0d2907484352dc4 is first bad commit
->>>> Does the following patch fix it?
->>> Yes, it works now
->> Works for me too with the patch.
+> >> > Ah now the write protection is a "needed feature", in your previous
+> >> > comment you talked about why not use ext2/3.......
+> >> >
+> >> > Marco
+> >> >
+> >>
+> >> Just for your information I tried the same test with pc in a virtual machine with 32MB of RAM:
+> >>
+> >> Version 1.03e       ------Sequential Output------ --Sequential Input- --Random-
+> >>                     -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
+> >> Machine   Size:chnk K/sec %CP K/sec %CP K/sec %CP K/sec %CP K/sec %CP  /sec %CP
+> >> hostname     15M:1k 14156  99 128779 100 92240 100 11669 100 166242  99 80058  82
+> >>                     ------Sequential Create------ --------Random Create--------
+> >>                     -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
+> >>               files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
+> >>                   4  2842  99 133506 104 45088 101  2787  99 79581 101 58212 102
+> >>
+> >> These data are the proof of the importance of the environment, workload and so on when we talk
+> >> about benchmark. Your consideration are really superficial.
+> >
+> > Unfortunately, your numbers are meaningless.
 > 
-> UPDATE ...
+> I don't think so.
 > 
-> STR able to resume and works after >100 seconds
-> 
-> STD able to resume but failed after 100 seconds (could be 300 seconds)
-> but eventually failed. Everything seems ok, but mouse and keyboard
-> just freezed suddenly. Just haven't really time it enough.
-> 
-> Jeff.
-> 
-Hello,
+> > (PCs should have cca 3GB/sec RAM transfer rates; and you demosstrated
+> > cca 166MB/sec read rate; disk is 80MB/sec, so that's too slow. If you
+> > want to prove your filesystem the filesystem is reasonably fast,
+> > compare it with ext2 on ramdisk.)
+> >
+> This is the point. I don't want compare it with ext2 from performance
+> point of view. This comparison makes no sense for me. I've done this
+> test to prove that if you change environment you can change in a
+> purposeful way the results.
 
-same here ; after resume, computer hangs after 2minutes (cannot ping from outside)
-and STR/resume doesn't work if I try from console not from X
-there must be at least one another bug lurking
-If someone hasn't a better idea I'll try another bisection, applying bart's patch at each step
+Yes, IOW you demonstrated that the numbers are machine-dependend and
+really meaningless.
 
-Etienne
-
-
+ext2 comparison would tell you how much pramfs sucks (or not).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
