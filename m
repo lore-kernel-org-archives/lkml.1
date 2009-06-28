@@ -1,65 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbZF1QAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbZF1QKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756465AbZF1QAv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZF1QAl
+	id S1757031AbZF1QKH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZF1QJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:00:41 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:6849
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753702AbZF1QAl (ORCPT
+	Sun, 28 Jun 2009 12:09:54 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60977 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbZF1QJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:00:41 -0400
-Message-ID: <4A4793A6.8080802@panasas.com>
-Date: Sun, 28 Jun 2009 19:00:38 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
-MIME-Version: 1.0
-To: James Smart <James.Smart@Emulex.Com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>, Olaf Hering <olh@suse.de>,
-       Sam Ravnborg <sam@ravnborg.org>, Benny Halevy <bhalevy@panasas.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       scst-devel <scst-devel@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <rdunlap@xenotime.net>
-Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
- and scsi_device_type
-References: <1246122359.32198.7.camel@hpdv5.satnam> <4A47222B.5020702@panasas.com> <4A477F00.70305@emulex.com>
-In-Reply-To: <4A477F00.70305@emulex.com>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 28 Jun 2009 12:09:50 -0400
+Date: Sun, 28 Jun 2009 09:10:55 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, x86@kernel.org
+Subject: kerneloops.org report for the week
+Message-ID: <20090628091055.12a4fb9e@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2009 16:00:42.0001 (UTC) FILETIME=[967E1810:01C9F809]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28/2009 05:32 PM, James Smart wrote:
-> Sorry folks --  the nuance of the clibrary having it's own version of a 
-> kernel header for distros was completely unknown to me.
-> 
-> Christoph mentioned this to me last week, with the recommendation to 
-> back out the patch and move the other headers that were exprted into 
-> include/linux - thus nothing in include/scsi gets export.  No Problem. 
-> and I'll do so shortly.
-> 
-> How does a lowly contributor track these kind of nuances ?
-> 
-> -- james s
-> 
+Few "highlights" this week
+* mem_cgroup_add_lru_list (rank 2) is a high rising issue;
+  it's list corruption, question is why this is new
+* rank 13 (memcmp in the raid code) is also new
+* the warning in get_free_pages that has been discussed on lkml is dropping
+  from the ranks again
 
-Don't give up so fast. Please. 
-Kernel should reclaim back control of it's own headers.
-/usr/include/scsi is Kernel territory from the start.
-This is just a plain historical mistake that glibc had
-to duplicate all these Kernel headers.
 
-Please lets start with scsi.h and then advance slowly
-to more Headers like sg.h
+This week, a total of 15273 oopses and warnings have been reported,
+compared to 13384 reports in the previous week.
 
-Andrew, please help.
 
-Thanks
-Boaz
+Rank 1: i915_gem_set_tiling (warning)
+	Reported 2754 times (8928 total reports)
+	[gem] Failure in the tiling code
+	This warning was last seen in version 2.6.31-rc0-git15, and first seen in 2.6.29-rc2.
+	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_set_tiling
+
+Rank 2: mem_cgroup_add_lru_list (warn)
+	Reported 1554 times (1622 total reports)
+	List corruption in the VM code
+	This oops was last seen in version 2.6.30-git19, and first seen in 2.6.29.
+	More info: http://www.kerneloops.org/searchweek.php?search=mem_cgroup_add_lru_list
+
+Rank 3: getnstimeofday (warning)
+	Reported 1319 times (4893 total reports)
+	[suspend resume] getnstimeofday() is called before timekeeping is resumed
+	This oops was last seen in version 2.6.30, and first seen in 2.6.24.
+	More info: http://www.kerneloops.org/searchweek.php?search=getnstimeofday
+
+Rank 4: iwl_set_dynamic_key (warning)
+	Reported 825 times (16074 total reports)
+	no space for new kew"
+	This warning was last seen in version 2.6.30, and first seen in 2.6.27.
+	More info: http://www.kerneloops.org/searchweek.php?search=iwl_set_dynamic_key
+
+Rank 5: ct_vm_map (warning)
+	Reported 773 times (2362 total reports)
+	Fedora: Bug in the creative XFI driver backport 
+	This warning was last seen in version 2.6.29.5, and first seen in 2.6.29-rc4-git1.
+	More info: http://www.kerneloops.org/searchweek.php?search=ct_vm_map
+
+Rank 6: parport_device_proc_unregister (warning)
+	Reported 766 times (3660 total reports)
+	Alan has a fix for this
+	This warning was last seen in version 2.6.29.4, and first seen in 2.6.27.
+	More info: http://www.kerneloops.org/searchweek.php?search=parport_device_proc_unregister
+
+Rank 7: hres_timers_resume (warning)
+	Reported 763 times (2368 total reports)
+	[suspend resume] hres_timers_resume() is incorrectly called with interrupts on
+	This warning was last seen in version 2.6.30, and first seen in 2.6.24.7.
+	More info: http://www.kerneloops.org/searchweek.php?search=hres_timers_resume
+
+Rank 8: generic_get_mtrr (warning)
+	Reported 544 times (2061 total reports)
+	BIOS bug where the MTRRs are not set up correctly
+	This warning was last seen in version 2.6.30, and first seen in 2.6.25.3.
+	More info: http://www.kerneloops.org/searchweek.php?search=generic_get_mtrr
+
+Rank 9: dmar_table_init (warning)
+	Reported 346 times (1206 total reports)
+	BIOS bug exposed via a WARN_ON
+	This warning was last seen in version 2.6.31-rc0-git18, and first seen in 2.6.29.
+	More info: http://www.kerneloops.org/searchweek.php?search=dmar_table_init
+
+Rank 10: minstrel_get_rate (warning)
+	Reported 228 times (796 total reports)
+	Issue with the ath5k driver
+	This warning was last seen in version 2.6.30-rc3, and first seen in 2.6.27.12.
+	More info: http://www.kerneloops.org/searchweek.php?search=minstrel_get_rate
+
+Rank 11: dev_watchdog(r8169) (oops)
+	Reported 206 times (9616 total reports)
+	This oops was last seen in version 2.6.30, and first seen in 2.6.26.6.
+	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
+
+Rank 12: ath_get_rate (warning)
+	Reported 145 times (1051 total reports)
+	This warning was last seen in version 2.6.30, and first seen in 2.6.26.
+	More info: http://www.kerneloops.org/searchweek.php?search=ath_get_rate
+
+Rank 13: memcmp (oops)
+	Reported 131 times (273 total reports)
+	memcmp trips up in the raid code
+	This oops was last seen in version 2.6.29.4, and first seen in 2.6.21-rc3.
+	More info: http://www.kerneloops.org/searchweek.php?search=memcmp
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
