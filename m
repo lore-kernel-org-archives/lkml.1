@@ -1,191 +1,853 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZF1OM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZF1ONU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbZF1OM4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZF1OMf
+	id S1756634AbZF1ONU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756433AbZF1OMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:12:35 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756058AbZF1OMd (ORCPT
+	Sun, 28 Jun 2009 10:12:47 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:60306 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756178AbZF1OMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:12:33 -0400
+	Sun, 28 Jun 2009 10:12:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=cNse+aGtER3u5P8RhxkQEG9b3+QXRW3NxF3WEIhcvqxEXmoli0ZkGweN3PxCH7G5aS
-         tq/o+jgR2RdPCeTYtnGYHiCu0xt3lfYmHFwMD7Qwx+i+RMMRrqE6g6hUSnW7F6DUZxyg
-         /f+mRgqZGeVeISUfvvjWdrVsj8E+QQDnuImyU=
+        b=B9O6tHobJ9g55GQZbTlvVX8ptfiX/7jGrbGhpQGbImTUULpy7RpA/3BDt38rrFr56d
+         jtoAAiDohIFTKcU3Y0XoX3E59yDDLDFHOcgBIOmtth7WB559wg/sMydFakdz8EgLTQ0O
+         DqjKiYoCR6u5VXHHbnT2hxFLbWUYMeOF1LYjI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:18:57 +0200
-Message-Id: <20090628141857.8761.44519.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:19:03 +0200
+Message-Id: <20090628141903.8761.71355.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 03/18] Staging: rtl8187se: remove THOMAS_TURBO ifdefs
+Subject: [PATCH 04/18] Staging: rtl8187se: remove CONFIG_RTL818x_S ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: remove THOMAS_TURBO ifdefs
+Subject: [PATCH] Staging: rtl8187se: remove CONFIG_RTL818x_S ifdefs
+
+CONFIG_RTL818x_S is defined in drivers/staging/rtl8187se/r8180_hw.h.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/Makefile                      |    1 -
- drivers/staging/rtl8187se/ieee80211/ieee80211.h         |    2 --
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c      |    6 ------
- drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |   15 ---------------
- drivers/staging/rtl8187se/r8185b_init.c                 |    2 --
- 5 files changed, 26 deletions(-)
+ drivers/staging/rtl8187se/Makefile          |    1 
+ drivers/staging/rtl8187se/r8180_core.c      |   40 -----
+ drivers/staging/rtl8187se/r8180_dm.c        |   24 ---
+ drivers/staging/rtl8187se/r8180_hw.h        |   18 --
+ drivers/staging/rtl8187se/r8180_rtl8225.c   |   21 ---
+ drivers/staging/rtl8187se/r8180_rtl8225z2.c |   41 -----
+ drivers/staging/rtl8187se/r8185b_init.c     |  192 ----------------------------
+ 7 files changed, 337 deletions(-)
 
 Index: b/drivers/staging/rtl8187se/Makefile
 ===================================================================
 --- a/drivers/staging/rtl8187se/Makefile
 +++ b/drivers/staging/rtl8187se/Makefile
-@@ -4,7 +4,6 @@
- #EXTRA_CFLAGS += -std=gnu89
+@@ -5,7 +5,6 @@
  #EXTRA_CFLAGS += -O2
  #CC            = gcc
--EXTRA_CFLAGS += -DTHOMAS_TURBO
  #CFLAGS += -DCONFIG_RTL8185B
- #CFLAGS += -DCONFIG_RTL818x_S
+-#CFLAGS += -DCONFIG_RTL818x_S
  
-Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+ #added for EeePC testing
+ EXTRA_CFLAGS += -DENABLE_IPS
+Index: b/drivers/staging/rtl8187se/r8180_core.c
 ===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
-@@ -956,9 +956,7 @@ struct ieee80211_network {
- //by amy 080312
- 	u8 HighestOperaRate;
- //by amy 080312
--#ifdef THOMAS_TURBO
- 	u8 Turbo_Enable;//enable turbo mode, added by thomas
--#endif
- 	u16 CountryIeLen;
- 	u8 CountryIeBuf[MAX_IE_LEN];
- };
-Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
-@@ -1159,9 +1159,7 @@ inline int ieee80211_network_init(
- //by amy 080312
- 	network->HighestOperaRate = 0;
- //by amy 080312
--#ifdef THOMAS_TURBO
- 	network->Turbo_Enable = 0;
--#endif
- 	network->CountryIeLen = 0;
- 	memset(network->CountryIeBuf, 0, MAX_IE_LEN);
- 
-@@ -1338,7 +1336,6 @@ inline int ieee80211_network_init(
- 				       network->wpa_ie_len);
- 			}
- 
--#ifdef THOMAS_TURBO
- 			if (info_element->len == 7 &&
- 			    info_element->data[0] == 0x00 &&
- 			    info_element->data[1] == 0xe0 &&
-@@ -1347,7 +1344,6 @@ inline int ieee80211_network_init(
- 			    info_element->data[4] == 0x02) {
- 				network->Turbo_Enable = 1;
- 			}
--#endif
- 			if (1 == stats->nic_type) {//nic 87
- 				break;
- 			}
-@@ -1541,9 +1537,7 @@ inline void update_network(struct ieee80
- 	dst->QoS_Enable = 1;//for Rtl8187 simulation
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -2479,10 +2479,8 @@ void rtl8180_rx(struct net_device *dev)
+ 		}else {
+ 			padding = 0;
+ 		}
+-#ifdef CONFIG_RTL818X_S
+                padding = 0;
  #endif
- 	dst->SignalStrength = src->SignalStrength;
--#ifdef THOMAS_TURBO
- 	dst->Turbo_Enable = src->Turbo_Enable;
 -#endif
- 	dst->CountryIeLen = src->CountryIeLen;
- 	memcpy(dst->CountryIeBuf, src->CountryIeBuf, src->CountryIeLen);
- }
-Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+ 		priv->rx_prevlen+=len;
+ 
+ 		if(priv->rx_prevlen > MAX_FRAG_THRESHOLD + 100){
+@@ -3862,14 +3860,12 @@ void watch_dog_adaptive(unsigned long da
+ 	}
+ #endif
+ 
+-#ifdef CONFIG_RTL818X_S
+ 	// Tx Power Tracking on 87SE.
+ #ifdef TX_TRACK
+ 	//if( priv->bTxPowerTrack )	//lzm mod 080826
+ 	if( CheckTxPwrTracking((struct net_device *)data));
+ 		TxPwrTracking87SE((struct net_device *)data);
+ #endif
+-#endif
+ 
+ 	// Perform DIG immediately.
+ #ifdef SW_DIG
+@@ -4024,11 +4020,7 @@ short rtl8180_init(struct net_device *de
+ 	 */
+ 
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 	priv->RegThreeWireMode = HW_THREE_WIRE_SI;
+-#else
+-        priv->RegThreeWireMode = SW_THREE_WIRE;
+-#endif
+ #endif
+ 
+ //Add for RF power on power off by lizhaoming 080512
+@@ -4269,10 +4261,6 @@ short rtl8180_init(struct net_device *de
+ 									(0 ? TCR_SAT : 0);	// FALSE: HW provies PLCP length and LENGEXT, TURE: SW proiveds them
+ 
+ 	priv->ReceiveConfig	=
+-#ifdef CONFIG_RTL818X_S
+-#else
+-                                                        priv->CSMethod |
+-#endif
+ //								RCR_ENMARP |
+ 								RCR_AMF | RCR_ADF |				//accept management/data
+ 								RCR_ACF |						//accept control frame for SW AP needs PS-poll, 2005.07.07, by rcnjko.
+@@ -4300,17 +4288,10 @@ short rtl8180_init(struct net_device *de
+ 	switch (hw_version){
+ #ifdef CONFIG_RTL8185B
+ 		case HW_VERID_R8185B_B:
+-#ifdef CONFIG_RTL818X_S
+                         priv->card_8185 = VERSION_8187S_C;
+ 		        DMESG("MAC controller is a RTL8187SE b/g");
+ 			priv->phy_ver = 2;
+ 			break;
+-#else
+-			DMESG("MAC controller is a RTL8185B b/g");
+-			priv->card_8185 = 3;
+-			priv->phy_ver = 2;
+-			break;
+-#endif
+ #endif
+ 		case HW_VERID_R8185_ABC:
+ 			DMESG("MAC controller is a RTL8185 b/g");
+@@ -4350,24 +4331,9 @@ short rtl8180_init(struct net_device *de
+ 	priv->card_8185_Bversion = 0;
+ 
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 	// just for sync 85
+ 	priv->card_type = PCI;
+         DMESG("This is a PCI NIC");
+-#else
+-	config3 = read_nic_byte(dev, CONFIG3);
+-	if(config3 & 0x8){
+-		priv->card_type = CARDBUS;
+-		DMESG("This is a CARDBUS NIC");
+-	}
+-	else if( config3 & 0x4){
+-		priv->card_type = MINIPCI;
+-		DMESG("This is a MINI-PCI NIC");
+-	}else{
+-		priv->card_type = PCI;
+-		DMESG("This is a PCI NIC");
+-	}
+-#endif
+ #endif
+ 	priv->enable_gpio0 = 0;
+ 
+@@ -4375,7 +4341,6 @@ short rtl8180_init(struct net_device *de
+ #ifdef CONFIG_RTL8185B
+ 	usValue = eprom_read(dev, EEPROM_SW_REVD_OFFSET);
+ 	DMESG("usValue is 0x%x\n",usValue);
+-#ifdef CONFIG_RTL818X_S
+ 	//3Read AntennaDiversity
+ 	// SW Antenna Diversity.
+ 	if(	(usValue & EEPROM_SW_AD_MASK) != EEPROM_SW_AD_ENABLE )
+@@ -4427,7 +4392,6 @@ short rtl8180_init(struct net_device *de
+ 	}
+ 	//printk("bDefaultAntenna1 = %d\n", priv->bDefaultAntenna1);
+ #endif
+-#endif
+ //by amy for antenna
+ 	/* rtl8185 can calc plcp len in HW.*/
+ 	priv->hw_plcp_len = 1;
+@@ -4537,13 +4501,9 @@ DMESG output to andreamrl@tiscali.it THA
+ 	}
+ 
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 	priv->rf_chip = RF_ZEBRA4;
+ 	priv->rf_sleep = rtl8225z4_rf_sleep;
+ 	priv->rf_wakeup = rtl8225z4_rf_wakeup;
+-#else
+-        priv->rf_chip = RF_ZEBRA2;
+-#endif
+ 	//DMESG("Card reports RF frontend Realtek 8225z2");
+ 	//DMESGW("This driver has EXPERIMENTAL support for this chipset.");
+ 	//DMESGW("use it with care and at your own risk and");
+Index: b/drivers/staging/rtl8187se/r8180_dm.c
 ===================================================================
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
-@@ -127,7 +127,6 @@ void ieee80211_WMM_Info(struct ieee80211
- 	*tag_p = tag;
+--- a/drivers/staging/rtl8187se/r8180_dm.c
++++ b/drivers/staging/rtl8187se/r8180_dm.c
+@@ -517,7 +517,6 @@ MgntIsCckRate(
+ 
+         return bReturn;
  }
- 
--#ifdef THOMAS_TURBO
- void ieee80211_TURBO_Info(struct ieee80211_device *ieee, u8 **tag_p) {
- 	u8 *tag = *tag_p;
- 
-@@ -144,7 +143,6 @@ void ieee80211_TURBO_Info(struct ieee802
- 	*tag_p = tag;
- 	printk(KERN_ALERT "This is enable turbo mode IE process\n");
+-#ifdef CONFIG_RTL818X_S
+ //
+ //	Description:
+ //		Tx Power tracking mechanism routine on 87SE.
+@@ -1233,7 +1232,6 @@ SetInitialGain:
+ 	priv->LastTxThroughput = TxThroughput;
+ 	priv->ieee80211->rate = priv->CurrentOperaRate * 5;
  }
 -#endif
  
- void enqueue_mgmt(struct ieee80211_device *ieee, struct sk_buff *skb)
+ void rtl8180_rate_adapter(struct work_struct * work)
  {
-@@ -1108,9 +1106,7 @@ inline struct sk_buff *ieee80211_associa
+@@ -1259,10 +1257,8 @@ void timer_rate_adaptive(unsigned long d
+ 			(priv->ForcedDataRate == 0) )
+ 	{
+ //	DMESG("timer_rate_adaptive():schedule rate_adapter_wq\n");
+-#ifdef CONFIG_RTL818X_S
+ 		queue_work(priv->ieee80211->wq, (void *)&priv->ieee80211->rate_adapter_wq);
+ //		StaRateAdaptive87SE((struct net_device *)data);
+-#endif
+ 	}
+ 	priv->rateadapter_timer.expires = jiffies + MSECS(priv->RateAdaptivePeriod);
+ 	add_timer(&priv->rateadapter_timer);
+@@ -1320,20 +1316,12 @@ SetAntenna8185(
+ 		case RF_ZEBRA2:
+ 		case RF_ZEBRA4:
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 			// Mac register, main antenna
+ 			write_nic_byte(dev, ANTSEL, 0x03);
+ 			//base band
+ 			write_phy_cck(dev,0x11, 0x9b); // Config CCK RX antenna.
+ 			write_phy_ofdm(dev, 0x0d, 0x5c); // Config OFDM RX antenna.
+ 
+-#else
+-			// Mac register, main antenna
+-			write_nic_byte(dev, ANTSEL, 0x03);
+-			//base band
+-			write_phy_cck(dev, 0x10, 0x9b); // Config CCK RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x5c); // Config OFDM RX antenna.
+-#endif
  #endif
- 	unsigned int rate_len = ieee80211_MFIE_rate_len(ieee);
- 	unsigned int wmm_info_len = beacon->QoS_Enable?9:0;
--#ifdef THOMAS_TURBO
- 	unsigned int turbo_info_len = beacon->Turbo_Enable?9:0;
+ 
+ 			bAntennaSwitched = true;
+@@ -1351,19 +1339,11 @@ SetAntenna8185(
+ 		case RF_ZEBRA2:
+ 		case RF_ZEBRA4:
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 			// Mac register, aux antenna
+ 			write_nic_byte(dev, ANTSEL, 0x00);
+ 			//base band
+ 			write_phy_cck(dev, 0x11, 0xbb); // Config CCK RX antenna.
+ 			write_phy_ofdm(dev, 0x0d, 0x54); // Config OFDM RX antenna.
+-#else
+-			// Mac register, aux antenna
+-			write_nic_byte(dev, ANTSEL, 0x00);
+-			//base band
+-			write_phy_cck(dev, 0x10, 0xbb); // Config CCK RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x54); // Config OFDM RX antenna.
+-#endif
+ #endif
+ 
+ 			bAntennaSwitched = true;
+@@ -1406,12 +1386,10 @@ SwitchAntenna(
+ 	{
+ #if 0//lzm del 080826
+ //by amy 080312
+-#ifdef CONFIG_RTL818X_S
+ 		if(priv->bSwAntennaDiverity)
+ 			bResult = SetAntennaConfig87SE(dev, 1, true);
+ 		else
+ #endif
+-#endif
+ 			bResult = SetAntenna8185(dev, 1);
+ //by amy 080312
+ //		printk("SwitchAntenna(): switching to antenna 1 ......\n");
+@@ -1421,12 +1399,10 @@ SwitchAntenna(
+ 	{
+ #if 0//lzm del 080826
+ //by amy 080312
+-#ifdef CONFIG_RTL818X_S
+ 		if(priv->bSwAntennaDiverity)
+ 			bResult = SetAntennaConfig87SE(dev, 0, true);
+ 		else
+ #endif
+-#endif
+ 			bResult = SetAntenna8185(dev, 0);
+ //by amy 080312
+ //		printk("SwitchAntenna(): switching to antenna 0 ......\n");
+Index: b/drivers/staging/rtl8187se/r8180_hw.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_hw.h
++++ b/drivers/staging/rtl8187se/r8180_hw.h
+@@ -21,7 +21,6 @@
+ #define R8180_HW
+ 
+ #define CONFIG_RTL8185B  //support for rtl8185B, xiong-2006-11-15
+-#define CONFIG_RTL818X_S
+ 
+ #define BIT0	0x00000001
+ #define BIT1	0x00000002
+@@ -300,7 +299,6 @@
+ #define CONFIG3 0x0059
+ #define CONFIG4 0x005A
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 	// SD3 szuyitasi: Mac0x57= CC -> B0 Mac0x60= D1 -> C6
+ 	// Mac0x60 = 0x000004C6 power save parameters
+ 	#define ANAPARM_ASIC_ON    0xB0054D00
+@@ -308,14 +306,6 @@
+ 
+ 	#define ANAPARM_ON ANAPARM_ASIC_ON
+ 	#define ANAPARM2_ON ANAPARM2_ASIC_ON
+-#else
+-	// SD3 CMLin:
+-	#define ANAPARM_ASIC_ON    0x45090658
+-	#define ANAPARM2_ASIC_ON  0x727f3f52
+-
+-	#define ANAPARM_ON ANAPARM_ASIC_ON
+-	#define ANAPARM2_ON ANAPARM2_ASIC_ON
+-#endif
+ #endif
+ 
+ #define TESTR 0x005B
+@@ -453,9 +443,7 @@
+ 
+ /* 0x00DA - 0x00DB - reserved */
+ 
+-#ifdef CONFIG_RTL818X_S
+ #define PHYPR			0xDA			//0xDA - 0x0B PHY Parameter Register.
 -#endif
  
- 	u8  encry_proto = ieee->wpax_type_notify & 0xff;
- 	//u8  pairwise_type = (ieee->wpax_type_notify >> 8) & 0xff;
-@@ -1128,7 +1124,6 @@ inline struct sk_buff *ieee80211_associa
- 			wpa_len = 0;
+ #define CWR 0x00DC
+ #define CWR_END 0x00DD
+@@ -468,9 +456,7 @@
+ #define RDSAR_END 0x00E7
+ 
+ /* 0x00E8 - 0x00EF - reserved */
+-#ifdef CONFIG_RTL818X_S
+ #define LED_CONTROL		0xED
+-#endif
+ 
+ #define FER 0x00F0
+ #define FER_END 0x00F3
+@@ -827,11 +813,9 @@
+ #define AC_BE_PARAM		0xF8			// AC_BE Parameters Record
+ #define AC_BK_PARAM		0xFC			// AC_BK Parameters Record
+ 
+-#ifdef CONFIG_RTL818X_S
+ #define BcnTimingAdjust	0x16A			// Beacon Timing Adjust Register.
+ #define GPIOCtrl			0x16B			// GPIO Control Register.
+ #define PSByGC			0x180			// 0x180 - 0x183 Power Saving by Gated Clock.
+-#endif
+ #define ARFR			0x1E0	// Auto Rate Fallback Register (0x1e0 ~ 0x1e2)
+ 
+ #define RFSW_CTRL			0x272	// 0x272-0x273.
+@@ -840,10 +824,8 @@
+ #define SW_3W_CMD0			0x27C	// Software 3-wire Control/Status Register.
+ #define SW_3W_CMD1			0x27D	// Software 3-wire Control/Status Register.
+ 
+-#ifdef CONFIG_RTL818X_S
+ #define PI_DATA_READ		0X360	// 0x360 - 0x361  Parallel Interface Data Register.
+ #define SI_DATA_READ		0x362	// 0x362 - 0x363  Serial Interface Data Register.
+-#endif
+ 
+ //----------------------------------------------------------------------------
+ //       8185B TPPoll bits 				(offset 0xd9, 1 byte)
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225.c
+@@ -38,7 +38,6 @@ u8 rtl8225_init_gain[]={
+ 	0x93,0x38,0x5a,0xc5,//0x00,0x31,0x06,0x99,//Gain = 6 ~ -54dbm
+ };
+ #endif
+-#ifdef CONFIG_RTL818X_S
+ u32 rtl8225_chan[] ={
+               0,
+ 		0x0080, //ch1
+@@ -56,26 +55,6 @@ u32 rtl8225_chan[] ={
+ 		0x0680,
+ 		0x074A, //ch14
+ };
+-#else
+-u32 rtl8225_chan[] = {
+-	0,	//dummy channel 0
+-	0x085c, //1
+-	0x08dc, //2
+-	0x095c, //3
+-	0x09dc, //4
+-	0x0a5c, //5
+-	0x0adc, //6
+-	0x0b5c, //7
+-	0x0bdc, //8
+-	0x0c5c, //9
+-	0x0cdc, //10
+-	0x0d5c, //11
+-	0x0ddc, //12
+-	0x0e5c, //13
+-	//0x0f5c, //14
+-	0x0f72, // 14
+-};
+-#endif
+ 
+ u16 rtl8225bcd_rxgain[]={
+ 	0x0400, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0408, 0x0409,
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+@@ -445,7 +445,6 @@ DbmToTxPwrIdx(
+  	bool bUseDefault = true;
+ 	s8 TxPwrIdx = 0;
+ 
+-#ifdef CONFIG_RTL818X_S
+ 	//
+ 	// 071011, SD3 SY:
+ 	// OFDM Power in dBm = Index * 0.5 + 0
+@@ -480,7 +479,6 @@ DbmToTxPwrIdx(
+ 				TxPwrIdx = (s8)tmp;
  		}
  	}
--#ifdef THOMAS_TURBO
- 	len = sizeof(struct ieee80211_assoc_request_frame)+
- 		+ beacon->ssid_len//essid tagged val
- 		+ rate_len//rates tagged val
-@@ -1136,14 +1131,6 @@ inline struct sk_buff *ieee80211_associa
- 		+ rsn_len
- 		+ wmm_info_len
- 		+ turbo_info_len;
+-#endif
+ 
+ 	//
+ 	// TRUE if we want to use a default implementation.
+@@ -577,7 +575,6 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+ 	min_ofdm_power_level = 10;
+ 
+ #ifdef CONFIG_RTL8185B
+-#ifdef CONFIG_RTL818X_S
+ 
+ 	if(cck_power_level > 35)
+ 	{
+@@ -590,36 +587,6 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+        //printk("CCK TX power is %x\n", (ZEBRA2_CCK_OFDM_GAIN_SETTING[cck_power_level]));
+        force_pci_posting(dev);
+ 	mdelay(1);
 -#else
--	len = sizeof(struct ieee80211_assoc_request_frame)+
--		+ beacon->ssid_len//essid tagged val
--		+ rate_len//rates tagged val
--		+ wpa_len
--		+ rsn_len
--		+ wmm_info_len;
+-
+-	/* CCK power setting */
+-	if(cck_power_level > max_cck_power_level)
+-		cck_power_level = max_cck_power_level;
+-
+-	cck_power_level += priv->cck_txpwr_base;
+-
+-	if(cck_power_level > 35)
+-		cck_power_level = 35;
+-
+-	if(ch == 14)
+-		cck_power_table = rtl8225z2_tx_power_cck_ch14;
+-	else
+-		cck_power_table = rtl8225z2_tx_power_cck;
+-
+-
+-	for(i=0;i<8;i++){
+-
+-		power = cck_power_table[i];
+-		write_phy_cck(dev, 0x44 + i, power);
+-	}
+-
+-	//write_nic_byte(dev, TX_GAIN_CCK, power);
+-	//2005.11.17,
+-	write_nic_byte(dev, CCK_TXAGC, ZEBRA2_CCK_OFDM_GAIN_SETTING[(u8)cck_power_level]);
+-
+-	force_pci_posting(dev);
+-	mdelay(1);
 -#endif
+ #endif
+ 	/* OFDM power setting */
+ //  Old:
+@@ -652,11 +619,7 @@ void rtl8225z2_SetTXPowerLevel(struct ne
  
- 	skb = dev_alloc_skb(len);
- 
-@@ -1389,12 +1376,10 @@ inline struct sk_buff *ieee80211_associa
- 	if(wmm_info_len) {
- 	  ieee80211_WMM_Info(ieee, &tag);
- 	}
--#ifdef THOMAS_TURBO
- 	tag = skb_put(skb,turbo_info_len);
-         if(turbo_info_len) {
-                 ieee80211_TURBO_Info(ieee, &tag);
-         }
+ 	//write_nic_byte(dev, TX_GAIN_OFDM, ofdm_power_level);
+ 	//2005.11.17,
+-#ifdef CONFIG_RTL818X_S
+         write_nic_byte(dev, OFDM_TXAGC, ZEBRA2_CCK_OFDM_GAIN_SETTING[(u8)ofdm_power_level]);
+-#else
+-        write_nic_byte(dev, OFDM_TXAGC, ZEBRA2_CCK_OFDM_GAIN_SETTING[(u8)ofdm_power_level]*2);
 -#endif
+         if(ofdm_power_level<=11)
+         {
+ //            write_nic_dword(dev,PHY_ADR,0x00005c87);
+@@ -1137,11 +1100,7 @@ void rtl8225z2_rf_init(struct net_device
+ //	//}
  
- 	return skb;
- }
+ 	rtl8225z2_SetTXPowerLevel(dev, channel);
+-#ifdef CONFIG_RTL818X_S
+         write_phy_cck(dev, 0x11, 0x9b); mdelay(1); /* Rx ant A, 0xdb for B */
+-#else
+-	write_phy_cck(dev, 0x10, 0x9b); mdelay(1); /* Rx ant A, 0xdb for B */
+-#endif
+ 	write_phy_ofdm(dev, 0x26, 0x90); mdelay(1); /* Rx ant A, 0x10 for B */
+ 
+ 	rtl8185_tx_antenna(dev, 0x3); /* TX ant A, 0x0 for B */
 Index: b/drivers/staging/rtl8187se/r8185b_init.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8185b_init.c
 +++ b/drivers/staging/rtl8187se/r8185b_init.c
-@@ -2227,11 +2227,9 @@ ActUpdateChannelAccessSetting(
+@@ -39,7 +39,6 @@ Notes:
+ //#define CONFIG_RTL8180_IO_MAP
  
- 		//lzm reserved 080826
- #if 1
--#ifdef THOMAS_TURBO
- 		// For turbo mode setting. port from 87B by Isaiah 2008-08-01
- 		if( ieee->current_network.Turbo_Enable == 1 )
- 			AcParam.f.TXOPLimit = 0x01FF;
+ #define TC_3W_POLL_MAX_TRY_CNT 5
+-#ifdef CONFIG_RTL818X_S
+ static u8 MAC_REG_TABLE[][2]={
+                         //PAGA 0:
+                         // 0x34(BRSR), 0xBE(RATE_FALLBACK_CTL), 0x1E0(ARFR) would set in HwConfigureRTL8185()
+@@ -120,97 +119,6 @@ static u8 OFDM_CONFIG[]={
+ 			0xC0, 0xC1, 0x58, 0xF1, 0x00, 0xC4, 0x90, 0x3e,
+ 			0xD8, 0x3C, 0x7B, 0x10, 0x10
+ 		};
+-#else
+- static u8 MAC_REG_TABLE[][2]={
+-			//PAGA 0:
+-			{0xf0, 0x32}, {0xf1, 0x32}, {0xf2, 0x00}, {0xf3, 0x00}, {0xf4, 0x32},
+-			{0xf5, 0x43}, {0xf6, 0x00}, {0xf7, 0x00}, {0xf8, 0x46}, {0xf9, 0xa4},
+-			{0xfa, 0x00}, {0xfb, 0x00}, {0xfc, 0x96}, {0xfd, 0xa4}, {0xfe, 0x00},
+-			{0xff, 0x00},
+-
+-			//PAGE 1:
+-			{0x5e, 0x01},
+-			{0x58, 0x4b}, {0x59, 0x00}, {0x5a, 0x4b}, {0x5b, 0x00}, {0x60, 0x4b},
+-			{0x61, 0x09}, {0x62, 0x4b}, {0x63, 0x09}, {0xce, 0x0f}, {0xcf, 0x00},
+-			{0xe0, 0xff}, {0xe1, 0x0f}, {0xe2, 0x00}, {0xf0, 0x4e}, {0xf1, 0x01},
+-			{0xf2, 0x02}, {0xf3, 0x03}, {0xf4, 0x04}, {0xf5, 0x05}, {0xf6, 0x06},
+-			{0xf7, 0x07}, {0xf8, 0x08},
+-
+-
+-			//PAGE 2:
+-			{0x5e, 0x02},
+-			{0x0c, 0x04}, {0x21, 0x61}, {0x22, 0x68}, {0x23, 0x6f}, {0x24, 0x76},
+-			{0x25, 0x7d}, {0x26, 0x84}, {0x27, 0x8d}, {0x4d, 0x08}, {0x4e, 0x00},
+-			{0x50, 0x05}, {0x51, 0xf5}, {0x52, 0x04}, {0x53, 0xa0}, {0x54, 0x1f},
+-			{0x55, 0x23}, {0x56, 0x45}, {0x57, 0x67}, {0x58, 0x08}, {0x59, 0x08},
+-			{0x5a, 0x08}, {0x5b, 0x08}, {0x60, 0x08}, {0x61, 0x08}, {0x62, 0x08},
+-			{0x63, 0x08}, {0x64, 0xcf}, {0x72, 0x56}, {0x73, 0x9a},
+-
+-			//PAGA 0:
+-			{0x5e, 0x00},
+-			{0x34, 0xff}, {0x35, 0x0f}, {0x5b, 0x40}, {0x84, 0x88}, {0x85, 0x24},
+-			{0x88, 0x54}, {0x8b, 0xb8}, {0x8c, 0x07}, {0x8d, 0x00}, {0x94, 0x1b},
+-			{0x95, 0x12}, {0x96, 0x00}, {0x97, 0x06}, {0x9d, 0x1a}, {0x9f, 0x10},
+-			{0xb4, 0x22}, {0xbe, 0x80}, {0xdb, 0x00}, {0xee, 0x00}, {0x5b, 0x42},
+-			{0x91, 0x03},
+-
+-			//PAGE 2:
+-			{0x5e, 0x02},
+-			{0x4c, 0x03},
+-
+-			//PAGE 0:
+-			{0x5e, 0x00},
+-
+-			//PAGE 3:
+-			{0x5e, 0x03},
+-			{0x9f, 0x00},
+-
+-			//PAGE 0:
+-			{0x5e, 0x00},
+-			{0x8c, 0x01}, {0x8d, 0x10},{0x8e, 0x08}, {0x8f, 0x00}
+-		};
+-
+-
+-static u8  ZEBRA_AGC[]={
+-	0,
+-	0x5e,0x5e,0x5e,0x5e,0x5d,0x5b,0x59,0x57,0x55,0x53,0x51,0x4f,0x4d,0x4b,0x49,0x47,
+-	0x45,0x43,0x41,0x3f,0x3d,0x3b,0x39,0x37,0x35,0x33,0x31,0x2f,0x2d,0x2b,0x29,0x27,
+-	0x25,0x23,0x21,0x1f,0x1d,0x1b,0x19,0x17,0x15,0x13,0x11,0x0f,0x0d,0x0b,0x09,0x07,
+-	0x05,0x03,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+-	0x19,0x19,0x19,0x019,0x19,0x19,0x19,0x19,0x19,0x19,0x1e,0x1f,0x20,0x21,0x21,0x22,
+-	0x23,0x24,0x24,0x25,0x25,0x26,0x26,0x27,0x27,0x28,0x28,0x28,0x29,0x2a,0x2a,0x2b,
+-	0x2b,0x2b,0x2c,0x2c,0x2c,0x2d,0x2d,0x2d,0x2e,0x2e,0x2f,0x30,0x31,0x31,0x31,0x31,
+-	0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31,0x31
+-	};
+-
+-static u32 ZEBRA_RF_RX_GAIN_TABLE[]={
+-	0,
+-	0x0400,0x0401,0x0402,0x0403,0x0404,0x0405,0x0408,0x0409,
+-	0x040a,0x040b,0x0502,0x0503,0x0504,0x0505,0x0540,0x0541,
+-	0x0542,0x0543,0x0544,0x0545,0x0580,0x0581,0x0582,0x0583,
+-	0x0584,0x0585,0x0588,0x0589,0x058a,0x058b,0x0643,0x0644,
+-	0x0645,0x0680,0x0681,0x0682,0x0683,0x0684,0x0685,0x0688,
+-	0x0689,0x068a,0x068b,0x068c,0x0742,0x0743,0x0744,0x0745,
+-	0x0780,0x0781,0x0782,0x0783,0x0784,0x0785,0x0788,0x0789,
+-	0x078a,0x078b,0x078c,0x078d,0x0790,0x0791,0x0792,0x0793,
+-	0x0794,0x0795,0x0798,0x0799,0x079a,0x079b,0x079c,0x079d,
+-	0x07a0,0x07a1,0x07a2,0x07a3,0x07a4,0x07a5,0x07a8,0x07a9,
+-	0x03aa,0x03ab,0x03ac,0x03ad,0x03b0,0x03b1,0x03b2,0x03b3,
+-	0x03b4,0x03b5,0x03b8,0x03b9,0x03ba,0x03bb,0x03bb
+-};
+-
+-// 2006.07.13, SD3 szuyitasi:
+-//	OFDM.0x03=0x0C (original is 0x0F)
+-// Use the new SD3 given param, by shien chang, 2006.07.14
+-static u8 OFDM_CONFIG[]={
+-	0x10, 0x0d, 0x01, 0x0C, 0x14, 0xfb, 0x0f, 0x60, 0x00, 0x60,
+-	0x00, 0x00, 0x00, 0x5c, 0x00, 0x00, 0x40, 0x00, 0x40, 0x00,
+-	0x00, 0x00, 0xa8, 0x46, 0xb2, 0x33, 0x07, 0xa5, 0x6f, 0x55,
+-	0xc8, 0xb3, 0x0a, 0xe1, 0x1c, 0x8a, 0xb6, 0x83, 0x34, 0x0f,
+-	0x4f, 0x23, 0x6f, 0xc2, 0x6b, 0x40, 0x80, 0x00, 0xc0, 0xc1,
+-	0x58, 0xf1, 0x00, 0xe4, 0x90, 0x3e, 0x6d, 0x3c, 0xff, 0x07
+-};
 -#endif
- 		// For 87SE with Intel 4965  Ad-Hoc mode have poor throughput (19MB)
- 		if (ieee->iw_mode == IW_MODE_ADHOC)
- 			AcParam.f.TXOPLimit = 0x0020;
+ 
+ /*---------------------------------------------------------------
+   * Hardware IO
+@@ -538,12 +446,10 @@ ZEBRA_RFSerialWrite(
+ 	u16				UshortBuffer;
+ 
+ 	u8			u1bTmp;
+-#ifdef CONFIG_RTL818X_S
+ 	// RTL8187S HSSI Read/Write Function
+ 	u1bTmp = read_nic_byte(dev, RF_SW_CONFIG);
+ 	u1bTmp |=   RF_SW_CFG_SI;   //reg08[1]=1 Serial Interface(SI)
+ 	write_nic_byte(dev, RF_SW_CONFIG, u1bTmp);
+-#endif
+ 	UshortBuffer = read_nic_word(dev, RFPinsOutput);
+ 	oval = UshortBuffer & 0xfff8; // We shall clear bit0, 1, 2 first, 2005.10.28, by rcnjko.
+ 
+@@ -914,7 +820,6 @@ RF_WriteReg(
+ 					1);					// bWrite
+          		}
+ 			break;
+-  #ifdef CONFIG_RTL818X_S
+ 			case HW_THREE_WIRE_PI: //Parallel Interface
+ 			{ // Pure HW 3-wire.
+ 				data2Write = (data << 4) | (u32)(offset & 0x0f);
+@@ -948,7 +853,6 @@ RF_WriteReg(
+ //                                 printk(" exit ZEBRA_RFSerialWrite\n ");
+ 			}
+ 			break;
+-  #endif
+ 
+ 
+ 		default:
+@@ -981,13 +885,11 @@ ZEBRA_RFSerialRead(
+ 	u8			u1bTmp;
+ 	ThreeWireReg	tdata;
+ 	//PHAL_DATA_8187	pHalData = GetHalData8187(pAdapter);
+-#ifdef CONFIG_RTL818X_S
+ 	{ // RTL8187S HSSI Read/Write Function
+ 		u1bTmp = read_nic_byte(dev, RF_SW_CONFIG);
+ 		u1bTmp |=   RF_SW_CFG_SI;   //reg08[1]=1 Serial Interface(SI)
+ 		write_nic_byte(dev, RF_SW_CONFIG, u1bTmp);
+ 	}
+-#endif
+ 
+ 	wReg80 = oval = read_nic_word(dev, RFPinsOutput);
+ 	oval2 = read_nic_word(dev, RFPinsEnable);
+@@ -1111,7 +1013,6 @@ RF_ReadReg(
+ 	case RF_ZEBRA4:
+ 		switch(priv->RegThreeWireMode)
+ 		{
+-#ifdef CONFIG_RTL818X_S
+ 			case HW_THREE_WIRE_PI: // For 87S  Parallel Interface.
+ 			{
+ 				data2Write = ((u32)(offset&0x0f));
+@@ -1141,7 +1042,6 @@ RF_ReadReg(
+ 			}
+ 			break;
+ 
+-#endif
+ 			// Perform SW 3-wire programming by driver.
+ 			default:
+ 			{
+@@ -1200,7 +1100,6 @@ ReadBBPortUchar(
+ 	return RegisterContent;
+ }
+ //{by amy 080312
+-#ifdef CONFIG_RTL818X_S
+ //
+ //	Description:
+ //		Perform Antenna settings with antenna diversity on 87SE.
+@@ -1282,7 +1181,6 @@ SetAntennaConfig87SE(
+ 	priv->CurrAntennaIndex = DefaultAnt; // Update default settings.
+ 	return	bAntennaSwitched;
+ }
+-#endif
+ //by amy 080312
+ /*---------------------------------------------------------------
+   * Hardware Initialization.
+@@ -1301,7 +1199,6 @@ ZEBRA_Config_85BASIC_HardCode(
+ 	u32	u4bRegOffset, u4bRegValue, u4bRF23, u4bRF24;
+        u8			u1b24E;
+ 
+-#ifdef CONFIG_RTL818X_S
+ 
+ 	//=============================================================================
+ 	// 87S_PCIE :: RADIOCFG.TXT
+@@ -1509,72 +1406,6 @@ ZEBRA_Config_85BASIC_HardCode(
+ 	write_nic_byte(dev, CCK_TXAGC, 0x10);
+ 	write_nic_byte(dev, OFDM_TXAGC, 0x1B);
+ 	write_nic_byte(dev, ANTSEL, 0x03);
+-#else
+-	//=============================================================================
+-	// RADIOCFG.TXT
+-	//=============================================================================
+-
+-	RF_WriteReg(dev, 0x00, 0x00b7);			mdelay(1);
+-	RF_WriteReg(dev, 0x01, 0x0ee0);			mdelay(1);
+-	RF_WriteReg(dev, 0x02, 0x044d);			mdelay(1);
+-	RF_WriteReg(dev, 0x03, 0x0441);			mdelay(1);
+-	RF_WriteReg(dev, 0x04, 0x08c3);			mdelay(1);
+-	RF_WriteReg(dev, 0x05, 0x0c72);			mdelay(1);
+-	RF_WriteReg(dev, 0x06, 0x00e6);			mdelay(1);
+-	RF_WriteReg(dev, 0x07, 0x082a);			mdelay(1);
+-	RF_WriteReg(dev, 0x08, 0x003f);			mdelay(1);
+-	RF_WriteReg(dev, 0x09, 0x0335);			mdelay(1);
+-	RF_WriteReg(dev, 0x0a, 0x09d4);			mdelay(1);
+-	RF_WriteReg(dev, 0x0b, 0x07bb);			mdelay(1);
+-	RF_WriteReg(dev, 0x0c, 0x0850);			mdelay(1);
+-	RF_WriteReg(dev, 0x0d, 0x0cdf);			mdelay(1);
+-	RF_WriteReg(dev, 0x0e, 0x002b);			mdelay(1);
+-	RF_WriteReg(dev, 0x0f, 0x0114);			mdelay(1);
+-
+-	RF_WriteReg(dev, 0x00, 0x01b7);			mdelay(1);
+-
+-
+-	for(i=1;i<=95;i++)
+-	{
+-		RF_WriteReg(dev, 0x01, i);	mdelay(1);
+-		RF_WriteReg(dev, 0x02, ZEBRA_RF_RX_GAIN_TABLE[i]); mdelay(1);
+-		//DbgPrint("RF - 0x%x = 0x%x", i, ZEBRA_RF_RX_GAIN_TABLE[i]);
+-	}
+-
+-	RF_WriteReg(dev, 0x03, 0x0080);			mdelay(1); 	// write reg 18
+-	RF_WriteReg(dev, 0x05, 0x0004);			mdelay(1);	// write reg 20
+-	RF_WriteReg(dev, 0x00, 0x00b7);			mdelay(1);	// switch to reg0-reg15
+-	//0xfd
+-	//0xfd
+-	//0xfd
+-	RF_WriteReg(dev, 0x02, 0x0c4d);			mdelay(1);
+-	mdelay(100);	// Deay 100 ms. //0xfe
+-	mdelay(100);	// Deay 100 ms. //0xfe
+-	RF_WriteReg(dev, 0x02, 0x044d);			mdelay(1);
+-	RF_WriteReg(dev, 0x00, 0x02bf);			mdelay(1);	//0x002f disable 6us corner change,  06f--> enable
+-
+-	//=============================================================================
+-
+-	//=============================================================================
+-	// CCKCONF.TXT
+-	//=============================================================================
+-
+-	//=============================================================================
+-
+-	//=============================================================================
+-	// Follow WMAC RTL8225_Config()
+-	//=============================================================================
+-
+-	// power control
+-	write_nic_byte(dev, CCK_TXAGC, 0x03);
+-	write_nic_byte(dev, OFDM_TXAGC, 0x07);
+-	write_nic_byte(dev, ANTSEL, 0x03);
+-
+-	//=============================================================================
+-
+-	// OFDM BBP setup
+-//	SetOutputEnableOfRfPins(dev);//by amy
+-#endif
+ 
+ 
+ 
+@@ -1629,10 +1460,8 @@ ZEBRA_Config_85BASIC_HardCode(
+ //by amy for antenna
+ 	//=============================================================================
+ //{by amy 080312
+-#ifdef CONFIG_RTL818X_S
+ 	// Config Sw/Hw  Combinational Antenna Diversity. Added by Roger, 2008.02.26.
+ 	SetAntennaConfig87SE(dev, priv->bDefaultAntenna1, priv->bSwAntennaDiverity);
+-#endif
+ //by amy 080312}
+ #if 0
+ 	// Config Sw/Hw  Antenna Diversity
+@@ -1857,7 +1686,6 @@ UpdateInitialGain(
+ 		break;
+ 	}
+ }
+-#ifdef CONFIG_RTL818X_S
+ //
+ //	Description:
+ //		Tx Power tracking mechanism routine on 87SE.
+@@ -1878,7 +1706,6 @@ InitTxPwrTracking87SE(
+ 	RF_WriteReg(dev, 0x02, u4bRfReg|PWR_METER_EN);			mdelay(1);
+ }
+ 
+-#endif
+ void
+ PhyConfig8185(
+ 	struct net_device *dev
+@@ -1896,7 +1723,6 @@ PhyConfig8185(
+ 		break;
+ 	}
+ //{by amy 080312
+-#ifdef CONFIG_RTL818X_S
+ 	// Set default initial gain state to 4, approved by SD3 DZ, by Bruce, 2007-06-06.
+ 	if(priv->bDigMechanism)
+ 	{
+@@ -1913,7 +1739,6 @@ PhyConfig8185(
+ 	if(priv->bTxPowerTrack)
+ 		InitTxPwrTracking87SE(dev);
+ 
+-#endif
+ //by amy 080312}
+ 	priv->InitialGainBackUp= priv->InitialGain;
+ 	UpdateInitialGain(dev);
+@@ -2004,13 +1829,8 @@ HwConfigureRTL8185(
+ #if 0
+ 		PlatformIOWrite2Byte(dev, ARFR, 0x0fff); 	// set 1M ~ 54M
+ #endif
+-#ifdef CONFIG_RTL818X_S
+ 	        // Aadded by Roger, 2007.11.15.
+ 	        PlatformIOWrite2Byte(dev, ARFR, 0x0fff); //set 1M ~ 54Mbps.
+-#else
+-		PlatformIOWrite2Byte(dev, ARFR, 0x0c00); //set 48Mbps, 54Mbps.
+-                // By SD3 szuyi's request. by Roger, 2007.03.26.
+-#endif
+ //by amy
+ 	}
+ 	else
+@@ -2083,7 +1903,6 @@ MacConfig_85BASIC(
+ #if 0
+ 	write_nic_dword(dev, RFTiming, 0x00004001);
+ #endif
+-#ifdef CONFIG_RTL818X_S
+ 	// power save parameter based on "87SE power save parameters 20071127.doc", as follow.
+ 
+ 	//Enable DA10 TX power saving
+@@ -2104,9 +1923,6 @@ MacConfig_85BASIC(
+ 	write_nic_word(dev, 0x37C, 0x00EC);
+ //	write_nic_word(dev, 0x37E, 0x00FE);//-edward
+ 	write_nic_word(dev, 0x37E, 0x00EC);//+edward
+-#else
+-       write_nic_dword(dev, RFTiming, 0x00004003);
+-#endif
+        write_nic_byte(dev, 0x24E,0x01);
+ //by amy
+ 
+@@ -2973,22 +2789,14 @@ void rtl8185b_adapter_start(struct net_d
+ 	write_nic_byte(dev, CR9346, 0xc0);	// enable config register write
+ //by amy
+ 	tmpu8 = read_nic_byte(dev, CONFIG3);
+-#ifdef CONFIG_RTL818X_S
+ 	write_nic_byte(dev, CONFIG3, (tmpu8 |CONFIG3_PARM_En) );
+-#else
+-	write_nic_byte(dev, CONFIG3, (tmpu8 |CONFIG3_PARM_En | CONFIG3_CLKRUN_En) );
+-#endif
+ //by amy
+ 	// Turn on Analog power.
+ 	// Asked for by William, otherwise, MAC 3-wire can't work, 2006.06.27, by rcnjko.
+ 	write_nic_dword(dev, ANAPARAM2, ANAPARM2_ASIC_ON);
+ 	write_nic_dword(dev, ANAPARAM, ANAPARM_ASIC_ON);
+ //by amy
+-#ifdef CONFIG_RTL818X_S
+ 	write_nic_word(dev, ANAPARAM3, 0x0010);
+-#else
+-      write_nic_byte(dev, ANAPARAM3, 0x00);
+-#endif
+ //by amy
+ 
+ 	write_nic_byte(dev, CONFIG3, tmpu8);
