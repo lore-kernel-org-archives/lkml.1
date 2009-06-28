@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZF1NXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbZF1NYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZF1NXC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 09:23:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZF1NWx
+	id S1755789AbZF1NYD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 09:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZF1NXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 09:22:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41380 "EHLO mx2.redhat.com"
+	Sun, 28 Jun 2009 09:23:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41391 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbZF1NWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 09:22:52 -0400
-Date: Sun, 28 Jun 2009 16:22:24 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: array of pointers with rcu
-Message-ID: <20090628132223.GA11856@redhat.com>
+	id S1751102AbZF1NXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 09:23:53 -0400
+Message-ID: <4A476F3F.3090301@redhat.com>
+Date: Sun, 28 Jun 2009 16:25:19 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       davidel@xmailserver.org, rusty@rustcorp.com.au
+Subject: Re: [KVM PATCH v5 3/4] KVM: Fix races in irqfd using new	eventfd_kref_get
+ interface
+References: <20090625132441.26748.641.stgit@dev.haskins.net> <20090625132826.26748.15607.stgit@dev.haskins.net> <20090628110650.GA8061@redhat.com> <4A476714.2000602@novell.com> <20090628131859.GC11866@redhat.com>
+In-Reply-To: <20090628131859.GC11866@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
-I'd like to implement a static array of pointers with rcu.
-(Note that Documentation/RCU/arrayRCU.txt addresses only the case of
-static arrays where the data (rather than a pointer to the data) is
-located in each array element).
-The array is implemented today in kvm as follows:
+On 06/28/2009 04:18 PM, Michael S. Tsirkin wrote:
+>
+> that could be the case, as we have, for example:
+>
+> static struct file_operations kvm_vm_fops = {
+>          .release        = kvm_vm_release,
+>          .unlocked_ioctl = kvm_vm_ioctl,
+>          .compat_ioctl   = kvm_vm_ioctl,
+>          .mmap           = kvm_vm_mmap,
+> };
+>
+> with no owner field.
+>
+> Avi, shouldn't we initialize the owner field to prevent
+> kvm module from going away while files are open?
+>    
 
-struct kvm_io_bus {
-        int                   dev_count;
-#define NR_IOBUS_DEVS 6
-        struct kvm_io_device *devs[NR_IOBUS_DEVS];
-};
+We do initialize it:
 
-It's easy to use rcu_assign_pointer and
-rcu_dereference to access each value in the array,
-so that's fine.
+kvm_chardev_ops.owner = module;
+kvm_vm_fops.owner = module;
+kvm_vcpu_fops.owner = module;
 
-However, I also have the dev_count value to handle.
-This value is usually used in loops like this
+The reason it's not done through the initializer is that we set the 
+owner to the vendor module (e.g. kvm-intel.ko) so that you can't remove 
+the vendor module when a guest is running.
 
-for (i = 0; i < bus->dev_count; ++i) {
-	... uses bus->devs[i] ...
-}
-
-I can assign the dev_count value with rcu_assign_pointer and even though
-it is not a pointer I think it should work fine.  However, to access
-dev_count I think that rcu_dereference will not do what I want:
-
-#define rcu_dereference(p)     ({ \
-                                typeof(p) _________p1 = ACCESS_ONCE(p);
-\
-                                smp_read_barrier_depends(); \
-                                (_________p1); \
-                                })
-
-
-The use of dev_count is not through a dependency so
-smp_read_barrier_depends will not be enough on most architectures.
-
-So it seems that what I really need is something like:
-#define rcu_read_value(p)     ({ \
-                                typeof(p) _________p1 = ACCESS_ONCE(p);
-\
-                                smp_rmb(); \
-                                (_________p1); \
-                                })
-
-And maybe
-#define rcu_assign_value rcu_assign_pointer
-for symmetry.
-
-Comments?
 
 -- 
-MST
+error compiling committee.c: too many arguments to function
+
