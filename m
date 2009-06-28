@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZF1QAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbZF1QAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbZF1QAh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZF1QA3
+	id S1756465AbZF1QAv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZF1QAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:00:29 -0400
-Received: from www.tglx.de ([62.245.132.106]:36261 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbZF1QA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:00:28 -0400
-Date: Sun, 28 Jun 2009 18:00:21 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: vijay baskar <cn.vijaibaskar@gdatech.co.in>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UIO driver for framebuffer
-Message-ID: <20090628160021.GC3639@local>
-References: <4A436265.4050502@gdatech.co.in>
+	Sun, 28 Jun 2009 12:00:41 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:6849
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753702AbZF1QAl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 12:00:41 -0400
+Message-ID: <4A4793A6.8080802@panasas.com>
+Date: Sun, 28 Jun 2009 19:00:38 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A436265.4050502@gdatech.co.in>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Smart <James.Smart@Emulex.Com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>, Olaf Hering <olh@suse.de>,
+       Sam Ravnborg <sam@ravnborg.org>, Benny Halevy <bhalevy@panasas.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       scst-devel <scst-devel@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
+ and scsi_device_type
+References: <1246122359.32198.7.camel@hpdv5.satnam> <4A47222B.5020702@panasas.com> <4A477F00.70305@emulex.com>
+In-Reply-To: <4A477F00.70305@emulex.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jun 2009 16:00:42.0001 (UTC) FILETIME=[967E1810:01C9F809]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 05:11:25PM +0530, vijay baskar wrote:
-> Hi all,
->
-> I have written a uio driver for framebuffer device.
+On 06/28/2009 05:32 PM, James Smart wrote:
+> Sorry folks --  the nuance of the clibrary having it's own version of a 
+> kernel header for distros was completely unknown to me.
+> 
+> Christoph mentioned this to me last week, with the recommendation to 
+> back out the patch and move the other headers that were exprted into 
+> include/linux - thus nothing in include/scsi gets export.  No Problem. 
+> and I'll do so shortly.
+> 
+> How does a lowly contributor track these kind of nuances ?
+> 
+> -- james s
+> 
 
-Why? Framebuffer devices should be handled by the framebuffer subsystem which
-already makes the framebuffer accessible from userspace in a way that's
-supported by many userspace libraries. Why do you want to reinvent the wheel
-in an incompatible way?
+Don't give up so fast. Please. 
+Kernel should reclaim back control of it's own headers.
+/usr/include/scsi is Kernel territory from the start.
+This is just a plain historical mistake that glibc had
+to duplicate all these Kernel headers.
 
-> I added device  
-> specific register memory in uio.mem. I also added DMA param memory in  
-> uio.mem to perform DMA from userspace. Also video RAM  
-> <http://fixunix.com/#> was mapped in kernel space using  
-> dma_alloc_coherent() and a logical address was obtained. This logical  
-> address was also added in uio.mem with memtype as UIO_MEM_LOGICAL  
-> because i can fill video ram from userspace.Read and write to this DMA  
-> param memory from userspace is not having any effect. Also video RAM  
-> memory that i filled up is not getting written to the framebuffer device  
-> when DMA is started. Also one more info that i noted was that values  
-> assigned to logical addresses in kernel space are not reflected in  
-> userspace after mmap. The values in userspace show different values  
-> compared to that in kernel space.
-> This is a bit confusing for me.
+Please lets start with scsi.h and then advance slowly
+to more Headers like sg.h
 
-For me too.
+Andrew, please help.
 
-> Why is this happening?? Have I missed  
-> any information??
-
-Yes, UIO is not for devices that are already supported by other subsystems.
-
-> Am i on the right path??
-
-I don't think so, unless you can provide good technical reasons for your
-concept.
-
-Thanks,
-Hans
-
->
-> regards,
-> vijai
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks
+Boaz
