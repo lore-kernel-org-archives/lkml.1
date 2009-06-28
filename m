@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbZF1XSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZF1Xek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753085AbZF1XSY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 19:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZF1XSO
+	id S1756010AbZF1Xek (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 19:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZF1Xea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 19:18:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54695 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZF1XSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 19:18:14 -0400
-Subject: Re: [linux-cifs-client] Re: [PATCH] cifs: fix fh_mutex locking in 
- cifs_reopen_file
-From: Jeff Layton <jlayton@redhat.com>
-To: Steve French <smfrench@gmail.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       Jeremy Allison <jra@samba.org>, samba-technical@lists.samba.org
-In-Reply-To: <524f69650906281202p6296c83esd9848931dfa4e8e8@mail.gmail.com>
-References: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
-	 <524f69650906271710n663e4f21x106b5deaa81e20c0@mail.gmail.com>
-	 <1246152224.7960.1.camel@tupile.poochiereds.net>
-	 <524f69650906280943y447c0ee5oad516c4a7589c764@mail.gmail.com>
-	 <524f69650906281202p6296c83esd9848931dfa4e8e8@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 19:18:09 -0400
-Message-Id: <1246231089.2956.3.camel@tlielax.poochiereds.net>
+	Sun, 28 Jun 2009 19:34:30 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53099 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbZF1Xea (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 19:34:30 -0400
+Date: Mon, 29 Jun 2009 08:32:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       kamezawa.hiroyuki@jp.fujitsu.com, nishimura@mxp.nes.nec.co.jp,
+       lizf@cn.fujitsu.com, menage@google.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] memcg: add commens for expaing memory barrier (Was Re:
+ Low overhead patches for the memory cgroup controller (v5)
+Message-Id: <20090629083256.a41751f4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090626044803.GG8642@balbir.in.ibm.com>
+References: <20090615043900.GF23577@balbir.in.ibm.com>
+	<20090622154343.9cdbf23a.akpm@linux-foundation.org>
+	<20090623090116.556d4f97.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090626095745.01cef410.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090626044803.GG8642@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 14:02 -0500, Steve French wrote:
-> On Sun, Jun 28, 2009 at 11:43 AM, Steve French<smfrench@gmail.com> wrote:
-> > On Sat, Jun 27, 2009 at 8:23 PM, Jeff Layton<jlayton@redhat.com> wrote:
-> > In any case, as long as we are sure we are hitting a Samba server
-> > limit (or server side
-> > per-process limit), we are ok and can continue to review/merge the very large
-> > inode patches.  I am verifying with one additional pair of temporary
-> > stats (counters of successful opens) in the exit path of cifs_open and
-> > cifs_close)
-> > to make sure that those match what I have already verified that we are seeing
-> > with smbstatus and the client side counters on number of successful posix_opens.
-> 
-> I am puzzled about the Samba 3.4 max files limit (I am seeing it at
-> 1014 opens) and seems
-> strange that dbench would open so many files, but with counters in
-> cifs_open and cifs_close - I see 1014 more opens than closes (from the vfs)
-> which matches what I see at the SMB level and what I see in Samba server.
-> dbench 4 fails even faster.   This also fails on other OS (opensuse,
-> Ubuntu etc.),
-> but worked on Samba 3.0.28.  Is it possible that Samba 3.4 changed their
-> max open file limit?
-> 
-> 
+On Fri, 26 Jun 2009 10:18:03 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Doesn't 3.0.28 have broken POSIX open calls? That may account for the
-difference. I can't be certain I was seeing the same failures you were
-with dbench, but I never got a passing run until I applied that patch to
-fix the reopen locking.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-26 09:57:45]:
+> 
+> > On Tue, 23 Jun 2009 09:01:16 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > Do we still need the smp_wmb()?
+> > > > 
+> > > > It's hard to say, because we forgot to document it :(
+> > > > 
+> > > Sorry for lack of documentation.
+> > > 
+> > > pc->mem_cgroup should be visible before SetPageCgroupUsed(). Othrewise,
+> > > A routine believes USED bit will see bad pc->mem_cgroup.
+> > > 
+> > > I'd like to  add a comment later (againt new mmotm.)
+> > > 
+> > 
+> > Ok, it's now.
+> > ==
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > Add comments for the reason of smp_wmb() in mem_cgroup_commit_charge().
+> > 
+> > Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  mm/memcontrol.c |    7 +++++++
+> >  1 file changed, 7 insertions(+)
+> > 
+> > Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
+> > +++ mmotm-2.6.31-Jun25/mm/memcontrol.c
+> > @@ -1134,6 +1134,13 @@ static void __mem_cgroup_commit_charge(s
+> >  	}
+> > 
+> >  	pc->mem_cgroup = mem;
+> > +	/*
+> > + 	 * We access a page_cgroup asynchronously without lock_page_cgroup().
+> > + 	 * Especially when a page_cgroup is taken from a page, pc->mem_cgroup
+> > + 	 * is accessed after testing USED bit. To make pc->mem_cgroup visible
+> > + 	 * before USED bit, we need memory barrier here.
+> > + 	 * See mem_cgroup_add_lru_list(), etc.
+> > + 	 */
+> 
+> 
+> I don't think this is sufficient, since in
+> mem_cgroup_get_reclaim_stat_from_page() we say we need this since we
+> set used bit without atomic operation. The used bit is now atomically
+> set. I think we need to reword other comments as well.
+>  
+ok, plz.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+Maybe we need total review. 
+
+Thanks,
+-Kame
+
+
+> 
+> -- 
+> 	Balbir
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
