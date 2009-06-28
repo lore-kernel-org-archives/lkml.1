@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZF1Jki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZF1J4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZF1Jki (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 05:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZF1Jka
+	id S1754880AbZF1J4z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 05:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZF1J4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 05:40:30 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:33433 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbZF1Jk3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 05:40:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=YCMghYUPXrNu3VtUmRlkDx/JwKwYO4odOGpVK7CNZH++p7fPYtOWOgQX7s7BaNbWBD
-         xOFjMf4rEOPMMSPDv/MQPGvfYXYlZ8gRLSZIiv2zbcg7mIFkV9lnZ2V938AyqQ8hBoc1
-         wUrKtbzcfBD8rR2vWPR9R04U3+rQcBMdMVedw=
+	Sun, 28 Jun 2009 05:56:45 -0400
+Received: from cs-studio.ru ([195.178.208.66]:50428 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751965AbZF1J4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 05:56:44 -0400
+Date: Sun, 28 Jun 2009 13:56:37 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] headers_check fix: linux/netfilter/xt_osf.h
+Message-ID: <20090628095637.GA651@ioremap.net>
+References: <1246120264.32198.2.camel@hpdv5.satnam> <20090627175209.GA12453@ioremap.net> <20090627220007.GB2719@uranus.ravnborg.org>
 MIME-Version: 1.0
-Date: Sun, 28 Jun 2009 17:40:32 +0800
-Message-ID: <b6a2187b0906280240x4bdbaa4as7d0a2b535129d237@mail.gmail.com>
-Subject: Unable to reserve port: Resource temporarily unavailable
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>, cups-bugs <cups-bugs@easysw.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090627220007.GB2719@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-" Unable to reserve port: Resource temporarily unavailable" ... this
-came CUPS trying to print 2000 jobs, which printer1 is just local
-network printer printing to localhost (127.0.0.1).
+On Sun, Jun 28, 2009 at 12:00:07AM +0200, Sam Ravnborg (sam@ravnborg.org) wrote:
+> What about the other potential issues in the same file?
+> struct xt_osf_opt {
+>         __u16                   kind, length;
+>         struct xt_osf_wc        wc;
+> };
+> 
+> Do we know that struct xt_osf_wc is always aligned at a two byte
+> address also on 64 bit?
 
-for((i = 0; i < 2000; i++))
-do
-date | lpr -Pprinter1
-done
+Why 2 bytes? It is 4 bytes aligned everywhere everytime.
 
-Which kernek parameters I can modify to increase network resources? Or
-it is CUPS?
+> Do we know that sizeof(struct xt_osf_opt) is the same
+> on all platforms?
 
-Thanks,
-Jeff.
+Yes.
+
+> struct xt_osf_user_finger {
+>         struct xt_osf_wc        wss;
+> 
+>         __u8                    ttl, df;
+>         __u16                   ss, mss;
+>         __u16                   opt_num;
+> 
+>         char                    genre[MAXGENRELEN];
+>         char                    version[MAXGENRELEN];
+>         char                    subtype[MAXGENRELEN];
+> 
+>         /* MAX_IPOPTLEN is maximum if all options are NOPs or EOLs */
+>         struct xt_osf_opt       opt[MAX_IPOPTLEN];
+> };
+> 
+> Do we know that opt[MAX_IPOPTLEN] always start at the same offset
+> with different architectures?
+
+Yes.
+
+> struct xt_osf_nlmsg {
+>         struct xt_osf_user_finger       f;
+>         struct iphdr            ip;
+>         struct tcphdr           tcp;
+> };
+> 
+> We do not knwo struct iphdr/tcphdr - missing include.
+> Do we know the alignment of the above structs?
+> Are they always the same on all archs?
+
+You won't believe...
+
+-- 
+	Evgeniy Polyakov
