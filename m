@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbZF1Sd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZF1Sf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756450AbZF1Sd1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 14:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZF1SdU
+	id S1754351AbZF1Sf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 14:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZF1SfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 14:33:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39119
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752730AbZF1SdT (ORCPT
+	Sun, 28 Jun 2009 14:35:18 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1583 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbZF1SfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 14:33:19 -0400
-Date: Sun, 28 Jun 2009 11:33:25 -0700 (PDT)
-Message-Id: <20090628.113325.244931913.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
-Cc: joe@perches.com, linux-kernel@vger.kernel.org, trivial@kernel.org,
-       akpm@linux-foundation.org, Eng.Linux@digi.com
-Subject: Re: [PATCH 14/62] drivers/char/epca.c: Remove unnecessary
- semicolons
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090628185102.47663e61@lxorguk.ukuu.org.uk>
+	Sun, 28 Jun 2009 14:35:17 -0400
+Subject: [PATCH] MAINTAINERS: QLGE 10Gb ETHERNET - pair P:/M: entries
+ properly
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ron Mercer <ron.mercer@qlogic.com>, linux-driver@qlogic.com,
+       netdev@vger.kernel.org
+In-Reply-To: <86a775a4ef18051cbf116f969e07d8cb36e56b10.1246173681.git.joe@perches.com>
 References: <cover.1246173664.git.joe@perches.com>
-	<1ee6dd55768ebbbeb505c47e2944b683633be630.1246173680.git.joe@perches.com>
-	<20090628185102.47663e61@lxorguk.ukuu.org.uk>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	 <86a775a4ef18051cbf116f969e07d8cb36e56b10.1246173681.git.joe@perches.com>
+Content-Type: text/plain
+Date: Sun, 28 Jun 2009 11:35:19 -0700
+Message-Id: <1246214119.13673.19.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Sun, 28 Jun 2009 18:51:02 +0100
+Signed-off-by: Joe Perches <joe@perches.com>
 
-> On Sun, 28 Jun 2009 09:26:19 -0700
-> Joe Perches <joe@perches.com> wrote:
-> 
->> Signed-off-by: Joe Perches <joe@perches.com>
->> ---
->>  drivers/char/epca.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> If you must do this then please roll it into a single patch and get it
-> applied so it doesn't mess up all the pending patches. Really though I
-> have to ask what the point is - it just makes other patches not apply and
-> creates noise work.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index fa2a16d..57357d4 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4766,8 +4766,8 @@ F:	drivers/net/qla3xxx.*
+ 
+ QLOGIC QLGE 10Gb ETHERNET DRIVER
+ P:	Ron Mercer
+-M:	linux-driver@qlogic.com
+ M:	ron.mercer@qlogic.com
++M:	linux-driver@qlogic.com
+ L:	netdev@vger.kernel.org
+ S:	Supported
+ F:	drivers/net/qlge/
 
-It has made bugs get added in the past, and makes code confusing
-to read sometimes.  I'm all for this, to be honest, and I'm very
-much for rolling this into one single patch too :)
+
