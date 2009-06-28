@@ -1,467 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZF1OPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbZF1OQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755846AbZF1OPP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756845AbZF1ONc
+	id S1758040AbZF1OQB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757084AbZF1ONr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:13:32 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:50609 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756846AbZF1ON3 (ORCPT
+	Sun, 28 Jun 2009 10:13:47 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757100AbZF1ONq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:13:29 -0400
+	Sun, 28 Jun 2009 10:13:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Ks49SLYcWwmIkpISqjgXQfYoOxbtVKOsbKdTmnp3wQwgxijNExk5mW8AXCm+4TpcCn
-         IGBMgp/D4arBcrtNxwxBG99c8BcDtVxrXB3AZVfAKsMBme167hqFfxh6g9Ylad/GD/L3
-         qrgYcL7YBVdEdl1viKkEw9T4kqv2JqYlqf1Bc=
+        b=ry8BCXVKRFUYaHPjwe6K5idzCHBvyKmvD+Q5q9OdnqYt8dxnFrUm/MzXUVO2PemVBh
+         Wcg9nHS5Tu3dY9z8MzCQHIRriB91oa9Vih7ZZEKzDycFt61uE/fOdPkMSbWPdAUecs+T
+         0mVAniqkWwn9taLv7huD7oX8wU+j/sJrzafgk=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:19:51 +0200
-Message-Id: <20090628141951.8761.12459.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:20:10 +0200
+Message-Id: <20090628142010.8761.16823.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 11/18] Staging: rtl8187se: cleanup r8180_rtl8225.c
+Subject: [PATCH 14/18] Staging: rtl8187se: merge r8180_pm.c with r8180_core.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: cleanup r8180_rtl8225.c
+Subject: [PATCH] Staging: rtl8187se: merge r8180_pm.c with r8180_core.c
 
-* remove empty rtl8225_host_usb_init()
-* remove commented out code
-* remove useless comments
-* beautify code
+* merge r8180_pm.c with r8180_core.c
+* make functions static
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/r8180_rtl8225.c   |  251 +++++++++++-----------------
- drivers/staging/rtl8187se/r8180_rtl8225.h   |    1 
- drivers/staging/rtl8187se/r8180_rtl8225z2.c |    5 
- 3 files changed, 103 insertions(+), 154 deletions(-)
+ drivers/staging/rtl8187se/Makefile      |    1 
+ drivers/staging/rtl8187se/r8180_core.c  |   63 ++++++++++++++++++++++++++-
+ drivers/staging/rtl8187se/r8180_pm.c    |   74 --------------------------------
+ drivers/staging/rtl8187se/r8180_pm.h    |   24 ----------
+ drivers/staging/rtl8187se/r8185b_init.c |    2 
+ 5 files changed, 61 insertions(+), 103 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/r8180_rtl8225.c
+Index: b/drivers/staging/rtl8187se/Makefile
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_rtl8225.c
-+++ b/drivers/staging/rtl8187se/r8180_rtl8225.c
-@@ -16,35 +16,23 @@
- #include "r8180_rtl8225.h"
+--- a/drivers/staging/rtl8187se/Makefile
++++ b/drivers/staging/rtl8187se/Makefile
+@@ -25,7 +25,6 @@ rtl8187se-objs :=			\
+ 		r8180_rtl8225z2.o	\
+ 		r8185b_init.o		\
+ 		r8180_dm.o		\
+-		r8180_pm.o		\
+ 		ieee80211/dot11d.o			\
+ 		ieee80211/ieee80211_softmac.o		\
+ 		ieee80211/ieee80211_rx.o		\
+Index: b/drivers/staging/rtl8187se/r8180_core.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -22,6 +22,9 @@
  
- 
--u8 rtl8225_gain[]={
--	0x23,0x88,0x7c,0xa5,// -82dbm
--	0x23,0x88,0x7c,0xb5,// -82dbm
--	0x23,0x88,0x7c,0xc5,// -82dbm
--	0x33,0x80,0x79,0xc5,// -78dbm
--	0x43,0x78,0x76,0xc5,// -74dbm
--	0x53,0x60,0x73,0xc5,// -70dbm
--	0x63,0x58,0x70,0xc5,// -66dbm
-+u8 rtl8225_gain[] = {
-+	0x23, 0x88, 0x7c, 0xa5,	/* -82dBm */
-+	0x23, 0x88, 0x7c, 0xb5,	/* -82dBm */
-+	0x23, 0x88, 0x7c, 0xc5,	/* -82dBm */
-+	0x33, 0x80, 0x79, 0xc5,	/* -78dBm */
-+	0x43, 0x78, 0x76, 0xc5,	/* -74dBm */
-+	0x53, 0x60, 0x73, 0xc5,	/* -70dBm */
-+	0x63, 0x58, 0x70, 0xc5,	/* -66dBm */
- };
- 
--u32 rtl8225_chan[] ={
--              0,
--		0x0080, //ch1
--		0x0100, //ch2
--		0x0180, //ch3
--		0x0200, //ch4
--		0x0280,
--		0x0300,
--		0x0380,
--		0x0400,
--		0x0480,
--		0x0500,
--		0x0580,
--		0x0600,
--		0x0680,
--		0x074A, //ch14
-+u32 rtl8225_chan[] = {
-+	0,
-+	0x0080, 0x0100, 0x0180, 0x0200, 0x0280, 0x0300, 0x0380,
-+	0x0400, 0x0480, 0x0500, 0x0580, 0x0600, 0x0680, 0x074A,
- };
- 
--u16 rtl8225bcd_rxgain[]={
-+u16 rtl8225bcd_rxgain[] = {
- 	0x0400, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0408, 0x0409,
- 	0x040a, 0x040b, 0x0502, 0x0503, 0x0504, 0x0505, 0x0540, 0x0541,
- 	0x0542, 0x0543, 0x0544, 0x0545, 0x0580, 0x0581, 0x0582, 0x0583,
-@@ -60,48 +48,51 @@ u16 rtl8225bcd_rxgain[]={
- 
- };
- 
--u8 rtl8225_agc[]={
--	0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9d,0x9c,0x9b,0x9a,0x99,0x98,0x97,0x96,
--	0x95,0x94,0x93,0x92,0x91,0x90,0x8f,0x8e,0x8d,0x8c,0x8b,0x8a,0x89,0x88,0x87,0x86,
--	0x85,0x84,0x83,0x82,0x81,0x80,0x3f,0x3e,0x3d,0x3c,0x3b,0x3a,0x39,0x38,0x37,0x36,
--	0x35,0x34,0x33,0x32,0x31,0x30,0x2f,0x2e,0x2d,0x2c,0x2b,0x2a,0x29,0x28,0x27,0x26,
--	0x25,0x24,0x23,0x22,0x21,0x20,0x1f,0x1e,0x1d,0x1c,0x1b,0x1a,0x19,0x18,0x17,0x16,
--	0x15,0x14,0x13,0x12,0x11,0x10,0x0f,0x0e,0x0d,0x0c,0x0b,0x0a,0x09,0x08,0x07,0x06,
--	0x05,0x04,0x03,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
--	0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-+u8 rtl8225_agc[] = {
-+	0x9e, 0x9e, 0x9e, 0x9e, 0x9e, 0x9e, 0x9e, 0x9e,
-+	0x9d, 0x9c, 0x9b, 0x9a, 0x99, 0x98, 0x97, 0x96,
-+	0x95, 0x94, 0x93, 0x92, 0x91, 0x90, 0x8f, 0x8e,
-+	0x8d, 0x8c, 0x8b, 0x8a, 0x89, 0x88, 0x87, 0x86,
-+	0x85, 0x84, 0x83, 0x82, 0x81, 0x80, 0x3f, 0x3e,
-+	0x3d, 0x3c, 0x3b, 0x3a, 0x39, 0x38, 0x37, 0x36,
-+	0x35, 0x34, 0x33, 0x32, 0x31, 0x30, 0x2f, 0x2e,
-+	0x2d, 0x2c, 0x2b, 0x2a, 0x29, 0x28, 0x27, 0x26,
-+	0x25, 0x24, 0x23, 0x22, 0x21, 0x20, 0x1f, 0x1e,
-+	0x1d, 0x1c, 0x1b, 0x1a, 0x19, 0x18, 0x17, 0x16,
-+	0x15, 0x14, 0x13, 0x12, 0x11, 0x10, 0x0f, 0x0e,
-+	0x0d, 0x0c, 0x0b, 0x0a, 0x09, 0x08, 0x07, 0x06,
-+	0x05, 0x04, 0x03, 0x02, 0x01, 0x01, 0x01, 0x01,
-+	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-+	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-+	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
- };
- 
--
--u8 rtl8225_tx_gain_cck_ofdm[]={
--	0x02,0x06,0x0e,0x1e,0x3e,0x7e
-+u8 rtl8225_tx_gain_cck_ofdm[] = {
-+	0x02, 0x06, 0x0e, 0x1e, 0x3e, 0x7e
- };
- 
--
--u8 rtl8225_tx_power_ofdm[]={
--	0x80,0x90,0xa2,0xb5,0xcb,0xe4
-+u8 rtl8225_tx_power_ofdm[] = {
-+	0x80, 0x90, 0xa2, 0xb5, 0xcb, 0xe4
- };
- 
--
--u8 rtl8225_tx_power_cck_ch14[]={
--	0x18,0x17,0x15,0x0c,0x00,0x00,0x00,0x00,
--	0x1b,0x1a,0x17,0x0e,0x00,0x00,0x00,0x00,
--	0x1f,0x1e,0x1a,0x0f,0x00,0x00,0x00,0x00,
--	0x22,0x21,0x1d,0x11,0x00,0x00,0x00,0x00,
--	0x26,0x25,0x21,0x13,0x00,0x00,0x00,0x00,
--	0x2b,0x2a,0x25,0x15,0x00,0x00,0x00,0x00
-+u8 rtl8225_tx_power_cck_ch14[] = {
-+	0x18, 0x17, 0x15, 0x0c, 0x00, 0x00, 0x00, 0x00,
-+	0x1b, 0x1a, 0x17, 0x0e, 0x00, 0x00, 0x00, 0x00,
-+	0x1f, 0x1e, 0x1a, 0x0f, 0x00, 0x00, 0x00, 0x00,
-+	0x22, 0x21, 0x1d, 0x11, 0x00, 0x00, 0x00, 0x00,
-+	0x26, 0x25, 0x21, 0x13, 0x00, 0x00, 0x00, 0x00,
-+	0x2b, 0x2a, 0x25, 0x15, 0x00, 0x00, 0x00, 0x00
- };
- 
--
--u8 rtl8225_tx_power_cck[]={
--	0x18,0x17,0x15,0x11,0x0c,0x08,0x04,0x02,
--	0x1b,0x1a,0x17,0x13,0x0e,0x09,0x04,0x02,
--	0x1f,0x1e,0x1a,0x15,0x10,0x0a,0x05,0x02,
--	0x22,0x21,0x1d,0x18,0x11,0x0b,0x06,0x02,
--	0x26,0x25,0x21,0x1b,0x14,0x0d,0x06,0x03,
--	0x2b,0x2a,0x25,0x1e,0x16,0x0e,0x07,0x03
-+u8 rtl8225_tx_power_cck[] = {
-+	0x18, 0x17, 0x15, 0x11, 0x0c, 0x08, 0x04, 0x02,
-+	0x1b, 0x1a, 0x17, 0x13, 0x0e, 0x09, 0x04, 0x02,
-+	0x1f, 0x1e, 0x1a, 0x15, 0x10, 0x0a, 0x05, 0x02,
-+	0x22, 0x21, 0x1d, 0x18, 0x11, 0x0b, 0x06, 0x02,
-+	0x26, 0x25, 0x21, 0x1b, 0x14, 0x0d, 0x06, 0x03,
-+	0x2b, 0x2a, 0x25, 0x1e, 0x16, 0x0e, 0x07, 0x03
- };
- 
--
- void rtl8225_set_gain(struct net_device *dev, short gain)
- {
- 	write_phy_ofdm(dev, 0x0d, rtl8225_gain[gain * 4]);
-@@ -113,15 +104,15 @@ void rtl8225_set_gain(struct net_device 
- void write_rtl8225(struct net_device *dev, u8 adr, u16 data)
- {
- 	int i;
--	u16 out,select;
-+	u16 out, select;
- 	u8 bit;
- 	u32 bangdata = (data << 4) | (adr & 0xf);
- 	struct r8180_priv *priv = ieee80211_priv(dev);
- 
- 	out = read_nic_word(dev, RFPinsOutput) & 0xfff3;
- 
--	write_nic_word(dev,RFPinsEnable,
--		(read_nic_word(dev,RFPinsEnable) | 0x7));
-+	write_nic_word(dev, RFPinsEnable,
-+		(read_nic_word(dev, RFPinsEnable) | 0x7));
- 
- 	select = read_nic_word(dev, RFPinsSelect);
- 
-@@ -131,7 +122,7 @@ void write_rtl8225(struct net_device *de
- 	force_pci_posting(dev);
- 	udelay(10);
- 
--	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN );//| 0x1fff);
-+	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
- 
- 	force_pci_posting(dev);
- 	udelay(2);
-@@ -141,10 +132,8 @@ void write_rtl8225(struct net_device *de
- 	force_pci_posting(dev);
- 	udelay(10);
- 
--
--	for(i=15; i>=0;i--){
--
--		bit = (bangdata & (1<<i)) >> i;
-+	for (i = 15; i >= 0; i--) {
-+		bit = (bangdata & (1 << i)) >> i;
- 
- 		write_nic_word(dev, RFPinsOutput, bit | out);
- 
-@@ -152,7 +141,7 @@ void write_rtl8225(struct net_device *de
- 		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
- 
- 		i--;
--		bit = (bangdata & (1<<i)) >> i;
-+		bit = (bangdata & (1 << i)) >> i;
- 
- 		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
- 		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
-@@ -172,7 +161,7 @@ void write_rtl8225(struct net_device *de
- 	write_nic_word(dev, RFPinsSelect, select |
- 		((priv->card_type == USB) ? 0 : SW_CONTROL_GPIO));
- 
--	if(priv->card_type == USB)
-+	if (priv->card_type == USB)
- 		mdelay(2);
- 	else
- 		rtl8185_rf_pins_enable(dev);
-@@ -181,7 +170,6 @@ void write_rtl8225(struct net_device *de
- void rtl8225_SetTXPowerLevel(struct net_device *dev, short ch)
- {
- 	struct r8180_priv *priv = ieee80211_priv(dev);
--
- 	int GainIdx;
- 	int GainSetting;
- 	int i;
-@@ -193,36 +181,31 @@ void rtl8225_SetTXPowerLevel(struct net_
- 	u8 cck_power_level = 0xff & priv->chtxpwr[ch];
- 	u8 ofdm_power_level = 0xff & priv->chtxpwr_ofdm[ch];
- 
--	if(priv->card_type == USB){
-+	if (priv->card_type == USB) {
- 		max_cck_power_level = 11;
--		max_ofdm_power_level = 25; //  12 -> 25
-+		max_ofdm_power_level = 25;
- 		min_ofdm_power_level = 10;
--	}else{
-+	} else {
- 		max_cck_power_level = 35;
- 		max_ofdm_power_level = 35;
- 		min_ofdm_power_level = 0;
- 	}
--	/* CCK power setting */
--	if(cck_power_level > max_cck_power_level)
+    A big big thanks goes also to Realtek corp. for their help in my attempt to
+    add RTL8185 and RTL8225 support, and to David Young also.
 +
-+	if (cck_power_level > max_cck_power_level)
- 		cck_power_level = max_cck_power_level;
--	GainIdx=cck_power_level % 6;
--	GainSetting=cck_power_level / 6;
++   Power management interface routines.
++   Written by Mariusz Matuszek.
+ */
  
--	if(ch == 14)
-+	GainIdx = cck_power_level % 6;
-+	GainSetting = cck_power_level / 6;
-+
-+	if (ch == 14)
- 		cck_power_table = rtl8225_tx_power_cck_ch14;
- 	else
- 		cck_power_table = rtl8225_tx_power_cck;
+ #undef RX_DONT_PASS_UL
+@@ -37,8 +40,6 @@
+ #include "r8180_wx.h"
+ #include "r8180_dm.h"
  
--//	if(priv->card_8185 == 1 && priv->card_8185_Bversion ){
--		/*Ver B*/
--//		write_nic_byte(dev, TX_GAIN_CCK, rtl8225_tx_gain_cck_ofdm[GainSetting]);
--//	}else{
--		/*Ver C - D */
--	write_nic_byte(dev, TX_GAIN_CCK, rtl8225_tx_gain_cck_ofdm[GainSetting]>>1);
--//	}
+-#include "r8180_pm.h"
 -
--	for(i=0;i<8;i++){
-+	write_nic_byte(dev, TX_GAIN_CCK,
-+		       rtl8225_tx_gain_cck_ofdm[GainSetting] >> 1);
+ #include "ieee80211/dot11d.h"
  
-+	for (i = 0; i < 8; i++) {
- 		power = cck_power_table[GainIdx * 8 + i];
- 		write_phy_cck(dev, 0x44 + i, power);
- 	}
-@@ -231,48 +214,33 @@ void rtl8225_SetTXPowerLevel(struct net_
- 	force_pci_posting(dev);
- 	mdelay(1);
- 
--	/* OFDM power setting */
--//  Old:
--//	if(ofdm_power_level > max_ofdm_power_level)
--//		ofdm_power_level = 35;
--//	ofdm_power_level += min_ofdm_power_level;
--//  Latest:
--	if(ofdm_power_level > (max_ofdm_power_level - min_ofdm_power_level))
-+	if (ofdm_power_level > (max_ofdm_power_level - min_ofdm_power_level))
- 		ofdm_power_level = max_ofdm_power_level;
- 	else
- 		ofdm_power_level += min_ofdm_power_level;
--	if(ofdm_power_level > 35)
-+
-+	if (ofdm_power_level > 35)
- 		ofdm_power_level = 35;
--//
- 
--	GainIdx=ofdm_power_level % 6;
--	GainSetting=ofdm_power_level / 6;
--#if 1
--//	if(priv->card_type == USB){
--		rtl8185_set_anaparam2(dev,RTL8225_ANAPARAM2_ON);
--
--		write_phy_ofdm(dev,2,0x42);
--		write_phy_ofdm(dev,6,0);
--		write_phy_ofdm(dev,8,0);
--//	}
--#endif
--//	if(priv->card_8185 == 1 && priv->card_8185_Bversion){
--//		/*Ver B*/
--//		write_nic_byte(dev, TX_GAIN_OFDM, rtl8225_tx_gain_cck_ofdm[GainSetting]);
--//	}else{
--		/*Ver C - D */
--	write_nic_byte(dev, TX_GAIN_OFDM, rtl8225_tx_gain_cck_ofdm[GainSetting]>>1);
--//	}
-+	GainIdx = ofdm_power_level % 6;
-+	GainSetting = ofdm_power_level / 6;
-+
-+	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_ON);
-+
-+	write_phy_ofdm(dev, 2, 0x42);
-+	write_phy_ofdm(dev, 6, 0x00);
-+	write_phy_ofdm(dev, 8, 0x00);
- 
-+	write_nic_byte(dev, TX_GAIN_OFDM,
-+		       rtl8225_tx_gain_cck_ofdm[GainSetting] >> 1);
- 
- 	power = rtl8225_tx_power_ofdm[GainIdx];
- 
--	write_phy_ofdm(dev, 0x5, power);
--	write_phy_ofdm(dev, 0x7, power);
-+	write_phy_ofdm(dev, 5, power);
-+	write_phy_ofdm(dev, 7, power);
- 
- 	force_pci_posting(dev);
- 	mdelay(1);
--	//write_nic_byte(dev, TX_AGC_CONTROL,4);
+ #ifndef PCI_VENDOR_ID_BELKIN
+@@ -121,6 +122,64 @@ static void rtl8180_shutdown (struct pci
+ 	pci_disable_device(pdev);
  }
  
- void rtl8225_rf_set_chan(struct net_device *dev, short ch)
-@@ -289,34 +257,27 @@ void rtl8225_rf_set_chan(struct net_devi
- 	force_pci_posting(dev);
- 	mdelay(10);
- 
--	// A mode sifs 0x44, difs 34-14, slot 9, eifs 23, cwm 3, cwM 7, ctstoself 0x10
--	if(gset){
--		write_nic_byte(dev,SIFS,0x22);// SIFS: 0x22
--		write_nic_byte(dev,DIFS,0x14); //DIFS: 20
--		//write_nic_byte(dev,DIFS,20); //DIFS: 20
--	}else{
--		write_nic_byte(dev,SIFS,0x44);// SIFS: 0x22
--		write_nic_byte(dev,DIFS,50 - 14); //DIFS: 36
-+	if (gset) {
-+		write_nic_byte(dev, SIFS, 0x22);
-+		write_nic_byte(dev, DIFS, 0x14);
-+	} else {
-+		write_nic_byte(dev, SIFS, 0x44);
-+		write_nic_byte(dev, DIFS, 0x24);
- 	}
--	if(priv->ieee80211->state == IEEE80211_LINKED &&
--		ieee80211_is_shortslot(priv->ieee80211->current_network))
--		write_nic_byte(dev,SLOT,0x9); //SLOT: 9
- 
-+	if (priv->ieee80211->state == IEEE80211_LINKED &&
-+	    ieee80211_is_shortslot(priv->ieee80211->current_network))
-+		write_nic_byte(dev, SLOT, 0x9);
- 	else
--		write_nic_byte(dev,SLOT,0x14); //SLOT: 20 (0x14)
-+		write_nic_byte(dev, SLOT, 0x14);
- 
++static int rtl8180_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++
++	if (!netif_running(dev))
++		goto out_pci_suspend;
++
++	if (dev->netdev_ops->ndo_stop)
++		dev->netdev_ops->ndo_stop(dev);
++
++	netif_device_detach(dev);
++
++out_pci_suspend:
++	pci_save_state(pdev);
++	pci_disable_device(pdev);
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
++	return 0;
++}
++
++static int rtl8180_resume(struct pci_dev *pdev)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++	int err;
++	u32 val;
++
++	pci_set_power_state(pdev, PCI_D0);
++
++	err = pci_enable_device(pdev);
++	if (err) {
++		printk(KERN_ERR "%s: pci_enable_device failed on resume\n",
++				dev->name);
++
++		return err;
++	}
++
++	pci_restore_state(pdev);
++
++	/*
++	 * Suspend/Resume resets the PCI configuration space, so we have to
++	 * re-disable the RETRY_TIMEOUT register (0x41) to keep PCI Tx retries
++	 * from interfering with C3 CPU state. pci_restore_state won't help
++	 * here since it only restores the first 64 bytes pci config header.
++	 */
++	pci_read_config_dword(pdev, 0x40, &val);
++	if ((val & 0x0000ff00) != 0)
++		pci_write_config_dword(pdev, 0x40, val & 0xffff00ff);
++
++	if (!netif_running(dev))
++		goto out;
++
++	if (dev->netdev_ops->ndo_open)
++		dev->netdev_ops->ndo_open(dev);
++
++	netif_device_attach(dev);
++out:
++	return 0;
++}
++
+ static struct pci_driver rtl8180_pci_driver = {
+ 	.name		= RTL8180_MODULE_NAME,	          /* Driver name   */
+ 	.id_table	= rtl8180_pci_id_tbl,	          /* PCI_ID table  */
+Index: b/drivers/staging/rtl8187se/r8180_pm.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_pm.c
++++ /dev/null
+@@ -1,74 +0,0 @@
+-/*
+-   Power management interface routines.
+-   Written by Mariusz Matuszek.
+-   This code is currently just a placeholder for later work and
+-   does not do anything useful.
 -
--	if(gset){
--		write_nic_byte(dev,EIFS,81);//91 - 20); // EIFS: 91 (0x5B)
--		write_nic_byte(dev,CW_VAL,0x73); //CW VALUE: 0x37
--		//DMESG("using G net params");
--	}else{
--		write_nic_byte(dev,EIFS,81); // EIFS: 91 (0x5B)
--		write_nic_byte(dev,CW_VAL,0xa5); //CW VALUE: 0x37
--		//DMESG("using B net params");
-+	if (gset) {
-+		write_nic_byte(dev, EIFS, 81);
-+		write_nic_byte(dev, CW_VAL, 0x73);
-+	} else {
-+		write_nic_byte(dev, EIFS, 81);
-+		write_nic_byte(dev, CW_VAL, 0xa5);
- 	}
+-   This is part of rtl8180 OpenSource driver.
+-   Copyright (C) Andrea Merello 2004  <andreamrl@tiscali.it>
+-   Released under the terms of GPL (General Public Licence)
+-*/
 -
 -
- }
- 
- void rtl8225_host_pci_init(struct net_device *dev)
-@@ -325,21 +286,13 @@ void rtl8225_host_pci_init(struct net_de
- 
- 	rtl8185_rf_pins_enable(dev);
- 
--	//if(priv->card_8185 == 2 && priv->enable_gpio0 ) /* version D */
--	//write_nic_word(dev, RFPinsSelect, 0x88);
--	//else
--	write_nic_word(dev, RFPinsSelect, 0x88 | SW_CONTROL_GPIO); /* 0x488 | SW_CONTROL_GPIO */
-+	write_nic_word(dev, RFPinsSelect, 0x88 | SW_CONTROL_GPIO);
- 
- 	write_nic_byte(dev, GP_ENABLE, 0);
- 
- 	force_pci_posting(dev);
- 	mdelay(200);
- 
--	write_nic_word(dev, GP_ENABLE, 0xff & (~(1<<6))); /* bit 6 is for RF on/off detection */
 -
+-#include "r8180_hw.h"
+-#include "r8180_pm.h"
+-#include "r8180.h"
 -
+-int rtl8180_suspend(struct pci_dev *pdev, pm_message_t state)
+-{
+-	struct net_device *dev = pci_get_drvdata(pdev);
+-
+-	if (!netif_running(dev))
+-		goto out_pci_suspend;
+-
+-	if (dev->netdev_ops->ndo_stop)
+-		dev->netdev_ops->ndo_stop(dev);
+-
+-	netif_device_detach(dev);
+-
+-out_pci_suspend:
+-	pci_save_state(pdev);
+-	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-	return 0;
 -}
 -
--void rtl8225_host_usb_init(struct net_device *dev)
+-int rtl8180_resume(struct pci_dev *pdev)
 -{
-+	/* bit 6 is for RF on/off detection */
-+	write_nic_word(dev, GP_ENABLE, 0xff & (~(1 << 6)));
- }
-Index: b/drivers/staging/rtl8187se/r8180_rtl8225.h
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_rtl8225.h
-+++ b/drivers/staging/rtl8187se/r8180_rtl8225.h
-@@ -24,7 +24,6 @@ void rtl8225z2_rf_set_chan(struct net_de
- void rtl8225z2_rf_close(struct net_device *dev);
- 
- void rtl8225_host_pci_init(struct net_device *dev);
--void rtl8225_host_usb_init(struct net_device *dev);
- 
- void write_rtl8225(struct net_device *dev, u8 adr, u16 data);
- void RF_WriteReg(struct net_device *dev, u8 offset, u32	data);
-Index: b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-+++ b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
-@@ -472,10 +472,7 @@ void rtl8225z2_rf_init(struct net_device
- 
- //	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
- 
+-	struct net_device *dev = pci_get_drvdata(pdev);
+-	int err;
+-	u32 val;
 -
--	if(priv->card_type == USB)
--		rtl8225_host_usb_init(dev);
--	else
-+	if (priv->card_type != USB)
- 		rtl8225_host_pci_init(dev);
+-	pci_set_power_state(pdev, PCI_D0);
+-
+-	err = pci_enable_device(pdev);
+-	if (err) {
+-		printk(KERN_ERR "%s: pci_enable_device failed on resume\n",
+-				dev->name);
+-
+-		return err;
+-	}
+-
+-	pci_restore_state(pdev);
+-
+-	/*
+-	 * Suspend/Resume resets the PCI configuration space, so we have to
+-	 * re-disable the RETRY_TIMEOUT register (0x41) to keep PCI Tx retries
+-	 * from interfering with C3 CPU state. pci_restore_state won't help
+-	 * here since it only restores the first 64 bytes pci config header.
+-	 */
+-	pci_read_config_dword(pdev, 0x40, &val);
+-	if ((val & 0x0000ff00) != 0)
+-		pci_write_config_dword(pdev, 0x40, val & 0xffff00ff);
+-
+-	if (!netif_running(dev))
+-		goto out;
+-
+-	if (dev->netdev_ops->ndo_open)
+-		dev->netdev_ops->ndo_open(dev);
+-
+-	netif_device_attach(dev);
+-out:
+-	return 0;
+-}
+Index: b/drivers/staging/rtl8187se/r8180_pm.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_pm.h
++++ /dev/null
+@@ -1,24 +0,0 @@
+-/*
+-        Power management interface routines.
+-	Written by Mariusz Matuszek.
+-	This code is currently just a placeholder for later work and
+-	does not do anything useful.
+-
+-	This is part of rtl8180 OpenSource driver.
+-	Copyright (C) Andrea Merello 2004  <andreamrl@tiscali.it>
+-	Released under the terms of GPL (General Public Licence)
+-
+-*/
+-
+-
+-#ifndef R8180_PM_H
+-#define R8180_PM_H
+-
+-#include <linux/types.h>
+-#include <linux/pci.h>
+-
+-int rtl8180_suspend (struct pci_dev *pdev, pm_message_t state);
+-int rtl8180_resume (struct pci_dev *pdev);
+-
+-#endif //R8180_PM_H
+-
+Index: b/drivers/staging/rtl8187se/r8185b_init.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8185b_init.c
++++ b/drivers/staging/rtl8187se/r8185b_init.c
+@@ -26,8 +26,6 @@ Notes:
+ #include "r8180_93cx6.h"   /* Card EEPROM */
+ #include "r8180_wx.h"
  
- 	write_nic_dword(dev, RF_TIMING, 0x000a8008);
+-#include "r8180_pm.h"
+-
+ #include "ieee80211/dot11d.h"
+ 
+ 
