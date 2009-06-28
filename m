@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbZF1SOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZF1SP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbZF1SOi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 14:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZF1SOa
+	id S1757357AbZF1SP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 14:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZF1SPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 14:14:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44464 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751519AbZF1SOa (ORCPT
+	Sun, 28 Jun 2009 14:15:17 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:61093 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbZF1SPQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 14:14:30 -0400
-Date: Sun, 28 Jun 2009 11:12:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH 00/62] Remove unnecessary semicolons
-Message-Id: <20090628111207.c1829473.akpm@linux-foundation.org>
-In-Reply-To: <20090628101159.4c35a4db@infradead.org>
-References: <cover.1246173664.git.joe@perches.com>
-	<20090628101159.4c35a4db@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 28 Jun 2009 14:15:16 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: tom.leiming@gmail.com
+Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in dma_sync_*_for_cpu
+Date: Sun, 28 Jun 2009 15:34:35 +0000
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906281534.37148.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18S6FX+lXePWQRG2sSjMM8wALwYCR3gWEUggd7
+ 3wAdirIFCHnE2wuVL+HCXCTgCt/G9IiDkutt/BKKZwMqzmULjz
+ 9uak2pRTH37g6Ok8V19xg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009 10:11:59 -0700 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> On Sun, 28 Jun 2009 09:26:05 -0700
-> Joe Perches <joe@perches.com> wrote:
+On Sunday 28 June 2009 14:39:19 tom.leiming@gmail.com wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
 > 
-> > Found by script
-> > #! /bin/bash
-> > 
-> > from=";\s*;\s*\n"
-> > to=";\n"
-> > 
-> > for file in $(grep -rP --include=*.[ch] -li $from *) ; do
-> > 
-> >     perl -i -e \
-> > 	"local $/; while(<>) { s/$from/$to/g; print; }" $file
-> > 
-> > done
-> > 
+> dma_sync_*_for_cpu() is introduced to make cpu access dma buffers safely when
+> dma transfer is over, it seems there is nothing to do with cpu write buffer,
+> so remove it.
 > 
-> 
-> can you improve your descriptions please?
-> to at least include the why for a change, not just the how and what...
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 
-The [0/n] text doesn't get into git anyway (unless someone manually
-copies-n-pastes it).
+Right, this looks correct. On a related note, flush_write_buffers is
+architecture specific right now: only x86 and frv implement it at all,
+though and with slightly different semantics.
 
-Each of the actual patches have no changelog at all, and they don't
-need one - it's utterly obvious what they're doing.
+Maybe it would be more consistent to change the dma_map_* and
+dma_sync_*_for_device stuff there to wmb() to make it  portable
+to other architectures.
 
-So I don't believe that anything needs to be changed here.
-
+	Arnd <><
