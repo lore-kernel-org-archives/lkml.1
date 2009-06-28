@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378AbZF1H4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZF1IGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753378AbZF1H4k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 03:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbZF1H4a
+	id S1752866AbZF1IGb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 04:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZF1IGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 03:56:30 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:28150
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752651AbZF1H43 (ORCPT
+	Sun, 28 Jun 2009 04:06:07 -0400
+Received: from smtp4.tech.numericable.fr ([82.216.111.40]:45003 "EHLO
+	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751973AbZF1IGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 03:56:29 -0400
-Message-ID: <4A47222B.5020702@panasas.com>
-Date: Sun, 28 Jun 2009 10:56:27 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Sun, 28 Jun 2009 04:06:04 -0400
+Message-ID: <4A47246A.5060608@numericable.fr>
+Date: Sun, 28 Jun 2009 10:06:02 +0200
+From: Etienne Basset <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       James Smart <james.smart@emulex.com>, Olaf Hering <olh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Benny Halevy <bhalevy@panasas.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
- and scsi_device_type
-References: <1246122359.32198.7.camel@hpdv5.satnam>
-In-Reply-To: <1246122359.32198.7.camel@hpdv5.satnam>
-Content-Type: text/plain; charset=UTF-8
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, davem@davemloft.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [REGRESSION] 2.6.29=>2.6.30 suspend to ram regression (IDE 	related)
+References: <4A44EBEE.9070503@numericable.fr>	 <200906262139.23367.bzolnier@gmail.com>	 <4A45E095.5070608@numericable.fr>	 <b6a2187b0906271109q2194cadbv8d20b4bda82bde19@mail.gmail.com> <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
+In-Reply-To: <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jun 2009 07:56:30.0639 (UTC) FILETIME=[F2880BF0:01C9F7C5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/27/2009 08:05 PM, Jaswinder Singh Rajput wrote:
-> userspace cannot use scsi_command_size_tbl, COMMAND_SIZE
-> and scsi_device_type defined in kernel
+Jeff Chua wrote:
+> On Sun, Jun 28, 2009 at 2:09 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
+>> On Sat, Jun 27, 2009 at 5:04 PM, Etienne
+>> Basset<etienne.basset@numericable.fr> wrote:
+>>>>> kernel v2.6.29 suspends to RAM reliably on my computer; v2.6.30 doesn't resume after STR
+>> Same problem on Thinkpad X61. STD STR suspended ok. Upon resume,
+>> everything "seems" fine for about 100 seconds. Then mouse, keyboard
+>> frozen.
+>>
+>>>>> I tried also 2.6.31-rc1 doesn't work either
+>>>>> etienne@etienne-desktop:~/linux-2.6$ git bisect bad
+>>>>> 2f0d0fd2a605666d38e290c5c0d2907484352dc4 is first bad commit
+>>>> Does the following patch fix it?
+>>> Yes, it works now
+>> Works for me too with the patch.
 > 
-> fix the following 'make headers_check' warnings:
+> UPDATE ...
 > 
->   usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
->   usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
+> STR able to resume and works after >100 seconds
 > 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> STD able to resume but failed after 100 seconds (could be 300 seconds)
+> but eventually failed. Everything seems ok, but mouse and keyboard
+> just freezed suddenly. Just haven't really time it enough.
+> 
+> Jeff.
+> 
+Hello,
 
-include/scsi/scsi.h was always provided by glibc and was never exported from Kernel.
-It was only recently added to include/scsi/Kbuild. (In this merge window, was never released)
-(see: [9e4f5e29] [SCSI] FC Pass Thru support)
+same here ; after resume, computer hangs after 2minutes (cannot ping from outside)
+and STR/resume doesn't work if I try from console not from X
+there must be at least one another bug lurking
+If someone hasn't a better idea I'll try another bisection, applying bart's patch at each step
 
-Two questions. 
-1. Are we sure this will work. Is the Header fully compatible with glibc's header.
-2. What will this do to distor's package managers having the same file in two packages?
-   Don't we need a followup patch sent to glibc to remove that Header from there?
+Etienne
 
-James Smart
-  What is the new definitions needed in user-mode in scsi.h that is not available in glibc's
-supplied header?
 
-(For reference see this patch from 2007: [e629a7dd] do not export /usr/include/scsi in make headers_install)
-
-Boaz
