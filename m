@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbZF1VtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZF1VtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbZF1VtG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 17:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZF1Vsx
+	id S1754786AbZF1VtY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 17:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZF1Vs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 17:48:53 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45646 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZF1Vsx (ORCPT
+	Sun, 28 Jun 2009 17:48:58 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:51059 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZF1Vs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 17:48:53 -0400
-Date: Sun, 28 Jun 2009 23:48:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using pipes in core_pattern
-Message-ID: <20090628214855.GC6760@one.firstfloor.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090626104804.GA7337@hmsreliant.think-freely.org> <20090626092001.32e35e17.akpm@linux-foundation.org> <20090628193112.GA6760@one.firstfloor.org> <20090628135235.10f9b153.akpm@linux-foundation.org> <m163egt524.fsf@fess.ebiederm.org>
-Mime-Version: 1.0
+	Sun, 28 Jun 2009 17:48:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aBvB+mWTW2gCRCcRmeGLYpXEF3EnMC1HQ8RHuhTIR7DjtcUlmRIsNr9JZ1gwqjbUQe
+         1jgKUrXS5ipICtZYM0DpO+BBxxJJiq+EEXec7skWBv5Nq54/BynDBY9gI7h7ddXX1lXX
+         BOuEjUDMhDXF1SYH49iyuH73865vWH7FoKHog=
+Date: Sun, 28 Jun 2009 23:48:46 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090628214846.GB4584@ami.dom.local>
+References: <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com> <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626135742.GB3845@redhat.com> <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com> <20090626145027.GA6534@redhat.com> <4A474FB5.4070901@gmail.com> <4A475266.9040203@gmail.com> <20090628180412.GA9171@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m163egt524.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090628180412.GA9171@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Andrew should I toss all 100 or so patches over the wall to you
-> and your -mm tree?  Or should I maintain a public git tree based
-> at 2.6.31-rc1?  Get it into linux-next and ask Linus to pull it when
-> the merge window comes?
+On Sun, Jun 28, 2009 at 08:04:12PM +0200, Oleg Nesterov wrote:
+> On 06/28, Jarek Poplawski wrote:
+...
+> > Hmm... of course:
+> >
+> > static inline void sock_poll_wait(struct file * filp, struct sock *sk, poll_table *p)
+> > {
+> >  	if (p && sk->sk_sleep) {
+> >  		__poll_wait(filp, sk->sk_sleep, p);
+> >  		/*
+> >  		 * fat comment
+> >  		 */
+> >  		smp_mb(); // or smp_mb__after_unlock();
+> >  	}
+> > }
+> 
+> Perhaps it makes sense to check ->sk_sleep != NULL in sock_poll_wait(), but
+> I don't think we need __poll_wait(). poll_wait() is inline, I think gcc
+> will optimize out "if (p && wait_address)" check if poll_wait() is called
+> from sock_poll_wait().
 
-What do these 100 odd patches do exactly? 
+Sure, to me it looks a bit more readable, but let Jiri choose.;-)
 
-I think DEFINE_SYSCTL()/ELF section would be the correct direction to go
-for all global variable sysctls.
-
-Then the binary sysctls could be handled by a global table
-in a separate file like you described
-
-[My old patch back then also had a sysctl_name() syscall to still
-allow changing sysctl without mounting /proc, but that wasn't 
-very popular]
-
-For dynamically generated sysctls (relatively rare but there) 
-the current interfaces are not great, but could be probably kept.
-
-That all doesn't really need 100 patches though.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Cheers,
+Jarek P. 
