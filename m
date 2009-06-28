@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbZF1Qgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758323AbZF1Qhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759379AbZF1Qgr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbZF1Q2G
+	id S1758323AbZF1Qhl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757009AbZF1Q2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:28:06 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1133 "EHLO
+	Sun, 28 Jun 2009 12:28:13 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1158 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756759AbZF1Q1r (ORCPT
+	with ESMTP id S1757244AbZF1Q2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:27:47 -0400
+	Sun, 28 Jun 2009 12:28:00 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       netdev@vger.kernel.org
-Subject: [PATCH 33/62] drivers/net/sky2.c: Remove unnecessary semicolons
-Date: Sun, 28 Jun 2009 09:26:38 -0700
-Message-Id: <932cc95f8a6d7d97a91d7a6bbaa026439d7c47b6.1246173681.git.joe@perches.com>
+       James Smart <james.smart@emulex.com>,
+       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH 44/62] drivers/scsi/lpfc/lpfc_ct.c: Remove unnecessary semicolons
+Date: Sun, 28 Jun 2009 09:26:49 -0700
+Message-Id: <2f7fa59e8fc0ade08d9f23a72d8e1907350eb24d.1246173682.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1246173664.git.joe@perches.com>
 References: <cover.1246173664.git.joe@perches.com>
@@ -27,22 +28,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/net/sky2.c |    2 +-
+ drivers/scsi/lpfc/lpfc_ct.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/sky2.c b/drivers/net/sky2.c
-index 7681d28..c4281b5 100644
---- a/drivers/net/sky2.c
-+++ b/drivers/net/sky2.c
-@@ -749,7 +749,7 @@ static void sky2_wol_init(struct sky2_port *sky2)
- 	if (sky2->wol & WAKE_MAGIC)
- 		ctrl |= WOL_CTL_ENA_PME_ON_MAGIC_PKT|WOL_CTL_ENA_MAGIC_PKT_UNIT;
- 	else
--		ctrl |= WOL_CTL_DIS_PME_ON_MAGIC_PKT|WOL_CTL_DIS_MAGIC_PKT_UNIT;;
-+		ctrl |= WOL_CTL_DIS_PME_ON_MAGIC_PKT|WOL_CTL_DIS_MAGIC_PKT_UNIT;
- 
- 	ctrl |= WOL_CTL_DIS_PME_ON_PATTERN|WOL_CTL_DIS_PATTERN_UNIT;
- 	sky2_write16(hw, WOL_REGS(port, WOL_CTRL_STAT), ctrl);
+diff --git a/drivers/scsi/lpfc/lpfc_ct.c b/drivers/scsi/lpfc/lpfc_ct.c
+index 0e532f0..4d935ba 100644
+--- a/drivers/scsi/lpfc/lpfc_ct.c
++++ b/drivers/scsi/lpfc/lpfc_ct.c
+@@ -1205,7 +1205,7 @@ lpfc_ns_cmd(struct lpfc_vport *vport, int cmdcode,
+ 		vport->ct_flags &= ~FC_CT_RFF_ID;
+ 		CtReq->CommandResponse.bits.CmdRsp =
+ 		    be16_to_cpu(SLI_CTNS_RFF_ID);
+-		CtReq->un.rff.PortId = cpu_to_be32(vport->fc_myDID);;
++		CtReq->un.rff.PortId = cpu_to_be32(vport->fc_myDID);
+ 		CtReq->un.rff.fbits = FC4_FEATURE_INIT;
+ 		CtReq->un.rff.type_code = FC_FCP_DATA;
+ 		cmpl = lpfc_cmpl_ct_cmd_rff_id;
 -- 
 1.6.3.1.10.g659a0.dirty
 
