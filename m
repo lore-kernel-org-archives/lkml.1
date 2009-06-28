@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZF1FlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZF1Fx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbZF1FlK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 01:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZF1Fk6
+	id S1754554AbZF1Fx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 01:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZF1Fxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 01:40:58 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:35867 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbZF1Fk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 01:40:58 -0400
-Message-ID: <59240.192.168.10.88.1246167644.squirrel@dbdmail.itg.ti.com>
-Date: Sun, 28 Jun 2009 11:10:44 +0530 (IST)
-Subject: Re: [PATCH][MTD][NAND]: fix omap2.c compile failure and warning
-From: "vimal singh" <vimalsingh@ti.com>
-To: "David Woodhouse" <dwmw2@infradead.org>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Sun, 28 Jun 2009 01:53:47 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:45014 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbZF1Fxq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 01:53:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=BmQFUWESzLn2vjLqnLjQaa+up813iZPoHeV5+aGl+0CxGRn9I47Qs5vyk/Y57meZJc
+         ZJaSztQYNRvuBtYE/qlG7mA+uwFsQLx/bckFF4HKRMs2JUVmDe02XIqLJWimz1BWgpu1
+         7yRZozVGMlkGspNUy28dGSky88NwFlHzYfFig=
+From: Alberto Gonzalez <alberto6674@gmail.com>
+To: linux-hotplug-devel@lists.sourceforge.net
+Subject: Kernel 2.6.30 and udevd problem
+Date: Sun, 28 Jun 2009 07:53:44 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30-ARCH; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906280753.44805.info@gnebu.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Er, did he? And please put proper email addresses in. If you can't find
-> an @ sign on your keyboard, cut and paste it from elsewhere.
-Corrected this.
+Hello,
 
->> -             if (!(status & 0x40))
->> +             if (status & NAND_STATUS_READY)
->>                       break;
->
-> Hm... now you're polling the PASS/FAIL bit in the status, not the
-> READY/BUSY bit. I suspect that's not going to work too well...
->
-Value of macro 'NAND_STATUS_READY' is '0x40' only. And AFAIK this is the bit
-for ready/busy, isn't it?
+I have recently upgraded my kernel to 2.6.30 and I've noticed that at some 
+point (randomly), udevd would start using a lot of CPU time. Killing the 
+process and starting it with --debug option prints these messages when the 
+problem starts:
 
+[22652] event_queue_insert: seq 168515 queued, 'change' 'drm'
+[22657] udev_device_new_from_syspath: device 0x2040320 has devpath 
+'/devices/pci0000:00/0000:00:02.0/drm/card0'
+[22657] udev_device_read_db: device 0x2040320 filled with db symlink data 
+'/dev/dri/card0'
+[22657] udev_rules_apply_to_event: LINK 'char/226:0' /lib/udev/rules.d/50-
+udev-default.rules:5
+[22657] udev_rules_apply_to_event: NAME 'dri/card0' /lib/udev/rules.d/50-udev-
+default.rules:38
+[22657] udev_rules_apply_to_event: GROUP 91 /lib/udev/rules.d/50-udev-
+default.rules:42
+[22657] udev_device_new_from_syspath: device 0x2040790 has devpath 
+'/devices/pci0000:00/0000:00:02.0'
+[22657] udev_device_new_from_syspath: device 0x2040a80 has devpath 
+'/devices/pci0000:00'
+[22657] udev_rules_apply_to_event: RUN 
+'socket:@/org/freedesktop/hal/udev_event' /etc/udev/rules.d/90-hal.rules:2
+[22657] udev_device_update_db: create db link (dri/card0 char/226:0)
+[22657] udev_node_add: creating device node '/dev/dri/card0', devnum=226:0, 
+mode=0660, uid=0, gid=91
+[22657] udev_node_mknod: preserve file '/dev/dri/card0', because it has correct 
+dev_t
+[22657] update_link: '/dev/char/226:0' with target '/dev/dri/card0' has the 
+highest priority 0, create it
+[22657] node_symlink: preserve already existing symlink '/dev/char/226:0' to 
+'../dri/card0'
+[22657] udev_monitor_send_device: passed 230 bytes to monitor 0x2040320
+[22657] udev_monitor_send_device: passed -1 bytes to monitor 0x2036150
+[22657] event_fork: seq 168515 exit with 0
+[22652] event_fork: seq 168515 forked, pid [22657], 'change' 'drm', 0 seconds 
+old
+[22652] udev_done: seq 168515 cleanup, pid [22657], status 0, 0 seconds old
 
-Signed-off-by: Vimal Singh <vimalsingh@ti.com>
----
+This sequence repeats ad infinitum. I have no clue what it means, so any help 
+is appreciated.
 
-diff --git a/drivers/mtd/nand/omap2.c b/drivers/mtd/nand/omap2.c
-index 0cd76f8..3b6e6ad 100644
---- a/drivers/mtd/nand/omap2.c
-+++ b/drivers/mtd/nand/omap2.c
-@@ -11,6 +11,8 @@
- #include <linux/platform_device.h>
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
-+#include <linux/jiffies.h>
-+#include <linux/sched.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/nand.h>
- #include <linux/mtd/partitions.h>
-@@ -541,7 +543,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
- 	struct omap_nand_info *info = container_of(mtd, struct omap_nand_info,
- 							mtd);
- 	unsigned long timeo = jiffies;
--	int status, state = this->state;
-+	int status = NAND_STATUS_FAIL, state = this->state;
+My system is a Dell Studio desktop with Intel graphics (G45). I run a standard 
+distro kernel (Arch Linux). Please ask me for any other relevant info.
 
- 	if (state == FL_ERASING)
- 		timeo += (HZ * 400) / 1000;
-@@ -558,6 +560,7 @@ static int omap_wait(struct mtd_info *mtd, struct nand_chip
- 		status = __raw_readb(this->IO_ADDR_R);
--		if (!(status & 0x40))
-+		if (status & NAND_STATUS_READY)
- 			break;
-+		cond_resched();
- 	}
- 	return status;
- }
-
+Thanks,
+Alberto.
