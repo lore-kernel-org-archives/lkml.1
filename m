@@ -1,123 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbZF1QKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756667AbZF1QOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757031AbZF1QKH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZF1QJy
+	id S1756667AbZF1QOO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZF1QOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:09:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:60977 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbZF1QJu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:09:50 -0400
-Date: Sun, 28 Jun 2009 09:10:55 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, x86@kernel.org
-Subject: kerneloops.org report for the week
-Message-ID: <20090628091055.12a4fb9e@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 28 Jun 2009 12:14:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49697 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753334AbZF1QOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 12:14:05 -0400
+Date: Sun, 28 Jun 2009 09:14:11 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: array of pointers with rcu
+Message-ID: <20090628161411.GE7070@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090628132223.GA11856@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090628132223.GA11856@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Few "highlights" this week
-* mem_cgroup_add_lru_list (rank 2) is a high rising issue;
-  it's list corruption, question is why this is new
-* rank 13 (memcmp in the raid code) is also new
-* the warning in get_free_pages that has been discussed on lkml is dropping
-  from the ranks again
+On Sun, Jun 28, 2009 at 04:22:24PM +0300, Michael S. Tsirkin wrote:
+> Paul,
+> I'd like to implement a static array of pointers with rcu.
+> (Note that Documentation/RCU/arrayRCU.txt addresses only the case of
+> static arrays where the data (rather than a pointer to the data) is
+> located in each array element).
+> The array is implemented today in kvm as follows:
+> 
+> struct kvm_io_bus {
+>         int                   dev_count;
+> #define NR_IOBUS_DEVS 6
+>         struct kvm_io_device *devs[NR_IOBUS_DEVS];
+> };
+> 
+> It's easy to use rcu_assign_pointer and
+> rcu_dereference to access each value in the array,
+> so that's fine.
+> 
+> However, I also have the dev_count value to handle.
+> This value is usually used in loops like this
+> 
+> for (i = 0; i < bus->dev_count; ++i) {
+> 	... uses bus->devs[i] ...
+> }
 
+So the count can vary, then.  In other words, someone might change the
+value of ->dev_count from (say) 5 to (say) 2, implicitly invalidating
+the last three ->devs pointers, correct?
 
-This week, a total of 15273 oopses and warnings have been reported,
-compared to 13384 reports in the previous week.
+Of course, this implicit invalidation might happen just after you
+fetched the value of (say) ->devs[3].  Or just after you fetch the
+value of ->dev_count, for that matter.
 
+> I can assign the dev_count value with rcu_assign_pointer and even though
+> it is not a pointer I think it should work fine.  However, to access
+> dev_count I think that rcu_dereference will not do what I want:
+> 
+> #define rcu_dereference(p)     ({ \
+>                                 typeof(p) _________p1 = ACCESS_ONCE(p);
+> \
+>                                 smp_read_barrier_depends(); \
+>                                 (_________p1); \
+>                                 })
+> 
+> 
+> The use of dev_count is not through a dependency so
+> smp_read_barrier_depends will not be enough on most architectures.
+> 
+> So it seems that what I really need is something like:
+> #define rcu_read_value(p)     ({ \
+>                                 typeof(p) _________p1 = ACCESS_ONCE(p);
+> \
+>                                 smp_rmb(); \
+>                                 (_________p1); \
+>                                 })
+> 
+> And maybe
+> #define rcu_assign_value rcu_assign_pointer
+> for symmetry.
+> 
+> Comments?
 
-Rank 1: i915_gem_set_tiling (warning)
-	Reported 2754 times (8928 total reports)
-	[gem] Failure in the tiling code
-	This warning was last seen in version 2.6.31-rc0-git15, and first seen in 2.6.29-rc2.
-	More info: http://www.kerneloops.org/searchweek.php?search=i915_gem_set_tiling
+Hmmm...
 
-Rank 2: mem_cgroup_add_lru_list (warn)
-	Reported 1554 times (1622 total reports)
-	List corruption in the VM code
-	This oops was last seen in version 2.6.30-git19, and first seen in 2.6.29.
-	More info: http://www.kerneloops.org/searchweek.php?search=mem_cgroup_add_lru_list
+What you would really need to do in the above scheme is to make careful
+use of memory barriers to order the accesses to ->dev_count and the the
+elements of the ->devs[] array.  The usual trick to avoid such memory
+barriers it to dynamically allocate the array, but putting the count
+into a struct that includes the array, so that readers are guaranteed
+to get a value of ->dev_count that matches the ->devs[] array.
 
-Rank 3: getnstimeofday (warning)
-	Reported 1319 times (4893 total reports)
-	[suspend resume] getnstimeofday() is called before timekeeping is resumed
-	This oops was last seen in version 2.6.30, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=getnstimeofday
+Of course, you might have other reasons for the array to be statically
+allocated.  In that case, one trick is to statically allocate two
+arrays, each with its own ->dev_count.  Then a size-change update will
+copy from the current array to the new array, set the value of the new
+->dev_count appropriately, and then use rcu_assign_pointer() to cause
+new readers to see the updated array.  In short, use the approach
+described for resizeable arrays in Documentation/RCU/arrayRCU.txt
+even though the physical array stays the same size.
 
-Rank 4: iwl_set_dynamic_key (warning)
-	Reported 825 times (16074 total reports)
-	no space for new kew"
-	This warning was last seen in version 2.6.30, and first seen in 2.6.27.
-	More info: http://www.kerneloops.org/searchweek.php?search=iwl_set_dynamic_key
+But again given that you only have six elements, why not just scan the
+whole array unconditionally, using NULL pointers in the ->devs[] elements
+to indicate that the corresponding element is invalid?  Then the normal
+rcu_assign_pointer() and rcu_dereference() will work normally.
 
-Rank 5: ct_vm_map (warning)
-	Reported 773 times (2362 total reports)
-	Fedora: Bug in the creative XFI driver backport 
-	This warning was last seen in version 2.6.29.5, and first seen in 2.6.29-rc4-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=ct_vm_map
-
-Rank 6: parport_device_proc_unregister (warning)
-	Reported 766 times (3660 total reports)
-	Alan has a fix for this
-	This warning was last seen in version 2.6.29.4, and first seen in 2.6.27.
-	More info: http://www.kerneloops.org/searchweek.php?search=parport_device_proc_unregister
-
-Rank 7: hres_timers_resume (warning)
-	Reported 763 times (2368 total reports)
-	[suspend resume] hres_timers_resume() is incorrectly called with interrupts on
-	This warning was last seen in version 2.6.30, and first seen in 2.6.24.7.
-	More info: http://www.kerneloops.org/searchweek.php?search=hres_timers_resume
-
-Rank 8: generic_get_mtrr (warning)
-	Reported 544 times (2061 total reports)
-	BIOS bug where the MTRRs are not set up correctly
-	This warning was last seen in version 2.6.30, and first seen in 2.6.25.3.
-	More info: http://www.kerneloops.org/searchweek.php?search=generic_get_mtrr
-
-Rank 9: dmar_table_init (warning)
-	Reported 346 times (1206 total reports)
-	BIOS bug exposed via a WARN_ON
-	This warning was last seen in version 2.6.31-rc0-git18, and first seen in 2.6.29.
-	More info: http://www.kerneloops.org/searchweek.php?search=dmar_table_init
-
-Rank 10: minstrel_get_rate (warning)
-	Reported 228 times (796 total reports)
-	Issue with the ath5k driver
-	This warning was last seen in version 2.6.30-rc3, and first seen in 2.6.27.12.
-	More info: http://www.kerneloops.org/searchweek.php?search=minstrel_get_rate
-
-Rank 11: dev_watchdog(r8169) (oops)
-	Reported 206 times (9616 total reports)
-	This oops was last seen in version 2.6.30, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
-
-Rank 12: ath_get_rate (warning)
-	Reported 145 times (1051 total reports)
-	This warning was last seen in version 2.6.30, and first seen in 2.6.26.
-	More info: http://www.kerneloops.org/searchweek.php?search=ath_get_rate
-
-Rank 13: memcmp (oops)
-	Reported 131 times (273 total reports)
-	memcmp trips up in the raid code
-	This oops was last seen in version 2.6.29.4, and first seen in 2.6.21-rc3.
-	More info: http://www.kerneloops.org/searchweek.php?search=memcmp
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+							Thanx, Paul
