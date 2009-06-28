@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760732AbZF1Qom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760514AbZF1Qn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760732AbZF1Qom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbZF1Qk0
+	id S1760514AbZF1Qn1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZF1Q2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:40:26 -0400
-Received: from storm.alittletooquiet.net ([67.23.28.199]:47093 "EHLO
-	storm.alittletooquiet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759374AbZF1QkY (ORCPT
+	Sun, 28 Jun 2009 12:28:46 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1194 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752140AbZF1Q2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:40:24 -0400
-Date: Sun, 28 Jun 2009 12:40:27 -0400
-From: Forest Bond <forest@alittletooquiet.net>
-To: Greg KH <gregkh@suse.de>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Staging: vt6656 ?
-Message-ID: <20090628164027.GB9143@alittletooquiet.net>
-References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com> <20090609105101.GB15378@suse.de> <20090609113343.GA13779@alittletooquiet.net> <200906281543.12745.bzolnier@gmail.com> <20090628135731.GA9143@alittletooquiet.net> <20090628162953.GA28389@suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="K8nIJk4ghYZn606h"
-Content-Disposition: inline
-In-Reply-To: <20090628162953.GA28389@suse.de>
-X-PGP-Key: http://www.alittletooquiet.net/media/forest.pubkey.asc
+	Sun, 28 Jun 2009 12:28:24 -0400
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 61/62] net/wireless/wext-compat.c: Remove unnecessary semicolons
+Date: Sun, 28 Jun 2009 09:27:06 -0700
+Message-Id: <4778c827bdc892c3f3d341e29fcdb2f6af5bec0e.1246173683.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
+In-Reply-To: <cover.1246173664.git.joe@perches.com>
+References: <cover.1246173664.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ net/wireless/wext-compat.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---K8nIJk4ghYZn606h
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+diff --git a/net/wireless/wext-compat.c b/net/wireless/wext-compat.c
+index d030c53..2e33fe5 100644
+--- a/net/wireless/wext-compat.c
++++ b/net/wireless/wext-compat.c
+@@ -794,7 +794,7 @@ int cfg80211_wext_siwtxpower(struct net_device *dev,
+ 		return 0;
+ 	}
+ 
+-	return rdev->ops->set_tx_power(wdev->wiphy, type, dbm);;
++	return rdev->ops->set_tx_power(wdev->wiphy, type, dbm);
+ }
+ EXPORT_SYMBOL_GPL(cfg80211_wext_siwtxpower);
+ 
+-- 
+1.6.3.1.10.g659a0.dirty
 
-Howdie,
-
-On Sun, Jun 28, 2009 at 09:29:53AM -0700, Greg KH wrote:
-> On Sun, Jun 28, 2009 at 09:57:31AM -0400, Forest Bond wrote:
-> > I sent it to Greg about two weeks ago.  I assume it is in his queue som=
-ewhere.
-> >=20
-> > Let me know if you think I ought to do something else with them.
->=20
-> Yes, sorry, I am burried in patches right now.  I hope to dig out this
-> week...
-
-No need to apologize.  Your work is appreciated!
-
--Forest
---=20
-Forest Bond
-http://www.alittletooquiet.net
-http://www.pytagsfs.org
-
---K8nIJk4ghYZn606h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFKR5z7RO4fQQdv5AwRAm23AJ4wsxXNrE1WfjrzOPxRhsLYRRhqswCfQWbP
-wLXM6d12iHpdD5tD2LvmiZA=
-=I0ut
------END PGP SIGNATURE-----
-
---K8nIJk4ghYZn606h--
