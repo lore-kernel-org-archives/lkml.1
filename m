@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZF1Nxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753138AbZF1N5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755796AbZF1Nxh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 09:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZF1Nx3
+	id S1753138AbZF1N5g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 09:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZF1N53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 09:53:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59212 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751102AbZF1Nx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 09:53:28 -0400
-From: Avi Kivity <avi@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: [GIT PULL] KVM fixes for 2.6.31-rc1
-Date: Sun, 28 Jun 2009 16:53:26 +0300
-Message-Id: <1246197206-24770-1-git-send-email-avi@redhat.com>
+	Sun, 28 Jun 2009 09:57:29 -0400
+Received: from storm.alittletooquiet.net ([67.23.28.199]:38659 "EHLO
+	storm.alittletooquiet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZF1N52 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 09:57:28 -0400
+Date: Sun, 28 Jun 2009 09:57:31 -0400
+From: Forest Bond <forest@alittletooquiet.net>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Alexander Beregalov <a.beregalov@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Staging: vt6656 ?
+Message-ID: <20090628135731.GA9143@alittletooquiet.net>
+References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com> <20090609105101.GB15378@suse.de> <20090609113343.GA13779@alittletooquiet.net> <200906281543.12745.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="17pEHd4RhPHOinZp"
+Content-Disposition: inline
+In-Reply-To: <200906281543.12745.bzolnier@gmail.com>
+X-PGP-Key: http://www.alittletooquiet.net/media/forest.pubkey.asc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please find, in
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  git://git.kernel.org/pub/scm/virt/kvm/kvm.git kvm-updates/2.6.31
+Hi,
 
-a few kvm updates for 2.6.31-rc1.  There's nothing earth shattering in
-there.  Most significant is a race fix which could leave stale guest tlb
-entries under fairly rare conditions.
+On Sun, Jun 28, 2009 at 03:43:12PM +0200, Bartlomiej Zolnierkiewicz wrote:
+>=20
+> Hi,
+>=20
+> On Tuesday 09 June 2009 13:33:43 Forest Bond wrote:
+> > Hi,
+> >=20
+> > On Tue, Jun 09, 2009 at 03:51:01AM -0700, Greg KH wrote:
+> > > On Tue, Jun 09, 2009 at 02:31:30PM +0400, Alexander Beregalov wrote:
+> > > > Hi Greg, Forest
+> > > >=20
+> > > > Are you going to merge driver for VT6656 also?
+> > >=20
+> > > If someone sends me some patches for it, sure, I will.
+> >=20
+> > I have patches almost ready.  I'll send them by the end of next week at=
+ the
+> > latest.  Busy week here.
+>=20
+> Did I miss the patch?  There are people already doing cleanups for VT6655
+> driver (which seems to share a great deal of code with VT6656 driver) so
+> it would greatly help to get VT6656 merged ASAP and merge the shared code
+> first to not duplicate efforts.
+>=20
+> Also if you need some help with integrating the driver or hosting patches
+> in git tree at kernel.org before Greg picks them up [ he seems to be buri=
+ed
+> alive by patches at the moment :) ] I'll be happy to help..
 
-Amit Shah (1):
-      KVM: Ignore reads to K7 EVNTSEL MSRs
+I sent it to Greg about two weeks ago.  I assume it is in his queue somewhe=
+re.
 
-Avi Kivity (2):
-      KVM: MMU: Allow 4K ptes with bit 7 (PAT) set
-      KVM: VMX: Handle vmx instruction vmexits
+Let me know if you think I ought to do something else with them.
 
-Christian Borntraeger (1):
-      KVM: s390: Allow stfle instruction in the guest
+Thanks,
+Forest
+--=20
+Forest Bond
+http://www.alittletooquiet.net
+http://www.pytagsfs.org
 
-Izik Eidus (1):
-      KVM: Fix dirty bit tracking for slots with large pages
+--17pEHd4RhPHOinZp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Jaswinder Singh Rajput (2):
-      KVM: kvm/x86_emulate.c toggle_interruptibility() should be static
-      KVM: shut up uninit compiler warning in paging_tmpl.h
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Jes Sorensen (1):
-      KVM: ia64: fix ia64 build due to missing kallsyms_lookup() and double export
+iD8DBQFKR3bLRO4fQQdv5AwRAvwLAJ9Frf7OkD4iS33nkOksBqKusrH6+ACgs70n
+nwdqLGE+/OUbptXkE5g4kjo=
+=Sp6M
+-----END PGP SIGNATURE-----
 
-Marcelo Tosatti (1):
-      KVM: protect concurrent make_all_cpus_request
-
- arch/ia64/kvm/kvm_lib.c          |    6 ++++++
- arch/s390/include/asm/kvm_host.h |    4 +++-
- arch/s390/kvm/kvm-s390.c         |   23 ++++++++++++++++++++++-
- arch/s390/kvm/priv.c             |    2 +-
- arch/x86/kvm/mmu.c               |    6 +++---
- arch/x86/kvm/paging_tmpl.h       |    2 +-
- arch/x86/kvm/vmx.c               |   15 +++++++++++++++
- arch/x86/kvm/x86.c               |    1 +
- arch/x86/kvm/x86_emulate.c       |    2 +-
- include/linux/kvm_host.h         |    1 +
- virt/kvm/kvm_main.c              |    5 +++++
- 11 files changed, 59 insertions(+), 8 deletions(-)
+--17pEHd4RhPHOinZp--
