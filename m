@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZF1AFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZF1AKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbZF1AFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 20:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZF1AFF
+	id S1756168AbZF1AKY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 20:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZF1AKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 20:05:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51796 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777AbZF1AFE (ORCPT
+	Sat, 27 Jun 2009 20:10:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:46325 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbZF1AKM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 20:05:04 -0400
-Date: Sat, 27 Jun 2009 17:06:09 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arno Schuring <aelschuring@hotmail.com>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: 2.6.31-rc1 WARNING: at drivers/char/tty_ldisc.c:210
-Message-ID: <20090627170609.4ff42e69@infradead.org>
-In-Reply-To: <4A469C4A.5050309@hotmail.com>
-References: <4A469C4A.5050309@hotmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 27 Jun 2009 20:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MRFeNt4NbP2zDWZpAc5P9gPppJ4YObyAKit99CQrjwHGzKBrwp2Fth1ipidXVUf2t3
+         MLIgpVgfSYkudLbquKhnf42KR/Rjk5XbVM34HpOjAywbx8hbKsks3dIWb3DNG79aCQWT
+         ISnNVg+oUUWZkS29BS5UfzGQTWTxYobQZQxqw=
+MIME-Version: 1.0
+In-Reply-To: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
+References: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
+Date: Sat, 27 Jun 2009 19:10:14 -0500
+Message-ID: <524f69650906271710n663e4f21x106b5deaa81e20c0@mail.gmail.com>
+Subject: Re: [PATCH] cifs: fix fh_mutex locking in cifs_reopen_file
+From: Steve French <smfrench@gmail.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       stable@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009 00:25:14 +0200
-Arno Schuring <aelschuring@hotmail.com> wrote:
+Good catch .
 
-> Hello to all,
-> 
-> Current 2.6.31-rc1 is triggering a warning on my machine (x86
-> non-smp). I can reliably trigger this warning by booting single-user
-> and performing telinit 2 (which continues normal boot). I'm testing
-> with Radeon kernel modesetting enabled on an R300 card, but I'm not
-> sure if that is relevant.
-> 
-> First of all: if I'm posting to the wrong list, please kindly redirect
-> me to the correct location. I have found one reference to this
-> warning, it was on the PPC list:
-> http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34679.html
-> 
+I have reviewed and merged into cifs-2.6.git. Merge requested for upstream.
 
+On Sat, Jun 27, 2009 at 6:04 AM, Jeff Layton<jlayton@redhat.com> wrote:
+> Fixes a regression caused by commit a6ce4932fbdbcd8f8e8c6df76812014351c32892
+>
+> When this lock was converted to a mutex, the locks were turned into
+> unlocks and vice-versa.
+>
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Cc: Stable Tree <stable@kernel.org>
+> ---
+>  fs/cifs/file.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/fs/cifs/file.c b/fs/cifs/file.c
+> index ebdbe62..97ce4bf 100644
+> --- a/fs/cifs/file.c
+> +++ b/fs/cifs/file.c
+> @@ -493,9 +493,9 @@ static int cifs_reopen_file(struct file *file, bool can_flush)
+>                return -EBADF;
+>
+>        xid = GetXid();
+> -       mutex_unlock(&pCifsFile->fh_mutex);
+> +       mutex_lock(&pCifsFile->fh_mutex);
+>        if (!pCifsFile->invalidHandle) {
+> -               mutex_lock(&pCifsFile->fh_mutex);
+> +               mutex_unlock(&pCifsFile->fh_mutex);
+>                rc = 0;
+>                FreeXid(xid);
+>                return rc;
+> @@ -527,7 +527,7 @@ static int cifs_reopen_file(struct file *file, bool can_flush)
+>        if (full_path == NULL) {
+>                rc = -ENOMEM;
+>  reopen_error_exit:
+> -               mutex_lock(&pCifsFile->fh_mutex);
+> +               mutex_unlock(&pCifsFile->fh_mutex);
+>                FreeXid(xid);
+>                return rc;
+>        }
+> @@ -569,14 +569,14 @@ reopen_error_exit:
+>                         cifs_sb->local_nls, cifs_sb->mnt_cifs_flags &
+>                                CIFS_MOUNT_MAP_SPECIAL_CHR);
+>        if (rc) {
+> -               mutex_lock(&pCifsFile->fh_mutex);
+> +               mutex_unlock(&pCifsFile->fh_mutex);
+>                cFYI(1, ("cifs_open returned 0x%x", rc));
+>                cFYI(1, ("oplock: %d", oplock));
+>        } else {
+>  reopen_success:
+>                pCifsFile->netfid = netfid;
+>                pCifsFile->invalidHandle = false;
+> -               mutex_lock(&pCifsFile->fh_mutex);
+> +               mutex_unlock(&pCifsFile->fh_mutex);
+>                pCifsInode = CIFS_I(inode);
+>                if (pCifsInode) {
+>                        if (can_flush) {
+> --
+> 1.6.0.6
+>
+>
 
-you're not the first one to hit this one, yet it's a pretty rare thing
-to happen as well:
-
-http://www.kerneloops.org/search.php?search=tty_ldisc_put
-
-more common things have hundreds if not thousands of entries in the
-kerneloops database..
 
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+
+Steve
