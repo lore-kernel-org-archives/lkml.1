@@ -1,89 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZF1Fit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbZF1FjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbZF1Fit (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 01:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1Fil
+	id S1753213AbZF1FjJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 01:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZF1Fiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 01:38:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48706 "EHLO hera.kernel.org"
+	Sun, 28 Jun 2009 01:38:55 -0400
+Received: from mail.samba.org ([66.70.73.150]:39361 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751430AbZF1Fil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 01:38:41 -0400
-Subject: Re: [PATCH] headers_check fix: linux/pps.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Rodolfo Giometti <giometti@linux.it>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246166231.4497.5.camel@hpdv5.satnam>
-References: <1246120414.32198.5.camel@hpdv5.satnam>
-	 <20090627215346.GA2719@uranus.ravnborg.org>
-	 <1246166231.4497.5.camel@hpdv5.satnam>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 11:07:30 +0530
-Message-Id: <1246167450.4497.14.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	id S1752074AbZF1Fiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 01:38:54 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19015.482.794111.612472@samba.org>
+Date: Sun, 28 Jun 2009 15:38:42 +1000
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <m1vdmh2e26.fsf@fess.ebiederm.org>
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 10:47 +0530, Jaswinder Singh Rajput wrote:
-> On Sat, 2009-06-27 at 23:53 +0200, Sam Ravnborg wrote:
-> > On Sat, Jun 27, 2009 at 10:03:34PM +0530, Jaswinder Singh Rajput wrote:
-> > > 
-> > > fix the following 'make headers_check' warnings:
-> > > 
-> > >   usr/include/linux/pps.h:52: found __[us]{8,16,32,64} type without #include <linux/types.h>
-> > > 
-> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > > ---
-> > >  include/linux/pps.h |    2 ++
-> > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/include/linux/pps.h b/include/linux/pps.h
-> > > index cfe5c72..0194ab0 100644
-> > > --- a/include/linux/pps.h
-> > > +++ b/include/linux/pps.h
-> > > @@ -22,6 +22,8 @@
-> > >  #ifndef _PPS_H_
-> > >  #define _PPS_H_
-> > >  
-> > > +#include <linux/types.h>
-> > > +
-> > >  #define PPS_VERSION		"5.3.6"
-> > >  #define PPS_MAX_SOURCES		16		/* should be enough... */
-> > 
-> > That file has other issues that should be addresses too.
-> > 1) It uses int rather than wide specific types
-> > 2) It uses structs with questionable alignmner as per David's comment
-> > 
-> 
-> This should be send in different patch.
-> 
-> > Keeping the warning until all issues are sorted out is preferred.
-> > If we 'fix' the warning then we loose the reminder that this file
-> > needs to be eyeballed.
-> > 
-> 
-> You mean files which do not get headers_check warning are absolutely OK.
-> This is totally insane.
-> 
-> This are different issues and need to send by different series of
-> patches. Please do not mix up things.
+Hi Eric,
 
-If others maintainers will be like you they will never get any patch. If
-they keep on saying go and fix complete source file first.
+ > Given what you have said our interpretation of vfat has a bug,
+ > and that small change is a candidate for -stable.  If it could
+ > be it's own patch.
 
-Do you get some idea, what are you requesting for.
+good point. 
 
-If you find the problem why do not you submit patches ?
+Hirofumi-san, would you support putting the last_u change into stable?
 
-Thanks,
---
-JSR
-
+Cheers, Tridge
