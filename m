@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZF1TCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbZF1TCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZF1TCS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 15:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZF1TCI
+	id S1754583AbZF1TCw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 15:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZF1TCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 15:02:08 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:44577 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752008AbZF1TCH (ORCPT
+	Sun, 28 Jun 2009 15:02:45 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:59509 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbZF1TCo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 15:02:07 -0400
-Date: Sun, 28 Jun 2009 21:01:58 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       trivial@kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH 18/62] drivers/hwmon/sht15.c: Remove 
- unnecessary semicolons
-Message-ID: <20090628210158.7df366ad@hyperion.delvare>
-In-Reply-To: <b74f45f84ee741d41ab6938ea07fed85ee79b0a2.1246173681.git.joe@perches.com>
-References: <cover.1246173664.git.joe@perches.com>
-	<b74f45f84ee741d41ab6938ea07fed85ee79b0a2.1246173681.git.joe@perches.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jun 2009 15:02:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SW1yp+fub3YX5iZXQx26twEd4Q2OJySj/m2NLBDuJPhppIkwy+hDT3+CU99tkWnWvU
+         CEslk6pfKpHsPbn+UKjAfZWLxEMmLVhrmF3xBFJM+rW5SIeVfhQuge5DQx86O+pIgbdg
+         wZwwXCCMRZtrjqV6JexiW11meFJHdSKjQJ+WU=
+MIME-Version: 1.0
+In-Reply-To: <524f69650906280943y447c0ee5oad516c4a7589c764@mail.gmail.com>
+References: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
+	 <524f69650906271710n663e4f21x106b5deaa81e20c0@mail.gmail.com>
+	 <1246152224.7960.1.camel@tupile.poochiereds.net>
+	 <524f69650906280943y447c0ee5oad516c4a7589c764@mail.gmail.com>
+Date: Sun, 28 Jun 2009 14:02:46 -0500
+Message-ID: <524f69650906281202p6296c83esd9848931dfa4e8e8@mail.gmail.com>
+Subject: Re: [linux-cifs-client] Re: [PATCH] cifs: fix fh_mutex locking in 
+	cifs_reopen_file
+From: Steve French <smfrench@gmail.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       Jeremy Allison <jra@samba.org>, samba-technical@lists.samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe,
+On Sun, Jun 28, 2009 at 11:43 AM, Steve French<smfrench@gmail.com> wrote:
+> On Sat, Jun 27, 2009 at 8:23 PM, Jeff Layton<jlayton@redhat.com> wrote:
+> In any case, as long as we are sure we are hitting a Samba server
+> limit (or server side
+> per-process limit), we are ok and can continue to review/merge the very large
+> inode patches.  I am verifying with one additional pair of temporary
+> stats (counters of successful opens) in the exit path of cifs_open and
+> cifs_close)
+> to make sure that those match what I have already verified that we are seeing
+> with smbstatus and the client side counters on number of successful posix_opens.
 
-On Sun, 28 Jun 2009 09:26:23 -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/hwmon/sht15.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/hwmon/sht15.c b/drivers/hwmon/sht15.c
-> index 56cd600..6290a25 100644
-> --- a/drivers/hwmon/sht15.c
-> +++ b/drivers/hwmon/sht15.c
-> @@ -257,7 +257,7 @@ static inline int sht15_update_single_val(struct sht15_data *data,
->  				 (data->flag == SHT15_READING_NOTHING),
->  				 msecs_to_jiffies(timeout_msecs));
->  	if (ret == 0) {/* timeout occurred */
-> -		disable_irq_nosync(gpio_to_irq(data->pdata->gpio_data));;
-> +		disable_irq_nosync(gpio_to_irq(data->pdata->gpio_data));
->  		sht15_connection_reset(data);
->  		return -ETIME;
->  	}
+I am puzzled about the Samba 3.4 max files limit (I am seeing it at
+1014 opens) and seems
+strange that dbench would open so many files, but with counters in
+cifs_open and cifs_close - I see 1014 more opens than closes (from the vfs)
+which matches what I see at the SMB level and what I see in Samba server.
+dbench 4 fails even faster.   This also fails on other OS (opensuse,
+Ubuntu etc.),
+but worked on Samba 3.0.28.  Is it possible that Samba 3.4 changed their
+max open file limit?
 
-Applied, thanks.
 
 -- 
-Jean Delvare
+Thanks,
+
+Steve
