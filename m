@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZF1Fcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbZF1Fit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753867AbZF1Fcz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 01:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZF1Fcq
+	id S1753192AbZF1Fit (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 01:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1Fil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 01:32:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53683 "EHLO hera.kernel.org"
+	Sun, 28 Jun 2009 01:38:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48706 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbZF1Fcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 01:32:46 -0400
-Subject: Re: [PATCH -tip] perf stat: memcpy is only required if no event is
- selected and !null_run
+	id S1751430AbZF1Fil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 01:38:41 -0400
+Subject: Re: [PATCH] headers_check fix: linux/pps.h
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Rodolfo Giometti <giometti@linux.it>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246126749.32198.16.camel@hpdv5.satnam>
-References: <1246126749.32198.16.camel@hpdv5.satnam>
+In-Reply-To: <1246166231.4497.5.camel@hpdv5.satnam>
+References: <1246120414.32198.5.camel@hpdv5.satnam>
+	 <20090627215346.GA2719@uranus.ravnborg.org>
+	 <1246166231.4497.5.camel@hpdv5.satnam>
 Content-Type: text/plain
-Date: Sun, 28 Jun 2009 11:01:29 +0530
-Message-Id: <1246167089.4497.8.camel@hpdv5.satnam>
+Date: Sun, 28 Jun 2009 11:07:30 +0530
+Message-Id: <1246167450.4497.14.camel@hpdv5.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -28,57 +32,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If You want can also add Impact Line.
+On Sun, 2009-06-28 at 10:47 +0530, Jaswinder Singh Rajput wrote:
+> On Sat, 2009-06-27 at 23:53 +0200, Sam Ravnborg wrote:
+> > On Sat, Jun 27, 2009 at 10:03:34PM +0530, Jaswinder Singh Rajput wrote:
+> > > 
+> > > fix the following 'make headers_check' warnings:
+> > > 
+> > >   usr/include/linux/pps.h:52: found __[us]{8,16,32,64} type without #include <linux/types.h>
+> > > 
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  include/linux/pps.h |    2 ++
+> > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/include/linux/pps.h b/include/linux/pps.h
+> > > index cfe5c72..0194ab0 100644
+> > > --- a/include/linux/pps.h
+> > > +++ b/include/linux/pps.h
+> > > @@ -22,6 +22,8 @@
+> > >  #ifndef _PPS_H_
+> > >  #define _PPS_H_
+> > >  
+> > > +#include <linux/types.h>
+> > > +
+> > >  #define PPS_VERSION		"5.3.6"
+> > >  #define PPS_MAX_SOURCES		16		/* should be enough... */
+> > 
+> > That file has other issues that should be addresses too.
+> > 1) It uses int rather than wide specific types
+> > 2) It uses structs with questionable alignmner as per David's comment
+> > 
+> 
+> This should be send in different patch.
+> 
+> > Keeping the warning until all issues are sorted out is preferred.
+> > If we 'fix' the warning then we loose the reminder that this file
+> > needs to be eyeballed.
+> > 
+> 
+> You mean files which do not get headers_check warning are absolutely OK.
+> This is totally insane.
+> 
+> This are different issues and need to send by different series of
+> patches. Please do not mix up things.
 
-Impact: Speedup, reduce binary size.
+If others maintainers will be like you they will never get any patch. If
+they keep on saying go and fix complete source file first.
 
+Do you get some idea, what are you requesting for.
 
-On Sat, 2009-06-27 at 23:49 +0530, Jaswinder Singh Rajput wrote:
-> Set attrs and nr_counters if no event is selected and !null_run
-> 
-> Setting of attrs should depend on number of counters,
-> so we need to memcpy only for sizeof(default_attrs)
-> 
-> and set nr_counters as ARRAY_SIZE(default_attrs) in place of hardcoded value
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  tools/perf/builtin-stat.c |   11 ++++++-----
->  1 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-> index 3840a70..3e5ea4e 100644
-> --- a/tools/perf/builtin-stat.c
-> +++ b/tools/perf/builtin-stat.c
-> @@ -46,7 +46,7 @@
->  #include <sys/prctl.h>
->  #include <math.h>
->  
-> -static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
-> +static struct perf_counter_attr default_attrs[] = {
->  
->    { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_TASK_CLOCK	},
->    { .type = PERF_TYPE_SOFTWARE, .config = PERF_COUNT_SW_CONTEXT_SWITCHES},
-> @@ -477,16 +477,17 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
->  {
->  	int status;
->  
-> -	memcpy(attrs, default_attrs, sizeof(attrs));
-> -
->  	argc = parse_options(argc, argv, options, stat_usage, 0);
->  	if (!argc)
->  		usage_with_options(stat_usage, options);
->  	if (run_count <= 0 || run_count > MAX_RUN)
->  		usage_with_options(stat_usage, options);
->  
-> -	if (!null_run && !nr_counters)
-> -		nr_counters = 8;
-> +	/* Set attrs and nr_counters if no event is selected and !null_run */
-> +	if (!null_run && !nr_counters) {
-> +		memcpy(attrs, default_attrs, sizeof(default_attrs));
-> +		nr_counters = ARRAY_SIZE(default_attrs);
-> +	}
->  
->  	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
->  	assert(nr_cpus <= MAX_NR_CPUS);
+If you find the problem why do not you submit patches ?
+
+Thanks,
+--
+JSR
 
