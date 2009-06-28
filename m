@@ -1,121 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756421AbZF1PQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZF1PbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756421AbZF1PQu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 11:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZF1PQm
+	id S1756548AbZF1PbR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 11:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZF1PbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 11:16:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48255 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZF1PQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 11:16:41 -0400
-Subject: Re: [PATCH 2/3 -tip] perf_counter tools: Add support to set of
- multiple events in one shot
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090628132926.GD31988@elte.hu>
-References: <1246051852.2988.8.camel@hpdv5.satnam>
-	 <1246051927.2988.10.camel@hpdv5.satnam>
-	 <1246051996.2988.12.camel@hpdv5.satnam> <20090627163821.GA17638@elte.hu>
-	 <1246129498.32198.27.camel@hpdv5.satnam>  <20090628132926.GD31988@elte.hu>
-Content-Type: text/plain
-Date: Sun, 28 Jun 2009 20:46:06 +0530
-Message-Id: <1246202166.2982.8.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jun 2009 11:31:06 -0400
+Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1086 "EHLO
+	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbZF1PbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 11:31:05 -0400
+Date: Sun, 28 Jun 2009 12:30:25 -0300
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: Neil Brown <neilb@suse.de>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
+	data integrity
+Message-ID: <20090628153025.GH5913@blitiri.com.ar>
+References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain> <20090525174630.GI1376@blitiri.com.ar> <8763fop31e.fsf@frosties.localdomain> <20090526125252.GL1376@blitiri.com.ar> <19014.47753.69063.510164@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19014.47753.69063.510164@notabene.brown>
+User-Agent: Mutt/1.5.17 (2008-03-04)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 15:29 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Sat, 2009-06-27 at 18:38 +0200, Ingo Molnar wrote:
-> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Sun, Jun 28, 2009 at 10:34:17AM +1000, Neil Brown wrote:
+> On Tuesday May 26, albertito@blitiri.com.ar wrote:
+> > On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
+> > > > This scheme assumes writes to a single sector are atomic in the presence of
+> > > > normal crashes, which I'm not sure if it's something sane to assume in
+> > > > practise. If it's not, then the scheme can be modified to cope with that.
 > > > 
-> > > > Add support for HARDWARE and SOFTWARE events :
-> > > >  perf stat -e all-sw-events
-> > > >  perf stat -e sw-events
-> > > >  perf stat -e all-hw-events
-> > > >  perf stat -e hw-events
+> > > What happens if you have multiple writes to the same sector? (assuming
+> > > you ment "before" above)
 > > > 
-> > > > +static struct event_type_symbol event_type_symbols[] = {
-> > > > + [PERF_TYPE_HARDWARE]	= { "hw-events",	"all-hw-events",	},
-> > > > + [PERF_TYPE_SOFTWARE]	= { "sw-events",	"all-sw-events",	},
+> > > - user writes to sector
+> > > - queue up write for M1 and data1
+> > > - M1 writes
+> > > - user writes to sector
+> > > - queue up writes for M2 and data2
+> > > - data1 is thrown away as data2 overwrites it
+> > > - M2 writes
+> > > - system crashes
 > > > 
-> > > Hm, this really just special-cases and open-codes these. The better 
-> > > solution is what i suggested in my review of your prior patches: 
-> > > regex pattern matching.
+> > > Now both M1 and M2 have a different checksum than the old data left on
+> > > disk.
 > > > 
+> > > Can this happen?
 > > 
-> > parse_events() is responsible to parse events for 'perf stat -e' 
-> > and it is parsing by parse_event_symbol()
-> > 
-> > If you want to use regex pattern matching then either we should 
-> > make some another option or if we need to rewrite 
-> > parse_event_symbol to use regex pattern matching which will be 
-> > applicable to all the events.
+> > No, parallel writes that affect the same metadata sectors will not be allowed.
+> > At the moment there is a rough lock which does not allow simultaneous updates
+> > at all, I plan to make that more fine-grained in the future.
 > 
-> As i mentioned it before, i think the most intuitive solution is to 
-> extend the --event syntax with regex patterns. No new option - just 
-> richer -e syntax.
+> Can I suggest a variation on the above which, I think, can cause a
+> problem.
 > 
-> We could have this syntax:
+>  - user writes data-A' to sector-A (which currently contains data-A)
+>  - queue up write for M1 and data-A'
+>  - M1 is written correctly.
+>  - power fails (before data-A' is written)
+> reboot
+>  - read sector-A, find data-A which matches checksum on M2, so
+>    success.
 > 
->   hw-cpu-cycles
->   hw-instructions
->   hw-cache-references
->   hw-cache-misses
->   hw-branch-instructions
->   hw-branch-misses
->   hw-bus-cycles
+> So everything is working perfectly so far...
 > 
->   sw-cpu-clock
->   sw-task-clock
->   sw-page-faults
->   sw-minor-faults
->   sw-major-faults
->   sw-context-switches
->   sw-cpu-migrations
-> 
-> regex patterns like:
-> 
->   hw-*
->   sw-*
->   *
-> 
-> the first one would select all hardware events - the second all 
-> software events - the third all events in general. But other regex 
-> patterns make sense too, like:
-> 
->   *branch*
->   *cache*
->   *fault*
-> 
-> And as the number of generic events increases, so will regex 
-> patterns become more and more useful.
-> 
+>  - write sector-B (in same 62-sector range as sector-A).
+>  - queue up write for M2 and data-B
+>  - those writes complete
+>  - read sector-A.  find data-A, which doesn't match M1 (that has
+>    data-A') and doesn't match M2 (which is mostly a copy of M1),
+>    so the read fails.
 
-This is a good approach, but this should be done separately because
-these will effect all the events.
+The thing is that M2 is not a copy of M1. When updating M2 for data-B, the
+procedure is not "copy M1, update sector-B's checksum, write" but "read M2,
+update sector-B's checksum, write". So as long as there are no writes to
+sector-A, M1 will have the incorrect checksum and M2 will have the correct
+one, regardless of writes to the other sectors.
 
-Currently I send patches to support multiple events in one shot which is
-adding new feature.
+However, a troubling scenario based on yours could be:
 
-And you telling to use regex wildcard for all the events in
-parse_event_symbol() which is enhancement and should be done in series
-of patches.
+ - M2 has the right checksum but is older, M1 has the wrong checksum but is
+   newer.
+ - user writes data-A'' to sector'A
+ - queue up write for M2 (chosen because it is older)
+ - M2 is written correctly
+ - power fails before data-A'' is written
 
-Do not you think you are mixing 2 things. I request you to accept
-"multiple events in one shot" patches. And then we will do enhancement.
+At that point, data-A is written at sector-A, but both M1 and M2 have
+incorrect checksums for it.
 
-Thanks,
---
-JSR
+I'll try to come up with a better scheme that copes with this kind of
+scenarios and post an updated patch.
 
-
+Thanks a lot,
+		Alberto
 
