@@ -1,813 +1,2114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZF1OOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZF1OOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbZF1OOa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbZF1ONZ
+	id S1757215AbZF1OOG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZF1ONQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:13:25 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:47267 "EHLO
+	Sun, 28 Jun 2009 10:13:16 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756632AbZF1ONJ (ORCPT
+	with ESMTP id S1756583AbZF1ONB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:13:09 -0400
+	Sun, 28 Jun 2009 10:13:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=e2sMnnvQ+xed4Zo2in4dOxxegNi+QisUy7NPQdszfUpaPL1oF0F/23zLMaZI+qrsxW
-         NyQOc5thNjyq0FPLzh7FCLBZZWU+g47r73lQiNmkdBWXEdpuBDXeHyuBuA+Q6R+KUrzR
-         DFMKDXk1EtIENUYGB49ykJgLbxpKI2l8h416w=
+        b=nOVhcg50sYKfra/qAb8L/Y/vX6ImjWQzYMzQfbVWks18GgUYBTlO1nWXtx423EMdu9
+         D5wl2itZCzL+OPkRqJ9c7gQ1zS8l6BfGNj1U3aS6VLYgy12bxP1TsgS2JJpIr3bsaL38
+         N7CioVIdBhz9jZ9Q4sPVgH3Ube+n0+wixMw5s=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:19:31 +0200
-Message-Id: <20090628141931.8761.88183.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:19:23 +0200
+Message-Id: <20090628141923.8761.81439.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 08/18] Staging: rtl8187se: remove unused radio frontends
+Subject: [PATCH 07/18] Staging: rtl8187se: remove dead code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: remove unused radio frontends
+Subject: [PATCH] Staging: rtl8187se: remove dead code
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/Makefile        |    4 
- drivers/staging/rtl8187se/r8180_core.c    |    4 
- drivers/staging/rtl8187se/r8180_gct.c     |  296 ----
- drivers/staging/rtl8187se/r8180_gct.h     |   25 
- drivers/staging/rtl8187se/r8180_max2820.c |  171 --
- drivers/staging/rtl8187se/r8180_max2820.h |   21 
- drivers/staging/rtl8187se/r8180_rtl8255.c | 1807 ------------------------------
- drivers/staging/rtl8187se/r8180_rtl8255.h |   19 
- drivers/staging/rtl8187se/r8180_sa2400.c  |  233 ---
- drivers/staging/rtl8187se/r8180_sa2400.h  |   26 
- drivers/staging/rtl8187se/r8180_wx.c      |    1 
- drivers/staging/rtl8187se/r8185b_init.c   |    4 
- 12 files changed, 2611 deletions(-)
+ drivers/staging/rtl8187se/ieee80211/dot11d.c               |   10 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c      |   13 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c |    7 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c |   19 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c  |    5 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_module.c     |   88 --
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c         |   56 -
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c    |  289 -------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c |   19 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c         |    4 
+ drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c         |   63 -
+ drivers/staging/rtl8187se/r8180_core.c                     |  522 -------------
+ drivers/staging/rtl8187se/r8180_dm.c                       |   12 
+ drivers/staging/rtl8187se/r8180_max2820.c                  |   69 -
+ drivers/staging/rtl8187se/r8180_rtl8225.c                  |  200 ----
+ drivers/staging/rtl8187se/r8180_rtl8225z2.c                |  375 ---------
+ drivers/staging/rtl8187se/r8180_rtl8255.c                  |   33 
+ drivers/staging/rtl8187se/r8180_wx.c                       |   29 
+ drivers/staging/rtl8187se/r8185b_init.c                    |  285 -------
+ 19 files changed, 13 insertions(+), 2085 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/Makefile
+Index: b/drivers/staging/rtl8187se/ieee80211/dot11d.c
 ===================================================================
---- a/drivers/staging/rtl8187se/Makefile
-+++ b/drivers/staging/rtl8187se/Makefile
-@@ -20,13 +20,9 @@ EXTRA_CFLAGS += -DENABLE_LPS
+--- a/drivers/staging/rtl8187se/ieee80211/dot11d.c
++++ b/drivers/staging/rtl8187se/ieee80211/dot11d.c
+@@ -222,13 +222,3 @@ int ToLegalChannel(
  
- rtl8187se-objs :=			\
- 		r8180_core.o		\
--		r8180_sa2400.o		\
- 		r8180_93cx6.o		\
- 		r8180_wx.o		\
--		r8180_max2820.o		\
--		r8180_gct.o		\
- 		r8180_rtl8225.o		\
--		r8180_rtl8255.o		\
- 		r8180_rtl8225z2.o	\
- 		r8185b_init.o		\
- 		r8180_dm.o		\
+ 	return default_chn;
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(Dot11d_Init);
+-EXPORT_SYMBOL(Dot11d_Reset);
+-EXPORT_SYMBOL(Dot11d_UpdateCountryIe);
+-EXPORT_SYMBOL(DOT11D_GetMaxTxPwrInDbm);
+-EXPORT_SYMBOL(DOT11D_ScanComplete);
+-EXPORT_SYMBOL(IsLegalChannel);
+-EXPORT_SYMBOL(ToLegalChannel);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt.c
+@@ -247,16 +247,3 @@ void ieee80211_crypto_deinit(void)
+ 	}
+ 	kfree(hcrypt);
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_crypt_deinit_entries);
+-EXPORT_SYMBOL(ieee80211_crypt_deinit_handler);
+-EXPORT_SYMBOL(ieee80211_crypt_delayed_deinit);
+-
+-EXPORT_SYMBOL(ieee80211_register_crypto_ops);
+-EXPORT_SYMBOL(ieee80211_unregister_crypto_ops);
+-EXPORT_SYMBOL(ieee80211_get_crypto_ops);
+-#endif
+-
+-//module_init(ieee80211_crypto_init);
+-//module_exit(ieee80211_crypto_deinit);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_ccmp.c
+@@ -472,10 +472,3 @@ void ieee80211_crypto_ccmp_exit(void)
+ {
+ 	ieee80211_unregister_crypto_ops(&ieee80211_crypt_ccmp);
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_ccmp_null);
+-#endif
+-
+-//module_init(ieee80211_crypto_ccmp_init);
+-//module_exit(ieee80211_crypto_ccmp_exit);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_tkip.c
+@@ -327,17 +327,6 @@ static int ieee80211_tkip_encrypt(struct
+ 		return -1;
+ 
+ 	hdr = (struct ieee80211_hdr *) skb->data;
+-#if 0
+-printk("@@ tkey\n");
+-printk("%x|", ((u32*)tkey->key)[0]);
+-printk("%x|", ((u32*)tkey->key)[1]);
+-printk("%x|", ((u32*)tkey->key)[2]);
+-printk("%x|", ((u32*)tkey->key)[3]);
+-printk("%x|", ((u32*)tkey->key)[4]);
+-printk("%x|", ((u32*)tkey->key)[5]);
+-printk("%x|", ((u32*)tkey->key)[6]);
+-printk("%x\n", ((u32*)tkey->key)[7]);
+-#endif
+ 
+ 	if (!tkey->tx_phase1_done) {
+ 		tkip_mixing_phase1(tkey->tx_ttak, tkey->key, hdr->addr2,
+@@ -767,11 +756,3 @@ void ieee80211_tkip_null(void)
+ //    printk("============>%s()\n", __func__);
+         return;
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_tkip_null);
+-#endif
+-
+-
+-//module_init(ieee80211_crypto_tkip_init);
+-//module_exit(ieee80211_crypto_tkip_exit);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_crypt_wep.c
+@@ -298,8 +298,3 @@ void ieee80211_wep_null(void)
+ //	printk("============>%s()\n", __func__);
+         return;
+ }
+-#if 0
+-EXPORT_SYMBOL(ieee80211_wep_null);
+-#endif
+-//module_init(ieee80211_crypto_wep_init);
+-//module_exit(ieee80211_crypto_wep_exit);
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
+@@ -210,91 +210,3 @@ void free_ieee80211(struct net_device *d
+ 
+ 	free_netdev(dev);
+ }
+-
+-//#ifdef CONFIG_IEEE80211_DEBUG
+-#if 0
+-
+-static int debug = 0;
+-u32 ieee80211_debug_level = 0;
+-struct proc_dir_entry *ieee80211_proc = NULL;
+-
+-static int show_debug_level(char *page, char **start, off_t offset,
+-			    int count, int *eof, void *data)
+-{
+-	return snprintf(page, count, "0x%08X\n", ieee80211_debug_level);
+-}
+-
+-static int store_debug_level(struct file *file, const char *buffer,
+-			     unsigned long count, void *data)
+-{
+-	char buf[] = "0x00000000";
+-	unsigned long len = min(sizeof(buf) - 1, (u32)count);
+-	char *p = (char *)buf;
+-	unsigned long val;
+-
+-	if (copy_from_user(buf, buffer, len))
+-		return count;
+-	buf[len] = 0;
+-	if (p[1] == 'x' || p[1] == 'X' || p[0] == 'x' || p[0] == 'X') {
+-		p++;
+-		if (p[0] == 'x' || p[0] == 'X')
+-			p++;
+-		val = simple_strtoul(p, &p, 16);
+-	} else
+-		val = simple_strtoul(p, &p, 10);
+-	if (p == buf)
+-		printk(KERN_INFO DRV_NAME
+-		       ": %s is not in hex or decimal form.\n", buf);
+-	else
+-		ieee80211_debug_level = val;
+-
+-	return strnlen(buf, count);
+-}
+-
+-static int __init ieee80211_init(void)
+-{
+-	struct proc_dir_entry *e;
+-
+-	ieee80211_debug_level = debug;
+-	ieee80211_proc = create_proc_entry(DRV_NAME, S_IFDIR, proc_net);
+-	if (ieee80211_proc == NULL) {
+-		IEEE80211_ERROR("Unable to create " DRV_NAME
+-				" proc directory\n");
+-		return -EIO;
+-	}
+-	e = create_proc_entry("debug_level", S_IFREG | S_IRUGO | S_IWUSR,
+-			      ieee80211_proc);
+-	if (!e) {
+-		remove_proc_entry(DRV_NAME, proc_net);
+-		ieee80211_proc = NULL;
+-		return -EIO;
+-	}
+-	e->read_proc = show_debug_level;
+-	e->write_proc = store_debug_level;
+-	e->data = NULL;
+-
+-	return 0;
+-}
+-
+-static void __exit ieee80211_exit(void)
+-{
+-	if (ieee80211_proc) {
+-		remove_proc_entry("debug_level", ieee80211_proc);
+-		remove_proc_entry(DRV_NAME, proc_net);
+-		ieee80211_proc = NULL;
+-	}
+-}
+-
+-#include <linux/moduleparam.h>
+-module_param(debug, int, 0444);
+-MODULE_PARM_DESC(debug, "debug output mask");
+-
+-
+-module_exit(ieee80211_exit);
+-module_init(ieee80211_init);
+-#endif
+-
+-#if 0
+-EXPORT_SYMBOL(alloc_ieee80211);
+-EXPORT_SYMBOL(free_ieee80211);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -650,22 +650,6 @@ int ieee80211_rx(struct ieee80211_device
+ 
+ 
+ 	if (type == IEEE80211_FTYPE_MGMT) {
+-
+-	#if 0
+-		if ( stype == IEEE80211_STYPE_AUTH &&
+-		    fc & IEEE80211_FCTL_WEP && ieee->host_decrypt &&
+-		    (keyidx = hostap_rx_frame_decrypt(ieee, skb, crypt)) < 0)
+-		{
+-			printk(KERN_DEBUG "%s: failed to decrypt mgmt::auth "
+-			       "from " MAC_FMT "\n", dev->name,
+-			       MAC_ARG(hdr->addr2));
+-			/* TODO: could inform hostapd about this so that it
+-			 * could send auth failure report */
+-			goto rx_dropped;
+-		}
+-	#endif
+-
+-
+ 		if (ieee80211_rx_frame_mgmt(ieee, skb, rx_stats, type, stype))
+ 			goto rx_dropped;
+ 		else
+@@ -1077,15 +1061,6 @@ static inline void ieee80211_extract_cou
+ 	u8 * addr2
+ )
+ {
+-#if 0
+-	u32 i = 0;
+-	u8 * p = (u8*)info_element->data;
+-	printk("-----------------------\n");
+-	printk("%s Country IE:", network->ssid);
+-	for(i=0; i<info_element->len; i++)
+-		printk("\t%2.2x", *(p+i));
+-	printk("\n-----------------------\n");
+-#endif
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 	{
+ 		if(info_element->len!= 0)
+@@ -1277,11 +1252,8 @@ inline int ieee80211_network_init(
+ 
+ 			if(ieee->state != IEEE80211_LINKED)
+ 				break;
+-#if 0
+-			network->last_dtim_sta_time[0] = stats->mac_time[0];
+-#else
++
+ 			network->last_dtim_sta_time[0] = jiffies;
+-#endif
+ 			network->last_dtim_sta_time[1] = stats->mac_time[1];
+ 
+ 			network->dtim_data = IEEE80211_DTIM_VALID;
+@@ -1425,9 +1397,7 @@ inline int ieee80211_network_init(
+ 
+ 	if (ieee80211_is_empty_essid(network->ssid, network->ssid_len))
+ 		network->flags |= NETWORK_EMPTY_ESSID;
+-#if 0
+-	stats->signal = ieee80211_SignalStrengthTranslate(stats->signal);
+-#endif
++
+ 	stats->signal = ieee80211_TranslateToDbm(stats->signalstrength);
+ 	//stats->noise = stats->signal - stats->noise;
+ 	stats->noise = ieee80211_TranslateToDbm(100 - stats->signalstrength) - 25;
+@@ -1581,21 +1551,7 @@ inline void ieee80211_process_probe_resp
+ 		(beacon->capability & (1<<0x2)) ? '1' : '0',
+ 		(beacon->capability & (1<<0x1)) ? '1' : '0',
+ 		(beacon->capability & (1<<0x0)) ? '1' : '0');
+-#if 0
+-	if(strcmp(escape_essid(beacon->info_element.data, beacon->info_element.len), "rtl_softap") == 0)
+-	{
+-		if(WLAN_FC_GET_STYPE(beacon->header.frame_ctl) == IEEE80211_STYPE_BEACON)
+-		{
+-			u32 i = 0, len = stats->len;
+-			u8 * p = (u8*)beacon;
+-			printk("-----------------------\n");
+-			printk("rtl_softap Beacon:");
+-			for(i=0; i<len; i++)
+-				printk("\t%2.2x", *(p+i));
+-			printk("\n-----------------------\n");
+-		}
+-	}
+-#endif
++
+ 	if (ieee80211_network_init(ieee, beacon, &network, stats)) {
+ 		IEEE80211_DEBUG_SCAN("Dropped '%s' (" MAC_FMT ") via %s.\n",
+ 				     escape_essid(info_element->data,
+@@ -1781,9 +1737,3 @@ void ieee80211_rx_mgt(struct ieee80211_d
+ 		break;
+ 	}
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_rx_mgt);
+-EXPORT_SYMBOL(ieee80211_rx);
+-EXPORT_SYMBOL(ieee80211_network_init);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+@@ -574,25 +574,6 @@ out:
+ 		DOT11D_ScanComplete(ieee);
+ }
+ 
+-
+-#if 0
+-/* called both by wq with ieee->lock held */
+-void ieee80211_softmac_scan(struct ieee80211_device *ieee)
+-{
+-	short watchdog = 0;
+-
+-	do{
+-		ieee->current_network.channel =
+-			(ieee->current_network.channel + 1) % MAX_CHANNEL_NUMBER;
+-		if (watchdog++ > MAX_CHANNEL_NUMBER)
+-				return; /* no good chans */
+-
+-	}while(!ieee->channel_map[ieee->current_network.channel]);
+-
+-
+-	schedule_work(&ieee->softmac_scan_wq);
+-}
+-#endif
+ #ifdef ENABLE_IPS
+ void ieee80211_softmac_scan_wq(struct work_struct *work)
+ {
+@@ -1172,206 +1153,10 @@ inline struct sk_buff *ieee80211_associa
+ 
+ 	//add rsn==0 condition for ap's mix security mode(wpa+wpa2), john2007.8.9
+ 	//choose AES encryption as default algorithm while using mixed mode
+-#if 0
+-	if(rsn_len == 0){
+-
+-		tag = skb_put(skb,wpa_len);
+-
+-		if(wpa_len) {
+-
+-
+-		  //{add by david. 2006.8.31
+-		  //fix linksys compatibility bug
+-		  //}
+-		  if(wpa_len > 24) {//22+2, mean include the capability
+-			beacon->wpa_ie[wpa_len - 2] = 0;
+-		  }
+-		//multicast cipher OUI
+-                  if(  beacon->wpa_ie[11]==0x2      ){ //0x0050f202 is the oui of tkip
+-                  ieee->broadcast_key_type = KEY_TYPE_TKIP;
+-                }
+-                  else if(  beacon->wpa_ie[11]==0x4      ){//0x0050f204 is the oui of ccmp
+-                  ieee->broadcast_key_type = KEY_TYPE_CCMP;
+-                }
+- 		//unicast cipher OUI
+-		  if(	beacon->wpa_ie[14]==0
+-			&& beacon->wpa_ie[15]==0x50
+-                        && beacon->wpa_ie[16]==0xf2
+-                        && beacon->wpa_ie[17]==0x2  	){ //0x0050f202 is the oui of tkip
+-                  ieee->pairwise_key_type = KEY_TYPE_TKIP;
+-		}
+-
+-                  else if(   beacon->wpa_ie[14]==0
+-                        && beacon->wpa_ie[15]==0x50
+-                        && beacon->wpa_ie[16]==0xf2
+-                        && beacon->wpa_ie[17]==0x4      ){//0x0050f204 is the oui of ccmp
+-                  ieee->pairwise_key_type = KEY_TYPE_CCMP;
+-		}
+-		//indicate the wpa_ie content to WPA_SUPPLICANT
+-		buff = kmalloc(IW_CUSTOM_MAX, GFP_ATOMIC);
+-		memset(buff, 0, IW_CUSTOM_MAX);
+-		p=buff;
+-		p += sprintf(p, "ASSOCINFO(ReqIEs=");
+-		for(i=0;i<wpa_len;i++){
+-			p += sprintf(p, "%02x", beacon->wpa_ie[i]);
+-		}
+-		p += sprintf(p, ")");
+-		memset(&wrqu, 0, sizeof(wrqu) );
+-		wrqu.data.length = p - buff;
+-
+-		wireless_send_event(dev, IWEVCUSTOM, &wrqu, buff);
+-		  memcpy(tag,beacon->wpa_ie,wpa_len);
+-		}
+-
+-	}
+-
+-	if(rsn_len > 22) {
+-
+-	  					if(     beacon->rsn_ie[4]==0x0 &&
+-                                beacon->rsn_ie[5]==0xf &&
+-                                beacon->rsn_ie[6]==0xac){
+-
+-                                switch(beacon->rsn_ie[7]){
+-                                        case 0x1:
+-                                                ieee->broadcast_key_type = KEY_TYPE_WEP40;
+-                                                break;
+-                                        case 0x2:
+-                                                ieee->broadcast_key_type = KEY_TYPE_TKIP;
+-                                                break;
+-                                        case 0x4:
+-                                                ieee->broadcast_key_type = KEY_TYPE_CCMP;
+-                                                break;
+-                                        case 0x5:
+-                                                ieee->broadcast_key_type = KEY_TYPE_WEP104;
+-                                                break;
+-                                        default:
+-                                                printk("fault suite type in RSN broadcast key\n");
+-                                                break;
+-                                }
+-                        }
+-
+-                        if(     beacon->rsn_ie[10]==0x0 &&
+-                                beacon->rsn_ie[11]==0xf &&
+-                                beacon->rsn_ie[12]==0xac){
+-				if(beacon->rsn_ie[8]==1){//not mixed mode
+-	                                switch(beacon->rsn_ie[13]){
+-        	                                case 0x2:
+-                	                                ieee->pairwise_key_type = KEY_TYPE_TKIP;
+-                        	                        break;
+-                                	        case 0x4:
+-                                        	        ieee->pairwise_key_type = KEY_TYPE_CCMP;
+-                                                	break;
+-        	                                default:
+-	                                                printk("fault suite type in RSN pairwise key\n");
+-                	                                break;
+-                                	}
+-				}
+-				else if(beacon->rsn_ie[8]==2){//mixed mode
+-					ieee->pairwise_key_type = KEY_TYPE_CCMP;
+-				}
+-                        }
+ 
+-
+-
+-		tag = skb_put(skb,22);
+-		memcpy(tag,(beacon->rsn_ie + info_addr),8);
+-		tag[1] =  20;
+-		tag += 8;
+-		info_addr += 8;
+-
+-		spin_lock_irqsave(&ieee->wpax_suitlist_lock,flags);
+-		for (i = 0; i < 2; i++) {
+-			tag[0] = 1;
+-			tag[1] = 0;
+-			tag += 2;
+-			suite_count = beacon->rsn_ie[info_addr] + \
+-				      (beacon->rsn_ie[info_addr + 1] << 8);
+-			info_addr += 2;
+-			if(1 == suite_count) {
+-				memcpy(tag,(beacon->rsn_ie + info_addr),4);
+-				info_addr += 4;
+-			} else {
+-				// if the wpax_type_notify has been set by the application,
+-				// just use it, otherwise just use the default one.
+-				if(ieee->wpax_type_set) {
+-					suit_select = ((0 == i) ? pairwise_type:authen_type)&0x0f ;
+-					memcpy(tag,rsn_authen_cipher_suite[suit_select],4);
+-				} else {
+-					//default set as ccmp, or none authentication
+-					if(i == 0) {
+-						memcpy(tag,rsn_authen_cipher_suite[4],4);
+-					} else {
+-						memcpy(tag,rsn_authen_cipher_suite[2],4);
+-					}
+-
+-				}
+-
+-				info_addr += (suite_count * 4);
+-			}
+-			tag += 4;
+-		}
+-		spin_unlock_irqrestore(&ieee->wpax_suitlist_lock,flags);
+-
+-		tag[0] = 0;
+-		tag[1] = beacon->rsn_ie[info_addr+1];
+-
+-	} else {
+-		tag = skb_put(skb,rsn_len);
+-		if(rsn_len) {
+-
+-
+-			if( 	beacon->rsn_ie[4]==0x0 &&
+-				beacon->rsn_ie[5]==0xf &&
+-				beacon->rsn_ie[6]==0xac){
+-				switch(beacon->rsn_ie[7]){
+-					case 0x1:
+-						ieee->broadcast_key_type = KEY_TYPE_WEP40;
+-                                                break;
+-					case 0x2:
+-						ieee->broadcast_key_type = KEY_TYPE_TKIP;
+-						break;
+-					case 0x4:
+-   	                                        ieee->broadcast_key_type = KEY_TYPE_CCMP;
+-                                                break;
+-                                        case 0x5:
+-                                                ieee->broadcast_key_type = KEY_TYPE_WEP104;
+-                                                break;
+-					default:
+-						printk("fault suite type in RSN broadcast key\n");
+-						break;
+-				}
+-			}
+-                        if(     beacon->rsn_ie[10]==0x0 &&
+-                                beacon->rsn_ie[11]==0xf &&
+-                                beacon->rsn_ie[12]==0xac){
+-                                if(beacon->rsn_ie[8]==1){//not mixed mode
+-                                        switch(beacon->rsn_ie[13]){
+-                                                case 0x2:
+-                                                        ieee->pairwise_key_type = KEY_TYPE_TKIP;
+-                                                        break;
+-                                                case 0x4:
+-                                                        ieee->pairwise_key_type = KEY_TYPE_CCMP;
+-                                                        break;
+-                                                default:
+-                                                        printk("fault suite type in RSN pairwise key\n");
+-                                                        break;
+-                                	}
+-
+-				}
+-                                else if(beacon->rsn_ie[8]==2){//mixed mode
+-                                        ieee->pairwise_key_type = KEY_TYPE_CCMP;
+-                                }
+-                        }
+-
+-
+-			beacon->rsn_ie[rsn_len - 2] = 0;
+-			memcpy(tag,beacon->rsn_ie,rsn_len);
+-		}
+-	}
+-#else
+ 	tag = skb_put(skb,ieee->wpa_ie_len);
+ 	memcpy(tag,ieee->wpa_ie,ieee->wpa_ie_len);
+-#endif
++
+ 	tag = skb_put(skb,wmm_info_len);
+ 	if(wmm_info_len) {
+ 	  ieee80211_WMM_Info(ieee, &tag);
+@@ -1827,12 +1612,6 @@ ieee80211_rx_assoc_rq(struct ieee80211_d
+ 	}
+ 
+ 	printk(KERN_INFO"New client associated: "MAC_FMT"\n", MAC_ARG(dest));
+-	//FIXME
+-	#if 0
+-	spin_lock_irqsave(&ieee->lock,flags);
+-	add_associate(ieee,dest);
+-	spin_unlock_irqrestore(&ieee->lock,flags);
+-	#endif
+ }
+ 
+ 
+@@ -1850,11 +1629,8 @@ void ieee80211_sta_ps_send_null_frame(st
+ 
+ short ieee80211_sta_ps_sleep(struct ieee80211_device *ieee, u32 *time_h, u32 *time_l)
+ {
+-#if 0
+-        int timeout = ieee->ps_timeout;
+-#else
+         int timeout = 0;
+-#endif
++
+ 	u8 dtim;
+ 	/*if(ieee->ps == IEEE80211_PS_DISABLED ||
+ 		ieee->iw_mode != IW_MODE_INFRA ||
+@@ -1885,13 +1661,7 @@ short ieee80211_sta_ps_sleep(struct ieee
+ 	if((ieee->softmac_features & IEEE_SOFTMAC_SINGLE_QUEUE ) &&
+ 		(ieee->mgmt_queue_tail != ieee->mgmt_queue_head))
+ 		return 0;
+-#if 0
+-	if(time_l){
+-		*time_l = ieee->current_network.last_dtim_sta_time[0]
+-			+ (ieee->current_network.beacon_interval
+-			* ieee->current_network.dtim_period) * 1000;
+-	}
+-#else
++
+ 	if(time_l){
+ 		*time_l = ieee->current_network.last_dtim_sta_time[0]
+ 			+ MSECS((ieee->current_network.beacon_interval));
+@@ -1899,7 +1669,6 @@ short ieee80211_sta_ps_sleep(struct ieee
+ 			//printk("beacon_interval:%x, dtim_period:%x, totol to Msecs:%x, HZ:%x\n", ieee->current_network.beacon_interval, ieee->current_network.dtim_period, MSECS(((ieee->current_network.beacon_interval * ieee->current_network.dtim_period))), HZ);
+ 	}
+ 
+-#endif
+ 	if(time_h){
+ 		*time_h = ieee->current_network.last_dtim_sta_time[1];
+ 		if(time_l && *time_l < ieee->current_network.last_dtim_sta_time[0])
+@@ -2247,29 +2016,6 @@ void ieee80211_softmac_xmit(struct ieee8
+ 	int  i;
+ 
+ 	spin_lock_irqsave(&ieee->lock,flags);
+-	#if 0
+-	if(ieee->queue_stop){
+-		IEEE80211DMESG("EE: IEEE hard_start_xmit invoked when kernel queue should be stopped");
+-		netif_stop_queue(ieee->dev);
+-		ieee->ieee_stats.swtxstop++;
+-		//dev_kfree_skb_any(skb);
+-		err = 1;
+-		goto exit;
+-	}
+-
+-	ieee->stats.tx_bytes+=skb->len;
+-
+-
+-	txb=ieee80211_skb_to_txb(ieee,skb);
+-
+-
+-	if(txb==NULL){
+-		IEEE80211DMESG("WW: IEEE stack failed to provide txb");
+-		//dev_kfree_skb_any(skb);
+-		err = 1;
+-		goto exit;
+-	}
+-	#endif
+ 
+ 	/* called with 2nd parm 0, no tx mgmt lock required */
+ 	ieee80211_sta_wakeup(ieee,0);
+@@ -2844,11 +2590,7 @@ void ieee80211_softmac_init(struct ieee8
+ //by amy
+ 
+ 	init_mgmt_queue(ieee);
+-#if 0
+-	init_timer(&ieee->scan_timer);
+-	ieee->scan_timer.data = (unsigned long)ieee;
+-	ieee->scan_timer.function = ieee80211_softmac_scan_cb;
+-#endif
++
+ 	ieee->tx_pending.txb = NULL;
+ 
+ 	init_timer(&ieee->associate_timer);
+@@ -3306,26 +3048,3 @@ void notify_wx_assoc_event(struct ieee80
+ 		memset(wrqu.ap_addr.sa_data, 0, ETH_ALEN);
+ 	wireless_send_event(ieee->dev, SIOCGIWAP, &wrqu, NULL);
+ }
+-
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_get_beacon);
+-EXPORT_SYMBOL(ieee80211_wake_queue);
+-EXPORT_SYMBOL(ieee80211_stop_queue);
+-EXPORT_SYMBOL(ieee80211_reset_queue);
+-EXPORT_SYMBOL(ieee80211_softmac_stop_protocol);
+-EXPORT_SYMBOL(ieee80211_softmac_start_protocol);
+-EXPORT_SYMBOL(ieee80211_is_shortslot);
+-EXPORT_SYMBOL(ieee80211_is_54g);
+-EXPORT_SYMBOL(ieee80211_wpa_supplicant_ioctl);
+-EXPORT_SYMBOL(ieee80211_ps_tx_ack);
+-EXPORT_SYMBOL(ieee80211_start_protocol);
+-EXPORT_SYMBOL(ieee80211_stop_protocol);
+-EXPORT_SYMBOL(notify_wx_assoc_event);
+-EXPORT_SYMBOL(ieee80211_stop_send_beacons);
+-EXPORT_SYMBOL(SendDisassociation);
+-EXPORT_SYMBOL(ieee80211_disassociate);
+-EXPORT_SYMBOL(ieee80211_start_scan);
+-EXPORT_SYMBOL(ieee80211_softmac_ips_scan_syncro);
+-EXPORT_SYMBOL(ieee80211_sta_ps_send_null_frame);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac_wx.c
+@@ -570,22 +570,3 @@ exit:
+ 	return ret;
+ 
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_wx_get_essid);
+-EXPORT_SYMBOL(ieee80211_wx_set_essid);
+-EXPORT_SYMBOL(ieee80211_wx_set_rate);
+-EXPORT_SYMBOL(ieee80211_wx_get_rate);
+-EXPORT_SYMBOL(ieee80211_wx_set_wap);
+-EXPORT_SYMBOL(ieee80211_wx_get_wap);
+-EXPORT_SYMBOL(ieee80211_wx_set_mode);
+-EXPORT_SYMBOL(ieee80211_wx_get_mode);
+-EXPORT_SYMBOL(ieee80211_wx_set_scan);
+-EXPORT_SYMBOL(ieee80211_wx_get_freq);
+-EXPORT_SYMBOL(ieee80211_wx_set_freq);
+-EXPORT_SYMBOL(ieee80211_wx_set_rawtx);
+-EXPORT_SYMBOL(ieee80211_wx_get_name);
+-EXPORT_SYMBOL(ieee80211_wx_set_power);
+-EXPORT_SYMBOL(ieee80211_wx_get_power);
+-EXPORT_SYMBOL(ieee80211_wlan_frequencies);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c
+@@ -585,7 +585,3 @@ int ieee80211_xmit(struct sk_buff *skb,
+ 	return NETDEV_TX_BUSY;
+ 
+ }
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_txb_free);
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c
+@@ -174,33 +174,6 @@ static inline char *rtl818x_translate_sc
+ 	if (iwe.u.data.length)
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, custom);
+ 
+-#if 0
+-	if (ieee->wpa_enabled && network->wpa_ie_len){
+-		char buf[MAX_WPA_IE_LEN * 2 + 30];
+-	//	printk("WPA IE\n");
+-		u8 *p = buf;
+-		p += sprintf(p, "wpa_ie=");
+-		for (i = 0; i < network->wpa_ie_len; i++) {
+-			p += sprintf(p, "%02x", network->wpa_ie[i]);
+-		}
+-
+-		memset(&iwe, 0, sizeof(iwe));
+-		iwe.cmd = IWEVCUSTOM;
+-		iwe.u.data.length = strlen(buf);
+-		start = iwe_stream_add_point(info, start, stop, &iwe, buf);
+-	}
+-
+-	if (ieee->wpa_enabled && network->rsn_ie_len){
+-		char buf[MAX_WPA_IE_LEN * 2 + 30];
+-
+-		u8 *p = buf;
+-		p += sprintf(p, "rsn_ie=");
+-		for (i = 0; i < network->rsn_ie_len; i++) {
+-			p += sprintf(p, "%02x", network->rsn_ie[i]);
+-		}
+-
+-
+-#else
+ 		memset(&iwe, 0, sizeof(iwe));
+         if (network->wpa_ie_len) {
+ 	//	printk("wpa_ie_len:%d\n", network->wpa_ie_len);
+@@ -214,14 +187,6 @@ static inline char *rtl818x_translate_sc
+         memset(&iwe, 0, sizeof(iwe));
+         if (network->rsn_ie_len) {
+ 	//	printk("=====>rsn_ie_len:\n", network->rsn_ie_len);
+-		#if 0
+-		{
+-			int i;
+-			for (i=0; i<network->rsn_ie_len; i++);
+-			printk("%2x ", network->rsn_ie[i]);
+-			printk("\n");
+-		}
+-		#endif
+                 char buf[MAX_WPA_IE_LEN];
+                 memcpy(buf, network->rsn_ie, network->rsn_ie_len);
+                 iwe.cmd = IWEVGENIE;
+@@ -229,8 +194,6 @@ static inline char *rtl818x_translate_sc
+ 		start = iwe_stream_add_point(info, start, stop, &iwe, buf);
+ 	}
+ 
+-#endif
+-
+ 	/* Add EXTRA: Age to display seconds since last beacon/probe response
+ 	 * for given network. */
+ 	iwe.cmd = IWEVCUSTOM;
+@@ -578,12 +541,7 @@ int ieee80211_wx_set_encode_ext(struct i
+ 
+ 	sec.enabled = 1;
+     //    sec.encrypt = 1;
+-#if 0
+-        if (group_key ? !ieee->host_mc_decrypt :
+-            !(ieee->host_encrypt || ieee->host_decrypt ||
+-              ieee->host_encrypt_msdu))
+-                goto skip_host_crypt;
+-#endif
++
+         switch (ext->alg) {
+         case IW_ENCODE_ALG_WEP:
+                 alg = "WEP";
+@@ -769,15 +727,6 @@ int ieee80211_wx_set_auth(struct ieee802
+ #if 1
+ int ieee80211_wx_set_gen_ie(struct ieee80211_device *ieee, u8 *ie, size_t len)
+ {
+-#if 0
+-	printk("====>%s()\n", __func__);
+-	{
+-		int i;
+-		for (i=0; i<len; i++)
+-		printk("%2x ", ie[i]&0xff);
+-		printk("\n");
+-	}
+-#endif
+ 	u8 *buf = NULL;
+ 
+ 	if (len>MAX_WPA_IE_LEN || (len && ie == NULL))
+@@ -812,13 +761,3 @@ int ieee80211_wx_set_gen_ie(struct ieee8
+ 
+ }
+ #endif
+-
+-#if 0
+-EXPORT_SYMBOL(ieee80211_wx_set_gen_ie);
+-EXPORT_SYMBOL(ieee80211_wx_set_mlme);
+-EXPORT_SYMBOL(ieee80211_wx_set_auth);
+-EXPORT_SYMBOL(ieee80211_wx_set_encode_ext);
+-EXPORT_SYMBOL(ieee80211_wx_get_scan);
+-EXPORT_SYMBOL(ieee80211_wx_set_encode);
+-EXPORT_SYMBOL(ieee80211_wx_get_encode);
+-#endif
 Index: b/drivers/staging/rtl8187se/r8180_core.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8180_core.c
 +++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -54,11 +54,7 @@
- //#include <asm/uaccess.h>
- #include "r8180_hw.h"
- #include "r8180.h"
--#include "r8180_sa2400.h"  /* PHILIPS Radio frontend */
--#include "r8180_max2820.h" /* MAXIM Radio frontend */
--#include "r8180_gct.h"     /* GCT Radio frontend */
- #include "r8180_rtl8225.h" /* RTL8225 Radio frontend */
--#include "r8180_rtl8255.h" /* RTL8255 Radio frontend */
- #include "r8180_93cx6.h"   /* Card EEPROM */
- #include "r8180_wx.h"
- #include "r8180_dm.h"
-Index: b/drivers/staging/rtl8187se/r8180_gct.c
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_gct.c
-+++ /dev/null
-@@ -1,296 +0,0 @@
--/*
--   This files contains GCT radio frontend programming routines.
--
--   This is part of rtl8180 OpenSource driver
--   Copyright (C) Andrea Merello 2004-2005  <andreamrl@tiscali.it>
--   Released under the terms of GPL (General Public Licence)
--
--   Parts of this driver are based on the GPL part of the
--   official realtek driver
--
--   Parts of this driver are based on the rtl8180 driver skeleton
--   from Patric Schenke & Andres Salomon
--
--   Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver.
--
--   Code from Rtw8180 NetBSD driver by David Young has been really useful to
--   understand some things and gets some ideas
--
--   Code from rtl8181 project has been useful to me to understand some things.
--
--   Some code from 'Deuce' work
--
--   We want to tanks the Authors of such projects and the Ndiswrapper
--   project Authors.
--*/
+@@ -24,16 +24,6 @@
+    add RTL8185 and RTL8225 support, and to David Young also.
+ */
+ 
+-#if 0
+-double __floatsidf (int i) { return i; }
+-unsigned int __fixunsdfsi (double d) { return d; }
+-double __adddf3(double a, double b) { return a+b; }
+-double __addsf3(float a, float b) { return a+b; }
+-double __subdf3(double a, double b) { return a-b; }
+-double __extendsfdf2(float a) {return a;}
+-#endif
 -
 -
--#include "r8180.h"
--#include "r8180_hw.h"
--#include "r8180_gct.h"
--
--
--//#define DEBUG_GCT
--
--/* the following experiment are just experiments.
-- * this means if you enable them you can have every kind
-- * of result, included damage the RF chip, so don't
-- * touch them if you don't know what you are doing.
-- * In any case, if you do it, do at your own risk
-- */
--
--//#define GCT_EXPERIMENT1  //improve RX sensivity
--
--//#define GCT_EXPERIMENT2
--
--//#define GCT_EXPERIMENT3  //iprove a bit RX signal quality ?
--
--//#define GCT_EXPERIMENT4 //maybe solve some brokeness with experiment1 ?
--
--//#define GCT_EXPERIMENT5
--
--//#define GCT_EXPERIMENT6  //not good
--
--
--u32 gct_chan[] = {
--	0x0,	//dummy channel 0
--	0x0, //1
--	0x1, //2
--	0x2, //3
--	0x3, //4
--	0x4, //5
--	0x5, //6
--	0x6, //7
--	0x7, //8
--	0x8, //9
--	0x9, //10
--	0xa, //11
--	0xb, //12
--	0xc, //13
--	0xd, //14
--};
--
--int gct_encode[16] = {
--	0, 8, 4, 0xC,
--	2, 0xA, 6, 0xE,
--	1, 9, 5, 0xD,
--	3, 0xB, 7, 0xF
--};
--
--void gct_rf_stabilize(struct net_device *dev)
+ #undef DEBUG_TX_DESC2
+ #undef RX_DONT_PASS_UL
+ #undef DEBUG_EPROM
+@@ -93,36 +83,6 @@ static struct pci_device_id rtl8180_pci_
+                 .subdevice = PCI_ANY_ID,
+                 .driver_data = 0,
+         },
+-#if 0
+-        {
+-                .vendor = PCI_VENDOR_ID_BELKIN,
+-                .device = 0x6001,
+-                .subvendor = PCI_ANY_ID,
+-                .subdevice = PCI_ANY_ID,
+-                .driver_data = 1,
+-        },
+-        {       /* Belkin F5D6020 v3 */
+-	        .vendor = PCI_VENDOR_ID_BELKIN,
+-                .device = 0x6020,
+-                .subvendor = PCI_ANY_ID,
+-                .subdevice = PCI_ANY_ID,
+-                .driver_data = 2,
+-        },
+-        {       /* D-Link DWL-610 */
+-                .vendor = PCI_VENDOR_ID_DLINK,
+-                .device = 0x3300,
+-                .subvendor = PCI_ANY_ID,
+-                .subdevice = PCI_ANY_ID,
+-                .driver_data = 3,
+-        },
+-	{
+-		.vendor = PCI_VENDOR_ID_REALTEK,
+-		.device = 0x8185,
+-		.subvendor = PCI_ANY_ID,
+-		.subdevice = PCI_ANY_ID,
+-		.driver_data = 4,
+-	},
+-#endif
+         {
+                 .vendor = 0,
+                 .device = 0,
+@@ -360,82 +320,6 @@ static int proc_get_stats_rx(char *page,
+ 	return len;
+ }
+ 
+-#if 0
+-static int proc_get_stats_ieee(char *page, char **start,
+-			  off_t offset, int count,
+-			  int *eof, void *data)
 -{
--	force_pci_posting(dev);
--	mdelay(3); //for now use a great value.. we may optimize in future
+-	struct net_device *dev = data;
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-
+-	int len = 0;
+-
+-	len += snprintf(page + len, count - len,
+-		"TXed association requests: %u\n"
+-		"TXed authentication requests: %u\n"
+-		"RXed successful association response: %u\n"
+-		"RXed failed association response: %u\n"
+-		"RXed successful authentication response: %u\n"
+-		"RXed failed authentication response: %u\n"
+-		"Association requests without response: %u\n"
+-		"Authentication requests without response: %u\n"
+-		"TX probe response: %u\n"
+-		"RX probe request: %u\n"
+-		"TX probe request: %lu\n"
+-		"RX authentication requests: %lu\n"
+-		"RX association requests: %lu\n"
+-		"Reassociations: %lu\n",
+-		priv->ieee80211->ieee_stats.tx_ass,
+-		priv->ieee80211->ieee_stats.tx_aut,
+-		priv->ieee80211->ieee_stats.rx_ass_ok,
+-		priv->ieee80211->ieee_stats.rx_ass_err,
+-		priv->ieee80211->ieee_stats.rx_aut_ok,
+-		priv->ieee80211->ieee_stats.rx_aut_err,
+-		priv->ieee80211->ieee_stats.ass_noresp,
+-		priv->ieee80211->ieee_stats.aut_noresp,
+-		priv->ieee80211->ieee_stats.tx_probe,
+-		priv->ieee80211->ieee_stats.rx_probe,
+-		priv->ieee80211->ieee_stats.tx_probe_rq,
+-		priv->ieee80211->ieee_stats.rx_auth_rq,
+-		priv->ieee80211->ieee_stats.rx_assoc_rq,
+-		priv->ieee80211->ieee_stats.reassoc);
+-
+-	*eof = 1;
+-	return len;
 -}
--
--
--void write_gct(struct net_device *dev, u8 adr, u32 data)
--{
--//	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 phy_config;
--
--	phy_config =  gct_encode[(data & 0xf00) >> 8];
--	phy_config |= gct_encode[(data & 0xf0) >> 4 ] << 4;
--	phy_config |= gct_encode[(data & 0xf)       ] << 8;
--	phy_config |= gct_encode[(adr >> 1) & 0xf   ] << 12;
--	phy_config |=            (adr & 1 )           << 16;
--	phy_config |= gct_encode[(data & 0xf000)>>12] << 24;
--
--	phy_config |= 0x90000000; // MAC will bang bits to the chip
--
--
--	write_nic_dword(dev,PHY_CONFIG,phy_config);
--#ifdef DEBUG_GCT
--	DMESG("Writing GCT: %x (adr %x)",phy_config,adr);
 -#endif
--	gct_rf_stabilize(dev);
+-#if 0
+-static int proc_get_stats_ap(char *page, char **start,
+-			  off_t offset, int count,
+-			  int *eof, void *data)
+-{
+-	struct net_device *dev = data;
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-	struct mac_htable_t *list;
+-	int i;
+-	int len = 0;
+-
+-	if(priv->ieee80211->iw_mode != IW_MODE_MASTER){
+-		len += snprintf(page + len, count - len,
+-		"Card is not acting as AP...\n"
+-		);
+-	}else{
+-		len += snprintf(page + len, count - len,
+-		"List of associated STA:\n"
+-		);
+-
+-		for(i=0;i<MAC_HTABLE_ENTRY;i++)
+-			for (list = priv->ieee80211->assoc_htable[i]; list!=NULL; list = list->next){
+-				len += snprintf(page + len, count - len,
+-					MACSTR"\n",MAC2STR(list->adr));
+-			}
+-
+-	}
+-	*eof = 1;
+-	return len;
 -}
+-#endif
 -
+ static int proc_get_stats_tx(char *page, char **start,
+ 			  off_t offset, int count,
+ 			  int *eof, void *data)
+@@ -561,26 +445,6 @@ void rtl8180_proc_init_one(struct net_de
+ 		      "/proc/net/r8180/%s/stats-tx\n",
+ 		      dev->name);
+ 	}
+-	#if 0
+-	e = create_proc_read_entry("stats-ieee", S_IFREG | S_IRUGO,
+-				   priv->dir_dev, proc_get_stats_ieee, dev);
 -
+-	if (!e) {
+-		DMESGE("Unable to initialize "
+-		      "/proc/net/rtl8180/%s/stats-ieee\n",
+-		      dev->name);
+-	}
+-	#endif
+-	#if 0
+-	e = create_proc_read_entry("stats-ap", S_IFREG | S_IRUGO,
+-				   priv->dir_dev, proc_get_stats_ap, dev);
 -
--void gct_write_phy_antenna(struct net_device *dev,short ch)
+-	if (!e) {
+-		DMESGE("Unable to initialize "
+-		      "/proc/net/rtl8180/%s/stats-ap\n",
+-		      dev->name);
+-	}
+-	#endif
+ 
+ 	e = create_proc_read_entry("registers", S_IFREG | S_IRUGO,
+ 				   priv->dir_dev, proc_get_registers, dev);
+@@ -731,10 +595,6 @@ int get_curr_tx_free_desc(struct net_dev
+ 
+ 	/* FIXME FIXME FIXME FIXME */
+ 
+-#if 0
+-	if( head <= tail ) return priv->txringcount-1 - (tail - head)/8;
+-	return (head - tail)/8/4;
+-#else
+ 	if( head <= tail )
+ 		ret = priv->txringcount - (tail - head)/8;
+ 	else
+@@ -742,7 +602,6 @@ int get_curr_tx_free_desc(struct net_dev
+ 
+ 	if(ret > priv->txringcount ) DMESG("BUG");
+ 	return ret;
+-#endif
+ }
+ 
+ 
+@@ -1540,34 +1399,6 @@ void rtl8180_rtx_disable(struct net_devi
+ 		dev_kfree_skb_any(priv->rx_skb);
+ }
+ 
+-#if 0
+-int alloc_tx_beacon_desc_ring(struct net_device *dev, int count)
 -{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u8 ant;
+-	int i;
+-	u32 *tmp;
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
 -
--	ant = GCT_ANTENNA;
--	if(priv->antb) /*default antenna is antenna B */
--		ant |= BB_ANTENNA_B;
--	if(ch == 14)
--		ant |= BB_ANTATTEN_CHAN14;
--	write_phy(dev,0x10,ant);
--	//DMESG("BB antenna %x ",ant);
+-	priv->txbeaconring = (u32*)pci_alloc_consistent(priv->pdev,
+-					  sizeof(u32)*8*count,
+-					  &priv->txbeaconringdma);
+-	if (!priv->txbeaconring) return -1;
+-	for (tmp=priv->txbeaconring,i=0;i<count;i++){
+-		*tmp = *tmp &~ (1<<31); // descriptor empty, owned by the drv
+-		/*
+-		*(tmp+2) = (u32)dma_tmp;
+-		*(tmp+3) = bufsize;
+-		*/
+-		if(i+1<count)
+-			*(tmp+4) = (u32)priv->txbeaconringdma+((i+1)*8*4);
+-		else
+-			*(tmp+4) = (u32)priv->txbeaconringdma;
+-
+-		tmp=tmp+8;
+-	}
+-	return 0;
 -}
+-#endif
 -
+ short alloc_tx_desc_ring(struct net_device *dev, int bufsize, int count,
+ 			 int addr)
+ {
+@@ -1601,28 +1432,6 @@ short alloc_tx_desc_ring(struct net_devi
+ 		if (buf == NULL) return -ENOMEM;
+ 
+ 		switch(addr) {
+-#if 0
+-		case TX_NORMPRIORITY_RING_ADDR:
+-			if(-1 == buffer_add(&(priv->txnpbufs),buf,dma_tmp,NULL)){
+-				DMESGE("Unable to allocate mem for buffer NP");
+-				return -ENOMEM;
+-			}
+-			break;
 -
--void gct_rf_set_chan(struct net_device *dev, short ch)
+-		case TX_LOWPRIORITY_RING_ADDR:
+-			if(-1 == buffer_add(&(priv->txlpbufs),buf,dma_tmp,NULL)){
+-				DMESGE("Unable to allocate mem for buffer LP");
+-				return -ENOMEM;
+-			}
+-			break;
+-
+-		case TX_HIGHPRIORITY_RING_ADDR:
+-			if(-1 == buffer_add(&(priv->txhpbufs),buf,dma_tmp,NULL)){
+-				DMESGE("Unable to allocate mem for buffer HP");
+-				return -ENOMEM;
+-			}
+-			break;
+-#else
+ 		case TX_MANAGEPRIORITY_RING_ADDR:
+ 			if(-1 == buffer_add(&(priv->txmapbufs),buf,dma_tmp,NULL)){
+ 				DMESGE("Unable to allocate mem for buffer NP");
+@@ -1655,7 +1464,6 @@ short alloc_tx_desc_ring(struct net_devi
+ 				return -ENOMEM;
+ 			}
+ 			break;
+-#endif
+ 		case TX_HIGHPRIORITY_RING_ADDR:
+ 			if(-1 == buffer_add(&(priv->txhpbufs),buf,dma_tmp,NULL)){
+ 				DMESGE("Unable to allocate mem for buffer HP");
+@@ -1764,22 +1572,6 @@ void free_tx_desc_rings(struct net_devic
+ 	buffer_free(dev,&(priv->txbeaconbufs),priv->txbuffsize,1);
+ }
+ 
+-#if 0
+-void free_beacon_desc_ring(struct net_device *dev,int count)
 -{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 txpw = 0xff & priv->chtxpwr[ch];
--	u32 chan = gct_chan[ch];
 -
--	//write_phy(dev,3,txpw);
--#ifdef DEBUG_GCT
--	DMESG("Gct set channel");
--#endif
--	/* set TX power */
--	write_gct(dev,0x15,0);
-- 	write_gct(dev,6, txpw);
--	write_gct(dev,0x15, 0x10);
--	write_gct(dev,0x15,0);
+-	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-	struct pci_dev *pdev=priv->pdev;
 -
--	/*set frequency*/
--	write_gct(dev,7, 0);
--      	write_gct(dev,0xB, chan);
--      	write_gct(dev,7, 0x1000);
+-	pci_free_consistent(pdev, sizeof(u32)*8*count+256,
+-			    priv->txbeaconring, priv->txbeaconringdma);
 -
--#ifdef DEBUG_GCT
--	DMESG("Gct set channel > write phy antenna");
--#endif
--
--
--	gct_write_phy_antenna(dev,ch);
+-	if (priv->beacon_buf)
+-		pci_free_consistent(priv->pdev,
+-			priv->master_beaconsize,priv->beacon_buf,priv->beacondmabuf);
 -
 -}
+-#endif
+ void free_rx_desc_ring(struct net_device *dev)
+ {
+ 	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+@@ -2247,39 +2039,6 @@ void rtl8180_rx(struct net_device *dev)
+ 
+ 		}else{*/
+ 
+-		#if 0
+-		/* Maybe it is possible that the NIC has skipped some descriptors or
+-		 * it has reset its internal pointer to the beginning of the ring
+-		 * we search for the first filled descriptor in the ring, or we break
+-		 * putting again the pointer in the old location if we do not found any.
+-		 * This is quite dangerous, what does happen if the nic writes
+-		 * two descriptor (say A and B) when we have just checked the descriptor
+-		 * A and we are going to check the descriptor B..This might happen if the
+-		 * interrupt was dummy, there was not really filled descriptors and
+-		 * the NIC didn't lose pointer
+-		 */
 -
+-		//priv->stats.rxwrkaround++;
 -
--void gct_rf_close(struct net_device *dev)
+-		tmp = priv->rxringtail;
+-		while (*(priv->rxringtail) & (1<<31)){
+-
+-			priv->rxringtail+=4;
+-
+-			if(priv->rxringtail >=
+-				(priv->rxring)+(priv->rxringcount )*4)
+-				priv->rxringtail=priv->rxring;
+-
+-			priv->rxbuffer=(priv->rxbuffer->next);
+-
+-			if(priv->rxringtail == tmp ){
+-				//DMESG("EE: Could not find RX pointer");
+-				priv->stats.rxnopointer++;
+-				break;
+-			}
+-		}
+-		#else
+-
+ 		tmp2 = NULL;
+ 		tmp = priv->rxringtail;
+ 		do{
+@@ -2294,7 +2053,6 @@ void rtl8180_rx(struct net_device *dev)
+ 		}while(tmp != priv->rxring);
+ 
+ 		if(tmp2) priv->rxringtail = tmp2;
+-		#endif
+ 		//}
+ 	}
+ 
+@@ -2529,30 +2287,6 @@ void rtl8180_rx(struct net_device *dev)
+ 			/* support for prism header has been originally added by Christian */
+ 			if(priv->prism_hdr && priv->ieee80211->iw_mode == IW_MODE_MONITOR){
+ 
+-#if 0
+-				priv->rx_skb = dev_alloc_skb(len+2+PRISM_HDR_SIZE);
+-				if(! priv->rx_skb) goto drop;
+-
+-				prism_hdr = (u32*) skb_put(priv->rx_skb,PRISM_HDR_SIZE);
+-				prism_hdr[0]=htonl(0x80211001);        //version
+-				prism_hdr[1]=htonl(0x40);              //length
+-				prism_hdr[2]=htonl(stats.mac_time[1]);    //mactime (HIGH)
+-				prism_hdr[3]=htonl(stats.mac_time[0]);    //mactime (LOW)
+-				rdtsc(prism_hdr[5], prism_hdr[4]);         //hostime (LOW+HIGH)
+-				prism_hdr[4]=htonl(prism_hdr[4]);          //Byte-Order aendern
+-				prism_hdr[5]=htonl(prism_hdr[5]);          //Byte-Order aendern
+-				prism_hdr[6]=0x00;                     //phytype
+-				prism_hdr[7]=htonl(priv->chan);        //channel
+-				prism_hdr[8]=htonl(stats.rate);        //datarate
+-				prism_hdr[9]=0x00;                     //antenna
+-				prism_hdr[10]=0x00;                    //priority
+-				prism_hdr[11]=0x00;                    //ssi_type
+-				prism_hdr[12]=htonl(stats.signal);     //ssi_signal
+-				prism_hdr[13]=htonl(stats.noise);      //ssi_noise
+-				prism_hdr[14]=0x00;                    //preamble
+-				prism_hdr[15]=0x00;                    //encoding
+-
+-#endif
+ 			}else{
+ 				priv->rx_skb = dev_alloc_skb(len+2);
+ 				if( !priv->rx_skb) goto drop;
+@@ -2737,21 +2471,6 @@ void rtl8180_dma_kick(struct net_device 
+ 	force_pci_posting(dev);
+ }
+ 
+-#if 0
+-void rtl8180_tx_queues_stop(struct net_device *dev)
 -{
--	u32 anaparam;
+-	//struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-	u8 dma_poll_mask = (1<<TX_DMA_STOP_LOWPRIORITY_SHIFT);
+-	dma_poll_mask |= (1<<TX_DMA_STOP_HIPRIORITY_SHIFT);
+-	dma_poll_mask |= (1<<TX_DMA_STOP_NORMPRIORITY_SHIFT);
+-	dma_poll_mask |= (1<<TX_DMA_STOP_BEACON_SHIFT);
 -
--	anaparam = read_nic_dword(dev,ANAPARAM);
--	anaparam &= 0x000fffff;
--	anaparam |= 0x3f900000;
--	rtl8180_set_anaparam(dev, anaparam);
--
--	write_gct(dev, 0x7, 0);
--	write_gct(dev, 0x1f, 0x45);
--	write_gct(dev, 0x1f, 0x5);
--	write_gct(dev, 0x0, 0x8e4);
+-	rtl8180_set_mode(dev,EPROM_CMD_CONFIG);
+-	write_nic_byte(dev,TX_DMA_POLLING,dma_poll_mask);
+-	rtl8180_set_mode(dev,EPROM_CMD_NORMAL);
 -}
+-#endif
 -
+ void rtl8180_data_hard_stop(struct net_device *dev)
+ {
+ 	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+@@ -2938,39 +2657,6 @@ void rtl8180_prepare_beacon(struct net_d
+ 			0,0,ieeerate2rtlrate(priv->ieee80211->basic_rate));
+ 		dev_kfree_skb_any(skb);
+ 	}
+-	#if 0
+-	//DMESG("size %x",len);
+-	if(*tail & (1<<31)){
 -
--void gct_rf_init(struct net_device *dev)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	//u32 anaparam;
+-		//DMESG("No more beacon TX desc");
+-		return ;
 -
+-	}
+-	//while(! (*tail & (1<<31))){
+-		*tail= 0; // zeroes header
 -
--	write_nic_byte(dev,PHY_DELAY,0x6);	//this is general
--	write_nic_byte(dev,CARRIER_SENSE_COUNTER,0x4c); //this is general
+-		*tail = *tail| (1<<29) ; //fist segment of the packet
+-		*tail = (*tail) | (1<<28); // last segment
+-	//	*tail = *tail | (1<<18); // this is  a beacon frame
+-		*(tail+3)=*(tail+3) &~ 0xfff;
+-		*(tail+3)=*(tail+3) | len; // buffer lenght
+-		*tail = *tail |len;
+-		// zeroes the second 32-bits dword of the descriptor
+-		*(tail+1)= 0;
+-		*tail = *tail | (rate << 24);
 -
--	//DMESG("%x", read_nic_dword(dev,ANAPARAM));
--	/* we should set anaparm here*/
--	//rtl8180_set_anaparam(dev,anaparam);
+-			duration = rtl8180_len2duration(len,rate,&ext);
 -
--	write_gct(dev,0x1f,0);
--	write_gct(dev,0x1f,0);
--	write_gct(dev,0x1f,0x40);
--	write_gct(dev,0x1f,0x60);
--	write_gct(dev,0x1f,0x61);
--	write_gct(dev,0x1f,0x61);
--	write_gct(dev,0x0,0xae4);
--	write_gct(dev,0x1f,0x1);
--	write_gct(dev,0x1f,0x41);
--	write_gct(dev,0x1f,0x61);
--	write_gct(dev,0x1,0x1a23);
--	write_gct(dev,0x2,0x4971);
--	write_gct(dev,0x3,0x41de);
--	write_gct(dev,0x4,0x2d80);
--#ifdef GCT_EXPERIMENT1
--	//write_gct(dev,0x5,0x6810);  // from zydas driver. sens+ but quite slow
--	//write_gct(dev,0x5,0x681f);  //good+ (somewhat stable, better sens, performance decent)
--	write_gct(dev,0x5,0x685f);  //good performances, not sure sens is really so beeter
--	//write_gct(dev,0x5,0x687f);  //good performances, maybe sens is not improved
--	//write_gct(dev,0x5,0x689f);  //like above
--	//write_gct(dev,0x5,0x685e);  //bad
--	//write_gct(dev,0x5,0x68ff);  //good+ (somewhat stable, better sens(?), performance decent)
--	//write_gct(dev,0x5,0x68f0);  //bad
--	//write_gct(dev,0x5,0x6cff);  //sens+ but not so good
--	//write_gct(dev,0x5,0x6dff);  //sens+,apparentely very good but broken
--	//write_gct(dev,0x5,0x65ff);  //sens+,good
--	//write_gct(dev,0x5,0x78ff);  //sens + but almost broken
--	//write_gct(dev,0x5,0x7810);  //- //snes + but broken
--	//write_gct(dev,0x5,0x781f);  //-- //sens +
--	//write_gct(dev,0x5,0x78f0);  //low sens
+-		*(tail+1) = *(tail+1) | ((duration & 0x7fff)<<16);
+-
+-		*tail = *tail | (1<<31);
+-		//^ descriptor ready to be txed
+-		if((tail - begin)/8 == priv->txbeaconcount-1)
+-			tail=begin;
+-		else
+-			tail=tail+8;
+-	//}
+-#endif
+ }
+ 
+ /* This function do the real dirty work: it enqueues a TX command
+@@ -3233,21 +2919,6 @@ short rtl8180_tx(struct net_device *dev,
+ 		//DMESG("rate %d",rate);
+ 
+ 		if(priv->card_8185){
+-
+-			#if 0
+-			*(tail+5)&= ~(1<<24); /* tx ant 0 */
+-
+-			*(tail+5) &= ~(1<<23); /* random tx agc 23-16 */
+-			*(tail+5) |= (1<<22)|(1<<21)|(1<<20)|(1<<19)|(1<<18)|(1<<17)|(1<<16);
+-
+-			*(tail+5) &=
+-~((1<<15)|(1<<14)|(1<<13)|(1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8));
+-			*(tail+5) |= (7<<8); // Max retry limit
+-
+-			*(tail+5) &= ~((1<<7)|(1<<6)|(1<<5)|(1<<4)|(1<<3)|(1<<2)|(1<<1)|(1<<0));
+-			*(tail+5) |= (8<<4); // Max contention window
+-			*(tail+6) |= 4; // Min contention window
+-			#endif
+            //    	*(tail+5) = 0;
+ 		}
+ 
+@@ -3387,29 +3058,6 @@ void rtl8180_link_change(struct net_devi
+ 	u16 = u16 &~ ATIM_MASK;
+ 	u16 = u16 | beacon->atim;
+ 	*/
+-#if 0
+-	if (net->capability & WLAN_CAPABILITY_PRIVACY) {
+-		if (priv->hw_wep) {
+-			DMESG("Enabling hardware WEP support");
+-			rtl8180_set_hw_wep(dev);
+-			priv->ieee80211->host_encrypt=0;
+-			priv->ieee80211->host_decrypt=0;
+-		}
+-#ifndef CONFIG_IEEE80211_NOWEP
+-		else {
+-			priv->ieee80211->host_encrypt=1;
+-			priv->ieee80211->host_decrypt=1;
+-		}
+-#endif
+-	}
+-#ifndef CONFIG_IEEE80211_NOWEP
+-	else{
+-		priv->ieee80211->host_encrypt=0;
+-		priv->ieee80211->host_decrypt=0;
+-	}
+-#endif
+-#endif
+-
+ 
+ 	if(priv->card_8185)
+ 		rtl8180_set_chan(dev, priv->chan);
+@@ -3811,13 +3459,6 @@ short rtl8180_init(struct net_device *de
+ 	u16 tmpu16;
+ 	int i, j;
+ 
+-#if 0
+-	for(i=0;i<0xFF;i++) {
+-		if(i%16 == 0)
+-			printk("\n[%x]: ", i/16);
+-		printk("\t%4.4x", eprom_read(dev,i));
+-	}
+-#endif
+ 	priv->channel_plan = eprom_read(dev, EEPROM_COUNTRY_CODE>>1) & 0xFF;
+ 	if(priv->channel_plan > COUNTRY_CODE_GLOBAL_DOMAIN){
+ 		printk("rtl8180_init:Error channel plan! Set to default.\n");
+@@ -3853,39 +3494,8 @@ short rtl8180_init(struct net_device *de
+ 	priv->irq_enabled=0;
+ 
+ //YJ,modified,080828
+-#if 0
+-	priv->stats.rxdmafail=0;
+-	priv->stats.txrdu=0;
+-	priv->stats.rxrdu=0;
+-	priv->stats.rxnolast=0;
+-	priv->stats.rxnodata=0;
+-	//priv->stats.rxreset=0;
+-	//priv->stats.rxwrkaround=0;
+-	priv->stats.rxnopointer=0;
+-	priv->stats.txnperr=0;
+-	priv->stats.txresumed=0;
+-	priv->stats.rxerr=0;
+-	priv->stats.rxoverflow=0;
+-	priv->stats.rxint=0;
+-	priv->stats.txnpokint=0;
+-	priv->stats.txhpokint=0;
+-	priv->stats.txhperr=0;
+-	priv->stats.ints=0;
+-	priv->stats.shints=0;
+-	priv->stats.txoverflow=0;
+-	priv->stats.txbeacon=0;
+-	priv->stats.txbeaconerr=0;
+-	priv->stats.txlperr=0;
+-	priv->stats.txlpokint=0;
+-	priv->stats.txretry=0;//tony 20060601
+-	priv->stats.rxcrcerrmin=0;
+-	priv->stats.rxcrcerrmid=0;
+-	priv->stats.rxcrcerrmax=0;
+-	priv->stats.rxicverr=0;
 -#else
--	write_gct(dev,0x5,0x61ff);   //best performance but weak sensitivity
+ 	rtl8180_statistics_init(&priv->stats);
+ 	rtl8180_link_detect_init(&priv->link_detect);
 -#endif
--#ifdef GCT_EXPERIMENT2
--	write_gct(dev,0x6,0xe);
+ //YJ,modified,080828,end
+ 
+ 
+@@ -4532,24 +4142,13 @@ void rtl8185_write_phy(struct net_device
+ 	adr |= 0x80;
+ 
+ 	phyw= ((data<<8) | adr);
+-#if 0
+-
+-	write_nic_dword(dev, PHY_ADR, phyw);
+-
+-	//read_nic_dword(dev, PHY_ADR);
+-	for(i=0;i<10;i++){
+-		write_nic_dword(dev, PHY_ADR, 0xffffff7f & phyw);
+-		phyr = read_nic_byte(dev, PHY_READ);
+-		if(phyr == (data&0xff)) break;
+ 
+-	}
 -#else
--	write_gct(dev,0x6,0x0);
+ 	// Note that, we must write 0xff7c after 0x7d-0x7f to write BB register.
+ 	write_nic_byte(dev, 0x7f, ((phyw & 0xff000000) >> 24));
+ 	write_nic_byte(dev, 0x7e, ((phyw & 0x00ff0000) >> 16));
+ 	write_nic_byte(dev, 0x7d, ((phyw & 0x0000ff00) >> 8));
+ 	write_nic_byte(dev, 0x7c, ((phyw & 0x000000ff) ));
 -#endif
--	write_gct(dev,0x7,0x0);
--	write_gct(dev,0x8,0x7533);
--	write_gct(dev,0x9,0xc401);
--	write_gct(dev,0xa,0x0);
--	write_gct(dev,0xc,0x1c7);
--	write_gct(dev,0xd,0x29d3);
--	write_gct(dev,0xe,0x2e8);
--	write_gct(dev,0x10,0x192);
--#ifdef GCT_EXPERIMENT3
--	write_gct(dev,0x11,0x246);
--#else
--	write_gct(dev,0x11,0x248);
++
+ 	/* this is ok to fail when we write AGC table. check for AGC table might be
+ 	 * done by masking with 0x7f instead of 0xff
+ 	 */
+@@ -4806,19 +4405,7 @@ void rtl8180_start_tx_beacon(struct net_
+ 	rtl8180_prepare_beacon(dev);
+ 	rtl8180_irq_disable(dev);
+ 	rtl8180_beacon_tx_enable(dev);
+-#if 0
+-	rtl8180_set_mode(dev,EPROM_CMD_CONFIG);
+-	//write_nic_byte(dev,0x9d,0x20); //DMA Poll
+-	//write_nic_word(dev,0x7a,0);
+-	//write_nic_word(dev,0x7a,0x8000);
+ 
+-#if 0
+-	word  = read_nic_word(dev, BcnItv);
+-	word &= ~BcnItv_BcnItv; // clear Bcn_Itv
+-	word |= priv->ieee80211->current_network.beacon_interval;//0x64;
+-	write_nic_word(dev, BcnItv, word);
 -#endif
--	write_gct(dev,0x12,0x0);
--	write_gct(dev,0x13,0x20c4);
--#ifdef GCT_EXPERIMENT4
--	write_gct(dev,0x14,0xf488);
--#else
--	write_gct(dev,0x14,0xf4fc);
 -#endif
--#ifdef GCT_EXPERIMENT5
--	write_gct(dev,0x15,0xb152);
--#else
--	write_gct(dev,0x15,0x0);
--#endif
--#ifdef GCT_EXPERIMENT6
--	write_gct(dev,0x1e,0x1);
--#endif
--	write_gct(dev,0x16,0x1500);
--
--	write_gct(dev,0x7,0x1000);
--	/*write_gct(dev,0x15,0x0);
--	write_gct(dev,0x6,0x15);
--	write_gct(dev,0x15,0x8);
--	write_gct(dev,0x15,0x0);
--*/
--	write_phy(dev,0,0xa8);
--
--/*	write_gct(dev,0x15,0x0);
--	write_gct(dev,0x6,0x12);
--	write_gct(dev,0x15,0x8);
--	write_gct(dev,0x15,0x0);
--*/
--	write_phy(dev,3,0x0);
--	write_phy(dev,4,0xc0); /* lna det*/
--	write_phy(dev,5,0x90);
--	write_phy(dev,6,0x1e);
--	write_phy(dev,7,0x64);
--
--#ifdef DEBUG_GCT
--	DMESG("Gct init> write phy antenna");
--#endif
--
--	gct_write_phy_antenna(dev,priv->chan);
--
--	write_phy(dev,0x11,0x88);
--	if(!priv->diversity)
--		write_phy(dev,0x12,0xc0);
+ 	word = read_nic_word(dev, AtimWnd) &~ AtimWnd_AtimWnd;
+ 	write_nic_word(dev, AtimWnd,word);// word |=
+ //priv->ieee80211->current_network.atim_window);
+@@ -4887,16 +4474,7 @@ MgntActSet_802_11_PowerSaveMode(
+ //	priv->dot11PowerSaveMode = rtPsMode;
+ 	priv->ieee80211->ps = rtPsMode;
+ 	// Determine ListenInterval.
+-#if 0
+-	if(priv->dot11PowerSaveMode == eMaxPs)
+-	{
+-		priv->ieee80211->ListenInterval = 10;
+-	}
 -	else
--		write_phy(dev,0x12,0x40);
+-	{
+-		priv->ieee80211->ListenInterval = 2;
+-	}
+-#endif
++
+ 	return true;
+ }
+ 
+@@ -5058,31 +4636,6 @@ void rtl8180_watch_dog(struct net_device
+ 	}
+ #endif
+ 
+-#if 0
+-#ifndef ENABLE_LPS
+-	if(priv->ieee80211->state == IEEE80211_LINKED){
+-		if(	priv->NumRxOkInPeriod> 666 ||
+-			priv->NumTxOkInPeriod > 666 ) {
+-			bBusyTraffic = true;
+-		}
+-		if((priv->ieee80211->NumRxData + priv->NumTxOkInPeriod)<8) {
+-			bEnterPS= true;
+-		}
+-		if(bEnterPS) {
+-			LeisurePSEnter(priv);
+-		}
+-		else {
+-			LeisurePSLeave(priv);
+-		}
+-	}
+-	else	{
+-		LeisurePSLeave(priv);
+-	}
+-#endif
+-	priv->NumRxOkInPeriod = 0;
+-	priv->NumTxOkInPeriod = 0;
+-	priv->ieee80211->NumRxData = 0;
+-#else
+ #ifdef ENABLE_LPS
+ 	if(priv->ieee80211->state == IEEE80211_LINKED){
+ 		priv->link_detect.NumRxOkInPeriod = priv->ieee80211->NumRxDataInPeriod;
+@@ -5115,7 +4668,6 @@ void rtl8180_watch_dog(struct net_device
+ 	priv->link_detect.NumTxOkInPeriod = 0;
+ 	priv->ieee80211->NumRxDataInPeriod = 0;
+ 	priv->ieee80211->NumRxBcnInPeriod = 0;
+-#endif
+ }
+ int _rtl8180_up(struct net_device *dev)
+ {
+@@ -5288,21 +4840,6 @@ static void r8180_set_multicast(struct n
+ 	//up(&priv->wx_sem);
+ }
+ 
+-#if 0
+-/* this is called by the kernel when it needs to TX a 802.3 encapsulated frame*/
+-int rtl8180_8023_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+-{
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-	int ret;
+-	unsigned long flags;
 -
--	write_phy(dev,0x13,0x90 | priv->cs_treshold );
--
--	write_phy(dev,0x19,0x0);
--	write_phy(dev,0x1a,0xa0);
--	write_phy(dev,0x1b,0x44);
--
--#ifdef DEBUG_GCT
--	DMESG("Gct init > set channel2");
+-	spin_lock_irqsave(&priv->tx_lock,flags);
+-	ret = ieee80211_r8180_8023_hardstartxmit(skb,priv->ieee80211);
+-	spin_unlock_irqrestore(&priv->tx_lock,flags);
+-	return ret;
+-}
 -#endif
 -
--	gct_rf_set_chan(dev,priv->chan);
--}
-Index: b/drivers/staging/rtl8187se/r8180_gct.h
+ int r8180_set_mac_adr(struct net_device *dev, void *mac)
+ {
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+@@ -5766,20 +5303,7 @@ priv->txnpring)/8);
+ 		else
+ 			head+=8;
+ 	}
+-#if 0
+-	if(nicv == begin)
+-		txdv = begin + (priv->txringcount -1)*8;
+-	else
+-		txdv = nicv - 8;
+ 
+-	txed = !(txdv[0] &(1<<31));
+-
+-	if(txed){
+-		if(!(txdv[0] & (1<<15))) error = 1;
+-		//if(!(txdv[0] & (1<<30))) error = 1;
+-		if(error)DMESG("%x",txdv[0]);
+- 	}
+-#endif
+ 	//DMESG("%x",txdv[0]);
+ 	/* the head has been moved to the last certainly TXed
+ 	 * (or at least processed by the nic) packet.
+@@ -6131,14 +5655,6 @@ void GPIOChangeRFWorkItemCallBack(struct
+ 
+ 	readf_count = (readf_count+1)%0xffff;
+ #endif
+-#if 0
+-	if(priv->up == 0)//driver stopped
+-		{
+-			printk("\nDo nothing...");
+-			goto out;
+-		}
+-	else
+-#endif
+ 		{
+ 			// We should turn off LED before polling FF51[4].
+ 
+@@ -6193,40 +5709,6 @@ void GPIOChangeRFWorkItemCallBack(struct
+ 
+ static u8 read_acadapter_file(char *filename)
+ {
+-#if 0
+-	int fd;
+-	char buf[1];
+-	char ret[50];
+-	int i = 0;
+-	int n = 0;
+-	mm_segment_t old_fs = get_fs();
+-	set_fs(KERNEL_DS);
+-
+-	fd = sys_open(filename, O_RDONLY, 0);
+-	if (fd >= 0) {
+-		while (sys_read(fd, buf, 1) == 1)
+-		{
+-			i++;
+-			if(i>10)
+-			{
+-				if(buf[0]!=' ')
+-				{
+-					ret[n]=buf[0];
+-					n++;
+-				}
+-			}
+-		}
+-		sys_close(fd);
+-	}
+-	ret[n]='\0';
+-//	printk("%s \n", ret);
+-	set_fs(old_fs);
+-
+-	if(strncmp(ret, "off-line",8) == 0)
+-	{
+-		return 1;
+-	}
+-#endif
+ 	return 0;
+ }
+ 
+Index: b/drivers/staging/rtl8187se/r8180_dm.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_gct.h
-+++ /dev/null
-@@ -1,25 +0,0 @@
--/*
--	This is part of rtl8180 OpenSource driver - v 0.20
--	Copyright (C) Andrea Merello 2004  <andreamrl@tiscali.it>
--	Released under the terms of GPL (General Public Licence)
--
--	Parts of this driver are based on the GPL part of the official realtek driver
--	Parts of this driver are based on the rtl8180 driver skeleton from Patric Schenke & Andres Salomon
--	Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver
--
--	We want to tanks the Authors of such projects and the Ndiswrapper project Authors.
--*/
--
--#define GCT_ANTENNA 0xA3
--
--
--// we use the untouched eeprom value- cross your finger ;-)
--#define GCT_ANAPARAM_PWR1_ON ??
--#define GCT_ANAPARAM_PWR0_ON ??
--
--
--
--void gct_rf_init(struct net_device *dev);
--void gct_rf_set_chan(struct net_device *dev,short ch);
--
--void gct_rf_close(struct net_device *dev);
+--- a/drivers/staging/rtl8187se/r8180_dm.c
++++ b/drivers/staging/rtl8187se/r8180_dm.c
+@@ -1380,12 +1380,6 @@ SwitchAntenna(
+ 
+ 	if(priv->CurrAntennaIndex == 0)
+ 	{
+-#if 0//lzm del 080826
+-//by amy 080312
+-		if(priv->bSwAntennaDiverity)
+-			bResult = SetAntennaConfig87SE(dev, 1, true);
+-		else
+-#endif
+ 			bResult = SetAntenna8185(dev, 1);
+ //by amy 080312
+ //		printk("SwitchAntenna(): switching to antenna 1 ......\n");
+@@ -1393,12 +1387,6 @@ SwitchAntenna(
+ 	}
+ 	else
+ 	{
+-#if 0//lzm del 080826
+-//by amy 080312
+-		if(priv->bSwAntennaDiverity)
+-			bResult = SetAntennaConfig87SE(dev, 0, true);
+-		else
+-#endif
+ 			bResult = SetAntenna8185(dev, 0);
+ //by amy 080312
+ //		printk("SwitchAntenna(): switching to antenna 0 ......\n");
 Index: b/drivers/staging/rtl8187se/r8180_max2820.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8180_max2820.c
-+++ /dev/null
-@@ -1,171 +0,0 @@
--/*
--   This files contains MAXIM MAX2820 radio frontend programming routines.
++++ b/drivers/staging/rtl8187se/r8180_max2820.c
+@@ -50,75 +50,6 @@ u32 maxim_chan[] = {
+ 	84, //14
+ };
+ 
+-#if 0
+-/* maxim expects 4 bit address MSF, then 12 bit data MSF*/
+-void write_maxim(struct net_device *dev,u8 adr, u32 data)
+-{
 -
--   This is part of rtl8180 OpenSource driver
--   Copyright (C) Andrea Merello 2004-2005  <andreamrl@tiscali.it>
--   Released under the terms of GPL (General Public Licence)
+-	int shift;
+-	short bit;
+-	u16 word;
 -
--   Parts of this driver are based on the GPL part of the
--   official realtek driver
--
--   Parts of this driver are based on the rtl8180 driver skeleton
--   from Patric Schenke & Andres Salomon
--
--   Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver.
--
--   NetBSD rtl8180 driver from Dave Young has been really useful to
--   understand how to program the MAXIM radio. Thanks a lot!!!
--
--   'The Deuce' tested this and fixed some bugs.
--
--   Code from rtl8181 project has been useful to me to understand some things.
--
--   We want to tanks the Authors of such projects and the Ndiswrapper
--   project Authors.
--*/
--
--
--#include "r8180.h"
--#include "r8180_hw.h"
--#include "r8180_max2820.h"
--
--
--//#define DEBUG_MAXIM
--
--u32 maxim_chan[] = {
--	0,	//dummy channel 0
--	12, //1
--	17, //2
--	22, //3
--	27, //4
--	32, //5
--	37, //6
--	42, //7
--	47, //8
--	52, //9
--	57, //10
--	62, //11
--	67, //12
--	72, //13
--	84, //14
--};
--
--void write_maxim(struct net_device *dev,u8 adr, u32 data) {
--	u32 temp;
--	temp =  0x90 + (data & 0xf);
--	temp <<= 16;
--	temp += adr;
--	temp <<= 8;
--	temp += (data >> 4) & 0xff;
--#ifdef DEBUG_MAXIM
--	DMESG("write_maxim: %08x", temp);
--#endif
--	write_nic_dword(dev, PHY_CONFIG, temp);
--	force_pci_posting(dev);
+-	adr = adr &0xf;
+-	word = (u16)data & 0xfff;
+-	word |= (adr<<12);
+-	/*write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | BB_HOST_BANG_EN);
+-	read_nic_dword(dev,PHY_CONFIG);
 -	mdelay(1);
--}
 -
+-	write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | BB_HOST_BANG_EN | BB_HOST_BANG_CLK);
+-	read_nic_dword(dev,PHY_CONFIG);
+-	mdelay(1);
+-	*/
 -
--void maxim_write_phy_antenna(struct net_device *dev,short ch)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u8 ant;
+-	/* MAX2820 will sample data on rising edge of clock */
+-	for(shift = 15;shift >=0; shift--){
+-		bit = word>>shift & 1;
 -
--	ant = MAXIM_ANTENNA;
--	if(priv->antb) /*default antenna is antenna B */
--		ant |= BB_ANTENNA_B;
--	if(ch == 14)
--		ant |= BB_ANTATTEN_CHAN14;
--	write_phy(dev,0x10,ant);
--	//DMESG("BB antenna %x ",ant);
--}
+-		write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | (bit<<BB_HOST_BANG_DATA));
 -
+-		read_nic_dword(dev,PHY_CONFIG);
+-		mdelay(2);
 -
--void maxim_rf_set_chan(struct net_device *dev, short ch)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 txpw = 0xff & priv->chtxpwr[ch];
--	u32 chan = maxim_chan[ch];
+-		write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG |
+-		(bit<<BB_HOST_BANG_DATA) | BB_HOST_BANG_CLK); /* sample data */
 -
--	/*While philips SA2400 drive the PA bias
--	 *seems that for MAXIM we delegate this
--	 *to the BB
+-		read_nic_dword(dev,PHY_CONFIG);
+-		mdelay(1);
+-
+-		write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG |
+-		(bit<<BB_HOST_BANG_DATA));
+-
+-		read_nic_dword(dev,PHY_CONFIG);
+-		mdelay(2);
+-
+-	}
+-	write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | (bit<<BB_HOST_BANG_DATA)|
+-					BB_HOST_BANG_EN);
+-	read_nic_dword(dev,PHY_CONFIG);
+-	mdelay(2);
+-
+-	/* The shift register fill flush to the requested register the
+-	 * last 12 bits data shifted in
 -	 */
+-	write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | (bit<<BB_HOST_BANG_DATA)|
+-					BB_HOST_BANG_EN | BB_HOST_BANG_CLK);
+-	read_nic_dword(dev,PHY_CONFIG);
+-	mdelay(2);
 -
--	//write_maxim(dev,5,txpw);
--	write_phy(dev,3,txpw);
+-	write_nic_dword(dev,PHY_CONFIG,BB_HOST_BANG | (bit<<BB_HOST_BANG_DATA)|
+-					BB_HOST_BANG_EN);
+-	read_nic_dword(dev,PHY_CONFIG);
+-	mdelay(2);
 -
--	maxim_write_phy_antenna(dev,ch);
--	write_maxim(dev,3,chan);
+-
+-#ifdef DEBUG_MAXIM
+-	DMESG("Writing maxim: %x (adr %x)",phy_config,adr);
+-#endif
+-
 -}
+-#endif
+-
+ void write_maxim(struct net_device *dev,u8 adr, u32 data) {
+ 	u32 temp;
+ 	temp =  0x90 + (data & 0xf);
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225.c
+@@ -26,18 +26,6 @@ u8 rtl8225_gain[]={
+ 	0x63,0x58,0x70,0xc5,// -66dbm
+ };
+ 
+-#if 0
+-u8 rtl8225_init_gain[]={
+-	//0x00,0x00,0x00,0x00,//0x00,0x00,0x00,0x00,
+-	0x33,0x80,0x6c,0xc5,//0x00,0x49,0x06,0xb5,//Gain = 0 ~ -78dbm
+-	0x43,0x78,0x69,0xc5,//0x00,0x45,0x06,0xb1,//Gain = 1 ~ -74dbm
+-	0x53,0x60,0x66,0xc5,//0x00,0x41,0x06,0xab,//Gain = 2 ~ -70dbm
+-	0x63,0x58,0x63,0xc5,//0x00,0x3d,0x06,0xa5,//Gain = 3 ~ -66dbm
+-	0x73,0x50,0x62,0xc5,//0x00,0x39,0x06,0xa1,//Gain = 4 ~ -62dbm
+-	0x83,0x43,0x61,0xc5,//0x00,0x35,0x06,0x9b,//Gain = 5 ~ -58dbm
+-	0x93,0x38,0x5a,0xc5,//0x00,0x31,0x06,0x99,//Gain = 6 ~ -54dbm
+-};
+-#endif
+ u32 rtl8225_chan[] ={
+               0,
+ 		0x0080, //ch1
+@@ -72,41 +60,6 @@ u16 rtl8225bcd_rxgain[]={
+ 
+ };
+ 
+-
+-#if 0
+-u16 rtl8225bc_rxgain[]={
+-	0x0400, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0408, 0x0409,
+-	0x040a, 0x040b, 0x0502, 0x0503, 0x0504, 0x0505, 0x0540, 0x0541,
+-	0x0542, 0x0543, 0x0544, 0x0545, 0x0580, 0x0581, 0x0582, 0x0583,
+-	0x0584, 0x0585, 0x0588, 0x0589, 0x058a, 0x058b, 0x0643, 0x0644,
+-	0x0645, 0x0680, 0x0681, 0x0682, 0x0683, 0x0684, 0x0685, 0x0688,
+-	0x0689, 0x068a, 0x068b, 0x068c, 0x0742, 0x0743, 0x0744, 0x0745,
+-	0x0780, 0x0781, 0x0782, 0x0783, 0x0784, 0x0785, 0x0788, 0x0789,
+-	0x078a, 0x078b, 0x078c, 0x078d, 0x0790, 0x0791, 0x0792, 0x0793,
+-	0x0794, 0x0795, 0x0798, 0x0799, 0x039a, 0x039b, 0x039c, 0x039d,
+-	0x03a0, 0x03a1, 0x03a2, 0x03a3, 0x03a4, 0x03a5, 0x03a8, 0x03a9,
+-	0x03aa, 0x03ab, 0x03ac, 0x03ad, 0x03b0, 0x03b1, 0x03b2, 0x03b3,
+-	0x03b4, 0x03b5, 0x03b8, 0x03b9, 0x03ba, 0x03bb, 0x03bb
+-
+-};
 -
 -
--void maxim_rf_close(struct net_device *dev)
--{
--	write_phy(dev, 3, 0x8);
--	write_maxim(dev, 1, 0);
--}
+-u16 rtl8225a_rxgain[]={
+-	0x0400, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0408, 0x0409,
+-	0x040a, 0x040b, 0x0502, 0x0503, 0x0504, 0x0505, 0x0540, 0x0541,
+-	0x0542, 0x0543, 0x0544, 0x0545, 0x0580, 0x0581, 0x0582, 0x0583,
+-	0x0584, 0x0585, 0x0588, 0x0589, 0x058a, 0x058b, 0x0643, 0x0644,
+-	0x0645, 0x0680, 0x0681, 0x0682, 0x0683, 0x0684, 0x0685, 0x0688,
+-	0x0689, 0x068a, 0x068b, 0x068c, 0x0742, 0x0743, 0x0744, 0x0745,
+-	0x0780, 0x0781, 0x0782, 0x0783, 0x0784, 0x0785, 0x0788, 0x0789,
+-	0x078a, 0x078b, 0x078c, 0x078d, 0x0790, 0x0791, 0x0792, 0x0793,
+-	0x0794, 0x0795, 0x0798, 0x0799, 0x079a, 0x079b, 0x079c, 0x079d,
+-	0x07a0, 0x07a1, 0x07a2, 0x07a3, 0x07a4, 0x07a5, 0x07a8, 0x07a9,
+-	0x07aa, 0x07ab, 0x07ac, 0x07ad, 0x07ad, 0x07ad, 0x07ad, 0x07ad,
+-	0x07ad, 0x07ad, 0x07ad, 0x07ad, 0x07ad, 0x07ad, 0x07ad
+-};
+-#endif
 -
+ u8 rtl8225_agc[]={
+ 	0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9d,0x9c,0x9b,0x9a,0x99,0x98,0x97,0x96,
+ 	0x95,0x94,0x93,0x92,0x91,0x90,0x8f,0x8e,0x8d,0x8c,0x8b,0x8a,0x89,0x88,0x87,0x86,
+@@ -156,40 +109,6 @@ void rtl8225_set_gain(struct net_device 
+ 	write_phy_ofdm(dev, 0x1b, rtl8225_gain[gain * 4 + 2]);
+ 	write_phy_ofdm(dev, 0x1d, rtl8225_gain[gain * 4 + 3]);
+ }
+-#if 0
 -
--void maxim_rf_init(struct net_device *dev)
+-void rtl8225_set_gain(struct net_device *dev, short gain)
 -{
 -	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 anaparam;
 -
--	write_nic_byte(dev,PHY_DELAY,0x6);	//this is general
--	write_nic_byte(dev,CARRIER_SENSE_COUNTER,0x4c); //this is general
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
 -
--	/*these are maxim specific*/
--	anaparam = read_nic_dword(dev,ANAPARAM);
--	anaparam = anaparam &~ (ANAPARAM_TXDACOFF_SHIFT);
--	anaparam = anaparam &~ANAPARAM_PWR1_MASK;
--	anaparam = anaparam &~ANAPARAM_PWR0_MASK;
--	anaparam |= (MAXIM_ANAPARAM_PWR1_ON<<ANAPARAM_PWR1_SHIFT);
--	anaparam |= (MAXIM_ANAPARAM_PWR0_ON<<ANAPARAM_PWR0_SHIFT);
--
--	//rtl8180_set_anaparam(dev,anaparam);
--
--	/* MAXIM from netbsd driver */
--
--	write_maxim(dev,0, 7); /* test mode as indicated in datasheet*/
--	write_maxim(dev,1, 0x1e); /* enable register*/
--	write_maxim(dev,2, 1); /* synt register */
--
--
--	maxim_rf_set_chan(dev,priv->chan);
--
--	write_maxim(dev,4, 0x313); /* rx register*/
--
--	/* PA is driven directly by the BB, we keep the MAXIM bias
--	 * at the highest value in the boubt tha pleacing it to lower
--	 * values may introduce some further attenuation somewhere..
--	 */
--
--	write_maxim(dev,5, 0xf);
--
--
--	/*baseband configuration*/
--	write_phy(dev,0,0x88); //sys1
--	write_phy(dev,3,0x8); //txagc
--	write_phy(dev,4,0xf8); // lnadet
--	write_phy(dev,5,0x90); // ifagcinit
--	write_phy(dev,6,0x1a); // ifagclimit
--	write_phy(dev,7,0x64); // ifagcdet
--
--	/*Should be done something more here??*/
--
--	maxim_write_phy_antenna(dev,priv->chan);
--
--	write_phy(dev,0x11,0x88); //trl
--	if(priv->diversity)
--		write_phy(dev,0x12,0xc7);
+-	if(priv->card_8185 == 2)
+-		write_phy_ofdm(dev, 0x21, 0x27);
 -	else
--		write_phy(dev,0x12,0x47);
+-		write_phy_ofdm(dev, 0x21, 0x37);
 -
--	write_phy(dev,0x13,0x9b);
+-	write_phy_ofdm(dev, 0x25, 0x20);
+-	write_phy_ofdm(dev, 0x11, 0x6);
 -
--	write_phy(dev,0x19,0x0); //CHESTLIM
--	write_phy(dev,0x1a,0x9f); //CHSQLIM
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_ofdm(dev, 0x27, 0x8);
+-	else
+-		write_phy_ofdm(dev, 0x27, 0x88);
 -
--	maxim_rf_set_chan(dev,priv->chan);
--}
-Index: b/drivers/staging/rtl8187se/r8180_max2820.h
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_max2820.h
-+++ /dev/null
-@@ -1,21 +0,0 @@
--/*
--	This is part of rtl8180 OpenSource driver
--	Copyright (C) Andrea Merello 2004-2005  <andreamrl@tiscali.it>
--	Released under the terms of GPL (General Public Licence)
+-	write_phy_ofdm(dev, 0x14, 0);
+-	write_phy_ofdm(dev, 0x16, 0);
+-	write_phy_ofdm(dev, 0x15, 0x40);
+-	write_phy_ofdm(dev, 0x17, 0x40);
 -
--	Parts of this driver are based on the GPL part of the official realtek driver
--	Parts of this driver are based on the rtl8180 driver skeleton from Patric Schenke & Andres Salomon
--	Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver
--
--	We want to tanks the Authors of such projects and the Ndiswrapper project Authors.
--*/
--
--#define MAXIM_ANTENNA 0xb3
--#define MAXIM_ANAPARAM_PWR1_ON 0x8
--#define MAXIM_ANAPARAM_PWR0_ON 0x0
--
--
--void maxim_rf_init(struct net_device *dev);
--void maxim_rf_set_chan(struct net_device *dev,short ch);
--
--void maxim_rf_close(struct net_device *dev);
-Index: b/drivers/staging/rtl8187se/r8180_rtl8255.c
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_rtl8255.c
-+++ /dev/null
-@@ -1,1807 +0,0 @@
--/*
--  This is part of the rtl8180-sa2400 driver
--  released under the GPL (See file COPYING for details).
--  Copyright (c) 2005 Andrea Merello <andreamrl@tiscali.it>
--
--  This files contains programming code for the rtl8255
--  radio frontend.
--
--  *Many* thanks to Realtek Corp. for their great support!
--
--*/
--
--#define BAND_A 1
--#define BAND_BG 2
--
--#include "r8180.h"
--#include "r8180_hw.h"
--#include "r8180_rtl8255.h"
--
--u32 rtl8255_chan[] = {
--	0,	//dummy channel 0
--	0x13, //1
--	0x115, //2
--	0x217, //3
--	0x219, //4
--	0x31b, //5
--	0x41d, //6
--	0x41f, //7
--	0x621, //8
--	0x623, //9
--	0x625, //10
--	0x627, //11
--	0x829, //12
--	0x82b, //13
--	0x92f, // 14
--};
--
--static short rtl8255_gain_2G[]={
--	0x33, 0x17, 0x7c, 0xc5,//-78
--	0x43, 0x17, 0x7a, 0xc5,//-74
--	0x53, 0x17, 0x78, 0xc5,//-70
--	0x63, 0x17, 0x76, 0xc5,//-66
--};
--
--
--static short rtl8255_agc[]={
--	0x1, 0x1, 0x1, 0x1, 0x1,         0x1, 0x1, 0x1, 0x1, 0x1,
--
--	0x1, 0x1, 0x2, 0x2, 0x3,         0x3, 0x4, 0x4, 0x5, 0x5,
--	0x6, 0x6, 0x7, 0x7, 0x8,         0x8, 0x9, 0x9, 0xa, 0xa,
--	0xb, 0xb, 0xc, 0xc, 0xd,         0xd, 0xe, 0xe, 0xf, 0xf,
--
--	0x10, 0x10, 0x11, 0x11, 0x12,    0x12, 0x13, 0x13, 0x14, 0x14,
--	0x15, 0x15, 0x16, 0x16, 0x17,    0x17, 0x18, 0x18, 0x19, 0x19,
--	0x1a, 0x1a, 0x1b, 0x1b, 0x1c,    0x1c, 0x1d, 0x1d, 0x1e, 0x1e,
--	0x1f, 0x1f,
--
--	0x20, 0x20, 0x21, 0x21, 0x22,    0x22, 0x23, 0x23, 0x24, 0x24,
--	0x25, 0x25, 0x26, 0x26, 0x27,    0x27, 0x28, 0x28, 0x29, 0x29,
--	0x2a, 0x2a,
--
--	0x2a, 0x2a, 0x2a, 0x2a, 0x2a,    0x2a, 0x2a, 0x2a, 0x2a, 0x2a,
--	0x2a, 0x2a, 0x2a, 0x2a, 0x2a,    0x2a, 0x2a, 0x2a, 0x2a, 0x2a,
--	0x2a, 0x2a, 0x2a, 0x2a, 0x2a,    0x2a, 0x2a, 0x2a, 0x2a, 0x2a,
--	0x2a, 0x2a, 0x2a, 0x2a
--
--};
--
--void rtl8255_set_gain(struct net_device *dev, short gain)
--{
--
--//	struct r8180_priv *priv = ieee80211_priv(dev);
--
--	write_phy_ofdm(dev, 0x0d, rtl8255_gain_2G[gain * 4]);
--	write_phy_ofdm(dev, 0x23, rtl8255_gain_2G[gain * 4 + 1]);
--	write_phy_ofdm(dev, 0x1b, rtl8255_gain_2G[gain * 4 + 2]);
--	write_phy_ofdm(dev, 0x1d, rtl8255_gain_2G[gain * 4 + 3]);
+-	write_phy_ofdm(dev, 0x0d, rtl8225_gain[gain * 4]);
+-	write_phy_ofdm(dev, 0x23, rtl8225_gain[gain * 4 + 1]);
+-	write_phy_ofdm(dev, 0x1b, rtl8225_gain[gain * 4 + 2]);
+-	write_phy_ofdm(dev, 0x1d, rtl8225_gain[gain * 4 + 3]);
 -	//rtl8225_set_gain_usb(dev, gain);
 -}
+-#endif
 -
--void write_rtl8255_reg0c(struct net_device *dev, u32 d1, u32 d2, u32 d3, u32 d4,
--u32 d5, u32 d6, u32 d7, u32 d8, u32 d9, u32 d10)
+ 
+ void write_rtl8225(struct net_device *dev, u8 adr, u16 data)
+ {
+@@ -366,14 +285,7 @@ void rtl8225_SetTXPowerLevel(struct net_
+ 	mdelay(1);
+ 	//write_nic_byte(dev, TX_AGC_CONTROL,4);
+ }
+-#if 0
+-/* switch between mode B and G */
+-void rtl8225_set_mode(struct net_device *dev, short modeb)
 -{
--	int i,j;
--	u16 out,select;
--	u8 bit;
--	u32 bangdata;
--//	struct r8180_priv *priv = ieee80211_priv(dev);
--
--	write_nic_word(dev,RFPinsEnable,
--		(read_nic_word(dev,RFPinsEnable) | 0x7));
--
--	select = read_nic_word(dev, RFPinsSelect);
--
--	write_nic_word(dev, RFPinsSelect, select | 0x7 | SW_CONTROL_GPIO);
--
--	out = read_nic_word(dev, RFPinsOutput) & 0xfff3;
--
--	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN );//| 0x1fff);
--
--	force_pci_posting(dev);
--	udelay(2);
--
--	write_nic_word(dev, RFPinsOutput, out);
--
--	force_pci_posting(dev);
--	udelay(2);
--
--	for(j=0;j<10;j++)
--	{
--		switch(j)
--		{
--			case 9:
--			bangdata = d10 | 0x0c;
--			break;
--			case 8:
--			bangdata = d9;
--			break;
--			case 7:
--			bangdata = d8;
--			break;
--			case 6:
--			bangdata = d7;
--			break;
--			case 5:
--			bangdata = d6;
--			break;
--			case 4:
--			bangdata = d5;
--			break;
--			case 3:
--			bangdata = d4;
--			break;
--			case 2:
--			bangdata = d3;
--			break;
--			case 1:
--			bangdata = d2;
--			break;
--			case 0:
--			bangdata = d1;
--			break;
--			default:
--			bangdata=0xbadc0de; /* avoid gcc complaints */
--			break;
--		}
--
--		for(i=31; i>=0;i--){
--
--			bit = (bangdata & (1<<i)) >> i;
--
--			write_nic_word(dev, RFPinsOutput, bit | out);
--			force_pci_posting(dev);
--			udelay(1);
--			write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
--			force_pci_posting(dev);
--			udelay(1);
--		//	write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
--			i--;
--			bit = (bangdata & (1<<i)) >> i;
--
--			write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
--			force_pci_posting(dev);
--			udelay(1);
--		//	write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
--			write_nic_word(dev, RFPinsOutput, bit | out);
--			force_pci_posting(dev);
--			udelay(1);
--		}
--	}
--
--	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
--	force_pci_posting(dev);
--	udelay(10);
--
--//	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
--	write_nic_word(dev, RFPinsSelect, select | SW_CONTROL_GPIO);
--//	rtl8185_rf_pins_enable(dev);
--
+-	write_phy_ofdm(dev, 0x15, (modeb ? 0x0 : 0x40));
+-	write_phy_ofdm(dev, 0x17, (modeb ? 0x0 : 0x40));
 -}
+-#endif
++
+ void rtl8225_rf_set_chan(struct net_device *dev, short ch)
+ {
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+@@ -441,33 +353,6 @@ void rtl8225_host_pci_init(struct net_de
+ 
+ void rtl8225_host_usb_init(struct net_device *dev)
+ {
+-	#if 0
+-	write_nic_byte(dev,RFPinsSelect+1,0);
 -
--void write_rtl8255(struct net_device *dev, u8 adr, u16 data)
+-	write_nic_byte(dev,GPIO,0);
+-
+-	write_nic_byte_E(dev,0x53,read_nic_byte_E(dev,0x53) | (1<<7));
+-
+-	write_nic_byte(dev,RFPinsSelect+1,4);
+-
+-	write_nic_byte(dev,GPIO,0x20);
+-
+-	write_nic_byte(dev,GP_ENABLE,0);
+-
+-
+-	/* Config BB & RF */
+-	write_nic_word(dev, RFPinsOutput, 0x80);
+-
+-	write_nic_word(dev, RFPinsSelect, 0x80);
+-
+-	write_nic_word(dev, RFPinsEnable, 0x80);
+-
+-
+-	mdelay(100);
+-
+-	mdelay(1000);
+-#endif
+-
+ }
+ 
+ void rtl8225_rf_sleep(struct net_device *dev)
+@@ -511,20 +396,6 @@ void rtl8225_rf_init(struct net_device *
+ 
+ 	write_nic_word(dev, BRSR, 0xffff);
+ 
+-	#if 0
+-	if(priv->card_8185 == 1){/* version C or B */
+-		if(priv->card_8185_Bversion)  /* version B*/
+-			write_nic_dword(dev, RF_PARA, 0x44);
+-		else    /* version C */
+-			write_nic_dword(dev, RF_PARA, 0x100044);
+-	}else{ /* version D */
+-		if(priv->enable_gpio0)
+-			write_nic_dword(dev, RF_PARA, 0x20100044);
+-		else /* also USB */
+-			write_nic_dword(dev, RF_PARA, 0x100044);
+-	}
+-	#endif
+-
+ 	write_nic_dword(dev, RF_PARA, 0x100044);
+ 
+ 	#if 1  //0->1
+@@ -555,13 +426,6 @@ void rtl8225_rf_init(struct net_device *
+ 
+ 	mdelay(1);
+ 
+-
+-	#if 0
+-	}else if(priv->phy_ver == 1){
+-		/* version A */
+-		write_rtl8225(dev, 0x5, 0xbc0 + 2);
+-	}else{
+-	#endif
+ 	/* version B & C */
+ 
+ 	if(priv->card_type == USB)
+@@ -628,12 +492,6 @@ void rtl8225_rf_init(struct net_device *
+ 	for(i=0;i<95;i++){
+ 		write_rtl8225(dev, 0x1, (u8)(i+1));
+ 
+-		#if 0
+-		if(priv->phy_ver == 1)
+-			/* version A */
+-			write_rtl8225(dev, 0x2, rtl8225a_rxgain[i]);
+-		else
+-		#endif
+ 		/* version B & C & D*/
+ 
+ 		write_rtl8225(dev, 0x2, rtl8225bcd_rxgain[i]);
+@@ -681,18 +539,6 @@ void rtl8225_rf_init(struct net_device *
+ 	write_phy_ofdm(dev, 0x8, 0x40); mdelay(1);
+ 	write_phy_ofdm(dev, 0x9, 0xfe); mdelay(1);
+ 
+-	#if 0
+-	if(priv->card_type == USB){
+-		write_phy_ofdm(dev, 0xa, 0x9);
+-	}else{
+-		if(priv->card_8185 == 1 && priv->card_8185_Bversion){
+-			/* Ver B
+-			* maybe later version can accept this also?
+-			*/
+-			write_phy_ofdm(dev, 0xa, 0x6);
+-			write_phy_ofdm(dev, 0x18, 0x6f);
+-		}else{
+-	#endif
+ 			/* ver C & D */
+ 	write_phy_ofdm(dev, 0xa, 0x9); mdelay(1);
+ 
+@@ -710,14 +556,6 @@ void rtl8225_rf_init(struct net_device *
+ 	write_phy_ofdm(dev, 0xe, 0xd3);mdelay(1);
+ 
+ 
+-	#if 0
+-	if(priv->card_8185 == 1){
+-		if(priv->card_8185_Bversion)
+-			write_phy_ofdm(dev, 0xf, 0x20);/*ver B*/
+-		else
+-			write_phy_ofdm(dev, 0xf, 0x28);/*ver C*/
+-	}else{
+-	#endif
+ 	write_phy_ofdm(dev, 0xf, 0x38);mdelay(1);
+ /*ver D & 8187*/
+ //	}
+@@ -738,13 +576,6 @@ void rtl8225_rf_init(struct net_device *
+ 
+ 	write_phy_ofdm(dev, 0x13, 0x20);mdelay(1);
+ 
+-#if 0
+-	}else{
+-		/* Ver B & C*/
+-		write_phy_ofdm(dev, 0x12, 0x0);
+-		write_phy_ofdm(dev, 0x13, 0x0);
+-	}
+-#endif
+ 	write_phy_ofdm(dev, 0x14, 0x0); mdelay(1);
+ 	write_phy_ofdm(dev, 0x15, 0x40); mdelay(1);
+ 	write_phy_ofdm(dev, 0x16, 0x0); mdelay(1);
+@@ -769,20 +600,6 @@ void rtl8225_rf_init(struct net_device *
+ 
+ 	write_phy_ofdm(dev, 0x1c, 0x4);mdelay(1);
+ 
+-#if 0
+-	if(priv->card_8185 == 1){
+-		if(priv->card_8185_Bversion){
+-			/*ver B*/
+-			write_phy_ofdm(dev, 0x1e, 0x95);
+-			write_phy_ofdm(dev, 0x1f, 0x55);
+-		}else{
+-			/*ver C*/
+-			write_phy_ofdm(dev, 0x1e, 0x90);
+-			write_phy_ofdm(dev, 0x1f, 0x34);
+-
+-		}
+-	}else{
+-#endif
+ 		/*ver D & 8187*/
+ 	write_phy_ofdm(dev, 0x1e, 0x95);mdelay(1);
+ 
+@@ -802,11 +619,6 @@ void rtl8225_rf_init(struct net_device *
+ 	write_phy_ofdm(dev, 0x24, 0x46); mdelay(1);
+ 	write_phy_ofdm(dev, 0x25, 0x20); mdelay(1);
+ 	write_phy_ofdm(dev, 0x26, 0x90); mdelay(1);
+-#if 0
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_ofdm(dev, 0x27, 0x08); /* Ver B. might work also fo ver C&D ?*/
+-	else
+-#endif
+ 	write_phy_ofdm(dev, 0x27, 0x88); mdelay(1);
+ /* Ver C & D & 8187*/
+ 
+@@ -824,11 +636,6 @@ void rtl8225_rf_init(struct net_device *
+ 	write_phy_cck(dev, 0x4, 0x7e); mdelay(1);
+ 	write_phy_cck(dev, 0x5, 0x12); mdelay(1);
+ 	write_phy_cck(dev, 0x6, 0xfc); mdelay(1);
+-#if 0
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_cck(dev, 0x7, 0xd8); /* Ver B */
+-	else
+-#endif
+ 	write_phy_cck(dev, 0x7, 0x78);mdelay(1);
+  /* Ver C & D & 8187*/
+ 
+@@ -837,11 +644,6 @@ void rtl8225_rf_init(struct net_device *
+ 	write_phy_cck(dev, 0x10, ((priv->card_type == USB) ? 0x9b: 0x93)); mdelay(1);
+ 	write_phy_cck(dev, 0x11, 0x88); mdelay(1);
+ 	write_phy_cck(dev, 0x12, 0x47); mdelay(1);
+-#if 0
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_cck(dev, 0x13, 0x98); /* Ver B */
+-	else
+-#endif
+ 	write_phy_cck(dev, 0x13, 0xd0); /* Ver C & D & 8187*/
+ 
+ 	write_phy_cck(dev, 0x19, 0x0);
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+@@ -46,26 +46,6 @@ u8 rtl8225z2_gain_a[]={
+ 	0x63,0x24,0x4f,//,0x37,// -70dbm
+ 	0x73,0x0f,0x4c,//,0x37,// -66dbm
+ };
+-#if 0
+-u32 rtl8225_chan[] = {
+-	0,	//dummy channel 0
+-	0x085c, //1
+-	0x08dc, //2
+-	0x095c, //3
+-	0x09dc, //4
+-	0x0a5c, //5
+-	0x0adc, //6
+-	0x0b5c, //7
+-	0x0bdc, //8
+-	0x0c5c, //9
+-	0x0cdc, //10
+-	0x0d5c, //11
+-	0x0ddc, //12
+-	0x0e5c, //13
+-	//0x0f5c, //14
+-	0x0f72, // 14
+-};
+-#endif
+ 
+ //-
+ u16 rtl8225z2_rxgain[]={
+@@ -94,19 +74,6 @@ u8 ZEBRA2_CCK_OFDM_GAIN_SETTING[]={
+         0x1e,0x1f,0x20,0x21,0x22,0x23,
+ };
+ 
+-#if 0
+-//-
+-u8 rtl8225_agc[]={
+-	0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9e,0x9d,0x9c,0x9b,0x9a,0x99,0x98,0x97,0x96,
+-	0x95,0x94,0x93,0x92,0x91,0x90,0x8f,0x8e,0x8d,0x8c,0x8b,0x8a,0x89,0x88,0x87,0x86,
+-	0x85,0x84,0x83,0x82,0x81,0x80,0x3f,0x3e,0x3d,0x3c,0x3b,0x3a,0x39,0x38,0x37,0x36,
+-	0x35,0x34,0x33,0x32,0x31,0x30,0x2f,0x2e,0x2d,0x2c,0x2b,0x2a,0x29,0x28,0x27,0x26,
+-	0x25,0x24,0x23,0x22,0x21,0x20,0x1f,0x1e,0x1d,0x1c,0x1b,0x1a,0x19,0x18,0x17,0x16,
+-	0x15,0x14,0x13,0x12,0x11,0x10,0x0f,0x0e,0x0d,0x0c,0x0b,0x0a,0x09,0x08,0x07,0x06,
+-	0x05,0x04,0x03,0x02,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+-	0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+-};
+-#endif
+ /*
+  from 0 to 0x23
+ u8 rtl8225_tx_gain_cck_ofdm[]={
+@@ -155,40 +122,6 @@ void rtl8225z2_set_gain(struct net_devic
+ 
+ }
+ 
+-#if 0
+-
+-void rtl8225_set_gain(struct net_device *dev, short gain)
+-{
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
+-
+-	if(priv->card_8185 == 2)
+-		write_phy_ofdm(dev, 0x21, 0x27);
+-	else
+-		write_phy_ofdm(dev, 0x21, 0x37);
+-
+-	write_phy_ofdm(dev, 0x25, 0x20);
+-	write_phy_ofdm(dev, 0x11, 0x6);
+-
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_ofdm(dev, 0x27, 0x8);
+-	else
+-		write_phy_ofdm(dev, 0x27, 0x88);
+-
+-	write_phy_ofdm(dev, 0x14, 0);
+-	write_phy_ofdm(dev, 0x16, 0);
+-	write_phy_ofdm(dev, 0x15, 0x40);
+-	write_phy_ofdm(dev, 0x17, 0x40);
+-
+-	write_phy_ofdm(dev, 0x0d, rtl8225_gain[gain * 4]);
+-	write_phy_ofdm(dev, 0x23, rtl8225_gain[gain * 4 + 1]);
+-	write_phy_ofdm(dev, 0x1b, rtl8225_gain[gain * 4 + 2]);
+-	write_phy_ofdm(dev, 0x1d, rtl8225_gain[gain * 4 + 3]);
+-	//rtl8225_set_gain_usb(dev, gain);
+-}
+-#endif
+-
+ u32 read_rtl8225(struct net_device *dev, u8 adr)
+ {
+ 	u32 data2Write = ((u32)(adr & 0x1f)) << 27;
+@@ -284,76 +217,7 @@ u32 read_rtl8225(struct net_device *dev,
+ 	return dataRead;
+ 
+ }
+-#if 0
+-void write_rtl8225(struct net_device *dev, u8 adr, u16 data)
 -{
 -	int i;
 -	u16 out,select;
 -	u8 bit;
 -	u32 bangdata = (data << 4) | (adr & 0xf);
--//	struct r8180_priv *priv = ieee80211_priv(dev);
+-	struct r8180_priv *priv = ieee80211_priv(dev);
 -
 -	out = read_nic_word(dev, RFPinsOutput) & 0xfff3;
 -
@@ -816,7 +2117,8 @@ Index: b/drivers/staging/rtl8187se/r8180_rtl8255.c
 -
 -	select = read_nic_word(dev, RFPinsSelect);
 -
--	write_nic_word(dev, RFPinsSelect, select | 0x7 | SW_CONTROL_GPIO);
+-	write_nic_word(dev, RFPinsSelect, select | 0x7 |
+-		((priv->card_type == USB) ? 0 : SW_CONTROL_GPIO));
 -
 -	force_pci_posting(dev);
 -	udelay(10);
@@ -837,1914 +2139,831 @@ Index: b/drivers/staging/rtl8187se/r8180_rtl8255.c
 -		bit = (bangdata & (1<<i)) >> i;
 -
 -		write_nic_word(dev, RFPinsOutput, bit | out);
+-
 -		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
 -		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
+-
 -		i--;
 -		bit = (bangdata & (1<<i)) >> i;
 -
 -		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
 -		write_nic_word(dev, RFPinsOutput, bit | out | BB_HOST_BANG_CLK);
--		write_nic_word(dev, RFPinsOutput, bit | out);
--	}
 -
+-		write_nic_word(dev, RFPinsOutput, bit | out);
+ 
+-	}
 -
 -	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
 -
 -	force_pci_posting(dev);
 -	udelay(10);
 -
--	write_nic_word(dev, RFPinsOutput, out | BB_HOST_BANG_EN);
--	write_nic_word(dev, RFPinsSelect, select | SW_CONTROL_GPIO);
+-	write_nic_word(dev, RFPinsOutput, out |
+-		((priv->card_type == USB) ? 4 : BB_HOST_BANG_EN));
 -
--	rtl8185_rf_pins_enable(dev);
+-	write_nic_word(dev, RFPinsSelect, select |
+-		((priv->card_type == USB) ? 0 : SW_CONTROL_GPIO));
+-
+-	if(priv->card_type == USB)
+-		mdelay(2);
+-	else
+-		rtl8185_rf_pins_enable(dev);
 -}
 -
--void rtl8255_rf_close(struct net_device *dev)
+-#endif
+ short rtl8225_is_V_z2(struct net_device *dev)
+ {
+ 	short vz2 = 1;
+@@ -364,13 +228,7 @@ short rtl8225_is_V_z2(struct net_device 
+ 
+ 	/* reg 8 pg 1 = 23*/
+ 	//printk(KERN_WARNING "RF Rigisters:\n");
+-#if 0
+-	for(i = 0; i <= 0xf; i++)
+-		printk(KERN_WARNING "%08x,", read_rtl8225(dev, i));
+-	//printk(KERN_WARNING "reg[9]@pg1 = 0x%x\n", read_rtl8225(dev, 0x0F));
+ 
+-//	printk(KERN_WARNING "RF:\n");
+-#endif
+ 	if( read_rtl8225(dev, 8) != 0x588)
+ 		vz2 = 0;
+ 
+@@ -385,38 +243,6 @@ short rtl8225_is_V_z2(struct net_device 
+ 
+ }
+ 
+-#if 0
+-void rtl8225_rf_close(struct net_device *dev)
 -{
+-	write_rtl8225(dev, 0x4, 0x1f);
 -
--//	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_OFF);
--//	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_OFF);
--}
--
--void rtl8255_SetTXPowerLevel(struct net_device *dev, short ch)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--
--	u8 cck_power_level = 0xff & priv->chtxpwr[ch];
--	u8 ofdm_power_level = 0xff & priv->chtxpwr_ofdm[ch];
--	write_nic_byte(dev, TX_GAIN_OFDM, ofdm_power_level);
--	write_nic_byte(dev, TX_GAIN_CCK, cck_power_level);
 -	force_pci_posting(dev);
 -	mdelay(1);
--	//write_nic_byte(dev, TX_AGC_CONTROL,4);
+-
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_OFF);
+-	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_OFF);
 -}
--
--void rtl8255_rf_set_chan(struct net_device *dev, short ch)
+-#endif
+-#if 0
+-short rtl8225_rf_set_sens(struct net_device *dev, short sens)
 -{
--	//write_rtl8225(dev, 0x7, rtl8225_chan[1]);
--	write_rtl8255(dev, 0x5, 0x65);
--	write_rtl8255(dev, 0x6, rtl8255_chan[ch]);
--	write_rtl8255(dev, 0x7, 0x7c);
--	write_rtl8255(dev, 0x8, 0x6);
+-	if (sens <0 || sens > 6) return -1;
 -
+-	if(sens > 4)
+-		write_rtl8225(dev, 0x0c, 0x850);
+-	else
+-		write_rtl8225(dev, 0x0c, 0x50);
 -
--	force_pci_posting(dev);
--	set_current_state(TASK_INTERRUPTIBLE);
--	schedule_timeout(HZ);
--//	rtl8225_set_mode_B(dev);
+-	sens= 6-sens;
+-	rtl8225_set_gain(dev, sens);
 -
--	rtl8255_SetTXPowerLevel(dev, ch);
--	/* FIXME FIXME FIXME */
--}
--
--void rtl8255_init_BGband(struct net_device *dev)
--{
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804187cf, 0x40000027,
--		0x92402ac0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc00);
--	write_rtl8255(dev, 0x4, 0xe00);
--	write_rtl8255(dev, 0x4, 0xc00);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x800);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa00);
--	write_rtl8255(dev, 0x4, 0x800);
--	write_rtl8255(dev, 0x4, 0x400);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x27);
--	write_rtl8255(dev, 0x4, 0x600);
--	write_rtl8255(dev, 0x4, 0x400);
--	write_rtl8255(dev, 0x4, 0x400);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x600);
--	write_rtl8255(dev, 0x4, 0x400);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804187ce, 0x80000027,
--		0x92402ac0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc01);
--	write_rtl8255(dev, 0x4, 0xe01);
--	write_rtl8255(dev, 0x4, 0xc01);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x801);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa01);
--	write_rtl8255(dev, 0x4, 0x801);
--	write_rtl8255(dev, 0x4, 0x401);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x27);
--	write_rtl8255(dev, 0x4, 0x601);
--	write_rtl8255(dev, 0x4, 0x401);
--	write_rtl8255(dev, 0x4, 0x401);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x601);
--	write_rtl8255(dev, 0x4, 0x401);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80418bdf, 0x40000027,
--		0x92402ac4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc02);
--	write_rtl8255(dev, 0x4, 0xe02);
--	write_rtl8255(dev, 0x4, 0xc02);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x802);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa02);
--	write_rtl8255(dev, 0x4, 0x802);
--	write_rtl8255(dev, 0x4, 0x402);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x602);
--	write_rtl8255(dev, 0x4, 0x402);
--	write_rtl8255(dev, 0x4, 0x402);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x602);
--	write_rtl8255(dev, 0x4, 0x402);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80418bbf, 0x40000027,
--		0x92402ac4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc03);
--	write_rtl8255(dev, 0x4, 0xe03);
--	write_rtl8255(dev, 0x4, 0xc03);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x803);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa03);
--	write_rtl8255(dev, 0x4, 0x803);
--	write_rtl8255(dev, 0x4, 0x403);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x603);
--	write_rtl8255(dev, 0x4, 0x403);
--	write_rtl8255(dev, 0x4, 0x403);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x603);
--	write_rtl8255(dev, 0x4, 0x403);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80418b9f, 0x40000027,
--		0x92402ac8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc04);
--	write_rtl8255(dev, 0x4, 0xe04);
--	write_rtl8255(dev, 0x4, 0xc04);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x804);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa04);
--	write_rtl8255(dev, 0x4, 0x804);
--	write_rtl8255(dev, 0x4, 0x404);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x604);
--	write_rtl8255(dev, 0x4, 0x404);
--	write_rtl8255(dev, 0x4, 0x404);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x604);
--	write_rtl8255(dev, 0x4, 0x404);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804183df, 0x40000027,
--		0x92402ac8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc05);
--	write_rtl8255(dev, 0x4, 0xe05);
--	write_rtl8255(dev, 0x4, 0xc05);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x805);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa05);
--	write_rtl8255(dev, 0x4, 0x805);
--	write_rtl8255(dev, 0x4, 0x405);
--	write_rtl8255(dev, 0x3, 0x26);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x605);
--	write_rtl8255(dev, 0x4, 0x405);
--	write_rtl8255(dev, 0x4, 0x405);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x605);
--	write_rtl8255(dev, 0x4, 0x405);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804183cf, 0x27,
--		0x92402acc, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc06);
--	write_rtl8255(dev, 0x4, 0xe06);
--	write_rtl8255(dev, 0x4, 0xc06);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x806);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa06);
--	write_rtl8255(dev, 0x4, 0x806);
--	write_rtl8255(dev, 0x4, 0x406);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x606);
--	write_rtl8255(dev, 0x4, 0x406);
--	write_rtl8255(dev, 0x4, 0x406);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x606);
--	write_rtl8255(dev, 0x4, 0x406);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804183af, 0x27,
--		0x92402acc, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc07);
--	write_rtl8255(dev, 0x4, 0xe07);
--	write_rtl8255(dev, 0x4, 0xc07);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x807);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa07);
--	write_rtl8255(dev, 0x4, 0x807);
--	write_rtl8255(dev, 0x4, 0x407);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x607);
--	write_rtl8255(dev, 0x4, 0x407);
--	write_rtl8255(dev, 0x4, 0x407);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x607);
--	write_rtl8255(dev, 0x4, 0x407);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804083d7, 0x40000027,
--		0x92402ad0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc08);
--	write_rtl8255(dev, 0x4, 0xe08);
--	write_rtl8255(dev, 0x4, 0xc08);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x808);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa08);
--	write_rtl8255(dev, 0x4, 0x808);
--	write_rtl8255(dev, 0x4, 0x408);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x608);
--	write_rtl8255(dev, 0x4, 0x408);
--	write_rtl8255(dev, 0x4, 0x408);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x608);
--	write_rtl8255(dev, 0x4, 0x408);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804083c7, 0x27,
--		0x92402ad0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc09);
--	write_rtl8255(dev, 0x4, 0xe09);
--	write_rtl8255(dev, 0x4, 0xc09);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x809);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa09);
--	write_rtl8255(dev, 0x4, 0x809);
--	write_rtl8255(dev, 0x4, 0x409);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x609);
--	write_rtl8255(dev, 0x4, 0x409);
--	write_rtl8255(dev, 0x4, 0x409);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x609);
--	write_rtl8255(dev, 0x4, 0x409);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804043d7, 0x40000027,
--		0x92402ad4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0a);
--	write_rtl8255(dev, 0x4, 0xe0a);
--	write_rtl8255(dev, 0x4, 0xc0a);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80a);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0a);
--	write_rtl8255(dev, 0x4, 0x80a);
--	write_rtl8255(dev, 0x4, 0x40a);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60a);
--	write_rtl8255(dev, 0x4, 0x40a);
--	write_rtl8255(dev, 0x4, 0x40a);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60a);
--	write_rtl8255(dev, 0x4, 0x40a);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804043d7, 0x40000027,
--		0x92402ad4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0b);
--	write_rtl8255(dev, 0x4, 0xe0b);
--	write_rtl8255(dev, 0x4, 0xc0b);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80b);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0b);
--	write_rtl8255(dev, 0x4, 0x80b);
--	write_rtl8255(dev, 0x4, 0x40b);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60b);
--	write_rtl8255(dev, 0x4, 0x40b);
--	write_rtl8255(dev, 0x4, 0x40b);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60b);
--	write_rtl8255(dev, 0x4, 0x40b);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804043c7, 0x27,
--		0x92402ad8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0c);
--	write_rtl8255(dev, 0x4, 0xe0c);
--	write_rtl8255(dev, 0x4, 0xc0c);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80c);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0c);
--	write_rtl8255(dev, 0x4, 0x80c);
--	write_rtl8255(dev, 0x4, 0x40c);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60c);
--	write_rtl8255(dev, 0x4, 0x40c);
--	write_rtl8255(dev, 0x4, 0x40c);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60c);
--	write_rtl8255(dev, 0x4, 0x40c);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804043a7, 0x27,
--		0x92402ad8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0d);
--	write_rtl8255(dev, 0x4, 0xe0d);
--	write_rtl8255(dev, 0x4, 0xc0d);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80d);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0d);
--	write_rtl8255(dev, 0x4, 0x80d);
--	write_rtl8255(dev, 0x4, 0x40d);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60d);
--	write_rtl8255(dev, 0x4, 0x40d);
--	write_rtl8255(dev, 0x4, 0x40d);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60d);
--	write_rtl8255(dev, 0x4, 0x40d);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404387, 0x27,
--		0x92402aa8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0e);
--	write_rtl8255(dev, 0x4, 0xe0e);
--	write_rtl8255(dev, 0x4, 0xc0e);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80e);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0e);
--	write_rtl8255(dev, 0x4, 0x80e);
--	write_rtl8255(dev, 0x4, 0x40e);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60e);
--	write_rtl8255(dev, 0x4, 0x40e);
--	write_rtl8255(dev, 0x4, 0x40e);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60e);
--	write_rtl8255(dev, 0x4, 0x40e);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804041c7, 0x27,
--		0x92402aa8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc0f);
--	write_rtl8255(dev, 0x4, 0xe0f);
--	write_rtl8255(dev, 0x4, 0xc0f);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x80f);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa0f);
--	write_rtl8255(dev, 0x4, 0x80f);
--	write_rtl8255(dev, 0x4, 0x40f);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x60f);
--	write_rtl8255(dev, 0x4, 0x40f);
--	write_rtl8255(dev, 0x4, 0x40f);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x60f);
--	write_rtl8255(dev, 0x4, 0x40f);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x804041a7, 0x27,
--		0x92402aac, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc10);
--	write_rtl8255(dev, 0x4, 0xe10);
--	write_rtl8255(dev, 0x4, 0xc10);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x810);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa10);
--	write_rtl8255(dev, 0x4, 0x810);
--	write_rtl8255(dev, 0x4, 0x410);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x610);
--	write_rtl8255(dev, 0x4, 0x410);
--	write_rtl8255(dev, 0x4, 0x410);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x610);
--	write_rtl8255(dev, 0x4, 0x410);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404187, 0x27,
--		0x92402aac, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc11);
--	write_rtl8255(dev, 0x4, 0xe11);
--	write_rtl8255(dev, 0x4, 0xc11);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x811);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa11);
--	write_rtl8255(dev, 0x4, 0x811);
--	write_rtl8255(dev, 0x4, 0x411);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x611);
--	write_rtl8255(dev, 0x4, 0x411);
--	write_rtl8255(dev, 0x4, 0x411);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x611);
--	write_rtl8255(dev, 0x4, 0x411);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404186, 0x80000027,
--		0x92402ab0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc12);
--	write_rtl8255(dev, 0x4, 0xe12);
--	write_rtl8255(dev, 0x4, 0xc12);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x812);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa12);
--	write_rtl8255(dev, 0x4, 0x812);
--	write_rtl8255(dev, 0x4, 0x412);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x612);
--	write_rtl8255(dev, 0x4, 0x412);
--	write_rtl8255(dev, 0x4, 0x412);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x612);
--	write_rtl8255(dev, 0x4, 0x412);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404186, 0x27,
--		0x92402ab0, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc13);
--	write_rtl8255(dev, 0x4, 0xe13);
--	write_rtl8255(dev, 0x4, 0xc13);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x813);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa13);
--	write_rtl8255(dev, 0x4, 0x813);
--	write_rtl8255(dev, 0x4, 0x413);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x613);
--	write_rtl8255(dev, 0x4, 0x413);
--	write_rtl8255(dev, 0x4, 0x413);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x613);
--	write_rtl8255(dev, 0x4, 0x413);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404146, 0x27,
--		0x92402ab4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc14);
--	write_rtl8255(dev, 0x4, 0xe14);
--	write_rtl8255(dev, 0x4, 0xc14);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x814);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa14);
--	write_rtl8255(dev, 0x4, 0x814);
--	write_rtl8255(dev, 0x4, 0x414);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x614);
--	write_rtl8255(dev, 0x4, 0x414);
--	write_rtl8255(dev, 0x4, 0x414);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x614);
--	write_rtl8255(dev, 0x4, 0x414);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404126, 0x27,
--		0x92402ab4, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc15);
--	write_rtl8255(dev, 0x4, 0xe15);
--	write_rtl8255(dev, 0x4, 0xc15);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x815);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa15);
--	write_rtl8255(dev, 0x4, 0x815);
--	write_rtl8255(dev, 0x4, 0x415);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x615);
--	write_rtl8255(dev, 0x4, 0x415);
--	write_rtl8255(dev, 0x4, 0x415);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x615);
--	write_rtl8255(dev, 0x4, 0x415);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404106, 0x27,
--		0x92402ab8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc16);
--	write_rtl8255(dev, 0x4, 0xe16);
--	write_rtl8255(dev, 0x4, 0xc16);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x816);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa16);
--	write_rtl8255(dev, 0x4, 0x816);
--	write_rtl8255(dev, 0x4, 0x416);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x616);
--	write_rtl8255(dev, 0x4, 0x416);
--	write_rtl8255(dev, 0x4, 0x416);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x616);
--	write_rtl8255(dev, 0x4, 0x416);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404105, 0x27,
--		0x92402ab8, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc17);
--	write_rtl8255(dev, 0x4, 0xe17);
--	write_rtl8255(dev, 0x4, 0xc17);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x817);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa17);
--	write_rtl8255(dev, 0x4, 0x817);
--	write_rtl8255(dev, 0x4, 0x417);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x617);
--	write_rtl8255(dev, 0x4, 0x417);
--	write_rtl8255(dev, 0x4, 0x417);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x617);
--	write_rtl8255(dev, 0x4, 0x417);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404104, 0x80000027,
--		0x92402a88, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc18);
--	write_rtl8255(dev, 0x4, 0xe18);
--	write_rtl8255(dev, 0x4, 0xc18);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x818);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa18);
--	write_rtl8255(dev, 0x4, 0x818);
--	write_rtl8255(dev, 0x4, 0x418);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x618);
--	write_rtl8255(dev, 0x4, 0x418);
--	write_rtl8255(dev, 0x4, 0x418);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x618);
--	write_rtl8255(dev, 0x4, 0x418);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404104, 0x27,
--		0x92402a88, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc19);
--	write_rtl8255(dev, 0x4, 0xe19);
--	write_rtl8255(dev, 0x4, 0xc19);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x819);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa19);
--	write_rtl8255(dev, 0x4, 0x819);
--	write_rtl8255(dev, 0x4, 0x419);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x619);
--	write_rtl8255(dev, 0x4, 0x419);
--	write_rtl8255(dev, 0x4, 0x419);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x619);
--	write_rtl8255(dev, 0x4, 0x419);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404044, 0x27,
--		0x92402a8c, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1a);
--	write_rtl8255(dev, 0x4, 0xe1a);
--	write_rtl8255(dev, 0x4, 0xc1a);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81a);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1a);
--	write_rtl8255(dev, 0x4, 0x81a);
--	write_rtl8255(dev, 0x4, 0x41a);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61a);
--	write_rtl8255(dev, 0x4, 0x41a);
--	write_rtl8255(dev, 0x4, 0x41a);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61a);
--	write_rtl8255(dev, 0x4, 0x41a);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404024, 0x27,
--		0x92402a8c, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1b);
--	write_rtl8255(dev, 0x4, 0xe1b);
--	write_rtl8255(dev, 0x4, 0xc1b);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81b);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1b);
--	write_rtl8255(dev, 0x4, 0x81b);
--	write_rtl8255(dev, 0x4, 0x41b);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61b);
--	write_rtl8255(dev, 0x4, 0x41b);
--	write_rtl8255(dev, 0x4, 0x41b);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61b);
--	write_rtl8255(dev, 0x4, 0x41b);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404004, 0x27,
--		0x92402a90, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1c);
--	write_rtl8255(dev, 0x4, 0xe1c);
--	write_rtl8255(dev, 0x4, 0xc1c);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81c);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1c);
--	write_rtl8255(dev, 0x4, 0x81c);
--	write_rtl8255(dev, 0x4, 0x41c);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61c);
--	write_rtl8255(dev, 0x4, 0x41c);
--	write_rtl8255(dev, 0x4, 0x41c);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61c);
--	write_rtl8255(dev, 0x4, 0x41c);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404001, 0x27,
--		0x92402a90, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1d);
--	write_rtl8255(dev, 0x4, 0xe1d);
--	write_rtl8255(dev, 0x4, 0xc1d);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81d);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1d);
--	write_rtl8255(dev, 0x4, 0x81d);
--	write_rtl8255(dev, 0x4, 0x41d);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61d);
--	write_rtl8255(dev, 0x4, 0x41d);
--	write_rtl8255(dev, 0x4, 0x41d);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61d);
--	write_rtl8255(dev, 0x4, 0x41d);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a94, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1e);
--	write_rtl8255(dev, 0x4, 0xe1e);
--	write_rtl8255(dev, 0x4, 0xc1e);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81e);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1e);
--	write_rtl8255(dev, 0x4, 0x81e);
--	write_rtl8255(dev, 0x4, 0x41e);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61e);
--	write_rtl8255(dev, 0x4, 0x41e);
--	write_rtl8255(dev, 0x4, 0x41e);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61e);
--	write_rtl8255(dev, 0x4, 0x41e);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x27,
--		0x92402a94, 0xf0009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc1f);
--	write_rtl8255(dev, 0x4, 0xe1f);
--	write_rtl8255(dev, 0x4, 0xc1f);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x81f);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa1f);
--	write_rtl8255(dev, 0x4, 0x81f);
--	write_rtl8255(dev, 0x4, 0x41f);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x61f);
--	write_rtl8255(dev, 0x4, 0x41f);
--	write_rtl8255(dev, 0x4, 0x41f);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x61f);
--	write_rtl8255(dev, 0x4, 0x41f);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404020, 0x80000027,
--		0x92402a98, 0xf8009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc20);
--	write_rtl8255(dev, 0x4, 0xe20);
--	write_rtl8255(dev, 0x4, 0xc20);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x820);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa20);
--	write_rtl8255(dev, 0x4, 0x820);
--	write_rtl8255(dev, 0x4, 0x420);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x620);
--	write_rtl8255(dev, 0x4, 0x420);
--	write_rtl8255(dev, 0x4, 0x420);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x620);
--	write_rtl8255(dev, 0x4, 0x420);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404020, 0x27,
--		0x92402a98, 0xf8009, 0x28000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc21);
--	write_rtl8255(dev, 0x4, 0xe21);
--	write_rtl8255(dev, 0x4, 0xc21);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x821);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa21);
--	write_rtl8255(dev, 0x4, 0x821);
--	write_rtl8255(dev, 0x4, 0x421);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x621);
--	write_rtl8255(dev, 0x4, 0x421);
--	write_rtl8255(dev, 0x4, 0x421);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x621);
--	write_rtl8255(dev, 0x4, 0x421);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a68, 0xf0009, 0x10028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc22);
--	write_rtl8255(dev, 0x4, 0xe22);
--	write_rtl8255(dev, 0x4, 0xc22);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x822);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa22);
--	write_rtl8255(dev, 0x4, 0x822);
--	write_rtl8255(dev, 0x4, 0x422);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x622);
--	write_rtl8255(dev, 0x4, 0x422);
--	write_rtl8255(dev, 0x4, 0x422);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x622);
--	write_rtl8255(dev, 0x4, 0x422);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404010, 0x80000027,
--		0x92402a68, 0xf0009, 0x20028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc23);
--	write_rtl8255(dev, 0x4, 0xe23);
--	write_rtl8255(dev, 0x4, 0xc23);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x823);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa23);
--	write_rtl8255(dev, 0x4, 0x823);
--	write_rtl8255(dev, 0x4, 0x423);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x623);
--	write_rtl8255(dev, 0x4, 0x423);
--	write_rtl8255(dev, 0x4, 0x423);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x623);
--	write_rtl8255(dev, 0x4, 0x423);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404010, 0x80000027,
--		0x92402a6c, 0xf0009, 0x30028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc24);
--	write_rtl8255(dev, 0x4, 0xe24);
--	write_rtl8255(dev, 0x4, 0xc24);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x824);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa24);
--	write_rtl8255(dev, 0x4, 0x824);
--	write_rtl8255(dev, 0x4, 0x424);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x624);
--	write_rtl8255(dev, 0x4, 0x424);
--	write_rtl8255(dev, 0x4, 0x424);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x624);
--	write_rtl8255(dev, 0x4, 0x424);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404010, 0x80000027,
--		0x92402a6c, 0xf0009, 0x40028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc25);
--	write_rtl8255(dev, 0x4, 0xe25);
--	write_rtl8255(dev, 0x4, 0xc25);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x825);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa25);
--	write_rtl8255(dev, 0x4, 0x825);
--	write_rtl8255(dev, 0x4, 0x425);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x625);
--	write_rtl8255(dev, 0x4, 0x425);
--	write_rtl8255(dev, 0x4, 0x425);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x625);
--	write_rtl8255(dev, 0x4, 0x425);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a70, 0xf0009, 0x60028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc26);
--	write_rtl8255(dev, 0x4, 0xe26);
--	write_rtl8255(dev, 0x4, 0xc26);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x826);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa26);
--	write_rtl8255(dev, 0x4, 0x826);
--	write_rtl8255(dev, 0x4, 0x426);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x626);
--	write_rtl8255(dev, 0x4, 0x426);
--	write_rtl8255(dev, 0x4, 0x426);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x626);
--	write_rtl8255(dev, 0x4, 0x426);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404031, 0x40000027,
--		0x92402a70, 0xf0011, 0x60028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc27);
--	write_rtl8255(dev, 0x4, 0xe27);
--	write_rtl8255(dev, 0x4, 0xc27);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x827);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa27);
--	write_rtl8255(dev, 0x4, 0x827);
--	write_rtl8255(dev, 0x4, 0x427);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x627);
--	write_rtl8255(dev, 0x4, 0x427);
--	write_rtl8255(dev, 0x4, 0x427);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x627);
--	write_rtl8255(dev, 0x4, 0x427);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404011, 0x40000027,
--		0x92402a74, 0xf0011, 0x60028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc28);
--	write_rtl8255(dev, 0x4, 0xe28);
--	write_rtl8255(dev, 0x4, 0xc28);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x828);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa28);
--	write_rtl8255(dev, 0x4, 0x828);
--	write_rtl8255(dev, 0x4, 0x428);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x628);
--	write_rtl8255(dev, 0x4, 0x428);
--	write_rtl8255(dev, 0x4, 0x428);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x628);
--	write_rtl8255(dev, 0x4, 0x428);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404010, 0xc0000027,
--		0x92402a74, 0xf0011, 0x60028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc29);
--	write_rtl8255(dev, 0x4, 0xe29);
--	write_rtl8255(dev, 0x4, 0xc29);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x829);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa29);
--	write_rtl8255(dev, 0x4, 0x829);
--	write_rtl8255(dev, 0x4, 0x429);
--	write_rtl8255(dev, 0x3, 0x25);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x629);
--	write_rtl8255(dev, 0x4, 0x429);
--	write_rtl8255(dev, 0x4, 0x429);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x629);
--	write_rtl8255(dev, 0x4, 0x429);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a78, 0xf0011, 0x60028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2a);
--	write_rtl8255(dev, 0x4, 0xe2a);
--	write_rtl8255(dev, 0x4, 0xc2a);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82a);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2a);
--	write_rtl8255(dev, 0x4, 0x82a);
--	write_rtl8255(dev, 0x4, 0x42a);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62a);
--	write_rtl8255(dev, 0x4, 0x42a);
--	write_rtl8255(dev, 0x4, 0x42a);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62a);
--	write_rtl8255(dev, 0x4, 0x42a);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a78, 0xf0011, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2b);
--	write_rtl8255(dev, 0x4, 0xe2b);
--	write_rtl8255(dev, 0x4, 0xc2b);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82b);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2b);
--	write_rtl8255(dev, 0x4, 0x82b);
--	write_rtl8255(dev, 0x4, 0x42b);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62b);
--	write_rtl8255(dev, 0x4, 0x42b);
--	write_rtl8255(dev, 0x4, 0x42b);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62b);
--	write_rtl8255(dev, 0x4, 0x42b);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a48, 0xf0019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2c);
--	write_rtl8255(dev, 0x4, 0xe2c);
--	write_rtl8255(dev, 0x4, 0xc2c);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82c);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2c);
--	write_rtl8255(dev, 0x4, 0x82c);
--	write_rtl8255(dev, 0x4, 0x42c);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62c);
--	write_rtl8255(dev, 0x4, 0x42c);
--	write_rtl8255(dev, 0x4, 0x42c);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62c);
--	write_rtl8255(dev, 0x4, 0x42c);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a48, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2d);
--	write_rtl8255(dev, 0x4, 0xe2d);
--	write_rtl8255(dev, 0x4, 0xc2d);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82d);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2d);
--	write_rtl8255(dev, 0x4, 0x82d);
--	write_rtl8255(dev, 0x4, 0x42d);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62d);
--	write_rtl8255(dev, 0x4, 0x42d);
--	write_rtl8255(dev, 0x4, 0x42d);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62d);
--	write_rtl8255(dev, 0x4, 0x42d);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a4c, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2e);
--	write_rtl8255(dev, 0x4, 0xe2e);
--	write_rtl8255(dev, 0x4, 0xc2e);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82e);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2e);
--	write_rtl8255(dev, 0x4, 0x82e);
--	write_rtl8255(dev, 0x4, 0x42e);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62e);
--	write_rtl8255(dev, 0x4, 0x42e);
--	write_rtl8255(dev, 0x4, 0x42e);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62e);
--	write_rtl8255(dev, 0x4, 0x42e);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a4c, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc2f);
--	write_rtl8255(dev, 0x4, 0xe2f);
--	write_rtl8255(dev, 0x4, 0xc2f);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x82f);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa2f);
--	write_rtl8255(dev, 0x4, 0x82f);
--	write_rtl8255(dev, 0x4, 0x42f);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x62f);
--	write_rtl8255(dev, 0x4, 0x42f);
--	write_rtl8255(dev, 0x4, 0x42f);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x62f);
--	write_rtl8255(dev, 0x4, 0x42f);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a50, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc30);
--	write_rtl8255(dev, 0x4, 0xe30);
--	write_rtl8255(dev, 0x4, 0xc30);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x830);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa30);
--	write_rtl8255(dev, 0x4, 0x830);
--	write_rtl8255(dev, 0x4, 0x430);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x630);
--	write_rtl8255(dev, 0x4, 0x430);
--	write_rtl8255(dev, 0x4, 0x430);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x630);
--	write_rtl8255(dev, 0x4, 0x430);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a50, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc31);
--	write_rtl8255(dev, 0x4, 0xe31);
--	write_rtl8255(dev, 0x4, 0xc31);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x831);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa31);
--	write_rtl8255(dev, 0x4, 0x831);
--	write_rtl8255(dev, 0x4, 0x431);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x631);
--	write_rtl8255(dev, 0x4, 0x431);
--	write_rtl8255(dev, 0x4, 0x431);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x631);
--	write_rtl8255(dev, 0x4, 0x431);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a54, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc32);
--	write_rtl8255(dev, 0x4, 0xe32);
--	write_rtl8255(dev, 0x4, 0xc32);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x832);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa32);
--	write_rtl8255(dev, 0x4, 0x832);
--	write_rtl8255(dev, 0x4, 0x432);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x632);
--	write_rtl8255(dev, 0x4, 0x432);
--	write_rtl8255(dev, 0x4, 0x432);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x632);
--	write_rtl8255(dev, 0x4, 0x432);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a54, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc33);
--	write_rtl8255(dev, 0x4, 0xe33);
--	write_rtl8255(dev, 0x4, 0xc33);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x833);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa33);
--	write_rtl8255(dev, 0x4, 0x833);
--	write_rtl8255(dev, 0x4, 0x433);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x633);
--	write_rtl8255(dev, 0x4, 0x433);
--	write_rtl8255(dev, 0x4, 0x433);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x633);
--	write_rtl8255(dev, 0x4, 0x433);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a58, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc34);
--	write_rtl8255(dev, 0x4, 0xe34);
--	write_rtl8255(dev, 0x4, 0xc34);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x834);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa34);
--	write_rtl8255(dev, 0x4, 0x834);
--	write_rtl8255(dev, 0x4, 0x434);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x634);
--	write_rtl8255(dev, 0x4, 0x434);
--	write_rtl8255(dev, 0x4, 0x434);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x634);
--	write_rtl8255(dev, 0x4, 0x434);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a58, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc35);
--	write_rtl8255(dev, 0x4, 0xe35);
--	write_rtl8255(dev, 0x4, 0xc35);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x835);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa35);
--	write_rtl8255(dev, 0x4, 0x835);
--	write_rtl8255(dev, 0x4, 0x435);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x4, 0x635);
--	write_rtl8255(dev, 0x4, 0x435);
--	write_rtl8255(dev, 0x4, 0x435);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x635);
--	write_rtl8255(dev, 0x4, 0x435);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a24, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc36);
--	write_rtl8255(dev, 0x4, 0xe36);
--	write_rtl8255(dev, 0x4, 0xc36);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x836);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa36);
--	write_rtl8255(dev, 0x4, 0x836);
--	write_rtl8255(dev, 0x4, 0x436);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x25);
--	write_rtl8255(dev, 0x4, 0x636);
--	write_rtl8255(dev, 0x4, 0x436);
--	write_rtl8255(dev, 0x4, 0x436);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x636);
--	write_rtl8255(dev, 0x4, 0x436);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a24, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc37);
--	write_rtl8255(dev, 0x4, 0xe37);
--	write_rtl8255(dev, 0x4, 0xc37);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x837);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa37);
--	write_rtl8255(dev, 0x4, 0x837);
--	write_rtl8255(dev, 0x4, 0x437);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x25);
--	write_rtl8255(dev, 0x4, 0x637);
--	write_rtl8255(dev, 0x4, 0x437);
--	write_rtl8255(dev, 0x4, 0x437);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x637);
--	write_rtl8255(dev, 0x4, 0x437);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a28, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc38);
--	write_rtl8255(dev, 0x4, 0xe38);
--	write_rtl8255(dev, 0x4, 0xc38);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x838);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa38);
--	write_rtl8255(dev, 0x4, 0x838);
--	write_rtl8255(dev, 0x4, 0x438);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x25);
--	write_rtl8255(dev, 0x4, 0x638);
--	write_rtl8255(dev, 0x4, 0x438);
--	write_rtl8255(dev, 0x4, 0x438);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x638);
--	write_rtl8255(dev, 0x4, 0x438);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a28, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc39);
--	write_rtl8255(dev, 0x4, 0xe39);
--	write_rtl8255(dev, 0x4, 0xc39);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x839);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa39);
--	write_rtl8255(dev, 0x4, 0x839);
--	write_rtl8255(dev, 0x4, 0x439);
--	write_rtl8255(dev, 0x3, 0x24);
--	write_rtl8255(dev, 0x2, 0x25);
--	write_rtl8255(dev, 0x4, 0x639);
--	write_rtl8255(dev, 0x4, 0x439);
--	write_rtl8255(dev, 0x4, 0x439);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x639);
--	write_rtl8255(dev, 0x4, 0x439);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3a);
--	write_rtl8255(dev, 0x4, 0xe3a);
--	write_rtl8255(dev, 0x4, 0xc3a);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83a);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3a);
--	write_rtl8255(dev, 0x4, 0x83a);
--	write_rtl8255(dev, 0x4, 0x43a);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63a);
--	write_rtl8255(dev, 0x4, 0x43a);
--	write_rtl8255(dev, 0x4, 0x43a);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63a);
--	write_rtl8255(dev, 0x4, 0x43a);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3b);
--	write_rtl8255(dev, 0x4, 0xe3b);
--	write_rtl8255(dev, 0x4, 0xc3b);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83b);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3b);
--	write_rtl8255(dev, 0x4, 0x83b);
--	write_rtl8255(dev, 0x4, 0x43b);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63b);
--	write_rtl8255(dev, 0x4, 0x43b);
--	write_rtl8255(dev, 0x4, 0x43b);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63b);
--	write_rtl8255(dev, 0x4, 0x43b);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3c);
--	write_rtl8255(dev, 0x4, 0xe3c);
--	write_rtl8255(dev, 0x4, 0xc3c);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83c);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3c);
--	write_rtl8255(dev, 0x4, 0x83c);
--	write_rtl8255(dev, 0x4, 0x43c);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63c);
--	write_rtl8255(dev, 0x4, 0x43c);
--	write_rtl8255(dev, 0x4, 0x43c);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63c);
--	write_rtl8255(dev, 0x4, 0x43c);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3d);
--	write_rtl8255(dev, 0x4, 0xe3d);
--	write_rtl8255(dev, 0x4, 0xc3d);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83d);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3d);
--	write_rtl8255(dev, 0x4, 0x83d);
--	write_rtl8255(dev, 0x4, 0x43d);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63d);
--	write_rtl8255(dev, 0x4, 0x43d);
--	write_rtl8255(dev, 0x4, 0x43d);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63d);
--	write_rtl8255(dev, 0x4, 0x43d);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8019, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3e);
--	write_rtl8255(dev, 0x4, 0xe3e);
--	write_rtl8255(dev, 0x4, 0xc3e);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83e);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3e);
--	write_rtl8255(dev, 0x4, 0x83e);
--	write_rtl8255(dev, 0x4, 0x43e);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63e);
--	write_rtl8255(dev, 0x4, 0x43e);
--	write_rtl8255(dev, 0x4, 0x43e);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63e);
--	write_rtl8255(dev, 0x4, 0x43e);
--	write_rtl8255_reg0c(dev, 0x1554, 0xa800403b, 0xf6d44278, 0x80404000, 0x80000027,
--		0x92402a00, 0xf8011, 0x70028000, 0xc00, 0x0);
--	write_rtl8255(dev, 0x1, 0x807);
--	write_rtl8255(dev, 0x4, 0xc3f);
--	write_rtl8255(dev, 0x4, 0xe3f);
--	write_rtl8255(dev, 0x4, 0xc3f);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255(dev, 0x4, 0x83f);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0xa3f);
--	write_rtl8255(dev, 0x4, 0x83f);
--	write_rtl8255(dev, 0x4, 0x43f);
--	write_rtl8255(dev, 0x3, 0x0);
--	write_rtl8255(dev, 0x2, 0x0);
--	write_rtl8255(dev, 0x4, 0x63f);
--	write_rtl8255(dev, 0x4, 0x43f);
--	write_rtl8255(dev, 0x4, 0x43f);
--	write_rtl8255(dev, 0x3, 0x100);
--	write_rtl8255(dev, 0x4, 0x63f);
--	write_rtl8255(dev, 0x4, 0x43f);
--	write_rtl8255(dev, 0x4, 0x0);
--	write_rtl8255(dev, 0x1, 0x0);
--	write_rtl8255_reg0c(dev, 0x3539, 0x70000c03, 0xfef46178, 0x408000, 0x403307,
--		0x924f80c0, 0xf955c, 0x8400, 0x429200, 0x1ce20);
--	write_rtl8255(dev, 0x1, 0x1c7);
--	write_rtl8255(dev, 0x2, 0x26);
--	write_rtl8255(dev, 0x3, 0x27);
--	write_rtl8255(dev, 0x1, 0x47);
--	write_rtl8255(dev, 0x4, 0x98c);
--	write_rtl8255(dev, 0x5, 0x65);
--	write_rtl8255(dev, 0x6, 0x13);
--	write_rtl8255(dev, 0x7, 0x7c);
--	write_rtl8255(dev, 0x8, 0x6);
--	write_rtl8255(dev, 0x8, 0x7);
--	write_rtl8255(dev, 0x8, 0x6);
--	write_rtl8255(dev, 0x9, 0xce2);
--	write_rtl8255(dev, 0xb, 0x1c5);
--	write_rtl8255(dev, 0xd, 0xd7f);
--	write_rtl8255(dev, 0xe, 0x369);
--	write_rtl8255(dev, 0xa, 0xd56);
--	write_rtl8255(dev, 0xa, 0xd57);
--	mdelay(20);
--	write_rtl8255(dev, 0xd, 0xd7e);
+-	write_phy_cck(dev, 0x41, rtl8225_threshold[sens]);
+-	return 0;
 -
 -}
+-#endif
 -
 -
--void rtl8255_set_band_param(struct net_device *dev, short band)
--{
--	if(band != BAND_A){
--		write_nic_dword(dev, 0x94, 0x3dc00002);
--		write_nic_dword(dev, 0x88, 0x00100040);
+ void rtl8225z2_rf_close(struct net_device *dev)
+ {
+ 	RF_WriteReg(dev, 0x4, 0x1f);
+@@ -514,39 +340,7 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+ //	u8 ofdm_power_level = 0xff & priv->chtxpwr_ofdm[ch];//-by amy 080312
+ 	char cck_power_level = (char)(0xff & priv->chtxpwr[ch]);//+by amy 080312
+ 	char ofdm_power_level = (char)(0xff & priv->chtxpwr_ofdm[ch]);//+by amy 080312
+-#if 0
+-	//
+-	// CCX 2 S31, AP control of client transmit power:
+-	// 1. We shall not exceed Cell Power Limit as possible as we can.
+-	// 2. Tolerance is +/- 5dB.
+-	// 3. 802.11h Power Contraint takes higher precedence over CCX Cell Power Limit.
+-	//
+-	// TODO:
+-	// 1. 802.11h power contraint
+-	//
+-	// 071011, by rcnjko.
+-	//
+-	if(	priv->OpMode == RT_OP_MODE_INFRASTRUCTURE &&
+-		priv->bWithCcxCellPwr &&
+-		ch == priv->dot11CurrentChannelNumber)
+-	{
+-		u8 CckCellPwrIdx = DbmToTxPwrIdx(dev, WIRELESS_MODE_B, pMgntInfo->CcxCellPwr);
+-		u8 OfdmCellPwrIdx = DbmToTxPwrIdx(dev, WIRELESS_MODE_G, pMgntInfo->CcxCellPwr);
 -
--		write_phy_cck(dev, 0x13, 0xd0);
+-		printk("CCX Cell Limit: %d dBm => CCK Tx power index : %d, OFDM Tx power index: %d\n",
+-			priv->CcxCellPwr, CckCellPwrIdx, OfdmCellPwrIdx);
+-		printk("EEPROM channel(%d) => CCK Tx power index: %d, OFDM Tx power index: %d\n",
+-			channel, CckTxPwrIdx, OfdmTxPwrIdx);
 -
--		write_phy_cck(dev, 0x41, 0x9d);
--		write_nic_dword(dev, 0x8c, 0x00082205);
--		write_nic_byte(dev, 0xb4, 0x66);
+-		if(cck_power_level > CckCellPwrIdx)
+-			cck_power_level = CckCellPwrIdx;
+-		if(ofdm_power_level > OfdmCellPwrIdx)
+-			ofdm_power_level = OfdmCellPwrIdx;
+ 
+-		printk("Altered CCK Tx power index : %d, OFDM Tx power index: %d\n",
+-			CckTxPwrIdx, OfdmTxPwrIdx);
 -	}
--}
--
--void rtl8255_rf_init(struct net_device *dev)
+-#endif
+ 	if(IS_DOT11D_ENABLE(priv->ieee80211) &&
+ 		IS_DOT11D_STATE_DONE(priv->ieee80211) )
+ 	{
+@@ -642,14 +436,6 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+ 	mdelay(1);
+ 
+ }
+-#if 0
+-/* switch between mode B and G */
+-void rtl8225_set_mode(struct net_device *dev, short modeb)
 -{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	int i;
--	u16 brsr;
--//	short channel /*= priv->chan*/ = 1;
--	priv->chan = 1;
+-	write_phy_ofdm(dev, 0x15, (modeb ? 0x0 : 0x40));
+-	write_phy_ofdm(dev, 0x17, (modeb ? 0x0 : 0x40));
+-}
+-#endif
+ 
+ void rtl8225z2_rf_set_chan(struct net_device *dev, short ch)
+ {
+@@ -672,86 +458,8 @@ void rtl8225z2_rf_set_chan(struct net_de
+ 
+ 	force_pci_posting(dev);
+ 	mdelay(10);
+-//deleted by David : 2006/8/9
+-#if 0
+-	write_nic_byte(dev,SIFS,0x22);// SIFS: 0x22
 -
--	write_nic_word(dev, RFPinsOutput, 0x80);
--	write_nic_word(dev, RFPinsSelect, 0x80 | SW_CONTROL_GPIO);
--	write_nic_word(dev, RFPinsEnable, 0x80);
--	write_nic_word(dev, RFPinsSelect, SW_CONTROL_GPIO);
+-	if(gset)
+-		write_nic_byte(dev,DIFS,20); //DIFS: 20
+-	else
+-		write_nic_byte(dev,DIFS,0x24); //DIFS: 36
 -
--	write_nic_dword(dev, RF_TIMING, 0x000f800f);
+-	if(priv->ieee80211->state == IEEE80211_LINKED &&
+-		ieee80211_is_shortslot(priv->ieee80211->current_network))
+-		write_nic_byte(dev,SLOT,0x9); //SLOT: 9
 -
--	brsr = read_nic_word(dev, BRSR);
+-	else
+-		write_nic_byte(dev,SLOT,0x14); //SLOT: 20 (0x14)
 -
--	write_nic_word(dev, 0x2c, 0xffff);
 -
+-	if(gset){
+-		write_nic_byte(dev,EIFS,91 - 20); // EIFS: 91 (0x5B)
+-		write_nic_byte(dev,CW_VAL,0x73); //CW VALUE: 0x37
+-		//DMESG("using G net params");
+-	}else{
+-		write_nic_byte(dev,EIFS,91 - 0x24); // EIFS: 91 (0x5B)
+-		write_nic_byte(dev,CW_VAL,0xa5); //CW VALUE: 0x37
+-		//DMESG("using B net params");
+-	}
+-#endif
 -
--	rtl8180_set_anaparam(dev, RTL8255_ANAPARAM_ON);
--	rtl8185_set_anaparam2(dev, RTL8255_ANAPARAM2_ON);
--
--	write_nic_dword(dev, 0x94, 0x11c00002);
--
--	write_nic_dword(dev, RF_PARA, 0x100040);
+ }
+-#if 0
+-void rtl8225_host_pci_init(struct net_device *dev)
+-{
+-	write_nic_word(dev, RFPinsOutput, 0x480);
 -
 -	rtl8185_rf_pins_enable(dev);
 -
--	rtl8255_init_BGband(dev);
--	rtl8255_set_band_param(dev,BAND_BG);
+-	//if(priv->card_8185 == 2 && priv->enable_gpio0 ) /* version D */
+-	//write_nic_word(dev, RFPinsSelect, 0x88);
+-	//else
+-	write_nic_word(dev, RFPinsSelect, 0x88 | SW_CONTROL_GPIO); /* 0x488 | SW_CONTROL_GPIO */
 -
--	write_phy_cck(dev, 0x0, 0x98);
--	write_phy_cck(dev, 0x3, 0x20);
--	write_phy_cck(dev, 0x4, 0x2e);
--	write_phy_cck(dev, 0x5, 0x12);
--	write_phy_cck(dev, 0x6, 0xfc);
--	write_phy_cck(dev, 0x7, 0xd8);
--	write_phy_cck(dev, 0x8, 0x2e);
--	write_phy_cck(dev, 0x10, 0xd3);
--	write_phy_cck(dev, 0x11, 0x88);
--	write_phy_cck(dev, 0x12, 0x47);
--	write_phy_cck(dev, 0x13, 0xd0); /* Ver C & D & 8187*/
+-	write_nic_byte(dev, GP_ENABLE, 0);
 -
--	write_phy_cck(dev, 0x19, 0x0);
--	write_phy_cck(dev, 0x1a, 0xa0);
--	write_phy_cck(dev, 0x1b, 0x8);
--	write_phy_cck(dev, 0x40, 0x86); /* CCK Carrier Sense Threshold */
--	write_phy_cck(dev, 0x41, 0x9d); /* Energy Threshold */
--	//write_phy_cck(dev, 0x42, 0x0);
--	write_phy_cck(dev, 0x43, 0x8);
--
--	write_nic_byte(dev, TESTR,0x8);
--
--	for(i=0;i<128;i++){
--		write_phy_ofdm(dev, 0x4b, rtl8255_agc[i]);
--		write_phy_ofdm(dev, 0x4a, (u8)i+ 0x80);
--	}
--
--
--	write_phy_ofdm(dev, 0x0, 0x1);
--	write_phy_ofdm(dev, 0x1, 0x2);
--	write_phy_ofdm(dev, 0x2, 0x43);
--	write_phy_ofdm(dev, 0x3, 0x0);
--	write_phy_ofdm(dev, 0x4, 0x0);
--	write_phy_ofdm(dev, 0x5, 0x0);
--	write_phy_ofdm(dev, 0x6, 0x40);
--	write_phy_ofdm(dev, 0x7, 0x0);
--	write_phy_ofdm(dev, 0x8, 0x40);
--	write_phy_ofdm(dev, 0x9, 0xfe);
--	write_phy_ofdm(dev, 0xa, 0x9);
--	write_phy_ofdm(dev, 0xb, 0x80);
--	write_phy_ofdm(dev, 0xc, 0x1);
--	write_phy_ofdm(dev, 0xd, 0x43);
--	write_phy_ofdm(dev, 0xe, 0xd3);
--	write_phy_ofdm(dev, 0xf, 0x38);
--	write_phy_ofdm(dev, 0x10, 0x4);
--	write_phy_ofdm(dev, 0x11, 0x06);/*agc resp time 700*/
--	write_phy_ofdm(dev, 0x12, 0x20);
--	write_phy_ofdm(dev, 0x13, 0x20);
--	write_phy_ofdm(dev, 0x14, 0x0);
--	write_phy_ofdm(dev, 0x15, 0x40);
--	write_phy_ofdm(dev, 0x16, 0x0);
--	write_phy_ofdm(dev, 0x17, 0x40);
--	write_phy_ofdm(dev, 0x18, 0xef);
--	write_phy_ofdm(dev, 0x19, 0x25);
--	write_phy_ofdm(dev, 0x1a, 0x20);
--	write_phy_ofdm(dev, 0x1b, 0x7a);
--	write_phy_ofdm(dev, 0x1c, 0x84);
--	write_phy_ofdm(dev, 0x1e, 0x95);
--	write_phy_ofdm(dev, 0x1f, 0x75);
--	write_phy_ofdm(dev, 0x20, 0x1f);
--	write_phy_ofdm(dev, 0x21, 0x17);
--	write_phy_ofdm(dev, 0x22, 0x16);
--	write_phy_ofdm(dev, 0x23, 0x70); //FIXME maybe not needed
--	write_phy_ofdm(dev, 0x24, 0x70);
--	write_phy_ofdm(dev, 0x25, 0x0);
--	write_phy_ofdm(dev, 0x26, 0x10);
--	write_phy_ofdm(dev, 0x27, 0x88);
--
--
--	write_nic_dword(dev, 0x94, 0x3dc00002); //BAND DEPEND.
--//	write_nic_dword(dev, 0x94, 0x15c00002); //BAND DEPEND.
--
--	write_phy_cck(dev, 0x4, 0x18);
--	write_phy_cck(dev, 0x43, 0x18);
--	write_phy_cck(dev, 0x6, 0xdc);
--	write_phy_cck(dev, 0x44, 0x2b);
--	write_phy_cck(dev, 0x45, 0x2b);
--	write_phy_cck(dev, 0x46, 0x25);
--	write_phy_cck(dev, 0x47, 0x15);
--	write_phy_cck(dev, 0x48, 0x0);
--	write_phy_cck(dev, 0x49, 0x0);
--	write_phy_cck(dev, 0x4a, 0x0);
--	write_phy_cck(dev, 0x4b, 0x0);
--//	write_phy_cck(dev, 0x4c, 0x5);
--
--	//rtl8255_set_gain(dev, 1); /* FIXME this '1' is random */
--
--	rtl8255_SetTXPowerLevel(dev, priv->chan);
--
--	write_phy_cck(dev, 0x10, 0x93 |0x4); /* Rx ant B, 0xd3 for A */
--	write_phy_ofdm(dev, 0x26, 0x90); /* Rx ant B, 0x10 for A */
--
--	rtl8185_tx_antenna(dev, 0x3); /* TX ant B, 0x0 for A*/
--	/* make sure is waken up! */
--	rtl8180_set_anaparam(dev, RTL8255_ANAPARAM_ON);
--	rtl8185_set_anaparam2(dev, RTL8255_ANAPARAM2_ON);
--
--	rtl8255_set_band_param(dev,BAND_BG);
--
--	write_phy_cck(dev, 0x41, 0x9d);
--
--	rtl8255_set_gain(dev, 4);
--	//rtl8255_set_energy_threshold(dev);
--	write_phy_cck(dev, 0x41, 0x9d);
--	rtl8255_rf_set_chan(dev, priv->chan);
--
--	write_nic_word(dev, BRSR, brsr);
--}
--
-Index: b/drivers/staging/rtl8187se/r8180_rtl8255.h
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_rtl8255.h
-+++ /dev/null
-@@ -1,19 +0,0 @@
--/*
--  This is part of the rtl8180-sa2400 driver
--  released under the GPL (See file COPYING for details).
--  Copyright (c) 2005 Andrea Merello <andreamrl@tiscali.it>
--
--  This files contains programming code for the rtl8255
--  radio frontend.
--
--  *Many* thanks to Realtek Corp. for their great support!
--
--*/
--
--#define RTL8255_ANAPARAM_ON 0xa0000b59
--#define RTL8255_ANAPARAM2_ON 0x840cf311
--
--
--void rtl8255_rf_init(struct net_device *dev);
--void rtl8255_rf_set_chan(struct net_device *dev,short ch);
--void rtl8255_rf_close(struct net_device *dev);
-Index: b/drivers/staging/rtl8187se/r8180_sa2400.c
-===================================================================
---- a/drivers/staging/rtl8187se/r8180_sa2400.c
-+++ /dev/null
-@@ -1,233 +0,0 @@
--/*
--   This files contains PHILIPS SA2400 radio frontend programming routines.
--
--   This is part of rtl8180 OpenSource driver
--   Copyright (C) Andrea Merello 2004-2005  <andreamrl@tiscali.it>
--   Released under the terms of GPL (General Public Licence)
--
--   Parts of this driver are based on the GPL part of the
--   official realtek driver
--
--   Parts of this driver are based on the rtl8180 driver skeleton
--   from Patric Schenke & Andres Salomon
--
--   Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver.
--
--   Code at http://che.ojctech.com/~dyoung/rtw/ has been useful to me to
--   understand some things.
--
--   Code from rtl8181 project has been useful to me to understand some things.
--
--   We want to tanks the Authors of such projects and the Ndiswrapper
--   project Authors.
--*/
--
--
--#include "r8180.h"
--#include "r8180_hw.h"
--#include "r8180_sa2400.h"
--
--
--//#define DEBUG_SA2400
--
--u32 sa2400_chan[] = {
--	0x0,	//dummy channel 0
--	0x00096c, //1
--	0x080970, //2
--	0x100974, //3
--	0x180978, //4
--	0x000980, //5
--	0x080984, //6
--	0x100988, //7
--	0x18098c, //8
--	0x000994, //9
--	0x080998, //10
--	0x10099c, //11
--	0x1809a0, //12
--	0x0009a8, //13
--	0x0009b4, //14
--};
--
--
--void rf_stabilize(struct net_device *dev)
--{
 -	force_pci_posting(dev);
--	mdelay(3); //for now use a great value.. we may optimize in future
+-	mdelay(200);
+-
+-	write_nic_word(dev, GP_ENABLE, 0xff & (~(1<<6))); /* bit 6 is for RF on/off detection */
+ 
+-
 -}
 -
--
--void write_sa2400(struct net_device *dev,u8 adr, u32 data)
+-void rtl8225_host_usb_init(struct net_device *dev)
 -{
--//	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 phy_config;
+-	write_nic_byte(dev,RFPinsSelect+1,0);
 -
--        // philips sa2400 expects 24 bits data
+-	write_nic_byte(dev,GPIO,0);
 -
--	/*if(adr == 4 && priv->digphy){
--		phy_config=0x60000000;
--	}else{
--		phy_config=0xb0000000;
--	}*/
+-	write_nic_byte_E(dev,0x53,read_nic_byte_E(dev,0x53) | (1<<7));
 -
--	phy_config = 0xb0000000; // MAC will bang bits to the sa2400
+-	write_nic_byte(dev,RFPinsSelect+1,4);
 -
--	phy_config |= (((u32)(adr&0xf))<< 24);
--	phy_config |= (data & 0xffffff);
--	write_nic_dword(dev,PHY_CONFIG,phy_config);
--#ifdef DEBUG_SA2400
--	DMESG("Writing sa2400: %x (adr %x)",phy_config,adr);
+-	write_nic_byte(dev,GPIO,0x20);
+-
+-	write_nic_byte(dev,GP_ENABLE,0);
+-
+-
+-	/* Config BB & RF */
+-	write_nic_word(dev, RFPinsOutput, 0x80);
+-
+-	write_nic_word(dev, RFPinsSelect, 0x80);
+-
+-	write_nic_word(dev, RFPinsEnable, 0x80);
+-
+-
+-	mdelay(100);
+-
+-	mdelay(1000);
+-
+-}
 -#endif
--	rf_stabilize(dev);
--}
+ void rtl8225z2_rf_init(struct net_device *dev)
+ {
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+@@ -840,12 +548,6 @@ void rtl8225z2_rf_init(struct net_device
+ 	for(i=0;i<95;i++){
+ 		write_rtl8225(dev, 0x1, (u8)(i+1));
+ 
+-		#if 0
+-		if(priv->phy_ver == 1)
+-			/* version A */
+-			write_rtl8225(dev, 0x2, rtl8225a_rxgain[i]);
+-		else
+-		#endif
+ 		/* version B & C & D*/
+ 
+ 		write_rtl8225(dev, 0x2, rtl8225z2_rxgain[i]);
+@@ -917,16 +619,6 @@ void rtl8225z2_rf_init(struct net_device
+ 
+                 mdelay(1);
+         }
+-#if 0
+-	for(i=0;i<128;i++){
+-		write_phy_ofdm(dev, 0xb, rtl8225_agc[i]);
 -
+-		mdelay(1);
+-		write_phy_ofdm(dev, 0xa, (u8)i+ 0x80);
 -
--
--void sa2400_write_phy_antenna(struct net_device *dev,short ch)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u8 ant;
--
--	ant = SA2400_ANTENNA;
--	if(priv->antb) /*default antenna is antenna B */
--		ant |= BB_ANTENNA_B;
--	if(ch == 14)
--		ant |= BB_ANTATTEN_CHAN14;
--	write_phy(dev,0x10,ant);
--	//DMESG("BB antenna %x ",ant);
--}
--
--
--/* from the rtl8181 embedded driver */
--short sa2400_rf_set_sens(struct net_device *dev, short sens)
--{
--	u8 finetune = 0;
--	if ((sens > 85) || (sens < 54)) return -1;
--
--	write_sa2400(dev,5,0x1dfb | (sens-54) << 15 |(finetune<<20));  // AGC	0xc9dfb
--
--	return 0;
--}
--
--
--void sa2400_rf_set_chan(struct net_device *dev, short ch)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 txpw = 0xff & priv->chtxpwr[ch];
--	u32 chan = sa2400_chan[ch];
--
--	write_sa2400(dev,7,txpw);
--	//write_phy(dev,0x10,0xd1);
--	sa2400_write_phy_antenna(dev,ch);
--	write_sa2400(dev,0,chan);
--	write_sa2400(dev,1,0xbb50);
--	write_sa2400(dev,2,0x80);
--	write_sa2400(dev,3,0);
--}
--
--
--void sa2400_rf_close(struct net_device *dev)
--{
--	write_sa2400(dev, 4, 0);
--}
--
--
--void sa2400_rf_init(struct net_device *dev)
--{
--	struct r8180_priv *priv = ieee80211_priv(dev);
--	u32 anaparam;
--	u8 firdac;
--
--	write_nic_byte(dev,PHY_DELAY,0x6);	//this is general
--	write_nic_byte(dev,CARRIER_SENSE_COUNTER,0x4c); //this is general
--
--	/*these are philips sa2400 specific*/
--	anaparam = read_nic_dword(dev,ANAPARAM);
--	anaparam = anaparam &~ (1<<ANAPARAM_TXDACOFF_SHIFT);
--
--	anaparam = anaparam &~ANAPARAM_PWR1_MASK;
--	anaparam = anaparam &~ANAPARAM_PWR0_MASK;
--	if(priv->digphy){
--		anaparam |= (SA2400_DIG_ANAPARAM_PWR1_ON<<ANAPARAM_PWR1_SHIFT);
--		anaparam |= (SA2400_ANAPARAM_PWR0_ON<<ANAPARAM_PWR0_SHIFT);
+-		mdelay(1);
+-	}
+-#endif
+ 
+ 	force_pci_posting(dev);
+ 	mdelay(1);
+@@ -958,14 +650,6 @@ void rtl8225z2_rf_init(struct net_device
+ 	write_phy_ofdm(dev, 0xe, 0xd3);mdelay(1);
+ 
+ 
+-	#if 0
+-	if(priv->card_8185 == 1){
+-		if(priv->card_8185_Bversion)
+-			write_phy_ofdm(dev, 0xf, 0x20);/*ver B*/
+-		else
+-			write_phy_ofdm(dev, 0xf, 0x28);/*ver C*/
 -	}else{
--		anaparam |= (SA2400_ANA_ANAPARAM_PWR1_ON<<ANAPARAM_PWR1_SHIFT);
+-	#endif
+ 	write_phy_ofdm(dev, 0xf, 0x38);mdelay(1);
+ /*ver D & 8187*/
+ //	}
+@@ -986,13 +670,6 @@ void rtl8225z2_rf_init(struct net_device
+ 
+ 	write_phy_ofdm(dev, 0x13, 0x20);mdelay(1);
+ 
+-#if 0
+-	}else{
+-		/* Ver B & C*/
+-		write_phy_ofdm(dev, 0x12, 0x0);
+-		write_phy_ofdm(dev, 0x13, 0x0);
 -	}
--
--	rtl8180_set_anaparam(dev,anaparam);
--
--	firdac = (priv->digphy) ? (1<<SA2400_REG4_FIRDAC_SHIFT) : 0;
--	write_sa2400(dev,0,sa2400_chan[priv->chan]);
--	write_sa2400(dev,1,0xbb50);
--	write_sa2400(dev,2,0x80);
--	write_sa2400(dev,3,0);
--	write_sa2400(dev,4,0x19340 | firdac);
--	write_sa2400(dev,5,0xc9dfb);  // AGC
--	write_sa2400(dev,4,0x19348 | firdac);  //calibrates VCO
--
--	if(priv->digphy)
--		write_sa2400(dev,4,0x1938c); /*???*/
--
--	write_sa2400(dev,4,0x19340 | firdac);
--
--	write_sa2400(dev,0,sa2400_chan[priv->chan]);
--	write_sa2400(dev,1,0xbb50);
--	write_sa2400(dev,2,0x80);
--	write_sa2400(dev,3,0);
--	write_sa2400(dev,4,0x19344 | firdac); //calibrates filter
--
--	/* new from rtl8180 embedded driver (rtl8181 project) */
--	write_sa2400(dev,6,0x13ff | (1<<23)); // MANRX
--	write_sa2400(dev,8,0); //VCO
--
--	if(!priv->digphy)
--	{
--		rtl8180_set_anaparam(dev, anaparam | \
--				     (1<<ANAPARAM_TXDACOFF_SHIFT));
--
--		rtl8180_conttx_enable(dev);
--
--		write_sa2400(dev, 4, 0x19341); // calibrates DC
--
--		/* a 5us sleep is required here,
--		   we rely on the 3ms delay introduced in write_sa2400
--		*/
--		write_sa2400(dev, 4, 0x19345);
--		/* a 20us sleep is required here,
--		   we rely on the 3ms delay introduced in write_sa2400
--		*/
--		rtl8180_conttx_disable(dev);
--
--		rtl8180_set_anaparam(dev, anaparam);
--	}
--	/* end new */
--
--	write_sa2400(dev,4,0x19341 | firdac ); //RTX MODE
--
--	// Set tx power level !?
--
--
--	/*baseband configuration*/
--	write_phy(dev,0,0x98);
--	write_phy(dev,3,0x38);
--	write_phy(dev,4,0xe0);
--	write_phy(dev,5,0x90);
--	write_phy(dev,6,0x1a);
--	write_phy(dev,7,0x64);
--
--	/*Should be done something more here??*/
--
--	sa2400_write_phy_antenna(dev,priv->chan);
--
--	write_phy(dev,0x11,0x80);
--	if(priv->diversity)
--		write_phy(dev,0x12,0xc7);
+-#endif
+ 	write_phy_ofdm(dev, 0x14, 0x0); mdelay(1);
+ 	write_phy_ofdm(dev, 0x15, 0x40); mdelay(1);
+ 	write_phy_ofdm(dev, 0x16, 0x0); mdelay(1);
+@@ -1052,11 +729,6 @@ void rtl8225z2_rf_init(struct net_device
+ 	write_phy_cck(dev, 0x10, ((priv->card_type == USB) ? 0x9b: 0x93)); mdelay(1);
+ 	write_phy_cck(dev, 0x11, 0x88); mdelay(1);
+ 	write_phy_cck(dev, 0x12, 0x47); mdelay(1);
+-#if 0
+-	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-		write_phy_cck(dev, 0x13, 0x98); /* Ver B */
 -	else
--		write_phy(dev,0x12,0x47);
+-#endif
+ 	write_phy_cck(dev, 0x13, 0xd0); /* Ver C & D & 8187*/
+ 
+ 	write_phy_cck(dev, 0x19, 0x0);
+@@ -1279,13 +951,6 @@ SetZebraRFPowerState8185(
+ 					QueueID++;
+ 					continue;
+ 				}
+-#if 0		//reserved amy
+-				else if(priv->NdisAdapter.CurrentPowerState != NdisDeviceStateD0)
+-				{
+-					RT_TRACE(COMP_POWER, DBG_LOUD, ("eRfSleep: %d times TcbBusyQueue[%d] !=0 but lower power state!\n", (pMgntInfo->TxPollingTimes+1), QueueID));
+-					break;
+-				}
+-#endif
+ 				else//lzm mod 080826
+ 				{
+ 					priv->TxPollingTimes ++;
+@@ -1388,13 +1053,6 @@ SetZebraRFPowerState8185(
+ 					QueueID++;
+ 					continue;
+ 				}
+-#if 0
+-				else if(Adapter->NdisAdapter.CurrentPowerState != NdisDeviceStateD0)
+-				{
+-					RT_TRACE(COMP_POWER, DBG_LOUD, ("%d times TcbBusyQueue[%d] !=0 but lower power state!\n", (i+1), QueueID));
+-					break;
+-				}
+-#endif
+ 				else
+ 				{
+ 					udelay(10);
+@@ -1477,39 +1135,6 @@ SetZebraRFPowerState8185(
+ 	{
+ 		// Update current RF state variable.
+ 		priv->eRFPowerState = eRFPowerState;
+-#if 0
+-		switch(priv->eRFPowerState)
+-		{
+-		case eRfOff:
+-			//
+-			//If Rf off reason is from IPS, Led should blink with no link, by Maddest 071015
+-			//
+-			if(priv->RfOffReason==RF_CHANGE_BY_IPS )
+-			{
+-				Adapter->HalFunc.LedControlHandler(Adapter,LED_CTL_NO_LINK);
+-			}
+-			else
+-			{
+-				// Turn off LED if RF is not ON.
+-				Adapter->HalFunc.LedControlHandler(Adapter, LED_CTL_POWER_OFF);
+-			}
+-			break;
 -
--	write_phy(dev,0x13,0x90 | priv->cs_treshold );
+-		case eRfOn:
+-			// Turn on RF we are still linked, which might happen when
+-			// we quickly turn off and on HW RF. 2006.05.12, by rcnjko.
+-			if( pMgntInfo->bMediaConnect == TRUE )
+-			{
+-				Adapter->HalFunc.LedControlHandler(Adapter, LED_CTL_LINK);
+-			}
+-			break;
 -
--	write_phy(dev,0x19,0x0);
--	write_phy(dev,0x1a,0xa0);
+-		default:
+-			// do nothing.
+-			break;
+-		}
+-#endif
 -
--	sa2400_rf_set_chan(dev,priv->chan);
--}
-Index: b/drivers/staging/rtl8187se/r8180_sa2400.h
+ 	}
+ 
+ 	priv->SetRFPowerStateInProgress = false;
+Index: b/drivers/staging/rtl8187se/r8180_rtl8255.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_sa2400.h
-+++ /dev/null
-@@ -1,26 +0,0 @@
--/*
--	This is part of rtl8180 OpenSource driver - v 0.7
--	Copyright (C) Andrea Merello 2004  <andreamrl@tiscali.it>
--	Released under the terms of GPL (General Public Licence)
+--- a/drivers/staging/rtl8187se/r8180_rtl8255.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8255.c
+@@ -256,14 +256,6 @@ void rtl8255_SetTXPowerLevel(struct net_
+ 	mdelay(1);
+ 	//write_nic_byte(dev, TX_AGC_CONTROL,4);
+ }
+-#if 0
+-/* switch between mode B and G */
+-void rtl8255_set_mode(struct net_device *dev, short modeb)
+-{
+-	write_phy_ofdm(dev, 0x15, (modeb ? 0x0 : 0x40));
+-	write_phy_ofdm(dev, 0x17, (modeb ? 0x0 : 0x40));
+-}
+-#endif
+ 
+ void rtl8255_rf_set_chan(struct net_device *dev, short ch)
+ {
+@@ -281,25 +273,6 @@ void rtl8255_rf_set_chan(struct net_devi
+ 
+ 	rtl8255_SetTXPowerLevel(dev, ch);
+ 	/* FIXME FIXME FIXME */
 -
--	Parts of this driver are based on the GPL part of the official realtek driver
--	Parts of this driver are based on the rtl8180 driver skeleton from Patric Schenke & Andres Salomon
--	Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver
--
--	We want to tanks the Authors of such projects and the Ndiswrapper project Authors.
--*/
--
--#define SA2400_ANTENNA 0x91
--#define SA2400_DIG_ANAPARAM_PWR1_ON 0x8
--#define SA2400_ANA_ANAPARAM_PWR1_ON 0x28
--#define SA2400_ANAPARAM_PWR0_ON 0x3
--
--#define SA2400_RF_MAX_SENS 85
--#define SA2400_RF_DEF_SENS 80
--
--#define SA2400_REG4_FIRDAC_SHIFT 7
--
--void sa2400_rf_init(struct net_device *dev);
--void sa2400_rf_set_chan(struct net_device *dev,short ch);
--short sa2400_rf_set_sens(struct net_device *dev,short sens);
--void sa2400_rf_close(struct net_device *dev);
+-	#if 0
+-	write_nic_byte(dev,DIFS,0xe); //DIFS
+-	write_nic_byte(dev,SLOT,0x14); //SLOT
+-	write_nic_byte(dev,EIFS,0x5b); // EIFS
+-	//write_nic_byte(dev,0xbc,0); //CW CONFIG
+-	write_nic_byte(dev,0xbd,0xa4); //CW VALUE
+-	//write_nic_byte(dev,TX_AGC_CONTROL,4);
+-	//write_nic_byte(dev, 0x9d,7);
+-//Apr 20 13:25:03 localhost kernel: w8. 409d<-7  // CCK AGC
+-	/*write_nic_word(dev,0x84,0x488);
+-	write_nic_byte(dev,0x91,0x3e);
+-	write_nic_byte(dev,0x90,0x30);
+-	write_nic_word(dev,0x84,0x488);
+-	write_nic_byte(dev,0x91,0x3e);
+-	write_nic_byte(dev,0x90,0x20);
+-	*/
+-	//mdelay(100);
+-	#endif
+ }
+ 
+ void rtl8255_init_BGband(struct net_device *dev)
+@@ -1807,11 +1780,7 @@ void rtl8255_rf_init(struct net_device *
+ 	write_phy_cck(dev, 0x4a, 0x0);
+ 	write_phy_cck(dev, 0x4b, 0x0);
+ //	write_phy_cck(dev, 0x4c, 0x5);
+-#if 0
+-	write_phy_cck(dev, 0x41, 0x9d); /* Energy Threshold */
+-	// TESTR 0xb 8187
+-	write_phy_cck(dev, 0x10, 0x93);// & 0xfb);
+-#endif
++
+ 	//rtl8255_set_gain(dev, 1); /* FIXME this '1' is random */
+ 
+ 	rtl8255_SetTXPowerLevel(dev, priv->chan);
 Index: b/drivers/staging/rtl8187se/r8180_wx.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8180_wx.c
 +++ b/drivers/staging/rtl8187se/r8180_wx.c
-@@ -20,7 +20,6 @@
+@@ -1569,36 +1569,7 @@ static struct iw_statistics *r8180_get_w
+ 		wstats->qual.updated = IW_QUAL_ALL_UPDATED | IW_QUAL_DBM;
+ 		return wstats;
+ 	}
+-#if 0
+-	spin_lock_irqsave(&ieee->lock, flag);
+-	list_for_each_entry(target, &ieee->network_list, list)
+-	{
+-		if (is_same_network(target, &ieee->current_network, ieee))
+-		{
+-			printk("it's same network:%s\n", target->ssid);
+-#if 0
+-			if (!tmp_level)
+-			{
+-				tmp_level = target->stats.signalstrength;
+-				tmp_qual = target->stats.signal;
+-			}
+-			else
+-			{
  
- #include "r8180.h"
- #include "r8180_hw.h"
--#include "r8180_sa2400.h"
- 
- #include "ieee80211/dot11d.h"
- 
+-				tmp_level = (15*tmp_level + target->stats.signalstrength)/16;
+-				tmp_qual = (15*tmp_qual + target->stats.signal)/16;
+-			}
+-#else
+-			tmp_level = target->stats.signal;
+-			tmp_qual = target->stats.signalstrength;
+-			tmp_noise = target->stats.noise;
+-			printk("level:%d, qual:%d, noise:%d\n", tmp_level, tmp_qual, tmp_noise);
+-#endif
+-			break;
+-		}
+-	}
+-	spin_unlock_irqrestore(&ieee->lock, flag);
+-#endif
+ 	tmp_level = (&ieee->current_network)->stats.signal;
+ 	tmp_qual = (&ieee->current_network)->stats.signalstrength;
+ 	tmp_noise = (&ieee->current_network)->stats.noise;
 Index: b/drivers/staging/rtl8187se/r8185b_init.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8185b_init.c
 +++ b/drivers/staging/rtl8187se/r8185b_init.c
-@@ -22,11 +22,7 @@ Notes:
- #include <linux/spinlock.h>
- #include "r8180_hw.h"
- #include "r8180.h"
--#include "r8180_sa2400.h"  /* PHILIPS Radio frontend */
--#include "r8180_max2820.h" /* MAXIM Radio frontend */
--#include "r8180_gct.h"     /* GCT Radio frontend */
- #include "r8180_rtl8225.h" /* RTL8225 Radio frontend */
--#include "r8180_rtl8255.h" /* RTL8255 Radio frontend */
- #include "r8180_93cx6.h"   /* Card EEPROM */
- #include "r8180_wx.h"
+@@ -1194,11 +1194,6 @@ ZEBRA_Config_85BASIC_HardCode(
+ 	RF_WriteReg(dev, 0x05, 0x05ab);			mdelay(1); // Rx mode//+edward
+ 	RF_WriteReg(dev, 0x00, 0x009f);			mdelay(1); // Rx mode//+edward
  
+-#if 0//-edward
+-	RF_WriteReg(dev, 0x00, 0x0197);			mdelay(1);
+-	RF_WriteReg(dev, 0x05, 0x05ab);			mdelay(1);
+-	RF_WriteReg(dev, 0x00, 0x009F);			mdelay(1);
+-#endif
+ 	RF_WriteReg(dev, 0x01, 0x0000);			mdelay(1); // Rx mode//+edward
+ 	RF_WriteReg(dev, 0x02, 0x0000);			mdelay(1); // Rx mode//+edward
+ 	//power save parameters.
+@@ -1218,14 +1213,7 @@ ZEBRA_Config_85BASIC_HardCode(
+ 		CCK reg0x06[3]=1'b1: turn off unused circuits before cca = 1
+ 		CCK reg0x06[2]=1'b1: turn off cck's circuit if macrst =0
+ 	*/
+-#if 0
+-	write_nic_dword(dev, PHY_ADR, 0x0100c880);
+-	write_nic_dword(dev, PHY_ADR, 0x01001c86);
+-	write_nic_dword(dev, PHY_ADR, 0x01007890);
+-	write_nic_dword(dev, PHY_ADR, 0x0100d0ae);
+-	write_nic_dword(dev, PHY_ADR, 0x010006af);
+-	write_nic_dword(dev, PHY_ADR, 0x01004681);
+-#endif
++
+ 	write_phy_cck(dev,0x00,0xc8);
+ 	write_phy_cck(dev,0x06,0x1c);
+ 	write_phy_cck(dev,0x10,0x78);
+@@ -1294,64 +1282,6 @@ ZEBRA_Config_85BASIC_HardCode(
+ 	// Config Sw/Hw  Combinational Antenna Diversity. Added by Roger, 2008.02.26.
+ 	SetAntennaConfig87SE(dev, priv->bDefaultAntenna1, priv->bSwAntennaDiverity);
+ //by amy 080312}
+-#if 0
+-	// Config Sw/Hw  Antenna Diversity
+-	if( priv->bSwAntennaDiverity )  //  Use SW+Hw Antenna Diversity
+-	{
+-		if( priv->bDefaultAntenna1 == true )  // aux antenna
+-		{
+-			// Mac register, aux antenna
+-			write_nic_byte(dev, ANTSEL, 0x00);
+-			// Config CCK RX antenna.
+-			write_phy_cck(dev, 0x11, 0xbb); // Reg11 : bb
+-			write_phy_cck(dev, 0x0c, 0x09); // Reg0c : 09
+-			write_phy_cck(dev, 0x01, 0xc7); // Reg01 : c7
+-			// Config OFDM RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x54);   // Reg0d : 54
+-			write_phy_ofdm(dev, 0x18, 0xb2);  // Reg18 : b2
+-		}
+-		else //  main antenna
+-		{
+-			// Mac register, main antenna
+-			write_nic_byte(dev, ANTSEL, 0x03);
+-			//base band
+-			// Config CCK RX antenna.
+-			write_phy_cck(dev, 0x11, 0x9b); // Reg11 : 9b
+-			write_phy_cck(dev, 0x0c, 0x09); // Reg0c : 09
+-			write_phy_cck(dev, 0x01, 0xc7); // Reg01 : c7
+-			// Config OFDM RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x5c);   // Reg0d : 5c
+-			write_phy_ofdm(dev, 0x18, 0xb2);  // Reg18 : b2
+-		}
+-	}
+-	else   // Disable Antenna Diversity
+-	{
+-		if( priv->bDefaultAntenna1 == true ) // aux Antenna
+-		{
+-			// Mac register, aux antenna
+-			write_nic_byte(dev, ANTSEL, 0x00);
+-			// Config CCK RX antenna.
+-			write_phy_cck(dev, 0x11, 0xbb); // Reg11 : bb
+-			write_phy_cck(dev, 0x0c, 0x09); // Reg0c : 09
+-			write_phy_cck(dev, 0x01, 0x47); // Reg01 : 47
+-			// Config OFDM RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x54);   // Reg0d : 54
+-			write_phy_ofdm(dev, 0x18, 0x32);  // Reg18 : 32
+-		}
+-		else // main Antenna
+-		{
+-			// Mac register, main antenna
+-			write_nic_byte(dev, ANTSEL, 0x03);
+-			// Config CCK RX antenna.
+-			write_phy_cck(dev, 0x11, 0x9b); // Reg11 : 9b
+-			write_phy_cck(dev, 0x0c, 0x09); // Reg0c : 09
+-			write_phy_cck(dev, 0x01, 0x47); // Reg01 : 47
+-			// Config OFDM RX antenna.
+-			write_phy_ofdm(dev, 0x0d, 0x5c);   // Reg0d : 5c
+-			write_phy_ofdm(dev, 0x18, 0x32);  // Reg18 : 32
+-		}
+-	}
+-#endif
+ //by amy for antenna
+ }
+ 
+@@ -1378,69 +1308,6 @@ UpdateInitialGain(
+ 
+ 	switch(priv->rf_chip)
+ 	{
+-#if 0
+-	case RF_ZEBRA2:
+-		// Dynamic set initial gain, by shien chang, 2006.07.14
+-		switch(priv->InitialGain)
+-		{
+-			case 1: //m861dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 1: -82 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x2697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0x86a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfa85);	mdelay(1);
+-				break;
+-
+-			case 2: //m862dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 2: -82 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x2697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0x86a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			case 3: //m863dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 3: -82 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x2697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0x96a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			case 4: //m864dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 4: -78 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x2697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xa6a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			case 5: //m82dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 5: -74 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x3697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xa6a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			case 6: //m78dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 6: -70 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x4697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xa6a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			case 7: //m74dBm
+-				DMESG("RTL8185B + 8225 Initial Gain State 7: -66 dBm \n");
+-				write_nic_dword(dev, PhyAddr, 0x5697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xa6a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfb85);	mdelay(1);
+-				break;
+-
+-			default:	//MP
+-				DMESG("RTL8185B + 8225 Initial Gain State 1: -82 dBm (default)\n");
+-				write_nic_dword(dev, PhyAddr, 0x2697);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0x86a4);	mdelay(1);
+-				write_nic_dword(dev, PhyAddr, 0xfa85);	mdelay(1);
+-				break;
+-		}
+-		break;
+-#endif
+ 	case RF_ZEBRA4:
+ 		// Dynamic set initial gain, follow 87B
+ 		switch(priv->InitialGain)
+@@ -1657,9 +1524,6 @@ HwConfigureRTL8185(
+ 		// <RJ_TODO_8185B> We shall set up the ARFR according to user's setting.
+ 		//write_nic_word(dev, ARFR, 0x0fff); // set 1M ~ 54M
+ //by amy
+-#if 0
+-		PlatformIOWrite2Byte(dev, ARFR, 0x0fff); 	// set 1M ~ 54M
+-#endif
+ 	        // Aadded by Roger, 2007.11.15.
+ 	        PlatformIOWrite2Byte(dev, ARFR, 0x0fff); //set 1M ~ 54Mbps.
+ //by amy
+@@ -1731,9 +1595,6 @@ MacConfig_85BASIC(
+ 	// Asked for by SD3 CM Lin, 2006.06.27, by rcnjko.
+ 	//PlatformIOWrite4Byte(dev, RFTiming, 0x00004001);
+ //by amy
+-#if 0
+-	write_nic_dword(dev, RFTiming, 0x00004001);
+-#endif
+ 	// power save parameter based on "87SE power save parameters 20071127.doc", as follow.
+ 
+ 	//Enable DA10 TX power saving
+@@ -2118,16 +1979,6 @@ MgntDisconnectIBSS(
+ 	notify_wx_assoc_event(priv->ieee80211);
+ 
+ 	// Stop SW Beacon.Use hw beacon so do not need to do so.by amy
+-#if 0
+-	if(pMgntInfo->bEnableSwBeaconTimer)
+-	{
+-		// SwBeaconTimer will stop if pMgntInfo->mIbss==FALSE, see SwBeaconCallback() for details.
+-// comment out by haich, 2007.10.01
+-//#if DEV_BUS_TYPE==USB_INTERFACE
+-		PlatformCancelTimer( Adapter, &pMgntInfo->SwBeaconTimer);
+-//#endif
+-	}
+-#endif
+ 
+ //		MgntIndicateMediaStatus( Adapter, RT_MEDIA_DISCONNECT, GENERAL_INDICATE );
+ 
+@@ -2483,19 +2334,7 @@ InactivePowerSave(
+ 	//
+ 	// To solve CAM values miss in RF OFF, rewrite CAM values after RF ON. By Bruce, 2007-09-20.
+ 	//
+-#if 0
+-	while( index < 4 )
+-	{
+-		if( ( pMgntInfo->SecurityInfo.PairwiseEncAlgorithm == WEP104_Encryption ) ||
+-			(pMgntInfo->SecurityInfo.PairwiseEncAlgorithm == WEP40_Encryption) )
+-		{
+-			if( pMgntInfo->SecurityInfo.KeyLen[index] != 0)
+-			pAdapter->HalFunc.SetKeyHandler(pAdapter, index, 0, FALSE, pMgntInfo->SecurityInfo.PairwiseEncAlgorithm, TRUE, FALSE);
+ 
+-		}
+-		index++;
+-	}
+-#endif
+ 	priv->bSwRfProcessing = false;
+ }
+ 
+@@ -2782,58 +2621,6 @@ void rtl8185b_rx_enable(struct net_devic
+ 	//u32 rxconf;
+ 	/* for now we accept data, management & ctl frame*/
+ 	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+-#if 0
+-	rxconf=read_nic_dword(dev,RX_CONF);
+-	rxconf = rxconf &~ MAC_FILTER_MASK;
+-	rxconf = rxconf | (1<<ACCEPT_MNG_FRAME_SHIFT);
+-	rxconf = rxconf | (1<<ACCEPT_DATA_FRAME_SHIFT);
+-	rxconf = rxconf | (1<<ACCEPT_BCAST_FRAME_SHIFT);
+-	rxconf = rxconf | (1<<ACCEPT_MCAST_FRAME_SHIFT);
+-//	rxconf = rxconf | (1<<ACCEPT_CRCERR_FRAME_SHIFT);
+-	if (dev->flags & IFF_PROMISC) DMESG ("NIC in promisc mode");
+-
+-	if(priv->ieee80211->iw_mode == IW_MODE_MONITOR || \
+-	   dev->flags & IFF_PROMISC){
+-		rxconf = rxconf | (1<<ACCEPT_ALLMAC_FRAME_SHIFT);
+-	}else{
+-		rxconf = rxconf | (1<<ACCEPT_NICMAC_FRAME_SHIFT);
+-		if(priv->card_8185 == 0)
+-			rxconf = rxconf | (1<<RX_CHECK_BSSID_SHIFT);
+-	}
+-
+-	/*if(priv->ieee80211->iw_mode == IW_MODE_MASTER){
+-		rxconf = rxconf | (1<<ACCEPT_ALLMAC_FRAME_SHIFT);
+-		rxconf = rxconf | (1<<RX_CHECK_BSSID_SHIFT);
+-	}*/
+-
+-	if(priv->ieee80211->iw_mode == IW_MODE_MONITOR){
+-		rxconf = rxconf | (1<<ACCEPT_CTL_FRAME_SHIFT);
+-		rxconf = rxconf | (1<<ACCEPT_ICVERR_FRAME_SHIFT);
+-		rxconf = rxconf | (1<<ACCEPT_PWR_FRAME_SHIFT);
+-	}
+-
+-	if( priv->crcmon == 1 && priv->ieee80211->iw_mode == IW_MODE_MONITOR)
+-		rxconf = rxconf | (1<<ACCEPT_CRCERR_FRAME_SHIFT);
+-
+-	//if(!priv->card_8185){
+-		rxconf = rxconf &~ RX_FIFO_THRESHOLD_MASK;
+-		rxconf = rxconf | (RX_FIFO_THRESHOLD_NONE<<RX_FIFO_THRESHOLD_SHIFT);
+-	//}
+-
+-	rxconf = rxconf | (1<<RX_AUTORESETPHY_SHIFT);
+-	rxconf = rxconf &~ MAX_RX_DMA_MASK;
+-	rxconf = rxconf | (MAX_RX_DMA_2048<<MAX_RX_DMA_SHIFT);
+-
+-	//if(!priv->card_8185)
+-		rxconf = rxconf | RCR_ONLYERLPKT;
+-
+-	rxconf = rxconf &~ RCR_CS_MASK;
+-	if(!priv->card_8185)
+-		rxconf |= (priv->rcr_csense<<RCR_CS_SHIFT);
+-//	rxconf &=~ 0xfff00000;
+-//	rxconf |= 0x90100000;//9014f76f;
+-	write_nic_dword(dev, RX_CONF, rxconf);
+-#endif
+ 
+ 	if (dev->flags & IFF_PROMISC) DMESG ("NIC in promisc mode");
+ 
+@@ -2875,76 +2662,6 @@ void rtl8185b_tx_enable(struct net_devic
+ 	//u32 txconf;
+ 	struct r8180_priv *priv = (struct r8180_priv *)ieee80211_priv(dev);
+ 
+-#if 0
+-	txconf= read_nic_dword(dev,TX_CONF);
+-	if(priv->card_8185){
+-
+-
+-		byte = read_nic_byte(dev,CW_CONF);
+-		byte &= ~(1<<CW_CONF_PERPACKET_CW_SHIFT);
+-		byte &= ~(1<<CW_CONF_PERPACKET_RETRY_SHIFT);
+-		write_nic_byte(dev, CW_CONF, byte);
+-
+-		tx_agc_ctl = read_nic_byte(dev, TX_AGC_CTL);
+-		tx_agc_ctl &= ~(1<<TX_AGC_CTL_PERPACKET_GAIN_SHIFT);
+-		tx_agc_ctl &= ~(1<<TX_AGC_CTL_PERPACKET_ANTSEL_SHIFT);
+-		tx_agc_ctl |=(1<<TX_AGC_CTL_FEEDBACK_ANT);
+-		write_nic_byte(dev, TX_AGC_CTL, tx_agc_ctl);
+-		/*
+-		write_nic_word(dev, 0x5e, 0x01);
+-		force_pci_posting(dev);
+-		mdelay(1);
+-		write_nic_word(dev, 0xfe, 0x10);
+-		force_pci_posting(dev);
+-		mdelay(1);
+-		write_nic_word(dev, 0x5e, 0x00);
+-		force_pci_posting(dev);
+-		mdelay(1);
+-		*/
+-		write_nic_byte(dev, 0xec, 0x3f); /* Disable early TX */
+-	}
+-
+-	if(priv->card_8185){
+-
+-		txconf = txconf &~ (1<<TCR_PROBE_NOTIMESTAMP_SHIFT);
+-
+-	}else{
+-
+-		if(hwseqnum)
+-			txconf= txconf &~ (1<<TX_CONF_HEADER_AUTOICREMENT_SHIFT);
+-		else
+-			txconf= txconf | (1<<TX_CONF_HEADER_AUTOICREMENT_SHIFT);
+-	}
+-
+-	txconf = txconf &~ TX_LOOPBACK_MASK;
+-	txconf = txconf | (TX_LOOPBACK_NONE <<TX_LOOPBACK_SHIFT);
+-	txconf = txconf &~ TCR_DPRETRY_MASK;
+-	txconf = txconf &~ TCR_RTSRETRY_MASK;
+-	txconf = txconf | (priv->retry_data<<TX_DPRETRY_SHIFT);
+-	txconf = txconf | (priv->retry_rts<<TX_RTSRETRY_SHIFT);
+-	txconf = txconf &~ (1<<TX_NOCRC_SHIFT);
+-
+-	if(priv->card_8185){
+-		if(priv->hw_plcp_len)
+-			txconf = txconf &~ TCR_PLCP_LEN;
+-		else
+-			txconf = txconf | TCR_PLCP_LEN;
+-	}else{
+-		txconf = txconf &~ TCR_SAT;
+-	}
+-	txconf = txconf &~ TCR_MXDMA_MASK;
+-	txconf = txconf | (TCR_MXDMA_2048<<TCR_MXDMA_SHIFT);
+-	txconf = txconf | TCR_CWMIN;
+-	txconf = txconf | TCR_DISCW;
+-
+-//	if(priv->ieee80211->hw_wep)
+-//		txconf=txconf &~ (1<<TX_NOICV_SHIFT);
+-//	else
+-		txconf=txconf | (1<<TX_NOICV_SHIFT);
+-
+-	write_nic_dword(dev,TX_CONF,txconf);
+-#endif
+-
+ 	write_nic_dword(dev, TCR, priv->TransmitConfig);
+ 	byte = read_nic_byte(dev, MSR);
+ 	byte |= MSR_LINK_ENEDCA;
