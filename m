@@ -1,167 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZF1Wra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZF1WuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbZF1Wra (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 18:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZF1WrT
+	id S1754954AbZF1WuL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 18:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZF1WuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 18:47:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44832 "EHLO mx2.redhat.com"
+	Sun, 28 Jun 2009 18:50:00 -0400
+Received: from tundra.namei.org ([65.99.196.166]:33359 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754058AbZF1WrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 18:47:17 -0400
-Date: Mon, 29 Jun 2009 00:47:17 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.16-rc1
-Message-ID: <20090628224717.GA2936@nb.net.home>
+	id S1752106AbZF1WuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 18:50:00 -0400
+Date: Mon, 29 Jun 2009 08:50:00 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, "J.R. Okajima" <hooanon05@yahoo.co.jp>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
+In-Reply-To: <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+Message-ID: <alpine.LRH.2.00.0906290849060.29509@tundra.namei.org>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com> <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Jun 2009, Mimi Zohar wrote:
 
-The first util-linux-ng 2.16 release candidate is available at
+> This patch fixes an imbalance message as reported by J.R. Okajima.
+> The IMA file counters are incremented in ima_path_check. If the
+> actual open fails, such as ETXTBSY, decrement the counters to
+> prevent unnecessary imbalance messages.
+> 
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+Don't forget to use "Reported-by:" lines for the bug reporter.
 
-Feedback and bug reports, as always, are welcomed.
+Have you tested this using the original test case?
 
-	Karel
-
-
-Util-linux-ng 2.16 Release Notes
-================================
-
-Release highlights
-------------------
-
-libuuid, uuidgen(1) and uuidd(8):
-  - the libuuid library has been moved from e2fsprogs to util-linux-ng
-
-switch_root:
-  - this NEW COMMAND allows to switch to another filesystem as the root
-    of the mount tree.
-
-mount, umount, fsck:
-  - don't support linking against obsolete libvolume_id (from udev)
-
-
-Stable maintenance releases between v2.15 and v2.16
----------------------------------------------------
-
-util-linux-ng 2.15.1 [10-Jun-2009]
-
- * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ReleaseNotes
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ChangeLog
-
-
-ChangeLog between v2.15 and v2.16
----------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
-
-
-build-sys:
-   - add --disable-libblkid, remove volume_id support  [Karel Zak]
-   - add --disable-switch_root  [Karel Zak]
-   - add --disable-tls  [Karel Zak]
-   - add --disable-uuidd  [Karel Zak]
-   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
-   - check for openat() and linux for switch_root  [Karel Zak]
-   - cleanup libuuid stuff  [Karel Zak]
-   - complete /libs to /shlibs rename  [Karel Zak]
-   - enable fsck by default  [Karel Zak]
-   - fix blkid.h include for old e2fsprogs  [Karel Zak]
-   - fix --disable-uuidd
-   - fix headers in mkswap and libblkid  [Karel Zak]
-   - fix libuuid Makefile.am  [Karel Zak]
-   - fix "make -C" bug  [Karel Zak]
-   - rename /libs to /shlibs  [Karel Zak]
-cal:
-   - Highlight today even when month or year specified  [Rajeev V. Pillai]
-   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
-chrt:
-   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
-docs:
-   - add missing commands/projects to AUTHORS file  [Karel Zak]
-   - refresh TODO list  [Karel Zak]
-   - remove obsolete information from fstab example  [Karel Zak]
-   - update AUTHORS file  [Karel Zak]
-fdisk:
-   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
-   - add simple test for doslabel stuff  [Zdenek Behan]
-hwclock:
-   - fix mismatched popen/fclose.  [John Keeping]
-ionice:
-   - Allow setting the none class  [Jakob Unterwurzacher]
-libblkid:
-   - add device-mapper snapshot cow device probe  [Milan Broz]
-   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
-   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
-   - don't require udev symlinks verification for non-root users  [Karel Zak]
-   - fix "hangs forever with partition type mdraid"  [Karel Zak]
-   - fix LVM1 probe  [Milan Broz]
-   - fix reiserfs name  [Karel Zak]
-   - make libuuid optional  [Karel Zak]
-   - update man page  [Karel Zak]
-libuuid:
-   - add --disable-libuuid and LIBUUID_VERSION  [Karel Zak]
-   - add .gitignore  [Karel Zak]
-   - add info about u-l-ng to man pages  [Karel Zak]
-   - import UUID library from e2fsprogs  [Karel Zak]
-losetup:
-   - add --set-capacity  [Karel Zak]
-   - handle symlinks in /dev/loop/  [Mike Frysinger]
-   - suggest to use modprobe rather than insmod in losetup.8  [Karel Zak]
-lscpu:
-   - fix cpuid code on x86/PIC  [Mike Frysinger]
-mount:
-   - (and fsck) remove libvolume_id support  [Karel Zak]
-   - a little clean up info about loopdevs in man page  [Karel Zak]
-   - add ext4 to mount.8  [Karel Zak]
-   - add ext4 to the list of filesystems in mount.8  [Karel Zak]
-   - add info about obsolete vfat options to mount.8  [Karel Zak]
-   - cleanup notes about -l option in mount.8  [Karel Zak]
-   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
-   - move MS_{PROPAGATION,BIND,MOVE} detection  [Karel Zak]
-   - use "none" fstype for MS_PROPAGATION mounts  [Karel Zak]
-   - use TAG parsing function from libblkid  [Karel Zak]
-po:
-   - fix typo in French translation  [Olivier Blin]
-   - merge changes  [Karel Zak]
-   - refresh POTFILES.in  [Karel Zak]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-switch_root:
-   - add man page  [Karel Zak]
-   - clean up argv[] usage, add -h and -V  [Karel Zak]
-   - do recursiveRemove after our root is moved to avoid races.  [Peter Jones]
-   - fix coding style  [Karel Zak]
-   - fork before cleaning up the filesystem.  [Peter Jones]
-   - new command  [Karel Zak]
-   - rewrite to use fstatat() and unlinkat()  [Karel Zak]
-   - use err.h, clean up return codes  [Karel Zak]
-   - use file descriptor instead of path for recursiveRemove()  [Peter Jones]
-   - use snprintf() rather tan str{cpy,cat}()  [Karel Zak]
-tests:
-   - add functions for work withdisk images  [Karel Zak]
-   - add mdraid libblkid test  [Karel Zak]
-   - don't run some mount tests for non-root users  [Karel Zak]
-   - fix 'delete extended partition' checksum  [Karel Zak]
-   - fix reiserfs test  [Karel Zak]
-   - fix script that creates lscpu dumps  [Karel Zak]
-   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
-   - remove broken Xen dumps for lscpu  [Karel Zak]
-umount:
-   - clean up help output  [Karel Zak]
-uuidd:
-   - new command (UUID daemon from e2fsprogs)  [Karel Zak]
-uuidgen:
-   - new command (from e2fsprogs)  [Karel Zak]
 
 -- 
- Karel Zak  <kzak@redhat.com>
+James Morris
+<jmorris@namei.org>
