@@ -1,55 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZF1LK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZF1LLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbZF1LK0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 07:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZF1LKT
+	id S1755133AbZF1LLY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 07:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZF1LLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 07:10:19 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:46396 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751406AbZF1LKS (ORCPT
+	Sun, 28 Jun 2009 07:11:11 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:61042 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbZF1LLJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 07:10:18 -0400
-Date: Sun, 28 Jun 2009 13:10:19 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] kmemcheck: depend on HAVE_ARCH_KMEMCHECK
-Message-ID: <20090628111019.GA15900@Chamillionaire.breakpoint.cc>
+	Sun, 28 Jun 2009 07:11:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=OAXyYBQbdE0wJETWapoNy6p3kgHC7Sr9n8UnthVD8zcFgoXHb1i+1TmuuDsT91Ahc9
+         UCdMT6E5Ih8Mz+Bh75lb2TFf6V2FiXD542KeU0pkhMwo5xtthzEhA+kGv13W9Ke+H0wd
+         e23hDmIqVSXxpARW/KmOswCmTh4XWHyjaM/VQ=
+Message-ID: <4A474FB5.4070901@gmail.com>
+Date: Sun, 28 Jun 2009 13:10:45 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Davide Libenzi <davidel@xmailserver.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>, Jiri Olsa <jolsa@redhat.com>,
+       netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com,
+       Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] net: fix race in the receive/select
+References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> <20090625122416.GA23613@redhat.com> <alpine.DEB.1.10.0906251827510.9517@makko.or.mcafeemobile.com> <4A442B65.8040701@gmail.com> <alpine.DEB.1.10.0906251858520.9517@makko.or.mcafeemobile.com> <4A443033.8060401@gmail.com> <alpine.DEB.1.10.0906251947530.9517@makko.or.mcafeemobile.com> <20090626135742.GB3845@redhat.com> <alpine.DEB.1.10.0906261018580.16400@makko.or.mcafeemobile.com> <20090626145027.GA6534@redhat.com>
+In-Reply-To: <20090626145027.GA6534@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-to make it selectable if it is available
+Oleg Nesterov wrote, On 06/26/2009 04:50 PM:
 
-Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
----
- lib/Kconfig.kmemcheck |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> On 06/26, Davide Libenzi wrote:
+>> On Fri, 26 Jun 2009, Oleg Nesterov wrote:
+>>
+>>> And if we remove waitqueue_active() in xxx_update(), then lock/unlock is
+>>> not needed too.
+>>>
+>>> If xxx_poll() takes q->lock first, it can safely miss the changes in ->status
+>>> and schedule(): xxx_update() will take q->lock, notice the sleeper and wake
+>>> it up (ok, it will set ->triggered but this doesn't matter).
+>>>
+>>> If xxx_update() takes q->lock first, xxx_poll() must see the changes in
+>>> status after poll_wait()->unlock(&q->lock) (in fact, after lock, not unlock).
+>> Sure. The snippet above was just to show what typically the code does, not
+>> a suggestion on how to solve the socket case.
+> 
+> Yes, yes. I just meant you are right imho, we shouldn't add mb() into
+> add_wait_queue().
+> 
+>> But yeah, the problem in this case is the waitqueue_active() call. Without
+>> that, the wait queue lock/unlock in poll_wait() and the one in wake_up()
+>> guarantees the necessary barriers.
+>> Some might argue the costs of the lock/unlock of q->lock, and wonder if
+>> MBs are a more efficient solution. This is something I'm not going into.
+>> To me, it just looked not right having cross-matching MB in different
+>> subsystems.
+> 
+> This is subjective and thus up to maintainers, but personally I think you
+> are very, very right.
+> 
+> Perhaps we can add
+> 
+> 	void sock_poll_wait(struct file *file, struct sock *sk, poll_table *pt)
+> 	{
+> 		if (pt) {
+> 			poll_wait(file, sk->sk_sleep, pt);
+> 			/*
+> 			 * fat comment
+> 			 */
+> 			smp_mb(); // or smp_mb__after_unlock();
+> 		}
+> 	}
+> 
+> Oleg.
 
-diff --git a/lib/Kconfig.kmemcheck b/lib/Kconfig.kmemcheck
-index 603c81b..9ccca0d 100644
---- a/lib/Kconfig.kmemcheck
-+++ b/lib/Kconfig.kmemcheck
-@@ -1,6 +1,7 @@
- config HAVE_ARCH_KMEMCHECK
- 	bool
- 
-+if HAVE_ARCH_KMEMCHECK
- menuconfig KMEMCHECK
- 	bool "kmemcheck: trap use of uninitialized memory"
- 	depends on DEBUG_KERNEL
-@@ -89,3 +90,4 @@ config KMEMCHECK_BITOPS_OK
- 	  accesses where not all the bits are initialized at the same time.
- 	  This may also hide some real bugs.
- 
-+endif
--- 
-1.6.0.6
 
+Maybe 'a bit' further?:
+
+static inline void __poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+{
+	p->qproc(filp, wait_address, p);
+}
+
+static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+{
+	if (p && wait_address)
+		__poll_wait(filp, wait_address, p);
+}
+
+static inline void sock_poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+{
+	if (p && wait_address) {
+		__poll_wait(filp, wait_address, p);
+		/*
+		 * fat comment
+		 */
+		smp_mb(); // or smp_mb__after_unlock();
+	}
+}
+
+Jarek P.
