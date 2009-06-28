@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZF1GWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbZF1GZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZF1GWM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 02:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1GWB
+	id S1752662AbZF1GZR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 02:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1GZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 02:22:01 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:46831 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZF1GV7 (ORCPT
+	Sun, 28 Jun 2009 02:25:06 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:41257 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZF1GZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 02:21:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=content-disposition:from:to:subject:date:user-agent:cc:mime-version
-         :content-type:content-transfer-encoding:message-id;
-        b=ckVqUIyqxfCaFX0bUt0jShdzlQRgWz84k0PDl97U5pLkOGmVXrxf/d15r6doxLWoTT
-         WAwr7rZ/jSqfKL32L5PB5ZS6kMO2mgjv917SF3xw8fgPqFtUsU5tfip4e80GJFFMQ2bB
-         i65SsECTAeHHfqoEskvGmnQCNgvBEnPNWpjSo=
-Content-Disposition: inline
-From: Alberto Gonzalez <alberto6674@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel 2.6.30 and udevd problem
-Date: Sun, 28 Jun 2009 08:21:58 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30-ARCH; KDE/4.2.4; x86_64; ; )
-Cc: linux-hotplug@vger.kernel.org, Alberto Gonzalez <alberto6674@gmail.com>
+	Sun, 28 Jun 2009 02:25:04 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: ebiederm@xmission.com (Eric W. Biederman), john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
+Date: Sun, 28 Jun 2009 15:25:02 +0900
+In-Reply-To: <19015.482.794111.612472@samba.org> (tridge@samba.org's message
+	of "Sun, 28 Jun 2009 15:38:42 +1000")
+Message-ID: <87ab3sx4ch.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906280821.58631.info@gnebu.es>
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sorry, wrong udev list in previous message.]
+tridge@samba.org writes:
 
-Hello,
+>  > Given what you have said our interpretation of vfat has a bug,
+>  > and that small change is a candidate for -stable.  If it could
+>  > be it's own patch.
+>
+> good point. 
+>
+> Hirofumi-san, would you support putting the last_u change into stable?
 
-I have recently upgraded my kernel to 2.6.30 and I've noticed that at some 
-point (randomly), udevd would start using a lot of CPU time. Killing the 
-process and starting it with --debug option prints these messages when the 
-problem starts:
+If you want, I have no problem to do. However, I'm not thinking that
+part is a bug.  And -stable rule is also "a real bug that bothers
+people", but there is even a no bug reporter which tell actual problem.
 
-[22652] event_queue_insert: seq 168515 queued, 'change' 'drm'
-[22657] udev_device_new_from_syspath: device 0x2040320 has devpath 
-'/devices/pci0000:00/0000:00:02.0/drm/card0'
-[22657] udev_device_read_db: device 0x2040320 filled with db symlink data 
-'/dev/dri/card0'
-[22657] udev_rules_apply_to_event: LINK 'char/226:0' /lib/udev/rules.d/50-
-udev-default.rules:5
-[22657] udev_rules_apply_to_event: NAME 'dri/card0' /lib/udev/rules.d/50-udev-
-default.rules:38
-[22657] udev_rules_apply_to_event: GROUP 91 /lib/udev/rules.d/50-udev-
-default.rules:42
-[22657] udev_device_new_from_syspath: device 0x2040790 has devpath 
-'/devices/pci0000:00/0000:00:02.0'
-[22657] udev_device_new_from_syspath: device 0x2040a80 has devpath 
-'/devices/pci0000:00'
-[22657] udev_rules_apply_to_event: RUN 
-'socket:@/org/freedesktop/hal/udev_event' /etc/udev/rules.d/90-hal.rules:2
-[22657] udev_device_update_db: create db link (dri/card0 char/226:0)
-[22657] udev_node_add: creating device node '/dev/dri/card0', devnum=226:0, 
-mode=0660, uid=0, gid=91
-[22657] udev_node_mknod: preserve file '/dev/dri/card0', because it has correct 
-dev_t
-[22657] update_link: '/dev/char/226:0' with target '/dev/dri/card0' has the 
-highest priority 0, create it
-[22657] node_symlink: preserve already existing symlink '/dev/char/226:0' to 
-'../dri/card0'
-[22657] udev_monitor_send_device: passed 230 bytes to monitor 0x2040320
-[22657] udev_monitor_send_device: passed -1 bytes to monitor 0x2036150
-[22657] event_fork: seq 168515 exit with 0
-[22652] event_fork: seq 168515 forked, pid [22657], 'change' 'drm', 0 seconds 
-old
-[22652] udev_done: seq 168515 cleanup, pid [22657], status 0, 0 seconds old
-
-
-This sequence repeats ad infinitum. I have no clue what it means, so any help 
-is appreciated.
-
-My system is a Dell Studio desktop with Intel graphics (G45). I run a standard 
-distro kernel (Arch Linux). Please ask me for any other relevant info.
-
-Thanks,
-Alberto.
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
