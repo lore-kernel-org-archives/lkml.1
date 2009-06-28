@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZF1Rr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZF1Rst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZF1Rr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 13:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZF1RrU
+	id S1755469AbZF1Rst (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 13:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZF1Rsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 13:47:20 -0400
-Received: from mail1.radix.net ([207.192.128.31]:50270 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbZF1RrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 13:47:20 -0400
-X-Greylist: delayed 1784 seconds by postgrey-1.27 at vger.kernel.org; Sun, 28 Jun 2009 13:47:19 EDT
-Subject: Re: [PATCH 22/62] drivers/media/video/cx18/cx18-fileops.c: Remove
- unnecessary semicolons
-From: Andy Walls <awalls@radix.net>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-In-Reply-To: <7eeefbbba34fc477540566c6b1888cb7c871f4cd.1246173681.git.joe@perches.com>
+	Sun, 28 Jun 2009 13:48:41 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1510 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbZF1Rsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 13:48:41 -0400
+Subject: Re: [PATCH 00/62] Remove unnecessary semicolons
+From: Joe Perches <joe@perches.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090628104332.482ee449@infradead.org>
 References: <cover.1246173664.git.joe@perches.com>
-	 <7eeefbbba34fc477540566c6b1888cb7c871f4cd.1246173681.git.joe@perches.com>
+	 <20090628101159.4c35a4db@infradead.org>
+	 <1246209365.13673.5.camel@Joe-Laptop.home>
+	 <20090628104332.482ee449@infradead.org>
 Content-Type: text/plain
-Date: Sun, 28 Jun 2009 13:17:40 -0400
-Message-Id: <1246209460.1550.12.camel@palomino.walls.org>
+Date: Sun, 28 Jun 2009 10:48:33 -0700
+Message-Id: <1246211313.13673.11.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 09:26 -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/media/video/cx18/cx18-fileops.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Sun, 2009-06-28 at 10:43 -0700, Arjan van de Ven wrote:
+> On Sun, 28 Jun 2009 10:16:05 -0700
+> Joe Perches <joe@perches.com> wrote:
+> > On Sun, 2009-06-28 at 10:11 -0700, Arjan van de Ven wrote:
+> > > can you improve your descriptions please?
+> > > to at least include the why for a change, not just the how and
+> > > what...
+> > Is any part of "Remove unnecessary semicolons" unclear?
+> > What would you prefer?
 > 
-> diff --git a/drivers/media/video/cx18/cx18-fileops.c b/drivers/media/video/cx18/cx18-fileops.c
-> index 29969c1..04d9c25 100644
-> --- a/drivers/media/video/cx18/cx18-fileops.c
-> +++ b/drivers/media/video/cx18/cx18-fileops.c
-> @@ -690,7 +690,7 @@ int cx18_v4l2_open(struct file *filp)
->  	int res;
->  	struct video_device *video_dev = video_devdata(filp);
->  	struct cx18_stream *s = video_get_drvdata(video_dev);
-> -	struct cx18 *cx = s->cx;;
-> +	struct cx18 *cx = s->cx;
->  
->  	mutex_lock(&cx->serialize_lock);
->  	if (cx18_init_on_first_open(cx)) {
+> your sentence addresses the what question, no the why question
+> or in business words: whats the value proposition
 
-Acked-by: Andy Walls <awalls@radix.net>
+Are any of these better?
 
-This is on topic for the ivtv-devel list, but must we spam the
-ivtv-users list with this sort of trivia? 
+Saving the world, one byte at a time...
+Because they're unnecessary...
+Because they cause visual stalls when humans parse them...
+Just for fun...
 
-Perhaps your Maintainers file scraper script could be tweaked a little?
-
-Regards,
-Andy
+?
 
