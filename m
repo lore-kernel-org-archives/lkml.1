@@ -1,72 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZF1GyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZF1HP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZF1GyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 02:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZF1GyH
+	id S1753991AbZF1HP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 03:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZF1HPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 02:54:07 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:44275 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZF1GyG (ORCPT
+	Sun, 28 Jun 2009 03:15:16 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:33697 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbZF1HPP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 02:54:06 -0400
+	Sun, 28 Jun 2009 03:15:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FpT6ipi3duZsSahr0WHNqk65JYEySGFzTki+0KdI8H5m33EBn26RLkvJ5BjRcq2RFX
-         5Fh3sd22Kk/WlSvhc189uq9H0zD/5PKY0Yg2cbWMfDRG+JWOc7eloZBP3bu9jFIuLgnj
-         KQh3lIOjPGfB3RZqGtW6GXKJYAwop/RjTsXZw=
-Date: Sun, 28 Jun 2009 02:53:56 -0400
-From: Chris Snook <chris.snook@gmail.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MAINTAINERS: update atlx contact info
-Message-ID: <20090628065356.GA23405@einstein.jnsq.org>
-References: <alpine.LFD.2.00.0906280204560.23036@localhost.localdomain> <1246170620.23023.198.camel@Joe-Laptop.home>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E47sjdiQUlh37lG0fJlA207+RKoEUmaBfEv/AybLyJQ/3V6CUOX08EfgqrwaTZPxn9
+         k2wD7VcV5PBv/6+qnU3InILKikqYTWKNe5WIPnGO3qhBzrkeixe5LT4jK9IEcJPuQgJc
+         9JnR7Wii41GBWLIgXBkX15pdMTrisnvBNXPpE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246170620.23023.198.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1246122138.3727.12.camel@brutus>
+References: <1246122138.3727.12.camel@brutus>
+Date: Sun, 28 Jun 2009 12:45:17 +0530
+Message-ID: <5d5443650906280015x4bddefa5v9dd36f888c5f2e92@mail.gmail.com>
+Subject: Re: [PATCH] PCAP touchscreen driver (for 2.6.32)
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       Harald Welte <laforge@gnumonks.org>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 27, 2009 at 11:30:19PM -0700, Joe Perches wrote:
-> On Sun, 2009-06-28 at 02:11 -0400, Chris Snook wrote:
-> > From: Chris Snook <chris.snook@gmail.com>
-> > 
-> > Update MAINTAINERS to reflect my current (non-)affiliation.
-> > Anyone hiring?
-> 
-> Sorry Chris, not me.
-> 
-> It does look like this will not apply,
-> some whitespace corruption or another.
-> 
-> g'luck...
-> 
+Hi Daniel,
 
-I'm not sure how/why alpine did that.  Once more with mutt:
+2009/6/27 Daniel Ribeiro <drwyrm@gmail.com>:
+> Touchscreen driver for PCAP2 PMIC.
+>
 
-From: Chris Snook <chris.snook@gmail.com>
+Some more description in commit text really helps.
 
-Update MAINTAINERS to reflect my current (non-)affiliation.
-Anyone hiring?
+> +static irqreturn_t pcap_ts_event_touch(int pirq, void *data)
+> +{
+> +       struct pcap_ts *pcap_ts = data;
+> +
+> +       if (pcap_ts->read_state == PCAP_ADC_TS_M_STANDBY) {
+> +               pcap_ts->read_state = PCAP_ADC_TS_M_PRESSURE;
+> +               schedule_delayed_work(&pcap_ts->work, 0);
+> +       }
+> +       return IRQ_HANDLED;
+> +}
+> +
+> +static int __devinit pcap_ts_probe(struct platform_device *pdev)
+> +{
+> +       struct input_dev *input_dev;
+> +       struct pcap_ts *pcap_ts;
+> +       int err = -ENOMEM;
+> +
+> +       pcap_ts = kzalloc(sizeof(*pcap_ts), GFP_KERNEL);
+> +       if (!pcap_ts)
+> +               return err;
+> +
+> +       pcap_ts->pcap = platform_get_drvdata(pdev);
+> +       platform_set_drvdata(pdev, pcap_ts);
+> +
+> +       input_dev = input_allocate_device();
+> +       if (!pcap_ts || !input_dev)
+> +               goto fail;
+> +
+> +       INIT_DELAYED_WORK(&pcap_ts->work, pcap_ts_work);
+> +
+> +       pcap_ts->read_state = PCAP_ADC_TS_M_STANDBY;
+> +
+> +       pcap_ts->input = input_dev;
+> +
+> +       input_dev->name = "pcap-touchscreen";
+> +       input_dev->phys = "pcap_ts/input0";
+> +       input_dev->id.bustype = BUS_HOST;
+> +       input_dev->id.vendor = 0x0001;
+> +       input_dev->id.product = 0x0002;
+> +       input_dev->id.version = 0x0100;
+> +       input_dev->dev.parent = &pdev->dev;
+> +
+> +       input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
+> +       input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+> +       input_set_abs_params(input_dev, ABS_X, X_AXIS_MIN, X_AXIS_MAX, 0, 0);
+> +       input_set_abs_params(input_dev, ABS_Y, Y_AXIS_MIN, Y_AXIS_MAX, 0, 0);
+> +       input_set_abs_params(input_dev, ABS_PRESSURE, PRESSURE_MIN,
+> +                            PRESSURE_MAX, 0, 0);
+> +
+> +       err = request_irq(pcap_to_irq(pcap_ts->pcap, PCAP_IRQ_TS),
+> +                       pcap_ts_event_touch, 0, "Touch Screen", pcap_ts);
+> +       if (err)
+> +               goto fail;
+> +
+> +       err = input_register_device(pcap_ts->input);
+> +       if (err)
+> +               goto fail_touch;
 
-Signed-off-by: Chris Snook <chris.snook@gmail.com>
- 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fa2a16d..e86e432 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1009,7 +1009,7 @@ ATLX ETHERNET DRIVERS
- P:	Jay Cliburn
- M:	jcliburn@gmail.com
- P:	Chris Snook
--M:	csnook@redhat.com
-+M:	chris.snook@gmail.com
- P:	Jie Yang
- M:	jie.yang@atheros.com
- L:	atl1-devel@lists.sourceforge.net
+Please move request_irq after input_register_device, as IRQ can get
+fired before input device gets available, right?
+
+Overall driver is nice and clean.
+
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
