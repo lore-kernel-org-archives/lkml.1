@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbZF1WGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZF1WKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbZF1WGf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 18:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZF1WG1
+	id S1754096AbZF1WKU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 18:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZF1WKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 18:06:27 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:43160 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZF1WG1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 18:06:27 -0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       earl_chew@agilent.com, Oleg Nesterov <oleg@redhat.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090625163050.d6a71a13.akpm@linux-foundation.org>
-	<20090626104804.GA7337@hmsreliant.think-freely.org>
-	<20090626092001.32e35e17.akpm@linux-foundation.org>
-	<20090628193112.GA6760@one.firstfloor.org>
-	<20090628135235.10f9b153.akpm@linux-foundation.org>
-	<m163egt524.fsf@fess.ebiederm.org>
-	<20090628214855.GC6760@one.firstfloor.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 28 Jun 2009 15:06:25 -0700
-In-Reply-To: <20090628214855.GC6760@one.firstfloor.org> (Andi Kleen's message of "Sun\, 28 Jun 2009 23\:48\:55 +0200")
-Message-ID: <m1hby0qahq.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 28 Jun 2009 18:10:08 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:58803 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752355AbZF1WKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 18:10:07 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jarkko Nikula <jhnikula@gmail.com>
+Subject: Re: [PATCH] [RFC] ASoC: OMAP: fix OMAP1510 broken PCM pointer callback
+Date: Mon, 29 Jun 2009 00:08:59 +0200
+User-Agent: KMail/1.9.10
+Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+References: <200906280021.05931.jkrzyszt@tis.icnet.pl> <20090628223732.53954402.jhnikula@gmail.com>
+In-Reply-To: <20090628223732.53954402.jhnikula@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: andi@firstfloor.org, alan@lxorguk.ukuu.org.uk, oleg@redhat.com, earl_chew@agilent.com, linux-kernel@vger.kernel.org, nhorman@tuxdriver.com, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andi Kleen <andi@firstfloor.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using pipes in core_pattern
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+Message-Id: <200906290008.59640.jkrzyszt@tis.icnet.pl>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
-
->> Andrew should I toss all 100 or so patches over the wall to you
->> and your -mm tree?  Or should I maintain a public git tree based
->> at 2.6.31-rc1?  Get it into linux-next and ask Linus to pull it when
->> the merge window comes?
+On Sunday 28 June 2009 21:37:32 Jarkko Nikula wrote:
+> On Sun, 28 Jun 2009 00:21:05 +0200
+> Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> wrote:
+> > This patch tries to work around the problem of broken OMAP1510 PCM
+> > playback pointer calculation by replacing DMA function call that
+> > incorrectly tries to read the value form DMA hardware with a value
+> > computed locally from an already maintained variable
+> > omap_runtime_data.period_index.
+> >
+> > Tested on OMAP5910 based Amstrad Delta (E3) using work in progress
+> > ASoC driver.
+> >
+> > Based on linux-2.6-asoc.git v2.6.31-rc1.
+> >
+> > Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+> > ---
+> > It seems that on OMAP1510, DMA Channel Progress Counter registers
+> > (DMA_CPC_CH[0-8]) always contain values derived from DMA channels
+> > destination port address, even if constant, and there are no DMA
+> > registers available that would follow DMA channels source port
+> > address. Because of this limitation, current implementation of
+> > omap_get_dma_src_pos() for OMAP1510 is broken and doesn't seem to be
+> > easy correctable.
 >
-> What do these 100 odd patches do exactly? 
+> Hi
+>
+> Before going into workaround, did you try to change function
+> omap_get_dma_src_pos to read CSSA_L instead of CPC in
+> arch/arm/plat-omap/dma.c that I was speculating in mail below?
+>
+> http://mailman.alsa-project.org/pipermail/alsa-devel/2009-June/018569.html
+>
+> While CPC seems to be correct [1], you mentioned before that patch below
+> broke the older ALSA driver so it's worth to find out if the problem
+> can be corrected by simple one line fix (or two if omap_get_dma_dst_pos
+> need to be fixed as well).
+>
+> http://marc.info/?l=linux-omap&m=121280267705523
 
-Mostly a fine grained killing of ctl_name, and strategy.
+Jarkko,
 
-> I think DEFINE_SYSCTL()/ELF section would be the correct direction to go
-> for all global variable sysctls.
+AFAIK, both CSSA_L and CDSA_L DMA registers are static. Loaded by CPU with 16 
+LSB of initial source and destination port addresses respectively, they are 
+never updated by the DMA engine itself. That's why they can't be used for 
+transfer progress indication unless updated by CPU.
 
-Perhaps.  I don't know how those data structures interact with
-what we have in kernel and in modules.
+The old omap-alsa driver was just updating them, intentionally or not, by 
+reprogramming and restarting DMA every PCM period. That's why calculating PCM 
+pointers from CSSA_L/CDSA_L worked.
 
-> Then the binary sysctls could be handled by a global table
-> in a separate file like you described
+ASoC OMAP driver transfers whole PCM buffer with single DMA transfer, so it 
+doesn't need to update DMA source/destination port address after initial 
+playback/capture setup, even if restarting DMA, and actually never does this. 
+Calculating PCM pointers from CSSA_L/CDSA_L registers without updating them 
+every period would then be wrong.
 
-Getting the binary sysctl crud out of the core path should
-happen first.  That is just a handful of patches.
+For capture, reading CPC, that follows destination port address progress, just 
+works fine (for both old and new driver). For playback, similar hardware 
+functionality seems to be missing, so it has to be emulated in software if 
+required.
 
-> For dynamically generated sysctls (relatively rare but there) 
-> the current interfaces are not great, but could be probably kept.
-
-Things like register_sysctl_path can be greatly improved.  Now
-that we don't have to worry about the binary paths.
-
-> That all doesn't really need 100 patches though.
-
-If you want the patches to be small enough to be human readable it
-takes a lot.  If you want the patches to be CC'able to the appropriate
-maintainers and you don't want to require them to weed through a bunch of
-irrelevant code it takes a lot.
-
-Typos are a real danger in an operation like this.
-
-Eric
+Thanks,
+Janusz
