@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbZF1GZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZF1GgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752662AbZF1GZR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 02:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1GZG
+	id S1754104AbZF1GgT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 02:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZF1GgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 02:25:06 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:41257 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZF1GZE (ORCPT
+	Sun, 28 Jun 2009 02:36:09 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:64492 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751524AbZF1GgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 02:25:04 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: tridge@samba.org
-Cc: ebiederm@xmission.com (Eric W. Biederman), john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-References: <19013.8005.541836.436991@samba.org>
-	<m1d48p5dil.fsf@fess.ebiederm.org>
-	<19014.54044.484370.187018@samba.org>
-	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
-Date: Sun, 28 Jun 2009 15:25:02 +0900
-In-Reply-To: <19015.482.794111.612472@samba.org> (tridge@samba.org's message
-	of "Sun, 28 Jun 2009 15:38:42 +1000")
-Message-ID: <87ab3sx4ch.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sun, 28 Jun 2009 02:36:08 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: [regression] drm: display arifacts when X.Org is stopped
+Date: Sun, 28 Jun 2009 08:36:08 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>,
+       dri-devel@lists.sourceforge.net
+References: <200906271852.57388.elendil@planet.nl> <21d7e9970906271844t15540ef8x57df641e87ab71fc@mail.gmail.com>
+In-Reply-To: <21d7e9970906271844t15540ef8x57df641e87ab71fc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906280836.09142.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Jun 2009 06:36:09.0932 (UTC) FILETIME=[B92A88C0:01C9F7BA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tridge@samba.org writes:
-
->  > Given what you have said our interpretation of vfat has a bug,
->  > and that small change is a candidate for -stable.  If it could
->  > be it's own patch.
+On Sunday 28 June 2009, Dave Airlie wrote:
+> On Sun, Jun 28, 2009 at 2:52 AM, Frans Pop<elendil@planet.nl> wrote:
+> > With 2.6.31-rc1 I'm getting fairly serious display artifacts when
+> > X.Org is stopped and the display switches modes. This happens when I
+> > reboot the system (on the switch back to VT1), but also when I just
+> > restart the X server from the kdm splash screen.
+> >
+> > My text consoles use the VESA framebuffer (vga=791).
+> > I'm not using GEM.
 >
-> good point. 
->
-> Hirofumi-san, would you support putting the last_u change into stable?
+> you can't not use GEM, you can not use kernel modesetting which is
+> what I assume you are saying.
 
-If you want, I have no problem to do. However, I'm not thinking that
-part is a bug.  And -stable rule is also "a real bug that bothers
-people", but there is even a no bug reporter which tell actual problem.
+Yes, sorry.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> Have you 4GB RAM btw?
+
+No, just 2GB.
