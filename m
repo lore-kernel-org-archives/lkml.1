@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbZF1TuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbZF1Tvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbZF1TuI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 15:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZF1Tt5
+	id S1755295AbZF1Tvz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 15:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZF1Tvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 15:49:57 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:41337 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZF1Tt5 (ORCPT
+	Sun, 28 Jun 2009 15:51:46 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:47317 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751714AbZF1Tvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 15:49:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=if19teteFiP15GvDNL6f91KFerq8hZXZBwpInVYj3hr0gCEbcYpPZoxZ+qouY61f2q
-         Y3lOGbWkB4xF8SwQCW6p7Z86nc8ZGJOWgcxnYFXseSzDJTvoAD/K6yPXtJTDv2FihvdP
-         fsy0DRY2PF2j69IhISuIcNQ8eAQmg2f1ZC7KI=
+	Sun, 28 Jun 2009 15:51:45 -0400
+To: tridge@samba.org
+Cc: john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
+	<87ab3sx4ch.fsf@devron.myhome.or.jp>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 28 Jun 2009 12:51:41 -0700
+In-Reply-To: <87ab3sx4ch.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of "Sun\, 28 Jun 2009 15\:25\:02 +0900")
+Message-ID: <m1k52wxhki.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Date: Sun, 28 Jun 2009 21:49:59 +0200
-Message-ID: <9c30dffe0906281249md437f08he4d4b065d345803e@mail.gmail.com>
-Subject: [2.6.31-rc1] oops in __ieee80211_stop_queue
-From: Bjarke Istrup Pedersen <gurligebis@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: tridge@samba.org, paulmck@linux.vnet.ibm.com, cmm@us.ibm.com, sfrench@us.ibm.com, shaggy@linux.vnet.ibm.com, linux-fsdevel@vger.kernel.org, hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org, john.lanza@linux.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;tridge@samba.org
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_Sft_Brands_C00 XM_Sft_Brands_C00
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops happens when pcmcia p54 card is inserted.
-Works with 2.6.30, broken in 2.6.31-rc1.
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
-Output of relevant dmesg part:
+> tridge@samba.org writes:
+>
+>>  > Given what you have said our interpretation of vfat has a bug,
+>>  > and that small change is a candidate for -stable.  If it could
+>>  > be it's own patch.
+>>
+>> good point. 
+>>
+>> Hirofumi-san, would you support putting the last_u change into stable?
+>
+> If you want, I have no problem to do. However, I'm not thinking that
+> part is a bug.  And -stable rule is also "a real bug that bothers
+> people", but there is even a no bug reporter which tell actual problem.
 
-pcmcia_socket pcmcia_socket1: pccard: CardBus card inserted into slot 1
-pci 0000:04:00.0: reg 10 32bit mmio: [0x000000-0x001fff]
-pci 0000:04:00.0: supports D1 D2
-pci 0000:04:00.0: PME# supported from D0 D1 D2 D3hot D3cold
-pci 0000:04:00.0: PME# disabled
-yenta_cardbus 0000:02:04.1: EnE: chaning testregister 0xC9, 04 -> 04
-p54pci 0000:04:00.0: enabling device (0000 -> 0002)
-p54pci 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-p54pci 0000:04:00.0: setting latency timer to 64
-p54pci 0000:04:00.0: firmware: using built-in firmware isl3886pci
-phy2: p54 detected a LM86 firmware
-p54: rx_mtu reduced from 3240 to 2376
-phy2: FW rev 2.13.12.0 - Softmac protocol 5.9
-phy2: cryptographic accelerator WEP:YES, TKIP:YES, CCMP:YES
-BUG: unable to handle kernel NULL pointer dereference at 00000280
-IP: [<c1288e61>] __ieee80211_stop_queue+0x2b/0x43
-*pde = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file:
-/sys/devices/pci0000:00/0000:00:14.4/0000:02:04.1/0000:04:00.0/class
 
-Pid: 535, comm: pccardd Not tainted (2.6.31-rc1 #2) TravelMate 540
-EIP: 0060:[<c1288e61>] EFLAGS: 00010046 CPU: 0
-EIP is at __ieee80211_stop_queue+0x2b/0x43
-EAX: dedd41a0 EBX: 00000000 ECX: 00000000 EDX: 00000000
-ESI: 00000000 EDI: dedd4204 EBP: 00000000 ESP: df8abdcc
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process pccardd (pid: 535, ti=df8aa000 task=df9c7000 task.ti=df8aa000)
-Stack:
- dedd41a0 00000000 c1288ea0 00000286 dedd4920 ded2a300 00003ff0 00000470
-<0> c11a83b1 00020200 00020200 dedd41a0 dedd4940 00000286 00004460 dedd4934
-<0> dedd4934 c11f6f64 dfa5a020 ded2a300 dedd4920 00000408 000003fc c11a84ae
-Call Trace:
- [<c1288ea0>] ? ieee80211_stop_queues_by_reason+0x27/0x3f
- [<c11a83b1>] ? p54_assign_address+0x16b/0x1cd
- [<c11f6f64>] ? __alloc_skb+0x48/0x105
- [<c11a84ae>] ? p54_alloc_skb+0x9b/0xb3
- [<c11aaefd>] ? p54_read_eeprom+0x3b/0x1b6
- [<c11ab652>] ? p54p_open+0x2e1/0x3c0
- [<c12941b6>] ? p54p_probe+0x2eb/0x362
- [<c113430b>] ? local_pci_probe+0xb/0xc
- [<c1134485>] ? pci_device_probe+0x41/0x63
- [<c117cde1>] ? driver_probe_device+0x76/0xe6
- [<c117c4db>] ? bus_for_each_drv+0x37/0x5f
- [<c117cf33>] ? device_attach+0x44/0x54
- [<c117ceac>] ? __device_attach+0x0/0x28
- [<c117c397>] ? bus_attach_device+0x1b/0x46
- [<c117b5ac>] ? device_add+0x2ee/0x428
- [<c11f04b0>] ? pci_write+0x1c/0x21
- [<c11308ae>] ? pci_bus_add_device+0xc/0x2c
- [<c11308ec>] ? pci_bus_add_devices+0x1e/0xd2
- [<c1290599>] ? cb_alloc+0x97/0xa9
- [<c11ac12c>] ? socket_insert+0x8a/0xb0
- [<c11ac877>] ? pccardd+0x158/0x1d6
- [<c11ac71f>] ? pccardd+0x0/0x1d6
- [<c103130a>] ? kthread+0x66/0x6b
- [<c10312a4>] ? kthread+0x0/0x6b
- [<c10031ff>] ? kernel_thread_helper+0x7/0x10
-Code: 56 53 0f b7 58 48 39 da 7c 11 ba 38 01 00 00 b8 69 72 37 c1 5b
-5e e9 97 9d d9 ff 83 7c 90 54 00 75 17 8b 70 68 0f b7 da c1 e3 08 <03>
-9e 80 02 00 00 8d 73 08 3e 80 4b 08 01 8d 44 90 54 0f ab 08
-EIP: [<c1288e61>] __ieee80211_stop_queue+0x2b/0x43 SS:ESP 0068:df8abdcc
-CR2: 0000000000000280
----[ end trace 1227e32b55188f72 ]---
+Tridge.  Is there any reason to believe that Microsoft will continue
+to treat Longfilenames without short filenames as valid in vfat?
+
+If this turns into a contest of who can do the silliest things in
+their vfat code microsoft could easily introduce a stricter directory
+parser and cause all kinds of grief.
+
+It wouldn't even surprise me if you haven't seen such shenanigans
+while working on samba.
+
+Eric
