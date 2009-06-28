@@ -1,134 +1,683 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZF1OL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZF1OMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbZF1OL5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbZF1OLu
+	id S1755618AbZF1OMa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZF1OMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:11:50 -0400
+	Sun, 28 Jun 2009 10:12:22 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbZF1OLt (ORCPT
+	with ESMTP id S1754058AbZF1OMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:11:49 -0400
+	Sun, 28 Jun 2009 10:12:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
-         :message-id:content-type:content-transfer-encoding;
-        b=emmpJ5eukc66/WOs5PngK3JYk11C1rNmqdTLE8TrMVrzbQ+1C3/gn02+feHMp7X/0o
-         WvaOr7kELKxpEaqhFMz6dfKemBIQ9P2Biyz3BlRd3cKTRAjqKyHH0TXgnRpc4P/ymaPb
-         eSgmoIbbmyard017S1Lnh88tJMMFeb8bdZKXI=
+        h=from:to:cc:date:message-id:subject;
+        b=IKmFGgmDHvxBpKAWJK3ZWTdlYnO6zof7+zIrnE5BHN6bCldtTm9csqK5YXWVl55y5I
+         zo3fqqNTO8PzRMSvXgjDskuA7rszAJenb9aooZjnUYMdCFCLo4TRWqTo1mOICmHdmJHk
+         39KGpbQ7xIUlDhIbMPl9yAu/OZdLgpZPlFe34=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: [git patches] Staging: rtl8187se cleanups
-Date: Sun, 28 Jun 2009 16:17:19 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906281617.20325.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 28 Jun 2009 16:18:44 +0200
+Message-Id: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
+Subject: [PATCH 01/18] Staging: rtl8187se: remove ENABLE_DOT11D ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] Staging: rtl8187se: remove ENABLE_DOT11D ifdefs
 
-Hi,
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+on top of http://patchwork.kernel.org/patch/30083/
 
-The following patchset against Linus' tree contains all my previously
-posted rtl8187se patches (9 first commits) plus a bunch of new stuff:
+ drivers/staging/rtl8187se/Makefile                      |    3 
+ drivers/staging/rtl8187se/ieee80211/dot11d.c            |    2 
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h         |   10 --
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c      |   12 ---
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |   62 ----------------
+ drivers/staging/rtl8187se/r8180_core.c                  |   20 -----
+ drivers/staging/rtl8187se/r8180_rtl8225z2.c             |    6 -
+ drivers/staging/rtl8187se/r8180_wx.c                    |   14 ---
+ drivers/staging/rtl8187se/r8185b_init.c                 |    4 -
+ 9 files changed, 133 deletions(-)
 
-git://git.kernel.org:/pub/scm/linux/kernel/git/bart/misc.git rtl8187se
-
-[ I'll also post new patches in a separate thread. ]
-
- drivers/staging/rtl8187se/Makefile                 |   14 -
- drivers/staging/rtl8187se/dot11d.h                 |  101 -
- drivers/staging/rtl8187se/ieee80211.h              | 1755 ------------
- drivers/staging/rtl8187se/ieee80211/dot11d.c       |   22 -
- drivers/staging/rtl8187se/ieee80211/dot11d.h       |    2 -
- drivers/staging/rtl8187se/ieee80211/ieee80211.h    |  140 +-
- .../staging/rtl8187se/ieee80211/ieee80211_crypt.c  |   17 -
- .../rtl8187se/ieee80211/ieee80211_crypt_ccmp.c     |   73 +-
- .../rtl8187se/ieee80211/ieee80211_crypt_tkip.c     |  293 +--
- .../rtl8187se/ieee80211/ieee80211_crypt_wep.c      |  120 +-
- .../staging/rtl8187se/ieee80211/ieee80211_module.c |   88 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c |  242 +--
- .../rtl8187se/ieee80211/ieee80211_softmac.c        |  995 +-------
- .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |   30 -
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c |  241 --
- drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c |  123 +-
- drivers/staging/rtl8187se/ieee80211/internal.h     |  115 -
- drivers/staging/rtl8187se/ieee80211/rtl_crypto.h   |  399 ---
- drivers/staging/rtl8187se/ieee80211_crypt.h        |   86 -
- drivers/staging/rtl8187se/r8180.h                  |   24 +-
- drivers/staging/rtl8187se/r8180_93cx6.h            |    2 -
- drivers/staging/rtl8187se/r8180_core.c             | 2946 ++------------------
- drivers/staging/rtl8187se/r8180_dm.c               |   58 -
- drivers/staging/rtl8187se/r8180_dm.h               |   18 -
- drivers/staging/rtl8187se/r8180_gct.c              |  296 --
- drivers/staging/rtl8187se/r8180_gct.h              |   25 -
- drivers/staging/rtl8187se/r8180_hw.h               |  393 +---
- drivers/staging/rtl8187se/r8180_max2820.c          |  240 --
- drivers/staging/rtl8187se/r8180_max2820.h          |   21 -
- drivers/staging/rtl8187se/r8180_pm.c               |   92 -
- drivers/staging/rtl8187se/r8180_pm.h               |   28 -
- drivers/staging/rtl8187se/r8180_rtl8225.c          |  933 -------
- drivers/staging/rtl8187se/r8180_rtl8225.h          |   12 +-
- drivers/staging/rtl8187se/r8180_rtl8225z2.c        | 1552 ++++-------
- drivers/staging/rtl8187se/r8180_rtl8255.c          | 1838 ------------
- drivers/staging/rtl8187se/r8180_rtl8255.h          |   19 -
- drivers/staging/rtl8187se/r8180_sa2400.c           |  233 --
- drivers/staging/rtl8187se/r8180_sa2400.h           |   26 -
- drivers/staging/rtl8187se/r8180_wx.c               |   51 +-
- drivers/staging/rtl8187se/r8180_wx.h               |    2 +-
- drivers/staging/rtl8187se/r8185b_init.c            |  663 +-----
- 41 files changed, 906 insertions(+), 13422 deletions(-)
- delete mode 100644 drivers/staging/rtl8187se/dot11d.h
- delete mode 100644 drivers/staging/rtl8187se/ieee80211.h
- delete mode 100644 drivers/staging/rtl8187se/ieee80211/internal.h
- delete mode 100644 drivers/staging/rtl8187se/ieee80211/rtl_crypto.h
- delete mode 100644 drivers/staging/rtl8187se/ieee80211_crypt.h
- delete mode 100644 drivers/staging/rtl8187se/r8180_gct.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_gct.h
- delete mode 100644 drivers/staging/rtl8187se/r8180_max2820.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_max2820.h
- delete mode 100644 drivers/staging/rtl8187se/r8180_pm.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_pm.h
- delete mode 100644 drivers/staging/rtl8187se/r8180_rtl8225.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_rtl8255.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_rtl8255.h
- delete mode 100644 drivers/staging/rtl8187se/r8180_sa2400.c
- delete mode 100644 drivers/staging/rtl8187se/r8180_sa2400.h
-
-
-Bartlomiej Zolnierkiewicz (27):
-      Staging: rtl8187se/ieee80211: remove unused files
-      Staging: rtl8187se: remove duplicate dot11d.h and ieee80211.h includes
-      Staging: rtl8187se: remove unused ieee80211_crypt.h
-      Staging: rtl8187se: remove kernel version compatibility wrappers
-      Staging: rtl8187se: remove support for older wireless extensions
-      Staging: rtl8187se/ieee80211: remove dead _RTL8187_EXT_PATCH_ code
-      Staging: rtl8187se/ieee80211: remove superfluous ieee80211_* defines
-      Staging: rtl8187se/ieee80211: remove unused dump_chnl_map()
-      Staging: rtl8187se/ieee80211: remove superfluous JOHN_* ifdefs
-      Staging: rtl8187se: remove ENABLE_DOT11D ifdefs
-      Staging: rtl8187se: remove CONFIG_RTL8180_PM ifdefs
-      Staging: rtl8187se: remove THOMAS_TURBO ifdefs
-      Staging: rtl8187se: remove CONFIG_RTL818x_S ifdefs
-      Staging: rtl8187se: remove CONFIG_RTL8185B ifdefs
-      Staging: rtl8187se: remove CONFIG_RTL8180_IO_MAP ifdefs
-      Staging: rtl8187se: remove dead code
-      Staging: rtl8187se: remove unused radio frontends
-      Staging: rtl8187se: remove debugging code from r8180_core.c
-      Staging: rtl8187se: remove unused rtl8225_rf_* functions
-      Staging: rtl8187se: cleanup r8180_rtl8225.c
-      Staging: rtl8187se: merge r8180_rtl8225.c with r8180_rtl8225z2.c
-      Staging: rtl8187se: cleanup r8180_pm.c
-      Staging: rtl8187se: merge r8180_pm.c with r8180_core.c
-      Staging: rtl8187se: remove unused definitions from r8180_hw.h
-      Staging: rtl8187se: remove unused definitions from r8180.h
-      Staging: rtl8187se: cleanup r8180_rtl8225z2.c
-      Staging: rtl8187se: cleanup r8180_core.c
-
+Index: b/drivers/staging/rtl8187se/Makefile
+===================================================================
+--- a/drivers/staging/rtl8187se/Makefile
++++ b/drivers/staging/rtl8187se/Makefile
+@@ -17,9 +17,6 @@ EXTRA_CFLAGS += -DSW_DIG
+ EXTRA_CFLAGS += -DRATE_ADAPT
+ EXTRA_CFLAGS += -DCONFIG_RTL8180_PM
+ 
+-#+YJ,080626
+-EXTRA_CFLAGS += -DENABLE_DOT11D
+-
+ #enable it for legacy power save, disable it for leisure  power save
+ EXTRA_CFLAGS += -DENABLE_LPS
+ 
+Index: b/drivers/staging/rtl8187se/ieee80211/dot11d.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/dot11d.c
++++ b/drivers/staging/rtl8187se/ieee80211/dot11d.c
+@@ -1,4 +1,3 @@
+-#ifdef ENABLE_DOT11D
+ //-----------------------------------------------------------------------------
+ //	File:
+ //		Dot11d.c
+@@ -233,4 +232,3 @@ EXPORT_SYMBOL(DOT11D_ScanComplete);
+ EXPORT_SYMBOL(IsLegalChannel);
+ EXPORT_SYMBOL(ToLegalChannel);
+ #endif
+-#endif
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+@@ -694,7 +694,6 @@ struct ieee80211_header_data {
+ #define MFIE_TYPE_RATES_EX   50
+ #define MFIE_TYPE_GENERIC    221
+ 
+-#ifdef ENABLE_DOT11D
+ typedef enum
+ {
+ 	COUNTRY_CODE_FCC = 0,
+@@ -709,7 +708,6 @@ typedef enum
+ 	COUNTRY_CODE_GLOBAL_DOMAIN = 9,
+ 	COUNTRY_CODE_WORLD_WIDE_13_INDEX = 10
+ }country_code_type_t;
+-#endif
+ 
+ struct ieee80211_info_element_hdr {
+ 	u8 id;
+@@ -961,10 +959,8 @@ struct ieee80211_network {
+ #ifdef THOMAS_TURBO
+ 	u8 Turbo_Enable;//enable turbo mode, added by thomas
+ #endif
+-#ifdef ENABLE_DOT11D
+ 	u16 CountryIeLen;
+ 	u8 CountryIeBuf[MAX_IE_LEN];
+-#endif
+ };
+ 
+ enum ieee80211_state {
+@@ -1105,18 +1101,12 @@ struct ieee80211_device {
+ 	 */
+ 	short sync_scan_hurryup;
+ 
+-#ifdef ENABLE_DOT11D
+ 	void * pDot11dInfo;
+ 	bool bGlobalDomain;
+ 
+ 	// For Liteon Ch12~13 passive scan
+ 	u8	MinPassiveChnlNum;
+ 	u8	IbssStartChnl;
+-#else
+-	/* map of allowed channels. 0 is dummy */
+-	// FIXME: remeber to default to a basic channel plan depending of the PHY type
+-	int channel_map[MAX_CHANNEL_NUMBER+1];
+-#endif
+ 
+ 	int rate;       /* current rate */
+ 	int basic_rate;
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -44,9 +44,7 @@
+ #include <linux/ctype.h>
+ 
+ #include "ieee80211.h"
+-#ifdef ENABLE_DOT11D
+ #include "dot11d.h"
+-#endif
+ static inline void ieee80211_monitor_rx(struct ieee80211_device *ieee,
+ 					struct sk_buff *skb,
+ 					struct ieee80211_rx_stats *rx_stats)
+@@ -1072,7 +1070,6 @@ static inline int ieee80211_SignalStreng
+ 	return RetSS;
+ }
+ 
+-#ifdef ENABLE_DOT11D
+ static inline void ieee80211_extract_country_ie(
+ 	struct ieee80211_device *ieee,
+ 	struct ieee80211_info_element *info_element,
+@@ -1114,7 +1111,6 @@ static inline void ieee80211_extract_cou
+ 	}
+ 
+ }
+-#endif
+ 
+ int
+ ieee80211_TranslateToDbm(
+@@ -1166,10 +1162,8 @@ inline int ieee80211_network_init(
+ #ifdef THOMAS_TURBO
+ 	network->Turbo_Enable = 0;
+ #endif
+-#ifdef ENABLE_DOT11D
+ 	network->CountryIeLen = 0;
+ 	memset(network->CountryIeBuf, 0, MAX_IE_LEN);
+-#endif
+ 
+ 	if (stats->freq == IEEE80211_52GHZ_BAND) {
+ 		/* for A band (No DS info) */
+@@ -1394,14 +1388,12 @@ inline int ieee80211_network_init(
+ 			memcpy(network->rsn_ie, info_element,
+ 			       network->rsn_ie_len);
+ 			break;
+-#ifdef ENABLE_DOT11D
+ 		case MFIE_TYPE_COUNTRY:
+ 			IEEE80211_DEBUG_SCAN("MFIE_TYPE_COUNTRY: %d bytes\n",
+ 					     info_element->len);
+ //			printk("=====>Receive <%s> Country IE\n",network->ssid);
+ 			ieee80211_extract_country_ie(ieee, info_element, network, beacon->header.addr2);
+ 			break;
+-#endif
+ 		default:
+ 			IEEE80211_DEBUG_SCAN("unsupported IE %d\n",
+ 					     info_element->id);
+@@ -1552,10 +1544,8 @@ inline void update_network(struct ieee80
+ #ifdef THOMAS_TURBO
+ 	dst->Turbo_Enable = src->Turbo_Enable;
+ #endif
+-#ifdef ENABLE_DOT11D
+ 	dst->CountryIeLen = src->CountryIeLen;
+ 	memcpy(dst->CountryIeBuf, src->CountryIeBuf, src->CountryIeLen);
+-#endif
+ }
+ 
+ 
+@@ -1623,7 +1613,6 @@ inline void ieee80211_process_probe_resp
+ 		return;
+ 	}
+ 
+-#ifdef ENABLE_DOT11D
+ 	// For Asus EeePc request,
+ 	// (1) if wireless adapter receive get any 802.11d country code in AP beacon,
+ 	//	   wireless adapter should follow the country code.
+@@ -1677,7 +1666,6 @@ inline void ieee80211_process_probe_resp
+ 			}
+ 		}
+ 	}
+-#endif
+ 	/* The network parsed correctly -- so now we scan our known networks
+ 	 * to see if we can find it in our list.
+ 	 *
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+===================================================================
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+@@ -21,9 +21,7 @@
+ #include <linux/version.h>
+ #include <asm/uaccess.h>
+ 
+-#ifdef ENABLE_DOT11D
+ #include "dot11d.h"
+-#endif
+ u8 rsn_authen_cipher_suite[16][4] = {
+ 	{0x00,0x0F,0xAC,0x00}, //Use group key, //Reserved
+ 	{0x00,0x0F,0xAC,0x01}, //WEP-40         //RSNA default
+@@ -443,10 +441,8 @@ void ieee80211_send_probe_requests(struc
+ void ieee80211_softmac_scan_syncro(struct ieee80211_device *ieee)
+ {
+ 	short ch = 0;
+-#ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+ 	memcpy(channel_map, GET_DOT11D_INFO(ieee)->channel_map, MAX_CHANNEL_NUMBER+1);
+-#endif
+ 	down(&ieee->scan_sem);
+ //	printk("==================> Sync scan\n");
+ 
+@@ -458,11 +454,7 @@ void ieee80211_softmac_scan_syncro(struc
+ 			if (ch > MAX_CHANNEL_NUMBER)
+ 				goto out; /* scan completed */
+ 
+-#ifdef ENABLE_DOT11D
+ 		}while(!channel_map[ch]);
+-#else
+-		}while(!ieee->channel_map[ch]);
+-#endif
+ 		/* this fuction can be called in two situations
+ 		 * 1- We have switched to ad-hoc mode and we are
+ 		 *    performing a complete syncro scan before conclude
+@@ -487,9 +479,7 @@ void ieee80211_softmac_scan_syncro(struc
+ 
+ 		ieee->set_chan(ieee->dev, ch);
+ //		printk("=====>channel=%d   ",ch);
+-#ifdef ENABLE_DOT11D
+ 		if(channel_map[ch] == 1)
+-#endif
+ 		{
+ //			printk("====send probe request\n");
+ 			ieee80211_send_probe_requests(ieee);
+@@ -507,20 +497,16 @@ void ieee80211_softmac_scan_syncro(struc
+ out:
+ 	ieee->sync_scan_hurryup = 0;
+ 	up(&ieee->scan_sem);
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 		DOT11D_ScanComplete(ieee);
+-#endif
+ }
+ 
+ void ieee80211_softmac_ips_scan_syncro(struct ieee80211_device *ieee)
+ {
+ 	int ch;
+         unsigned int watch_dog = 0;
+-#ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+ 	memcpy(channel_map, GET_DOT11D_INFO(ieee)->channel_map, MAX_CHANNEL_NUMBER+1);
+-#endif
+         down(&ieee->scan_sem);
+ 	ch = ieee->current_network.channel;
+ //      	if(ieee->sync_scan_hurryup)
+@@ -554,16 +540,12 @@ void ieee80211_softmac_ips_scan_syncro(s
+ 		{
+ 			goto out;
+ 		}
+-#ifdef ENABLE_DOT11D
+ 		if(channel_map[ieee->current_network.channel] > 0)
+-#endif
+ 		{
+ 			ieee->set_chan(ieee->dev, ieee->current_network.channel);
+ //			printk("======>channel=%d  ",ieee->current_network.channel);
+ 		}
+-#ifdef ENABLE_DOT11D
+ 		if(channel_map[ieee->current_network.channel] == 1)
+-#endif
+ 		{
+ //			printk("====send probe request\n");
+ 			ieee80211_send_probe_requests(ieee);
+@@ -582,11 +564,7 @@ void ieee80211_softmac_ips_scan_syncro(s
+ 				goto out; /* scan completed */
+ 
+ 			ieee->current_network.channel = (ieee->current_network.channel + 1)%MAX_CHANNEL_NUMBER;
+-#ifdef ENABLE_DOT11D
+ 		}while(!channel_map[ieee->current_network.channel]);
+-#else
+-		}while(!ieee->channel_map[ieee->current_network.channel]);
+-#endif
+         }
+ out:
+ 	//ieee->sync_scan_hurryup = 0;
+@@ -594,10 +572,8 @@ out:
+    	//ieee->current_network.channel = ch;
+ 	ieee->actscanning = false;
+ 	up(&ieee->scan_sem);
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 		DOT11D_ScanComplete(ieee);
+-#endif
+ }
+ 
+ 
+@@ -625,10 +601,8 @@ void ieee80211_softmac_scan_wq(struct wo
+ 	struct delayed_work *dwork = to_delayed_work(work);
+ 	struct ieee80211_device *ieee = container_of(dwork, struct ieee80211_device, softmac_scan_wq);
+ 	static short watchdog = 0;
+-#ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+ 	memcpy(channel_map, GET_DOT11D_INFO(ieee)->channel_map, MAX_CHANNEL_NUMBER+1);
+-#endif
+ //	printk("ieee80211_softmac_scan_wq ENABLE_IPS\n");
+ //	printk("in %s\n",__func__);
+ 	down(&ieee->scan_sem);
+@@ -639,11 +613,7 @@ void ieee80211_softmac_scan_wq(struct wo
+ 		if (watchdog++ > MAX_CHANNEL_NUMBER)
+ 				goto out; /* no good chans */
+ 
+-#ifdef ENABLE_DOT11D
+  	}while(!channel_map[ieee->current_network.channel]);
+-#else
+- 	}while(!ieee->channel_map[ieee->current_network.channel]);
+-#endif
+ 
+ 	//printk("current_network.channel:%d\n", ieee->current_network.channel);
+ 	if (ieee->scanning == 0 )
+@@ -652,9 +622,7 @@ void ieee80211_softmac_scan_wq(struct wo
+ 		goto out;
+ 	}
+ 	ieee->set_chan(ieee->dev, ieee->current_network.channel);
+-#ifdef ENABLE_DOT11D
+ 	if(channel_map[ieee->current_network.channel] == 1)
+-#endif
+ 		ieee80211_send_probe_requests(ieee);
+ 
+ 	queue_delayed_work(ieee->wq, &ieee->softmac_scan_wq, IEEE80211_SOFTMAC_SCAN_TIME);
+@@ -666,10 +634,8 @@ out:
+ 	ieee->scanning = 0;
+ 	up(&ieee->scan_sem);
+ 
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 		DOT11D_ScanComplete(ieee);
+-#endif
+ 	return;
+ }
+ #else
+@@ -678,10 +644,8 @@ void ieee80211_softmac_scan_wq(struct wo
+ 	struct delayed_work *dwork = to_delayed_work(work);
+         struct ieee80211_device *ieee = container_of(work, struct ieee80211_device, softmac_scan_wq);
+         short watchdog = 0;
+-#ifdef ENABLE_DOT11D
+ 	u8 channel_map[MAX_CHANNEL_NUMBER+1];
+ 	memcpy(channel_map, GET_DOT11D_INFO(ieee)->channel_map, MAX_CHANNEL_NUMBER+1);
+-#endif
+ //      printk("enter scan wq,watchdog is %d\n",watchdog);
+         down(&ieee->scan_sem);
+ 
+@@ -691,11 +655,7 @@ void ieee80211_softmac_scan_wq(struct wo
+                 if (watchdog++ > MAX_CHANNEL_NUMBER)
+                                 goto out; /* no good chans */
+ 
+-#ifdef ENABLE_DOT11D
+         }while(!channel_map[ieee->current_network.channel]);
+-#else
+-        }while(!ieee->channel_map[ieee->current_network.channel]);
+-#endif
+ 
+ //      printk("current_network.channel:%d\n", ieee->current_network.channel);
+         if (ieee->scanning == 0 )
+@@ -704,18 +664,14 @@ void ieee80211_softmac_scan_wq(struct wo
+                 goto out;
+         }
+         ieee->set_chan(ieee->dev, ieee->current_network.channel);
+-#ifdef ENABLE_DOT11D
+ 	if(channel_map[ieee->current_network.channel] == 1)
+-#endif
+ 		ieee80211_send_probe_requests(ieee);
+ 
+ 	queue_delayed_work(ieee->wq, &ieee->softmac_scan_wq, IEEE80211_SOFTMAC_SCAN_TIME);
+ out:
+ 	up(&ieee->scan_sem);
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 		DOT11D_ScanComplete(ieee);
+-#endif
+ }
+ 
+ #endif
+@@ -794,7 +750,6 @@ void ieee80211_stop_scan(struct ieee8021
+ /* called with ieee->lock held */
+ void ieee80211_start_scan(struct ieee80211_device *ieee)
+ {
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee) )
+ 	{
+ 		if(IS_COUNTRY_IE_VALID(ieee))
+@@ -802,7 +757,6 @@ void ieee80211_start_scan(struct ieee802
+ 			RESET_CIE_WATCHDOG(ieee);
+ 		}
+ 	}
+-#endif
+ 	if (ieee->softmac_features & IEEE_SOFTMAC_SCAN){
+ 		if (ieee->scanning == 0)
+ 		{
+@@ -822,7 +776,6 @@ void ieee80211_start_scan(struct ieee802
+ /* called with wx_sem held */
+ void ieee80211_start_scan_syncro(struct ieee80211_device *ieee)
+ {
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee) )
+ 	{
+ 		if(IS_COUNTRY_IE_VALID(ieee))
+@@ -830,7 +783,6 @@ void ieee80211_start_scan_syncro(struct 
+ 			RESET_CIE_WATCHDOG(ieee);
+ 		}
+ 	}
+-#endif
+ 	ieee->sync_scan_hurryup = 0;
+ 
+ 	if (ieee->softmac_features & IEEE_SOFTMAC_SCAN)
+@@ -2534,10 +2486,8 @@ void ieee80211_start_ibss_wq(struct work
+ 	/* check if we have this cell in our network list */
+ 	ieee80211_softmac_check_all_nets(ieee);
+ 
+-#ifdef ENABLE_DOT11D
+ 	if(ieee->state == IEEE80211_NOLINK)
+ 		ieee->current_network.channel = 10;
+-#endif
+ 	/* if not then the state is not linked. Maybe the user swithced to
+ 	 * ad-hoc mode just after being in monitor mode, or just after
+ 	 * being very few time in managed mode (so the card have had no
+@@ -2626,7 +2576,6 @@ inline void ieee80211_start_ibss(struct 
+ void ieee80211_start_bss(struct ieee80211_device *ieee)
+ {
+ 	unsigned long flags;
+-#ifdef ENABLE_DOT11D
+ 	//
+ 	// Ref: 802.11d 11.1.3.3
+ 	// STA shall not start a BSS unless properly formed Beacon frame including a Country IE.
+@@ -2638,7 +2587,6 @@ void ieee80211_start_bss(struct ieee8021
+ 			return;
+ 		}
+ 	}
+-#endif
+ 	/* check if we have already found the net we
+ 	 * are interested in (if any).
+ 	 * if not (we are disassociated and we are not
+@@ -2677,10 +2625,8 @@ void ieee80211_disassociate(struct ieee8
+ 	if (ieee->data_hard_stop)
+ 			ieee->data_hard_stop(ieee->dev);
+ 
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(ieee))
+ 		Dot11d_Reset(ieee);
+-#endif
+ 	ieee->state = IEEE80211_NOLINK;
+ 	ieee->link_change(ieee->dev);
+ 	notify_wx_assoc_event(ieee);
+@@ -2822,11 +2768,7 @@ void ieee80211_start_protocol(struct iee
+ 			if (ch > MAX_CHANNEL_NUMBER)
+ 				return; /* no channel found */
+ 
+-#ifdef ENABLE_DOT11D
+ 		}while(!GET_DOT11D_INFO(ieee)->channel_map[ch]);
+-#else
+-		}while(!ieee->channel_map[ch]);
+-#endif
+ 
+ 		ieee->current_network.channel = ch;
+ 	}
+@@ -2954,9 +2896,7 @@ void ieee80211_softmac_init(struct ieee8
+ 	tasklet_init(&ieee->ps_task,
+ 	     (void(*)(unsigned long)) ieee80211_sta_ps,
+ 	     (unsigned long)ieee);
+-#ifdef ENABLE_DOT11D
+ 	ieee->pDot11dInfo = kmalloc(sizeof(RT_DOT11D_INFO), GFP_ATOMIC);
+-#endif
+ }
+ 
+ void ieee80211_softmac_free(struct ieee80211_device *ieee)
+@@ -2971,10 +2911,8 @@ void ieee80211_softmac_free(struct ieee8
+ 	cancel_delayed_work(&ieee->GPIOChangeRFWorkItem);
+ 
+ 	destroy_workqueue(ieee->wq);
+-#ifdef ENABLE_DOT11D
+ 	if(NULL != ieee->pDot11dInfo)
+ 		kfree(ieee->pDot11dInfo);
+-#endif
+ 	up(&ieee->wx_sem);
+ }
+ 
+Index: b/drivers/staging/rtl8187se/r8180_core.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -78,9 +78,7 @@ double __extendsfdf2(float a) {return a;
+ #include "r8180_pm.h"
+ #endif
+ 
+-#ifdef ENABLE_DOT11D
+ #include "ieee80211/dot11d.h"
+-#endif
+ 
+ #ifdef CONFIG_RTL8185B
+ //#define CONFIG_RTL8180_IO_MAP
+@@ -3899,7 +3897,6 @@ void watch_dog_adaptive(unsigned long da
+ //        DMESG("<----watch_dog_adaptive()\n");
+ }
+ 
+-#ifdef ENABLE_DOT11D
+ 
+ static CHANNEL_LIST ChannelPlan[] = {
+ 	{{1,2,3,4,5,6,7,8,9,10,11,36,40,44,48,52,56,60,64},19},  		//FCC
+@@ -3975,7 +3972,6 @@ static void rtl8180_set_channel_map(u8 c
+ 		}
+ 	}
+ }
+-#endif
+ 
+ //Add for RF power on power off by lizhaoming 080512
+ void GPIOChangeRFWorkItemCallBack(struct work_struct *work);
+@@ -4003,7 +3999,6 @@ short rtl8180_init(struct net_device *de
+ 	u16 tmpu16;
+ 	int i, j;
+ 
+-#ifdef ENABLE_DOT11D
+ #if 0
+ 	for(i=0;i<0xFF;i++) {
+ 		if(i%16 == 0)
+@@ -4020,21 +4015,6 @@ short rtl8180_init(struct net_device *de
+ 
+ 	DMESG("Channel plan is %d\n",priv->channel_plan);
+ 	rtl8180_set_channel_map(priv->channel_plan, priv->ieee80211);
+-#else
+-	int ch;
+-	//Set Default Channel Plan
+-	if(!channels){
+-		DMESG("No channels, aborting");
+-		return -1;
+-	}
+-	ch=channels;
+-	priv->channel_plan = 0;//hikaru
+-	 // set channels 1..14 allowed in given locale
+-	for (i=1; i<=14; i++) {
+-		(priv->ieee80211->channel_map)[i] = (u8)(ch & 0x01);
+-		ch >>= 1;
+-	}
+-#endif
+ 
+ 	//memcpy(priv->stats,0,sizeof(struct Stats));
+ 
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225z2.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225z2.c
+@@ -14,9 +14,7 @@
+ #include "r8180_rtl8225.h"
+ #include "r8180_93cx6.h"
+ 
+-#ifdef ENABLE_DOT11D
+ #include "ieee80211/dot11d.h"
+-#endif
+ 
+ #ifdef CONFIG_RTL8185B
+ 
+@@ -431,7 +429,6 @@ void rtl8225z2_rf_close(struct net_devic
+ 	rtl8185_set_anaparam2(dev, RTL8225z2_ANAPARAM2_OFF);
+ }
+ 
+-#ifdef ENABLE_DOT11D
+ //
+ //	Description:
+ //		Map dBm into Tx power index according to
+@@ -502,7 +499,6 @@ DbmToTxPwrIdx(
+ 
+ 	return TxPwrIdx;
+ }
+-#endif
+ 
+ void rtl8225z2_SetTXPowerLevel(struct net_device *dev, short ch)
+ {
+@@ -554,7 +550,6 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+ 			CckTxPwrIdx, OfdmTxPwrIdx);
+ 	}
+ #endif
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(priv->ieee80211) &&
+ 		IS_DOT11D_STATE_DONE(priv->ieee80211) )
+ 	{
+@@ -576,7 +571,6 @@ void rtl8225z2_SetTXPowerLevel(struct ne
+ 
+ 	//priv->CurrentCckTxPwrIdx = cck_power_level;
+ 	//priv->CurrentOfdmTxPwrIdx = ofdm_power_level;
+-#endif
+ 
+ 	max_cck_power_level = 15;
+ 	max_ofdm_power_level = 25; //  12 -> 25
+Index: b/drivers/staging/rtl8187se/r8180_wx.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_wx.c
++++ b/drivers/staging/rtl8187se/r8180_wx.c
+@@ -22,9 +22,7 @@
+ #include "r8180_hw.h"
+ #include "r8180_sa2400.h"
+ 
+-#ifdef ENABLE_DOT11D
+ #include "ieee80211/dot11d.h"
+-#endif
+ 
+ //#define RATE_COUNT 4
+ u32 rtl8180_rates[] = {1000000,2000000,5500000,11000000,
+@@ -313,11 +311,7 @@ static int rtl8180_wx_get_range(struct n
+ 	for (i = 0, val = 0; i < 14; i++) {
+ 
+ 		// Include only legal frequencies for some countries
+-#ifdef ENABLE_DOT11D
+ 		if ((GET_DOT11D_INFO(priv->ieee80211)->channel_map)[i+1]) {
+-#else
+-		if ((priv->ieee80211->channel_map)[i+1]) {
+-#endif
+ 		        range->freq[val].i = i + 1;
+ 			range->freq[val].m = ieee80211_wlan_frequencies[i] * 100000;
+ 			range->freq[val].e = 1;
+@@ -1189,20 +1183,12 @@ static int r8180_wx_set_channelplan(stru
+ 		// Clear old channel map
+ 		for (i=1;i<=MAX_CHANNEL_NUMBER;i++)
+ 		{
+-#ifdef ENABLE_DOT11D
+ 			GET_DOT11D_INFO(priv->ieee80211)->channel_map[i] = 0;
+-#else
+-			priv->ieee80211->channel_map[i] = 0;
+-#endif
+ 		}
+ 		// Set new channel map
+ 		for (i=1;i<=DefaultChannelPlan[*val].Len;i++)
+ 		{
+-#ifdef ENABLE_DOT11D
+ 			GET_DOT11D_INFO(priv->ieee80211)->channel_map[DefaultChannelPlan[*val].Channel[i-1]] = 1;
+-#else
+-			priv->ieee80211->channel_map[DefaultChannelPlan[*val].Channel[i-1]] = 1;
+-#endif
+ 		}
+ 	}
+ 	up(&priv->wx_sem);
+Index: b/drivers/staging/rtl8187se/r8185b_init.c
+===================================================================
+--- a/drivers/staging/rtl8187se/r8185b_init.c
++++ b/drivers/staging/rtl8187se/r8185b_init.c
+@@ -34,9 +34,7 @@ Notes:
+ #include "r8180_pm.h"
+ #endif
+ 
+-#ifdef ENABLE_DOT11D
+ #include "ieee80211/dot11d.h"
+-#endif
+ 
+ #ifdef CONFIG_RTL8185B
+ 
+@@ -2576,10 +2574,8 @@ MgntDisconnect(
+ 
+ 	// Indication of disassociation event.
+ 	//DrvIFIndicateDisassociation(Adapter, asRsn);
+-#ifdef ENABLE_DOT11D
+ 	if(IS_DOT11D_ENABLE(priv->ieee80211))
+ 		Dot11d_Reset(priv->ieee80211);
+-#endif
+ 	// In adhoc mode, update beacon frame.
+ 	if( priv->ieee80211->state == IEEE80211_LINKED )
+ 	{
