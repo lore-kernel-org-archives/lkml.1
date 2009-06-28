@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754021AbZF1ULi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZF1UN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754021AbZF1ULi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 16:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZF1ULa
+	id S1755432AbZF1UN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 16:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZF1UNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 16:11:30 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:48632 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054AbZF1UL3 (ORCPT
+	Sun, 28 Jun 2009 16:13:17 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:33995 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752568AbZF1UNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 16:11:29 -0400
-Date: Sun, 28 Jun 2009 21:11:30 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>, DRI <dri-devel@lists.sourceforge.net>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Bug #12765] i915 VT switch with AIGLX causes X lock up
-Message-ID: <20090628201129.GA1546@sucs.org>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.Q7C.Vm7KKB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AN6kEAA5GQ.A.Q7C.Vm7KKB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 28 Jun 2009 16:13:16 -0400
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: tridge@samba.org, john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <m1k52wxhki.fsf@fess.ebiederm.org>
+References: <19013.8005.541836.436991@samba.org>
+	 <m1d48p5dil.fsf@fess.ebiederm.org> <19014.54044.484370.187018@samba.org>
+	 <m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
+	 <87ab3sx4ch.fsf@devron.myhome.or.jp>  <m1k52wxhki.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Date: Sun, 28 Jun 2009 15:13:14 -0500
+Message-Id: <1246219994.4190.28.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 12:06:18PM +0200, Rafael J. Wysocki wrote:
+On Sun, 2009-06-28 at 12:51 -0700, Eric W. Biederman wrote:
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12765
-> Subject		: i915 VT switch with AIGLX causes X lock up
-> Submitter	: Sitsofe Wheeler <sitsofe@yahoo.com>
-> Date		: 2009-02-21 15:38 (107 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=14d200c5e5bd19219d930bbb9a5a22758c8f5bec
-> References	: http://marc.info/?l=linux-kernel&m=123523074304955&w=4
-> 		  http://lkml.org/lkml/2009/4/27/317
-> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Patch		: http://patchwork.kernel.org/patch/20197/
+> > tridge@samba.org writes:
+> >
+> >>  > Given what you have said our interpretation of vfat has a bug,
+> >>  > and that small change is a candidate for -stable.  If it could
+> >>  > be it's own patch.
+> >>
+> >> good point. 
+> >>
+> >> Hirofumi-san, would you support putting the last_u change into stable?
+> >
+> > If you want, I have no problem to do. However, I'm not thinking that
+> > part is a bug.  And -stable rule is also "a real bug that bothers
+> > people", but there is even a no bug reporter which tell actual problem.
+> 
+> 
+> Tridge.  Is there any reason to believe that Microsoft will continue
+> to treat Longfilenames without short filenames as valid in vfat?
+> 
+> If this turns into a contest of who can do the silliest things in
+> their vfat code microsoft could easily introduce a stricter directory
+> parser and cause all kinds of grief.
+> 
+> It wouldn't even surprise me if you haven't seen such shenanigans
+> while working on samba.
 
-Still here on 2.6.31-rc1 but...
+If you own the platform, like Microsoft does, there are many things you
+*could* do to make life difficult for others (like shipping a slightly
+incompatible version of java, for instance ...).  However, having had
+one or two consumer and regulatory backlashes from shipping updates
+primarily designed to hobble what you think of as a competitor, you tend
+to be much more wary about doing it so openly ... particularly when
+you're trying to convince a wary customer base that you're the champion
+of interoperability nowadays.
 
-...this seems to be tied to the version of the Intel X drivers I have.
-On another install with more recent Intel X drivers I cannot reproduce
-this issue.
+The bottom line is that we need to consider the current patch on its
+merits for evading the vfat patent.  Speculating about what Microsoft
+might or might not do to retaliate doesn't really help with this.
 
--- 
-Sitsofe | http://sucs.org/~sits/
+James
+
+
