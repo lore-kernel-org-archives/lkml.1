@@ -1,133 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZF1W7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZF1XAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZF1W7s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 18:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZF1W7h
+	id S1756277AbZF1XAO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 19:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZF1XAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 18:59:37 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:56539 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZF1W7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 18:59:36 -0400
-From: Goswin von Brederlow <goswin-v-b@web.de>
-To: Alberto Bertogli <albertito@blitiri.com.ar>
-Cc: Neil Brown <neilb@suse.de>, Goswin von Brederlow <goswin-v-b@web.de>,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       linux-raid@vger.kernel.org, agk@redhat.com
-Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks data integrity
-References: <20090521161317.GU1376@blitiri.com.ar>
-	<87my91qsn4.fsf@frosties.localdomain>
-	<20090525174630.GI1376@blitiri.com.ar>
-	<8763fop31e.fsf@frosties.localdomain>
-	<20090526125252.GL1376@blitiri.com.ar>
-	<19014.47753.69063.510164@notabene.brown>
-	<20090628153025.GH5913@blitiri.com.ar>
-Date: Mon, 29 Jun 2009 00:59:37 +0200
-In-Reply-To: <20090628153025.GH5913@blitiri.com.ar> (Alberto Bertogli's
-	message of "Sun, 28 Jun 2009 12:30:25 -0300")
-Message-ID: <87ab3sars6.fsf@frosties.localdomain>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
+	Sun, 28 Jun 2009 19:00:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41328 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754281AbZF1W77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 18:59:59 -0400
+Date: Mon, 29 Jun 2009 01:00:02 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: "rubenatch@gmail.com" <rubenatch@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2] Adding rumble support to Thrustmaster Dual Trigger
+ 3-in-1 devices
+In-Reply-To: <alpine.DEB.2.00.0906261639570.17888@localhost>
+Message-ID: <alpine.LNX.2.00.0906290058370.18021@wotan.suse.de>
+References: <alpine.DEB.2.00.0906261639570.17888@localhost>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1/SG/L9/IBhZKke+IXWE9lFFbCMbrvA7wt2tKc7
-	hqR77LADSOi8r6TFyLXQfiELcDAA/fob+kb9rqeDxSzWrBdTlf
-	F4KjSaAGo=
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-39250729-1246230002=:18021"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alberto Bertogli <albertito@blitiri.com.ar> writes:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Sun, Jun 28, 2009 at 10:34:17AM +1000, Neil Brown wrote:
->> On Tuesday May 26, albertito@blitiri.com.ar wrote:
->> > On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
->> > > > This scheme assumes writes to a single sector are atomic in the presence of
->> > > > normal crashes, which I'm not sure if it's something sane to assume in
->> > > > practise. If it's not, then the scheme can be modified to cope with that.
->> > > 
->> > > What happens if you have multiple writes to the same sector? (assuming
->> > > you ment "before" above)
->> > > 
->> > > - user writes to sector
->> > > - queue up write for M1 and data1
->> > > - M1 writes
->> > > - user writes to sector
->> > > - queue up writes for M2 and data2
->> > > - data1 is thrown away as data2 overwrites it
->> > > - M2 writes
->> > > - system crashes
->> > > 
->> > > Now both M1 and M2 have a different checksum than the old data left on
->> > > disk.
->> > > 
->> > > Can this happen?
->> > 
->> > No, parallel writes that affect the same metadata sectors will not be allowed.
->> > At the moment there is a rough lock which does not allow simultaneous updates
->> > at all, I plan to make that more fine-grained in the future.
->> 
->> Can I suggest a variation on the above which, I think, can cause a
->> problem.
->> 
->>  - user writes data-A' to sector-A (which currently contains data-A)
->>  - queue up write for M1 and data-A'
->>  - M1 is written correctly.
->>  - power fails (before data-A' is written)
->> reboot
->>  - read sector-A, find data-A which matches checksum on M2, so
->>    success.
->> 
->> So everything is working perfectly so far...
->> 
->>  - write sector-B (in same 62-sector range as sector-A).
->>  - queue up write for M2 and data-B
->>  - those writes complete
->>  - read sector-A.  find data-A, which doesn't match M1 (that has
->>    data-A') and doesn't match M2 (which is mostly a copy of M1),
->>    so the read fails.
->
-> The thing is that M2 is not a copy of M1. When updating M2 for data-B, the
-> procedure is not "copy M1, update sector-B's checksum, write" but "read M2,
-> update sector-B's checksum, write". So as long as there are no writes to
-> sector-A, M1 will have the incorrect checksum and M2 will have the correct
-> one, regardless of writes to the other sectors.
->
-> However, a troubling scenario based on yours could be:
->
->  - M2 has the right checksum but is older, M1 has the wrong checksum but is
->    newer.
->  - user writes data-A'' to sector'A
->  - queue up write for M2 (chosen because it is older)
->  - M2 is written correctly
->  - power fails before data-A'' is written
->
-> At that point, data-A is written at sector-A, but both M1 and M2 have
-> incorrect checksums for it.
->
-> I'll try to come up with a better scheme that copes with this kind of
-> scenarios and post an updated patch.
->
-> Thanks a lot,
-> 		Alberto
+--168427776-39250729-1246230002=:18021
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-When the newer block has the wrong checksum you first need to correct
-that. If you find a wrong checksum on read that is easy to do. But you
-won't detect this on writes.
+On Fri, 26 Jun 2009, rubenatch@gmail.com wrote:
 
-One solution I can think of is this:
+> 
+> From: Rubén Aós Garralda <rubenatch@gmail.com>
+> 
+> This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads (in
+> both PC and PS3 modes). It uses the same code as Thrustmaster FireStorm Dual
+> Power 2/3, so it only modifies hid-core.c (to put the devices in the
+> "forbidden list" and hid-tmff.c to add the new USB IDs.
 
-- user writes to sector A
-- compare checksum of sector A in M1 and M2
-  if checksums differ:
-  - read sector A and calculate checksum
-  - if M1 has the right checksum update M2
-  - wait
-- write new checksum to M1
-- wait
-- write data to sector A
-- wait
-- write new checksum to M2
+Could you please also send your Signed-off-by: line, so that I can 
+properly merge the patch?
 
-MfG
-        Goswin
+> diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c
+> linux-source-test/drivers/hid/hid-core.c
+> --- linux-source-2.6.30/drivers/hid/hid-core.c	2009-06-10 05:05:27.000000000
+> +0200
+> +++ linux-source-test/drivers/hid/hid-core.c	2009-06-26 15:33:48.000000000
+> +0200
+> @@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS,
+>  	USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
+>  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
+> +       	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
+
+This is whitespace damaged.
+
+Otherwise the patch is OK.
+
+Thanks!
+
+-- 
+Jiri Kosina
+SUSE Labs
+--168427776-39250729-1246230002=:18021--
