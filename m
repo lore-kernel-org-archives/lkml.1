@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbZF1Qnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760528AbZF1Qp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760068AbZF1Qnw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZF1Q2t
+	id S1760528AbZF1Qp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZF1Qps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:28:49 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1204 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270AbZF1Q21 (ORCPT
+	Sun, 28 Jun 2009 12:45:48 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:38432 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbZF1Qpr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:28:27 -0400
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>, alsa-devel@alsa-project.org
-Subject: [PATCH 62/62] sound: Remove unnecessary semicolons
-Date: Sun, 28 Jun 2009 09:27:07 -0700
-Message-Id: <abb8165c1dd4442d61748f23a8033d8bc8fc8be0.1246173683.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1246173664.git.joe@perches.com>
+	Sun, 28 Jun 2009 12:45:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ouW7Ek5/lFxgEVovQZh5yHBBKtApyLURF0lGVsi/9pW/XDNi8cpn8Yux8dJKCGFiGC
+         WJELpNwGcO/BgfSmvcpYC/BEcjE31sec5w8m3X31OKYmqZXj1MdDCnqE2AoyN4WjN6ZI
+         xQL1PBCTSMK83Zifcxrd/zbYITd75l0W3ZJRY=
+MIME-Version: 1.0
+In-Reply-To: <33feb04c647d39629feb6252488214b05e297f44.1246173683.git.joe@perches.com>
 References: <cover.1246173664.git.joe@perches.com>
+	 <33feb04c647d39629feb6252488214b05e297f44.1246173683.git.joe@perches.com>
+Date: Sun, 28 Jun 2009 11:45:50 -0500
+Message-ID: <524f69650906280945w75efb203mbd3a5770acf97188@mail.gmail.com>
+Subject: Re: [PATCH 56/62] fs/cifs/cifs_dfs_ref.c: Remove unnecessary 
+	semicolons
+From: Steve French <smfrench@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-cifs-client@lists.samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- sound/oss/sys_timer.c               |    3 ---
- sound/soc/codecs/wm9081.c           |    2 +-
- sound/soc/pxa/pxa-ssp.c             |    2 +-
- sound/soc/s3c24xx/s3c24xx_uda134x.c |    2 +-
- 4 files changed, 3 insertions(+), 6 deletions(-)
+This fix is fine of course.
 
-diff --git a/sound/oss/sys_timer.c b/sound/oss/sys_timer.c
-index 1075344..8db6aef 100644
---- a/sound/oss/sys_timer.c
-+++ b/sound/oss/sys_timer.c
-@@ -100,9 +100,6 @@ def_tmr_open(int dev, int mode)
- 	curr_tempo = 60;
- 	curr_timebase = 100;
- 	opened = 1;
--
--	;
--
- 	{
- 		def_tmr.expires = (1) + jiffies;
- 		add_timer(&def_tmr);
-diff --git a/sound/soc/codecs/wm9081.c b/sound/soc/codecs/wm9081.c
-index 86fc57e..220eebc 100644
---- a/sound/soc/codecs/wm9081.c
-+++ b/sound/soc/codecs/wm9081.c
-@@ -1079,7 +1079,7 @@ static int wm9081_hw_params(struct snd_pcm_substream *substream,
- 		       - wm9081->fs);
- 	for (i = 1; i < ARRAY_SIZE(clk_sys_rates); i++) {
- 		cur_val = abs((wm9081->sysclk_rate /
--			       clk_sys_rates[i].ratio) - wm9081->fs);;
-+			       clk_sys_rates[i].ratio) - wm9081->fs);
- 		if (cur_val < best_val) {
- 			best = i;
- 			best_val = cur_val;
-diff --git a/sound/soc/pxa/pxa-ssp.c b/sound/soc/pxa/pxa-ssp.c
-index 19c4540..af87986 100644
---- a/sound/soc/pxa/pxa-ssp.c
-+++ b/sound/soc/pxa/pxa-ssp.c
-@@ -351,7 +351,7 @@ static int pxa_ssp_set_dai_pll(struct snd_soc_dai *cpu_dai,
- 			do_div(tmp, freq_out);
- 			val = tmp;
- 
--			val = (val << 16) | 64;;
-+			val = (val << 16) | 64;
- 			ssp_write_reg(ssp, SSACDD, val);
- 
- 			ssacd |= (0x6 << 4);
-diff --git a/sound/soc/s3c24xx/s3c24xx_uda134x.c b/sound/soc/s3c24xx/s3c24xx_uda134x.c
-index 8e79a41..c215d32 100644
---- a/sound/soc/s3c24xx/s3c24xx_uda134x.c
-+++ b/sound/soc/s3c24xx/s3c24xx_uda134x.c
-@@ -67,7 +67,7 @@ static int s3c24xx_uda134x_startup(struct snd_pcm_substream *substream)
- {
- 	int ret = 0;
- #ifdef ENFORCE_RATES
--	struct snd_pcm_runtime *runtime = substream->runtime;;
-+	struct snd_pcm_runtime *runtime = substream->runtime;
- #endif
- 
- 	mutex_lock(&clk_lock);
+Do you prefer that I merge this via the cifs-2.6 tree or as part of
+your large patch series?
+
+On Sun, Jun 28, 2009 at 11:27 AM, Joe Perches<joe@perches.com> wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  fs/cifs/cifs_dfs_ref.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/fs/cifs/cifs_dfs_ref.c b/fs/cifs/cifs_dfs_ref.c
+> index 3bb11be..3f2c2a3 100644
+> --- a/fs/cifs/cifs_dfs_ref.c
+> +++ b/fs/cifs/cifs_dfs_ref.c
+> @@ -136,7 +136,7 @@ char *cifs_compose_mount_options(const char *sb_mountdata,
+>        rc = dns_resolve_server_name_to_ip(*devname, &srvIP);
+>        if (rc != 0) {
+>                cERROR(1, ("%s: Failed to resolve server part of %s to IP: %d",
+> -                         __func__, *devname, rc));;
+> +                         __func__, *devname, rc));
+>                goto compose_mount_options_err;
+>        }
+>        /* md_len = strlen(...) + 12 for 'sep+prefixpath='
+> --
+> 1.6.3.1.10.g659a0.dirty
+>
+>
+
+
+
 -- 
-1.6.3.1.10.g659a0.dirty
+Thanks,
 
+Steve
