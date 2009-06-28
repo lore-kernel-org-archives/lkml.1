@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZF1JMF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZF1Jfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbZF1JMF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 05:12:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZF1JLx
+	id S1753227AbZF1Jfp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 05:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbZF1Jfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 05:11:53 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:48794 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbZF1JLw convert rfc822-to-8bit (ORCPT
+	Sun, 28 Jun 2009 05:35:36 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:65184 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbZF1Jff (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 05:11:52 -0400
+	Sun, 28 Jun 2009 05:35:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=FlluCAA15fBCA+IhdZk3jv/A1yxhpTBHBcLhuCaRpH2wshF5Yz+ZM9XQTk8lTMtGHL
-         niCl1I9vOryEnVkVDZm/cPoLCaDCj02KcwOWi/k0pTRjFiNlhO1svOfAZGt+SJVNTxgl
-         GPdsrneYtGdfKD/oPYYLzGHO90cxCnbKPJ5v0=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qqVywXssJtZdVKzQn99k5AK+TFqeVp2FyGZyO4GEHOqsBieiPwAcJ1TK2iqNg6FnKc
+         QUQzkySOScDo1+xoDPDYx6jF9vYh0JsIIjvwhKaahV1zmNil/OtrVrst1G1mynuLgsB+
+         5DcOR7+FhXy6gZcj3xN21fci6VDWneplaKZlg=
 MIME-Version: 1.0
-In-Reply-To: <20090618223238.4d6b6707@infradead.org>
-References: <20090614173331.18f01123@infradead.org>
-	 <b6c5339f0906181008v1cd4b06aof866ea9a91d2eb84@mail.gmail.com>
-	 <20090618223238.4d6b6707@infradead.org>
-Date: Sun, 28 Jun 2009 05:11:54 -0400
-X-Google-Sender-Auth: d03fd49edc5361b7
-Message-ID: <b6c5339f0906280211n21287f68p6455890fd860c44@mail.gmail.com>
-Subject: Re: kerneloops.org report for the week of June 14 2009
-From: Bob Copeland <me@bobcopeland.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, tglx@tglx.de, alan@lxorguk.ukuu.org.uk,
-       rjw@sisk.pl, netdev@vger.kernel.org, mingo@elte.hu, dwmw2@infradead.org,
-       alsa-devel@alsa-project.org, dri-devel@lists.sourceforge.net
+In-Reply-To: <4A47246A.5060608@numericable.fr>
+References: <4A44EBEE.9070503@numericable.fr>
+	 <200906262139.23367.bzolnier@gmail.com>
+	 <4A45E095.5070608@numericable.fr>
+	 <b6a2187b0906271109q2194cadbv8d20b4bda82bde19@mail.gmail.com>
+	 <b6a2187b0906271212u78c00562oaf84ffd740d4aecb@mail.gmail.com>
+	 <4A47246A.5060608@numericable.fr>
+Date: Sun, 28 Jun 2009 17:35:38 +0800
+Message-ID: <b6a2187b0906280235u29302423g789b44229752e0f0@mail.gmail.com>
+Subject: Re: [REGRESSION] 2.6.29=>2.6.30 suspend to ram regression (IDE 
+	related)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Etienne Basset <etienne.basset@numericable.fr>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, davem@davemloft.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 19, 2009 at 1:32 AM, Arjan van de Ven<arjan@infradead.org> wrote:
-> On Thu, 18 Jun 2009 13:08:39 -0400
-> Bob Copeland <me@bobcopeland.com> wrote:
->> > Rank 9: minstrel_get_rate (warning)
->>
->> I believe this is fixed by http://lkml.org/lkml/2009/6/5/269, now
->> in pre-2.6.31.  Hmm, odd though, we should be seeing reports from
->> other wireless drivers since it's a general memory corruption
->> unrelated to ath5k (but not all use the mac80211 rate controllers).
->
-> well.. out of the 534 reports or so that I have by now... 525 have
-> ath5k loaded.....
->
-> it's not 100% but it'd pretty close.
+On Sun, Jun 28, 2009 at 4:06 PM, Etienne
+Basset<etienne.basset@numericable.fr> wrote:
+> same here ; after resume, computer hangs after 2minutes (cannot ping from outside)
+> and STR/resume doesn't work if I try from console not from X
+> there must be at least one another bug lurking
+> If someone hasn't a better idea I'll try another bisection, applying bart's patch at each step
 
-Indeed, I can replicate this now, looks like some kind of race condition
-since it's looking for a rate in the 5 ghz band while I'm communicating
-with a 2 ghz AP (during a scan perhaps?).  The warning is harmless but
-there is some underlying issue to be fixed.
+The patch seems to help, but I got a few hangs from STR still.
 
--- 
-Bob Copeland %% www.bobcopeland.com
+Jeff.
