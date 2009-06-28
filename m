@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753983AbZF1Vxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZF1V6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753983AbZF1Vxz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 17:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZF1Vxs
+	id S1754786AbZF1V6P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 17:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZF1V57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 17:53:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36352 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752539AbZF1Vxr (ORCPT
+	Sun, 28 Jun 2009 17:57:59 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:57942 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752341AbZF1V57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 17:53:47 -0400
-Date: Sun, 28 Jun 2009 14:52:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Andi Kleen <andi@firstfloor.org>, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when using
- pipes in core_pattern
-Message-Id: <20090628145228.2f80f327.akpm@linux-foundation.org>
-In-Reply-To: <m163egt524.fsf@fess.ebiederm.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	<20090625163050.d6a71a13.akpm@linux-foundation.org>
-	<20090626104804.GA7337@hmsreliant.think-freely.org>
-	<20090626092001.32e35e17.akpm@linux-foundation.org>
-	<20090628193112.GA6760@one.firstfloor.org>
-	<20090628135235.10f9b153.akpm@linux-foundation.org>
-	<m163egt524.fsf@fess.ebiederm.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jun 2009 17:57:59 -0400
+Date: Sun, 28 Jun 2009 22:57:54 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: tridge@samba.org
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090628215754.GA29896@shareable.org>
+References: <19013.8005.541836.436991@samba.org> <alpine.LSU.2.00.0906271918280.5582@fbirervta.pbzchgretzou.qr> <19014.56477.311713.975403@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19014.56477.311713.975403@samba.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009 14:35:31 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
+tridge@samba.org wrote:
+> Hi Jan,
+> 
+>  > Can't we make this a runtime option?
+> 
+> John may be able to give you a more detailed answer, but the short
+> answer is that it is much safer legally to not have the code in the
+> binary kernel image at all.
 
-> Andrew should I toss all 100 or so patches over the wall to you
-> and your -mm tree?  Or should I maintain a public git tree based
-> at 2.6.31-rc1?  Get it into linux-next and ask Linus to pull it when
-> the merge window comes?
+Understood.
 
-The latter would be more convenient for me.  It may cause pain for
-yourself and Stephen though?
+For those of us who don't want to omit the code, because we like
+compatibility and we're not in affected countries, or for research, it
+would be useful to have it as a mount option.
 
+So there should be these compile-time options:
+
+    1. CONFIG_VFAT_FS_DUALNAMES disabled:  Don't create shortnames.
+
+    2. CONFIG_VFAT_FS_DUALNAMES enabled: Create shortnames, unless
+       mount option "dualnames=no" is given, in which case that mount
+       behaves as if CONFIG_VFAT_FS_DUALNAMES is disabled.
+
+-- Jamie
