@@ -1,131 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZF1OMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZF1OM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZF1OMm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbZF1OM1
+	id S1755809AbZF1OM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130AbZF1OMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:12:27 -0400
+	Sun, 28 Jun 2009 10:12:35 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755999AbZF1OM0 (ORCPT
+	with ESMTP id S1756058AbZF1OMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:12:26 -0400
+	Sun, 28 Jun 2009 10:12:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=bm+TTolXT7vcLt83pP+cjWI76NBpV4Vm84njRgpTPFlCA827suWnICwSV5ZOVXPAlX
-         f/tDsGPeLv4r5V22S1fFWmYp1cy8ZG7C2xH7JjzzKrjarC0ZKBFFV9jDt7BdlmQbD0qx
-         iGUJlR6wxu68gf86KOukX9N3pBNpbL++pAhT8=
+        b=cNse+aGtER3u5P8RhxkQEG9b3+QXRW3NxF3WEIhcvqxEXmoli0ZkGweN3PxCH7G5aS
+         tq/o+jgR2RdPCeTYtnGYHiCu0xt3lfYmHFwMD7Qwx+i+RMMRrqE6g6hUSnW7F6DUZxyg
+         /f+mRgqZGeVeISUfvvjWdrVsj8E+QQDnuImyU=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:18:51 +0200
-Message-Id: <20090628141851.8761.44640.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:18:57 +0200
+Message-Id: <20090628141857.8761.44519.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/18] Staging: rtl8187se: remove CONFIG_RTL8180_PM ifdefs
+Subject: [PATCH 03/18] Staging: rtl8187se: remove THOMAS_TURBO ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: remove CONFIG_RTL8180_PM ifdefs
+Subject: [PATCH] Staging: rtl8187se: remove THOMAS_TURBO ifdefs
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/Makefile      |    1 -
- drivers/staging/rtl8187se/r8180_core.c  |    7 -------
- drivers/staging/rtl8187se/r8180_pm.c    |    2 --
- drivers/staging/rtl8187se/r8180_pm.h    |    2 --
- drivers/staging/rtl8187se/r8185b_init.c |    2 --
- 5 files changed, 14 deletions(-)
+ drivers/staging/rtl8187se/Makefile                      |    1 -
+ drivers/staging/rtl8187se/ieee80211/ieee80211.h         |    2 --
+ drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c      |    6 ------
+ drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c |   15 ---------------
+ drivers/staging/rtl8187se/r8185b_init.c                 |    2 --
+ 5 files changed, 26 deletions(-)
 
 Index: b/drivers/staging/rtl8187se/Makefile
 ===================================================================
 --- a/drivers/staging/rtl8187se/Makefile
 +++ b/drivers/staging/rtl8187se/Makefile
-@@ -15,7 +15,6 @@ EXTRA_CFLAGS += -DTX_TRACK
- EXTRA_CFLAGS += -DHIGH_POWER
- EXTRA_CFLAGS += -DSW_DIG
- EXTRA_CFLAGS += -DRATE_ADAPT
--EXTRA_CFLAGS += -DCONFIG_RTL8180_PM
+@@ -4,7 +4,6 @@
+ #EXTRA_CFLAGS += -std=gnu89
+ #EXTRA_CFLAGS += -O2
+ #CC            = gcc
+-EXTRA_CFLAGS += -DTHOMAS_TURBO
+ #CFLAGS += -DCONFIG_RTL8185B
+ #CFLAGS += -DCONFIG_RTL818x_S
  
- #enable it for legacy power save, disable it for leisure  power save
- EXTRA_CFLAGS += -DENABLE_LPS
-Index: b/drivers/staging/rtl8187se/r8180_core.c
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_core.c
-+++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -74,9 +74,7 @@ double __extendsfdf2(float a) {return a;
- #include "r8180_wx.h"
- #include "r8180_dm.h"
- 
--#ifdef CONFIG_RTL8180_PM
- #include "r8180_pm.h"
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211.h
+@@ -956,9 +956,7 @@ struct ieee80211_network {
+ //by amy 080312
+ 	u8 HighestOperaRate;
+ //by amy 080312
+-#ifdef THOMAS_TURBO
+ 	u8 Turbo_Enable;//enable turbo mode, added by thomas
 -#endif
- 
- #include "ieee80211/dot11d.h"
- 
-@@ -199,13 +197,8 @@ static struct pci_driver rtl8180_pci_dri
- 	.id_table	= rtl8180_pci_id_tbl,	          /* PCI_ID table  */
- 	.probe		= rtl8180_pci_probe,	          /* probe fn      */
- 	.remove		= __devexit_p(rtl8180_pci_remove),/* remove fn     */
--#ifdef CONFIG_RTL8180_PM
- 	.suspend	= rtl8180_suspend,	          /* PM suspend fn */
- 	.resume		= rtl8180_resume,                 /* PM resume fn  */
--#else
--	.suspend	= NULL,			          /* PM suspend fn */
--	.resume      	= NULL,			          /* PM resume fn  */
--#endif
- 	.shutdown	= rtl8180_shutdown,
+ 	u16 CountryIeLen;
+ 	u8 CountryIeBuf[MAX_IE_LEN];
  };
- 
-Index: b/drivers/staging/rtl8187se/r8180_pm.c
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_pm.c
-+++ b/drivers/staging/rtl8187se/r8180_pm.c
-@@ -9,7 +9,6 @@
-    Released under the terms of GPL (General Public Licence)
- */
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_rx.c
+@@ -1159,9 +1159,7 @@ inline int ieee80211_network_init(
+ //by amy 080312
+ 	network->HighestOperaRate = 0;
+ //by amy 080312
+-#ifdef THOMAS_TURBO
+ 	network->Turbo_Enable = 0;
+-#endif
+ 	network->CountryIeLen = 0;
+ 	memset(network->CountryIeBuf, 0, MAX_IE_LEN);
  
--#ifdef CONFIG_RTL8180_PM
+@@ -1338,7 +1336,6 @@ inline int ieee80211_network_init(
+ 				       network->wpa_ie_len);
+ 			}
  
- 
- #include "r8180_hw.h"
-@@ -89,4 +88,3 @@ int rtl8180_enable_wake (struct pci_dev 
- 
- 
- 
--#endif //CONFIG_RTL8180_PM
-Index: b/drivers/staging/rtl8187se/r8180_pm.h
+-#ifdef THOMAS_TURBO
+ 			if (info_element->len == 7 &&
+ 			    info_element->data[0] == 0x00 &&
+ 			    info_element->data[1] == 0xe0 &&
+@@ -1347,7 +1344,6 @@ inline int ieee80211_network_init(
+ 			    info_element->data[4] == 0x02) {
+ 				network->Turbo_Enable = 1;
+ 			}
+-#endif
+ 			if (1 == stats->nic_type) {//nic 87
+ 				break;
+ 			}
+@@ -1541,9 +1537,7 @@ inline void update_network(struct ieee80
+ 	dst->QoS_Enable = 1;//for Rtl8187 simulation
+ #endif
+ 	dst->SignalStrength = src->SignalStrength;
+-#ifdef THOMAS_TURBO
+ 	dst->Turbo_Enable = src->Turbo_Enable;
+-#endif
+ 	dst->CountryIeLen = src->CountryIeLen;
+ 	memcpy(dst->CountryIeBuf, src->CountryIeBuf, src->CountryIeLen);
+ }
+Index: b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180_pm.h
-+++ b/drivers/staging/rtl8187se/r8180_pm.h
-@@ -10,7 +10,6 @@
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_softmac.c
+@@ -127,7 +127,6 @@ void ieee80211_WMM_Info(struct ieee80211
+ 	*tag_p = tag;
+ }
  
- */
+-#ifdef THOMAS_TURBO
+ void ieee80211_TURBO_Info(struct ieee80211_device *ieee, u8 **tag_p) {
+ 	u8 *tag = *tag_p;
  
--#ifdef CONFIG_RTL8180_PM
+@@ -144,7 +143,6 @@ void ieee80211_TURBO_Info(struct ieee802
+ 	*tag_p = tag;
+ 	printk(KERN_ALERT "This is enable turbo mode IE process\n");
+ }
+-#endif
  
- #ifndef R8180_PM_H
- #define R8180_PM_H
-@@ -25,4 +24,3 @@ int rtl8180_enable_wake (struct pci_dev 
+ void enqueue_mgmt(struct ieee80211_device *ieee, struct sk_buff *skb)
+ {
+@@ -1108,9 +1106,7 @@ inline struct sk_buff *ieee80211_associa
+ #endif
+ 	unsigned int rate_len = ieee80211_MFIE_rate_len(ieee);
+ 	unsigned int wmm_info_len = beacon->QoS_Enable?9:0;
+-#ifdef THOMAS_TURBO
+ 	unsigned int turbo_info_len = beacon->Turbo_Enable?9:0;
+-#endif
  
- #endif //R8180_PM_H
+ 	u8  encry_proto = ieee->wpax_type_notify & 0xff;
+ 	//u8  pairwise_type = (ieee->wpax_type_notify >> 8) & 0xff;
+@@ -1128,7 +1124,6 @@ inline struct sk_buff *ieee80211_associa
+ 			wpa_len = 0;
+ 		}
+ 	}
+-#ifdef THOMAS_TURBO
+ 	len = sizeof(struct ieee80211_assoc_request_frame)+
+ 		+ beacon->ssid_len//essid tagged val
+ 		+ rate_len//rates tagged val
+@@ -1136,14 +1131,6 @@ inline struct sk_buff *ieee80211_associa
+ 		+ rsn_len
+ 		+ wmm_info_len
+ 		+ turbo_info_len;
+-#else
+-	len = sizeof(struct ieee80211_assoc_request_frame)+
+-		+ beacon->ssid_len//essid tagged val
+-		+ rate_len//rates tagged val
+-		+ wpa_len
+-		+ rsn_len
+-		+ wmm_info_len;
+-#endif
  
--#endif // CONFIG_RTL8180_PM
+ 	skb = dev_alloc_skb(len);
+ 
+@@ -1389,12 +1376,10 @@ inline struct sk_buff *ieee80211_associa
+ 	if(wmm_info_len) {
+ 	  ieee80211_WMM_Info(ieee, &tag);
+ 	}
+-#ifdef THOMAS_TURBO
+ 	tag = skb_put(skb,turbo_info_len);
+         if(turbo_info_len) {
+                 ieee80211_TURBO_Info(ieee, &tag);
+         }
+-#endif
+ 
+ 	return skb;
+ }
 Index: b/drivers/staging/rtl8187se/r8185b_init.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8185b_init.c
 +++ b/drivers/staging/rtl8187se/r8185b_init.c
-@@ -30,9 +30,7 @@ Notes:
- #include "r8180_93cx6.h"   /* Card EEPROM */
- #include "r8180_wx.h"
+@@ -2227,11 +2227,9 @@ ActUpdateChannelAccessSetting(
  
--#ifdef CONFIG_RTL8180_PM
- #include "r8180_pm.h"
+ 		//lzm reserved 080826
+ #if 1
+-#ifdef THOMAS_TURBO
+ 		// For turbo mode setting. port from 87B by Isaiah 2008-08-01
+ 		if( ieee->current_network.Turbo_Enable == 1 )
+ 			AcParam.f.TXOPLimit = 0x01FF;
 -#endif
- 
- #include "ieee80211/dot11d.h"
- 
+ 		// For 87SE with Intel 4965  Ad-Hoc mode have poor throughput (19MB)
+ 		if (ieee->iw_mode == IW_MODE_ADHOC)
+ 			AcParam.f.TXOPLimit = 0x0020;
