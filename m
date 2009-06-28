@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZF2Bkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZF2BpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbZF2Bkg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 21:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZF2Bk1
+	id S1753341AbZF2BpL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 21:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZF2BpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 21:40:27 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:30477 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZF2Bk0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 21:40:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=FmA55Sf1biyB6SpkNeMIf1sH7Yq9sMsKbDBjz19fi8rC8GdS/Dh3Qsr2k9u8YnU/m/
-         Wi+IvczhDn//JIKKwYVbWAGRzji5Lv91dBRh5D1c/TZKa6vwEjE+jSCpjYfRDjLUF9vB
-         ux1CgTpxXcryeCV4vWasqS1/0dB5BXNlOLa6w=
-Message-ID: <4A481B88.30806@gmail.com>
-Date: Mon, 29 Jun 2009 09:40:24 +0800
-From: Eric Miao <eric.y.miao@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 28 Jun 2009 21:45:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47746 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751844AbZF2Bo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 21:44:59 -0400
+Date: Mon, 29 Jun 2009 00:24:55 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       earl_chew@agilent.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 2/2] exec: Make do_coredump more robust and safer when
+	using pipes in core_pattern (v3)
+Message-ID: <20090628222455.GA21475@redhat.com>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090629003514.GC2479@localhost.localdomain>
 MIME-Version: 1.0
-To: Aviv Laufer <aviv.laufer@gmail.com>
-CC: Richard Purdie <rpurdie@rpsys.net>, eric.miao@marvell.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bug in tdo24m
-References: <87972c700906230516n538ad959nbd4b1ea21943ffc2@mail.gmail.com> <1245761933.5987.20.camel@dax.rpnet.com>
-In-Reply-To: <1245761933.5987.20.camel@dax.rpnet.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629003514.GC2479@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Purdie wrote:
-> Hi,
-> 
-> On Tue, 2009-06-23 at 15:16 +0300, Aviv Laufer wrote:
->> I have found a bug in tdo24m.c .
->> There is a call to kmalloc with the second param is sizeeof (flag)
->> instead of flag.
->> This cause  a crash.
-> 
-> Thats quite a nasty bug and its surprising its not been found before
-> now! Can you resubmit the patch with description and most importantly a
-> Signed-off-by line please (see Documentation/SubmittingPatches)?
-> 
+On 06/28, Neil Horman wrote:
+>
+> Allow for the kernel to wait for a core_pattern process to complete
 
-Ooops - this is embarrassing, yet I didn't find this causing any crash
-by now,  tdo24m works just OK on my Littleton and thus hiding this bug
-deeply.
+(please change the subject to match)
 
-Aviv,
+> One of the things core_pattern processes might do is interrogate the status of a
+> crashing process via its /proc/pid directory.  To ensure that that directory is
+> not removed prematurely, we wait for the process to exit prior to cleaning it
+> up.
+>
+> Since the addition of this feature makes it possible to block the reaping of a
+> crashed process (if the collecting process never exits), Also introduce a new
+> sysctl: core_pipe_limit.
 
-Any update on this patch? I'd like to queue this ASAP.
+Perhaps this sysctl should be added in a separate patch? This patch mixes
+differents things imho.
+
+But in fact I don't really understand why do we need the new sysctl. Yes,
+if the collecting process never exits, the coredumping thread can't be reaped.
+But this process runs as root, it can do other bad things. And let's suppose
+it just does nothing, say sleeps forever, and do not read the data from pipe.
+In that case, regardless of any sysctls, ->core_dump() never finishes too.
+
+> +fail_dropcount:
+> +	if (dump_count) {
+> +		while (core_pipe_limit && inode->i_pipe->readers)
+> +			pipe_wait(inode->i_pipe);
+
+No, no, this is racy and wrong.
+
+First, it is possible that it exits between ->readers != 0 check and
+pipe_wait(), we will sleep forever.
+
+Also, pipe_wait() should be called under pipe_lock(), I guess lockdep
+should complain if you test your patch ;)
+
+I'd suggest you to make a simple helper,
+
+	static inline void xxx(struct file *file)
+	{
+		struct pipe_inode_info *pipe = file->...;
+
+		wait_event(pipe->wait, pipe->readers == 0);
+	}
+
+I believe we don't need pipe_lock().
+
+Oleg.
+
