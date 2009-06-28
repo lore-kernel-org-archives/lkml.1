@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbZF1Ojc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZF1Oow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756119AbZF1Ojc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZF1OjY
+	id S1755672AbZF1Oow (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZF1Oon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:39:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:61816 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbZF1OjX (ORCPT
+	Sun, 28 Jun 2009 10:44:43 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36377 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750875AbZF1Oom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:39:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=daMgOWtZqM/dsdCezeR/So7cGQn5pXVaS5i/AvwF7tcoKuCeE4GbFw2OPfCUldxvYx
-         evXnnBGOLmQ9/4NaqgTgXjv7kdwMalzn/87Veuc47rKO/cEJEtbXzqNojHW5LYnlMWX4
-         vqyzR4sB7mgyMCsi4oC+Hih4NK1AI9BWdPuyE=
-From: tom.leiming@gmail.com
-To: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in dma_sync_*_for_cpu
-Date: Sun, 28 Jun 2009 22:39:19 +0800
-Message-Id: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+	Sun, 28 Jun 2009 10:44:42 -0400
+Subject: Re: [PATCH] SCSI: userspace cannot use scsi_command_size_tbl,
+ COMMAND_SIZE and scsi_device_type
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: James Smart <James.Smart@Emulex.Com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Olaf Hering <olh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Benny Halevy <bhalevy@panasas.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <4A477F00.70305@emulex.com>
+References: <1246122359.32198.7.camel@hpdv5.satnam>
+	 <4A47222B.5020702@panasas.com>  <4A477F00.70305@emulex.com>
+Content-Type: text/plain
+Date: Sun, 28 Jun 2009 09:44:42 -0500
+Message-Id: <1246200282.4190.13.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Sun, 2009-06-28 at 10:32 -0400, James Smart wrote:
+> Sorry folks --  the nuance of the clibrary having it's own version of a 
+> kernel header for distros was completely unknown to me.
+> 
+> Christoph mentioned this to me last week, with the recommendation to 
+> back out the patch and move the other headers that were exprted into 
+> include/linux - thus nothing in include/scsi gets export.  No Problem. 
+> and I'll do so shortly.
 
-dma_sync_*_for_cpu() is introduced to make cpu access dma buffers safely when
-dma transfer is over, it seems there is nothing to do with cpu write buffer,
-so remove it.
+Actually, I'm not sure that's the best way forwards ... the idea of
+include/scsi is to group all the SCSI headers together; having to put
+them in include/linux if they need to be exported defeats that purpose
+slightly.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- include/asm-generic/dma-mapping-common.h |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+I think the first point of business might be to find out why (or even
+if) glibc still wants its own SCSI headers.  After all, we now have
+quite an anomaly: if you use the old SG_IO ioctl, glibc supplies the
+header in include/scsi/sg.h; if you use the new bsg SG_IO then we supply
+it in include/linux/bsg.h
 
-diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
-index 5406a60..73411ab 100644
---- a/include/asm-generic/dma-mapping-common.h
-+++ b/include/asm-generic/dma-mapping-common.h
-@@ -103,7 +103,6 @@ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr,
- 	if (ops->sync_single_for_cpu)
- 		ops->sync_single_for_cpu(dev, addr, size, dir);
- 	debug_dma_sync_single_for_cpu(dev, addr, size, dir);
--	flush_write_buffers();
- }
- 
- static inline void dma_sync_single_for_device(struct device *dev,
-@@ -132,7 +131,6 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
- 		ops->sync_single_range_for_cpu(dev, addr, offset, size, dir);
- 		debug_dma_sync_single_range_for_cpu(dev, addr, offset, size, dir);
- 
--		flush_write_buffers();
- 	} else
- 		dma_sync_single_for_cpu(dev, addr, size, dir);
- }
-@@ -165,7 +163,6 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
- 	if (ops->sync_sg_for_cpu)
- 		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
- 	debug_dma_sync_sg_for_cpu(dev, sg, nelems, dir);
--	flush_write_buffers();
- }
- 
- static inline void
--- 
-1.6.0.GIT
+> How does a lowly contributor track these kind of nuances ?
+
+If the creator of the kernel header exports missed this problem for a
+year, I think it's safe to assume you don't lose brownie points for not
+spotting it either.
+
+James
+
 
