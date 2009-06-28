@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZF1WdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZF1WrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbZF1WdE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 18:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZF1Wcz
+	id S1753227AbZF1WrL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 18:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZF1Wq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 18:32:55 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:44087 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbZF1Wcz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 18:32:55 -0400
-Date: Sun, 28 Jun 2009 18:32:58 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-kernel@vger.kernel.org, Daniel Frazier <daniel_frazier@hp.com>,
-       David Altobelli <david.altobelli@hp.com>, nagananda.chumbalkar@hp.com
-Subject: Re: ACPI issues on HP DL585 G2
-Message-ID: <20090628223258.GP20436@tamriel.snowman.net>
-References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com>
+	Sun, 28 Jun 2009 18:46:57 -0400
+Received: from tundra.namei.org ([65.99.196.166]:33355 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752445AbZF1Wq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 18:46:57 -0400
+Date: Mon, 29 Jun 2009 08:46:07 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Chris Wright <chrisw@sous-sol.org>,
+       Joseph Cihula <joseph.cihula@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v4][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+ support
+In-Reply-To: <20090626213045.GA22359@elf.ucw.cz>
+Message-ID: <alpine.LRH.2.00.0906290828200.29509@tundra.namei.org>
+References: <4A299051.40405@intel.com> <alpine.LRH.2.00.0906121509001.14633@tundra.namei.org> <20090619150514.GE1389@ucw.cz> <20090619183414.GG19771@sequoia.sous-sol.org> <alpine.LRH.2.00.0906221135550.18633@tundra.namei.org>
+ <20090626213045.GA22359@elf.ucw.cz>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GvlH2BAVfmx8aXCn"
-Content-Disposition: inline
-In-Reply-To: <20090628172052.GA13957@ldl.fc.hp.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
-X-Uptime: 18:32:33 up 17 days, 19:59, 23 users,  load average: 0.08, 0.07,
-	0.07
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 26 Jun 2009, Pavel Machek wrote:
 
---GvlH2BAVfmx8aXCn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> 
+> > Also, hardware security measures such as TXT are important in providing 
+> > stronger mechanisms to ensure that kernel security mechanisms are 
+> > functioning correctly.
+> 
+> I don't get it. How does TXT help kernel security mechanisms?
 
-* Alex Chiang (achiang@hp.com) wrote:
-> I'm just scanning mail on the weekend, but what version of the
-> BIOS are you on? Do you have the latest?
+Kernel security mechanisms can be subverted and bypassed in the case of an 
+exploitable kernel vulnerability, or from exploitable buggy hardware (e.g. 
+which can access the entire host's memory via DMA).  Attacks on kernel 
+security mechanisms have been describe in detail, see: 
+http://www.phrack.com/issues.html?issue=66&id=15#article
 
-Check the message I just posted, it includes a dmesg under 2.6.30 (also
-with noapic, since it didn't boot w/o it again).
+This is close to impossible to solve from within the kernel alone. 
+Hardware support is required to allow protection of the IO space (e.g. via 
+IOMMU/VT-d), and to allow verification of the kernel itself (via TXT).
 
-	Stephen
+A significant advance in this area is LKIM:
+"Linux kernel integrity measurement using contextual inspection"
+http://portal.acm.org/citation.cfm?id=1314354.1314362
 
---GvlH2BAVfmx8aXCn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+(Unfortunately, the ACM has not made this freely available, although I 
+understand that individual authors are allowed to distribute their own 
+papers as they see fit).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkpH75oACgkQrzgMPqB3kijLAwCffbzhmoMU6aTbkrGBRQ3Th8KL
-diEAoIqTiPavQIF8NP5qmXNI3rmeUNWk
-=h24V
------END PGP SIGNATURE-----
-
---GvlH2BAVfmx8aXCn--
+- James
+-- 
+James Morris
+<jmorris@namei.org>
