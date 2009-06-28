@@ -1,104 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZF1AKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZF1Adu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZF1AKY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 27 Jun 2009 20:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZF1AKO
+	id S1755172AbZF1Adu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 27 Jun 2009 20:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbZF1Adi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 27 Jun 2009 20:10:14 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:46325 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751664AbZF1AKM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 27 Jun 2009 20:10:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=MRFeNt4NbP2zDWZpAc5P9gPppJ4YObyAKit99CQrjwHGzKBrwp2Fth1ipidXVUf2t3
-         MLIgpVgfSYkudLbquKhnf42KR/Rjk5XbVM34HpOjAywbx8hbKsks3dIWb3DNG79aCQWT
-         ISnNVg+oUUWZkS29BS5UfzGQTWTxYobQZQxqw=
+	Sat, 27 Jun 2009 20:33:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49978 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751607AbZF1Adh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 27 Jun 2009 20:33:37 -0400
+From: Neil Brown <neilb@suse.de>
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Date: Sun, 28 Jun 2009 10:34:17 +1000
 MIME-Version: 1.0
-In-Reply-To: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
-References: <1246100695-10344-1-git-send-email-jlayton@redhat.com>
-Date: Sat, 27 Jun 2009 19:10:14 -0500
-Message-ID: <524f69650906271710n663e4f21x106b5deaa81e20c0@mail.gmail.com>
-Subject: Re: [PATCH] cifs: fix fh_mutex locking in cifs_reopen_file
-From: Steve French <smfrench@gmail.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       stable@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19014.47753.69063.510164@notabene.brown>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
+	data integrity
+In-Reply-To: message from Alberto Bertogli on Tuesday May 26
+References: <20090521161317.GU1376@blitiri.com.ar>
+	<87my91qsn4.fsf@frosties.localdomain>
+	<20090525174630.GI1376@blitiri.com.ar>
+	<8763fop31e.fsf@frosties.localdomain>
+	<20090526125252.GL1376@blitiri.com.ar>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good catch .
+On Tuesday May 26, albertito@blitiri.com.ar wrote:
+> On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
+> > Alberto Bertogli <albertito@blitiri.com.ar> writes:
+> > > On Mon, May 25, 2009 at 02:22:23PM +0200, Goswin von Brederlow wrote:
+> > >> Alberto Bertogli <albertito@blitiri.com.ar> writes:
+> > >> > I'm writing this device mapper target that stores checksums on writes and
+> > >> > verifies them on reads.
+> > >> 
+> > >> How does that behave on crashes? Will checksums be out of sync with data?
+> > >> Will pending blocks recalculate their checksum?
+> > >
+> > >    To guarantee consistency, two imd sectors (named M1 and M2) are kept for
+> > >    every 62 data sectors, and the following procedure is used to update them
+> > >    when a write to a given sector is required:
+> > >
+> > >     - Read both M1 and M2.
+> > >     - Find out (using information stored in their headers) which one is newer.
+> > >       Let's assume M1 is newer than M2.
+> > >     - Update the M2 buffer to mark it's newer, and update the new data's CRC.
+> > >     - Submit the write to M2, and then the write to the data, using a barrier
+> > >       to make sure the metadata is updated _after_ the data.
+> > 
+> > Consider that the disk writes the data and then the system
+> > crashes. Now you have the old checksum but the new data. The checksum
+> > is out of sync.
+> > 
+> > Don't you mean that M2 is written _before_ the data? That way you have
+> > the old checksum in M1 and the new in M2. One of them will match
+> > depending on wether the data gets written before a crash or not. That
+> > would be more consistent with your read operation below.
+> 
+> Yes, the comment is wrong, thanks for noticing. That is how it's implemented.
+> 
+> 
+> > >    Accordingly, the read operations are handled as follows:
+> > >
+> > >     - Read both the data, M1 and M2.
+> > >     - Find out which one is newer. Let's assume M1 is newer than M2.
+> > >     - Calculate the data's CRC, and compare it to the one found in M1. If they
+> > >       match, the reading is successful. If not, compare it to the one found in
+> > >       M2. If they match, the reading is successful; otherwise, fail. If
+> > >       the read involves multiple sectors, it is possible that some of the
+> > >       correct CRCs are in M1 and some in M2.
+> > >
+> > >
+> > > The barrier will be (it's not done yet) replaced with serialized writes for
+> > > cases where the underlying block device does not support them, or when the
+> > > integrity metadata resides on a different block device than the data.
+> > >
+> > >
+> > > This scheme assumes writes to a single sector are atomic in the presence of
+> > > normal crashes, which I'm not sure if it's something sane to assume in
+> > > practise. If it's not, then the scheme can be modified to cope with that.
+> > 
+> > What happens if you have multiple writes to the same sector? (assuming
+> > you ment "before" above)
+> > 
+> > - user writes to sector
+> > - queue up write for M1 and data1
+> > - M1 writes
+> > - user writes to sector
+> > - queue up writes for M2 and data2
+> > - data1 is thrown away as data2 overwrites it
+> > - M2 writes
+> > - system crashes
+> > 
+> > Now both M1 and M2 have a different checksum than the old data left on
+> > disk.
+> > 
+> > Can this happen?
+> 
+> No, parallel writes that affect the same metadata sectors will not be allowed.
+> At the moment there is a rough lock which does not allow simultaneous updates
+> at all, I plan to make that more fine-grained in the future.
 
-I have reviewed and merged into cifs-2.6.git. Merge requested for upstream.
+Can I suggest a variation on the above which, I think, can cause a
+problem.
 
-On Sat, Jun 27, 2009 at 6:04 AM, Jeff Layton<jlayton@redhat.com> wrote:
-> Fixes a regression caused by commit a6ce4932fbdbcd8f8e8c6df76812014351c32892
->
-> When this lock was converted to a mutex, the locks were turned into
-> unlocks and vice-versa.
->
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> Cc: Stable Tree <stable@kernel.org>
-> ---
->  fs/cifs/file.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/fs/cifs/file.c b/fs/cifs/file.c
-> index ebdbe62..97ce4bf 100644
-> --- a/fs/cifs/file.c
-> +++ b/fs/cifs/file.c
-> @@ -493,9 +493,9 @@ static int cifs_reopen_file(struct file *file, bool can_flush)
->                return -EBADF;
->
->        xid = GetXid();
-> -       mutex_unlock(&pCifsFile->fh_mutex);
-> +       mutex_lock(&pCifsFile->fh_mutex);
->        if (!pCifsFile->invalidHandle) {
-> -               mutex_lock(&pCifsFile->fh_mutex);
-> +               mutex_unlock(&pCifsFile->fh_mutex);
->                rc = 0;
->                FreeXid(xid);
->                return rc;
-> @@ -527,7 +527,7 @@ static int cifs_reopen_file(struct file *file, bool can_flush)
->        if (full_path == NULL) {
->                rc = -ENOMEM;
->  reopen_error_exit:
-> -               mutex_lock(&pCifsFile->fh_mutex);
-> +               mutex_unlock(&pCifsFile->fh_mutex);
->                FreeXid(xid);
->                return rc;
->        }
-> @@ -569,14 +569,14 @@ reopen_error_exit:
->                         cifs_sb->local_nls, cifs_sb->mnt_cifs_flags &
->                                CIFS_MOUNT_MAP_SPECIAL_CHR);
->        if (rc) {
-> -               mutex_lock(&pCifsFile->fh_mutex);
-> +               mutex_unlock(&pCifsFile->fh_mutex);
->                cFYI(1, ("cifs_open returned 0x%x", rc));
->                cFYI(1, ("oplock: %d", oplock));
->        } else {
->  reopen_success:
->                pCifsFile->netfid = netfid;
->                pCifsFile->invalidHandle = false;
-> -               mutex_lock(&pCifsFile->fh_mutex);
-> +               mutex_unlock(&pCifsFile->fh_mutex);
->                pCifsInode = CIFS_I(inode);
->                if (pCifsInode) {
->                        if (can_flush) {
-> --
-> 1.6.0.6
->
->
+ - user writes data-A' to sector-A (which currently contains data-A)
+ - queue up write for M1 and data-A'
+ - M1 is written correctly.
+ - power fails (before data-A' is written)
+reboot
+ - read sector-A, find data-A which matches checksum on M2, so
+   success.
+
+So everything is working perfectly so far...
+
+ - write sector-B (in same 62-sector range as sector-A).
+ - queue up write for M2 and data-B
+ - those writes complete
+ - read sector-A.  find data-A, which doesn't match M1 (that has
+   data-A') and doesn't match M2 (which is mostly a copy of M1),
+   so the read fails.
 
 
+i.e. you get a situation where writing one sector can cause another
+sector to spontaneously fail.
 
--- 
-Thanks,
+NeilBrown
 
-Steve
