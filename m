@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZF1PbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbZF1PfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbZF1PbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 11:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZF1PbG
+	id S1755221AbZF1PfQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 11:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZF1PfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 11:31:06 -0400
-Received: from alerce.vps.bitfolk.com ([212.13.194.134]:1086 "EHLO
-	alerce.vps.bitfolk.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZF1PbF (ORCPT
+	Sun, 28 Jun 2009 11:35:05 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:52414 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZF1PfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 11:31:05 -0400
-Date: Sun, 28 Jun 2009 12:30:25 -0300
-From: Alberto Bertogli <albertito@blitiri.com.ar>
-To: Neil Brown <neilb@suse.de>
-Cc: Goswin von Brederlow <goswin-v-b@web.de>, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, linux-raid@vger.kernel.org, agk@redhat.com
-Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks
-	data integrity
-Message-ID: <20090628153025.GH5913@blitiri.com.ar>
-References: <20090521161317.GU1376@blitiri.com.ar> <87my91qsn4.fsf@frosties.localdomain> <20090525174630.GI1376@blitiri.com.ar> <8763fop31e.fsf@frosties.localdomain> <20090526125252.GL1376@blitiri.com.ar> <19014.47753.69063.510164@notabene.brown>
+	Sun, 28 Jun 2009 11:35:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=c0TzIkS15W0iQOlaJpNnjPqIfsUl1ss10XFx1B9t5+Peo0TN3kVe09cG2MANu6a3nX
+         6JHmX2dZgSBOedCMC3TxJCQV90uouUDF6FCKOo658e6VILafboANUx6aAVfqcQ6Gp4Cb
+         UcVStnbW/i9BCWkqY2RUxTtonYlAdeVzKC7sw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: [PATCH] Staging: rtl8192su: add TODO
+Date: Sun, 28 Jun 2009 17:40:50 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090623-11043-g1684859-dirty; KDE/4.2.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19014.47753.69063.510164@notabene.brown>
-User-Agent: Mutt/1.5.17 (2008-03-04)
+Message-Id: <200906281740.50426.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 10:34:17AM +1000, Neil Brown wrote:
-> On Tuesday May 26, albertito@blitiri.com.ar wrote:
-> > On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
-> > > > This scheme assumes writes to a single sector are atomic in the presence of
-> > > > normal crashes, which I'm not sure if it's something sane to assume in
-> > > > practise. If it's not, then the scheme can be modified to cope with that.
-> > > 
-> > > What happens if you have multiple writes to the same sector? (assuming
-> > > you ment "before" above)
-> > > 
-> > > - user writes to sector
-> > > - queue up write for M1 and data1
-> > > - M1 writes
-> > > - user writes to sector
-> > > - queue up writes for M2 and data2
-> > > - data1 is thrown away as data2 overwrites it
-> > > - M2 writes
-> > > - system crashes
-> > > 
-> > > Now both M1 and M2 have a different checksum than the old data left on
-> > > disk.
-> > > 
-> > > Can this happen?
-> > 
-> > No, parallel writes that affect the same metadata sectors will not be allowed.
-> > At the moment there is a rough lock which does not allow simultaneous updates
-> > at all, I plan to make that more fine-grained in the future.
-> 
-> Can I suggest a variation on the above which, I think, can cause a
-> problem.
-> 
->  - user writes data-A' to sector-A (which currently contains data-A)
->  - queue up write for M1 and data-A'
->  - M1 is written correctly.
->  - power fails (before data-A' is written)
-> reboot
->  - read sector-A, find data-A which matches checksum on M2, so
->    success.
-> 
-> So everything is working perfectly so far...
-> 
->  - write sector-B (in same 62-sector range as sector-A).
->  - queue up write for M2 and data-B
->  - those writes complete
->  - read sector-A.  find data-A, which doesn't match M1 (that has
->    data-A') and doesn't match M2 (which is mostly a copy of M1),
->    so the read fails.
 
-The thing is that M2 is not a copy of M1. When updating M2 for data-B, the
-procedure is not "copy M1, update sector-B's checksum, write" but "read M2,
-update sector-B's checksum, write". So as long as there are no writes to
-sector-A, M1 will have the incorrect checksum and M2 will have the correct
-one, regardless of writes to the other sectors.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/staging/rtl8192su/TODO |   23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-However, a troubling scenario based on yours could be:
-
- - M2 has the right checksum but is older, M1 has the wrong checksum but is
-   newer.
- - user writes data-A'' to sector'A
- - queue up write for M2 (chosen because it is older)
- - M2 is written correctly
- - power fails before data-A'' is written
-
-At that point, data-A is written at sector-A, but both M1 and M2 have
-incorrect checksums for it.
-
-I'll try to come up with a better scheme that copes with this kind of
-scenarios and post an updated patch.
-
-Thanks a lot,
-		Alberto
-
+Index: b/drivers/staging/rtl8192su/TODO
+===================================================================
+--- /dev/null
++++ b/drivers/staging/rtl8192su/TODO
+@@ -0,0 +1,23 @@
++TODO:
++- make ieee80211 stack private (may conflict with libipw currently)
++- prepare private ieee80211 stack for merge with rtl8187se's version:
++  - remove JOHN_DUMP[_DESC] ifdefs
++  - remove [IN]_OPENSUSE_SLED definitions
++  - remove superflous container_of definition from ieee80211.h
++  - remove superfluous ieee80211_* definitions from ieee80211.h
++  - remove rtl8192su's specific dead code
++  - cleanup ieee80211.h
++  - move rtl8192su's specific code out from ieee80211.h
++  - abstract rtl819su's specific code
++  - use list_for_each_safe() in ieee80211_crypto_deinit
++- switch to use shared "librtl" instead of private ieee80211 stack
++- switch to use LIB80211
++- switch to use MAC80211
++- switch to use EEPROM_93CX6
++- use kernel coding style
++- checkpatch.pl fixes
++- sparse fixes
++- integrate with drivers/net/wireless/rtl818x
++
++Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
++Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>.
