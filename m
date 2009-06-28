@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbZF1PEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbZF1PE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbZF1PEc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 11:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZF1PEY
+	id S1756632AbZF1PE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 11:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZF1PEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 11:04:24 -0400
-Received: from mga03.intel.com ([143.182.124.21]:52632 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZF1PEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 11:04:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,303,1243839600"; 
-   d="scan'208";a="159336641"
-Date: Sun, 28 Jun 2009 23:04:08 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-ID: <20090628150407.GA25076@localhost>
-References: <32411.1245336412@redhat.com> <20090517022327.280096109@intel.com> <2015.1245341938@redhat.com> <20090618095729.d2f27896.akpm@linux-foundation.org> <7561.1245768237@redhat.com> <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 28 Jun 2009 11:04:51 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:58849 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753382AbZF1PEu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 11:04:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=uYokmg55s9VrnjlCLbkoo3pjZhbZslExjKQkpLJNQUXs2P8UR8rJVcxt0Dz7LgG0Tu
+         1My0uZNpwBLS8N4MtcRpuSFy0SuUvbjoMazFB6FRO28z09nHOxbMdPC47cOP7UtcpqRC
+         o8BR8WfTEJYtj3N9Y/vhx8rL3XUI2E2sK4sbg=
+From: tom.leiming@gmail.com
+To: a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu
+Subject: [RESEND PATCH 0/11] kernel:lockdep:replace DFS with BFS
+Date: Sun, 28 Jun 2009 23:04:35 +0800
+Message-Id: <1246201486-7308-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 10:49:52PM +0800, KOSAKI Motohiro wrote:
-> >> In David's OOM case, there are two symptoms:
-> >> 1) 70000 unaccounted/leaked pages as found by Andrew
-> >>   (plus rather big number of PG_buddy and pagetable pages)
-> >> 2) almost zero active_file/inactive_file; small inactive_anon;
-> >>   many slab and active_anon pages.
-> >>
-> >> In the situation of (2), the slab cache is _under_ scanned. So David
-> >> got OOM when vmscan should have squeezed some free pages from the slab
-> >> cache. Which is one important side effect of MinChan's patch?
-> >
-> > My patch's side effect is (2).
-> >
-> > My guessing is following as.
-> >
-> > 1. The number of page scanned in shrink_slab is increased in shrink_page_list.
-> > And it is doubled for mapped page or swapcache.
-> > 2. shrink_page_list is called by shrink_inactive_list
-> > 3. shrink_inactive_list is called by shrink_list
-> >
-> > Look at the shrink_list.
-> > If inactive lru list is low, it always call shrink_active_list not
-> > shrink_inactive_list in case of anon.
-> > It means it doesn't increased sc->nr_scanned.
-> > Then shrink_slab can't shrink enough slab pages.
-> > So, David OOM have a lot of slab pages and active anon pages.
-> >
-> > Does it make sense ?
-> > If it make sense, we have to change shrink_slab's pressure method.
-> > What do you think ?
-> 
-> I'm confused.
-> 
-> if system have no swap, get_scan_ratio() always return anon=0%.
-> Then, the numver of inactive_anon is not effect to sc.nr_scanned.
+Hi,Peter
 
-You are right. Hehe, so that's not a real side effect.
+Currently lockdep uses recursion DFS(depth-first search) algorithm to
+search target in checking lock circle(check_noncircular()),irq-safe
+-> irq-unsafe(check_irq_usage()) and irq inversion when adding a new
+lock dependency. This patches replace the current DFS with BFS, based on
+the following consideration:
+
+    1,no loss of efficiency, no matter DFS or BFS, the running time
+    are O(V+E) (V is vertex count, and E is edge count of one
+    graph);
+
+    2,BFS may be easily implemented by circular queue and consumes
+    much less kernel stack space than DFS for DFS is implemented by
+    recursion.
+
+    3,The shortest path can be obtained by BFS if the target is
+    found, but can't be got by DFS. By the shortest path, we can
+    shorten the lock dependency chain and help to troubleshoot lock
+    problem easier than before.
+
+
+
