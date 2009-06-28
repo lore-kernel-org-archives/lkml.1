@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752640AbZF1GLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZF1GWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752640AbZF1GLj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 02:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbZF1GLa
+	id S1753991AbZF1GWM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 02:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZF1GWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 02:11:30 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:59747 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751430AbZF1GLa (ORCPT
+	Sun, 28 Jun 2009 02:22:01 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:46831 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZF1GV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 02:11:30 -0400
+	Sun, 28 Jun 2009 02:21:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type;
-        b=CKCmimGV3xXO5ixqgQdGCeadtYUCVV5nzPkqRlxj7lEb7lTgfZxCBcfAQ8DcL12t6G
-         LcVja6YJBgWEttlGWC1axyvFuCAV8WJ0yLezMIrH4xDvL1PI7O81ciFw5zTdsT4OWPIA
-         NI3GpRoXQZfoCtNDPEGxUDL/3ywhKKiC5IOIQ=
-Date: Sun, 28 Jun 2009 02:11:23 -0400 (EDT)
-From: "Chris Snook <chris.snook@gmail.com>" <chris.snook@gmail.com>
-X-X-Sender: chris@localhost.localdomain
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-cc: jcliburn@gmail.com, jie.yang@atheros.com
-Subject: [PATCH] MAINTAINERS: update atlx contact info
-Message-ID: <alpine.LFD.2.00.0906280204560.23036@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+        h=content-disposition:from:to:subject:date:user-agent:cc:mime-version
+         :content-type:content-transfer-encoding:message-id;
+        b=ckVqUIyqxfCaFX0bUt0jShdzlQRgWz84k0PDl97U5pLkOGmVXrxf/d15r6doxLWoTT
+         WAwr7rZ/jSqfKL32L5PB5ZS6kMO2mgjv917SF3xw8fgPqFtUsU5tfip4e80GJFFMQ2bB
+         i65SsECTAeHHfqoEskvGmnQCNgvBEnPNWpjSo=
+Content-Disposition: inline
+From: Alberto Gonzalez <alberto6674@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel 2.6.30 and udevd problem
+Date: Sun, 28 Jun 2009 08:21:58 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30-ARCH; KDE/4.2.4; x86_64; ; )
+Cc: linux-hotplug@vger.kernel.org, Alberto Gonzalez <alberto6674@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906280821.58631.info@gnebu.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <chris.snook@gmail.com>
+[Sorry, wrong udev list in previous message.]
 
-Update MAINTAINERS to reflect my current (non-)affiliation.
-Anyone hiring?
+Hello,
 
-Signed-off-by: Chris Snook <chris.snook@gmail.com>
+I have recently upgraded my kernel to 2.6.30 and I've noticed that at some 
+point (randomly), udevd would start using a lot of CPU time. Killing the 
+process and starting it with --debug option prints these messages when the 
+problem starts:
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fa2a16d..e86e432 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1009,7 +1009,7 @@ ATLX ETHERNET DRIVERS
-  P:	Jay Cliburn
-  M:	jcliburn@gmail.com
-  P:	Chris Snook
--M:	csnook@redhat.com
-+M:	chris.snook@gmail.com
-  P:	Jie Yang
-  M:	jie.yang@atheros.com
-  L:	atl1-devel@lists.sourceforge.net
+[22652] event_queue_insert: seq 168515 queued, 'change' 'drm'
+[22657] udev_device_new_from_syspath: device 0x2040320 has devpath 
+'/devices/pci0000:00/0000:00:02.0/drm/card0'
+[22657] udev_device_read_db: device 0x2040320 filled with db symlink data 
+'/dev/dri/card0'
+[22657] udev_rules_apply_to_event: LINK 'char/226:0' /lib/udev/rules.d/50-
+udev-default.rules:5
+[22657] udev_rules_apply_to_event: NAME 'dri/card0' /lib/udev/rules.d/50-udev-
+default.rules:38
+[22657] udev_rules_apply_to_event: GROUP 91 /lib/udev/rules.d/50-udev-
+default.rules:42
+[22657] udev_device_new_from_syspath: device 0x2040790 has devpath 
+'/devices/pci0000:00/0000:00:02.0'
+[22657] udev_device_new_from_syspath: device 0x2040a80 has devpath 
+'/devices/pci0000:00'
+[22657] udev_rules_apply_to_event: RUN 
+'socket:@/org/freedesktop/hal/udev_event' /etc/udev/rules.d/90-hal.rules:2
+[22657] udev_device_update_db: create db link (dri/card0 char/226:0)
+[22657] udev_node_add: creating device node '/dev/dri/card0', devnum=226:0, 
+mode=0660, uid=0, gid=91
+[22657] udev_node_mknod: preserve file '/dev/dri/card0', because it has correct 
+dev_t
+[22657] update_link: '/dev/char/226:0' with target '/dev/dri/card0' has the 
+highest priority 0, create it
+[22657] node_symlink: preserve already existing symlink '/dev/char/226:0' to 
+'../dri/card0'
+[22657] udev_monitor_send_device: passed 230 bytes to monitor 0x2040320
+[22657] udev_monitor_send_device: passed -1 bytes to monitor 0x2036150
+[22657] event_fork: seq 168515 exit with 0
+[22652] event_fork: seq 168515 forked, pid [22657], 'change' 'drm', 0 seconds 
+old
+[22652] udev_done: seq 168515 cleanup, pid [22657], status 0, 0 seconds old
+
+
+This sequence repeats ad infinitum. I have no clue what it means, so any help 
+is appreciated.
+
+My system is a Dell Studio desktop with Intel graphics (G45). I run a standard 
+distro kernel (Arch Linux). Please ask me for any other relevant info.
+
+Thanks,
+Alberto.
