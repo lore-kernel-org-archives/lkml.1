@@ -1,65 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZF1Wug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZF1W7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbZF1Wug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 18:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZF1Wu2
+	id S1754432AbZF1W7s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 18:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZF1W7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 18:50:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:21553 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752535AbZF1Wu1 (ORCPT
+	Sun, 28 Jun 2009 18:59:37 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:56539 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbZF1W7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 18:50:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=uJqcEoVw+0Qj3S3Ag4MDLBEcUqaIr1Nx0TqCWttTEk36by53UG1hD+4EC1MRUNmb1l
-         vJ5eD3irTsanjemjVHOvOtKfRgX3I2mE6dy5YB2R13RuSkD/JvfPuvK1vv9ol4Sm+yvN
-         Hw0ZrGuWFCFY0hScZ0Mp6vCGwrH3S3TxvlgAA=
-Message-ID: <4A47F3F5.4020405@gmail.com>
-Date: Sun, 28 Jun 2009 15:51:33 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Sun, 28 Jun 2009 18:59:36 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Alberto Bertogli <albertito@blitiri.com.ar>
+Cc: Neil Brown <neilb@suse.de>, Goswin von Brederlow <goswin-v-b@web.de>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       linux-raid@vger.kernel.org, agk@redhat.com
+Subject: Re: [RFC PATCH] dm-csum: A new device mapper target that checks data integrity
+References: <20090521161317.GU1376@blitiri.com.ar>
+	<87my91qsn4.fsf@frosties.localdomain>
+	<20090525174630.GI1376@blitiri.com.ar>
+	<8763fop31e.fsf@frosties.localdomain>
+	<20090526125252.GL1376@blitiri.com.ar>
+	<19014.47753.69063.510164@notabene.brown>
+	<20090628153025.GH5913@blitiri.com.ar>
+Date: Mon, 29 Jun 2009 00:59:37 +0200
+In-Reply-To: <20090628153025.GH5913@blitiri.com.ar> (Alberto Bertogli's
+	message of "Sun, 28 Jun 2009 12:30:25 -0300")
+Message-ID: <87ab3sars6.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [PATCH] acpi processor: simplify needlessly complex printk
-References: <200906282203.55643.elendil@planet.nl> <4A47E85D.3020202@gmail.com> <200906290028.33285.elendil@planet.nl>
-In-Reply-To: <200906290028.33285.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1/SG/L9/IBhZKke+IXWE9lFFbCMbrvA7wt2tKc7
+	hqR77LADSOi8r6TFyLXQfiELcDAA/fob+kb9rqeDxSzWrBdTlf
+	F4KjSaAGo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> On Monday 29 June 2009, Justin P. Mattock wrote:
->    
->> Would it be better to capitalize the S and add a period at the
->> end, or does it not matter?
->>      
->
-> Kernel messages are in general not sentences.
->
-> I thought of removing the parenteses, but if you look at the context of
-> the message then that only makes sense if other messages are modified at
-> the same time. The messages below appear together for my system and their
-> consistency could definitely be improved, but IMO that's better done in a
-> separate patch.
->
-> ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> processor LNXCPU:00: registered as cooling_device7
-> ACPI: Processor [CPU0] (supports 8 throttling states)
->
->    
-Cool, thanks for the info.
-I found Documentation/CodingStyle
-Chapter 13: Printing kernel messages
-Kernel messages do not have to be terminated with a period.
-(Sh^t I was going to submit some patches that made proper
-some messages, and comments)
-I guess I have to learn to change code, instead of messages!
+Alberto Bertogli <albertito@blitiri.com.ar> writes:
 
-Justin P. Mattock
+> On Sun, Jun 28, 2009 at 10:34:17AM +1000, Neil Brown wrote:
+>> On Tuesday May 26, albertito@blitiri.com.ar wrote:
+>> > On Tue, May 26, 2009 at 12:33:01PM +0200, Goswin von Brederlow wrote:
+>> > > > This scheme assumes writes to a single sector are atomic in the presence of
+>> > > > normal crashes, which I'm not sure if it's something sane to assume in
+>> > > > practise. If it's not, then the scheme can be modified to cope with that.
+>> > > 
+>> > > What happens if you have multiple writes to the same sector? (assuming
+>> > > you ment "before" above)
+>> > > 
+>> > > - user writes to sector
+>> > > - queue up write for M1 and data1
+>> > > - M1 writes
+>> > > - user writes to sector
+>> > > - queue up writes for M2 and data2
+>> > > - data1 is thrown away as data2 overwrites it
+>> > > - M2 writes
+>> > > - system crashes
+>> > > 
+>> > > Now both M1 and M2 have a different checksum than the old data left on
+>> > > disk.
+>> > > 
+>> > > Can this happen?
+>> > 
+>> > No, parallel writes that affect the same metadata sectors will not be allowed.
+>> > At the moment there is a rough lock which does not allow simultaneous updates
+>> > at all, I plan to make that more fine-grained in the future.
+>> 
+>> Can I suggest a variation on the above which, I think, can cause a
+>> problem.
+>> 
+>>  - user writes data-A' to sector-A (which currently contains data-A)
+>>  - queue up write for M1 and data-A'
+>>  - M1 is written correctly.
+>>  - power fails (before data-A' is written)
+>> reboot
+>>  - read sector-A, find data-A which matches checksum on M2, so
+>>    success.
+>> 
+>> So everything is working perfectly so far...
+>> 
+>>  - write sector-B (in same 62-sector range as sector-A).
+>>  - queue up write for M2 and data-B
+>>  - those writes complete
+>>  - read sector-A.  find data-A, which doesn't match M1 (that has
+>>    data-A') and doesn't match M2 (which is mostly a copy of M1),
+>>    so the read fails.
+>
+> The thing is that M2 is not a copy of M1. When updating M2 for data-B, the
+> procedure is not "copy M1, update sector-B's checksum, write" but "read M2,
+> update sector-B's checksum, write". So as long as there are no writes to
+> sector-A, M1 will have the incorrect checksum and M2 will have the correct
+> one, regardless of writes to the other sectors.
+>
+> However, a troubling scenario based on yours could be:
+>
+>  - M2 has the right checksum but is older, M1 has the wrong checksum but is
+>    newer.
+>  - user writes data-A'' to sector'A
+>  - queue up write for M2 (chosen because it is older)
+>  - M2 is written correctly
+>  - power fails before data-A'' is written
+>
+> At that point, data-A is written at sector-A, but both M1 and M2 have
+> incorrect checksums for it.
+>
+> I'll try to come up with a better scheme that copes with this kind of
+> scenarios and post an updated patch.
+>
+> Thanks a lot,
+> 		Alberto
+
+When the newer block has the wrong checksum you first need to correct
+that. If you find a wrong checksum on read that is easy to do. But you
+won't detect this on writes.
+
+One solution I can think of is this:
+
+- user writes to sector A
+- compare checksum of sector A in M1 and M2
+  if checksums differ:
+  - read sector A and calculate checksum
+  - if M1 has the right checksum update M2
+  - wait
+- write new checksum to M1
+- wait
+- write data to sector A
+- wait
+- write new checksum to M2
+
+MfG
+        Goswin
