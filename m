@@ -1,74 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbZF1OQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbZF1OPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbZF1OQk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbZF1OOE
+	id S1757951AbZF1OPu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbZF1ONm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:14:04 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:43467 "EHLO
+	Sun, 28 Jun 2009 10:13:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:47267 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757313AbZF1OOB (ORCPT
+	with ESMTP id S1756971AbZF1ONj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:14:01 -0400
+	Sun, 28 Jun 2009 10:13:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=skkedUWBr9g40qF3Jso71mRYAXznvbv6SzvvuACvE1h1jrpH9NbAiWOxh0E9NQzQpr
-         lUajAAz7AnGnW4W1Y+OsoU7Q7HTbtDbhxE83GjcWwiLPBLdDbt/DsSD7uvxZHu6ikFdK
-         bgPrnPiMqn7t2atXnyMX8KUTWttQZegQQKRhs=
+        b=nDuQn0eFyiPPTnCbSEcOZroBHTF5k/7G1LRpX6lF0h60JAqfp0u3zhE8WIm0hxB7hV
+         LeVogHH9wbwGkIQVMp8b+YWC+NeSnOEaNk2IeJRuZP13eQaGgvKq9reNOc22M2YPN96U
+         TgOaOEZaxtkdBDRhWJwAGoplOUdzCL7QkWmxY=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:20:23 +0200
-Message-Id: <20090628142023.8761.45624.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:20:04 +0200
+Message-Id: <20090628142004.8761.31645.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 16/18] Staging: rtl8187se: remove unused definitions from r8180.h
+Subject: [PATCH 13/18] Staging: rtl8187se: cleanup r8180_pm.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: remove unused definitions from r8180.h
+Subject: [PATCH] Staging: rtl8187se: cleanup r8180_pm.c
+
+* remove unused rtl8180_{save_state,enable_wake}()
+* remove commented out code
+* beautify code
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/r8180.h |   14 --------------
- 1 file changed, 14 deletions(-)
+ drivers/staging/rtl8187se/r8180_pm.c |   32 ++++++++------------------------
+ drivers/staging/rtl8187se/r8180_pm.h |    2 --
+ 2 files changed, 8 insertions(+), 26 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/r8180.h
+Index: b/drivers/staging/rtl8187se/r8180_pm.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8180.h
-+++ b/drivers/staging/rtl8187se/r8180.h
-@@ -52,30 +52,16 @@
+--- a/drivers/staging/rtl8187se/r8180_pm.c
++++ b/drivers/staging/rtl8187se/r8180_pm.c
+@@ -15,16 +15,9 @@
+ #include "r8180_pm.h"
+ #include "r8180.h"
  
- #define DEFAULT_FRAG_THRESHOLD 2342U
- #define MIN_FRAG_THRESHOLD     256U
--//#define	MAX_FRAG_THRESHOLD     2342U
- #define DEFAULT_RTS_THRESHOLD 2342U
- #define MIN_RTS_THRESHOLD 0U
- #define MAX_RTS_THRESHOLD 2342U
- #define DEFAULT_BEACONINTERVAL 0x64U
--#define DEFAULT_BEACON_ESSID "Rtl8180"
- 
--#define DEFAULT_SSID ""
- #define DEFAULT_RETRY_RTS 7
- #define DEFAULT_RETRY_DATA 7
--#define PRISM_HDR_SIZE 64
- 
+-int rtl8180_save_state (struct pci_dev *dev, u32 state)
+-{
+-        printk(KERN_NOTICE "r8180 save state call (state %u).\n", state);
+-	return(-EAGAIN);
+-}
 -
--#define MGNT_QUEUE						0
--#define BK_QUEUE						1
--#define BE_QUEUE						2
--#define VI_QUEUE						3
--#define VO_QUEUE						4
--#define HIGH_QUEUE						5
- #define BEACON_QUEUE					6
+-int rtl8180_suspend (struct pci_dev *pdev, pm_message_t state)
++int rtl8180_suspend(struct pci_dev *pdev, pm_message_t state)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+-//	struct r8180_priv *priv = ieee80211_priv(dev);
  
--#define LOW_QUEUE						BE_QUEUE
--#define NORMAL_QUEUE					MGNT_QUEUE
+ 	if (!netif_running(dev))
+ 		goto out_pci_suspend;
+@@ -37,27 +30,28 @@ int rtl8180_suspend (struct pci_dev *pde
+ out_pci_suspend:
+ 	pci_save_state(pdev);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev,pci_choose_state(pdev,state));
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+ 	return 0;
+ }
+ 
+-int rtl8180_resume (struct pci_dev *pdev)
++int rtl8180_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+-//	struct r8180_priv *priv = ieee80211_priv(dev);
+ 	int err;
+ 	u32 val;
+ 
+ 	pci_set_power_state(pdev, PCI_D0);
+ 
+ 	err = pci_enable_device(pdev);
+-	if(err) {
++	if (err) {
+ 		printk(KERN_ERR "%s: pci_enable_device failed on resume\n",
+ 				dev->name);
+ 
+ 		return err;
+ 	}
++
+ 	pci_restore_state(pdev);
++
+ 	/*
+ 	 * Suspend/Resume resets the PCI configuration space, so we have to
+ 	 * re-disable the RETRY_TIMEOUT register (0x41) to keep PCI Tx retries
+@@ -68,23 +62,13 @@ int rtl8180_resume (struct pci_dev *pdev
+ 	if ((val & 0x0000ff00) != 0)
+ 		pci_write_config_dword(pdev, 0x40, val & 0xffff00ff);
+ 
+-	if(!netif_running(dev))
++	if (!netif_running(dev))
+ 		goto out;
+ 
+ 	if (dev->netdev_ops->ndo_open)
+ 		dev->netdev_ops->ndo_open(dev);
++
+ 	netif_device_attach(dev);
+ out:
+ 	return 0;
+ }
 -
- #define aSifsTime 	10
+-
+-int rtl8180_enable_wake (struct pci_dev *dev, u32 state, int enable)
+-{
+-        printk(KERN_NOTICE "r8180 enable wake call (state %u, enable %d).\n",
+-	       state, enable);
+-	return(-EAGAIN);
+-}
+-
+-
+-
+Index: b/drivers/staging/rtl8187se/r8180_pm.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_pm.h
++++ b/drivers/staging/rtl8187se/r8180_pm.h
+@@ -17,10 +17,8 @@
+ #include <linux/types.h>
+ #include <linux/pci.h>
  
- #define sCrcLng         4
+-int rtl8180_save_state (struct pci_dev *dev, u32 state);
+ int rtl8180_suspend (struct pci_dev *pdev, pm_message_t state);
+ int rtl8180_resume (struct pci_dev *pdev);
+-int rtl8180_enable_wake (struct pci_dev *dev, u32 state, int enable);
+ 
+ #endif //R8180_PM_H
+ 
