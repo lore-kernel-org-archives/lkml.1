@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZF1SCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZF1SFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbZF1SCS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 14:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZF1SCK
+	id S1754063AbZF1SFX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 14:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZF1SFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 14:02:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47668 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752127AbZF1SCJ (ORCPT
+	Sun, 28 Jun 2009 14:05:12 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:52869 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752330AbZF1SFL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 14:02:09 -0400
-Date: Sun, 28 Jun 2009 11:01:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pavel Machek <pavel@ucw.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <20090628101654.GB8673@ucw.cz>
-Message-ID: <alpine.LFD.2.01.0906281101030.3605@localhost.localdomain>
-References: <20090624094622.d0b0fd82.akpm@linux-foundation.org> <84144f020906240955h5e26a248scc61439c1ca36023@mail.gmail.com> <20090624105517.904f93da.akpm@linux-foundation.org> <4A426825.80905@cs.helsinki.fi> <20090624113037.7d72ed59.akpm@linux-foundation.org>
- <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain>
- <20090628101654.GB8673@ucw.cz>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 28 Jun 2009 14:05:11 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Inconsistent console logging using 'quiet' with encrypted root fs
+Date: Sun, 28 Jun 2009 20:05:11 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Cc: cryptsetup@packages.debian.org
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906282005.12020.elendil@planet.nl>
+X-OriginalArrivalTime: 28 Jun 2009 18:05:12.0771 (UTC) FILETIME=[FB6B2130:01C9F81A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The boot option 'quiet' sets console_loglevel to 4 (KERN_WARNING) instead 
+of the default 7 (KERN_DEBUG).
 
-On Sun, 28 Jun 2009, Pavel Machek wrote:
-> 
-> Ok, so we should re-add that 4MB buffer to suspend, so that
-> allocations work even during that, right?
+This is respected during the early part of the boot of my system (x86_64, 
+Debian stable), when kernel and initrd are loaded/run. But after the 
+boot process mounts root and starts udev, I suddenly get a lot of messages 
+of level KERN_INFO. That can't be the intention of 'quiet'...
 
-Pavel, you really are a one-trick pony, aren't you?
+When I look at /proc/sys/kernel/printk after the boot, I see 
+console_loglevel is set to 7 instead of 4.
 
-Give it up. Return to your pet worry when there are any actual reports. As 
-you have been told several times.
+After some instrumentation I've found the cause for this problem.
 
-The _other_ part of memory management that you and Andrew seem to be 
-ignoring is that it's very robust, and keeps extra memory around, and just 
-generally does the right thing. We don't generally pre-allocate anything, 
-because we don't need to.
+My root partition is part of an encrypted LVM volume. So the initramfs 
+prompts for the passphrase needed to unlock the PV, and Debian's 
+cryptsetup package disables console logging around that to avoid the user 
+interaction getting messed up by kernel printks. That this is needed can 
+be seen from the partial log below.
 
-Almost the _only_ way to run out of memory is to have tons and tons of 
-dirty pages around. Yes, it can happen. But if it happens, you're almost 
-guaranteed to be screwed anyway. The whole VM is designed around the 
-notion that most of memory is just clean caches, and it's designed around 
-that simply because if it's not true, the VM freedom is so small that 
-there's not a lot a VM can reasonably do.
+To disable and re-enable logging to console, Debian's cryptsetup uses
+klogctl(6, NULL, 0) and klogctl(7, NULL, 0). Problem is that the latter 
+resores console_loglevel to the *default* level instead of the previous 
+level. And thus the 'quiet' boot becomes noisy from that point onwards.
 
-		Linus
+It seems reasonable to have "enable logging to console" restore the 
+previous level instead. I'll follow up with a patch that does that.
+
+Cheers,
+FJP
+
+dmesg *after* patch in follow-up mail was applied, with instrumentation:
+[...]
+usb 5-2: configuration #1 chosen from 1 choice
+[cryptsetup prompts for passphrase -> logging disabled]
+FJP: console logging disabled (console_loglevel: 1)
+FJP: console_loglevel change 4->1
+usb 1-2.2: new full speed USB device using ehci_hcd and address 4
+ieee1394: Host added: ID:BUS[0-00:1023]  GUID[001b249929192210]
+usb 1-2.2: configuration #1 chosen from 1 choice
+usb 1-2.3: new low speed USB device using ehci_hcd and address 5
+usb 1-2.3: configuration #1 chosen from 1 choice
+usbcore: registered new interface driver hiddev
+input: Logitech USB Receiver as /class/input/input1
+generic-usb 0003:046D:C50D.0001: input: USB HID v1.10 Mouse
+   [Logitech USB Receiver] on usb-0000:00:1a.7-2.3/input0
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+usb 1-2.4: new low speed USB device using ehci_hcd and address 6
+usb 1-2.4: configuration #1 chosen from 1 choice
+input: USB Compliant Keyboard as /class/input/input2
+generic-usb 0003:05A4:9841.0002: input: USB HID v1.10 Keyboard
+   [USB Compliant Keyboard] on usb-0000:00:1a.7-2.4/input0
+input: USB Compliant Keyboard as /class/input/input3
+generic-usb 0003:05A4:9841.0003: input: USB HID v1.10 Device
+   [USB Compliant Keyboard]  on usb-0000:00:1a.7-2.4/input1
+[incorrect passphrase entered]
+FJP: console logging enabled (console_loglevel: 4)
+FJP: console_loglevel change 1->4
+[incorrect passphrase, so cryptsetup asks again]
+FJP: console logging disabled (console_loglevel: 1)
+FJP: console_loglevel change 4->1
+FJP: console logging enabled (console_loglevel: 4)
+FJP: console_loglevel change 1->4
+PM: Starting manual resume from disk
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+[root file system mounted]
+[...]
