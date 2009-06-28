@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZF1L6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbZF1MF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753285AbZF1L6e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 07:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbZF1L6Y
+	id S1752346AbZF1MF6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 08:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751370AbZF1MFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 07:58:24 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:58641 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbZF1L6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 07:58:23 -0400
-Date: Sun, 28 Jun 2009 07:56:19 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: does CONFIG_MODULE_SRCVERSION_ALL depend on MODULE_VERSION?
-Message-ID: <alpine.LFD.2.00.0906280752060.7674@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 28 Jun 2009 08:05:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60614 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751295AbZF1MFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 08:05:47 -0400
+Message-ID: <4A475CF3.1070604@redhat.com>
+Date: Sun, 28 Jun 2009 15:07:15 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Gregory Haskins <ghaskins@novell.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCH] kvm: remove in_range from kvm_io_device
+References: <20090623150008.GA21059@redhat.com> <4A4184C3.6060503@novell.com> <20090624084901.GB22865@redhat.com> <20090625110812.GA6487@redhat.com> <4A435F28.3000301@novell.com> <20090625115403.GA7079@redhat.com> <4A4368A4.8030401@novell.com> <20090625123757.GA7121@redhat.com> <4A437564.6060308@novell.com> <20090625131633.GA7221@redhat.com> <4A43795D.1080501@novell.com>
+In-Reply-To: <4A43795D.1080501@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/25/2009 04:19 PM, Gregory Haskins wrote:
+> Indeed.  I will put something together.
+>
+> We should consider merging the io_bus cleanup I have for deregister
+> support ASAP as well.
+>
+>    
 
-  from the help text for CONFIG_MODULE_SRCVERSION_ALL:
+If it makes things easier, we can also introduce a rwsem as an 
+intermediary step.
 
-"Modules which contain a MODULE_VERSION get an extra "srcversion"
-field inserted into their modinfo section, which contains a
-sum of the source files which made it.  This helps maintainers
-see exactly which source was used to build a module (since
-others sometimes change the module source without updating
-the version).  With this option, such a "srcversion" field
-will be created for all modules.  If unsure, say N."
+-- 
+error compiling committee.c: too many arguments to function
 
-  that first sentence suggests that calculating a module's
-"srcversion" value depends on whether you've provided a MODULE_VERSION
-value, but that doesn't seem to be the case based on a test i just
-made.  and it seems to disagree with the later sentence that this
-CONFIG option will generate a srcversion value for "all" modules
-regardless.
-
-  clarification?  it seems that first sentence is misleading, unless
-i'm misreading it.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
