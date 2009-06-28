@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbZF1Q1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZF1Q3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbZF1Q1x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 12:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZF1Q1L
+	id S1754781AbZF1Q3K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 12:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZF1Q1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 12:27:11 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1068 "EHLO
+	Sun, 28 Jun 2009 12:27:16 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1075 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZF1Q1I (ORCPT
+	with ESMTP id S1754257AbZF1Q1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 12:27:08 -0400
+	Sun, 28 Jun 2009 12:27:11 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
 Cc: trivial@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH 01/62] arch/arm: Remove unnecessary semicolons
-Date: Sun, 28 Jun 2009 09:26:06 -0700
-Message-Id: <f64d52556c45ab969c417120a02ca61e7e37b0de.1246173680.git.joe@perches.com>
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
+Subject: [PATCH 04/62] arch/mips/kernel/vpe.c: Remove unnecessary semicolons
+Date: Sun, 28 Jun 2009 09:26:09 -0700
+Message-Id: <012172308c2e751761b89ec3c38fbc64b8137495.1246173680.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
 In-Reply-To: <cover.1246173664.git.joe@perches.com>
 References: <cover.1246173664.git.joe@perches.com>
@@ -26,64 +26,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/arm/mach-at91/at91cap9_devices.c   |    2 +-
- arch/arm/mach-at91/at91sam9rl_devices.c |    2 +-
- arch/arm/mach-w90x900/w90p910.c         |    2 +-
- arch/arm/plat-mxc/irq.c                 |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ arch/mips/kernel/vpe.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-at91/at91cap9_devices.c b/arch/arm/mach-at91/at91cap9_devices.c
-index 412aa49..799c11e 100644
---- a/arch/arm/mach-at91/at91cap9_devices.c
-+++ b/arch/arm/mach-at91/at91cap9_devices.c
-@@ -171,7 +171,7 @@ void __init at91_add_device_usba(struct usba_platform_data *data)
- 	 */
- 	usba_udc_data.pdata.vbus_pin = -EINVAL;
- 	usba_udc_data.pdata.num_ep = ARRAY_SIZE(usba_udc_ep);
--	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));;
-+	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));
+diff --git a/arch/mips/kernel/vpe.c b/arch/mips/kernel/vpe.c
+index 3ca5f42..07b9ec2 100644
+--- a/arch/mips/kernel/vpe.c
++++ b/arch/mips/kernel/vpe.c
+@@ -1387,7 +1387,7 @@ static ssize_t store_ntcs(struct device *dev, struct device_attribute *attr,
+ 	return len;
  
- 	if (data && data->vbus_pin > 0) {
- 		at91_set_gpio_input(data->vbus_pin, 0);
-diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
-index 7281865..e87237b 100644
---- a/arch/arm/mach-at91/at91sam9rl_devices.c
-+++ b/arch/arm/mach-at91/at91sam9rl_devices.c
-@@ -99,7 +99,7 @@ void __init at91_add_device_usba(struct usba_platform_data *data)
- 	 */
- 	usba_udc_data.pdata.vbus_pin = -EINVAL;
- 	usba_udc_data.pdata.num_ep = ARRAY_SIZE(usba_udc_ep);
--	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));;
-+	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));
+ out_einval:
+-	return -EINVAL;;
++	return -EINVAL;
+ }
  
- 	if (data && data->vbus_pin > 0) {
- 		at91_set_gpio_input(data->vbus_pin, 0);
-diff --git a/arch/arm/mach-w90x900/w90p910.c b/arch/arm/mach-w90x900/w90p910.c
-index 1c97e49..0399a24 100644
---- a/arch/arm/mach-w90x900/w90p910.c
-+++ b/arch/arm/mach-w90x900/w90p910.c
-@@ -62,7 +62,7 @@ static DEFINE_CLK(atapi, 6);
- static DEFINE_CLK(emc, 7);
- static DEFINE_CLK(usbd, 8);
- static DEFINE_CLK(usbh, 9);
--static DEFINE_CLK(g2d, 10);;
-+static DEFINE_CLK(g2d, 10);
- static DEFINE_CLK(pwm, 18);
- static DEFINE_CLK(ps2, 24);
- static DEFINE_CLK(kpi, 25);
-diff --git a/arch/arm/plat-mxc/irq.c b/arch/arm/plat-mxc/irq.c
-index 8aee763..c2106d5 100644
---- a/arch/arm/plat-mxc/irq.c
-+++ b/arch/arm/plat-mxc/irq.c
-@@ -53,7 +53,7 @@ int imx_irq_set_priority(unsigned char irq, unsigned char prio)
- 	unsigned int mask = 0x0F << irq % 8 * 4;
- 
- 	if (irq >= MXC_INTERNAL_IRQS)
--		return -EINVAL;;
-+		return -EINVAL;
- 
- 	temp = __raw_readl(avic_base + AVIC_NIPRIORITY(irq / 8));
- 	temp &= ~mask;
+ static struct device_attribute vpe_class_attributes[] = {
 -- 
 1.6.3.1.10.g659a0.dirty
 
