@@ -1,455 +1,456 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbZF1ONu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbZF1OOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757030AbZF1ONu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 10:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbZF1OMy
+	id S1757674AbZF1OOy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 10:14:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbZF1ONa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 10:12:54 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:60306 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756562AbZF1OMx (ORCPT
+	Sun, 28 Jun 2009 10:13:30 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:47267 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756648AbZF1ONU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 10:12:53 -0400
+	Sun, 28 Jun 2009 10:13:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=BpoYX3WdkF7JEkXSlqN0t1zOnMIOQTXS5GK87xEGAZNcb+iugrCnwMTHPFX/zQawEJ
-         Nwi7Ygb1qVizLTtT+zxm5jh1mGkpWKf6VQn9vVxI30g+ZSqVT54mNv2aivisHP6j5aM6
-         QGhGJATaFGuzJUNvb2Xt6l5umjtg/QN0ICbew=
+        b=s7UOUvGvTClK81K5oOC8FFeWopfOVZs+K2ALkmT7kVOo7K/dfl0Ms+p6lBzVf5xayO
+         zTodMiz/HX2bhge5mGtDU6uNyy3gV84/sD3TmazL1o0DxKtPHh6v81Bu6eFjnDdXtOYm
+         7Kxq3S8Gi60+sbEV8LlBG0WLiYpJiW4EHV9y8=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 28 Jun 2009 16:19:17 +0200
-Message-Id: <20090628141917.8761.45120.sendpatchset@localhost.localdomain>
+Date: Sun, 28 Jun 2009 16:19:45 +0200
+Message-Id: <20090628141945.8761.87017.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
 References: <20090628141844.8761.8943.sendpatchset@localhost.localdomain>
-Subject: [PATCH 06/18] Staging: rtl8187se: remove CONFIG_RTL8180_IO_MAP ifdefs
+Subject: [PATCH 10/18] Staging: rtl8187se: remove unused rtl8225_rf_* functions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: remove CONFIG_RTL8180_IO_MAP ifdefs
+Subject: [PATCH] Staging: rtl8187se: remove unused rtl8225_rf_* functions
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8187se/Makefile      |    1 
- drivers/staging/rtl8187se/r8180_core.c  |   83 ---------------
- drivers/staging/rtl8187se/r8185b_init.c |  168 --------------------------------
- 3 files changed, 252 deletions(-)
+ drivers/staging/rtl8187se/r8180_core.c    |    4 
+ drivers/staging/rtl8187se/r8180_rtl8225.c |  369 ------------------------------
+ drivers/staging/rtl8187se/r8180_rtl8225.h |    4 
+ 3 files changed, 377 deletions(-)
 
-Index: b/drivers/staging/rtl8187se/Makefile
-===================================================================
---- a/drivers/staging/rtl8187se/Makefile
-+++ b/drivers/staging/rtl8187se/Makefile
-@@ -1,6 +1,5 @@
- 
- #EXTRA_CFLAGS += -DCONFIG_IEEE80211_NOWEP=y
--#EXTRA_CFLAGS += -DCONFIG_RTL8180_IOMAP
- #EXTRA_CFLAGS += -std=gnu89
- #EXTRA_CFLAGS += -O2
- #CC            = gcc
 Index: b/drivers/staging/rtl8187se/r8180_core.c
 ===================================================================
 --- a/drivers/staging/rtl8187se/r8180_core.c
 +++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -59,7 +59,6 @@ double __extendsfdf2(float a) {return a;
- //#define DEBUG_RX
- //#define DEBUG_RX_SKB
- 
--//#define CONFIG_RTL8180_IO_MAP
- #include <linux/syscalls.h>
- //#include <linux/fcntl.h>
- //#include <asm/uaccess.h>
-@@ -78,8 +77,6 @@ double __extendsfdf2(float a) {return a;
- 
- #include "ieee80211/dot11d.h"
- 
--//#define CONFIG_RTL8180_IO_MAP
+@@ -3613,10 +3613,6 @@ DMESG output to andreamrl@tiscali.it THA
+ 	priv->rf_init = rtl8225z2_rf_init;
+ 	priv->rf_set_chan = rtl8225z2_rf_set_chan;
+ 	priv->rf_set_sens = NULL;
+-	//priv->rf_sleep = rtl8225_rf_sleep;
+-	//priv->rf_wakeup = rtl8225_rf_wakeup;
 -
- #ifndef PCI_VENDOR_ID_BELKIN
- 	#define PCI_VENDOR_ID_BELKIN 0x1799
- #endif
-@@ -202,39 +199,6 @@ static struct pci_driver rtl8180_pci_dri
- 
- 
- 
--#ifdef CONFIG_RTL8180_IO_MAP
 -
--u8 read_nic_byte(struct net_device *dev, int x)
--{
--        return 0xff&inb(dev->base_addr +x);
--}
--
--u32 read_nic_dword(struct net_device *dev, int x)
--{
--        return inl(dev->base_addr +x);
--}
--
--u16 read_nic_word(struct net_device *dev, int x)
--{
--        return inw(dev->base_addr +x);
--}
--
--void write_nic_byte(struct net_device *dev, int x,u8 y)
--{
--        outb(y&0xff,dev->base_addr +x);
--}
--
--void write_nic_word(struct net_device *dev, int x,u16 y)
--{
--        outw(y,dev->base_addr +x);
--}
--
--void write_nic_dword(struct net_device *dev, int x,u32 y)
--{
--        outl(y,dev->base_addr +x);
--}
--
--#else /* RTL_IO_MAP */
  
- u8 read_nic_byte(struct net_device *dev, int x)
- {
-@@ -269,7 +233,6 @@ void write_nic_word(struct net_device *d
- 	udelay(20);
- }
- 
--#endif /* RTL_IO_MAP */
- 
- 
- 
-@@ -278,9 +241,7 @@ void write_nic_word(struct net_device *d
- inline void force_pci_posting(struct net_device *dev)
- {
- 	read_nic_byte(dev,EPROM_CMD);
--#ifndef CONFIG_RTL8180_IO_MAP
- 	mb();
--#endif
- }
- 
- 
-@@ -5411,11 +5372,7 @@ static int __devinit rtl8180_pci_probe(s
- 	//u8 *ptr;
- 	u8 unit = 0;
- 
--#ifdef CONFIG_RTL8180_IO_MAP
--	unsigned long pio_start, pio_len, pio_flags;
--#else
- 	unsigned long pmem_start, pmem_len, pmem_flags;
--#endif //end #ifdef RTL_IO_MAP
- 
- 	DMESG("Configuring chip resources");
- 
-@@ -5442,27 +5399,6 @@ static int __devinit rtl8180_pci_probe(s
- 	priv->pdev=pdev;
- 
- 
--#ifdef CONFIG_RTL8180_IO_MAP
--
--	pio_start = (unsigned long)pci_resource_start (pdev, 0);
--	pio_len = (unsigned long)pci_resource_len (pdev, 0);
--	pio_flags = (unsigned long)pci_resource_flags (pdev, 0);
--
--      	if (!(pio_flags & IORESOURCE_IO)) {
--		DMESG("region #0 not a PIO resource, aborting");
--		goto fail;
--	}
--
--	//DMESG("IO space @ 0x%08lx", pio_start );
--	if( ! request_region( pio_start, pio_len, RTL8180_MODULE_NAME ) ){
--		DMESG("request_region failed!");
--		goto fail;
--	}
--
--	ioaddr = pio_start;
--	dev->base_addr = ioaddr; // device I/O address
--
--#else
- 
- 	pmem_start = pci_resource_start(pdev, 1);
- 	pmem_len = pci_resource_len(pdev, 1);
-@@ -5490,7 +5426,6 @@ static int __devinit rtl8180_pci_probe(s
- 	dev->mem_start = ioaddr; // shared mem start
- 	dev->mem_end = ioaddr + pci_resource_len(pdev, 0); // shared mem end
- 
--#endif //end #ifdef RTL_IO_MAP
- 
- 	//pci_read_config_byte(pdev, 0x05, ptr);
- 	//pci_write_config_byte(pdev, 0x05, (*ptr) & (~0x04));
-@@ -5530,20 +5465,11 @@ static int __devinit rtl8180_pci_probe(s
- 
- fail1:
- 
--#ifdef CONFIG_RTL8180_IO_MAP
--
--	if( dev->base_addr != 0 ){
--
--		release_region(dev->base_addr,
--	       pci_resource_len(pdev, 0) );
--	}
--#else
- 	if( dev->mem_start != (unsigned long)NULL ){
- 		iounmap( (void *)dev->mem_start );
- 		release_mem_region( pci_resource_start(pdev, 1),
- 				    pci_resource_len(pdev, 1) );
- 	}
--#endif //end #ifdef RTL_IO_MAP
- 
- 
- fail:
-@@ -5598,20 +5524,11 @@ static void __devexit rtl8180_pci_remove
- 		free_tx_desc_rings(dev);
- 	//	free_beacon_desc_ring(dev,priv->txbeaconcount);
- 
--#ifdef CONFIG_RTL8180_IO_MAP
--
--		if( dev->base_addr != 0 ){
--
--			release_region(dev->base_addr,
--				       pci_resource_len(pdev, 0) );
--		}
--#else
- 		if( dev->mem_start != (unsigned long)NULL ){
- 			iounmap( (void *)dev->mem_start );
- 			release_mem_region( pci_resource_start(pdev, 1),
- 					    pci_resource_len(pdev, 1) );
- 		}
--#endif /*end #ifdef RTL_IO_MAP*/
- 
- 		free_ieee80211(dev);
- 	}
-Index: b/drivers/staging/rtl8187se/r8185b_init.c
+ 	if(!priv->card_8185){
+ 		if(priv->antb)
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225.c
 ===================================================================
---- a/drivers/staging/rtl8187se/r8185b_init.c
-+++ b/drivers/staging/rtl8187se/r8185b_init.c
-@@ -131,37 +131,9 @@ PlatformIOWrite1Byte(
- 	u8		data
- 	)
- {
--#ifndef CONFIG_RTL8180_IO_MAP
- 	write_nic_byte(dev, offset, data);
- 	read_nic_byte(dev, offset); // To make sure write operation is completed, 2005.11.09, by rcnjko.
- 
--#else // Port IO
--	u32 Page = (offset >> 8);
--
--	switch(Page)
--	{
--	case 0: // Page 0
--		write_nic_byte(dev, offset, data);
--		break;
--
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
--
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			write_nic_byte(dev, (offset & 0xff), data);
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
--
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIOWrite1Byte(): illegal page number: %d, offset: %#X", Page, offset);
--		break;
--	}
--#endif
+--- a/drivers/staging/rtl8187se/r8180_rtl8225.c
++++ b/drivers/staging/rtl8187se/r8180_rtl8225.c
+@@ -178,17 +178,6 @@ void write_rtl8225(struct net_device *de
+ 		rtl8185_rf_pins_enable(dev);
  }
  
- void
-@@ -171,38 +143,10 @@ PlatformIOWrite2Byte(
- 	u16		data
- 	)
+-void rtl8225_rf_close(struct net_device *dev)
+-{
+-	write_rtl8225(dev, 0x4, 0x1f);
+-
+-	force_pci_posting(dev);
+-	mdelay(1);
+-
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_OFF);
+-	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_OFF);
+-}
+-
+ void rtl8225_SetTXPowerLevel(struct net_device *dev, short ch)
  {
--#ifndef CONFIG_RTL8180_IO_MAP
- 	write_nic_word(dev, offset, data);
- 	read_nic_word(dev, offset); // To make sure write operation is completed, 2005.11.09, by rcnjko.
- 
- 
--#else // Port IO
--	u32 Page = (offset >> 8);
--
--	switch(Page)
--	{
--	case 0: // Page 0
--		write_nic_word(dev, offset, data);
--		break;
--
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
--
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			write_nic_word(dev, (offset & 0xff), data);
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
--
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIOWrite2Byte(): illegal page number: %d, offset: %#X", Page, offset);
--		break;
--	}
--#endif
- }
- u8 PlatformIORead1Byte(struct net_device *dev, u32 offset);
- 
-@@ -213,7 +157,6 @@ PlatformIOWrite4Byte(
- 	u32		data
- 	)
+ 	struct r8180_priv *priv = ieee80211_priv(dev);
+@@ -354,361 +343,3 @@ void rtl8225_host_pci_init(struct net_de
+ void rtl8225_host_usb_init(struct net_device *dev)
  {
--#ifndef CONFIG_RTL8180_IO_MAP
- //{by amy 080312
- if (offset == PhyAddr)
- 	{//For Base Band configuration.
-@@ -257,33 +200,6 @@ if (offset == PhyAddr)
- 		write_nic_dword(dev, offset, data);
- 		read_nic_dword(dev, offset); // To make sure write operation is completed, 2005.11.09, by rcnjko.
- 	}
--#else // Port IO
--	u32 Page = (offset >> 8);
--
--	switch(Page)
--	{
--	case 0: // Page 0
--		write_nic_word(dev, offset, data);
--		break;
--
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
--
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			write_nic_dword(dev, (offset & 0xff), data);
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
--
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIOWrite4Byte(): illegal page number: %d, offset: %#X", Page, offset);
--		break;
--	}
--#endif
  }
- 
- u8
-@@ -294,36 +210,8 @@ PlatformIORead1Byte(
- {
- 	u8	data = 0;
- 
--#ifndef CONFIG_RTL8180_IO_MAP
- 	data = read_nic_byte(dev, offset);
- 
--#else // Port IO
--	u32 Page = (offset >> 8);
 -
--	switch(Page)
--	{
--	case 0: // Page 0
--		data = read_nic_byte(dev, offset);
--		break;
+-void rtl8225_rf_sleep(struct net_device *dev)
+-{
+-	write_rtl8225(dev,0x4,0xdff);
+-	force_pci_posting(dev);
+-	mdelay(1);
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_SLEEP);
+-	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_SLEEP);
+-	force_pci_posting(dev);
+-}
 -
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
+-void rtl8225_rf_wakeup(struct net_device *dev)
+-{
+-	write_rtl8225(dev,0x4,0x9ff);
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
+-	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_ON);
+-	force_pci_posting(dev);
+-}
 -
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			data = read_nic_byte(dev, (offset & 0xff));
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
+-void rtl8225_rf_init(struct net_device *dev)
+-{
+-	struct r8180_priv *priv = ieee80211_priv(dev);
+-	int i;
+-	short channel = 1;
+-	u16 brsr;
 -
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIORead1Byte(): illegal page number: %d, offset: %#X", Page, offset);
--		break;
+-	priv->chan = channel;
+-
+-	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
+-
+-
+-	if(priv->card_type == USB)
+-		rtl8225_host_usb_init(dev);
+-	else
+-		rtl8225_host_pci_init(dev);
+-
+-	write_nic_dword(dev, RF_TIMING, 0x000a8008);
+-
+-	brsr = read_nic_word(dev, BRSR);
+-
+-	write_nic_word(dev, BRSR, 0xffff);
+-
+-	write_nic_dword(dev, RF_PARA, 0x100044);
+-
+-	#if 1  //0->1
+-	rtl8180_set_mode(dev, EPROM_CMD_CONFIG);
+-	write_nic_byte(dev, CONFIG3, 0x44);
+-	rtl8180_set_mode(dev, EPROM_CMD_NORMAL);
+-	#endif
+-
+-	if(priv->card_type == USB){
+-		rtl8185_rf_pins_enable(dev);
+-
+-		mdelay(1000);
 -	}
--#endif
- 
- 	return data;
- }
-@@ -336,36 +224,8 @@ PlatformIORead2Byte(
- {
- 	u16	data = 0;
- 
--#ifndef CONFIG_RTL8180_IO_MAP
- 	data = read_nic_word(dev, offset);
- 
--#else // Port IO
--	u32 Page = (offset >> 8);
 -
--	switch(Page)
--	{
--	case 0: // Page 0
--		data = read_nic_word(dev, offset);
--		break;
+-	write_rtl8225(dev, 0x0, 0x67); mdelay(1);
 -
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
 -
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			data = read_nic_word(dev, (offset & 0xff));
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
+-	write_rtl8225(dev, 0x1, 0xfe0); mdelay(1);
 -
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIORead2Byte(): illegal page number: %d, offset: %#X", Page, offset);
--		break;
+-	write_rtl8225(dev, 0x2, 0x44d); mdelay(1);
+-
+-	write_rtl8225(dev, 0x3, 0x441); mdelay(1);
+-
+-	if(priv->card_type == USB)
+-		write_rtl8225(dev, 0x4, 0x486);
+-	else
+-		write_rtl8225(dev, 0x4, 0x8be);
+-
+-	mdelay(1);
+-
+-	/* version B & C */
+-
+-	if(priv->card_type == USB)
+-		write_rtl8225(dev, 0x5, 0xbc0);
+-	else if(priv->card_type == MINIPCI)
+-		write_rtl8225(dev, 0x5, 0xbc0 + 3 +(6<<3));
+-	else
+-		write_rtl8225(dev, 0x5, 0xbc0 + (6<<3));
+-
+-	 mdelay(1);
+-//	}
+-
+-	write_rtl8225(dev, 0x6, 0xae6);  mdelay(1);
+-
+-	write_rtl8225(dev, 0x7, ((priv->card_type == USB)? 0x82a : rtl8225_chan[channel]));  mdelay(1);
+-
+-	write_rtl8225(dev, 0x8, 0x1f);  mdelay(1);
+-
+-	write_rtl8225(dev, 0x9, 0x334);  mdelay(1);
+-
+-	write_rtl8225(dev, 0xa, 0xfd4);  mdelay(1);
+-
+-	write_rtl8225(dev, 0xb, 0x391);  mdelay(1);
+-
+-	write_rtl8225(dev, 0xc, 0x50);  mdelay(1);
+-
+-
+-	write_rtl8225(dev, 0xd, 0x6db);   mdelay(1);
+-
+-	write_rtl8225(dev, 0xe, 0x29);  mdelay(1);
+-
+-	write_rtl8225(dev, 0xf, 0x914);
+-
+-	if(priv->card_type == USB){
+-		//force_pci_posting(dev);
+-		mdelay(100);
 -	}
--#endif
- 
- 	return data;
- }
-@@ -378,36 +238,8 @@ PlatformIORead4Byte(
- {
- 	u32	data = 0;
- 
--#ifndef CONFIG_RTL8180_IO_MAP
- 	data = read_nic_dword(dev, offset);
- 
--#else // Port IO
--	u32 Page = (offset >> 8);
 -
--	switch(Page)
--	{
--	case 0: // Page 0
--		data = read_nic_dword(dev, offset);
--		break;
+-	write_rtl8225(dev, 0x2, 0xc4d);
 -
--	case 1: // Page 1
--	case 2: // Page 2
--	case 3: // Page 3
--		{
--			u8 psr = read_nic_byte(dev, PSR);
+-	if(priv->card_type == USB){
+-	//	force_pci_posting(dev);
+-		mdelay(200);
 -
--			write_nic_byte(dev, PSR, ((psr & 0xfc) | (u8)Page)); // Switch to page N.
--			data = read_nic_dword(dev, (offset & 0xff));
--			write_nic_byte(dev, PSR, (psr & 0xfc)); // Switch to page 0.
--		}
--		break;
+-		write_rtl8225(dev, 0x2, 0x44d);
 -
--	default:
--		// Illegal page number.
--		DMESGE("PlatformIORead4Byte(): illegal page number: %d, offset: %#X\n", Page, offset);
--		break;
+-	//	force_pci_posting(dev);
+-		mdelay(100);
+-
+-	}//End of if(priv->card_type == USB)
+-	/* FIXME!! rtl8187 we have to check if calibrarion
+-	 * is successful and eventually cal. again (repeat
+-	 * the two write on reg 2)
+-	*/
+-	force_pci_posting(dev);
+-
+-	mdelay(100); //200 for 8187
+-
+-	//if(priv->card_type != USB) /* maybe not needed even for 8185 */
+-//	write_rtl8225(dev, 0x7, rtl8225_chan[channel]);
+-
+-	write_rtl8225(dev, 0x0, 0x127);
+-
+-	for(i=0;i<95;i++){
+-		write_rtl8225(dev, 0x1, (u8)(i+1));
+-
+-		/* version B & C & D*/
+-
+-		write_rtl8225(dev, 0x2, rtl8225bcd_rxgain[i]);
 -	}
--#endif
- 
- 	return data;
- }
+-
+-	write_rtl8225(dev, 0x0, 0x27);
+-
+-
+-//	//if(priv->card_type != USB){
+-//		write_rtl8225(dev, 0x2, 0x44d);
+-//		write_rtl8225(dev, 0x7, rtl8225_chan[channel]);
+-//		write_rtl8225(dev, 0x2, 0x47d);
+-//
+-//		force_pci_posting(dev);
+-//		mdelay(100);
+-//
+-//		write_rtl8225(dev, 0x2, 0x44d);
+-//	//}
+-
+-	write_rtl8225(dev, 0x0, 0x22f);
+-
+-	if(priv->card_type != USB)
+-		rtl8185_rf_pins_enable(dev);
+-
+-	for(i=0;i<128;i++){
+-		write_phy_ofdm(dev, 0xb, rtl8225_agc[i]);
+-
+-		mdelay(1);
+-		write_phy_ofdm(dev, 0xa, (u8)i+ 0x80);
+-
+-		mdelay(1);
+-	}
+-
+-	force_pci_posting(dev);
+-	mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x0, 0x1); mdelay(1);
+-	write_phy_ofdm(dev, 0x1, 0x2); mdelay(1);
+-	write_phy_ofdm(dev, 0x2, ((priv->card_type == USB)? 0x42 : 0x62)); mdelay(1);
+-	write_phy_ofdm(dev, 0x3, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x4, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x5, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x6, 0x40); mdelay(1);
+-	write_phy_ofdm(dev, 0x7, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x8, 0x40); mdelay(1);
+-	write_phy_ofdm(dev, 0x9, 0xfe); mdelay(1);
+-
+-			/* ver C & D */
+-	write_phy_ofdm(dev, 0xa, 0x9); mdelay(1);
+-
+-	//write_phy_ofdm(dev, 0x18, 0xef);
+-	//	}
+-	//}
+-	write_phy_ofdm(dev, 0xb, 0x80); mdelay(1);
+-
+-	write_phy_ofdm(dev, 0xc, 0x1);mdelay(1);
+-
+-
+-	//if(priv->card_type != USB)
+-	//write_phy_ofdm(dev, 0xd, 0x33); // <>
+-
+-	write_phy_ofdm(dev, 0xe, 0xd3);mdelay(1);
+-
+-
+-	write_phy_ofdm(dev, 0xf, 0x38);mdelay(1);
+-/*ver D & 8187*/
+-//	}
+-
+-//	if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-//		write_phy_ofdm(dev, 0x10, 0x04);/*ver B*/
+-//	else
+-	write_phy_ofdm(dev, 0x10, 0x84);mdelay(1);
+-/*ver C & D & 8187*/
+-
+-	write_phy_ofdm(dev, 0x11, 0x06);mdelay(1);
+-/*agc resp time 700*/
+-
+-
+-//	if(priv->card_8185 == 2){
+-	/* Ver D & 8187*/
+-	write_phy_ofdm(dev, 0x12, 0x20);mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x13, 0x20);mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x14, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x15, 0x40); mdelay(1);
+-	write_phy_ofdm(dev, 0x16, 0x0); mdelay(1);
+-	write_phy_ofdm(dev, 0x17, 0x40); mdelay(1);
+-
+-//	if (priv->card_type == USB)
+-//		write_phy_ofdm(dev, 0x18, 0xef);
+-
+-	write_phy_ofdm(dev, 0x18, 0xef);mdelay(1);
+-
+-
+-	write_phy_ofdm(dev, 0x19, 0x19); mdelay(1);
+-	write_phy_ofdm(dev, 0x1a, 0x20); mdelay(1);
+-
+-//	if (priv->card_type != USB){
+-//		if(priv->card_8185 == 1 && priv->card_8185_Bversion)
+-//			write_phy_ofdm(dev, 0x1b, 0x66); /* Ver B */
+-//		else
+-	write_phy_ofdm(dev, 0x1b, 0x76);mdelay(1);
+- /* Ver C & D */ //FIXME:MAYBE not needed
+-//	}
+-
+-	write_phy_ofdm(dev, 0x1c, 0x4);mdelay(1);
+-
+-		/*ver D & 8187*/
+-	write_phy_ofdm(dev, 0x1e, 0x95);mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x1f, 0x75);	mdelay(1);
+-
+-//	}
+-
+-	write_phy_ofdm(dev, 0x20, 0x1f);mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x21, 0x27);mdelay(1);
+-
+-	write_phy_ofdm(dev, 0x22, 0x16);mdelay(1);
+-
+-//	if(priv->card_type != USB)
+-	//write_phy_ofdm(dev, 0x23, 0x43); //FIXME maybe not needed // <>
+-
+-	write_phy_ofdm(dev, 0x24, 0x46); mdelay(1);
+-	write_phy_ofdm(dev, 0x25, 0x20); mdelay(1);
+-	write_phy_ofdm(dev, 0x26, 0x90); mdelay(1);
+-	write_phy_ofdm(dev, 0x27, 0x88); mdelay(1);
+-/* Ver C & D & 8187*/
+-
+-	// <> Set init. gain to m74dBm.
+-	write_phy_ofdm(dev, 0x0d, 0x43);	 mdelay(1);
+-	write_phy_ofdm(dev, 0x1b, 0x76);	 mdelay(1);
+-	write_phy_ofdm(dev, 0x1d, 0xc5);	 mdelay(1);
+-	write_phy_ofdm(dev, 0x23, 0x78);	 mdelay(1);
+-
+-	//if(priv->card_type == USB);
+-	//	rtl8225_set_gain_usb(dev, 1); /* FIXME this '2' is random */
+-
+-	write_phy_cck(dev, 0x0, 0x98); mdelay(1);
+-	write_phy_cck(dev, 0x3, 0x20); mdelay(1);
+-	write_phy_cck(dev, 0x4, 0x7e); mdelay(1);
+-	write_phy_cck(dev, 0x5, 0x12); mdelay(1);
+-	write_phy_cck(dev, 0x6, 0xfc); mdelay(1);
+-	write_phy_cck(dev, 0x7, 0x78);mdelay(1);
+- /* Ver C & D & 8187*/
+-
+-	write_phy_cck(dev, 0x8, 0x2e);mdelay(1);
+-
+-	write_phy_cck(dev, 0x10, ((priv->card_type == USB) ? 0x9b: 0x93)); mdelay(1);
+-	write_phy_cck(dev, 0x11, 0x88); mdelay(1);
+-	write_phy_cck(dev, 0x12, 0x47); mdelay(1);
+-	write_phy_cck(dev, 0x13, 0xd0); /* Ver C & D & 8187*/
+-
+-	write_phy_cck(dev, 0x19, 0x0);
+-	write_phy_cck(dev, 0x1a, 0xa0);
+-	write_phy_cck(dev, 0x1b, 0x8);
+-	write_phy_cck(dev, 0x40, 0x86); /* CCK Carrier Sense Threshold */
+-
+-	write_phy_cck(dev, 0x41, 0x8d);mdelay(1);
+-
+-
+-	write_phy_cck(dev, 0x42, 0x15); mdelay(1);
+-	write_phy_cck(dev, 0x43, 0x18); mdelay(1);
+-	write_phy_cck(dev, 0x44, 0x1f); mdelay(1);
+-	write_phy_cck(dev, 0x45, 0x1e); mdelay(1);
+-	write_phy_cck(dev, 0x46, 0x1a); mdelay(1);
+-	write_phy_cck(dev, 0x47, 0x15); mdelay(1);
+-	write_phy_cck(dev, 0x48, 0x10); mdelay(1);
+-	write_phy_cck(dev, 0x49, 0xa); mdelay(1);
+-	write_phy_cck(dev, 0x4a, 0x5); mdelay(1);
+-	write_phy_cck(dev, 0x4b, 0x2); mdelay(1);
+-	write_phy_cck(dev, 0x4c, 0x5);mdelay(1);
+-
+-
+-	write_nic_byte(dev, 0x5b, 0x0d); mdelay(1);
+-
+-
+-
+-// <>
+-//	// TESTR 0xb 8187
+-//	write_phy_cck(dev, 0x10, 0x93);// & 0xfb);
+-//
+-//	//if(priv->card_type != USB){
+-//		write_phy_ofdm(dev, 0x2, 0x62);
+-//		write_phy_ofdm(dev, 0x6, 0x0);
+-//		write_phy_ofdm(dev, 0x8, 0x0);
+-//	//}
+-
+-	rtl8225_SetTXPowerLevel(dev, channel);
+-
+-	write_phy_cck(dev, 0x10, 0x9b); mdelay(1); /* Rx ant A, 0xdb for B */
+-	write_phy_ofdm(dev, 0x26, 0x90); mdelay(1); /* Rx ant A, 0x10 for B */
+-
+-	rtl8185_tx_antenna(dev, 0x3); /* TX ant A, 0x0 for B */
+-
+-	/* switch to high-speed 3-wire
+-	 * last digit. 2 for both cck and ofdm
+-	 */
+-	if(priv->card_type == USB)
+-		write_nic_dword(dev, 0x94, 0x3dc00002);
+-	else{
+-		write_nic_dword(dev, 0x94, 0x15c00002);
+-		rtl8185_rf_pins_enable(dev);
+-	}
+-
+-//	if(priv->card_type != USB)
+-//	rtl8225_set_gain(dev, 4); /* FIXME this '1' is random */ // <>
+-//	 rtl8225_set_mode(dev, 1); /* FIXME start in B mode */ // <>
+-//
+-//	/* make sure is waken up! */
+-//	write_rtl8225(dev,0x4, 0x9ff);
+-//	rtl8180_set_anaparam(dev, RTL8225_ANAPARAM_ON);
+-//	rtl8185_set_anaparam2(dev, RTL8225_ANAPARAM2_ON);
+-
+-	rtl8225_rf_set_chan(dev, priv->chan);
+-
+-	write_nic_word(dev,BRSR,brsr);
+-
+-}
+Index: b/drivers/staging/rtl8187se/r8180_rtl8225.h
+===================================================================
+--- a/drivers/staging/rtl8187se/r8180_rtl8225.h
++++ b/drivers/staging/rtl8187se/r8180_rtl8225.h
+@@ -29,11 +29,7 @@ void rtl8225_host_usb_init(struct net_de
+ void write_rtl8225(struct net_device *dev, u8 adr, u16 data);
+ void RF_WriteReg(struct net_device *dev, u8 offset, u32	data);
+ u32 RF_ReadReg(struct net_device *dev, u8 offset);
+-void rtl8225_rf_init(struct net_device *dev);
+ void rtl8225_rf_set_chan(struct net_device *dev,short ch);
+-void rtl8225_rf_close(struct net_device *dev);
+-void rtl8225_rf_sleep(struct net_device *dev);
+-void rtl8225_rf_wakeup(struct net_device *dev);
+ void rtl8180_set_mode(struct net_device *dev,int mode);
+ void rtl8180_set_mode(struct net_device *dev,int mode);
+ bool SetZebraRFPowerState8185(struct net_device *dev,RT_RF_POWER_STATE  eRFPowerState);
