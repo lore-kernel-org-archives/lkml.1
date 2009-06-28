@@ -1,95 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZF1UXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZF1Uht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZF1UXj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 16:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZF1UXa
+	id S1755076AbZF1Uht (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 16:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZF1Uhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 16:23:30 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:35846 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZF1UX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 16:23:29 -0400
-Date: Sun, 28 Jun 2009 21:23:29 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090628202329.GB1546@sucs.org>
-References: <20090313095213.GA14250@silver.sucs.org> <20090320131437.GA30120@hash.localnet> <20090329142432.GA15578@sucs.org> <20090329151401.GA26510@hash.localnet> <20090331083041.GA19657@sucs.org> <20090513214416.GA4492@sucs.org> <20090515040904.GA32357@hash.localnet> <20090518100540.GB21150@sucs.org> <20090522093930.GA15375@sucs.org> <20090526211029.GA2011@sucs.org>
+	Sun, 28 Jun 2009 16:37:40 -0400
+Received: from fe02x03-cgp.akado.ru ([77.232.31.165]:54858 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751102AbZF1Uhk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 16:37:40 -0400
+From: Arseniy Lartsev <ars3n@yandex.ru>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: PROBLEM: USB ACM device does not work
+Date: Mon, 29 Jun 2009 00:37:25 +0400
+User-Agent: KMail/1.10.3 (Linux/2.6.27.23-0.1-default; KDE/4.1.3; i686; ; )
+Cc: USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <200906282229.35713.ars3n@yandex.ru> <200906282220.50313.oliver@neukum.org>
+In-Reply-To: <200906282220.50313.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090526211029.GA2011@sucs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart1791704.sifc2WskHK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906290037.38840.ars3n@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 26, 2009 at 10:10:30PM +0100, Sitsofe Wheeler wrote:
-> On Fri, May 22, 2009 at 10:39:31AM +0100, Sitsofe Wheeler wrote:
-> > On Mon, May 18, 2009 at 11:05:40AM +0100, Sitsofe Wheeler wrote:
-> > > On Fri, May 15, 2009 at 12:09:04AM -0400, Bob Copeland wrote:
-> > > > 
-> > > > This is too ugly to live, but I'd like to know if you can reproduce
-> > > > with this patch.  If it still happens, then I guess it's back to
-> > 
-> > The poison message has not reappeared but this morning there was a
-> 
-> Yet again, I spoke too soon. This evening the following was in dmesg:
-> 
-> I'm pretty certain this kernel had your previous patch (although the
-> directory that held the kernel has since been cleaned away on the server
-> on which it was compiled).
+--nextPart1791704.sifc2WskHK
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-OK I'm still trying to follow this. I forwarded your patch to 2.6.31-rc1
-but this time I have kmemleak enabled. I left it streaming radio for the
-past few hours and the following appeared in the logs:
+On Monday 29 June 2009 00:20:49 Oliver Neukum wrote:
+> This is supposed to write to bulk endpoints. There's no reason interval
+> would need to be specified. Something is very odd. Please post "lsusb -v".
 
-Jun 28 17:01:34 eeepc kernel: [  744.083787] kmemleak: unreferenced object 0xf5845770 (size 64):
-Jun 28 17:01:34 eeepc kernel: [  744.083795] kmemleak:   comm "swapper", pid 1, jiffies 4294673468
-Jun 28 17:01:34 eeepc kernel: [  744.083799] kmemleak:   backtrace:
-Jun 28 17:01:34 eeepc kernel: [  744.083811] kmemleak:     [<c01a749d>] kmemleak_alloc+0x11d/0x2a0
-Jun 28 17:01:34 eeepc kernel: [  744.083818] kmemleak:     [<c01a4376>] __kmalloc+0x136/0x210
-Jun 28 17:01:34 eeepc kernel: [  744.083828] kmemleak:     [<c043f923>] ieee80211_register_hw+0x83/0x4b0
-Jun 28 17:01:34 eeepc kernel: [  744.083837] kmemleak:     [<c04630d5>] ath5k_pci_probe+0xee5/0x1100
-Jun 28 17:01:34 eeepc kernel: [  744.083849] kmemleak:     [<c0279ab3>] local_pci_probe+0x13/0x20
-Jun 28 17:01:34 eeepc kernel: [  744.083856] kmemleak:     [<c027a608>] pci_device_probe+0x68/0x90
-Jun 28 17:01:34 eeepc kernel: [  744.083864] kmemleak:     [<c0312670>] driver_probe_device+0x70/0x140
-Jun 28 17:01:34 eeepc kernel: [  744.083872] kmemleak:     [<c031293a>] __driver_attach+0x7a/0x80
-Jun 28 17:01:34 eeepc kernel: [  744.083881] kmemleak:     [<c0311af9>] bus_for_each_dev+0x49/0x70
-Jun 28 17:01:34 eeepc kernel: [  744.083888] kmemleak:     [<c031250e>] driver_attach+0x1e/0x20
-Jun 28 17:01:34 eeepc kernel: [  744.083896] kmemleak:     [<c0312188>] bus_add_driver+0xd8/0x290
-Jun 28 17:01:34 eeepc kernel: [  744.083904] kmemleak:     [<c0312a6f>] driver_register+0x5f/0x120
-Jun 28 17:01:34 eeepc kernel: [  744.083911] kmemleak:     [<c027a443>] __pci_register_driver+0x53/0xc0
-Jun 28 17:01:34 eeepc kernel: [  744.083922] kmemleak:     [<c061d82d>] init_ath5k_pci+0x1d/0x40
-Jun 28 17:01:34 eeepc kernel: [  744.083929] kmemleak:     [<c0101122>] do_one_initcall+0x32/0x1d0
-Jun 28 17:01:34 eeepc kernel: [  744.083939] kmemleak:     [<c05fe8aa>] kernel_init+0xba/0x110
-Jun 28 17:01:34 eeepc kernel: [  744.084074] kmemleak: unreferenced object 0xf5845b60 (size 64):
-Jun 28 17:01:34 eeepc kernel: [  744.084080] kmemleak:   comm "swapper", pid 1, jiffies 4294683694
-Jun 28 17:01:34 eeepc kernel: [  744.084085] kmemleak:   backtrace:
-Jun 28 17:01:34 eeepc kernel: [  744.084093] kmemleak:     [<c01a749d>] kmemleak_alloc+0x11d/0x2a0
-Jun 28 17:01:34 eeepc kernel: [  744.084100] kmemleak:     [<c01a4376>] __kmalloc+0x136/0x210
-Jun 28 17:01:34 eeepc kernel: [  744.084111] kmemleak:     [<c0239880>] __crypto_alloc_tfm+0x40/0x170
-Jun 28 17:01:34 eeepc kernel: [  744.084120] kmemleak:     [<c0239cbc>] crypto_alloc_base+0x3c/0x80
-Jun 28 17:01:34 eeepc kernel: [  744.084128] kmemleak:     [<c04420ff>] ieee80211_wep_init+0x2f/0x80
-Jun 28 17:01:34 eeepc kernel: [  744.084136] kmemleak:     [<c043fa9d>] ieee80211_register_hw+0x1fd/0x4b0
-Jun 28 17:01:34 eeepc kernel: [  744.084144] kmemleak:     [<c04630d5>] ath5k_pci_probe+0xee5/0x1100
-Jun 28 17:01:34 eeepc kernel: [  744.084153] kmemleak:     [<c0279ab3>] local_pci_probe+0x13/0x20
-Jun 28 17:01:34 eeepc kernel: [  744.084160] kmemleak:     [<c027a608>] pci_device_probe+0x68/0x90
-Jun 28 17:01:34 eeepc kernel: [  744.084168] kmemleak:     [<c0312670>] driver_probe_device+0x70/0x140
-Jun 28 17:01:34 eeepc kernel: [  744.084175] kmemleak:     [<c031293a>] __driver_attach+0x7a/0x80
-Jun 28 17:01:34 eeepc kernel: [  744.084184] kmemleak:     [<c0311af9>] bus_for_each_dev+0x49/0x70
-Jun 28 17:01:34 eeepc kernel: [  744.084191] kmemleak:     [<c031250e>] driver_attach+0x1e/0x20
-Jun 28 17:01:34 eeepc kernel: [  744.084199] kmemleak:     [<c0312188>] bus_add_driver+0xd8/0x290
-Jun 28 17:01:34 eeepc kernel: [  744.084207] kmemleak:     [<c0312a6f>] driver_register+0x5f/0x120
-Jun 28 17:01:34 eeepc kernel: [  744.084214] kmemleak:     [<c027a443>] __pci_register_driver+0x53/0xc0
+lsusb output follows. The device in question comes first.
 
-There were quite a few leaks before this. I dunno if kmemleak is
-spurious or not. As always, any ideas?
+Bus 002 Device 005: ID 16c0:05e1 VOTI=20
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            2 Communications
+  bDeviceSubClass         0=20
+  bDeviceProtocol         0=20
+  bMaxPacketSize0         8
+  idVendor           0x16c0 VOTI
+  idProduct          0x05e1=20
+  bcdDevice            2.00
+  iManufacturer           1 PROTTOSS
+  iProduct                2 AVR910 USB Programmer
+  iSerial                 0=20
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           67
+    bNumInterfaces          2
+    bConfigurationValue     1
+    iConfiguration          0=20
+    bmAttributes         0x80
+      (Bus Powered)
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         2 Communications
+      bInterfaceSubClass      2 Abstract (modem)
+      bInterfaceProtocol      1 AT-commands (v.25ter)
+      iInterface              0=20
+      CDC Header:
+        bcdCDC               1.10
+      CDC ACM:
+        bmCapabilities       0x02
+          line coding and serial state
+      CDC Union:
+        bMasterInterface        0
+        bSlaveInterface         1=20
+      CDC Call Management:
+        bmCapabilities       0x03
+          call management
+          use DataInterface
+        bDataInterface          1
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x83  EP 3 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval             100
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        1
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass        10 CDC Data
+      bInterfaceSubClass      0 Unused
+      bInterfaceProtocol      0=20
+      iInterface              0=20
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0008  1x 8 bytes
+        bInterval               0
+Device Status:     0x0000
+  (Bus Powered)
 
--- 
-Sitsofe | http://sucs.org/~sits/
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            9 Hub
+  bDeviceSubClass         0 Unused
+  bDeviceProtocol         0 Full speed (or root) hub
+  bMaxPacketSize0        64
+  idVendor           0x1d6b Linux Foundation
+  idProduct          0x0001 1.1 root hub
+  bcdDevice            2.06
+  iManufacturer           3 Linux 2.6.27.23-0.1-default ohci_hcd
+  iProduct                2 OHCI Host Controller
+  iSerial                 1 0000:00:03.1
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           25
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0=20
+    bmAttributes         0xe0
+      Self Powered
+      Remote Wakeup
+    MaxPower                0mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         9 Hub
+      bInterfaceSubClass      0 Unused
+      bInterfaceProtocol      0 Full speed (or root) hub
+      iInterface              0=20
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0002  1x 2 bytes
+        bInterval             255
+Hub Descriptor:
+  bLength               9
+  bDescriptorType      41
+  nNbrPorts             3
+  wHubCharacteristic 0x0002
+    No power switching (usb 1.0)
+    Ganged overcurrent protection
+  bPwrOn2PwrGood        0 * 2 milli seconds
+  bHubContrCurrent      0 milli Ampere
+  DeviceRemovable    0x00
+  PortPwrCtrlMask    0xff
+ Hub Port Status:
+   Port 1: 0000.0100 power
+   Port 2: 0000.0100 power
+   Port 3: 0000.0100 power
+Device Status:     0x0003
+  Self Powered
+  Remote Wakeup Enabled
+
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            9 Hub
+  bDeviceSubClass         0 Unused
+  bDeviceProtocol         0 Full speed (or root) hub
+  bMaxPacketSize0        64
+  idVendor           0x1d6b Linux Foundation
+  idProduct          0x0001 1.1 root hub
+  bcdDevice            2.06
+  iManufacturer           3 Linux 2.6.27.23-0.1-default ohci_hcd
+  iProduct                2 OHCI Host Controller
+  iSerial                 1 0000:00:03.0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           25
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0=20
+    bmAttributes         0xe0
+      Self Powered
+      Remote Wakeup
+    MaxPower                0mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         9 Hub
+      bInterfaceSubClass      0 Unused
+      bInterfaceProtocol      0 Full speed (or root) hub
+      iInterface              0=20
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0002  1x 2 bytes
+        bInterval             255
+Hub Descriptor:
+  bLength               9
+  bDescriptorType      41
+  nNbrPorts             3
+  wHubCharacteristic 0x0002
+    No power switching (usb 1.0)
+    Ganged overcurrent protection
+  bPwrOn2PwrGood        3 * 2 milli seconds
+  bHubContrCurrent      0 milli Ampere
+  DeviceRemovable    0x00
+  PortPwrCtrlMask    0xff
+ Hub Port Status:
+   Port 1: 0000.0100 power
+   Port 2: 0000.0300 lowspeed power
+   Port 3: 0000.0303 lowspeed power enable connect
+Device Status:     0x0003
+  Self Powered
+  Remote Wakeup Enabled
+
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            9 Hub
+  bDeviceSubClass         0 Unused
+  bDeviceProtocol         0 Full speed (or root) hub
+  bMaxPacketSize0        64
+  idVendor           0x1d6b Linux Foundation
+  idProduct          0x0002 2.0 root hub
+  bcdDevice            2.06
+  iManufacturer           3 Linux 2.6.27.23-0.1-default ehci_hcd
+  iProduct                2 EHCI Host Controller
+  iSerial                 1 0000:00:03.3
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           25
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0=20
+    bmAttributes         0xe0
+      Self Powered
+      Remote Wakeup
+    MaxPower                0mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           1
+      bInterfaceClass         9 Hub
+      bInterfaceSubClass      0 Unused
+      bInterfaceProtocol      0 Full speed (or root) hub
+      iInterface              0=20
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            3
+          Transfer Type            Interrupt
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0004  1x 4 bytes
+        bInterval              12
+Hub Descriptor:
+  bLength               9
+  bDescriptorType      41
+  nNbrPorts             6
+  wHubCharacteristic 0x000a
+    No power switching (usb 1.0)
+    Per-port overcurrent protection
+  bPwrOn2PwrGood       10 * 2 milli seconds
+  bHubContrCurrent      0 milli Ampere
+  DeviceRemovable    0x00
+  PortPwrCtrlMask    0xff
+ Hub Port Status:
+   Port 1: 0000.0100 power
+   Port 2: 0000.0100 power
+   Port 3: 0000.0100 power
+   Port 4: 0000.0100 power
+   Port 5: 0000.0100 power
+   Port 6: 0000.0100 power
+Device Status:     0x0003
+  Self Powered
+  Remote Wakeup Enabled
+
+
+--nextPart1791704.sifc2WskHK
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iJwEAAECAAYFAkpH1JIACgkQIHDkq2F9exYiogP9EP/ms30p+/xFJHfxDcgruDPx
+jo/L9Ar5e4c42FydiUj5p/KvyK1xqQ3+9k/M/C9+llB+pCBqH+k4vgpoCNvjG5hZ
+KxRGCKBeFs8/Wq2aZZLdYjpW+00uOd/JSVjBpW0XTi7VGyZ+VJc476m5Iw049qLe
+zKivldheyujdt42KFTU=
+=AIdK
+-----END PGP SIGNATURE-----
+
+--nextPart1791704.sifc2WskHK--
