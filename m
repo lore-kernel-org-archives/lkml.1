@@ -1,260 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZF2GtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZF2Gxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZF2GtK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 02:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZF2Gs4
+	id S1753987AbZF2Gxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 02:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZF2Gxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 02:48:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53455 "EHLO smtps.tip.net.au"
+	Mon, 29 Jun 2009 02:53:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50386 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751019AbZF2Gsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 02:48:55 -0400
-Date: Mon, 29 Jun 2009 16:48:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 29
-Message-Id: <20090629164851.57263dbc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Jun_2009_16_48_51_+1000_v/ef6CDdm5n+Dd=v"
+	id S1752979AbZF2Gxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 02:53:40 -0400
+Date: Mon, 29 Jun 2009 05:38:52 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ratan Nalumasu <rnalumasu@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
+	wakeup
+Message-ID: <20090629033852.GA14404@redhat.com>
+References: <20090622170437.GA4906@redhat.com> <20090624091316.73D0F4059B@magilla.sf.frob.com> <20090624152143.GB23848@redhat.com> <20090624185701.AA74C4059B@magilla.sf.frob.com> <20090624161111.GA27890@redhat.com> <20090624194239.A29174059B@magilla.sf.frob.com> <20090624171357.GA30435@redhat.com> <20090624205112.3EA944059B@magilla.sf.frob.com> <93ad5f3f0906252111n48742b9ax8dc2ad35b30f4292@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <93ad5f3f0906252111n48742b9ax8dc2ad35b30f4292@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__29_Jun_2009_16_48_51_+1000_v/ef6CDdm5n+Dd=v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 06/25, Ratan Nalumasu wrote:
+>
+> I understood it in the _past_, but somehow forgotten the details--I have a
+> vague recollection that there was some special handling for the group leader
+> stuff.
+> However, to reconfirm, we believe that the
+> following condition in eligible_child() is good, right:
+> ===
+>        if ((wo->wo_flags & __WNOTHREAD) && wo->child_wait.private !=
+> p->parent)
+>                return 0;
+> ===
+>
+> I will run it on my test machines and see if everything looks good.
 
-Hi all,
+OK, thanks.
 
-Changes since 20090626:
+The only problem it uses ->parent, this conflicts with other out-of-tree
+ptrace changes...
 
-New tree: percpu
+Roland, do you think we should do this change now or later?
 
-My fixes tree contains this commit:
+If now, then we can also do another nice optimization, and it is for free.
+See the untested patch below. It conflicts with those patches too, but
+in both cases fixups are trivial.
 
-	fbdev: work around old compiler bug
+Oleg.
 
-This tree fails to build for powerpc allyesconfig.
+------------------------------------------------------------------------
+[PATCH] do not place sub-threads on task_struct->children list
 
-The hid tree lost its build failure.
+Currently we add sub-threads to ->real_parent->children list. This
+buys nothing but slows down do_wait().
 
-The rr tree gained a conflict against Linus' tree.
+With this patch ->children contains only main threads (group leaders).
+The only complication is that forget_original_parent() should iterate
+over sub-threads by hand. (note that we can move reparent_thread()
+outside of while_each_thread() loop and simplify the code further).
 
-The block tree lost its build failure.
+>From now do_wait_thread() can never see task_detached() && !EXIT_DEAD
+tasks, we can remove this check. (note that now we can unify
+do_wait_thread() and ptrace_do_wait()).
 
-The percpu tree gained a conflict against Linus' tree.
+This change can confuse the optimistic search inmm_update_next_owner(),
+but this is fixable and minor.
 
-----------------------------------------------------------------------------
+Perhaps badness() and oom_kill_process() should be updated, but they
+should be fixed in any case.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+Do you see any problems?
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+---
 
-Below is a summary of the state of the merge.
+ kernel/fork.c |    2 +-
+ kernel/exit.c |   36 +++++++++++++++++-------------------
+ 2 files changed, 18 insertions(+), 20 deletions(-)
 
-We are up to 131 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+--- WAIT/kernel/fork.c~3_CHILDREN_NO_THREADS	2009-06-19 01:12:47.000000000 +0200
++++ WAIT/kernel/fork.c	2009-06-29 04:30:34.000000000 +0200
+@@ -1245,7 +1245,6 @@ static struct task_struct *copy_process(
+ 	}
+ 
+ 	if (likely(p->pid)) {
+-		list_add_tail(&p->sibling, &p->real_parent->children);
+ 		tracehook_finish_clone(p, clone_flags, trace);
+ 
+ 		if (thread_group_leader(p)) {
+@@ -1257,6 +1256,7 @@ static struct task_struct *copy_process(
+ 			p->signal->tty = tty_kref_get(current->signal->tty);
+ 			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
+ 			attach_pid(p, PIDTYPE_SID, task_session(current));
++			list_add_tail(&p->sibling, &p->real_parent->children);
+ 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
+ 			__get_cpu_var(process_counts)++;
+ 		}
+--- WAIT/kernel/exit.c~3_CHILDREN_NO_THREADS	2009-06-24 17:36:28.000000000 +0200
++++ WAIT/kernel/exit.c	2009-06-29 04:47:21.000000000 +0200
+@@ -67,11 +67,11 @@ static void __unhash_process(struct task
+ 		detach_pid(p, PIDTYPE_PGID);
+ 		detach_pid(p, PIDTYPE_SID);
+ 
++		list_del_init(&p->sibling);
+ 		list_del_rcu(&p->tasks);
+ 		__get_cpu_var(process_counts)--;
+ 	}
+ 	list_del_rcu(&p->thread_group);
+-	list_del_init(&p->sibling);
+ }
+ 
+ /*
+@@ -742,10 +742,10 @@ static void reparent_thread(struct task_
+ 	if (p->pdeath_signal)
+ 		group_send_sig_info(p->pdeath_signal, SEND_SIG_NOINFO, p);
+ 
+-	list_move_tail(&p->sibling, &p->real_parent->children);
+-
+ 	if (task_detached(p))
+ 		return;
++
++	list_move_tail(&p->sibling, &p->real_parent->children);
+ 	/*
+ 	 * If this is a threaded reparent there is no need to
+ 	 * notify anyone anything has happened.
+@@ -771,7 +771,7 @@ static void reparent_thread(struct task_
+ 
+ static void forget_original_parent(struct task_struct *father)
+ {
+-	struct task_struct *p, *n, *reaper;
++	struct task_struct *g, *p, *n, *reaper;
+ 	LIST_HEAD(dead_children);
+ 
+ 	exit_ptrace(father);
+@@ -779,13 +779,16 @@ static void forget_original_parent(struc
+ 	write_lock_irq(&tasklist_lock);
+ 	reaper = find_new_reaper(father);
+ 
+-	list_for_each_entry_safe(p, n, &father->children, sibling) {
+-		p->real_parent = reaper;
+-		if (p->parent == father) {
+-			BUG_ON(task_ptrace(p));
+-			p->parent = p->real_parent;
+-		}
+-		reparent_thread(father, p, &dead_children);
++	list_for_each_entry_safe(g, n, &father->children, sibling) {
++		p = g;
++		do {
++			p->real_parent = reaper;
++			if (p->parent == father) {
++				BUG_ON(task_ptrace(p));
++				p->parent = p->real_parent;
++			}
++			reparent_thread(father, p, &dead_children);
++		} while_each_thread(g, p);
+ 	}
+ 	write_unlock_irq(&tasklist_lock);
+ 
+@@ -1533,14 +1536,9 @@ static int do_wait_thread(struct wait_op
+ 	struct task_struct *p;
+ 
+ 	list_for_each_entry(p, &tsk->children, sibling) {
+-		/*
+-		 * Do not consider detached threads.
+-		 */
+-		if (!task_detached(p)) {
+-			int ret = wait_consider_task(wo, tsk, 0, p);
+-			if (ret)
+-				return ret;
+-		}
++		int ret = wait_consider_task(wo, tsk, 0, p);
++		if (ret)
++			return ret;
+ 	}
+ 
+ 	return 0;
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in arch/x86/kvm/x86.c
-CONFLICT (content): Merge conflict in virt/kvm/kvm_main.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/powermac/setup=
-.c
-CONFLICT (content): Merge conflict in kernel/cpu.c
-Applying: rr/pmac: fix for cpumask accessor changes
-Applying: UML: Fix some apparent bitrot in mmu_context.h
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/mn10300/kernel/vmlinux.lds.S
-Merging asm-generic/next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: kvm/powerpc: fix build error
-
---Signature=_Mon__29_Jun_2009_16_48_51_+1000_v/ef6CDdm5n+Dd=v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpIY9MACgkQjjKRsyhoI8z4GQCfYMi3kKQ8XBLL+7anl56TLTyy
-rjsAmgLBTuWw6j7e/Zmo1JD8VBDDp9/O
-=ZnJ0
------END PGP SIGNATURE-----
-
---Signature=_Mon__29_Jun_2009_16_48_51_+1000_v/ef6CDdm5n+Dd=v--
