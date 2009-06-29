@@ -1,102 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZF2ELY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZF2ENs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZF2ELY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 00:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZF2ELR
+	id S1754669AbZF2ENs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 00:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZF2ENk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 00:11:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36587 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750898AbZF2ELQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 00:11:16 -0400
-Date: Mon, 29 Jun 2009 06:11:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at
-	source code level
-Message-ID: <20090629041104.GB13117@elte.hu>
-References: <20090618.191448.886429908004553840.mitake@dcl.info.waseda.ac.jp> <20090622153522.GB18466@elte.hu> <20090623.132920.886429909279624487.mitake@dcl.info.waseda.ac.jp> <20090629.125902.886429909480974646.mitake@dcl.info.waseda.ac.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090629.125902.886429909480974646.mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 29 Jun 2009 00:13:40 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:47079 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZF2ENk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 00:13:40 -0400
+Date: Mon, 29 Jun 2009 13:10:37 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH] memcg: cgroup fix rmdir hang
+Message-Id: <20090629131037.bdd56fb0.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090626150052.362e1819.nishimura@mxp.nes.nec.co.jp>
+References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090626141020.849a081e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090626150052.362e1819.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-
-> From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
-> Date: Tue, 23 Jun 2009 13:29:20 +0900 (JST)
+On Fri, 26 Jun 2009 15:00:52 +0900, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> On Fri, 26 Jun 2009 14:10:20 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > I hope this will be a final bullet..
+> > I myself think this one is enough simple and good.
+> I think so too :)
+> Using test_and_clear_bit() and checking CGRP_WAIT_ON_RMDIR before sleeping
+> would be a good idea to make the patch simple.
 > 
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Subject: Re: [tip:sched/urgent] sched: Hide runqueues from direct refer at source code level
-> > Date: Mon, 22 Jun 2009 17:35:22 +0200
-> > 
-> > > > 
-> > > > Thanks for your fix, I didn't notice...
-> > > > I wrote a patch to fix these two points.
-> > > > 
-> > > > After applying this patch,
-> > > > all direct reference to runqueues is in macros. How is this?
-> > > > 
-> > > > Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> > > > 
-> > > > diff --git a/kernel/sched.c b/kernel/sched.c
-> > > > index 8ec9d13..e2ca8c1 100644
-> > > > --- a/kernel/sched.c
-> > > > +++ b/kernel/sched.c
-> > > > @@ -692,6 +692,7 @@ static inline int cpu_of(struct rq *rq)
-> > > >  #define this_rq()		(&__get_cpu_var(runqueues))
-> > > >  #define task_rq(p)		cpu_rq(task_cpu(p))
-> > > >  #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
-> > > > +#define raw_rq()		(&__raw_get_cpu_var(runqueues))
-> > > >  
-> > > >  inline void update_rq_clock(struct rq *rq)
-> > > >  {
-> > > > @@ -6625,7 +6626,7 @@ EXPORT_SYMBOL(yield);
-> > > >   */
-> > > >  void __sched io_schedule(void)
-> > > >  {
-> > > > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
-> > > > +	struct rq *rq = raw_rq();
-> > > >  
-> > > >  	delayacct_blkio_start();
-> > > >  	atomic_inc(&rq->nr_iowait);
-> > > > @@ -6637,7 +6638,7 @@ EXPORT_SYMBOL(io_schedule);
-> > > >  
-> > > >  long __sched io_schedule_timeout(long timeout)
-> > > >  {
-> > > > -	struct rq *rq = &__raw_get_cpu_var(runqueues);
-> > > > +	struct rq *rq = raw_rq();
-> > > >  	long ret;
-> > > >  
-> > > >  	delayacct_blkio_start();
-> > > 
-> > > Looks good - mind submitting a separate patch with a changelog, etc?
-> > > 
-> > > 	Ingo
-> > > 
-> > 
-> > No, I have no fix to post now. Thanks.
-> > 
+> > I'm sorry that we need test again.
+> No problem.
+> I'll test this one this weekend.
 > 
-> I felt that I misunderstood what you said.
-> Are you requiring me a content for changelog?
+It has survived my test(rmdir under memory pressure) this weekend.
+Please feel free to add my Tested-by.
 
-Yes, please send a full patch with a new subject line and a 
-changelog - as your previous patch has already been applied.
+	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-	Ingo
+Thanks,
+Daisuke Nishimura.
