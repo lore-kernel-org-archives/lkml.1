@@ -1,36 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZF2VPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbZF2VQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbZF2VPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 17:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbZF2VPN
+	id S1757784AbZF2VQB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 17:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbZF2VPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 17:15:13 -0400
-Received: from kroah.org ([198.145.64.141]:45256 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757103AbZF2VPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 17:15:12 -0400
-Date: Mon, 29 Jun 2009 14:01:44 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: "stable@kernel.org" <stable@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [stable] [PATCH 2.6.30-stable] jfs: fix regression preventing
-	coalescing of extents
-Message-ID: <20090629210144.GG24106@kroah.com>
-References: <1245245721.7926.4.camel@norville.austin.ibm.com>
+	Mon, 29 Jun 2009 17:15:51 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:37201 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755114AbZF2VPv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 17:15:51 -0400
+Date: Mon, 29 Jun 2009 17:15:36 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Eric Sandeen <sandeen@redhat.com>
+cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Theodore Tso <tytso@mit.edu>,
+       Andreas Dilger <adilger@sun.com>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <4A44DE14.2080403@redhat.com>
+Message-ID: <alpine.DEB.1.10.0906291714520.21956@gentwo.org>
+References: <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com>
+ <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com> <20090626011155.GI6472@mit.edu> <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI>
+ <4A44DE14.2080403@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1245245721.7926.4.camel@norville.austin.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 17, 2009 at 08:35:21AM -0500, Dave Kleikamp wrote:
-> Please pick up this patch for the 2.6.30 stable branch.  It has been
-> committed to mainline as f7c52fd17a7dda42fc9e88c2b2678403419bfe63.
+On Fri, 26 Jun 2009, Eric Sandeen wrote:
 
-Now queued up, thanks.
+> I'll test it; it'd be great if it did, I'm um, a bit ashamed at how I
+> fixed it ;)
 
-greg k-h
+Isnt the problem that the slab allocator did not align something that
+you did not request to be aligned?
