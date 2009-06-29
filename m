@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857AbZF2GDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbZF2GUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753857AbZF2GDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 02:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZF2GDW
+	id S1757106AbZF2GUK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 02:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbZF2GT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 02:03:22 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:38256 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbZF2GDV (ORCPT
+	Mon, 29 Jun 2009 02:19:58 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:44527 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZF2GT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 02:03:21 -0400
+	Mon, 29 Jun 2009 02:19:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=gKBxb7ajtZWnLF29zNOTjbya7nvDlC3k0XoZxa6q93BDDvyqc3p4I4N9ykXb2hd2cH
-         PFX/sKCGrL4W7BKYkvhZf3i3TdlXsmU6/7XqCQnGewmQvKHew35JdMmWHXzboQAcE3Fy
-         vgkAW8K1lCoqSdOU9/5ZBkbRvpFxVootNLk00=
-Date: Mon, 29 Jun 2009 09:04:03 +0300
-From: Jarkko Nikula <jhnikula@gmail.com>
-To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Cc: Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       Tony Lindgren <tony@atomide.com>,
-       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH] [RFC] ASoC: OMAP: fix OMAP1510 broken PCM pointer
- callback
-Message-Id: <20090629090403.5bfd35c8.jhnikula@gmail.com>
-In-Reply-To: <200906290008.59640.jkrzyszt@tis.icnet.pl>
-References: <200906280021.05931.jkrzyszt@tis.icnet.pl>
-	<20090628223732.53954402.jhnikula@gmail.com>
-	<200906290008.59640.jkrzyszt@tis.icnet.pl>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=aLYmiD+K4L4fWyhVIBSnHmq+hbFHNSdf8lI4Wj5NufRkZC0iM0e7exbITb8XH0dzdV
+         5UMNu6XhBCVue+GEgEpchmmjiPwCrlke5xAMthip2ggpv4mntMt4RFyEWBAGTsbVzB48
+         LnfYQob0CZi6pDSCLO/wqHQ6ZVzV7O/GOwI+E=
+Date: Sun, 28 Jun 2009 23:19:55 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: Daniel Ribeiro <drwyrm@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       Harald Welte <laforge@gnumonks.org>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH] PCAP touchscreen driver (for 2.6.32)
+Message-ID: <20090629061955.GE12821@dtor-d630.eng.vmware.com>
+References: <1246122138.3727.12.camel@brutus> <5d5443650906280015x4bddefa5v9dd36f888c5f2e92@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <5d5443650906280015x4bddefa5v9dd36f888c5f2e92@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009 00:08:59 +0200
-Janusz Krzysztofik <jkrzyszt@tis.icnet.pl> wrote:
-
-> AFAIK, both CSSA_L and CDSA_L DMA registers are static. Loaded by CPU
-> with 16 LSB of initial source and destination port addresses
-> respectively, they are never updated by the DMA engine itself. That's
-> why they can't be used for transfer progress indication unless
-> updated by CPU.
+On Sun, Jun 28, 2009 at 12:45:17PM +0530, Trilok Soni wrote:
+> Hi Daniel,
 > 
-> The old omap-alsa driver was just updating them, intentionally or
-> not, by reprogramming and restarting DMA every PCM period. That's why
-> calculating PCM pointers from CSSA_L/CDSA_L worked.
+> 2009/6/27 Daniel Ribeiro <drwyrm@gmail.com>:
+> > +
+> > +       err = request_irq(pcap_to_irq(pcap_ts->pcap, PCAP_IRQ_TS),
+> > +                       pcap_ts_event_touch, 0, "Touch Screen", pcap_ts);
+> > +       if (err)
+> > +               goto fail;
+> > +
+> > +       err = input_register_device(pcap_ts->input);
+> > +       if (err)
+> > +               goto fail_touch;
 > 
-Thanks for finding out this. Good to know that OMAP low-level DMA code
-now in this respect is as good as HW allows it.
-
-> ASoC OMAP driver transfers whole PCM buffer with single DMA transfer,
-> so it doesn't need to update DMA source/destination port address
-> after initial playback/capture setup, even if restarting DMA, and
-> actually never does this. Calculating PCM pointers from CSSA_L/CDSA_L
-> registers without updating them every period would then be wrong.
+> Please move request_irq after input_register_device, as IRQ can get
+> fired before input device gets available, right?
 > 
-> For capture, reading CPC, that follows destination port address
-> progress, just works fine (for both old and new driver). For
-> playback, similar hardware functionality seems to be missing, so it
-> has to be emulated in software if required.
-> 
-Kind an odd HW behaviour but that can happen. Probably it would be good
-to explain this also in function omap_get_dma_src_pos.
 
-Mark, I think this is fair to queue a fix for 2.6.31.
+Actually it is OK to have IRQs fired before the device is registered.
+Input core guarantees that input device allocated with
+input_allocate_device() will survive if events are sent through it. The
+events will not be delivered anywhere, for obvious reason, but
+everything else should be fine. In fact, if device has an event()
+handler then it has to be fully operational (that includes IRQ reserved
+and ready, unless the driver implements open/close methods) before
+calling input_register_device - the handlers that will attach to the
+device have every right to start sending events back to the device right
+away and expect them to be handled properly.
 
-Acked-by: Jarkko Nikula <jhnikula@gmail.com>
+-- 
+Dmitry
