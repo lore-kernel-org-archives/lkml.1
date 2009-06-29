@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZF2EUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZF2Eyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbZF2EUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 00:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757698AbZF2ETv
+	id S1754960AbZF2Eyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 00:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZF2Eyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 00:19:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48416 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757859AbZF2ETu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 00:19:50 -0400
-Date: Mon, 29 Jun 2009 04:19:23 GMT
-From: "tip-bot for Figo.zhang" <figo1802@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       figo1802@gmail.com, akpm@osdl.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       figo1802@gmail.com, tglx@linutronix.de, akpm@osdl.org, mingo@elte.hu
-In-Reply-To: <1246248175.5759.12.camel@myhost>
-References: <1246248175.5759.12.camel@myhost>
-Subject: [tip:x86/mm] x86, highmem_32.c: Clean up comment
-Message-ID: <tip-565b0c1f100408ccbcb04ba458a14da454cb271d@git.kernel.org>
-Git-Commit-ID: 565b0c1f100408ccbcb04ba458a14da454cb271d
-X-Mailer: tip-git-log-daemon
+	Mon, 29 Jun 2009 00:54:39 -0400
+Received: from mailfilter6.ihug.co.nz ([203.109.136.6]:17425 "EHLO
+	mailfilter6.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZF2Eyi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 00:54:38 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtkfAD/mR0opv2yC/2dsb2JhbACBUYxwiSaCFYYEqi+EDQWGbw
+X-IronPort-AV: E=Sophos;i="4.42,307,1243771200"; 
+   d="scan'208";a="108141945"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Jun 2009 04:19:24 +0000 (UTC)
+Date: Mon, 29 Jun 2009 16:54:36 +1200
+From: Management Center <info@customers.org>
+To: undisclosed-recipients:;
+Subject: Notification
+Reply-To: customersdelivery@gala.net
+Message-ID: <c21b6f98a0f369f1053f5a0d996f8f82@vodafone.co.nz>
+SenderIP: 41.191.108.130
+User-Agent: Vodafone Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  565b0c1f100408ccbcb04ba458a14da454cb271d
-Gitweb:     http://git.kernel.org/tip/565b0c1f100408ccbcb04ba458a14da454cb271d
-Author:     Figo.zhang <figo1802@gmail.com>
-AuthorDate: Mon, 29 Jun 2009 12:02:55 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 29 Jun 2009 06:14:43 +0200
 
-x86, highmem_32.c: Clean up comment
+-- 
+Congrats...You are the winner of £891,934.00's: Send your information to
+Mr.Fred Martins. at (customersdelivery1@hotmail.co.uk). Name: Age: Address,
+Phone, Country.
 
-Signed-off-by: Figo.zhang <figo1802@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>
-LKML-Reference: <1246248175.5759.12.camel@myhost>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-- 
 
 
----
- arch/x86/mm/highmem_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index 58f621e..0c6f43c 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -24,7 +24,7 @@ void kunmap(struct page *page)
-  * no global lock is needed and because the kmap code must perform a global TLB
-  * invalidation when the kmap pool wraps.
-  *
-- * However when holding an atomic kmap is is not legal to sleep, so atomic
-+ * However when holding an atomic kmap it is not legal to sleep, so atomic
-  * kmaps are appropriate for short, tight code paths only.
-  */
- void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+
