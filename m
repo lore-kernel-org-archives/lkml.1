@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZF2RfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758777AbZF2Rgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbZF2RfN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZF2Rep
+	id S1758777AbZF2Rgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZF2Rf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:34:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39849 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 13:35:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39865 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757489AbZF2Reo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:34:44 -0400
-Date: Mon, 29 Jun 2009 20:34:13 +0300
+	id S1757990AbZF2RfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:35:20 -0400
+Date: Mon, 29 Jun 2009 20:34:49 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: [PATCHv4 2/6] kvm: switch coalesced mmio changes to slots_lock
-Message-ID: <20090629173413.GC22855@redhat.com>
+Subject: [PATCHv4 6/6] kvm: document lock nesting rule
+Message-ID: <20090629173449.GG22855@redhat.com>
 References: <cover.1246294571.git.mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,66 +26,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-switch coalesced mmio slots_lock.  slots_lock is already taken for read
-everywhere, so we only need to take it for write when changing zones.
-This is in preparation to removing in_range and kvm->lock around it.
+Document kvm->lock nesting within kvm->slots_lock
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- virt/kvm/coalesced_mmio.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ virt/kvm/kvm_main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
-index 397f419..7b7cc9f 100644
---- a/virt/kvm/coalesced_mmio.c
-+++ b/virt/kvm/coalesced_mmio.c
-@@ -102,7 +102,7 @@ int kvm_coalesced_mmio_init(struct kvm *kvm)
- 	kvm_iodevice_init(&dev->dev, &coalesced_mmio_ops);
- 	dev->kvm = kvm;
- 	kvm->coalesced_mmio_dev = dev;
--	kvm_io_bus_register_dev(&kvm->mmio_bus, &dev->dev);
-+	kvm_io_bus_register_dev(kvm, &kvm->mmio_bus, &dev->dev);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 728118f..afbf006 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -68,7 +68,7 @@ MODULE_LICENSE("GPL");
+ /*
+  * Ordering of locks:
+  *
+- * 		kvm->lock --> kvm->irq_lock
++ * 		kvm->slots_lock --> kvm->lock --> kvm->irq_lock
+  */
  
- 	return 0;
- }
-@@ -115,16 +115,16 @@ int kvm_vm_ioctl_register_coalesced_mmio(struct kvm *kvm,
- 	if (dev == NULL)
- 		return -EINVAL;
- 
--	mutex_lock(&kvm->lock);
-+	down_write(&kvm->slots_lock);
- 	if (dev->nb_zones >= KVM_COALESCED_MMIO_ZONE_MAX) {
--		mutex_unlock(&kvm->lock);
-+		up_write(&kvm->slots_lock);
- 		return -ENOBUFS;
- 	}
- 
- 	dev->zone[dev->nb_zones] = *zone;
- 	dev->nb_zones++;
- 
--	mutex_unlock(&kvm->lock);
-+	up_write(&kvm->slots_lock);
- 	return 0;
- }
- 
-@@ -138,7 +138,7 @@ int kvm_vm_ioctl_unregister_coalesced_mmio(struct kvm *kvm,
- 	if (dev == NULL)
- 		return -EINVAL;
- 
--	mutex_lock(&kvm->lock);
-+	down_write(&kvm->slots_lock);
- 
- 	i = dev->nb_zones;
- 	while(i) {
-@@ -156,7 +156,7 @@ int kvm_vm_ioctl_unregister_coalesced_mmio(struct kvm *kvm,
- 		i--;
- 	}
- 
--	mutex_unlock(&kvm->lock);
-+	up_write(&kvm->slots_lock);
- 
- 	return 0;
- }
+ DEFINE_SPINLOCK(kvm_lock);
 -- 
 1.6.2.2
-
