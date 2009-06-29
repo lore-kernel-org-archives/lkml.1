@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZF2WEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbZF2WGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbZF2WEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZF2WE2
+	id S1757659AbZF2WGz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 18:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZF2WGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:04:28 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54980 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZF2WE1 (ORCPT
+	Mon, 29 Jun 2009 18:06:48 -0400
+Received: from smtprelay01.ispgateway.de ([80.67.18.13]:37699 "EHLO
+	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZF2WGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:04:27 -0400
-Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <7959.1246307789@jrobl>
-References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
-	 <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
-	 <12000.1246284749@jrobl>
-	 <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com>
-	 <7959.1246307789@jrobl>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 18:04:20 -0400
-Message-Id: <1246313060.3280.81.camel@dyn9002018117.watson.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Mon, 29 Jun 2009 18:06:47 -0400
+X-Greylist: delayed 460 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jun 2009 18:06:47 EDT
+From: Wolfgang Illmeyer <wolfgang@illmeyer.com>
+To: akpm@linux-foundation.org
+Subject: [PATCH 001/001] hostfs: set maximum filesize in superblock for proper LFS support
+Date: Mon, 29 Jun 2009 23:59:01 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1; KDE/4.2.4; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org, jdike@addtoit.com
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906292359.01834.wolfgang@illmeyer.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Df-Sender: wolfgang@illmeyer.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 05:36 +0900, hooanon05@yahoo.co.jp wrote:
-> Mimi Zohar:
-> > This suggestion has been mentioned before; and yes would definitely
-> > resolve the annoying imbalance and iint_free() messages.  But
-> > incrementing/decrementing the pointers automatically each time a file is
-> > opened/closed would defeat their purpose - alerting us that a file was
-> > possibly not measured before being read/executed. 
-> 
-> I may be wrong since I don't fully understand IMA's purpose, but why did
-> you create ima_counts_get() and make it call after dentry_open() in
-> nfsd_open()? Isn't it same thing essentially?
-> 
-> 
-> J. R. Okajima
+From: Wolfgang Illmeyer <wolfgang@illmeyer.com>
 
-NFSv3 is an interesting example. Permission checking is done once,
-followed by multiple open/read/close calls. Incrementing the counters in
-nfsd_permission() once and decrementing the counters in close, multiple
-times, resulted in imbalance messages.  True, the solution in this case
-was to increment in open and decrement in close, but that was only part
-of the solution.  The other part of the solution, the important part,
-was to add a call to ima_path_check() to measure the file.
+Maximum file size for hostfs mounts defaults to 2GB, so bigger files cannot be 
+read/written through hostfs. This patch initializes the maximum file size to 
+MAX_LFS_SIZE.
+Signed-off-by: Wolfgang Illmeyer <wolfgang@illmeyer.com>
+---
+This patch applies against linux-2.6.30. It fixes 
+http://bugzilla.kernel.org/show_bug.cgi?id=13531
+It is a revamped version of the patch I attached to the bug, using additional 
+input from Andrew Morton (thanks). This is my first patch for the kernel, I 
+hope I didn't break too many rules ;)
 
-The imbalance message did what it was suppose to do - highlight the fact
-that a file was read/executed without first being measured.
+For any feedback from the mailing list please add me to "To" or CC me - I'm 
+not on the list.
 
-Mimi
+--- fs/hostfs/hostfs_kern.c.orig   2009-06-29 23:13:05.000000000 +0200
++++ fs/hostfs/hostfs_kern.c        2009-06-29 23:14:43.000000000 +0200
+@@ -972,6 +972,7 @@ static int hostfs_fill_sb_common(struct
+        sb->s_blocksize_bits = 10;
+        sb->s_magic = HOSTFS_SUPER_MAGIC;
+        sb->s_op = &hostfs_sbops;
++       sb->s_maxbytes = MAX_LFS_FILESIZE;
+
+        /* NULL is printed as <NULL> by sprintf: avoid that. */
+        if (req_root == NULL)
 
