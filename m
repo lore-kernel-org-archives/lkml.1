@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbZF2X36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbZF2Xah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbZF2X36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZF2X3u
+	id S1759834AbZF2Xah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbZF2Xaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:29:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47023 "EHLO ogre.sisk.pl"
+	Mon, 29 Jun 2009 19:30:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47035 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783AbZF2X3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:29:50 -0400
+	id S1753624AbZF2Xa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:30:29 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [Bug #13653] system hangs after resume from suspend to disk, mce related
-Date: Tue, 30 Jun 2009 01:30:27 +0200
+To: Sergei Trofimovich <slyich@gmail.com>
+Subject: Re: [Bug #13655] [Oops] 2.6.31-rc1: tun
+Date: Tue, 30 Jun 2009 01:31:03 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.EED.DJASKB@chimera> <4A480E54.3060405@jp.fujitsu.com>
-In-Reply-To: <4A480E54.3060405@jp.fujitsu.com>
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.b1C.AJASKB@chimera> <20090629064417.2fd6ac63@mosly.slynet.org>
+In-Reply-To: <20090629064417.2fd6ac63@mosly.slynet.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906300130.27909.rjw@sisk.pl>
+Message-Id: <200906300131.04324.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009, Hidetoshi Seto wrote:
-> Rafael J. Wysocki wrote:
+On Monday 29 June 2009, Sergei Trofimovich wrote:
+> On Mon, 29 Jun 2009 02:11:48 +0200 (CEST)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
 > > This message has been generated automatically as a part of a report
 > > of recent regressions.
 > > 
@@ -40,19 +41,16 @@ On Monday 29 June 2009, Hidetoshi Seto wrote:
 > > (either way).
 > > 
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13653
-> > Subject		: system hangs after resume from suspend to disk, mce related
-> > Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
-> > Date		: 2009-06-21 19:02 (8 days old)
-> > References	: http://lkml.org/lkml/2009/6/21/86
-> > Handled-By	: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> > Patch		: http://patchwork.kernel.org/patch/32062/
-> 
-> The patch above, in /32062/, is for another bug related to timer
-> migration (waring message reported with check_interval=1).
-> 
-> Real patch for this bug is:
->  http://patchwork.kernel.org/patch/31907/
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13655
+> > Subject		: [Oops] 2.6.31-rc1: tun
+> > Submitter	: Sergei Trofimovich <slyich@gmail.com>
+> > Date		: 2009-06-25 23:53 (4 days old)
+> > References	: http://lkml.org/lkml/2009/6/25/435
+> > Handled-By	: Herbert Xu <herbert@gondor.apana.org.au>
+> > Patch		: http://patchwork.kernel.org/patch/32672/
+> > 
+> > 
+> This bug is a duplicate of http://bugzilla.kernel.org/show_bug.cgi?id=13627
 
 Thanks, updated.
 
