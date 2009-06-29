@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZF2Rot@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZF2RrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbZF2Rot (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:44:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZF2Rom
+	id S1754995AbZF2RrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZF2RrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:44:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48674 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 13:47:06 -0400
+Received: from kroah.org ([198.145.64.141]:50287 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752303AbZF2Rol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:44:41 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in cfq_find_alloc_queue()
-References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com>
-	<1246007120-24034-3-git-send-email-jens.axboe@oracle.com>
-	<x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
-	<20090627182617.GX23611@kernel.dk>
-	<x494otzxid3.fsf@segfault.boston.devel.redhat.com>
-	<20090629173418.GN23611@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 29 Jun 2009 13:44:07 -0400
-In-Reply-To: <20090629173418.GN23611@kernel.dk> (Jens Axboe's message of "Mon,
-	29 Jun 2009 19:34:18 +0200")
-Message-ID: <x494otzvst4.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1752439AbZF2RrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:47:04 -0400
+Date: Mon, 29 Jun 2009 10:33:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, intel-gfx@lists.freedesktop.org,
+       woodys@xandros.com, stefan.bader@canonical.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, apw@canonical.com,
+       tim.gardner@canonical.com, torvalds@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: [stable] [Intel-gfx] Intel 915GM MCHBAR bug
+Message-ID: <20090629173308.GB3901@kroah.com>
+References: <4A242C81.6020906@cs.helsinki.fi> <4A298971.5080006@xandros.com> <4A2A0951.1020608@cs.helsinki.fi> <20090605232711.d8503262.akpm@linux-foundation.org> <4A2A0E8C.1010109@cs.helsinki.fi> <20090606212759.31970fae@jbarnes-x200> <20090609150757.4a2109a9@jbarnes-x200> <20090609152828.d82528f3.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609152828.d82528f3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+On Tue, Jun 09, 2009 at 03:28:28PM -0700, Andrew Morton wrote:
+> On Tue, 9 Jun 2009 15:07:57 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> 
+> > > > Andrew Morton wrote:
+> > > > > These might end up being 2.6.30.1 material.
+> > > > 
+> > > > Yes, agreed completely. We probably want ACK from Jesse and Bjorn,
+> > > > though.
+> > > 
+> > > I'm ok with it being 2.6.30.1 stuff, but given the significance of the
+> > > change we were worried about putting it into 2.6.30 late in the cycle.
+> > > But as you say, it's a very important performance fix for many
+> > > machines...
+> > > 
+> > > Anyway, Eric may already have it merged.  Eric?
+> > > 
+> > 
+> > It's merged now into the drm-intel-next tree, and therefore queued for
+> > the merge window.
+> 
+> <hunts around for a while>
+> 
+> This? http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=commitdiff;h=d765898970f35acef960581f678b9da9d5c779fa;hp=1b8e69662e1a086878bf930a6042daf7f8a076cc
+> 
+> It doesn't have cc:stable in the changelog, so there's a reasonable
+> chance that it will get lost.
+> 
+> The -stable guys troll the commit list looking for mainline commits
+> which mention stable@kernel.org in the changelog.
 
-> On Mon, Jun 29 2009, Jeff Moyer wrote:
->> Jens Axboe <jens.axboe@oracle.com> writes:
->> 
->> > On Fri, Jun 26 2009, Jeff Moyer wrote:
->> >> Jens Axboe <jens.axboe@oracle.com> writes:
->> >> 
->> >> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
->> >> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
->> >> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
->> >> > never fails without having to ensure free memory.
->> >> >
->> >> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->> >> > ---
->> >> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
->> >> >  1 files changed, 67 insertions(+), 57 deletions(-)
->> >> >
->> >> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> >> > index c760ae7..91e7e0b 100644
->> >> > --- a/block/cfq-iosched.c
->> >> > +++ b/block/cfq-iosched.c
->> >> > +	/*
->> >> > +	 * Fallback dummy cfqq for extreme OOM conditions
->> >> > +	 */
->> >> > +	struct cfq_queue oom_cfqq;
->> >> 
->> >> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
->> >> guess that's not too bad.
->> >> 
->> >> > +	/*
->> >> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
->> >> > +	 * Grab a permanent reference to it, so that the normal code flow
->> >> > +	 * will not attempt to free it.
->> >> > +	 */
->> >> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
->> >> > +	atomic_inc(&cfqd->oom_cfqq.ref);
->> >> > +
->> >> 
->> >> I guess this is so we never try to free it, good.  ;)
->> >> 
->> >> One issue I have with this patch is that, if a task happens to run into
->> >> this condition, there is no way out.  It will always have the oom_cfqq
->> >> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
->> >
->> > Yeah, I fixed that about an hour after posting the patches. See:
->> >
->> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
->> >
->> > I didn't post the 3/2 patch though.
->> 
->> OK, that looks better.  Are you reposting the series, then?
->
-> Yeah, I'll fold the last two patches together and repost.
+I got it for the next .30 release.
 
-When you do, you can add my:
+thanks,
 
-Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
-
-Cheers,
-Jeff
+greg k-h
