@@ -1,149 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751680AbZF2HsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbZF2HyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751680AbZF2HsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZF2HsM
+	id S1757242AbZF2HyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF2HyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:48:12 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:63228 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbZF2HsL convert rfc822-to-8bit (ORCPT
+	Mon, 29 Jun 2009 03:54:11 -0400
+Received: from mga12.intel.com ([143.182.124.36]:16399 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751019AbZF2HyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:48:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=d8IRavFyJ9TPn31rPSGBZoKFTA73UtseUrk0b5K3WVGg3Gv00tYn6FFjIVYg4oyeyB
-         JAyioX6QeWXjTS70eOtjoB0FSvATTxw3KWJrKaQpEC23L+0ruPwD4cV+C4ab9OQRZQKS
-         jdZbCTySvCG03t+IonyfLFmc0K8KcyqlV+cds=
+	Mon, 29 Jun 2009 03:54:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,308,1243839600"; 
+   d="scan'208";a="159498097"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: kvm@vger.kernel.org
+Subject: Re: [PATCH] enable x2APIC without interrupt remapping under KVM
+Date: Mon, 29 Jun 2009 15:53:58 +0800
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
+Cc: Gleb Natapov <gleb@redhat.com>, linux-kernel@vger.kernel.org,
+       avi@redhat.com, "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+References: <20090628125114.GO20289@redhat.com>
+In-Reply-To: <20090628125114.GO20289@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com>
-References: <3901.1245848839@redhat.com> <2015.1245341938@redhat.com>
-	 <20090618095729.d2f27896.akpm@linux-foundation.org>
-	 <7561.1245768237@redhat.com> <26537.1246086769@redhat.com>
-	 <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost>
-	 <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com>
-	 <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com>
-	 <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com>
-Date: Mon, 29 Jun 2009 16:48:13 +0900
-X-Google-Sender-Auth: 46c9c175790c31d5
-Message-ID: <2f11576a0906290048t29667ae0sd75c96d023b113e2@mail.gmail.com>
-Subject: Re: Found the commit that causes the OOMs
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906291553.59347.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/29 Minchan Kim <minchan.kim@gmail.com>:
-> On Sun, Jun 28, 2009 at 11:49 PM, KOSAKI
-> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->>>> In David's OOM case, there are two symptoms:
->>>> 1) 70000 unaccounted/leaked pages as found by Andrew
->>>>   (plus rather big number of PG_buddy and pagetable pages)
->>>> 2) almost zero active_file/inactive_file; small inactive_anon;
->>>>   many slab and active_anon pages.
->>>>
->>>> In the situation of (2), the slab cache is _under_ scanned. So David
->>>> got OOM when vmscan should have squeezed some free pages from the slab
->>>> cache. Which is one important side effect of MinChan's patch?
->>>
->>> My patch's side effect is (2).
->>>
->>> My guessing is following as.
->>>
->>> 1. The number of page scanned in shrink_slab is increased in shrink_page_list.
->>> And it is doubled for mapped page or swapcache.
->>> 2. shrink_page_list is called by shrink_inactive_list
->>> 3. shrink_inactive_list is called by shrink_list
->>>
->>> Look at the shrink_list.
->>> If inactive lru list is low, it always call shrink_active_list not
->>> shrink_inactive_list in case of anon.
->>> It means it doesn't increased sc->nr_scanned.
->>> Then shrink_slab can't shrink enough slab pages.
->>> So, David OOM have a lot of slab pages and active anon pages.
->>>
->>> Does it make sense ?
->>> If it make sense, we have to change shrink_slab's pressure method.
->>> What do you think ?
->>
->> I'm confused.
->>
->> if system have no swap, get_scan_ratio() always return anon=0%.
->> Then, the numver of inactive_anon is not effect to sc.nr_scanned.
->>
->
-> My patch isn't a concern since the number of anon lru list(active +
-> anon) always same.  I mean shrink_slab's lru_pages is same whether my
-> patch there is.  OOM or Pass depends on sc->nr_scanned, I think.
->
-> Why I think it is my patch's side effect is follow as.
->
-> Compared to old behavior, my patch can change balancing of anon lru
-> list when "swap file" is full as Hannes already pointed me out.
->
-> It can affect reclaimable anon pages while David is going on swap test on LTP.
-> When swap file test is end, pages on swap file is inserted anon lru list, again.
->
-> My patch can change physical location of anon pages on ram compared to old.
+On Sunday 28 June 2009 20:51:14 Gleb Natapov wrote:
+ > KVM would like to provide x2APIC interface to a guest without emulating
+ > interrupt remapping device. The reason KVM prefers guest to use x2APIC
+ > is that x2APIC interface is better virtualizable and provides better
+ > performance than mmio xAPIC interface:
+ >
+ > - msr exits are faster than mmio (no page table walk, emulation)
+ > - no need to read back ICR to look at the busy bit
+ > - one 64 bit ICR write instead of two 32 bit writes
+ > - shared code with the Hyper-V paravirt interface
+ >
+ > Included patch changes x2APIC enabling logic to enable it even if IR
+ > initialization failed, but kernel runs under KVM and no apic id is
+ > greater than 255 (if there is one spec requires BIOS to move to x2apic
+ > mode before starting an OS).
+ 
+[Resend, sorry for html noise...]
 
-No.
-shrink_active_list() doesn't change page physical address.
+Add Suresh here. And some comments and unclear points below.
 
+> Signed-off-by: Gleb Natapov <gleb@redhat.com>
+ > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+ > index d1430ef..7438c5c 100644
+ > --- a/arch/x86/Kconfig
+ > +++ b/arch/x86/Kconfig
+ > @@ -260,7 +260,7 @@ config SMP
+ >
+ > config X86_X2APIC
+ > bool "Support x2apic"
+ > - depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
+ > + depends on X86_LOCAL_APIC && X86_64
+ > ---help---
+ > This enables x2apic support on CPUs that have this feature.
+ 
 
-> From now on, we have no swap file so that we can reclaim only file pages.
-> But we have missed one thing. lumpy reclaim!. (In fact, we should not
-> reclaim anon pages in no swap space. A few days ago, I sended patch
-> about this problem. http://patchwork.kernel.org/patch/32651/)
->
-> It can reclaim anon pages although we have no swap file.
-> But after all, shrink_page_list can't reclaim anon pages.  But it
-> increases sc->nr_scanned.
->
-> So I think whether Shrink_slab can reclaim enough or not depends on
-> sc->nr_scanned.
->
-> David's problem is very subtle.
->
-> 1. If lumpy picks up the anon pages, it can pass LTP since
-> sc->nr_scanned is increased.
-> 2. If lumpy don't pick up the anon pages, it can meet OOM since
-> sc->nr_scanned is almost zero or very small.
->
-> Unfortunately, my patch seems to change physical location of pages on
-> ram compared to old so that it selects 2.
->
-> It's my imaginary novel.
->
-> Okay. I believe Wu's patch will solve David's problem.
-> David. Could you test with Wu's patch ?
+We may need to note x2apic won't work without interrupt remapping or as a 
+guest in KVM here?
+ >
+ > diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+ > index 8c7c042..48a63b6 100644
+ > --- a/arch/x86/kernel/apic/apic.c
+ > +++ b/arch/x86/kernel/apic/apic.c
+ > @@ -49,6 +49,7 @@
+ > #include <asm/mtrr.h>
+ > #include <asm/smp.h>
+ > #include <asm/mce.h>
+ > +#include <asm/kvm_para.h>
+ >
+ > unsigned int num_processors;
+ >
+ > @@ -1363,11 +1364,10 @@ void enable_x2apic(void)
+ > }
+ > #endif /* CONFIG_X86_X2APIC */
+ >
+ > -void __init enable_IR_x2apic(void)
+ > +int __init enable_IR(void)
+ > {
+ > #ifdef CONFIG_INTR_REMAP
+ > int ret;
+ > - unsigned long flags;
+ > struct IO_APIC_route_entry **ioapic_entries = NULL;
+ >
+ > ret = dmar_table_init();
+ > @@ -1381,11 +1381,10 @@ void __init enable_IR_x2apic(void)
+ > goto ir_failed;
+ > }
+ >
+ > -
+ > if (!x2apic_preenabled && skip_ioapic_setup) {
+ > pr_info("Skipped enabling intr-remap because of skipping "
+ > "io-apic setup\n");
+ > - return;
+ > + goto ir_failed;
+ > }
+ >
+ > ioapic_entries = alloc_ioapic_entries();
+ > @@ -1400,22 +1399,14 @@ void __init enable_IR_x2apic(void)
+ > goto end;
+ > }
+ >
+ > - local_irq_save(flags);
+ > mask_IO_APIC_setup(ioapic_entries);
+ > - mask_8259A();
+ >
+ > ret = enable_intr_remapping(x2apic_supported());
+ > if (ret)
+ > goto end_restore;
+ > -
 
-However, lumpy reclaim is good viewpoint.
-Recently KAMEZAWA-san fix one serious lumpy reclaim problem. since
-2.6.28 lumpy reclaim can insert file mapped pages to anon lru list.
-Then, the page become to be not able to reclaimable.
+Unrelated...
 
-David, Can you please try to following patch? it was posted to LKML
-about 1-2 week ago.
+> pr_info("Enabled Interrupt-remapping\n");
+ >
+ > - if (x2apic_supported() && !x2apic_mode) {
+ > - x2apic_mode = 1;
+ > - enable_x2apic();
+ > - pr_info("Enabled x2apic\n");
+ > - }
+ > -
+ > + return 1;
+ > end_restore:
+ > if (ret)
+ > /*
+ > @@ -1423,30 +1414,50 @@ end_restore:
+ > */
+ > restore_IO_APIC_setup(ioapic_entries);
+ >
+ > - unmask_8259A();
+ > - local_irq_restore(flags);
+ > -
+ > end:
+ > if (ioapic_entries)
+ > free_ioapic_entries(ioapic_entries);
+ >
+ > - if (!ret)
+ > - return;
+ > -
+ > ir_failed:
+ > - if (x2apic_preenabled)
+ > +#endif
+ > + return 0;
+ > +}
+ > +
+ > +void __init enable_IR_x2apic(void)
+ > +{
+ > + unsigned long flags;
+ > +
+ > + local_irq_save(flags);
+ > + mask_8259A();
+ > +
+ > + /* IR is required if x2apic is enabled by BIOS even when running in kvm
+ > + * since this indicates present of APIC ID > 255 */
+ > + if (!enable_IR() && (x2apic_preenabled || !kvm_para_available()))
+ > + goto nox2apic;
+ > +
 
-Subject "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
-isolate_lru_pages v2"
+Not quite understand the comment here. Could you explain why "since this 
+indicates present of APIC ID > 255?" In another word, why enable_IR() needed 
+for KVM even it would be fail at dmar_table_init()?
+ 
+Another question is, we supposed KVM would use physical mode of x2apic, for 
+IOAPIC and MSI won't support APIC ID > 255. But seems not, or I miss 
+something?
+
+-- 
+regards
+Yang, Sheng
+ 
+
+> + if (x2apic_supported() && !x2apic_mode) {
+ > + x2apic_mode = 1;
+ > + enable_x2apic();
+ > + pr_info("Enabled x2apic\n");
+ > + }
+ > +
+ > + unmask_8259A();
+ > + local_irq_restore(flags);
+ > + return;
+ > +
+ > +nox2apic:
+ > + unmask_8259A();
+ > + local_irq_restore(flags);
+ > +
+ > + if (x2apic_preenabled) {
+ > +#ifdef CONFIG_INTR_REMAP
+ > panic("x2apic enabled by bios. But IR enabling failed");
+ > - else if (cpu_has_x2apic)
+ > - pr_info("Not enabling x2apic,Intr-remapping\n");
+ > #else
+ > - if (!cpu_has_x2apic)
+ > - return;
+ > -
+ > - if (x2apic_preenabled)
+ > panic("x2apic enabled prior OS handover,"
+ > " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
+ > #endif
+ > -
+ > + } else if (cpu_has_x2apic)
+ > + pr_info("Not enabling x2apic,Intr-remapping\n");
+ > return;
+ > }
+ >
+ > --
+ > Gleb.
+ > --
+ > To unsubscribe from this list: send the line "unsubscribe kvm" in
+ > the body of a message to majordomo@vger.kernel.org
+ > More majordomo info at http://vger.kernel.org/majordomo-info.html
+ 
+
