@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZF2SPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758217AbZF2SPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZF2SPX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZF2SPK
+	id S1758217AbZF2SPi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 14:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757892AbZF2SPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:15:10 -0400
-Received: from cantor.suse.de ([195.135.220.2]:33101 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbZF2SPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:15:09 -0400
-Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090424104651.7c751735.akpm@linux-foundation.org>
-References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
-	 <49F0C817.8050407@caviumnetworks.com>
-	 <20090423165723.16c9f566.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0904240632240.16107@localhost.localdomain>
-	 <20090424104651.7c751735.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Mon, 29 Jun 2009 20:15:11 +0200
-Message-Id: <1246299311.7698.19.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 29 Jun 2009 14:15:18 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:38188 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757745AbZF2SPQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 14:15:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sCC4zRUfjFSa1Abn9MBQCODgp2wRvW7wlyxPIpZLn2BiSWz2KmfppgClCz3WwA+aP1
+         ZGCDGNzaKFR0tQgPPNFEIwEmctsUHN3iuC95/4Qi8qMPXTISwLhBbfpxSN2hGuM6H+3/
+         CuL2/TeV2dFZU6pwMYZEQdIpROOfR1jjHtTdc=
+Date: Mon, 29 Jun 2009 20:14:42 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
+	callbacks
+Message-ID: <20090629181442.GF2742@ami.dom.local>
+References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906290826300.29966@makko.or.mcafeemobile.com> <20090629173217.GC2742@ami.dom.local> <alpine.DEB.1.10.0906291033140.30244@makko.or.mcafeemobile.com> <20090629180431.GE2742@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629180431.GE2742@ami.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton píše v Pá 24. 04. 2009 v 10:46 -0700:
-> On Fri, 24 Apr 2009 06:40:39 -0400 (EDT) "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-> 
-> >   so it would be a simple matter to define the bit set boolean in
-> > terms of hweight_long(), yes?  so what about, in bitops.h:
-> > 
-> >   static inline bool
-> >   exactly_one_bit_set(unsigned long w)
-> >   {
-> > 	return hweight_long(w) == 1;
-> >   }
-> > 
-> >   static inline bool
-> >   more_than_one_bit_set(unsigned long w)
-> >   {
-> > 	return hweight_long(w) > 1;
-> >   }
-> > 
+On Mon, Jun 29, 2009 at 08:04:31PM +0200, Jarek Poplawski wrote:
+...
+> Btw., maybe I miss something but I guess Oleg proposed something in
+> between: inlining __poll_wait(), which would save us 'extra API' and
+> compiler doubts. (But I still prefer Jiri's choice. ;-)
 
-Andrew, you must be kidding! Are you seriously suggesting to replace a
-simple and instruction with a call to an extern library function with 17
-instructions (not including the call and ret)?
+After re-reading I guess Oleg didn't proposed anything in between yet.
 
-I'd better check the use of hweight in the kernel to eradicate as many
-calls to it as possible...
-
-Petr Tesarik
-
-
+Sorry,
+Jarek P.
