@@ -1,37 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbZF2Khl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758322AbZF2Kj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758821AbZF2Khl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 06:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZF2Kh1
+	id S1758322AbZF2Kj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 06:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZF2Kjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 06:37:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48247
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754528AbZF2KhZ (ORCPT
+	Mon, 29 Jun 2009 06:39:48 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:45665 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751421AbZF2Kjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 06:37:25 -0400
-Date: Mon, 29 Jun 2009 03:37:30 -0700 (PDT)
-Message-Id: <20090629.033730.193709457.davem@davemloft.net>
-To: etienne.basset@numericable.fr
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       bzolnier@gmail.com, jeff.chua.linux@gmail.com
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A489775.6020102@numericable.fr>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	<5Hhc7UkUKEO.A.RvE.BjASKB@chimera>
-	<4A489775.6020102@numericable.fr>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 29 Jun 2009 06:39:48 -0400
+Subject: Re: kmemleak hexdump proposal
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <1246270774.6364.9.camel@penberg-laptop>
+References: <20090628173632.GA3890@localdomain.by>
+	 <84144f020906290243u7a362465p6b1f566257fa3239@mail.gmail.com>
+	 <20090629101917.GA3093@localdomain.by>
+	 <1246270774.6364.9.camel@penberg-laptop>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 29 Jun 2009 11:38:00 +0100
+Message-Id: <1246271880.21450.13.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jun 2009 10:38:01.0114 (UTC) FILETIME=[ACEAEFA0:01C9F8A5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Etienne Basset <etienne.basset@numericable.fr>
-Date: Mon, 29 Jun 2009 12:29:09 +0200
+On Mon, 2009-06-29 at 13:19 +0300, Pekka Enberg wrote:
+> On Mon, 2009-06-29 at 13:19 +0300, Sergey Senozhatsky wrote:
+> > Well, it's not easy to come up with something strong. 
+> > I agree, that stack gives you almost all you need.
+> > 
+> > HEX dump can give you a _tip_ in case you're not sure. 
+> 
+> Don't get me wrong, I'm not against it in any way. If Catalin is
+> interested in merging this kind of functionality, go for it! You might
+> want to consider unconditionally enabling the hexdump. If the
+> information is valuable, we should print it all the time.
 
-> yes, patch is not yet upstream;
+Though I prefer to do as much as possible in user space, I think this
+feature would be useful.
 
-I'll take care of pushing this around today.
+Anyway, I may not include it before the next merging window (when is
+actually the best time for new features). Currently, my main focus is on
+reducing the false positives.
+
+-- 
+Catalin
+
