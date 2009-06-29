@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZF2JtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZF2JvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbZF2JtK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbZF2Jsz
+	id S1758839AbZF2JvW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 05:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZF2JvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:48:55 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:51148 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751969AbZF2Jsy convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:48:54 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [2.6.31-rc1] iwlagn (4965): regression when hardware rf switch is used
-Date: Mon, 29 Jun 2009 11:48:54 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless@vger.kernel.org, Netdev <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <200906291128.05639.elendil@planet.nl> <1246268022.7775.24.camel@johannes.local>
-In-Reply-To: <1246268022.7775.24.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906291148.55386.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Jun 2009 09:48:56.0019 (UTC) FILETIME=[D1811A30:01C9F89E]
+	Mon, 29 Jun 2009 05:51:09 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:36883 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751611AbZF2JvI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 05:51:08 -0400
+Subject: Re: kmemleak reports firmware loader funnies in iwlwifi
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <84144f020906290248w474ad2ffpe6a8b5bede3d2c20@mail.gmail.com>
+References: <20090626171933.GA23170@redhat.com>
+	 <tnxy6rbv0oq.fsf@pc1117.cambridge.arm.com>
+	 <84144f020906290248w474ad2ffpe6a8b5bede3d2c20@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 29 Jun 2009 10:50:55 +0100
+Message-Id: <1246269055.21450.6.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jun 2009 09:50:56.0166 (UTC) FILETIME=[191E1460:01C9F89F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009, Johannes Berg wrote:
-> > [enable]
-> > usb 3-1: new full speed USB device using uhci_hcd and address 3
-> > usb 3-1: configuration #1 chosen from 1 choice
->
-> That is completely unrelated. You plugged in a USB device too :)
+On Mon, 2009-06-29 at 12:48 +0300, Pekka Enberg wrote:
+> Hi Catalin,
+> 
+> On Mon, Jun 29, 2009 at 12:39 PM, Catalin
+> Marinas<catalin.marinas@arm.com> wrote:
+> > diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> > index ddeb819..26fb808 100644
+> > --- a/drivers/base/firmware_class.c
+> > +++ b/drivers/base/firmware_class.c
+> > @@ -179,6 +179,13 @@ static ssize_t firmware_loading_store(struct device *dev,
+> >                                dev_err(dev, "%s: vmap() failed\n", __func__);
+> >                                goto err;
+> >                        }
+> > +                       /*
+> > +                        * This block of memory is later freed using vfree.
+> > +                        * Since kmemleak does not track vmap calls, just
+> > +                        * inform it about this block but ignore it during
+> > +                        * scanning.
+> > +                        */
+> > +                       kmemleak_alloc(fw_priv->fw->data, 0, -1, GFP_KERNEL);
+> >                        /* Pages will be freed by vfree() */
+> >                        fw_priv->pages = NULL;
+> >                        fw_priv->page_array_size = 0;
+> 
+> Would it be possible to put this hook in vmap() somehow?
 
-No, it's my "bluetooth + wlan" device. Note that disabling wireless with 
-the hardware switch also gives 'usb 3-1: USB disconnect, address 2'.
+It can be (and it could track vmap leaks as well). BTW, is there any
+use-case where vmap'ed memory may contain pointers? I did a grep but
+none of the vmap'ed blocks seem to have pointers.
 
->From lsusb:
-Bus 003 Device 002: ID 03f0:171d Hewlett-Packard Wireless (Bluetooth + 
-WLAN) Interface [Integrated Module]
+-- 
+Catalin
 
-> > A lot uglier with those errors. And after that I have to run
-> > ifdown/ifup before networking is up again (ifup only does not work as
-> > it will complain "interface already configured"):
->
-> And that's actually expected, and/or a bug in the debian networking
-> scripts.
-> (You can trigger the same problem by doing
-> ifup wlan0
-> ip link set wlan0 down
-> ifup wlan0 -> error)
-
-OK, I can accept that. Wonder why it does work with 2.6.30 then. But it 
-can certainly wait until the driver problem you mentioned is resolved.
-
-> To get your network connection back automatically we will require
-> changes to userland tools to listen to rfkill events.
->
-> > BTW, would it make sense to bring back the first two lines shown with
-> > .30 (or at least the first one):
-> >    iwlagn 0000:10:00.0: Radio Frequency Kill Switch is On:
-> >    Kill switch must be turned off for wireless networking to work.
-> > IMHO it's good to register the reason for the disconnect.
->
-> I guess something like that could be added to cfg80211:
-> phy0: taking interfaces down due to rfkill
-
-Yes, that would be nice.
-
-Thanks,
-FJP
