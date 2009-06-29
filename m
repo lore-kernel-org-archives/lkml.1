@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbZF2XCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZF2XFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbZF2XCV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZF2XCI
+	id S1754018AbZF2XFL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZF2XFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:02:08 -0400
-Received: from kroah.org ([198.145.64.141]:48176 "EHLO coco.kroah.org"
+	Mon, 29 Jun 2009 19:05:00 -0400
+Received: from main.gmane.org ([80.91.229.2]:58254 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752828AbZF2XCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:02:07 -0400
-Date: Mon, 29 Jun 2009 15:52:21 -0700
-From: Greg KH <greg@kroah.com>
-To: tridge@samba.org
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090629225221.GA16870@kroah.com>
-References: <19013.8005.541836.436991@samba.org> <m1d48p5dil.fsf@fess.ebiederm.org> <19014.54044.484370.187018@samba.org> <m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org> <87ab3sx4ch.fsf@devron.myhome.or.jp> <19016.6463.997760.757811@samba.org> <20090629221826.GA12781@kroah.com> <19017.17250.371594.268824@samba.org>
-MIME-Version: 1.0
+	id S1752828AbZF2XFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:05:00 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Mark Wielaard <mjw@redhat.com>
+Subject: Re: Dual-licensing LTTng, marker and tracepoints =?utf-8?b?dW5kZXIJR1BMdjIrL0xHUEx2Mi4xKw==?=
+Date: Mon, 29 Jun 2009 23:00:19 +0000 (UTC)
+Message-ID: <loom.20090629T224818-688@post.gmane.org>
+References: <4A412702.80707@polymtl.ca> <20090623191128.GA19010@Krystal> <20090623191513.GA20253@Krystal> <20090624004356.GB28911@Krystal> <20090624083334.GB16850@elte.hu> <20090624141438.GA15420@Krystal> <y0mprctzj5v.fsf@fche.csb> <20090624164909.GA20653@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19017.17250.371594.268824@samba.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 80.101.103.228 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b4) Gecko/20090427 Fedora/3.5-0.20.beta4.fc11 Firefox/3.5b4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 08:42:42AM +1000, tridge@samba.org wrote:
->  > I have no objection to take this patch for the -stable releases when it
->  > goes into Linus's tree.  Just forward the git commit ids to
->  > stable@kernel.org and I can take care of it.
+Mathieu Desnoyers <compudj <at> krystal.dyndns.org> writes:
+> * Frank Ch. Eigler (fche <at> redhat.com) wrote:
+> > > [...]The goal is to permit this library, which includes the
+> > > tracepoints, markers and LTTng features, to be used by userspace
+> > > applications and libraries so they can add static instrumentation
+> > > (as we currently do in the kernel). [...]
+> > 
+> > Just in case you're not aware, some API prior art for this is the
+> > dtrace sdt.h widget (already supported by systemtap), and of course
+> > it has no similarity to the various kernel tracing APIs.
 > 
-> ok, thanks Greg.
-> 
-> Hirofumi-san tells me we've missed the merge window for 2.6.31, so it
-> seems that this will go first into the fatfs tree, then go into
-> Linus's tree via -next for 2.6.32. So hopefully the patch will get
-> some more testing (perhaps in -mm?) before it needs to be considered
-> for -stable.
+> Yep, we're aware of this. However, last time I checked, dtrace SDT used
+> a breakpoint even for their userspace tracing, which has a way too large
+> performance overhead for our needs.
 
-That sounds reasonable.  Just add a:
-	Cc: stable <stable@kernel.org>
-in the "signed-off-by:" area of the patch, and when it goes into Linus's
-tree, the -stable team will be automatically notified of it and we will
-pick it up.
+You might want to check again. Although the systemtap sdt.h should be source
+compatible with dtrace markers since it provides the same compile time
+interfaces/macros (which is how systemtap support java hotspot probing for
+example), it isn't tied to any implementation details. The default
+implementation inserts a NOP that can be replaced by a breakpoint instruction.
+But Stan Cox added variants that can use syscalls/utrace/kprobes which have
+different performance overhead tradeoffs
+(http://article.gmane.org/gmane.linux.systemtap/12667). This is an
+implementation detail though since the source interfaces are the same. Just
+recompiling your application and/or libraries against a newer version of the
+sdt.h interfaces will automagically provide the different probe types.
 
-It needs to be in Linus's tree before we can add it to the -stable
-releases.
+Cheers,
 
-thanks,
+Mark
 
-greg k-h
