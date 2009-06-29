@@ -1,46 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbZF2J4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbZF2J6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758558AbZF2J4D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:56:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZF2Jzt
+	id S1758750AbZF2J6k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 05:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF2J6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:55:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43690 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 05:58:32 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37933 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbZF2Jzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:55:48 -0400
-Message-ID: <4A489002.1080106@redhat.com>
-Date: Mon, 29 Jun 2009 12:57:22 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1751201AbZF2J6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 05:58:31 -0400
+Date: Mon, 29 Jun 2009 10:58:32 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Alok Kataria <akataria@vmware.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org
+Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
+Message-ID: <20090629095832.GF28597@csn.ul.ie>
+References: <1245705941.26649.19.camel@alok-dev1>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCHv2] kvm: remove in_range and switch to rwsem for iobus
-References: <20090628193425.GA14204@redhat.com> <4A487D2C.2020007@redhat.com> <20090629092309.GA19167@redhat.com> <4A488D15.4060500@redhat.com> <20090629095132.GD19167@redhat.com>
-In-Reply-To: <20090629095132.GD19167@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1245705941.26649.19.camel@alok-dev1>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29/2009 12:51 PM, Michael S. Tsirkin wrote:
->> We can convert it to rcu indepenently of other things protected by
->> slots_lock; no need to do everything at the same time.
->>      
->
-> Yes but once we merge locks, it will be harder to split them out.
-> I know I can now do grep bus_lock and find all places affected,
-> if I reuse slot_lock this information is lost. No?
->    
+On Mon, Jun 22, 2009 at 02:25:41PM -0700, Alok Kataria wrote:
+> Looking at the output of /proc/meminfo, a user might get confused in thinking
+> that there are zero unevictable pages, though, in reality their can be
+> hugepages which are inherently unevictable. 
+> 
 
-That's true, but for seeing the overall picture, fewer locks are 
-better.  I'm more concerned about those looking at all the code (me) 
-than those implementing locking improvements (you).
+I think the problem may be with what meaning different people are
+getting from "Unevictable"
+
+For those of us that saw the Unevitable patches going by it means the number
+of pages that could potentially be on the LRU lists but are not because
+they are unevitable due to some action taken by the program - mlock() for
+example. This does not include hugepages because we know they cannot be
+reclaimed by any action other than directly freeing them.
+
+The meaning you want is that Unevitable represents a count of the pages
+that are unpagable such as pagetable pages, mlocked pages, hugepages,
+etc.
+
+> Though hugepages are not handled by the unevictable lru framework, they are
+> infact unevictable in nature and global statistics counter should reflect that. 
+> 
+
+I somewhat disagree as the full count of unreclaimable pages can be
+aggregated by looking at various statistics such as page table counts,
+slab pages, locked, etc.
+
+> For instance, I have allocated 20 huge pages on my system, meminfo shows this 
+> 
+> Unevictable:           0 kB
+> Mlocked:               0 kB
+> HugePages_Total:      20
+> HugePages_Free:       20
+> HugePages_Rsvd:        0
+> HugePages_Surp:        0
+> 
+
+Note that the hugepages_total here is for the default hugepage size. If
+there are other hugepages, you need to go to sysfs for them. If you are in
+the kernel, you need to walk through the hstates and aggregate the counters.
+
+> After the patch:
+> 
+> Unevictable:       81920 kB
+> Mlocked:               0 kB
+> HugePages_Total:      20
+> HugePages_Free:       20
+> HugePages_Rsvd:        0
+> HugePages_Surp:        0
+> 
+
+I'm not keen on this to be honest but that's because I know Unevitable to
+mean pages that potentially could be on the LRU but are not. I think that
+people will want to consider that separetly from hugepage usage.
+
+What I would be ok with is changing the output of meminfo slightly.
+Output "Pinned" which is a total count of pages that cannot be reclaimed at
+the moment. Give subheadings for that such as Unevitable LRU (potentially
+broken further down to what makes up the unevictable LRU count), pagetables,
+hugepages, etc.
+
+At minimum, your changelog needs to state why you need this information and
+how it's going to be used. It's not clear why you cannot just add Unevitable
++ pagetables + slab + HugePages_Total to get an approximation of the amount
+of pinned memory for example.
+
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> 
+> Index: linux-2.6/Documentation/vm/unevictable-lru.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/vm/unevictable-lru.txt	2009-06-22 11:49:27.000000000 -0700
+> +++ linux-2.6/Documentation/vm/unevictable-lru.txt	2009-06-22 13:57:32.000000000 -0700
+> @@ -71,6 +71,12 @@ The unevictable list addresses the follo
+>  
+>   (*) Those mapped into VM_LOCKED [mlock()ed] VMAs.
+>  
+> + (*) Hugetlb pages are also unevictable. Hugepages are already implemented in
+> +     a way that these pages don't reside on the LRU and hence are not iterated
+> +     over during the vmscan. So there is no need to move around these pages
+> +     across different LRU's. We just account these pages as unevictable for
+> +     correct statistics.
+> +
+>  The infrastructure may also be able to handle other conditions that make pages
+>  unevictable, either by definition or by circumstance, in the future.
+>  
+> Index: linux-2.6/mm/hugetlb.c
+> ===================================================================
+> --- linux-2.6.orig/mm/hugetlb.c	2009-06-22 11:49:57.000000000 -0700
+> +++ linux-2.6/mm/hugetlb.c	2009-06-22 14:04:05.000000000 -0700
+> @@ -533,6 +533,8 @@ static void update_and_free_page(struct 
+>  				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
+>  				1 << PG_private | 1<< PG_writeback);
+>  	}
+> +	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
+> +				-(pages_per_huge_page(h)));
+>  	set_compound_page_dtor(page, NULL);
+>  	set_page_refcounted(page);
+>  	arch_release_hugepage(page);
+> @@ -584,6 +586,8 @@ static void prep_new_huge_page(struct hs
+>  	spin_lock(&hugetlb_lock);
+>  	h->nr_huge_pages++;
+>  	h->nr_huge_pages_node[nid]++;
+> +	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
+> +				pages_per_huge_page(h));
+>  	spin_unlock(&hugetlb_lock);
+>  	put_page(page); /* free it into the hugepage allocator */
+>  }
+> @@ -749,6 +753,9 @@ static struct page *alloc_buddy_huge_pag
+>  		 */
+>  		h->nr_huge_pages_node[nid]++;
+>  		h->surplus_huge_pages_node[nid]++;
+> +		mod_zone_page_state(page_zone(page),
+> +					NR_LRU_BASE + LRU_UNEVICTABLE,
+> +					pages_per_huge_page(h));
+>  		__count_vm_event(HTLB_BUDDY_PGALLOC);
+>  	} else {
+>  		h->nr_huge_pages--;
+> 
+> 
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
