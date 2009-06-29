@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZF2EDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZF2EKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbZF2EDQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 00:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZF2EC7
+	id S1752437AbZF2EKH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 00:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZF2EJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 00:02:59 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:46780 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZF2EC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 00:02:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rj11TUa8hR0fkeVxc/eYVB1aPX2tkWlAP5MVZ02tkxKCpGEiqLEYSF6ZAHhp5Xclsm
-         GIBJv4MDO+o0kb5qhosF18lBl4ISuuXiC9B6W/ZdpBU29DfJt1pONtjF0y1WD2GnVS1M
-         7ivFwhChFngv8PvxYRqWytL3chJbRiegPBE3U=
-Subject: [PATCH v2]highmem_32.c : clean up comment
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246242173.2561.8.camel@myhost>
-References: <1246242173.2561.8.camel@myhost>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 12:02:55 +0800
-Message-Id: <1246248175.5759.12.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jun 2009 00:09:57 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38858 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZF2EJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 00:09:57 -0400
+Date: Mon, 29 Jun 2009 06:09:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Figo.zhang" <figo1802@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH]highmem_32.c: add argument pointer checking
+Message-ID: <20090629040954.GA13117@elte.hu>
+References: <1246244906.5759.5.camel@myhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246244906.5759.5.camel@myhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clean up comment.
 
-Signed-off-by: Figo.zhang <figo1802@gmail.com>
----  
-arch/x86/mm/highmem_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+* Figo.zhang <figo1802@gmail.com> wrote:
 
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index 58f621e..0c6f43c 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -24,7 +24,7 @@ void kunmap(struct page *page)
-  * no global lock is needed and because the kmap code must perform a global TLB
-  * invalidation when the kmap pool wraps.
-  *
-- * However when holding an atomic kmap is is not legal to sleep, so atomic
-+ * However when holding an atomic kmap it is not legal to sleep, so atomic
-  * kmaps are appropriate for short, tight code paths only.
-  */
- void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+> It had better add argument pointer checking.
+> 
+> If any guys write driver want to alloc hightmem and pass a no-initial pointer,
+> it would be crashed.
+> 
+> Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> ---  
+> arch/x86/mm/highmem_32.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+> index 58f621e..e52e1a9 100644
+> --- a/arch/x86/mm/highmem_32.c
+> +++ b/arch/x86/mm/highmem_32.c
+> @@ -31,6 +31,7 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+>  {
+>  	enum fixed_addresses idx;
+>  	unsigned long vaddr;
+> +	BUG_ON(!page);
+>  
+>  	/* even !CONFIG_PREEMPT needs this, for in_atomic in do_page_fault */
+>  	pagefault_disable();
+> @@ -58,6 +59,9 @@ void kunmap_atomic(void *kvaddr, enum km_type type)
+>  	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+>  	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
+>  
+> +	if(!kvaddr)
+> +		return;
+> +
 
+(Please run patches through scripts/checkpatch.pl before 
+submission.)
 
+Also, what's the improvement here? Before the patch we'd crash on a 
+NULL dereference ... after the patch we'd crash on a BUG_ON().
+
+Furthermore, he kunmap_atomic() change is outright wrong - it will 
+now allow NULL kunmaps, which can hide bugs in drivers.
+
+	Ingo
