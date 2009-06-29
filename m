@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZF2KWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbZF2KXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbZF2KWu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 06:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbZF2KWl
+	id S1759194AbZF2KXl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 06:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbZF2KXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 06:22:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33182 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Jun 2009 06:23:34 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:47140 "EHLO slimlogic.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758856AbZF2KWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 06:22:40 -0400
-Date: Mon, 29 Jun 2009 12:22:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>,
-       kvm@vger.kernel.org, avi@redhat.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH v2] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629102235.GA15372@elte.hu>
-References: <20090629100837.GW20289@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090629100837.GW20289@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1757788AbZF2KXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 06:23:33 -0400
+Subject: Re: [PATCHv3] PCAP regulator driver (for 2.6.32)
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Daniel Ribeiro <drwyrm@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>
+In-Reply-To: <1246123618.3727.29.camel@brutus>
+References: <1246072682.10360.424.camel@brutus>
+	 <20090627105150.GA4780@sirena.org.uk>  <1246123618.3727.29.camel@brutus>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 29 Jun 2009 11:23:34 +0100
+Message-Id: <1246271014.30631.37.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2009-06-27 at 14:26 -0300, Daniel Ribeiro wrote:
+> Em Sáb, 2009-06-27 às 11:51 +0100, Mark Brown escreveu:
+> > On Sat, Jun 27, 2009 at 12:18:02AM -0300, Daniel Ribeiro wrote:
+> > > Add (partial) support for the voltage regulators on the PCAP2 PMIC.
+> > > 
+> > > Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+> > 
+> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > 
+> > Looks good.
+> 
+> Thanks.
+> 
+> > > Mark, can you please assert that this only gets merged after Samuel has
+> > > a chance to merge the set_bits patch? Thanks!
+> > 
+> > It's Liam who manages the regulator tree, though given the set_bits()
+> > patch perhaps this one might end up getting merged via the MFD tree (or
+> > both via the regulator tree).
+> 
+> I prefer the set_bits() patch going through the MFD tree. I sent some
+> other fixes, and a patch to solve a similar race issue for the ADC/TS
+> driver.
+> 
 
-* Gleb Natapov <gleb@redhat.com> wrote:
+Is this a runtime or build time dependency for this patch ? I'm thinking
+about not breaking -next builds.  
 
-> KVM would like to provide x2APIC interface to a guest without emulating
-> interrupt remapping device. The reason KVM prefers guest to use x2APIC
-> is that x2APIC interface is better virtualizable and provides better
-> performance than mmio xAPIC interface:
+> Ideally, Samuel would push the PCAP patches on -rc phase, so the
+> sub-drivers can all be merged through the respective subsystem trees on
+> the .32 merge window.
 > 
-> - msr exits are faster than mmio (no page table walk, emulation)
-> - no need to read back ICR to look at the busy bit
-> - one 64 bit ICR write instead of two 32 bit writes
-> - shared code with the Hyper-V paravirt interface
-> 
-> Included patch changes x2APIC enabling logic to enable it even if IR
-> initialization failed, but kernel runs under KVM and no apic id is
-> greater than 255 (if there is one spec requires BIOS to move to x2apic
-> mode before starting an OS).
-> 
-> Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> ---
-> 
-> v2:
->   Add help message to Kconfig
->   Force physical mode if IR is not available.
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index d1430ef..3e5b6ea 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -260,12 +260,15 @@ config SMP
->  
->  config X86_X2APIC
->  	bool "Support x2apic"
-> -	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
-> +	depends on X86_LOCAL_APIC && X86_64
 
-Have you tried to build this with X86_X2APIC set but INTR_REMAP 
-disabled?
+I'm sure Samuel will give me a kick when he pushes mfd for .32.
 
-	Ingo
+Liam
+
