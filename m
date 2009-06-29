@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365AbZF2JGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbZF2JJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365AbZF2JGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2JGa
+	id S1752972AbZF2JJu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 05:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF2JJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:06:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51600 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbZF2JG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:06:29 -0400
-Date: Mon, 29 Jun 2009 11:06:31 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-In-Reply-To: <20090628140452.GA15816@gallifrey>
-Message-ID: <alpine.LNX.2.00.0906291103140.18021@wotan.suse.de>
-References: <20090613230842.GA18347@gallifrey> <alpine.LNX.2.00.0906231038500.7457@wotan.suse.de> <20090623185814.GB24108@gallifrey> <200906231106.37460.dmitry.torokhov@gmail.com> <20090628140452.GA15816@gallifrey>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 29 Jun 2009 05:09:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62529 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbZF2JJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 05:09:42 -0400
+Message-ID: <4A4884D6.3090404@monstr.eu>
+Date: Mon, 29 Jun 2009 11:09:42 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
+       benh@kernel.crashing.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, linux@arm.linux.org.uk
+Subject: Move of_node_to_nid to generic location
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009, Dr. David Alan Gilbert wrote:
+Hi All,
 
-> Apologies for the delay; attached is the dmesg from the Debian 2.6.18
-> in which keyboard works as previously described.
+I have on my list one task which needs to be discuss with you.
+I look at of_node_to_nid for non NUMA systems. I think we should
+move this function to asm-generic/topology.h.
 
-So the main difference is here:
+This function is used for powerpc, sparc, microblaze (and maybe future arm?)
 
-	drivers/input/serio/i8042.c: 20 -> i8042 (command) [3]
-	drivers/input/serio/i8042.c: 65 <- i8042 (return) [3]
-	drivers/input/serio/i8042.c: 60 -> i8042 (command) [3]
-	drivers/input/serio/i8042.c: 74 -> i8042 (parameter) [3]
-	drivers/input/serio/i8042.c: Interrupt 1, without any data [3]
+Arnd what do you think?
 
-compared to
-
-	drivers/input/serio/i8042.c: 20 -> i8042 (command) [1]
-	drivers/input/serio/i8042.c: 65 <- i8042 (return) [1]
-	drivers/input/serio/i8042.c: 60 -> i8042 (command) [2]
-	drivers/input/serio/i8042.c: 74 -> i8042 (parameter) [2]
-	drivers/input/serio/i8042.c: d3 -> i8042 (command) [2]
-
-So it looks like it is really affected by the polling timer removal/early 
-IRQ registration.
+Michal
 
 -- 
-Jiri Kosina
-SUSE Labs
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
