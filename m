@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZF2COI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZF2CQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbZF2COI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 22:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZF2CN5
+	id S1756267AbZF2CQz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 22:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZF2CQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 22:13:57 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:50189 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349AbZF2CN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 22:13:56 -0400
+	Sun, 28 Jun 2009 22:16:48 -0400
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:54639 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751585AbZF2CQr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 22:16:47 -0400
+Message-ID: <4A482410.2090704@xyzw.org>
+Date: Sun, 28 Jun 2009 19:16:48 -0700
+From: Brian Rogers <brian@xyzw.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090616)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Bug #13633] [bisected] No sound on HDA Intel (ALC268)
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.mfD.KJASKB@chimera>
+In-Reply-To: <6JJ2m5kyucK.A.mfD.KJASKB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <19016.9058.719104.420122@cargo.ozlabs.ibm.com>
-Date: Mon, 29 Jun 2009 12:13:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: performance counter ~0.4% error finding retired instruction
-	count
-In-Reply-To: <19016.8971.391008.394778@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
-	<20090624151010.GA12799@elte.hu>
-	<Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
-	<Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy>
-	<20090627060432.GB16200@elte.hu>
-	<19013.49344.860564.948905@cargo.ozlabs.ibm.com>
-	<20090627172854.GE21595@elte.hu>
-	<19016.8971.391008.394778@cargo.ozlabs.ibm.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras writes:
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13633
+> Subject		: [bisected] No sound on HDA Intel (ALC268)
+> Submitter	: Brian Rogers <brian@xyzw.org>
+> Date		: 2009-06-27 04:42 (2 days old)
+>   
 
-> I can think of three ways to eliminate the PLT resolver overhead on
-> execvp:
+Yes, this is still a current issue in mainline and a regression from 2.6.30.
 
-s/three/four/, obviously - I thought of the 4th while I was writing
-the mail.
-
-Paul.
