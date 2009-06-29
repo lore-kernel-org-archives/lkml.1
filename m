@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZF2LNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758725AbZF2LOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbZF2LNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZF2LNg
+	id S1758725AbZF2LOK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZF2LN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:13:36 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:41192 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751307AbZF2LNg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:13:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=F1A7+yDZAOPg1V1GSFOpNkpEIghbI5I6ge64nRK7x4vMSAgX26HH/YGllYjI7oI/cg
-         3cTzlQ1yJkHZ290p21EltfjQjmT4npkg63+GlZZ4OhwnX9le6W2CPraPAv7xcWSlrl6P
-         SRptSDWVAEazaAq18V1mLAkUDMw26tETFbRXo=
-Date: Mon, 29 Jun 2009 13:13:36 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/syscall: remove redundant code
-Message-ID: <20090629111334.GA6265@nowhere>
-References: <4A488667.6040004@cn.fujitsu.com>
+	Mon, 29 Jun 2009 07:13:57 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50128 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbZF2LN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:13:57 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A488667.6040004@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19016.41130.429944.316897@cargo.ozlabs.ibm.com>
+Date: Mon, 29 Jun 2009 21:08:26 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] perf_counter: tools: Make :u and :k exclude hypervisor
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 05:16:23PM +0800, Xiao Guangrong wrote:
-> No need to call trace_wake_up() explicitly because it's called
-> in trace_current_buffer_unlock_commit().
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_syscalls.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-> index 5e57964..dd1ce2c 100644
-> --- a/kernel/trace/trace_syscalls.c
-> +++ b/kernel/trace/trace_syscalls.c
-> @@ -168,7 +168,6 @@ void ftrace_syscall_enter(struct pt_regs *regs)
->  	syscall_get_arguments(current, regs, 0, sys_data->nb_args, entry->args);
->  
->  	trace_current_buffer_unlock_commit(event, 0, 0);
-> -	trace_wake_up();
->  }
->  
->  void ftrace_syscall_exit(struct pt_regs *regs)
-> @@ -194,7 +193,6 @@ void ftrace_syscall_exit(struct pt_regs *regs)
->  	entry->ret = syscall_get_return_value(current, regs);
->  
->  	trace_current_buffer_unlock_commit(event, 0, 0);
-> -	trace_wake_up();
->  }
->  
->  static int init_syscall_tracer(struct trace_array *tr)
-> -- 
-> 1.6.1.2
-> 
+At present, appending ":u" to an event sets the exclude_kernel bit,
+and ":k" sets the exclude_user bit.  There is no way to set the
+exclude_hv bit, which means that on systems with a hypervisor (e.g.
+IBM pSeries systems), we get counts from hypervisor mode for an event
+such as 0:1:u.
 
-Thanks,
+This fixes the problem by setting all three exclude bits when we see
+the second ':' and the clearing the exclude bits corresponding to the
+modes we want to count.  This also adds a ":h" modifier to allow the
+user to ask for counts in hypervisor mode.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ tools/perf/util/parse-events.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 4d042f1..f2ffe2c 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -277,10 +277,15 @@ static int parse_event_symbols(const char *str, struct perf_counter_attr *attr)
+ 		sep = strchr(pstr, ':');
+ 		if (sep) {
+ 			pstr = sep + 1;
++			attr->exclude_user = 1;
++			attr->exclude_kernel = 1;
++			attr->exclude_hv = 1;
+ 			if (strchr(pstr, 'k'))
+-				attr->exclude_user = 1;
++				attr->exclude_kernel = 0;
+ 			if (strchr(pstr, 'u'))
+-				attr->exclude_kernel = 1;
++				attr->exclude_user = 0;
++			if (strchr(pstr, 'h'))
++				attr->exclude_hv = 0;
+ 		}
+ 		attr->type = type;
+ 		attr->config = id;
+-- 
+1.6.0.4
 
