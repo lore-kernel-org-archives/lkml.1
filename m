@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZF2LGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbZF2LI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbZF2LGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZF2LG3
+	id S1759319AbZF2LI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZF2LIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:06:29 -0400
-Received: from mail.open.by ([193.232.92.17]:57650 "EHLO post.open.by"
+	Mon, 29 Jun 2009 07:08:19 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:59213 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752484AbZF2LG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:06:28 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 8857 [Jun 29 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Mon, 29 Jun 2009 14:08:12 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: kmemleak hexdump proposal
-Message-ID: <20090629110812.GC3731@localdomain.by>
-References: <20090628173632.GA3890@localdomain.by>
- <84144f020906290243u7a362465p6b1f566257fa3239@mail.gmail.com>
- <20090629101917.GA3093@localdomain.by>
- <1246270774.6364.9.camel@penberg-laptop>
- <20090629104553.GA3731@localdomain.by>
- <1246273108.21450.19.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246273108.21450.19.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752350AbZF2LIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:08:18 -0400
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-kernel@vger.kernel.org, "J.R. Okajima" <hooanon05@yahoo.co.jp>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <alpine.LRH.2.00.0906290849060.29509@tundra.namei.org>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LRH.2.00.0906290849060.29509@tundra.namei.org>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 07:08:20 -0400
+Message-Id: <1246273700.4054.7.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/29/09 11:58), Catalin Marinas wrote:
-> On Mon, 2009-06-29 at 13:45 +0300, Sergey Senozhatsky wrote:
-> > BTW, printing it all the time we can spam kmemleak (in case there are objects sized 2K, 4K and so on).
-> > That's why I wrote about hexdump=OBJECT_POINTER.
+On Mon, 2009-06-29 at 08:50 +1000, James Morris wrote:
+> On Fri, 26 Jun 2009, Mimi Zohar wrote:
 > 
-> I'm more in favour of an on/off hexdump feature (maybe even permanently
-> on) and with a limit to the number of bytes it displays. For larger
-> blocks, the hexdump=OBJECT_POINTER is easily achievable in user space
-> via /dev/kmem.
+> > This patch fixes an imbalance message as reported by J.R. Okajima.
+> > The IMA file counters are incremented in ima_path_check. If the
+> > actual open fails, such as ETXTBSY, decrement the counters to
+> > prevent unnecessary imbalance messages.
+> > 
+> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 > 
-Yeah. Good point.
+> Don't forget to use "Reported-by:" lines for the bug reporter.
 
-> My proposal is for an always on hexdump but with no more than 2-3 lines
-> of hex values. 
-I like it.
+Ok
 
-> As Pekka said, I should get it into linux-next before the
-> next merging window.
-I'll send new patch to you (today evening)/(tomorrow). 
-Ok?
+> Have you tested this using the original test case?
 
-> 
-> -- 
-> Catalin
-> 
+Yes, the patch resolves the iint_free() message.
 
-	Sergey
+Mimi
+
