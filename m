@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZF2HZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZF2HbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZF2HZh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2HZ1
+	id S1756397AbZF2HbS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2HbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:25:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55473 "EHLO hera.kernel.org"
+	Mon, 29 Jun 2009 03:31:05 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36300 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbZF2HZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:25:26 -0400
-Date: Mon, 29 Jun 2009 07:24:48 GMT
-From: tip-bot for Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mitake@dcl.info.waseda.ac.jp, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090629.144457.886429910353660979.mitake@dcl.info.waseda.ac.jp>
-References: <20090629.144457.886429910353660979.mitake@dcl.info.waseda.ac.jp>
-Subject: [tip:sched/core] sched: Hide runqueues from direct reference at source code level for __raw_get_cpu_var()
-Message-ID: <tip-54d35f29f49224d86b994acb6e5969b9ba09022d@git.kernel.org>
-Git-Commit-ID: 54d35f29f49224d86b994acb6e5969b9ba09022d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Jun 2009 07:24:49 +0000 (UTC)
+	id S1751428AbZF2HbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 03:31:03 -0400
+Date: Mon, 29 Jun 2009 17:30:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Len Brown <lenb@kernel.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, sfi-devel@simplefirmware.org,
+       x86@kernel.org
+Subject: Re: linux-next: Tree for June 19
+Message-Id: <20090629173055.76199377.sfr@canb.auug.org.au>
+In-Reply-To: <20090629071451.GA20225@elte.hu>
+References: <20090619172622.05adb236.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
+	<20090620150433.4e038676.sfr@canb.auug.org.au>
+	<alpine.LFD.2.00.0906201415400.4083@localhost.localdomain>
+	<20090622015427.c749a0d9.sfr@canb.auug.org.au>
+	<20090629071451.GA20225@elte.hu>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  54d35f29f49224d86b994acb6e5969b9ba09022d
-Gitweb:     http://git.kernel.org/tip/54d35f29f49224d86b994acb6e5969b9ba09022d
-Author:     Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-AuthorDate: Mon, 29 Jun 2009 14:44:57 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 29 Jun 2009 09:19:27 +0200
+--Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-sched: Hide runqueues from direct reference at source code level for __raw_get_cpu_var()
+Hi Ingo,
 
-Hide __raw_get_cpu_var() as well - thus all the direct
-references to runqueues will abstracted out.
+On Mon, 29 Jun 2009 09:14:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+>
+>=20
+> Yep, feel free, the SFI bits looked good in principle.
 
-Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-LKML-Reference: <20090629.144457.886429910353660979.mitake@dcl.info.waseda.ac.jp>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+OK, thanks, I will add the tree tomorrow.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
- kernel/sched.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+--Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.
+Content-Type: application/pgp-signature
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 168b268..ebc5151 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -692,6 +692,7 @@ static inline int cpu_of(struct rq *rq)
- #define this_rq()		(&__get_cpu_var(runqueues))
- #define task_rq(p)		cpu_rq(task_cpu(p))
- #define cpu_curr(cpu)		(cpu_rq(cpu)->curr)
-+#define raw_rq()		(&__raw_get_cpu_var(runqueues))
- 
- inline void update_rq_clock(struct rq *rq)
- {
-@@ -6669,7 +6670,7 @@ EXPORT_SYMBOL(yield);
-  */
- void __sched io_schedule(void)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = raw_rq();
- 
- 	delayacct_blkio_start();
- 	atomic_inc(&rq->nr_iowait);
-@@ -6681,7 +6682,7 @@ EXPORT_SYMBOL(io_schedule);
- 
- long __sched io_schedule_timeout(long timeout)
- {
--	struct rq *rq = &__raw_get_cpu_var(runqueues);
-+	struct rq *rq = raw_rq();
- 	long ret;
- 
- 	delayacct_blkio_start();
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpIba8ACgkQjjKRsyhoI8zqzQCcDrIt18shmU5+OXC6ejMyPE9/
+AwMAoKDu82/vXlZF3OWFttqF6rPnOD0F
+=Av1L
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.--
