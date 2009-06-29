@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbZF2QWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZF2Q1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbZF2QWt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 12:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758701AbZF2QWm
+	id S1759537AbZF2Q1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 12:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZF2Q1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 12:22:42 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:55694 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbZF2QWl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 12:22:41 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in dma_sync_*_for_cpu
-Date: Mon, 29 Jun 2009 18:22:17 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: tom.leiming@gmail.com, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com> <200906281534.37148.arnd@arndb.de> <20090629123142.GL5139@amd.com>
-In-Reply-To: <20090629123142.GL5139@amd.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 29 Jun 2009 12:27:11 -0400
+Received: from mail.open.by ([193.232.92.17]:64499 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752821AbZF2Q1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 12:27:11 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8864 [Jun 29 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Info: {UDS BL}
+X-SpamTest-Method: probable
+X-SpamTest-Rate: 65
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Probable Spam
+X-SpamTest-Status-Extended: probable_spam
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Mon, 29 Jun 2009 19:28:53 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13522] BUG: scheduling while atomic
+Message-ID: <20090629162853.GB3461@localdomain.by>
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera>
+ <6JJ2m5kyucK.A.D2D.VJASKB@chimera>
+ <20090629154119.2c61f234@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906291822.18334.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+0qhwL/QzPtCEj3r62VpXA61hMaYTcD5xRyyY
- Q3VTydv0sdJzNLT/VOKo3THbd03VDcxzCzN+W5GJdAGTtBKp2x
- AlRWgicA21L5rlc24m5xw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629154119.2c61f234@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009, Joerg Roedel wrote:
-> On Sun, Jun 28, 2009 at 03:34:35PM +0000, Arnd Bergmann wrote:
-> > On Sunday 28 June 2009 14:39:19 tom.leiming@gmail.com wrote:
-> > > From: Ming Lei <tom.leiming@gmail.com>
-> > > 
-> > > dma_sync_*_for_cpu() is introduced to make cpu access dma buffers safely when
-> > > dma transfer is over, it seems there is nothing to do with cpu write buffer,
-> > > so remove it.
-> > > 
-> > > Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+On (06/29/09 15:41), Alan Cox wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > Right, this looks correct. On a related note, flush_write_buffers is
-> > architecture specific right now: only x86 and frv implement it at all,
-> > though and with slightly different semantics.
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
 > 
-> This doen't look correct to me. The sync functions may do bounce buffering
-> which is all about copying data from one place in main memory to another. So we
-> need these flush_write_buffer() calls in the _for_cpu path too.
-
-Right, I didn't consider that.
-
-Wouldn't it be better to put the flush_write_buffer in the specific
-operation (swiotlb_sync_*_for_*) rather than the multiplexer?
-
-Maybe in that case, smp_wmb() would be more appropriate because
-it is defined on all architectures.
-
-> > Maybe it would be more consistent to change the dma_map_* and
-> > dma_sync_*_for_device stuff there to wmb() to make it  portable
-> > to other architectures.
+> Yes although getting people seeing to test with might_sleep() checks in
+> the tty layer demonstrate the tty layer isn't calling into ppp with irqs
+> disabled when it shouldn't so I'm at a loss as to whether this is a
+> network bug, a scheduler bug or something else.
 > 
-> If we change it to wmb() it would be executed every time there even if the
-> processor doesn't require it. Other architectures could simply add a
-> flush_write_buffers() implemention if they want to adapt the common dma-mapping
-> implementation, no?
+> The schedule error in __tasklet_schedule() is itself rather peicular.
+> 
 
-As mentioned, the definition of flush_write_buffers() seems a little dodgy,
-I would feel much more comfortable with putting it into the architecture
-specific code or using one of the existing common barriers, since we already
-have so many of them.
+Hello Alan, Rafael,
 
-	Arnd <><
+BUG is still here...
+
+kernel: [ 7331.719518] BUG: scheduling while atomic: pptpgw/4161/0x10000500
+kernel: [ 7331.719526] Modules linked in: ppp_deflate zlib_deflate ppp_async crc_ccitt ppp_generic slhc ipv6 fuse loop snd_hda_codec_si3054 snd_hda_codec_realtek snd_hda_intel
+snd_hda_codec snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd pcspkr soundcore psmouse serio_raw snd_page_alloc i2c_i801 rng_core evdev
+asus_laptop usbhid hid sg sd_mod sr_mod cdrom ata_generic pata_acpi uhci_hcd ata_piix sdhci_pci sdhci ricoh_mmc mmc_core led_class ide_pci_generic ehci_hcd r8169 mii usbcore
+kernel: [ 7331.719627] 
+kernel: [ 7331.719636] Pid: 4161, comm: pptpgw Not tainted (2.6.31-rc1-dbgnv-git4 #32) F3JC                
+kernel: [ 7331.719644] EIP: 0060:[<c13ffcd6>] EFLAGS: 00200246 CPU: 0
+kernel: [ 7331.719657] EIP is at _spin_unlock_irqrestore+0x16/0x30
+kernel: [ 7331.719664] EAX: c1690300 EBX: 00200246 ECX: 00000000 EDX: 00200246
+kernel: [ 7331.719671] ESI: dcf68398 EDI: 0000003a EBP: dcf61e94 ESP: dcf61e90
+kernel: [ 7331.719677]  DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+kernel: [ 7331.719684] CR0: 8005003b CR2: b6f77000 CR3: 1b4c3000 CR4: 000006d0
+kernel: [ 7331.719690] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+kernel: [ 7331.719696] DR6: ffff0ff0 DR7: 00000400
+kernel: [ 7331.719701] Call Trace:
+kernel: [ 7331.719714]  [<c12d002b>] tty_ldisc_deref+0x5b/0x90
+kernel: [ 7331.719724]  [<c12d16f5>] pty_write+0x85/0x90
+kernel: [ 7331.719734]  [<c12cbde3>] n_tty_write+0x303/0x410
+kernel: [ 7331.719745]  [<c103d8f0>] ? default_wake_function+0x0/0x40
+kernel: [ 7331.719754]  [<c12c8fc3>] tty_write+0x173/0x250
+kernel: [ 7331.719763]  [<c10ebcaf>] ? rw_verify_area+0x6f/0xf0
+kernel: [ 7331.719772]  [<c12cbae0>] ? n_tty_write+0x0/0x410
+kernel: [ 7331.719781]  [<c10ec89e>] vfs_write+0xbe/0x1c0
+kernel: [ 7331.719790]  [<c12c8e50>] ? tty_write+0x0/0x250
+kernel: [ 7331.719798]  [<c10ecaa8>] sys_write+0x58/0xa0
+kernel: [ 7331.719808]  [<c100324b>] sysenter_do_call+0x12/0x22
+
+	Sergey
