@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZF2XvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZF2XyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbZF2XvY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZF2XvP
+	id S1756039AbZF2XyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZF2XyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:51:15 -0400
-Received: from mail.samba.org ([66.70.73.150]:60419 "EHLO lists.samba.org"
+	Mon, 29 Jun 2009 19:54:11 -0400
+Received: from kroah.org ([198.145.64.141]:41858 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZF2XvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:51:14 -0400
+	id S1751486AbZF2XyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:54:11 -0400
+Date: Mon, 29 Jun 2009 16:44:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Bernd Schmidt <bernds_cb1@t-online.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] [PATCH] FLAT: fix uninitialized ptr with shared libs
+Message-ID: <20090629234436.GA28649@kroah.com>
+References: <alpine.LFD.2.01.0906221137580.3240@localhost.localdomain> <1245699332-1872-1-git-send-email-vapier@gentoo.org> <alpine.LFD.2.01.0906221338360.3240@localhost.localdomain> <4A40AAEA.4040100@t-online.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19017.21349.354386.847874@samba.org>
-Date: Tue, 30 Jun 2009 09:51:01 +1000
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <87tz1ymx3m.fsf@devron.myhome.or.jp>
-References: <19013.8005.541836.436991@samba.org>
-	<m1d48p5dil.fsf@fess.ebiederm.org>
-	<19014.54044.484370.187018@samba.org>
-	<m1vdmh2e26.fsf@fess.ebiederm.org>
-	<19015.482.794111.612472@samba.org>
-	<87ab3sx4ch.fsf@devron.myhome.or.jp>
-	<19016.6463.997760.757811@samba.org>
-	<20090629221826.GA12781@kroah.com>
-	<19017.17250.371594.268824@samba.org>
-	<87tz1ymx3m.fsf@devron.myhome.or.jp>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Content-Disposition: inline
+In-Reply-To: <4A40AAEA.4040100@t-online.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hirofumi-san writes:
- > Yes. And I will not drop this patch even if it's not perfect on test. I
- > can understand it would not be the option for some users.
+On Tue, Jun 23, 2009 at 11:14:02AM +0100, Bernd Schmidt wrote:
+> Linus Torvalds wrote:
+> > IOW, the whole patch really seems to be total and utter crap. Why didn't 
+> > people spend a bit more effort lookin at it?
+> 
+> Just sloppiness, I'm afraid.
+> 
+> > IOW, shouldn't the patch be something like the appended?
+> > 
+> > UNTESTED. I did not compile this, or the previous patch. I have not tried 
+> > it. I'm not going to commit it. I'm hoping to get a patch back that is 
+> > tested and/or explains my concerns with the previous one..
+> 
+> Your version seems to work fine.  Please apply it.
 
-ok, good
+Linus, this doesn't seem to be in your tree yet.  Did it get lost in the
+noise?
 
- > The default may be arguable though, like I said at first.
+thanks,
 
-I suggest we leave the default as "no dual names" for now to let it
-get some more testing, then if any problems come up then we can look
-at the choice of default again. If no problems come up we can keep the
-default as it is in the patch now.
-
-Cheers, Tridge
+greg k-h
