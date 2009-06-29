@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZF2LgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZF2Lle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbZF2LgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZF2LgO
+	id S1753289AbZF2Lle (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZF2LlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:36:14 -0400
-Received: from smtpq4.gn.mail.iss.as9143.net ([212.54.34.167]:33947 "EHLO
-	smtpq4.gn.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751484AbZF2LgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:36:13 -0400
-Date: Mon, 29 Jun 2009 13:36:13 +0200
-From: Dick Streefland <dick@streefland.net>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
-Message-ID: <20090629113613.GA6853@streefland.net>
-References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com>
+	Mon, 29 Jun 2009 07:41:19 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56873 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZF2LlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:41:18 -0400
+Date: Mon, 29 Jun 2009 13:41:21 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: NeilBrown <neilb@suse.de>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Mike Snitzer <snitzer@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
+	of the 'queue' sysfs directory.
+Message-ID: <20090629114121.GH23611@kernel.dk>
+References: <yq11vp8spxo.fsf@sermon.lab.mkp.net> <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name> <20090625194015.GB31415@kernel.dk> <19012.49673.454853.975682@notabene.brown> <20090626125037.GO23611@kernel.dk> <f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name> <20090626132940.GR23611@kernel.dk> <19014.4447.248248.63960@notabene.brown> <20090629101841.GF23611@kernel.dk> <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629025146.GA5998@cr0.nay.redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
-X-ZiggoSMTP-MailScanner-ID: 1MLF9i-00029Z-Ao
-X-ZiggoSMTP-MailScanner: Found to be clean
-X-ZiggoSMTP-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.322, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60, TW_IK 0.08)
-X-ZiggoSMTP-MailScanner-From: dick@streefland.net
+In-Reply-To: <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 2009-06-29 10:51, Amerigo Wang wrote:
-| Does this work?
-| My quick test shows no...
-| 
-| I still can't get the right offset number with this trick.
-| 
-| P.S. My grep is 2.5.1.
+On Mon, Jun 29 2009, NeilBrown wrote:
+> On Mon, June 29, 2009 8:18 pm, Jens Axboe wrote:
+> > On Sat, Jun 27 2009, Neil Brown wrote:
+> >> > There's no such thing as first or second class block devices. The fact
+> >> > that drivers using ->make_request_fn directly do not utilize the full
+> >> > scope of the queue isn't a very interesting fact, imho.
+> >>
+> >>  Your phrase "drivers using ->make_request_fn directly" seems to
+> >>  suggest you are looking at things very differently to me.
+> >>
+> >>  From my perspective, all drivers use ->make_request_fn equally.
+> >>  Some set it to "__make_request", some to "md_make_request", others to
+> >>  "dm_request" or "loop_make_request" etc.
+> >
+> > Neil, will you please stop these silly games. Stop trying to invent
+> > differences based on interpretations of what you read into my replies.
+> 
+> 
+> We do seem to be having trouble communicating don't we :-(
+> Be assured that it is not my intention to play games, silly or otherwise.
+> 
+> Maybe I should just try sending you patches.  Maybe that will
+> make my meaning clearer.
+> 
+> For the moment, I'm much more interested in the other question,
+> that of whether I can avoid having a 'queue' directory introduced into
+> md/dm/etc device directories in sysfs.
 
-I've tested the script with grep 2.5.1, and it works for me. Can you be
-more specific about what you think is wrong with the offsets? You need
-to be aware of the fact that because "tr" replaces the first character
-of the pattern by a newline, an offset will be 1 higher than the start
-of the original pattern. The resulting offsets are therefore 1-based
-instead of 0-based, which is exactly what "tail" expects for the "-c"
-option.
+We already talked about this, several times. My answer is that it seems
+pointless to begin with internally, and externally it just makes the API
+worse since tools then have to know which device type they are talking
+to.
+
+So I still see absolutely zero point in making such a change, quite the
+opposite.
 
 -- 
-Dick
+Jens Axboe
+
