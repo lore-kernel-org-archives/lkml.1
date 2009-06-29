@@ -1,90 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZF2Uez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbZF2Uf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbZF2Uez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 16:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZF2Ues
+	id S1753928AbZF2Uf4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 16:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZF2Uft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 16:34:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57615 "EHLO mx3.mail.elte.hu"
+	Mon, 29 Jun 2009 16:35:49 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57498 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbZF2Uer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 16:34:47 -0400
-Date: Mon, 29 Jun 2009 22:34:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] perf_counter: tools: Make :u and :k exclude
-	hypervisor
-Message-ID: <20090629203443.GH31577@elte.hu>
-References: <19016.41130.429944.316897@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19016.41130.429944.316897@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	id S1753058AbZF2Uft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 16:35:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,311,1243839600"; 
+   d="scan'208";a="470604586"
+Subject: Re: [RFC patch] Use IPI_shortcut for lapic timer broadcast
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com>
+References: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 13:34:04 -0700
+Message-Id: <1246307644.4534.26298.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> At present, appending ":u" to an event sets the exclude_kernel 
-> bit, and ":k" sets the exclude_user bit.  There is no way to set 
-> the exclude_hv bit, which means that on systems with a hypervisor 
-> (e.g. IBM pSeries systems), we get counts from hypervisor mode for 
-> an event such as 0:1:u.
+On Sun, 2009-06-28 at 23:47 -0700, Luming Yu wrote:
+> Hello,
 > 
-> This fixes the problem by setting all three exclude bits when we 
-> see the second ':' and the clearing the exclude bits corresponding 
-> to the modes we want to count.  This also adds a ":h" modifier to 
-> allow the user to ask for counts in hypervisor mode.
+> We need to use IPI shortcut to send lapic timer broadcast
+> to avoid the latency of sending IPI one bye one on systems with many
+> logical processors when NO_HZ is disabled.
+> Without this patch,I have seen upstream kernel with RHEL 5 kernel
+> config boot hang .
 > 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> ---
->  tools/perf/util/parse-events.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
+> The patch also changes physflat_send_IPI_all to IPI shortcut mode.
 > 
-> diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-> index 4d042f1..f2ffe2c 100644
-> --- a/tools/perf/util/parse-events.c
-> +++ b/tools/perf/util/parse-events.c
-> @@ -277,10 +277,15 @@ static int parse_event_symbols(const char *str, struct perf_counter_attr *attr)
->  		sep = strchr(pstr, ':');
->  		if (sep) {
->  			pstr = sep + 1;
-> +			attr->exclude_user = 1;
-> +			attr->exclude_kernel = 1;
-> +			attr->exclude_hv = 1;
->  			if (strchr(pstr, 'k'))
-> -				attr->exclude_user = 1;
-> +				attr->exclude_kernel = 0;
->  			if (strchr(pstr, 'u'))
-> -				attr->exclude_kernel = 1;
-> +				attr->exclude_user = 0;
-> +			if (strchr(pstr, 'h'))
-> +				attr->exclude_hv = 0;
->  		}
+> Please review, and apply.
+> 
+> **The patch is enclosed in text attachment*
+> **Using web client to send the patch* *
+> **below is for review, please apply attached  patch*/
+> 
+> Thanks,
+> Luming
+> 
+> 
+> Signed-off-by: Yu Luming <luming.yu@intel.com>
+> 
+>  apic.c         |    4 +++-
+>  apic_flat_64.c |    7 ++++++-
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c.0	2009-06-28
+> 20:22:55.000000000 -0600
+> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c	2009-06-29
+> 00:21:44.000000000 -0600
+> @@ -419,7 +419,9 @@
+>  static void lapic_timer_broadcast(const struct cpumask *mask)
+>  {
+>  #ifdef CONFIG_SMP
+> -	apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+> +	if (cpus_empty(*mask))
+> +		return;
+> +	apic->send_IPI_all(LOCAL_TIMER_VECTOR);
+>  #endif
+>  }
+> 
 
-Hm, mind fixing the full range of problems with these flags please?
+Hmm.. this change looks wrong. This will cause unnecessary timer
+broadcasts when nohz is actually enabled. I mean, when nohz is enabled,
+we want to send this interrupt broadcast to one or some subset of CPUs
+and this change sends the interrupt to all CPUs.
 
-One problem is that things like:
+On a 16 logical CPUs with nohz enabled, powertop without this patch I
+see
+Wakeups-from-idle per second : 11.6     interval: 15.0s
+and with this patch I see
+Wakeups-from-idle per second : 24.7     interval: 15.0s
 
-	--event cycles:u
+Also, cat /proc/interrupts | grep LOC shows this problem where all CPUs
+seem to get roughly same number of local APIC interrupts over a period
+of time with this patch.
 
-dont work as expected - the u/k/h flags only work in numeric events 
-which is a pity. Also, it would be nice to have an 'general' option 
-to specify the context mask for all events, in some straightforward 
-format like this:
+We should only do the allbutself when nohz is disabled with a big
+unlikely() around that code.
 
-	--event-mask +u+k-h
+Thanks,
+Venki
 
-Things like that. This bit is really not well developed right now.
+> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c.0	2009-06-29
+> 00:13:26.000000000 -0600
+> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c	2009-06-29
+> 00:11:23.000000000 -0600
+> @@ -274,7 +274,12 @@
+> 
+>  static void physflat_send_IPI_all(int vector)
+>  {
+> -	physflat_send_IPI_mask(cpu_online_mask, vector);
+> +	if (vector == NMI_VECTOR) {
+> +		physflat_send_IPI_mask(cpu_online_mask, vector);
+> +	} else {
+> +		__default_send_IPI_shortcut(APIC_DEST_ALLINC,
+> +					    vector, apic->dest_logical);
+> +	}
+>  }
+> 
+>  static unsigned int physflat_cpu_mask_to_apicid(const struct cpumask *cpumask)
 
-	Ingo
