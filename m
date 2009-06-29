@@ -1,93 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbZF2WBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759020AbZF2WBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbZF2WBB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbZF2WAo
+	id S1759020AbZF2WBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 18:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZF2WBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:00:44 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45100 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752581AbZF2WAm (ORCPT
+	Mon, 29 Jun 2009 18:01:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57131 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753716AbZF2WBh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:00:42 -0400
-Date: Mon, 29 Jun 2009 18:00:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906292304.02181.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906291752570.18279-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Jun 2009 18:01:37 -0400
+Date: Mon, 29 Jun 2009 15:01:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, amwang@redhat.com
+Subject: Re: [Patch] sysctl: forbid too long numbers
+Message-Id: <20090629150123.43f79091.akpm@linux-foundation.org>
+In-Reply-To: <20090619072212.6519.10915.sendpatchset@localhost.localdomain>
+References: <20090619072212.6519.10915.sendpatchset@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
+On Fri, 19 Jun 2009 03:19:57 -0400
+Amerigo Wang <amwang@redhat.com> wrote:
 
-> > Another possible approach you could take when the call to
-> > cancel_delayed_work fails (which should be rare) is to turn on RPM_WAKE
-> > in addition to RPM_IDLE and leave the suspend request queued.  When
-> > __pm_runtime_suspend sees both flags are set, it should abort and set
-> > the status directly back to RPM_ACTIVE.  At that time the idle
-> > notifications can start up again.
-> > 
-> > Is this any better?  I can't see how drivers would care, though.
 > 
-> There still is the problem that the suspend request is occupying the
-> work_struct which cannot be used for any other purpose.
-
-What other purpose?  We don't send idle notifications in RPM_IDLE and
-resume requests don't need to be stored since (as described above) they
-just set the RPM_WAKE flag.  Hence nothing else needs to use the
-work_struct.
-
->  I don't think this
-> is avoidable, though.  This way or another it is possible to have two requests
-> pending at a time.
+> For some file under /proc/sys/kernel, the valid values for them
+> are < ULONG_MAX if they don't have they own max value defined. Thus,
+> numbers longer than are invalid.
 > 
-> Perhaps the simplest thing to do would be to simply ignore pending suspend
-> requests in both pm_request_resume() and pm_runtime_resume() and to allow
-> them to be scheduled at any time.  That shouldn't hurt anything as long as
-> pm_runtime_suspend() is smart enough, but it has to be anyway, because it
-> can be run synchronously at any time.
+> So use strict_strtoul() instead of simple_strtoul(), and
+> make strict_strtoul() more strict.
 > 
-> The only question is what pm_runtime_suspend() should do when it sees a pending
-> suspend request and quite frankly I think it can just ignore it as well,
-> leaving the RPM_IDLE bit set.  In which case the name RPM_IDLE will not really
-> be adequate, so perhaps it can be renamed to RPM_REQUEST or something like
-> this.
-> 
-> Then, we'll need a separate work structure for suspend requests, but I have no
-> problem with that.
 
-You seem to be thinking about these requests in a very different way
-from me.  They don't form a queue or anything like that.  Instead they
-mean "Change the device's power state to this value as soon as
-possible" -- and they are needed only because sometimes (in atomic or
-interrupt contexts) the change can't be made right away.
+The changelog is a bit puzzling.
 
-That's why it doesn't make any sense to have both a suspend and a 
-resume request pending at the same time.  It would mean the driver is 
-telling us "Change the device's power state to both low-power and 
-full-power as soon as possible"!
+I think that what you're saying is that we can do
 
-We should settle on a general policy for how to handle it when a 
-driver makes the mistake of telling us to do contradictory things.  
-There are three natural policies:
+	echo 9999999999999999999999999999999999999999999 > /proc/whatever
 
-	The first request takes precedence over the second;
+and that the kernel will take the lower 32 (or 64) bits of that number
+and will accept this without error?
 
-	The second request takes precedence over the first;
+If so then I expect there are zillions of procfs/sysfs/debugfs/etc
+files which have the same problem?
 
-	Resumes take precedence over suspends.
 
-Any one of those would be acceptable.
+Also, fixing this is a non-backward-compatible change which could break
+existing userspace.  Although the chances of this seem fairly small.
 
-Alan Stern
+Or are they?  One could imagine a script which was tested and developed
+on a 64-bit system, which writes a >4G number into a pseudo file.  That
+script happens to work on 32-bit systems (it might not work _well_, but
+it'll work).  With this change, the write will fail on the 32-bit
+system and the entire application could bale out or something.
+
+I'm not saying that this is a reason to avoid making the change, but
+it's all a worry and needs consideration.
+
+
+> ---
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index ab462b9..bc27e00 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -2331,7 +2331,8 @@ static int __do_proc_dointvec(void *tbl_data, struct ctl_table *table,
+>  			if (*p < '0' || *p > '9')
+>  				break;
+>  
+> -			lval = simple_strtoul(p, &p, 0);
+> +			if (strict_strtoul(p, 0, &lval))
+> +				return -EINVAL;
+>  
+>  			len = p-buf;
+>  			if ((len < left) && *p && !isspace(*p))
+
+The other worrisome thing about this change is that there may well be
+existing userspace which does
+
+	echo 42foo > /proc/whatever
+
+and the conversion to strict_strtoul() will cause that script to
+newly fail.
+
+And the chances that there are scripts which do this are pretty darned
+good - it's fairly easy to accidentally leave junk like this in strings
+when hacking stuff together in scripting languages.
+
+
+
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index 756ccaf..ff2ca5c 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -163,11 +163,14 @@ int strict_strtoul(const char *cp, unsigned int base, unsigned long *res)
+>  	char *tail;
+>  	unsigned long val;
+>  	size_t len;
+> +	char tmp[32];
+>  
+>  	*res = 0;
+>  	len = strlen(cp);
+>  	if (len == 0)
+>  		return -EINVAL;
+> +	if (len > snprintf(tmp, "%ld", ULONG_MAX))
+> +		return -EINVAL;
+>  
+>  	val = simple_strtoul(cp, &tail, base);
+>  	if (tail == cp)
+
+And here we're doing a check for that overflow, yes?
+
+- We don't need tmp[].  vsnprintf(NULL, ...) can be used to query the
+  length of an sprintf.  See how kvasprintf() does this.
+
+- The strict_strtoul() documentation should be updated?
+
+- The above change affects strict_strtol() too.
+
+- The same change should be made to strict_strtoull() and hence
+  strict_strtoll()?
+
 
