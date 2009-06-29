@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbZF2PCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbZF2PDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbZF2PCy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 11:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758862AbZF2PCj
+	id S1760319AbZF2PDL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 11:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760227AbZF2PCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 11:02:39 -0400
+	Mon, 29 Jun 2009 11:02:43 -0400
 Received: from fg-out-1718.google.com ([72.14.220.153]:36258 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753487AbZF2PCi (ORCPT
+	with ESMTP id S1760169AbZF2PCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 11:02:38 -0400
+	Mon, 29 Jun 2009 11:02:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Y4zFjvbUH46pnDbXdnLTC5KKPkQKlyFsFuKZ7FO4OrB2NLL5/+42uPhc2ABR04SRJP
-         8yl91zFSRhhzLw5A1q+1XNKoYA9urag9xiH9nty7tRYx4rKe4FzNIC4ZqqXSjH7UAgyf
-         X/8cCLfuHNcwdebZwcDHa1LxUHcqvnR9emOgI=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=qTiIlxz7ZNH8pcNfwSw/YtKumgD/pni6mzUwQOw2aVGUgY8ojAk/ZdUOS19nO0pRgq
+         m5tmjFVXMNRh9WSFBysFPNbRlZaZmzYBF2STmNWI2I6Mh5ebPgCbgOmKxqi5eMQRIJ3W
+         qafefCC/M99inGy4Rid9d+qiwD+VBRm7BaiNc=
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: "David S. Miller" <davem@davemloft.net>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, slapin@ossfans.org
-Subject: [GIT PULL] Fixes for the IEEE 802.15.4 code
-Date: Mon, 29 Jun 2009 19:02:12 +0400
-Message-Id: <1246287735-2692-1-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH 3/3] nl802154: add module license and description
+Date: Mon, 29 Jun 2009 19:02:15 +0400
+Message-Id: <1246287735-2692-4-git-send-email-dbaryshkov@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1246287735-2692-3-git-send-email-dbaryshkov@gmail.com>
+References: <1246287735-2692-1-git-send-email-dbaryshkov@gmail.com>
+ <1246287735-2692-2-git-send-email-dbaryshkov@gmail.com>
+ <1246287735-2692-3-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull three following patches, containing small fixes for the IEEE 802.15.4
-code. The branch is based against net-next/master. Thank you.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ net/ieee802154/netlink.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-The following changes since commit 28d0325ce6e0a52f53d8af687e6427fee59004d3:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc1
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lowpan/lowpan.git for-linus
-
-Dmitry Eremin-Solenikov (3):
-      MAINTAINERS: ieee802154 lists are moderated for non-subscribers.
-      nl802154: fix Oops in ieee802154_nl_get_dev
-      nl802154: add module license and description
-
- MAINTAINERS              |    2 +-
- net/ieee802154/netlink.c |    6 ++++++
- 2 files changed, 7 insertions(+), 1 deletions(-)
+diff --git a/net/ieee802154/netlink.c b/net/ieee802154/netlink.c
+index 332b947..27eda9f 100644
+--- a/net/ieee802154/netlink.c
++++ b/net/ieee802154/netlink.c
+@@ -524,3 +524,6 @@ static void __exit ieee802154_nl_exit(void)
+ }
+ module_exit(ieee802154_nl_exit);
+ 
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("ieee 802.15.4 configuration interface");
++
+-- 
+1.6.3.1
 
