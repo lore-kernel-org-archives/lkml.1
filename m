@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZF2CrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZF2Ctr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751AbZF2CrD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 22:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZF2Cqx
+	id S1756601AbZF2Ctr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 22:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZF2Ctk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 22:46:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36089 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751744AbZF2Cqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 22:46:52 -0400
-Date: Mon, 29 Jun 2009 01:32:00 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       earl_chew@agilent.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/2] exec: Make do_coredump more robust and safer when
-	using pipes in core_pattern (v3)
-Message-ID: <20090628233200.GA26669@redhat.com>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090625163050.d6a71a13.akpm@linux-foundation.org> <20090629003514.GC2479@localhost.localdomain> <20090628222455.GA21475@redhat.com> <20090629023621.GA4289@localhost.localdomain>
+	Sun, 28 Jun 2009 22:49:40 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:44844 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbZF2Ctj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 22:49:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=e3yCloYdsLRdSqyl2N9zmYg9cT6ps42RQkuFk3ayaUpJtIDgv6Hb7vihGBvfT1iVlr
+         2Us4j8q13BzRkAMGMFspUpPCokWJHlEy/LGdLUtvUV+QcVBm8p8H3MkJJ9MsWjtFMFvq
+         wn97M0K3h5NKaGNhD/dDE80ZX5jU1A9M/FYTY=
+Date: Mon, 29 Jun 2009 10:51:46 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Dick Streefland <dick@streefland.net>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090629025146.GA5998@cr0.nay.redhat.com>
+References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629023621.GA4289@localhost.localdomain>
+In-Reply-To: <20090624133148.GA12878@streefland.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/28, Neil Horman wrote:
+On Wed, Jun 24, 2009 at 03:31:48PM +0200, Dick Streefland wrote:
+>On Wednesday 2009-06-24 13:46, Dick Streefland wrote:
+>| Because I don't want to rely on a particular version of grep, I've
+>| modified the script to use perl instead. I hope that's OK. Below is
+>| a new patch.
+><snip>
+
+
+Sorry for the delay, I missed this patch...
+
 >
-> On Mon, Jun 29, 2009 at 12:24:55AM +0200, Oleg Nesterov wrote:
-> >
-> > Perhaps this sysctl should be added in a separate patch? This patch mixes
-> > differents things imho.
-> >
-> No, I disagree. If we're going to have a sysctl, It should be added in this
-> patch.  I agree that since these processes run as root, we can have all sort of
-> bad things happen.  But I think theres an advantage to being able to limit the
-> damage that a core_pattern process can do if it never exits.
+>I found a way to work around the differences in behavior of grep.
+>Older versions of grep report the byte offset of the start of the
+>line instead of the byte offset of the pattern. By using tr to
+>make sure the pattern is always at the start of a "line", both old
+>and new versions of grep can be used.
 
-Yes, but why it should be added in this patch?
 
-> > But in fact I don't really understand why do we need the new sysctl. Yes,
-> > if the collecting process never exits, the coredumping thread can't be reaped.
-> > But this process runs as root, it can do other bad things. And let's suppose
-> > it just does nothing, say sleeps forever, and do not read the data from pipe.
-> > In that case, regardless of any sysctls, ->core_dump() never finishes too.
-> >
-> Not always true, in the event that the core file is smaller than the pipe size.
+This is very tricky...
 
-sure,
+<snip>
 
-> But regardless, if ->core_dump never returns due to the aforementioned
-> situation, the sysctl provides the ability to mitigate the damange that can do,
-> since the dump count is held while ->core_dump is called.
+>+
+>+gz1='\037\213\010'
+>+gz2='01'
+>+cf1='IKCFG_ST\037\213\010'
+>+cf2='0123456789'
+>+
+>+dump_config()
+> {
+>-	echo "  usage: extract-ikconfig [b]zImage_filename"
+>-}
+>-
+>-clean_up()
+>-{
+>-	if [ "$TMPFILE" != "" ]; then
+>-		rm -f $TMPFILE
+>+	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
 
-Yes, I misread the sysctl code. Perhaps another reason to split this patch ;)
 
-Oleg.
+Does this work?
+My quick test shows no...
 
+I still can't get the right offset number with this trick.
+
+P.S. My grep is 2.5.1.
