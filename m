@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752234AbZF2BYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZF2B2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752234AbZF2BYX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 21:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZF2BYM
+	id S1754857AbZF2B2A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 21:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZF2B1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 21:24:12 -0400
-Received: from mail.samba.org ([66.70.73.150]:57070 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349AbZF2BYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 21:24:11 -0400
-MIME-Version: 1.0
+	Sun, 28 Jun 2009 21:27:52 -0400
+Received: from toq5.bellnexxia.net ([209.226.175.27]:38338 "EHLO
+	toq5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbZF2B1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 21:27:52 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: An0FAK+yR0pMQWU3/2dsb2JhbACBUckBgkyBQQWDUA
+Date: Sun, 28 Jun 2009 21:25:58 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [Bug #13424] possible deadlock when doing governor switching
+Message-ID: <20090629012558.GA22666@Krystal>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.IOG.9jASKB@chimera>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-ID: <19016.6052.681949.872870@samba.org>
-Date: Mon, 29 Jun 2009 11:23:48 +1000
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090628215754.GA29896@shareable.org>
-References: <19013.8005.541836.436991@samba.org>
-	<alpine.LSU.2.00.0906271918280.5582@fbirervta.pbzchgretzou.qr>
-	<19014.56477.311713.975403@samba.org>
-	<20090628215754.GA29896@shareable.org>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+Content-Disposition: inline
+In-Reply-To: <5Hhc7UkUKEO.A.IOG.9jASKB@chimera>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:23:31 up 120 days, 21:49,  4 users,  load average: 0.04, 0.27,
+	0.30
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jamie,
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+> 
 
- > For those of us who don't want to omit the code, because we like
- > compatibility and we're not in affected countries, or for research, it
- > would be useful to have it as a mount option.
+Yep, it still exists. Venkatesh Pallipadi from Intel is working on it.
+We need to figure out a proper way to fix policy rwlock vs dbs_mutex vs
+timer mutex dependency.
 
-For research I think having to recompile the module is not a big
-burden.
+Mathieu
 
-The compatibility argument is more debatable, and if the patch
-involved the loss of a large degree of functionality then I would
-probably agree. As it is, the patch loses very little functionality -
-it is hard to find real scenarios where not storing a 8.3 name along
-with the long name will actually cause any problems.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13424
+> Subject		: possible deadlock when doing governor switching
+> Submitter	: Shaohua Li <shaohua.li@intel.com>
+> Date		: 2009-05-31 16:36 (29 days old)
+> References	: http://www.spinics.net/lists/cpufreq/msg00711.html
+> Handled-By	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> 
+> 
+> 
 
-I also don't think it is worth having a different kernel in different
-countries for this change, again because the loss of functionality is
-so small. The relevant patents exist in several countries (in various
-forms), and while the US might be the country of choice for enforcing
-patents it is not the only country where patents are a concern.
-
-I would rather see us err on the side of caution and ensure that
-Microsoft is not left with an opportunity to continue to spread FUD
-about Linux with regards to these patents.
-
-Cheers, Tridge
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
