@@ -1,232 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbZF2N3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759096AbZF2Ndb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbZF2N3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZF2N3c
+	id S1759096AbZF2Ndb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZF2NdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:29:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57054 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbZF2N3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:29:31 -0400
-Date: Mon, 29 Jun 2009 16:29:26 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629132926.GB20289@redhat.com>
+	Mon, 29 Jun 2009 09:33:24 -0400
+Received: from recombinator.qemfd.net ([216.27.165.184]:51797 "EHLO qemfd.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752582AbZF2NdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:33:23 -0400
+Date: Mon, 29 Jun 2009 09:33:26 -0400
+From: nick black <dank@qemfd.net>
+To: linux-kernel@vger.kernel.org
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       man-pages <mtk.manpages@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] janitorial/manpages: kill off duplication of constants
+Message-ID: <20090629133326.GA3149@qemfd.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
 Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM would like to provide x2APIC interface to a guest without emulating
-interrupt remapping device. The reason KVM prefers guest to use x2APIC
-is that x2APIC interface is better virtualizable and provides better
-performance than mmio xAPIC interface:
 
-- msr exits are faster than mmio (no page table walk, emulation)
-- no need to read back ICR to look at the busy bit
-- one 64 bit ICR write instead of two 32 bit writes
-- shared code with the Hyper-V paravirt interface
-    
-Included patch changes x2APIC enabling logic to enable it even if IR
-initialization failed, but kernel runs under KVM and no apic id is
-greater than 255 (if there is one spec requires BIOS to move to x2apic
-mode before starting an OS).
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
----
+Seize back constants duplicated in smack_lsm.c, exporting them via
+linux/magic.h. The removals expose no new interfaces, but moving
+SOCKFD_MAGIC and DEVPTS_SUPER_MAGIC to magic.h does expose to userspace what
+had not been previously exposed; I'm not sure this is desirable. If it is,
+the statfs(2) man page ought probably be updated to reflect the change. If
+not, #ifdef __KERNEL__ wrappers would work, but that might not be the best
+choice.
 
-v2:
-  Add help message to Kconfig
-  Force physical mode if IR is not available.
+Either way, the statfs(2) page references a DEVFS_SUPER_MAGIC [shudder],
+which was, if memory serves, unceremoniously purged some time ago? There's
+no instance of DEVFS_SUPER_MAGIC in 2.6.31-rc1. I'd be happy to send man
+page patches in if that's desirable.
 
-v3:
-  disable io-apic in outer function. Enable x2apic mode with masked
-  io-apic
+This is against 2.6.31-rc1. Thanks for feedback, Pekka Enberg!
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index d1430ef..3e5b6ea 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -260,12 +260,15 @@ config SMP
- 
- config X86_X2APIC
- 	bool "Support x2apic"
--	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
-+	depends on X86_LOCAL_APIC && X86_64
- 	---help---
- 	  This enables x2apic support on CPUs that have this feature.
- 
- 	  This allows 32-bit apic IDs (so it can support very large systems),
--	  and accesses the local apic via MSRs not via mmio.
-+	  and accesses the local apic via MSRs not via mmio. CONFIG_INTR_REMAP
-+	  is required for x2apic to take affect when running on physical
-+	  machine. If you intend to run the kernel as KVM guest x2apic can
-+	  be used without interrupt remapping.
- 
- 	  If you don't know what to do here, say N.
- 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 8c7c042..f5f02c3 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -49,6 +49,7 @@
- #include <asm/mtrr.h>
- #include <asm/smp.h>
- #include <asm/mce.h>
-+#include <asm/kvm_para.h>
- 
- unsigned int num_processors;
- 
-@@ -1363,52 +1364,76 @@ void enable_x2apic(void)
- }
- #endif /* CONFIG_X86_X2APIC */
- 
--void __init enable_IR_x2apic(void)
-+int __init enable_IR(void)
- {
- #ifdef CONFIG_INTR_REMAP
- 	int ret;
--	unsigned long flags;
--	struct IO_APIC_route_entry **ioapic_entries = NULL;
- 
- 	ret = dmar_table_init();
- 	if (ret) {
- 		pr_debug("dmar_table_init() failed with %d:\n", ret);
--		goto ir_failed;
-+		return 0;
- 	}
- 
- 	if (!intr_remapping_supported()) {
- 		pr_debug("intr-remapping not supported\n");
--		goto ir_failed;
-+		return 0;
- 	}
- 
+--rigorously, nick
+
+Signed-off-by: Nick Black <dank@qemfd.net>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
+-rc1-pristine/fs/devpts/inode.c linux-2.6.31-rc1/fs/devpts/inode.c
+--- linux-2.6.31-rc1-pristine/fs/devpts/inode.c	2009-06-24 19:25:37.0000000=
+00 -0400
++++ linux-2.6.31-rc1/fs/devpts/inode.c	2009-06-29 08:56:14.000000000 -0400
+@@ -18,14 +18,13 @@
+ #include <linux/mount.h>
+ #include <linux/tty.h>
+ #include <linux/mutex.h>
++#include <linux/magic.h>
+ #include <linux/idr.h>
+ #include <linux/devpts_fs.h>
+ #include <linux/parser.h>
+ #include <linux/fsnotify.h>
+ #include <linux/seq_file.h>
+=20
+-#define DEVPTS_SUPER_MAGIC 0x1cd1
 -
- 	if (!x2apic_preenabled && skip_ioapic_setup) {
- 		pr_info("Skipped enabling intr-remap because of skipping "
- 			"io-apic setup\n");
--		return;
-+		return 0;
- 	}
- 
-+	if (enable_intr_remapping(x2apic_supported()))
-+		return 0;
-+
-+	pr_info("Enabled Interrupt-remapping\n");
-+
-+	return 1;
-+
-+#endif
-+	return 0;
-+}
-+
-+void __init enable_IR_x2apic(void)
-+{
-+	unsigned long flags;
-+	struct IO_APIC_route_entry **ioapic_entries = NULL;
-+	int ret, x2apic_enabled = 0;
-+
- 	ioapic_entries = alloc_ioapic_entries();
- 	if (!ioapic_entries) {
--		pr_info("Allocate ioapic_entries failed: %d\n", ret);
--		goto end;
-+		 pr_info("Allocate ioapic_entries failed\n");
-+		 return;
- 	}
- 
- 	ret = save_IO_APIC_setup(ioapic_entries);
- 	if (ret) {
- 		pr_info("Saving IO-APIC state failed: %d\n", ret);
--		goto end;
-+		free_ioapic_entries(ioapic_entries);
-+		return;
- 	}
- 
- 	local_irq_save(flags);
--	mask_IO_APIC_setup(ioapic_entries);
- 	mask_8259A();
-+	mask_IO_APIC_setup(ioapic_entries);
- 
--	ret = enable_intr_remapping(x2apic_supported());
--	if (ret)
--		goto end_restore;
-+	ret = enable_IR();
-+	if (!ret) {
-+		/* IR is required if x2apic is enabled by BIOS even
-+		 * when running in kvm since this indicates present
-+		 * of APIC ID > 255 */
-+	       	if (x2apic_preenabled || !kvm_para_available())
-+			goto nox2apic;
-+		else
-+			/* without IR all CPUs can be addressed by IOAPIC/MSI
-+			 * only in physical mode */
-+			x2apic_phys = 1;
-+	}
- 
--	pr_info("Enabled Interrupt-remapping\n");
-+	x2apic_enabled = 1;
- 
- 	if (x2apic_supported() && !x2apic_mode) {
- 		x2apic_mode = 1;
-@@ -1416,41 +1441,28 @@ void __init enable_IR_x2apic(void)
- 		pr_info("Enabled x2apic\n");
- 	}
- 
--end_restore:
--	if (ret)
--		/*
--		 * IR enabling failed
--		 */
-+nox2apic:
-+	if (!ret) /* IR enabling failed */
- 		restore_IO_APIC_setup(ioapic_entries);
--
- 	unmask_8259A();
- 	local_irq_restore(flags);
- 
--end:
--	if (ioapic_entries)
--		free_ioapic_entries(ioapic_entries);
-+	free_ioapic_entries(ioapic_entries);
- 
--	if (!ret)
-+	if (x2apic_enabled)
- 		return;
- 
--ir_failed:
--	if (x2apic_preenabled)
-+	if (x2apic_preenabled) {
-+#ifdef CONFIG_INTR_REMAP
- 		panic("x2apic enabled by bios. But IR enabling failed");
--	else if (cpu_has_x2apic)
--		pr_info("Not enabling x2apic,Intr-remapping\n");
- #else
--	if (!cpu_has_x2apic)
--		return;
--
--	if (x2apic_preenabled)
- 		panic("x2apic enabled prior OS handover,"
--		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
-+				" enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
- #endif
--
--	return;
-+	} else if (cpu_has_x2apic)
-+		pr_info("Not enabling x2apic,Intr-remapping\n");
- }
- 
--
- #ifdef CONFIG_X86_64
+ #define DEVPTS_DEFAULT_MODE 0600
  /*
-  * Detect and enable local APICs on non-SMP boards.
---
-			Gleb.
+  * ptmx is a new node in /dev/pts and will be unused in legacy (single-
+diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
+-rc1-pristine/include/linux/magic.h linux-2.6.31-rc1/include/linux/magic.h
+--- linux-2.6.31-rc1-pristine/include/linux/magic.h	2009-06-24 19:25:37.000=
+000000 -0400
++++ linux-2.6.31-rc1/include/linux/magic.h	2009-06-29 08:55:57.000000000 -0=
+400
+@@ -53,4 +54,8 @@
+ #define INOTIFYFS_SUPER_MAGIC	0x2BAD1DEA
+=20
+ #define STACK_END_MAGIC		0x57AC6E9D
++
++#define DEVPTS_SUPER_MAGIC	0x1cd1
++#define SOCKFS_MAGIC		0x534F434B
++
+ #endif /* __LINUX_MAGIC_H__ */
+diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
+-rc1-pristine/net/socket.c linux-2.6.31-rc1/net/socket.c
+--- linux-2.6.31-rc1-pristine/net/socket.c	2009-06-24 19:25:37.000000000 -0=
+400
++++ linux-2.6.31-rc1/net/socket.c	2009-06-29 08:55:49.000000000 -0400
+@@ -86,6 +86,7 @@
+ #include <linux/audit.h>
+ #include <linux/wireless.h>
+ #include <linux/nsproxy.h>
++#include <linux/magic.h>
+=20
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -235,8 +236,6 @@ int move_addr_to_user(struct sockaddr *k
+ 	return __put_user(klen, ulen);
+ }
+=20
+-#define SOCKFS_MAGIC 0x534F434B
+-
+ static struct kmem_cache *sock_inode_cachep __read_mostly;
+=20
+ static struct inode *sock_alloc_inode(struct super_block *sb)
+diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
+-rc1-pristine/security/smack/smack_lsm.c linux-2.6.31-rc1/security/smack/sm=
+ack_lsm.c
+--- linux-2.6.31-rc1-pristine/security/smack/smack_lsm.c	2009-06-24 19:25:3=
+7.000000000 -0400
++++ linux-2.6.31-rc1/security/smack/smack_lsm.c	2009-06-29 08:54:50.0000000=
+00 -0400
+@@ -30,17 +30,11 @@
+ #include <net/netlabel.h>
+ #include <net/cipso_ipv4.h>
+ #include <linux/audit.h>
++#include <linux/magic.h>
+ #include "smack.h"
+=20
+ #define task_security(task)	(task_cred_xxx((task), security))
+=20
+-/*
+- * I hope these are the hokeyist lines of code in the module. Casey.
+- */
+-#define DEVPTS_SUPER_MAGIC	0x1cd1
+-#define SOCKFS_MAGIC		0x534F434B
+-#define TMPFS_MAGIC		0x01021994
+-
+ /**
+  * smk_fetch - Fetch the smack label from a file.
+  * @ip: a pointer to the inode
+
+--=20
+                                      Nick Black <dankamongmen@acm.org>
+                                             Principal Engineer, McAfee
+                                  Grad student, GT College of Computing
+                    "np: the class of dashed hopes, and idle dreams..."
+
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpIwqYACgkQzjCRTpolKGvjcACgoAY0UxJ7N0BKDuIMeiZmFLBU
+qH4AoKShOQkWSKfb4LpOwFNyNnM/gkkK
+=Aq9F
+-----END PGP SIGNATURE-----
+
+--Dxnq1zWXvFF0Q93v--
