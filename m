@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbZF2M6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbZF2M7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbZF2M6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 08:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZF2M6X
+	id S1759069AbZF2M7c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 08:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZF2M7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 08:58:23 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:49171 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZF2M6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 08:58:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ityIOSuYdl56KD2DFa2atTiS0IHKlS+GqLL28fr46AiUpMogsBA7TPjDkmIsvCaW+C
-         oct/4FB/mRoKisDPkLlkJWruumUt64UH7sRMvBL6X2ejd6eKo/eCcF0wO1ezs0AdLxJf
-         JfC1v5f0YphEUO5J4tW25NeX2hJotk1Ub3J2E=
-MIME-Version: 1.0
-In-Reply-To: <20090629125434.GA8416@localhost>
-References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2>
-	 <20090606233056.7B9F.A69D9226@jp.fujitsu.com>
-	 <20090606224538.GA6173@localhost>
-	 <20090618120436.ad3196e3.akpm@linux-foundation.org>
-	 <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net>
-	 <20090629093423.GB1315@localhost>
-	 <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com>
-	 <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost>
-Date: Mon, 29 Jun 2009 14:58:24 +0200
-Message-ID: <e2e108260906290558s59bc0475r713952fca6fa71d@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
-       Ronald Moesbergen <intercommit@gmail.com>,
+	Mon, 29 Jun 2009 08:59:24 -0400
+Received: from mga14.intel.com ([143.182.124.37]:1556 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbZF2M7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 08:59:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
+   d="scan'208";a="159576406"
+Date: Mon, 29 Jun 2009 20:59:11 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: David Howells <dhowells@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       "riel@redhat.com" <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: Found the commit that causes the OOMs
+Message-ID: <20090629125911.GB22932@localhost>
+References: <2015.1245341938@redhat.com> <20090618095729.d2f27896.akpm@linux-foundation.org> <7561.1245768237@redhat.com> <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com> <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com> <17087.1246279435@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17087.1246279435@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 2:54 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> Is blockdev-perftest public available? It's not obvious from google search.
+On Mon, Jun 29, 2009 at 08:43:55PM +0800, David Howells wrote:
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > David, Can you please try to following patch? it was posted to LKML
+> > about 1-2 week ago.
+> > 
+> > Subject "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
+> > isolate_lru_pages v2"
+> 
+> It is already committed, but I ran a test on the latest Linus kernel anyway:
 
-This script is publicly available. You can retrieve it by running the
-following command:
-svn co https://scst.svn.sourceforge.net/svnroot/scst/trunk/scripts
+page-types showed that there are only ~1MB mapped regular (non-tmpfs) file pages.
+So not surprisingly it didn't help.
 
-Bart.
+> msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
+> msgctl11 cpuset=/ mems_allowed=0
+> Pid: 20366, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #144
+> Call Trace:
+>  [<ffffffff810718d2>] ? oom_kill_process.clone.0+0xa9/0x245
+>  [<ffffffff81071b99>] ? __out_of_memory+0x12b/0x142
+>  [<ffffffff81071c1a>] ? out_of_memory+0x6a/0x94
+>  [<ffffffff810742e4>] ? __alloc_pages_nodemask+0x42e/0x51d
+>  [<ffffffff81031416>] ? copy_process+0x95/0x114f
+>  [<ffffffff8107443c>] ? __get_free_pages+0x12/0x4f
+>  [<ffffffff81031439>] ? copy_process+0xb8/0x114f
+>  [<ffffffff8108192e>] ? handle_mm_fault+0x5dd/0x62f
+>  [<ffffffff8103260f>] ? do_fork+0x13f/0x2ba
+>  [<ffffffff81022c22>] ? do_page_fault+0x1f8/0x20d
+>  [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
+>  [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
+> Mem-Info:
+> DMA per-cpu:
+> CPU    0: hi:    0, btch:   1 usd:   0
+> CPU    1: hi:    0, btch:   1 usd:   0
+> DMA32 per-cpu:
+> CPU    0: hi:  186, btch:  31 usd: 159
+> CPU    1: hi:  186, btch:  31 usd:   2
+> Active_anon:70477 active_file:1 inactive_anon:4514
+>  inactive_file:7 unevictable:0 dirty:0 writeback:0 unstable:0
+>  free:1954 slab:42078 mapped:237 pagetables:57791 bounce:0
+> DMA free:3932kB min:60kB low:72kB high:88kB active_anon:236kB inactive_anon:0kB active_file:4kB inactive_file:4kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
+> lowmem_reserve[]: 0 968 968 968
+> DMA32 free:3884kB min:3948kB low:4932kB high:5920kB active_anon:281672kB inactive_anon:18056kB active_file:0kB inactive_file:24kB unevictable:0kB present:992032kB pages_scanned:6 all_unreclaimable? no
+> lowmem_reserve[]: 0 0 0 0
+> DMA: 180*4kB 36*8kB 3*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 3936kB
+> DMA32: 491*4kB 0*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3884kB
+> 1808 total pagecache pages
+> 0 pages in swap cache
+> Swap cache stats: add 0, delete 0, find 0/0
+> Free swap  = 0kB
+> Total swap = 0kB
+> 255744 pages RAM
+> 5589 pages reserved
+> 249340 pages shared
+> 219039 pages non-shared
+> Out of memory: kill process 11471 (msgctl11) score 112393 or a child
+> Killed process 12318 (msgctl11)
+> 
+> 
+> David
