@@ -1,55 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZF2IjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZF2Il0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbZF2IjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 04:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF2IjO
+	id S1757430AbZF2Il0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 04:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZF2IlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 04:39:14 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:45792 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751201AbZF2IjN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 04:39:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YlEULliYCXzYrMQw1HKrTZVa20Hd3TS3nhiWyhHs0qEIDaunfsM9z2AULEv7p9twQL
-         9ZVUrgv465hnOkPFyuO6qp6qwoJzWZm4b/wdXt/H6ScDf9E0FseK5DBxmlosWrZgRmIk
-         ixRc7BIr9YAz8jtOL5TgsS/ibr7k4Uac7kxwU=
+	Mon, 29 Jun 2009 04:41:19 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56083 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbZF2IlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 04:41:17 -0400
+Date: Mon, 29 Jun 2009 09:41:14 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
+Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
+Message-ID: <20090629084114.GA28597@csn.ul.ie>
+References: <1245686553.7799.102.camel@lts-notebook> <20090622205308.GG3981@csn.ul.ie> <20090623200846.223C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090627185749.065bcab4@linux-uvcl.site>
-References: <20090627185749.065bcab4@linux-uvcl.site>
-Date: Mon, 29 Jun 2009 09:32:16 +0100
-X-Google-Sender-Auth: b16ec771856d9e39
-Message-ID: <e9e943910906290132odfb89c7t57ab1aca7203b476@mail.gmail.com>
-Subject: Re: Kernel testing in a VM good idea?
-From: Duane Griffin <duaneg@dghda.com>
-To: James Dolan <jamesdolan@clear.net.nz>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090623200846.223C.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/27 James Dolan <jamesdolan@clear.net.nz>:
-> Are there any disadvantages to testing/developing a kernel in a VM ? (i
-> luck the availability of hardware)
+On Tue, Jun 23, 2009 at 08:11:51PM +0900, KOSAKI Motohiro wrote:
+> > On Mon, Jun 22, 2009 at 12:02:33PM -0400, Lee Schermerhorn wrote:
+> > > On Mon, 2009-06-22 at 10:16 +0100, Mel Gorman wrote:
+> > > > On Mon, Jun 22, 2009 at 11:39:53AM +0900, KOSAKI Motohiro wrote:
+> > > > > (cc to Mel and some reviewer)
+> > > 
+> > > [added Rik so that he can get multiple copies, too. :)]
+> > > 
+> > > > > 
+> > > > > > Flags are:
+> > > > > > 0000000000400000 -- __PG_MLOCKED
+> > > > > > 800000000050000c -- my page flags
+> > > > > >         3650000c -- Maxim's page flags
+> > > > > > 0000000000693ce1 -- my PAGE_FLAGS_CHECK_AT_FREE
+> > > > > 
+> > > > > I guess commit da456f14d (page allocator: do not disable interrupts in
+> > > > > free_page_mlock()) is a bit wrong.
+> > > > > 
+> > > > > current code is:
+> > > > > -------------------------------------------------------------
+> > > > > static void free_hot_cold_page(struct page *page, int cold)
+> > > > > {
+> > > > > (snip)
+> > > > >         int clearMlocked = PageMlocked(page);
+> > > > > (snip)
+> > > > >         if (free_pages_check(page))
+> > > > >                 return;
+> > > > > (snip)
+> > > > >         local_irq_save(flags);
+> > > > >         if (unlikely(clearMlocked))
+> > > > >                 free_page_mlock(page);
+> > > > > -------------------------------------------------------------
+> > > > > 
+> > > > > Oh well, we remove PG_Mlocked *after* free_pages_check().
+> > > > > Then, it makes false-positive warning.
+> > > > > 
+> > > > > Sorry, my review was also wrong. I think reverting this patch is better ;)
+> > > > > 
+> > > > 
+> > > > I think a revert is way overkill. The intention of the patch is sound -
+> > > > reducing the number of times interrupts are disabled. Having pages
+> > > > with the PG_locked bit is now somewhat of an expected situation. I'd
+> > > > prefer to go with either
+> > > > 
+> > > > 1. Unconditionally clearing the bit with TestClearPageLocked as the
+> > > >    patch already posted does
+> > > > 2. Removing PG_locked from the free_pages_check()
+> > > > 3. Unlocking the pages as we go when an mlocked VMA is being torn town
+> > > 
+> > > Mel,
+> > > 
+> > > #3 SHOULD be happening in all cases.  The free_page_mlocked() function
+> > > counts when this is not happening.  We tried to fix all cases that we
+> > > encountered before this feature was submitted, but left the vm_stat
+> > > there to report if more PG_mlocked leaks were introduced. 
+> > 
+> > That makes sense. I was surprised at the thought that the pages were
+> > apparently not getting freed properly and upon investigation I could not
+> > trivially reproduce the problem. Can someone with this problem post their
+> > .config please in case I'm missing something in there?
+> > 
+> > > We also,
+> > > inadvertently, left PG_mlocked in the flags to check at free.  We didn't
+> > > hit this before your patch because free_page_mlock() did a test&clear on
+> > > the PG_mlocked before checking the flags.  Since you moved the call, and
+> > > used PageMlocked() instead of TestClearPageMlocked(), any PG_locked page
+> > > will cause the bug.
+> > > 
+> > > So, we have another PG_mlocked flag leaking to free.  I don't think this
+> > > is terribly serious in itself, and probably not deserving of a BUG_ON.
+> > > It probably doesn't deserve a vm_stat, either, I guess.  However, it
+> > > could indicate a more serious logic error and should be examined. So it
+> > > would be nice to retain some indication that it's happening.
+> > > 
+> > > > The patch that addresses 1 seemed ok to me. What do you think?
+> > > > 
+> > > 
+> > > Your alternative #2 sounds less expensive that test&clear.
+> > > 
+> > 
+> > How about the following? The intention is to warn once when PG_mlocked
+> > is set but continue to count the number of times the event occured.
+> > 
+> > ==== CUT HERE ====
+> > mm: Warn once when a page is freed with PG_mlocked set
+> > 
+> > When a page is freed with the PG_mlocked set, it is considered an unexpected
+> > but recoverable situation. A counter records how often this event happens
+> > but due to commit da456f14d [page allocator: do not disable interrupts in
+> > free_page_mlock()], the page state is being treated as a bad page which is
+> > considered a severe bug.
+> > 
+> > This bug drops the severity of the report in the event a page is freed
+> > with PG_mlocked set. A warning is printed once and the subsequent events
+> > counted.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > --- 
+> >  include/linux/page-flags.h |   10 +++++++++-
+> >  mm/page_alloc.c            |    9 +++++++++
+> >  2 files changed, 18 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+> > index d6792f8..81731cf 100644
+> > --- a/include/linux/page-flags.h
+> > +++ b/include/linux/page-flags.h
+> > @@ -389,7 +389,15 @@ static inline void __ClearPageTail(struct page *page)
+> >  	 1 << PG_private | 1 << PG_private_2 | \
+> >  	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
+> >  	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
+> > -	 1 << PG_unevictable | __PG_MLOCKED)
+> > +	 1 << PG_unevictable)
+> > +
+> > +/*
+> > + * Flags checked when a page is freed. Pages being freed should not have
+> > + * these set but the situation is easily resolved and should just be
+> > + * reported as a once-off warning.
+> > + */
+> > +#define PAGE_FLAGS_WARN_AT_FREE \
+> > +	(__PG_MLOCKED)
+> >  
+> >  /*
+> >   * Flags checked when a page is prepped for return by the page allocator.
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index a5f3c27..c8c029e 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -497,6 +497,15 @@ static void free_page_mlock(struct page *page) { }
+> >  
+> >  static inline int free_pages_check(struct page *page)
+> >  {
+> > +	if (unlikely(page->flags & PAGE_FLAGS_WARN_AT_FREE)) {
+> 
+> this condition is always false. it's because caller clear PG_Mlocked flag
+> before calling free_pages_check().
+> 
 
-To start with the obvious, with a VM you don't need extra hardware. If
-you make a silly mistake and trash the filesystem all you need to do
-is copy a file, not reinstall a whole system. The hack/install/test
-cycle can be as quick and easy as "make && ./test.sh", instead of
-requiring you to copy files across to another machine, reboot, etc.
-You can easily script tests, e.g. to create and boot from a COW image,
-drive the VM through its console, then run checks within the VM and
-externally for whatever it is you testing. You can give those scripts
-and images to others to use, too.
+This patch is intended as an alternative to the patch that replaces
+PageMlocked() with TestClearPageMlocked() so I expect the flag to only be
+set in the situation where PG_mlocked is not being cleared properly.
 
-Cheers,
-Duane.
+I see the unconditionoal clearing of the flag was merged since but even
+that might be too heavy handed as we are making a locked bit operation
+on every page free. That's unfortunate overhead to incur on every page
+free to handle a situation that should not be occurring at all.
+
+> 
+> > +		WARN_ONCE(1, KERN_WARNING
+> > +			"Sloppy page flags set process %s at pfn:%05lx\n"
+> > +			"page:%p flags:%p\n",
+> > +			current->comm, page_to_pfn(page),
+> > +			page, (void *)page->flags);
+> 
+> hmm, mystery (void*) casting is here.
+> 
+
+Code was taken from bad_page(). I should have used 0x%lX here.
+
+> 
+> > +		page->flags &= ~PAGE_FLAGS_WARN_AT_FREE;
+> > +	}
+> > +
+> >  	if (unlikely(page_mapcount(page) |
+> >  		(page->mapping != NULL)  |
+> >  		(atomic_read(&page->_count) != 0) |
+> 
+> Howerver, I like this patch concept. this warning is useful and meaningful IMHO.
+> 
+
+This is a version that is based on top of current mainline that just
+displays the warning. However, I think we should consider changing
+TestClearPageMlocked() back to PageMlocked() and only clearing the flags
+when the unusual condition is encountered.
+
+==== CUT HERE ====
+mm: Warn once when a page is freed with PG_mlocked set
+    
+When a page is freed with the PG_mlocked set, it is considered an unexpected
+but recoverable situation. A counter records how often this event happens
+but it is easy to miss that this event has occured at all. This patch warns
+once when PG_mlocked is set to prompt debuggers to check the counter to
+see how often it is happening.
+    
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 5d714f8..519ea6e 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -495,8 +495,16 @@ static inline void free_page_mlock(struct page *page)
+ static void free_page_mlock(struct page *page) { }
+ #endif
+ 
+-static inline int free_pages_check(struct page *page)
+-{
++static inline int free_pages_check(struct page *page, int wasMlocked)
++{
++	if (unlikely(wasMlocked)) {
++		WARN_ONCE(1, KERN_WARNING
++			"Page flag mlocked set for process %s at pfn:%05lx\n"
++			"page:%p flags:0x%lX\n",
++			current->comm, page_to_pfn(page),
++			page, page->flags|__PG_MLOCKED);
++	}
++
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+ 		(atomic_read(&page->_count) != 0) |
+@@ -562,7 +570,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+ 	kmemcheck_free_shadow(page, order);
+ 
+ 	for (i = 0 ; i < (1 << order) ; ++i)
+-		bad += free_pages_check(page + i);
++		bad += free_pages_check(page + i, wasMlocked);
+ 	if (bad)
+ 		return;
+ 
+@@ -1027,7 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+ 
+ 	if (PageAnon(page))
+ 		page->mapping = NULL;
+-	if (free_pages_check(page))
++	if (free_pages_check(page, wasMlocked))
+ 		return;
+ 
+ 	if (!PageHighMem(page)) {
 
 -- 
-"I never could learn to drink that blood and call it wine" - Bob Dylan
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
