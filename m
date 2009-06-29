@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZF2Lle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZF2LoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZF2Lle (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZF2LlT
+	id S1756096AbZF2LoE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZF2Lnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:41:19 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:56873 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbZF2LlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:41:18 -0400
-Date: Mon, 29 Jun 2009 13:41:21 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: NeilBrown <neilb@suse.de>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Mike Snitzer <snitzer@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
-	of the 'queue' sysfs directory.
-Message-ID: <20090629114121.GH23611@kernel.dk>
-References: <yq11vp8spxo.fsf@sermon.lab.mkp.net> <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name> <20090625194015.GB31415@kernel.dk> <19012.49673.454853.975682@notabene.brown> <20090626125037.GO23611@kernel.dk> <f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name> <20090626132940.GR23611@kernel.dk> <19014.4447.248248.63960@notabene.brown> <20090629101841.GF23611@kernel.dk> <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name>
+	Mon, 29 Jun 2009 07:43:52 -0400
+Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:50830 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751611AbZF2Lnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:43:52 -0400
+From: Arseniy Lartsev <ars3n@yandex.ru>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: PROBLEM: USB ACM device does not work
+Date: Mon, 29 Jun 2009 15:43:45 +0400
+User-Agent: KMail/1.10.3 (Linux/2.6.27.23-0.1-default; KDE/4.1.3; i686; ; )
+Cc: USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <200906282229.35713.ars3n@yandex.ru> <200906282258.08277.oliver@neukum.org>
+In-Reply-To: <200906282258.08277.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name>
+Content-Type: multipart/signed;
+  boundary="nextPart2720673.0iCECpZRQP";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906291543.52477.ars3n@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29 2009, NeilBrown wrote:
-> On Mon, June 29, 2009 8:18 pm, Jens Axboe wrote:
-> > On Sat, Jun 27 2009, Neil Brown wrote:
-> >> > There's no such thing as first or second class block devices. The fact
-> >> > that drivers using ->make_request_fn directly do not utilize the full
-> >> > scope of the queue isn't a very interesting fact, imho.
-> >>
-> >>  Your phrase "drivers using ->make_request_fn directly" seems to
-> >>  suggest you are looking at things very differently to me.
-> >>
-> >>  From my perspective, all drivers use ->make_request_fn equally.
-> >>  Some set it to "__make_request", some to "md_make_request", others to
-> >>  "dm_request" or "loop_make_request" etc.
-> >
-> > Neil, will you please stop these silly games. Stop trying to invent
-> > differences based on interpretations of what you read into my replies.
-> 
-> 
-> We do seem to be having trouble communicating don't we :-(
-> Be assured that it is not my intention to play games, silly or otherwise.
-> 
-> Maybe I should just try sending you patches.  Maybe that will
-> make my meaning clearer.
-> 
-> For the moment, I'm much more interested in the other question,
-> that of whether I can avoid having a 'queue' directory introduced into
-> md/dm/etc device directories in sysfs.
+--nextPart2720673.0iCECpZRQP
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-We already talked about this, several times. My answer is that it seems
-pointless to begin with internally, and externally it just makes the API
-worse since tools then have to know which device type they are talking
-to.
+Just the same with 2.6.31-rc1-git3.
 
-So I still see absolutely zero point in making such a change, quite the
-opposite.
+Any ideas?
 
--- 
-Jens Axboe
 
+--nextPart2720673.0iCECpZRQP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iJwEAAECAAYFAkpIqPgACgkQIHDkq2F9exaXLQP/SCgZ78WWrE7PGcK+89IDEoAM
+nlF0GtkkRekfBxuy8gvWYQqcfhPKb9Ongq1ekRojM43DDFq55Nivr7f7Rw4puwGh
+F4lOUmp4aV9N6cj7SXo35HU5P9XvGhEyxsV2dncUsfW0wFqM2clv29An6/29vFnl
+mOICisH+Jg9fv2LObE0=
+=fq7S
+-----END PGP SIGNATURE-----
+
+--nextPart2720673.0iCECpZRQP--
