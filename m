@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753747AbZF2Ih2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZF2IjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753747AbZF2Ih2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 04:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbZF2IhT
+	id S1754386AbZF2IjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 04:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF2IjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 04:37:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55908 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbZF2IhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 04:37:18 -0400
-Date: Mon, 29 Jun 2009 10:36:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT PULL] x86 fix
-Message-ID: <20090629083636.GA5385@elte.hu>
+	Mon, 29 Jun 2009 04:39:14 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:45792 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751201AbZF2IjN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 04:39:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=YlEULliYCXzYrMQw1HKrTZVa20Hd3TS3nhiWyhHs0qEIDaunfsM9z2AULEv7p9twQL
+         9ZVUrgv465hnOkPFyuO6qp6qwoJzWZm4b/wdXt/H6ScDf9E0FseK5DBxmlosWrZgRmIk
+         ixRc7BIr9YAz8jtOL5TgsS/ibr7k4Uac7kxwU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090627185749.065bcab4@linux-uvcl.site>
+References: <20090627185749.065bcab4@linux-uvcl.site>
+Date: Mon, 29 Jun 2009 09:32:16 +0100
+X-Google-Sender-Auth: b16ec771856d9e39
+Message-ID: <e9e943910906290132odfb89c7t57ab1aca7203b476@mail.gmail.com>
+Subject: Re: Kernel testing in a VM good idea?
+From: Duane Griffin <duaneg@dghda.com>
+To: James Dolan <jamesdolan@clear.net.nz>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+2009/6/27 James Dolan <jamesdolan@clear.net.nz>:
+> Are there any disadvantages to testing/developing a kernel in a VM ? (i
+> luck the availability of hardware)
 
-Please pull the latest x86-fixes-for-linus git tree from:
+To start with the obvious, with a VM you don't need extra hardware. If
+you make a silly mistake and trash the filesystem all you need to do
+is copy a file, not reinstall a whole system. The hack/install/test
+cycle can be as quick and easy as "make && ./test.sh", instead of
+requiring you to copy files across to another machine, reboot, etc.
+You can easily script tests, e.g. to create and boot from a COW image,
+drive the VM through its console, then run checks within the VM and
+externally for whatever it is you testing. You can give those scripts
+and images to others to use, too.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+Cheers,
+Duane.
 
-This reverts a commit that caused a regression.
-
- Thanks,
-
-	Ingo
-
------------------->
-H. Peter Anvin (1):
-      Revert "x86: cap iomem_resource to addressable physical memory"
-
-
- arch/x86/kernel/cpu/common.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 6b26d4d..f1961c0 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -848,9 +848,6 @@ static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
- 	numa_add_cpu(smp_processor_id());
- #endif
--
--	/* Cap the iomem address space to what is addressable on all CPUs */
--	iomem_resource.end &= (1ULL << c->x86_phys_bits) - 1;
- }
- 
- #ifdef CONFIG_X86_64
+-- 
+"I never could learn to drink that blood and call it wine" - Bob Dylan
