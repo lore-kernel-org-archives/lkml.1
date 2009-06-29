@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbZF2DAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZF2DBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753466AbZF2DAw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 23:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZF2DAo
+	id S1753227AbZF2DBt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 23:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZF2DBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 23:00:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:29173 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbZF2DAn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 23:00:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=kYWXaW5QNCY4dhZiYC6KdlUGeen+sRq1MdGwhwAdivEsHihoRMIBhrfy+XOP3nGjOg
-         snwnOS2CB8RbE5CoL01T7pJdvmYkmNUEClXpQgj/kVQnqSuG/jA6VABdLP9x4gSNn6MS
-         wzisF+q7sa9Vt0xpxqbCf4k2LiJRGdPaHIdu8=
-Message-ID: <4A482E56.1070604@gmail.com>
-Date: Mon, 29 Jun 2009 11:00:38 +0800
-From: Eric Miao <eric.y.miao@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Sun, 28 Jun 2009 23:01:41 -0400
+Received: from mga11.intel.com ([192.55.52.93]:16947 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbZF2DBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 23:01:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,306,1243839600"; 
+   d="scan'208";a="470365605"
+Date: Mon, 29 Jun 2009 10:59:33 +0800
+From: Feng Tang <feng.tang@intel.com>
+To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@linux.intel.com>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
+Message-ID: <20090629105933.56c6336f@feng-desktop>
+In-Reply-To: <43F901BD926A4E43B106BF17856F0755641A44CB@orsmsx508.amr.corp.intel.com>
+References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
+	<20090626070720.GB14078@elte.hu>
+	<43F901BD926A4E43B106BF17856F0755641A44CB@orsmsx508.amr.corp.intel.com>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 MIME-Version: 1.0
-To: Daniel Ribeiro <drwyrm@gmail.com>
-CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] MMC/pxamci: workaround regulator framework bugs
-References: <1246057668.10360.316.camel@brutus>	 <20090627004814.GB4379@sirena.org.uk> <1246071323.10360.386.camel@brutus>
-In-Reply-To: <1246071323.10360.386.camel@brutus>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Ribeiro wrote:
-> Em Sáb, 2009-06-27 às 01:48 +0100, Mark Brown escreveu:
->>> +		/*
->>> +		 * When the bootloader leaves a supply active, it's
->>> +		 * initialized with zero usecount ... and we can't
->>> +		 * disable it without first enabling it.  Until the
->>> +		 * framework is fixed, we need a workaround like this
->>> +		 * (which is safe for MMC, but not in general).
->> This also needs to explain the actual situation, especially the
->> exclusivity reqirement of the MMC core.  It might be worth providing a
->> helper in the MMC core, everything is going to need to be updated to use
->> exclusive get whenever someone implements it.
-> 
-> Heh, this patch was copy-n-paste from twl code. I really can't put much
-> time on this. :(
-> 
->> As discussed at some length the regulator API is not going to be changed
->> in the way you demand.  This is not something that it should be easy for
->> standard consumers to do since for standard consumers it normally points
->> out a programming error.
-> 
-> Ok, so I will "fix it" hacking the bootloader to power off the voltage
-> regulator before giving control to kernel. Lets hope that the next
-> developer that tries to use the regulator framework with a mmc card and
-> stumbles on the "regulator already enabled" case has more time to fix it
-> properly. :)
-> 
+On Sat, 27 Jun 2009 01:18:50 +0800
+"Pan, Jacob jun" <jacob.jun.pan@intel.com> wrote:
 
-This looks to be running into the same issue as clocks - where for power
-savings the clocks are assumed to be off as many as possible, leaving only
-those essential ones enabled, yet the assumption of the boot loader does
-this correctly is always a big problem, putting this into the kernel,
-however, is ugly.
+> >> -#ifdef CONFIG_ACPI
+> >> +#if defined(CONFIG_ACPI) || defined(CONFIG_SFI)
+> >
+> >Please add a new helper non-interactive Kconfig symbol instead of
+> >increasing the #ifdef jungle.
+> >
+> [[JPAN]] I agreed, maybe this should be part of the SFI patch or
+> already have similar plans?
+
+Yes, Ingo has given similar comments for SFI code. I thought about 2
+methods for this:
+1. these "#ifdef...#endif" covers three functions:
+ extern int io_apic_get_unique_id(int ioapic, int apic_id);
+ extern int io_apic_get_version(int ioapic);
+ extern int io_apic_get_redir_entries(int ioapic);	
+how about just completely removing the "#ifdef...#endif", as ACPI/SFI 
+codes are heavily used on x86 platforms, and it may bring one hundred
+additional bytes for None-ACPI/SFI platforms 
+2. create a new "CONFIG_ACPI_SFI" option, using this new option to cover
+this case, and let "ACPI"/"SFI" option select it in Kconfig files
+
+any comments? thanks
+
+- Feng
