@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZF2HbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZF2HeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbZF2HbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2HbF
+	id S1756002AbZF2HeD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2Hdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:31:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36300 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbZF2HbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:31:03 -0400
-Date: Mon, 29 Jun 2009 17:30:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Len Brown <lenb@kernel.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, sfi-devel@simplefirmware.org,
-       x86@kernel.org
-Subject: Re: linux-next: Tree for June 19
-Message-Id: <20090629173055.76199377.sfr@canb.auug.org.au>
-In-Reply-To: <20090629071451.GA20225@elte.hu>
-References: <20090619172622.05adb236.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0906200012200.4325@localhost.localdomain>
-	<20090620150433.4e038676.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0906201415400.4083@localhost.localdomain>
-	<20090622015427.c749a0d9.sfr@canb.auug.org.au>
-	<20090629071451.GA20225@elte.hu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2."
+	Mon, 29 Jun 2009 03:33:54 -0400
+Received: from ey-out-1920.google.com ([74.125.78.147]:32099 "EHLO
+	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZF2Hdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 03:33:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
+         :mime-version:content-type;
+        b=lJyJOuNf64zNXTfRzDL3WCQiJQ7Xw0fslHETQCLWjsheY3n0gF/odx6YyJg8vBcxDX
+         IaG8ygTOgRAVtl5oWZzBvuF067q31OiSKrvw/dB01HGPplpoq/teTyoGq1/M8jIvuqNa
+         EY5l/3YbVbZNOTpcPZlaPIncwPJSPII9iV7NM=
+Date: Mon, 29 Jun 2009 09:33:40 +0200 (CEST)
+From: "=?ISO-8859-15?Q?Rub=E9n_A=F3s_Garralda_=3Crubenatch=40gmail=2Ecom=3E?=" 
+	<rubenatch@gmail.com>
+X-X-Sender: root@localhost
+To: jkosina@suse.cz
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCHv3] Adding rumble support to Thrustmaster Dual Trigger
+ 3-in-1
+Message-ID: <alpine.DEB.2.00.0906290926140.9132@localhost>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-368403849-1246260836=:9132"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Hi Ingo,
+--8323328-368403849-1246260836=:9132
+Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
-On Mon, 29 Jun 2009 09:14:51 +0200 Ingo Molnar <mingo@elte.hu> wrote:
->
->=20
-> Yep, feel free, the SFI bits looked good in principle.
+From: Rubén Aós Garralda <rubenatch@gmail.com>
 
-OK, thanks, I will add the tree tomorrow.
+This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads (in 
+both PC and PS3 modes). It uses the same code as Thrustmaster FireStorm 
+Dual Power 2, so it only adds new USB IDs to hid-core.c and hid-tmff.c
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Rubén Aós Garralda <rubenatch@gmail.com>
 
---Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.
-Content-Type: application/pgp-signature
+---
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Hope it is OK this time...
 
-iEYEARECAAYFAkpIba8ACgkQjjKRsyhoI8zqzQCcDrIt18shmU5+OXC6ejMyPE9/
-AwMAoKDu82/vXlZF3OWFttqF6rPnOD0F
-=Av1L
------END PGP SIGNATURE-----
+diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c linux-source-test/drivers/hid/hid-core.c
+--- linux-source-2.6.30/drivers/hid/hid-core.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/hid-core.c	2009-06-26 15:33:48.000000000 +0200
+@@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS, USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED, USB_DEVICE_ID_TOPSEED_CYBERLINK) },
+diff -uprN linux-source-2.6.30/drivers/hid/hid-tmff.c linux-source-test/drivers/hid/hid-tmff.c
+--- linux-source-2.6.30/drivers/hid/hid-tmff.c	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/hid-tmff.c	2009-06-26 15:35:27.000000000 +0200
+@@ -236,7 +236,11 @@ err:
+  static const struct hid_device_id tm_devices[] = {
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300),
+  		.driver_data = (unsigned long)ff_rumble },
+-	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),	/* FireStorm Dual Power 2 (and 3) */
++		.driver_data = (unsigned long)ff_rumble },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323),	/* Dual Trigger 3-in-1 (PC Mode) */
++		.driver_data = (unsigned long)ff_rumble },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324),	/* Dual Trigger 3-in-1 (PS3 Mode) */
+  		.driver_data = (unsigned long)ff_rumble },
+  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),	/* FGT Rumble Force Wheel */
+  		.driver_data = (unsigned long)ff_rumble },
+diff -uprN linux-source-2.6.30/drivers/hid/Kconfig linux-source-test/drivers/hid/Kconfig
+--- linux-source-2.6.30/drivers/hid/Kconfig	2009-06-10 05:05:27.000000000 +0200
++++ linux-source-test/drivers/hid/Kconfig	2009-06-26 15:58:15.000000000 +0200
+@@ -268,8 +268,9 @@ config THRUSTMASTER_FF
+  	depends on USB_HID
+  	select INPUT_FF_MEMLESS
+  	help
+-	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or
+-	  a THRUSTMASTER Ferrari GT Rumble Force or Force Feedback Wheel.
++	  Say Y here if you have a THRUSTMASTER FireStorm Dual Power 2 or 3,
++	  a THRUSTMASTER Dual Trigger 3-in-1 or a THRUSTMASTER Ferrari GT
++	  Rumble Force or Force Feedback Wheel.
 
---Signature=_Mon__29_Jun_2009_17_30_55_+1000_6R05K8UHctoYOm2.--
+  config ZEROPLUS_FF
+  	tristate "Zeroplus based game controller support"
+--8323328-368403849-1246260836=:9132--
