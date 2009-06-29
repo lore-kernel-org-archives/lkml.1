@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZF2QrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZF2Qvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZF2QrS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 12:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZF2QrD
+	id S1753599AbZF2Qvg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 12:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZF2Qv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 12:47:03 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:46505 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZF2QrC convert rfc822-to-8bit (ORCPT
+	Mon, 29 Jun 2009 12:51:27 -0400
+Received: from fmailhost03.isp.att.net ([204.127.217.103]:53713 "EHLO
+	fmailhost03.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbZF2Qv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 12:47:02 -0400
-Date: Mon, 29 Jun 2009 18:46:51 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Minkyu Kang <promsoft@gmail.com>
-Cc: Minkyu Kang <mk7.kang@samsung.com>, linux-kernel@vger.kernel.org,
-       linux-i2c@vger.kernel.org, lm-sensors@lm-sensors.org,
-       suchang.woo@samsung.com, kyungmin.park@samsung.com
-Subject: Re: [PATCH] hwmon: add GP2A002 proximity/ambient sensor
-Message-ID: <20090629184651.6fc3dca5@hyperion.delvare>
-In-Reply-To: <1f3430fb0906290347r92201acpb35087c55049d8c5@mail.gmail.com>
-References: <4A448926.1030701@samsung.com>
-	<20090626113059.4c0c2fb3@hyperion.delvare>
-	<1f3430fb0906290347r92201acpb35087c55049d8c5@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Mon, 29 Jun 2009 12:51:27 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A48F114.1010702@lwfinger.net>
+Date: Mon, 29 Jun 2009 11:51:32 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.fNH.4kASKB@chimera>
+In-Reply-To: <5Hhc7UkUKEO.A.fNH.4kASKB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009 19:47:26 +0900, Minkyu Kang wrote:
-> Hi Jean,
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
 > 
-> 2009/6/26 Jean Delvare <khali@linux-fr.org>:
-> > On Fri, 26 Jun 2009 17:39:02 +0900, Minkyu Kang wrote:
-> >> The GP2A002 is a I2C interfaced Sensor for Proximity/Ambient
-> >> This patch adds support the GP2A002 sensor
-> >>
-> >> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
-> >> Signed-off-by: Suchang Woo <suchang.woo@samsung.com>
-> >> ---
-> >>  drivers/hwmon/Kconfig    |    7 +
-> >>  drivers/hwmon/Makefile   |    1 +
-> >>  drivers/hwmon/gp2ap002.c |  471 ++++++++++++++++++++++++++++++++++++++++++++++
-> >>  include/linux/gp2ap002.h |   21 ++
-> >>  4 files changed, 500 insertions(+), 0 deletions(-)
-> >>  create mode 100644 drivers/hwmon/gp2ap002.c
-> >>  create mode 100644 include/linux/gp2ap002.h
-> >>
-> >> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-> >> index 2d50166..cc4e200 100644
-> >> --- a/drivers/hwmon/Kconfig
-> >> +++ b/drivers/hwmon/Kconfig
-> >> @@ -1017,6 +1017,13 @@ config SENSORS_APPLESMC
-> >>         Say Y here if you have an applicable laptop and want to experience
-> >>         the awesome power of applesmc.
-> >>
-> >> +config SENSORS_GP2AP002
-> >> +     tristate "GP2AP002 series Proximity/Ambient Sensor"
-> >> +     depends on HWMON && I2C
-> >> +     help
-> >> +       This driver provides support for Proximity/Ambient Sensor.
-> >> +
-> >
-> > This doesn't have anything to do with hardware monitoring, so this
-> > doesn't belong to drivers/hwmon.
-> >
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> Can you please explain about belong to hardware monitoring?
-> did i missing something?
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
+> Subject		: Page allocation failures with b43 and p54usb
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2009-04-29 21:01 (61 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
+> 		  http://lkml.org/lkml/2009/6/7/136
+> Handled-By	: Johannes Berg <johannes@sipsolutions.net>
 
-I'm not sure how I can explain it better. Your driver is for a device
-which is no a hardware monitoring chip, so this driver should not be
-located in the drivers/hwmon directory.
+The cause of these failures has been determined. The wireless
+subsystem frequently requests buffers of size 4096, but when SLUB
+debugging is enabled and the debug info is added, the request becomes
+of order 1 and memory becomes fragmented.
 
--- 
-Jean Delvare
+A controversial "fix" in which SLUB debugging was disabled for
+allocations where adding such debugging info would increase the order
+was discussed and tried. With a quick look at the commit list for
+Linus's tree, I don't see that such a patch is available, but I will
+be corrected if I missed it.
+
+Larry
