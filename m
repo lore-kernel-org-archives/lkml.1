@@ -1,103 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbZF2M7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZF2NAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759069AbZF2M7c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 08:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZF2M7Y
+	id S1759143AbZF2NAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZF2NAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 08:59:24 -0400
-Received: from mga14.intel.com ([143.182.124.37]:1556 "EHLO mga14.intel.com"
+	Mon, 29 Jun 2009 09:00:18 -0400
+Received: from mga14.intel.com ([143.182.124.37]:40824 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZF2M7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 08:59:24 -0400
+	id S1753170AbZF2NAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:00:16 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="159576406"
-Date: Mon, 29 Jun 2009 20:59:11 +0800
+   d="scan'208";a="159576688"
+Date: Mon, 29 Jun 2009 21:00:05 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
-To: David Howells <dhowells@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-ID: <20090629125911.GB22932@localhost>
-References: <2015.1245341938@redhat.com> <20090618095729.d2f27896.akpm@linux-foundation.org> <7561.1245768237@redhat.com> <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com> <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com> <17087.1246279435@redhat.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
+       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       Beheer InterCommIT <intercommit@gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090629130005.GB8416@localhost>
+References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2> <4A2936A7.9070309@gmail.com> <20090606233056.7B9F.A69D9226@jp.fujitsu.com> <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net> <20090629093423.GB1315@localhost> <4A489D99.5020009@vlnb.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17087.1246279435@redhat.com>
+In-Reply-To: <4A489D99.5020009@vlnb.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 08:43:55PM +0800, David Howells wrote:
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Mon, Jun 29, 2009 at 06:55:21PM +0800, Vladislav Bolkhovitin wrote:
 > 
-> > David, Can you please try to following patch? it was posted to LKML
-> > about 1-2 week ago.
+> 
+> Wu Fengguang, on 06/29/2009 01:34 PM wrote:
+> > On Sat, Jun 20, 2009 at 08:29:31PM +0800, Vladislav Bolkhovitin wrote:
+> >> Wu Fengguang, on 06/20/2009 07:55 AM wrote:
+> >>> On Fri, Jun 19, 2009 at 03:04:36AM +0800, Andrew Morton wrote:
+> >>>> On Sun, 7 Jun 2009 06:45:38 +0800
+> >>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> >>>>
+> >>>>>>> Do you have a place where the raw blktrace data can be retrieved for
+> >>>>>>> more in-depth analysis?
+> >>>>>> I think your comment is really adequate. In another thread, Wu Fengguang pointed
+> >>>>>> out the same issue.
+> >>>>>> I and Wu also wait his analysis.
+> >>>>> And do it with a large readahead size :)
+> >>>>>
+> >>>>> Alan, this was my analysis:
+> >>>>>
+> >>>>> : Hifumi, can you help retest with some large readahead size?
+> >>>>> :
+> >>>>> : Your readahead size (128K) is smaller than your max_sectors_kb (256K),
+> >>>>> : so two readahead IO requests get merged into one real IO, that means
+> >>>>> : half of the readahead requests are delayed.
+> >>>>>
+> >>>>> ie. two readahead requests get merged and complete together, thus the effective
+> >>>>> IO size is doubled but at the same time it becomes completely synchronous IO.
+> >>>>>
+> >>>>> :
+> >>>>> : The IO completion size goes down from 512 to 256 sectors:
+> >>>>> :
+> >>>>> : before patch:
+> >>>>> :   8,0    3   177955    50.050313976     0  C   R 8724991 + 512 [0]
+> >>>>> :   8,0    3   177966    50.053380250     0  C   R 8725503 + 512 [0]
+> >>>>> :   8,0    3   177977    50.056970395     0  C   R 8726015 + 512 [0]
+> >>>>> :   8,0    3   177988    50.060326743     0  C   R 8726527 + 512 [0]
+> >>>>> :   8,0    3   177999    50.063922341     0  C   R 8727039 + 512 [0]
+> >>>>> :
+> >>>>> : after patch:
+> >>>>> :   8,0    3   257297    50.000760847     0  C   R 9480703 + 256 [0]
+> >>>>> :   8,0    3   257306    50.003034240     0  C   R 9480959 + 256 [0]
+> >>>>> :   8,0    3   257307    50.003076338     0  C   R 9481215 + 256 [0]
+> >>>>> :   8,0    3   257323    50.004774693     0  C   R 9481471 + 256 [0]
+> >>>>> :   8,0    3   257332    50.006865854     0  C   R 9481727 + 256 [0]
+> >>>>>
+> >>>> I haven't sent readahead-add-blk_run_backing_dev.patch in to Linus yet
+> >>>> and it's looking like 2.6.32 material, if ever.
+> >>>>
+> >>>> If it turns out to be wonderful, we could always ask the -stable
+> >>>> maintainers to put it in 2.6.x.y I guess.
+> >>> Agreed. The expected (and interesting) test on a properly configured
+> >>> HW RAID has not happened yet, hence the theory remains unsupported.
+> >> Hmm, do you see anything improper in the Ronald's setup (see
+> >> http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel)?
+> >> It is HW RAID based.
 > > 
-> > Subject "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
-> > isolate_lru_pages v2"
+> > No. Ronald's HW RAID performance is reasonably good.  I meant Hifumi's
+> > RAID performance is too bad and may be improved by increasing the
+> > readahead size, hehe.
+> > 
+> >> As I already wrote, we can ask Ronald to perform any needed tests.
+> > 
+> > Thanks!  Ronald's test results are:
+> > 
+> > 231   MB/s   HW RAID                        
+> >  69.6 MB/s   HW RAID + SCST                 
+> >  89.7 MB/s   HW RAID + SCST + this patch
+> > 
+> > So this patch seem to help SCST, but again it would be better to
+> > improve the SCST throughput first - it is now quite sub-optimal.
 > 
-> It is already committed, but I ran a test on the latest Linus kernel anyway:
+> No, SCST performance isn't an issue here. You simply can't get more than 
+> 110 MB/s from iSCSI over 1GbE, hence 231 MB/s fundamentally isn't 
+> possible. There is only room for 20% improvement, which should be 
 
-page-types showed that there are only ~1MB mapped regular (non-tmpfs) file pages.
-So not surprisingly it didn't help.
+Ah yes.
 
-> msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
-> msgctl11 cpuset=/ mems_allowed=0
-> Pid: 20366, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #144
-> Call Trace:
->  [<ffffffff810718d2>] ? oom_kill_process.clone.0+0xa9/0x245
->  [<ffffffff81071b99>] ? __out_of_memory+0x12b/0x142
->  [<ffffffff81071c1a>] ? out_of_memory+0x6a/0x94
->  [<ffffffff810742e4>] ? __alloc_pages_nodemask+0x42e/0x51d
->  [<ffffffff81031416>] ? copy_process+0x95/0x114f
->  [<ffffffff8107443c>] ? __get_free_pages+0x12/0x4f
->  [<ffffffff81031439>] ? copy_process+0xb8/0x114f
->  [<ffffffff8108192e>] ? handle_mm_fault+0x5dd/0x62f
->  [<ffffffff8103260f>] ? do_fork+0x13f/0x2ba
->  [<ffffffff81022c22>] ? do_page_fault+0x1f8/0x20d
->  [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
->  [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
-> Mem-Info:
-> DMA per-cpu:
-> CPU    0: hi:    0, btch:   1 usd:   0
-> CPU    1: hi:    0, btch:   1 usd:   0
-> DMA32 per-cpu:
-> CPU    0: hi:  186, btch:  31 usd: 159
-> CPU    1: hi:  186, btch:  31 usd:   2
-> Active_anon:70477 active_file:1 inactive_anon:4514
->  inactive_file:7 unevictable:0 dirty:0 writeback:0 unstable:0
->  free:1954 slab:42078 mapped:237 pagetables:57791 bounce:0
-> DMA free:3932kB min:60kB low:72kB high:88kB active_anon:236kB inactive_anon:0kB active_file:4kB inactive_file:4kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
-> lowmem_reserve[]: 0 968 968 968
-> DMA32 free:3884kB min:3948kB low:4932kB high:5920kB active_anon:281672kB inactive_anon:18056kB active_file:0kB inactive_file:24kB unevictable:0kB present:992032kB pages_scanned:6 all_unreclaimable? no
-> lowmem_reserve[]: 0 0 0 0
-> DMA: 180*4kB 36*8kB 3*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 3936kB
-> DMA32: 491*4kB 0*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3884kB
-> 1808 total pagecache pages
-> 0 pages in swap cache
-> Swap cache stats: add 0, delete 0, find 0/0
-> Free swap  = 0kB
-> Total swap = 0kB
-> 255744 pages RAM
-> 5589 pages reserved
-> 249340 pages shared
-> 219039 pages non-shared
-> Out of memory: kill process 11471 (msgctl11) score 112393 or a child
-> Killed process 12318 (msgctl11)
-> 
-> 
-> David
+> achieved with better client-side-driven pipelining (see our other 
+> discussions, e.g. http://lkml.org/lkml/2009/5/12/370)
+
+Yeah, that's what I want to figure out why :)
+
+Thanks,
+Fengguang
+
+> > (Sorry for the long delay: currently I have not got an idea on
+> >  how to measure such timing issues.)
+> > 
+> > And if Ronald could provide the HW RAID performance with this patch,
+> > then we can confirm if this patch really makes a difference for RAID.
+> > 
+> > Thanks,
+> > Fengguang
