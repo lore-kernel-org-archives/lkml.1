@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbZF2S3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZF2SaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758754AbZF2S3v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZF2S3S
+	id S1758839AbZF2SaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 14:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZF2S3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:29:18 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33499 "EHLO
+	Mon, 29 Jun 2009 14:29:20 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53169 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbZF2S3N (ORCPT
+	with ESMTP id S1756199AbZF2S3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:29:13 -0400
+	Mon, 29 Jun 2009 14:29:16 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v7 2/5] eventfd - revised interface and cleanups (4th rev)
+Subject: [KVM PATCH v7 3/5] KVM: Fix races in irqfd using new eventfd_kref_get
+	interface
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
        davidel@xmailserver.org
-Date: Mon, 29 Jun 2009 14:29:09 -0400
-Message-ID: <20090629182909.1886.61785.stgit@dev.haskins.net>
+Date: Mon, 29 Jun 2009 14:29:15 -0400
+Message-ID: <20090629182915.1886.54144.stgit@dev.haskins.net>
 In-Reply-To: <20090629181954.1886.20225.stgit@dev.haskins.net>
 References: <20090629181954.1886.20225.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -27,399 +28,277 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Davide Libenzi <davidel@xmailserver.org>
+eventfd currently emits a POLLHUP wakeup on f_ops->release() to generate a
+"release" callback.  This lets eventfd clients know if the eventfd is about
+to go away and is very useful particularly for in-kernel clients.  However,
+until recently it is not possible to use this feature of eventfd in a
+race-free way.  This patch utilizes a new eventfd interface to rectify
+the problem.
 
-The following patch changes the eventfd interface to de-couple the eventfd
-memory context, from the file pointer instance.
-Without such change, there is no clean way to racely free handle the
-POLLHUP event sent when the last instance of the file* goes away.
-Also, now the internal eventfd APIs are using the eventfd context instead
-of the file*.
-
-Gregory, none of the APIs changed, so your patches do not need to be
-rebased over this one. The last three revisions just updated comments.
-
-Andrew, I'm not posting the "AIO select EVENTFD" patch at this time. Will
-eventually try another push in your skull once I come back from vacation ;)
-
-[gmh: resolved merge conflict against prior POLLHUP patch ]
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- drivers/lguest/lg.h          |    2 -
- drivers/lguest/lguest_user.c |    4 +
- fs/aio.c                     |   24 ++------
- fs/eventfd.c                 |  126 ++++++++++++++++++++++++++++++++++++------
- include/linux/aio.h          |    4 +
- include/linux/eventfd.h      |   35 +++++++++---
- 6 files changed, 147 insertions(+), 48 deletions(-)
+ include/linux/kvm_host.h |    5 +-
+ virt/kvm/eventfd.c       |  153 ++++++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 129 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
-index d4e8979..9c31382 100644
---- a/drivers/lguest/lg.h
-+++ b/drivers/lguest/lg.h
-@@ -82,7 +82,7 @@ struct lg_cpu {
- 
- struct lg_eventfd {
- 	unsigned long addr;
--	struct file *event;
-+	struct eventfd_ctx *event;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 2451f48..5a90c6a 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -141,7 +141,10 @@ struct kvm {
+ 	struct kvm_io_bus mmio_bus;
+ 	struct kvm_io_bus pio_bus;
+ #ifdef CONFIG_HAVE_KVM_EVENTFD
+-	struct list_head irqfds;
++	struct {
++		spinlock_t        lock;
++		struct list_head  items;
++	} irqfds;
+ #endif
+ 	struct kvm_vm_stat stat;
+ 	struct kvm_arch arch;
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index 9656027..cb29a85 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -36,16 +36,22 @@
+  * Credit goes to Avi Kivity for the original idea.
+  * --------------------------------------------------------------------
+  */
++
+ struct _irqfd {
+ 	struct kvm               *kvm;
++	struct eventfd_ctx       *eventfd;
+ 	int                       gsi;
+ 	struct list_head          list;
+ 	poll_table                pt;
+ 	wait_queue_head_t        *wqh;
+ 	wait_queue_t              wait;
+ 	struct work_struct        inject;
++	struct work_struct        shutdown;
++	int                       active:1; /* guarded by kvm->irqfds.lock */
  };
  
- struct lg_eventfd_map {
-diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
-index 32e2971..9f9a295 100644
---- a/drivers/lguest/lguest_user.c
-+++ b/drivers/lguest/lguest_user.c
-@@ -50,7 +50,7 @@ static int add_eventfd(struct lguest *lg, unsigned long addr, int fd)
- 
- 	/* Now append new entry. */
- 	new->map[new->num].addr = addr;
--	new->map[new->num].event = eventfd_fget(fd);
-+	new->map[new->num].event = eventfd_ctx_fdget(fd);
- 	if (IS_ERR(new->map[new->num].event)) {
- 		kfree(new);
- 		return PTR_ERR(new->map[new->num].event);
-@@ -357,7 +357,7 @@ static int close(struct inode *inode, struct file *file)
- 
- 	/* Release any eventfds they registered. */
- 	for (i = 0; i < lg->eventfds->num; i++)
--		fput(lg->eventfds->map[i].event);
-+		eventfd_ctx_put(lg->eventfds->map[i].event);
- 	kfree(lg->eventfds);
- 
- 	/* If lg->dead doesn't contain an error code it will be NULL or a
-diff --git a/fs/aio.c b/fs/aio.c
-index 76da125..d065b2c 100644
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -485,6 +485,8 @@ static inline void really_put_req(struct kioctx *ctx, struct kiocb *req)
++static struct workqueue_struct *irqfd_cleanup_wq;
++
+ static void
+ irqfd_inject(struct work_struct *work)
  {
- 	assert_spin_locked(&ctx->ctx_lock);
- 
-+	if (req->ki_eventfd != NULL)
-+		eventfd_ctx_put(req->ki_eventfd);
- 	if (req->ki_dtor)
- 		req->ki_dtor(req);
- 	if (req->ki_iovec != &req->ki_inline_vec)
-@@ -509,8 +511,6 @@ static void aio_fput_routine(struct work_struct *data)
- 		/* Complete the fput(s) */
- 		if (req->ki_filp != NULL)
- 			__fput(req->ki_filp);
--		if (req->ki_eventfd != NULL)
--			__fput(req->ki_eventfd);
- 
- 		/* Link the iocb into the context's free list */
- 		spin_lock_irq(&ctx->ctx_lock);
-@@ -528,8 +528,6 @@ static void aio_fput_routine(struct work_struct *data)
-  */
- static int __aio_put_req(struct kioctx *ctx, struct kiocb *req)
- {
--	int schedule_putreq = 0;
--
- 	dprintk(KERN_DEBUG "aio_put(%p): f_count=%ld\n",
- 		req, atomic_long_read(&req->ki_filp->f_count));
- 
-@@ -549,24 +547,16 @@ static int __aio_put_req(struct kioctx *ctx, struct kiocb *req)
- 	 * we would not be holding the last reference to the file*, so
- 	 * this function will be executed w/out any aio kthread wakeup.
- 	 */
--	if (unlikely(atomic_long_dec_and_test(&req->ki_filp->f_count)))
--		schedule_putreq++;
--	else
--		req->ki_filp = NULL;
--	if (req->ki_eventfd != NULL) {
--		if (unlikely(atomic_long_dec_and_test(&req->ki_eventfd->f_count)))
--			schedule_putreq++;
--		else
--			req->ki_eventfd = NULL;
--	}
--	if (unlikely(schedule_putreq)) {
-+	if (unlikely(atomic_long_dec_and_test(&req->ki_filp->f_count))) {
- 		get_ioctx(ctx);
- 		spin_lock(&fput_lock);
- 		list_add(&req->ki_list, &fput_head);
- 		spin_unlock(&fput_lock);
- 		queue_work(aio_wq, &fput_work);
--	} else
-+	} else {
-+		req->ki_filp = NULL;
- 		really_put_req(ctx, req);
-+	}
- 	return 1;
+@@ -58,30 +64,78 @@ irqfd_inject(struct work_struct *work)
+ 	mutex_unlock(&kvm->irq_lock);
  }
  
-@@ -1622,7 +1612,7 @@ static int io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
- 		 * an eventfd() fd, and will be signaled for each completed
- 		 * event using the eventfd_signal() function.
- 		 */
--		req->ki_eventfd = eventfd_fget((int) iocb->aio_resfd);
-+		req->ki_eventfd = eventfd_ctx_fdget((int) iocb->aio_resfd);
- 		if (IS_ERR(req->ki_eventfd)) {
- 			ret = PTR_ERR(req->ki_eventfd);
- 			req->ki_eventfd = NULL;
-diff --git a/fs/eventfd.c b/fs/eventfd.c
-index 72f5f8d..31d12de 100644
---- a/fs/eventfd.c
-+++ b/fs/eventfd.c
-@@ -14,35 +14,44 @@
- #include <linux/list.h>
- #include <linux/spinlock.h>
- #include <linux/anon_inodes.h>
--#include <linux/eventfd.h>
- #include <linux/syscalls.h>
- #include <linux/module.h>
-+#include <linux/kref.h>
-+#include <linux/eventfd.h>
- 
- struct eventfd_ctx {
-+	struct kref kref;
- 	wait_queue_head_t wqh;
- 	/*
- 	 * Every time that a write(2) is performed on an eventfd, the
- 	 * value of the __u64 being written is added to "count" and a
- 	 * wakeup is performed on "wqh". A read(2) will return the "count"
- 	 * value to userspace, and will reset "count" to zero. The kernel
--	 * size eventfd_signal() also, adds to the "count" counter and
-+	 * side eventfd_signal() also, adds to the "count" counter and
- 	 * issue a wakeup.
- 	 */
- 	__u64 count;
- 	unsigned int flags;
- };
- 
--/*
-- * Adds "n" to the eventfd counter "count". Returns "n" in case of
-- * success, or a value lower then "n" in case of coutner overflow.
-- * This function is supposed to be called by the kernel in paths
-- * that do not allow sleeping. In this function we allow the counter
-- * to reach the ULLONG_MAX value, and we signal this as overflow
-- * condition by returining a POLLERR to poll(2).
-+/**
-+ * eventfd_signal - Adds @n to the eventfd counter.
-+ * @ctx: [in] Pointer to the eventfd context.
-+ * @n: [in] Value of the counter to be added to the eventfd internal counter.
-+ *          The value cannot be negative.
-+ *
-+ * This function is supposed to be called by the kernel in paths that do not
-+ * allow sleeping. In this function we allow the counter to reach the ULLONG_MAX
-+ * value, and we signal this as overflow condition by returining a POLLERR
-+ * to poll(2).
-+ *
-+ * Returns @n in case of success, a non-negative number lower than @n in case
-+ * of overflow, or the following error codes:
-+ *
-+ * -EINVAL    : The value of @n is negative.
-  */
--int eventfd_signal(struct file *file, int n)
-+int eventfd_signal(struct eventfd_ctx *ctx, int n)
- {
--	struct eventfd_ctx *ctx = file->private_data;
- 	unsigned long flags;
- 
- 	if (n < 0)
-@@ -59,17 +68,45 @@ int eventfd_signal(struct file *file, int n)
- }
- EXPORT_SYMBOL_GPL(eventfd_signal);
- 
-+static void eventfd_free(struct kref *kref)
-+{
-+	struct eventfd_ctx *ctx = container_of(kref, struct eventfd_ctx, kref);
-+
-+	kfree(ctx);
-+}
-+
-+/**
-+ * eventfd_ctx_get - Acquires a reference to the internal eventfd context.
-+ * @ctx: [in] Pointer to the eventfd context.
-+ *
-+ * Returns: In case of success, returns a pointer to the eventfd context.
++/*
++ * Race-free decouple logic (ordering is critical)
 + */
-+struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx)
++static void
++irqfd_shutdown(struct work_struct *work)
 +{
-+	kref_get(&ctx->kref);
-+	return ctx;
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_get);
++	struct _irqfd *irqfd = container_of(work, struct _irqfd, shutdown);
 +
-+/**
-+ * eventfd_ctx_put - Releases a reference to the internal eventfd context.
-+ * @ctx: [in] Pointer to eventfd context.
++	/*
++	 * Synchronize with the wait-queue and unhook ourselves to prevent
++	 * further events.
++	 */
++	remove_wait_queue(irqfd->wqh, &irqfd->wait);
++
++	/*
++	 * We know no new events will be scheduled at this point, so block
++	 * until all previously outstanding events have completed
++	 */
++	flush_work(&irqfd->inject);
++
++	/*
++	 * It is now safe to release the object's resources
++	 */
++	eventfd_ctx_put(irqfd->eventfd);
++	kfree(irqfd);
++}
++
++/*
++ * Mark the irqfd as inactive and schedule it for removal
 + *
-+ * The eventfd context reference must have been previously acquired either
-+ * with eventfd_ctx_get() or eventfd_ctx_fdget()).
++ * assumes kvm->irqfds.lock is held
 + */
-+void eventfd_ctx_put(struct eventfd_ctx *ctx)
++static void
++irqfd_deactivate(struct _irqfd *irqfd)
 +{
-+	kref_put(&ctx->kref, eventfd_free);
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_put);
++	BUG_ON(!irqfd->active);
 +
- static int eventfd_release(struct inode *inode, struct file *file)
++	irqfd->active = false;
++	list_del(&irqfd->list);
++
++	queue_work(irqfd_cleanup_wq, &irqfd->shutdown);
++}
++
++/*
++ * Called with wqh->lock held and interrupts disabled
++ */
+ static int
+ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
  {
- 	struct eventfd_ctx *ctx = file->private_data;
+ 	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
+ 	unsigned long flags = (unsigned long)key;
  
 -	/*
--	 * No need to hold the lock here, since we are on the file cleanup
--	 * path and the ones still attached to the wait queue will be
--	 * serialized by wake_up_locked_poll().
+-	 * Assume we will be called with interrupts disabled
 -	 */
--	wake_up_locked_poll(&ctx->wqh, POLLHUP);
--	kfree(ctx);
-+	wake_up_poll(&ctx->wqh, POLLHUP);
-+	eventfd_ctx_put(ctx);
+ 	if (flags & POLLIN)
+-		/*
+-		 * Defer the IRQ injection until later since we need to
+-		 * acquire the kvm->lock to do so.
+-		 */
++		/* An event has been signaled, inject an interrupt */
+ 		schedule_work(&irqfd->inject);
+ 
+ 	if (flags & POLLHUP) {
+-		/*
+-		 * for now, just remove ourselves from the list and let
+-		 * the rest dangle.  We will fix this up later once
+-		 * the races in eventfd are fixed
+-		 */
+-		__remove_wait_queue(irqfd->wqh, &irqfd->wait);
+-		irqfd->wqh = NULL;
++		/* The eventfd is closing, detach from KVM */
++		struct kvm *kvm = irqfd->kvm;
++		unsigned long flags;
++
++		spin_lock_irqsave(&kvm->irqfds.lock, flags);
++
++		if (irqfd->active)
++			/*
++			 * If we get here, we can be sure no-one else is
++			 * trying to shutdown this object at the same time
++			 * since we hold the list lock.
++			 */
++			irqfd_deactivate(irqfd);
++
++		spin_unlock_irqrestore(&kvm->irqfds.lock, flags);
+ 	}
+ 
  	return 0;
- }
- 
-@@ -193,6 +230,16 @@ static const struct file_operations eventfd_fops = {
- 	.write		= eventfd_write,
- };
- 
-+/**
-+ * eventfd_fget - Acquire a reference of an eventfd file descriptor.
-+ * @fd: [in] Eventfd file descriptor.
-+ *
-+ * Returns a pointer to the eventfd file structure in case of success, or the
-+ * following error pointer:
-+ *
-+ * -EBADF    : Invalid @fd file descriptor.
-+ * -EINVAL   : The @fd file descriptor is not an eventfd file.
-+ */
- struct file *eventfd_fget(int fd)
+@@ -102,6 +156,7 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
  {
- 	struct file *file;
-@@ -209,6 +256,48 @@ struct file *eventfd_fget(int fd)
- }
- EXPORT_SYMBOL_GPL(eventfd_fget);
+ 	struct _irqfd *irqfd;
+ 	struct file *file = NULL;
++	struct eventfd_ctx *eventfd = NULL;
+ 	int ret;
+ 	unsigned int events;
  
-+/**
-+ * eventfd_ctx_fdget - Acquires a reference to the internal eventfd context.
-+ * @fd: [in] Eventfd file descriptor.
-+ *
-+ * Returns a pointer to the internal eventfd context, otherwise the error
-+ * pointers returned by the following functions:
-+ *
-+ * eventfd_fget
-+ */
-+struct eventfd_ctx *eventfd_ctx_fdget(int fd)
-+{
-+	struct file *file;
-+	struct eventfd_ctx *ctx;
-+
-+	file = eventfd_fget(fd);
-+	if (IS_ERR(file))
-+		return (struct eventfd_ctx *) file;
-+	ctx = eventfd_ctx_get(file->private_data);
-+	fput(file);
-+
-+	return ctx;
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_fdget);
-+
-+/**
-+ * eventfd_ctx_fileget - Acquires a reference to the internal eventfd context.
-+ * @file: [in] Eventfd file pointer.
-+ *
-+ * Returns a pointer to the internal eventfd context, otherwise the error
-+ * pointer:
-+ *
-+ * -EINVAL   : The @fd file descriptor is not an eventfd file.
-+ */
-+struct eventfd_ctx *eventfd_ctx_fileget(struct file *file)
-+{
-+	if (file->f_op != &eventfd_fops)
-+		return ERR_PTR(-EINVAL);
-+
-+	return eventfd_ctx_get(file->private_data);
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_fileget);
-+
- SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- {
- 	int fd;
-@@ -225,6 +314,7 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
- 	if (!ctx)
- 		return -ENOMEM;
+@@ -113,6 +168,8 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ 	irqfd->gsi = gsi;
+ 	INIT_LIST_HEAD(&irqfd->list);
+ 	INIT_WORK(&irqfd->inject, irqfd_inject);
++	INIT_WORK(&irqfd->shutdown, irqfd_shutdown);
++	irqfd->active = true;
  
-+	kref_init(&ctx->kref);
- 	init_waitqueue_head(&ctx->wqh);
- 	ctx->count = count;
- 	ctx->flags = flags;
-diff --git a/include/linux/aio.h b/include/linux/aio.h
-index b16a957..47f7d93 100644
---- a/include/linux/aio.h
-+++ b/include/linux/aio.h
-@@ -121,9 +121,9 @@ struct kiocb {
+ 	file = eventfd_fget(fd);
+ 	if (IS_ERR(file)) {
+@@ -120,6 +177,14 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ 		goto fail;
+ 	}
+ 
++	eventfd = eventfd_ctx_fileget(file);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		goto fail;
++	}
++
++	irqfd->eventfd = eventfd;
++
+ 	/*
+ 	 * Install our own custom wake-up handling so we are notified via
+ 	 * a callback whenever someone signals the underlying eventfd
+@@ -129,12 +194,13 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ 
+ 	events = file->f_op->poll(file, &irqfd->pt);
+ 
+-	mutex_lock(&kvm->lock);
+-	list_add_tail(&irqfd->list, &kvm->irqfds);
+-	mutex_unlock(&kvm->lock);
++	spin_lock_irq(&kvm->irqfds.lock);
++	list_add_tail(&irqfd->list, &kvm->irqfds.items);
++	spin_unlock_irq(&kvm->irqfds.lock);
  
  	/*
- 	 * If the aio_resfd field of the userspace iocb is not zero,
--	 * this is the underlying file* to deliver event to.
-+	 * this is the underlying eventfd context to deliver events to.
+-	 * Check if there was an event already queued
++	 * Check if there was an event already pending on the eventfd
++	 * before we registered, and trigger it as if we didn't miss it.
  	 */
--	struct file		*ki_eventfd;
-+	struct eventfd_ctx	*ki_eventfd;
- };
+ 	if (events & POLLIN)
+ 		schedule_work(&irqfd->inject);
+@@ -148,6 +214,9 @@ kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
+ 	return 0;
  
- #define is_sync_kiocb(iocb)	((iocb)->ki_key == KIOCB_SYNC_KEY)
-diff --git a/include/linux/eventfd.h b/include/linux/eventfd.h
-index f45a8ae..3b85ba6 100644
---- a/include/linux/eventfd.h
-+++ b/include/linux/eventfd.h
-@@ -8,10 +8,8 @@
- #ifndef _LINUX_EVENTFD_H
- #define _LINUX_EVENTFD_H
- 
--#ifdef CONFIG_EVENTFD
--
--/* For O_CLOEXEC and O_NONBLOCK */
- #include <linux/fcntl.h>
-+#include <linux/file.h>
- 
- /*
-  * CAREFUL: Check include/asm-generic/fcntl.h when defining
-@@ -27,16 +25,37 @@
- #define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
- #define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
- 
-+#ifdef CONFIG_EVENTFD
+ fail:
++	if (eventfd && !IS_ERR(eventfd))
++		eventfd_ctx_put(eventfd);
 +
-+struct eventfd_ctx *eventfd_ctx_get(struct eventfd_ctx *ctx);
-+void eventfd_ctx_put(struct eventfd_ctx *ctx);
- struct file *eventfd_fget(int fd);
--int eventfd_signal(struct file *file, int n);
-+struct eventfd_ctx *eventfd_ctx_fdget(int fd);
-+struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
-+int eventfd_signal(struct eventfd_ctx *ctx, int n);
+ 	if (file && !IS_ERR(file))
+ 		fput(file);
  
- #else /* CONFIG_EVENTFD */
+@@ -158,24 +227,52 @@ fail:
+ void
+ kvm_irqfd_init(struct kvm *kvm)
+ {
+-	INIT_LIST_HEAD(&kvm->irqfds);
++	spin_lock_init(&kvm->irqfds.lock);
++	INIT_LIST_HEAD(&kvm->irqfds.items);
+ }
  
--#define eventfd_fget(fd) ERR_PTR(-ENOSYS)
--static inline int eventfd_signal(struct file *file, int n)
--{ return 0; }
 +/*
-+ * Ugly ugly ugly error layer to support modules that uses eventfd but
-+ * pretend to work in !CONFIG_EVENTFD configurations. Namely, AIO.
++ * This function is called as the kvm VM fd is being released. Shutdown all
++ * irqfds that still remain open
 + */
-+static inline struct eventfd_ctx *eventfd_ctx_fdget(int fd)
-+{
-+	return ERR_PTR(-ENOSYS);
+ void
+ kvm_irqfd_release(struct kvm *kvm)
+ {
+ 	struct _irqfd *irqfd, *tmp;
+ 
+-	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
+-		if (irqfd->wqh)
+-			remove_wait_queue(irqfd->wqh, &irqfd->wait);
++	spin_lock_irq(&kvm->irqfds.lock);
+ 
+-		flush_work(&irqfd->inject);
++	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds.items, list)
++		irqfd_deactivate(irqfd);
+ 
+-		mutex_lock(&kvm->lock);
+-		list_del(&irqfd->list);
+-		mutex_unlock(&kvm->lock);
++	spin_unlock_irq(&kvm->irqfds.lock);
+ 
+-		kfree(irqfd);
+-	}
++	/*
++	 * Block until we know all outstanding shutdown jobs have completed
++	 * since we do not take a kvm* reference.
++	 */
++	flush_workqueue(irqfd_cleanup_wq);
++
 +}
 +
-+static inline int eventfd_signal(struct eventfd_ctx *ctx, int n)
++/*
++ * create a host-wide workqueue for issuing deferred shutdown requests
++ * aggregated from all vm* instances. We need our own isolated single-thread
++ * queue to prevent deadlock against flushing the normal work-queue.
++ */
++static int __init irqfd_module_init(void)
 +{
-+	return -ENOSYS;
++	irqfd_cleanup_wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
++	if (!irqfd_cleanup_wq)
++		return -ENOMEM;
++
++	return 0;
+ }
++
++static void __exit irqfd_module_exit(void)
++{
++	destroy_workqueue(irqfd_cleanup_wq);
 +}
 +
-+static inline void eventfd_ctx_put(struct eventfd_ctx *ctx)
-+{
-+
-+}
- 
--#endif /* CONFIG_EVENTFD */
-+#endif
- 
- #endif /* _LINUX_EVENTFD_H */
- 
++module_init(irqfd_module_init);
++module_exit(irqfd_module_exit);
 
