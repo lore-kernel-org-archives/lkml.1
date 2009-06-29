@@ -1,92 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759453AbZF2P1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbZF2P3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759453AbZF2P1r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 11:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZF2P1j
+	id S1758308AbZF2P3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 11:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZF2P3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 11:27:39 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:59223 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752350AbZF2P1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 11:27:39 -0400
-Date: Mon, 29 Jun 2009 11:27:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906291654.56500.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906291107040.16597-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 29 Jun 2009 11:29:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60622 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbZF2P3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 11:29:06 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
+References: <28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com> <26537.1246086769@redhat.com> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com> <20090628142239.GA20986@localhost> <2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com> <20090628151026.GB25076@localhost> <20090629091741.ab815ae7.minchan.kim@barrios-desktop> <17678.1246270219@redhat.com> <20090629125549.GA22932@localhost> <29432.1246285300@redhat.com> 
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: dhowells@redhat.com, Mel Gorman <mel@csn.ul.ie>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: Found the commit that causes the OOMs
+Date: Mon, 29 Jun 2009 16:27:51 +0100
+Message-ID: <29869.1246289271@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
 
-> > > So, it seems, pm_request_resume() can't kill suspend requests by itself
-> > > and instead it has to queue up resume requests for this purpose, which
-> > > brings us right back to the problem of two requests queued up at a time
-> > > (a delayed suspend request and a resume request that is supposed to cancel it).
-> > 
-> > No, you're trying to do too much.  If the state is RPM_IDLE (i.e., a 
-> > suspend request is pending) then rpm_request_resume doesn't need to do 
-> > anything.  The device is already resumed!  Sure, it can try to kill the 
-> > request and change the state to RPM_ACTIVE, but it doesn't need to.
+Minchan Kim <minchan.kim@gmail.com> wrote:
+
+> Totally, I can't understand this situation.
+> Now, this page allocation is order zero and It is just likely GFP_HIGHUSER.
+> So it's unlikely interrupt context.
 > 
-> I think it does need to do that, because the reuqest may be scheduled way
-> in the future and we can't preserve its work structure until it runs.
-> pm_request_resume() doesn't know in advance when the suspend work function is
-> going to be queued up and run.
+> Buddy already has enough fallback DMA32, I think.
+> Why kernel can't allocate page for order 0 ?
+> Is it allocator bug ?
 
-It doesn't need to know.  All it needs to do is guarantee that the
-device will be in a resumed state some time not long after the function
-returns.  Thus calling rpm_request_resume while the status is RPM_IDLE
-is like calling it while the status is RPM_ACTIVE.  In neither case
-does it have to do anything, because the device will already be resumed
-when it returns.
+I don't know, but I've got you some more information.
 
-Perhaps instead we should provide a way to kill a pending suspend
-request?  It's not clear that anyone would need this.  The only reason
-I can think of is if you wanted to change the timeout duration.  But it
-wouldn't be able to run in interrupt context.
+I can reproduce the problem much, much quicker, it turns out by just running
+msgctl11 from the LTP syscalls testsuite a few times.  No NFSD traffic this
+time to confuse the issue or any other tests.
 
-> > Think about it.  Even if the suspend request were killed off, there's 
-> > always the possibility that someone could call rpm_runtime_suspend 
-> > right afterward.  If the driver really wants to resume the device and 
-> > prevent it from suspending again, then the driver should call 
-> > pm_runtime_get before pm_request_resume.  Then it won't matter if the 
-> > suspend request runs.
-> 
-> No, it doesn't matter if the request runs, but it does matter if the work
-> structure used for queuing it up may be used for another purpose. :-)
+I also managed to get a list of the most in-use slabs at the time:
 
-What else would it be used for?  If rpm_request_resume returns without 
-doing anything and leaves the status set to RPM_IDLE, then the work 
-structure won't be reused until the status changes.
+	002732 shmem_inode_cache         2750    800      5      1
+	003143 fs_cache                  3180     72     53      1
+	003145 files_cache               3145    728      5      1
+	003150 mm_struct                 3150    840      9      2
+	003152 task_xstate               3160    512      8      1
+	003174 sighand_cache             3180   2112      3      2
+	003185 task_struct               3185   1632      5      2
+	003192 signal_cache              3192    928      4      1
+	003192 task_delay_info           3304    136     28      1
+	003205 pid                       3330    104     37      1
+	003262 cred_jar                  3381    168     23      1
+	003438 size-2048                 3438   2072      3      2
+	003589 inode_cache               3606    608      6      1
+	004570 size-192                  4572    216     18      1
+	007644 size-64                   7656     88     44      1
+	007687 sysfs_dir_cache           7733    104     37      1
+	007875 selinux_inode_security    7920     96     40      1
+	008149 dentry                    8190    216     18      1
+	013692 size-128                 13900    152     25      1
+	047134 vm_area_struct           47440    192     20      1
+	182903 size-32                 183178     56     67      1
+	312010 avtab_node              312081     48     77      1
 
+This is from /proc/slabinfo, with the first two columns swapped to make
+sorting on it easier.  I've also attached the OOM report.
 
-> The problem with pm_<something>_put is that it does two things at a time,
-> decrements the resume counter and runs or queues up an idle notification.
-> Perhaps it's a good idea to call it after the second thing and change
-> pm_runtime_get() to pm_runtime_inuse(), so that we have:
-> 
-> * pm_runtime_inuse() - increment the resume counter
-> * pm_runtime_idle() - decrement the resume counter and run idle notification
-> * pm_request_idle()  - decrement the resume counter and queue idle notification
-> 
-> and __pm_runtime_idle() as the "bare" idle notification function?
+David
 
-I could live with that, but the nice thing about "get" and "put" is
-that they directly suggest a counter is being maintained and therefore
-the calls have to balance.  Maybe we should just call it 
-rpm_request_put and not worry that the put happens immediately.
-
-Alan Stern
-
+msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
+msgctl11 cpuset=/ mems_allowed=0
+Pid: 12170, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #146
+Call Trace:
+ [<ffffffff8107207e>] ? oom_kill_process.clone.0+0xa9/0x245
+ [<ffffffff81074168>] ? drain_local_pages+0x0/0x13
+ [<ffffffff81072345>] ? __out_of_memory+0x12b/0x142
+ [<ffffffff810723c6>] ? out_of_memory+0x6a/0x94
+ [<ffffffff81074a90>] ? __alloc_pages_nodemask+0x42e/0x51d
+ [<ffffffff81091546>] ? cache_alloc_refill+0x353/0x69c
+ [<ffffffff81031424>] ? copy_process+0x93/0x1136
+ [<ffffffff81091b24>] ? kmem_cache_alloc+0x83/0xc5
+ [<ffffffff81031424>] ? copy_process+0x93/0x1136
+ [<ffffffff81029da3>] ? update_curr+0x53/0xdf
+ [<ffffffff810820c1>] ? handle_mm_fault+0x5dd/0x62f
+ [<ffffffff81032606>] ? do_fork+0x13f/0x2ba
+ [<ffffffff81022c32>] ? do_page_fault+0x1f8/0x20d
+ [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
+ [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:
+CPU    0: hi:  186, btch:  31 usd:   0
+CPU    1: hi:  186, btch:  31 usd:  25
+Active_anon:75004 active_file:0 inactive_anon:2192
+ inactive_file:0 unevictable:0 dirty:0 writeback:0 unstable:0
+ free:2200 slab:37795 mapped:618 pagetables:60369 bounce:0
+DMA free:3928kB min:60kB low:72kB high:88kB active_anon:3024kB inactive_anon:128kB active_file:0kB inactive_file:0kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 968 968 968
+DMA32 free:4748kB min:3948kB low:4932kB high:5920kB active_anon:297092kB inactive_anon:8640kB active_file:0kB inactive_file:0kB unevictable:0kB present:992032kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 0*4kB 1*8kB 1*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3928kB
+DMA32: 476*4kB 56*8kB 14*16kB 4*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 4624kB
+1154 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 0kB
+Total swap = 0kB
+255744 pages RAM
+5589 pages reserved
+248214 pages shared
+219940 pages non-shared
+Out of memory: kill process 4164 (msgctl11) score 119366 or a child
+Killed process 10211 (msgctl11)
