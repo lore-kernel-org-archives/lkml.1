@@ -1,85 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbZF2Nq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757734AbZF2NtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757832AbZF2Nq7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZF2Nqv
+	id S1757734AbZF2NtK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZF2Ns4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:46:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58376 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZF2Nqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:46:51 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in cfq_find_alloc_queue()
-References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com>
-	<1246007120-24034-3-git-send-email-jens.axboe@oracle.com>
-	<x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
-	<20090627182617.GX23611@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 29 Jun 2009 09:46:48 -0400
-In-Reply-To: <20090627182617.GX23611@kernel.dk> (Jens Axboe's message of "Sat,
-	27 Jun 2009 20:26:17 +0200")
-Message-ID: <x494otzxid3.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Mon, 29 Jun 2009 09:48:56 -0400
+Received: from stinky.trash.net ([213.144.137.162]:37481 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZF2Nsz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:48:55 -0400
+Message-ID: <4A48C643.5030709@trash.net>
+Date: Mon, 29 Jun 2009 15:48:51 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andreas Jaggi <aj@open.ch>
+CC: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
+References: <4A48BC82.6040801@open.ch>
+In-Reply-To: <4A48BC82.6040801@open.ch>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+Andreas Jaggi wrote:
+> When tunneling IP traffic with GRE this patch makes it possible to 
+> export the ToS/DiffServ information to the outer IP header.
+> This is particularly useful in a scenario with ESP/AH where the inner IP 
+> header is encrypted but the packet priority/DiffServ information
+> should still be respected by the transporting routers (for example in an 
+> MPLS backbone network).
+> 
+> The feature is disabled by default and can be enabled on a per-interface 
+> basis (/proc/sys/net/ipv4/conf/ethX/gre_copy_tos).
+> 
+> Also does this bring Linux back in the game, as JunOS/IOS provide this 
+> for quite some time:
+> http://www.cisco.com/en/US/docs/ios/11_3/feature/guide/greqos.html
+> http://www.juniper.net/techpubs/software/junos/junos94/swconfig-services/configuring-a-gre-tunnel-to-copy-tos-bits-to-the-outer-ip-header.html 
+> 
+> 
+> Signed-off-by: Andreas Jaggi <aj@open.ch>
+> 
+> diff -urN vanilla-linux-2.6.29.4/include/linux/sysctl.h 
+> gre-copy-tos/include/linux/sysctl.h
+> --- vanilla-linux-2.6.29.4/include/linux/sysctl.h    2009-05-19 
+> 01:52:34.000000000 +0200
+> +++ gre-copy-tos/include/linux/sysctl.h    2009-06-29 14:23:07.000000000 
+> +0200
+> @@ -490,6 +490,7 @@
+>     NET_IPV4_CONF_ARP_IGNORE=19,
+>     NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
+>     NET_IPV4_CONF_ARP_ACCEPT=21,
+> +    NET_IPV4_CONF_GRE_COPY_TOS=22,
 
-> On Fri, Jun 26 2009, Jeff Moyer wrote:
->> Jens Axboe <jens.axboe@oracle.com> writes:
->> 
->> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
->> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
->> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
->> > never fails without having to ensure free memory.
->> >
->> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->> > ---
->> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
->> >  1 files changed, 67 insertions(+), 57 deletions(-)
->> >
->> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> > index c760ae7..91e7e0b 100644
->> > --- a/block/cfq-iosched.c
->> > +++ b/block/cfq-iosched.c
->> > +	/*
->> > +	 * Fallback dummy cfqq for extreme OOM conditions
->> > +	 */
->> > +	struct cfq_queue oom_cfqq;
->> 
->> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
->> guess that's not too bad.
->> 
->> > +	/*
->> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
->> > +	 * Grab a permanent reference to it, so that the normal code flow
->> > +	 * will not attempt to free it.
->> > +	 */
->> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
->> > +	atomic_inc(&cfqd->oom_cfqq.ref);
->> > +
->> 
->> I guess this is so we never try to free it, good.  ;)
->> 
->> One issue I have with this patch is that, if a task happens to run into
->> this condition, there is no way out.  It will always have the oom_cfqq
->> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
->
-> Yeah, I fixed that about an hour after posting the patches. See:
->
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
->
-> I didn't post the 3/2 patch though.
-
-OK, that looks better.  Are you reposting the series, then?
-
-Cheers,
-Jeff
+Please add this to the rtnl_link interface instead of using
+sysctls.
