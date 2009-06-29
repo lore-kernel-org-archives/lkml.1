@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZF2NqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbZF2Nq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752AbZF2NqB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZF2Npx
+	id S1757832AbZF2Nq7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZF2Nqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:45:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38742 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 09:46:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58376 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZF2Npw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:45:52 -0400
-Subject: Re: [PATCH] fs: allow d_instantiate to be called with negative
- parent dentry
-From: Eric Paris <eparis@redhat.com>
-To: Jeremy Kerr <jk@ozlabs.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org
-In-Reply-To: <1246257118.265649.273423097532.1.gpush@pingu>
-References: <1246257118.265649.273423097532.1.gpush@pingu>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 09:45:43 -0400
-Message-Id: <1246283143.754.16.camel@dhcp235-23.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1752003AbZF2Nqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:46:51 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in cfq_find_alloc_queue()
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com>
+	<1246007120-24034-3-git-send-email-jens.axboe@oracle.com>
+	<x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
+	<20090627182617.GX23611@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 29 Jun 2009 09:46:48 -0400
+In-Reply-To: <20090627182617.GX23611@kernel.dk> (Jens Axboe's message of "Sat,
+	27 Jun 2009 20:26:17 +0200")
+Message-ID: <x494otzxid3.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-29 at 14:31 +0800, Jeremy Kerr wrote:
-> The new fsnotify infrastructure (starting at 90586523) causes an oops in
-> spufs, where we populate a directory with files before instantiating the
-> directory itself. The new changes seem to have introduced an assumption
-> that a dentry's parent will be positive when instantiating.
-> 
-> This change makes it once again possible to d_instantiate a dentry
-> with a negative parent, and brings __fsnotify_d_instantiate() into
-> line with inotify_d_instantiate(), which already has this NULL check.
-> 
-> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-This problem was introduced based on a private off list comment from Al
-Viro back on Feb 17th when he was reviewing my code:
+> On Fri, Jun 26 2009, Jeff Moyer wrote:
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+>> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+>> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+>> > never fails without having to ensure free memory.
+>> >
+>> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+>> > ---
+>> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+>> >  1 files changed, 67 insertions(+), 57 deletions(-)
+>> >
+>> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> > index c760ae7..91e7e0b 100644
+>> > --- a/block/cfq-iosched.c
+>> > +++ b/block/cfq-iosched.c
+>> > +	/*
+>> > +	 * Fallback dummy cfqq for extreme OOM conditions
+>> > +	 */
+>> > +	struct cfq_queue oom_cfqq;
+>> 
+>> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+>> guess that's not too bad.
+>> 
+>> > +	/*
+>> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+>> > +	 * Grab a permanent reference to it, so that the normal code flow
+>> > +	 * will not attempt to free it.
+>> > +	 */
+>> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+>> > +	atomic_inc(&cfqd->oom_cfqq.ref);
+>> > +
+>> 
+>> I guess this is so we never try to free it, good.  ;)
+>> 
+>> One issue I have with this patch is that, if a task happens to run into
+>> this condition, there is no way out.  It will always have the oom_cfqq
+>> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+>
+> Yeah, I fixed that about an hour after posting the patches. See:
+>
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
+>
+> I didn't post the 3/2 patch though.
 
-fsnotify_d_instantiate(): check for NULL inode in parent?  Really?
-BTW, where's the codepath without that stuff?  I mean, for sane
-boxen that have *notify configured out.  Idiotify is at least
-configurable away...
+OK, that looks better.  Are you reposting the series, then?
 
->From that comment I dropped the check for dentry->d_parent->d_inode.
-The old behavior (which inotify had) is exactly what you propose and
-would cause no problems for anything.  I'll leave it up to Al if he
-wants to argue that the spufs logic is illegal but I'll put this patch
-into my tree and send it toward Linus.
-
--Eric
-
+Cheers,
+Jeff
