@@ -1,163 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757749AbZF2Hmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZF2HmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757749AbZF2Hmb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZF2HmW
+	id S1756817AbZF2HmI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZF2Hl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:42:22 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:32832 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752978AbZF2HmU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:42:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bGDRFW1r7bYqCry+bnXw7ptoI8kQtLbbMGsdk9fANZL3UYjmR6NPq9mHyTD//nm/ub
-         O/YJtDNZ1BCsmJnqCavOxW7grEruprOgu/dj4g2dYWZRdhWhqJxVneAtgzi3C6kg7awx
-         1FvQwuhaQ7eglm8SRqkmhJMQosrB7ptg/IQ2A=
+	Mon, 29 Jun 2009 03:41:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52230 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754454AbZF2Hlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 03:41:53 -0400
+Message-ID: <4A486FCE.4070206@kernel.org>
+Date: Mon, 29 Jun 2009 00:39:58 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <f69abfc30906250147n7e0b2945x50af858f52adb904@mail.gmail.com>
-References: <f69abfc30906250042g4e6cec13n1a25f4b04ce5177c@mail.gmail.com>
-	 <1245917167.17089.102.camel@macbook.infradead.org>
-	 <f69abfc30906250147n7e0b2945x50af858f52adb904@mail.gmail.com>
-Date: Mon, 29 Jun 2009 09:42:22 +0200
-Message-ID: <f69abfc30906290042j7f98f99fs80d2ca952550ddd1@mail.gmail.com>
-Subject: Re: Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash 
-	chips
-From: Yegor Yefremov <yegorslists@googlemail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
+       tglx@linutronix.de, hpa@zytor.com, ntl@pobox.com, mel@csn.ul.ie,
+       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
+       rientjes@google.com, containers@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: only clear node_states for 64bit
+References: <alpine.DEB.1.10.0906041309230.8080@gentwo.org> <4A2803D1.4070001@kernel.org> <m3bpokiv0u.fsf@pobox.com> <4A3B49BA.40100@kernel.org> <m3prd0havh.fsf@pobox.com> <4A3D7419.8040305@kernel.org> <m3my807ug3.fsf@pobox.com> <4A3FA58A.3010909@kernel.org> <20090626135428.d8f88a70.akpm@linux-foundation.org> <4A4538FE.2090101@kernel.org> <20090627171714.GD21595@elte.hu> <4A4683B2.106@kernel.org>
+In-Reply-To: <4A4683B2.106@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the SST 39VF3202, 39VF6401B and 39VF6402B flash chips
+Yinghai Lu wrote:
+> Ingo Molnar wrote:
+>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>
+>>> Andrew Morton wrote:
+>>>> On Mon, 22 Jun 2009 08:38:50 -0700
+>>>> Yinghai Lu <yinghai@kernel.org> wrote:
+>>>>
+>>>>> Nathan reported that
+>>>>> | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
+>>>>> | Author: Yinghai Lu <yinghai@kernel.org>
+>>>>> | Date:   Tue Jun 16 15:33:00 2009 -0700
+>>>>> |
+>>>>> |    page-allocator: clear N_HIGH_MEMORY map before we set it again
+>>>>> |    
+>>>>> |    SRAT tables may contains nodes of very small size.  The arch code may
+>>>>> |    decide to not activate such a node.  However, currently the early boot
+>>>>> |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
+>>>>> |    active although these nodes have no present pages.
+>>>>> |    
+>>>>> |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
+>>>>>
+>>>>> the cpuset.mems cgroup attribute on an i386 kvm guest
+>>>>>
+>>>>> fix it by only clearing node_states[N_NORMAL_MEMORY] for 64bit only.
+>>>>> and need to do save/restore for that in find_zone_movable_pfn
+>>>>>
+>>>> There appear to be some words omitted from this changelog - it doesn't
+>>>> make sense.
+>>>>
+>>>> I think that perhaps a line got deleted before "the cpuset.mems cgroup
+>>>> ...".  That was the line which actualy describes the bug which we're
+>>>> fixing.  Or perhaps it was a single word?  "zeroes".
+>>>>
+>>>>
+>>>> I did this:
+>>>>
+>>>> Nathan reported that
+>>>> : 
+>>>> : | commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
+>>>> : | Author: Yinghai Lu <yinghai@kernel.org>
+>>>> : | Date:   Tue Jun 16 15:33:00 2009 -0700
+>>>> : |
+>>>> : |    page-allocator: clear N_HIGH_MEMORY map before we set it again
+>>>> : |
+>>>> : |    SRAT tables may contains nodes of very small size.  The arch code may
+>>>> : |    decide to not activate such a node.  However, currently the early boot
+>>>> : |    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
+>>>> : |    active although these nodes have no present pages.
+>>>> : |
+>>>> : |    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
+>>>> : 
+>>> "
+>>>> : unintentionally and incorrectly clears the cpuset.mems cgroup attribute on
+>>>> : an i386 kvm guest
+>>> "
+>>> ==> 
+>>>
+>>> 32bit assume NORMAL_MEMORY bit and HIGH_MEMORY bit are set for 
+>>> Node0 always.
+>> Where in the code is this assumption?
+> 
+> in mm/page_alloc.c
+> /*
+>  * Array of node states.
+>  */
+> nodemask_t node_states[NR_NODE_STATES] __read_mostly = {
+>         [N_POSSIBLE] = NODE_MASK_ALL,
+>         [N_ONLINE] = { { [0] = 1UL } },
+> #ifndef CONFIG_NUMA
+>         [N_NORMAL_MEMORY] = { { [0] = 1UL } },
+> #ifdef CONFIG_HIGHMEM
+>         [N_HIGH_MEMORY] = { { [0] = 1UL } },
+> #endif
+>         [N_CPU] = { { [0] = 1UL } },
+> #endif  /* NUMA */
+> };
+> EXPORT_SYMBOL(node_states);
+> 
+> for x86 64bit, we clear POSSIBLE and ONLINE in arch/x86/mm/numa_64.c::initmem_init
+> and this patch clear NORMAL in arch/x86/mm/init_64.c::paging_init
+> 
+> for x86 32bit: ONLINE get cleared in get_memcfg_from_srat()
+> and NORMAL and HIGH_MEMORY are not cleared
+> before try to set new in mm/page_alloc.c::free_area_init_nodes
+> 
+>>> and some code only check if HIGH_MEMORY is there to know if 
+>>> NORMAL_MEMORY is there.
+>> Which code is that exactly?
+>>
+> with grep:
+> arch/x86/mm/init_64.c:	nodes_clear(node_states[N_NORMAL_MEMORY]);
+> drivers/base/node.c:	return print_nodes_state(N_NORMAL_MEMORY, buf);
+> include/linux/nodemask.h:	N_NORMAL_MEMORY,	/* The node has regular memory */
+> include/linux/nodemask.h:	N_HIGH_MEMORY = N_NORMAL_MEMORY,
+> mm/memcontrol.c:	if (!node_state(node, N_NORMAL_MEMORY))
+> mm/page_alloc.c:	[N_NORMAL_MEMORY] = { { [0] = 1UL } },
+> mm/page_alloc.c:			node_set_state(zone_to_nid(zone), N_NORMAL_MEMORY);
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:		for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:		for_each_node_state(node, N_NORMAL_MEMORY) {
+> mm/slub.c:	for_each_node_state(node, N_NORMAL_MEMORY)
+> 
+> Documentation/cgroups/cpusets.txt:automatically tracks the value of node_states[N_HIGH_MEMORY]--i.e.,
+> Documentation/memory-hotplug.txt:status_change_nid is set node id when N_HIGH_MEMORY of nodemask is (will be)
+> arch/ia64/kernel/uncached.c:		if (!node_state(nid, N_HIGH_MEMORY))
+> drivers/base/node.c:	return print_nodes_state(N_HIGH_MEMORY, buf);
+> include/linux/cpuset.h:#define cpuset_current_mems_allowed (node_states[N_HIGH_MEMORY])
+> include/linux/nodemask.h:	N_HIGH_MEMORY,		/* The node has regular or high memory */
+> include/linux/nodemask.h:	N_HIGH_MEMORY = N_NORMAL_MEMORY,
+> kernel/cpuset.c: * found any online mems, return node_states[N_HIGH_MEMORY].
+> kernel/cpuset.c: * of node_states[N_HIGH_MEMORY].
+> kernel/cpuset.c:					node_states[N_HIGH_MEMORY]))
+> kernel/cpuset.c:					node_states[N_HIGH_MEMORY]);
+> kernel/cpuset.c:		*pmask = node_states[N_HIGH_MEMORY];
+> kernel/cpuset.c:	BUG_ON(!nodes_intersects(*pmask, node_states[N_HIGH_MEMORY]));
+> kernel/cpuset.c:	 * top_cpuset.mems_allowed tracks node_stats[N_HIGH_MEMORY];
+> kernel/cpuset.c:				node_states[N_HIGH_MEMORY]))
+> kernel/cpuset.c:		    nodes_subset(cp->mems_allowed, node_states[N_HIGH_MEMORY]))
+> kernel/cpuset.c:						node_states[N_HIGH_MEMORY]);
+> kernel/cpuset.c: * Keep top_cpuset.mems_allowed tracking node_states[N_HIGH_MEMORY].
+> kernel/cpuset.c: * Call this routine anytime after node_states[N_HIGH_MEMORY] changes.
+> kernel/cpuset.c:		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+> kernel/cpuset.c:	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
+> kernel/cpuset.c: * subset of node_states[N_HIGH_MEMORY], even if this means going outside the
+> mm/memcontrol.c:		for_each_node_state(node, N_HIGH_MEMORY) {
+> mm/memory_hotplug.c:		node_set_state(zone_to_nid(zone), N_HIGH_MEMORY);
+> mm/mempolicy.c:	if (!nodes_subset(new, node_states[N_HIGH_MEMORY])) {
+> mm/mempolicy.c:	for_each_node_state(nid, N_HIGH_MEMORY) {
+> mm/mempolicy.c:		if (!nodes_subset(nodes, node_states[N_HIGH_MEMORY]))
+> mm/mempolicy.c:			nodes = node_states[N_HIGH_MEMORY];
+> mm/mempolicy.c:			&node_states[N_HIGH_MEMORY], MPOL_MF_STATS, md);
+> mm/mempolicy.c:	for_each_node_state(n, N_HIGH_MEMORY)
+> mm/migrate.c:			if (!node_state(node, N_HIGH_MEMORY))
+> mm/oom_kill.c:	nodemask_t nodes = node_states[N_HIGH_MEMORY];
+> mm/page-writeback.c:	for_each_node_state(node, N_HIGH_MEMORY) {
+> mm/page_alloc.c:	[N_HIGH_MEMORY] = { { [0] = 1UL } },
+> mm/page_alloc.c: * tasks mems_allowed, or node_states[N_HIGH_MEMORY].)
+> mm/page_alloc.c:					&node_states[N_HIGH_MEMORY];
+> mm/page_alloc.c:	for_each_node_state(n, N_HIGH_MEMORY) {
+> mm/page_alloc.c:				(nodes_weight(node_states[N_HIGH_MEMORY]) + 1);
+> mm/page_alloc.c: * Populate N_HIGH_MEMORY for calculating usable_nodes.
+> mm/page_alloc.c:			node_set_state(early_node_map[i].nid, N_HIGH_MEMORY);
+> mm/page_alloc.c:	nodemask_t saved_node_state = node_states[N_HIGH_MEMORY];
+> mm/page_alloc.c:	int usable_nodes = nodes_weight(node_states[N_HIGH_MEMORY]);
+> mm/page_alloc.c:	for_each_node_state(nid, N_HIGH_MEMORY) {
+> mm/page_alloc.c:	node_states[N_HIGH_MEMORY] = saved_node_state;
+> mm/page_alloc.c:			node_set_state(nid, N_HIGH_MEMORY);
+> mm/vmalloc.c:		for_each_node_state(nr, N_HIGH_MEMORY)
+> mm/vmscan.c:		for_each_node_state(nid, N_HIGH_MEMORY) {
+> mm/vmscan.c:	for_each_node_state(nid, N_HIGH_MEMORY)
+> mm/vmstat.c:	if (!node_state(pgdat->node_id, N_HIGH_MEMORY))
+> 
+> for 64bit N_HIGH_MEMORY == NORMAL_MEMORY
+> 
+> for 32bit, there are more reference to N_HIGH_MEMORY...
+> 
 
-- extend struct amd_flash_info to enable 8 erase regions for 8MiB flash chips
-- change erase block command to 0x50 due to the differences
-between 39VF6401/02 and 39VF6401B/02B chips. Refer to the
-corresponding data sheets
-Table 6 -> 6th bus write cycle:
-39VF6401B data sheet http://www.sst.com/downloads/datasheet/S71288.pdf
-39VF6401 data sheet http://www.sst.com/downloads/datasheet/S71223-03.pdf
+ - Why is this patch good/desired?
 
-Signed-off-by: Yegor Yefremov <yegorslists@googlemail.com>
+fix the broken with cpuset.mems cgroup attribute on an i386 kvm guest
 
-Index: linus/drivers/mtd/chips/cfi_cmdset_0002.c
-===================================================================
---- linus.orig/drivers/mtd/chips/cfi_cmdset_0002.c
-+++ linus/drivers/mtd/chips/cfi_cmdset_0002.c
-@@ -50,6 +50,8 @@
- #define SST49LF004B	        0x0060
- #define SST49LF040B	        0x0050
- #define SST49LF008A		0x005a
-+#define SST39VF6401B		0x236D
-+#define SST39VF6402B		0x236C
- #define AT49BV6416		0x00d6
+ - What did prior code do, and why was that wrong?
 
- static int cfi_amdstd_read (struct mtd_info *, loff_t, size_t, size_t
-*, u_char *);
-@@ -1629,7 +1631,11 @@ static int __xipram do_erase_oneblock(st
- 	cfi_send_gen_cmd(0x80, cfi->addr_unlock1, chip->start, map, cfi,
-cfi->device_type, NULL);
- 	cfi_send_gen_cmd(0xAA, cfi->addr_unlock1, chip->start, map, cfi,
-cfi->device_type, NULL);
- 	cfi_send_gen_cmd(0x55, cfi->addr_unlock2, chip->start, map, cfi,
-cfi->device_type, NULL);
--	map_write(map, CMD(0x30), adr);
-+
-+	if (cfi->mfr == MANUFACTURER_SST && (cfi->id == SST39VF6401B ||
-cfi->id == SST39VF6402B))
-+		map_write(map, CMD(0x50), adr);
-+	else
-+		map_write(map, CMD(0x30), adr);
+clear node_states[N_HIGH_MEMORY] for 32 bit and 64bit.
+actually we only need clear that for 64bit to make that right for some strange
+case like small range in one node.
 
- 	chip->state = FL_ERASING;
- 	chip->erase_suspended = 0;
-Index: linus/drivers/mtd/chips/jedec_probe.c
-===================================================================
---- linus.orig/drivers/mtd/chips/jedec_probe.c
-+++ linus/drivers/mtd/chips/jedec_probe.c
-@@ -160,6 +160,9 @@
- #define SST39LF160	0x2782
- #define SST39VF1601	0x234b
- #define SST39VF3201	0x235b
-+#define SST39VF3202	0x235a
-+#define SST39VF6401B	0x236D
-+#define SST39VF6402B	0x236C
- #define SST39LF512	0x00D4
- #define SST39LF010	0x00D5
- #define SST39LF020	0x00D6
-@@ -273,7 +276,7 @@ struct amd_flash_info {
- 	const uint8_t dev_size;
- 	const uint8_t nr_regions;
- 	const uint16_t cmd_set;
--	const uint32_t regions[6];
-+	const uint32_t regions[8];
- 	const uint8_t devtypes;		/* Bitmask for x8, x16 etc. */
- 	const uint8_t uaddr;		/* unlock addrs for 8, 16, 32, 64 */
- };
-@@ -1519,6 +1522,59 @@ static const struct amd_flash_info jedec
- 			ERASEINFO(0x1000,256)
- 		}
- 	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF3202,
-+		.name		= "SST 39VF3202",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0xAAAA_0x5555,
-+		.dev_size	= SIZE_4MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 4,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256)
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF6401B,
-+		.name		= "SST 39VF6401B",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
-+		.dev_size	= SIZE_8MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 8,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_SST,     /* should be CFI */
-+		.dev_id		= SST39VF6402B,
-+		.name		= "SST 39VF6402B",
-+		.devtypes	= CFI_DEVICETYPE_X16,
-+		.uaddr		= MTD_UADDR_0x0AAA_0x0555,
-+		.dev_size	= SIZE_8MiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 8,
-+		.regions	= {
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+			ERASEINFO(0x1000,256),
-+		}
-+	}, {
- 		.mfr_id		= MANUFACTURER_SST,
- 		.dev_id		= SST36VF3203,
- 		.name		= "SST 36VF3203",
+ - What were the bad effects. (crash, right?)
+
+cpuset.mems can not be used ...
+
+ - What does this patch do to achieve that good status?
+
+
+fix the problem with cpuset.mems and only keep the clearing for x86 64bit.
+
+YH
