@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZF2GbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZF2Gcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbZF2GbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 02:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbZF2GbI
+	id S1756196AbZF2Gcn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 02:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbZF2Gcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 02:31:08 -0400
-Received: from fwc.sitour.cz ([62.209.212.18]:4127 "EHLO kali.sitour.cz"
+	Mon, 29 Jun 2009 02:32:36 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58606 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbZF2GbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 02:31:07 -0400
-X-Greylist: delayed 567 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jun 2009 02:31:07 EDT
-Message-ID: <4A485D71.5020204@mydatex.cz>
-Date: Mon, 29 Jun 2009 08:21:37 +0200
-From: Daniel Smolik <marvin@mydatex.cz>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1751353AbZF2Gcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 02:32:35 -0400
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13512] D43 on 2.6.30 doesn't suspend anymore
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.uzF.njASKB@chimera>
-In-Reply-To: <5Hhc7UkUKEO.A.uzF.njASKB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Subject: [PATCH] fs: allow d_instantiate to be called with negative parent
+	dentry
+Message-Id: <1246257118.265649.273423097532.1.gpush@pingu>
+To: <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Eric Paris <eparis@redhat.com>,
+       Christoph Hellwig <hch@lst.de>, <cbe-oss-dev@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Mon, 29 Jun 2009 14:31:58 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. affected napsal(a):
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13512
-> Subject		: D43 on 2.6.30 doesn't suspend anymore
-> Submitter	: Daniel Smolik <marvin@mydatex.cz>
-> Date		: 2009-06-11 20:12 (18 days old)
->
->
->   
-Yes problem still exists. I now bitsecting and I am near to find 
-affected patch.
+The new fsnotify infrastructure (starting at 90586523) causes an oops in
+spufs, where we populate a directory with files before instantiating the
+directory itself. The new changes seem to have introduced an assumption
+that a dentry's parent will be positive when instantiating.
 
-Regards
-       Dan
+This change makes it once again possible to d_instantiate a dentry
+with a negative parent, and brings __fsnotify_d_instantiate() into
+line with inotify_d_instantiate(), which already has this NULL check.
 
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
+---
+Apologies for the resend, fixed lkml address
+
+---
+ include/linux/fsnotify_backend.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
+index 44848aa..6c3de99 100644
+--- a/include/linux/fsnotify_backend.h
++++ b/include/linux/fsnotify_backend.h
+@@ -280,7 +280,7 @@ static inline void __fsnotify_update_dcache_flags(struct dentry *dentry)
+ 	assert_spin_locked(&dentry->d_lock);
+ 
+ 	parent = dentry->d_parent;
+-	if (fsnotify_inode_watches_children(parent->d_inode))
++	if (parent->d_inode && fsnotify_inode_watches_children(parent->d_inode))
+ 		dentry->d_flags |= DCACHE_FSNOTIFY_PARENT_WATCHED;
+ 	else
+ 		dentry->d_flags &= ~DCACHE_FSNOTIFY_PARENT_WATCHED;
