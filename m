@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbZF2W6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbZF2XCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759316AbZF2W6R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZF2W6G
+	id S1757561AbZF2XCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZF2XCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:58:06 -0400
-Received: from baikonur.stro.at ([213.239.196.228]:51211 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbZF2W6F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:58:05 -0400
-Date: Tue, 30 Jun 2009 00:36:46 +0200
-From: maximilian attems <max@stro.at>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, tj@kernel.org, ink@jurassic.park.msu.ru,
-       rth@twiddle.net, stable@kernel.org
-Subject: Re: + alpha-fix-percpu-build-breakage.patch added to -mm tree
-Message-ID: <20090629223646.GI3564@stro.at>
-References: <200906280107.n5S17MVD011837@imap1.linux-foundation.org>
+	Mon, 29 Jun 2009 19:02:08 -0400
+Received: from kroah.org ([198.145.64.141]:48176 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752828AbZF2XCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:02:07 -0400
+Date: Mon, 29 Jun 2009 15:52:21 -0700
+From: Greg KH <greg@kroah.com>
+To: tridge@samba.org
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090629225221.GA16870@kroah.com>
+References: <19013.8005.541836.436991@samba.org> <m1d48p5dil.fsf@fess.ebiederm.org> <19014.54044.484370.187018@samba.org> <m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org> <87ab3sx4ch.fsf@devron.myhome.or.jp> <19016.6463.997760.757811@samba.org> <20090629221826.GA12781@kroah.com> <19017.17250.371594.268824@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906280107.n5S17MVD011837@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <19017.17250.371594.268824@samba.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 27 Jun 2009, akpm@linux-foundation.org wrote:
+On Tue, Jun 30, 2009 at 08:42:42AM +1000, tridge@samba.org wrote:
+>  > I have no objection to take this patch for the -stable releases when it
+>  > goes into Linus's tree.  Just forward the git commit ids to
+>  > stable@kernel.org and I can take care of it.
+> 
+> ok, thanks Greg.
+> 
+> Hirofumi-san tells me we've missed the merge window for 2.6.31, so it
+> seems that this will go first into the fatfs tree, then go into
+> Linus's tree via -next for 2.6.32. So hopefully the patch will get
+> some more testing (perhaps in -mm?) before it needs to be considered
+> for -stable.
 
-> 
-> The patch titled
->      alpha: fix percpu build breakage
-> has been added to the -mm tree.  Its filename is
->      alpha-fix-percpu-build-breakage.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: alpha: fix percpu build breakage
-> From: Tejun Heo <tj@kernel.org>
-> 
-> alpha percpu access requires custom SHIFT_PERCPU_PTR() definition for
-> modules to work around addressing range limitation.  This is done via
-> generating inline assembly using C preprocessing which forces the
-> assembler to generate external reference.  This happens behind the
-> compiler's back and makes the compiler think that static percpu variables
-> in modules are unused.
-> 
-> This used to be worked around by using __unused attribute for percpu
-> variables which prevent the compiler from omitting the variable; however,
-> recent declare/definition attribute unification change broke this as
-> __used can't be used for declaration.  Also, in the process,
-> PER_CPU_ATTRIBUTES definition in alpha percpu.h got broken.
-> 
-> This patch adds PER_CPU_DEF_ATTRIBUTES which is only used for definitions
-> and make alpha use it to add __used for percpu variables in modules.  This
-> also fixes the PER_CPU_ATTRIBUTES double definition bug.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: maximilian attems <max@stro.at>
-> Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> Cc: Richard Henderson <rth@twiddle.net>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/alpha/include/asm/percpu.h |    6 +++---
->  include/asm-generic/percpu.h    |    4 ++++
->  include/linux/percpu-defs.h     |    3 ++-
->  3 files changed, 9 insertions(+), 4 deletions(-)
+That sounds reasonable.  Just add a:
+	Cc: stable <stable@kernel.org>
+in the "signed-off-by:" area of the patch, and when it goes into Linus's
+tree, the -stable team will be automatically notified of it and we will
+pick it up.
 
-verified that all Debian alpha images build fine with aboves patch.
-thanks.
+It needs to be in Linus's tree before we can add it to the -stable
+releases.
+
+thanks,
+
+greg k-h
