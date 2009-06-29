@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZF2RrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZF2Rrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754995AbZF2RrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZF2RrG
+	id S1757212AbZF2Rrj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZF2Rr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:47:06 -0400
-Received: from kroah.org ([198.145.64.141]:50287 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752439AbZF2RrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:47:04 -0400
-Date: Mon, 29 Jun 2009 10:33:08 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, intel-gfx@lists.freedesktop.org,
-       woodys@xandros.com, stefan.bader@canonical.com,
-       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, apw@canonical.com,
-       tim.gardner@canonical.com, torvalds@linux-foundation.org,
-       stable@kernel.org
-Subject: Re: [stable] [Intel-gfx] Intel 915GM MCHBAR bug
-Message-ID: <20090629173308.GB3901@kroah.com>
-References: <4A242C81.6020906@cs.helsinki.fi> <4A298971.5080006@xandros.com> <4A2A0951.1020608@cs.helsinki.fi> <20090605232711.d8503262.akpm@linux-foundation.org> <4A2A0E8C.1010109@cs.helsinki.fi> <20090606212759.31970fae@jbarnes-x200> <20090609150757.4a2109a9@jbarnes-x200> <20090609152828.d82528f3.akpm@linux-foundation.org>
+	Mon, 29 Jun 2009 13:47:28 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:42480 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbZF2Rr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:47:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MIJcvDKj1nwLRIdW4UXCainJ8P01Wu81aU0ZqFDMP1QhNbdeCI2zO4a71uOkOF4/lg
+         IcUefABEGlu4MXbisiM4BUu6LWo1Tc+6oGgA72EycBfOXePOFUJ8uW6cllw40DkWIb9C
+         M/NNRbbIZAztk3AKVLLGld6kifO5m/RSoJMHs=
+Date: Mon, 29 Jun 2009 19:47:20 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org, eric.dumazet@gmail.com
+Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
+	callbacks
+Message-ID: <20090629174720.GD2742@ami.dom.local>
+References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609152828.d82528f3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 03:28:28PM -0700, Andrew Morton wrote:
-> On Tue, 9 Jun 2009 15:07:57 -0700
-> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> 
-> > > > Andrew Morton wrote:
-> > > > > These might end up being 2.6.30.1 material.
-> > > > 
-> > > > Yes, agreed completely. We probably want ACK from Jesse and Bjorn,
-> > > > though.
-> > > 
-> > > I'm ok with it being 2.6.30.1 stuff, but given the significance of the
-> > > change we were worried about putting it into 2.6.30 late in the cycle.
-> > > But as you say, it's a very important performance fix for many
-> > > machines...
-> > > 
-> > > Anyway, Eric may already have it merged.  Eric?
-> > > 
-> > 
-> > It's merged now into the drm-intel-next tree, and therefore queued for
-> > the merge window.
-> 
-> <hunts around for a while>
-> 
-> This? http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=commitdiff;h=d765898970f35acef960581f678b9da9d5c779fa;hp=1b8e69662e1a086878bf930a6042daf7f8a076cc
-> 
-> It doesn't have cc:stable in the changelog, so there's a reasonable
-> chance that it will get lost.
-> 
-> The -stable guys troll the commit list looking for mainline commits
-> which mention stable@kernel.org in the changelog.
+On Mon, Jun 29, 2009 at 04:14:45PM +0200, Jiri Olsa wrote:
+...
+> +/**
+> + * sk_has_sleeper - check if there are any waiting processes
+> + * @sk: socket
+> + *
+> + * Returns true if socket has waiting processes
+> + */
+> +static inline int sk_has_sleeper(struct sock *sk)
+> +{
+> +	/*
+> +	 * We need to be sure we are in sync with the
+> +	 * add_wait_queue modifications to the wait queue.
+> +	 *
+> +	 * This memory barrier is paired in the sock_poll_wait.
+> +	 */
+> +	smp_mb();
+> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> +}
+> +
 
-I got it for the next .30 release.
+Btw. I hope Jiri won't "listen" to me, but I can't stop to mention
+sock_waitqueue_active() looks to me quite naturally better paired
+with sock_poll_wait() than sk_has_sleeper(which otherwise is more
+conspicuous, sorry Eric.)
 
-thanks,
+Jarek P.
 
-greg k-h
+> +/**
+> + * sock_poll_wait - place memory barrier behind the __poll_wait call.
+> + * @filp: file
+> + * @sk:   socket
+> + * @p:    poll_table
+> + */
+> +static inline void sock_poll_wait(struct file *filp, struct sock *sk,
+> +		poll_table *p)
+> +{
+> +	if (p && sk->sk_sleep) {
+> +		__poll_wait(filp, sk->sk_sleep, p);
+> +		/*
+> +		 * We need to be sure we are in sync with the
+> +		 * socket flags modification.
+> +		 *
+> +		 * This memory barrier is paired in the sk_has_sleeper.
+> +		*/
+> +		smp_mb();
+> +	}
+> +}
