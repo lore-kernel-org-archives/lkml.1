@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZF2BbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZF2Bkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755069AbZF2BbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 21:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZF2BbB
+	id S1755952AbZF2Bkg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 21:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZF2Bk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 21:31:01 -0400
-Received: from mail.samba.org ([66.70.73.150]:57206 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750951AbZF2BbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 21:31:00 -0400
+	Sun, 28 Jun 2009 21:40:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:30477 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751499AbZF2Bk0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 21:40:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FmA55Sf1biyB6SpkNeMIf1sH7Yq9sMsKbDBjz19fi8rC8GdS/Dh3Qsr2k9u8YnU/m/
+         Wi+IvczhDn//JIKKwYVbWAGRzji5Lv91dBRh5D1c/TZKa6vwEjE+jSCpjYfRDjLUF9vB
+         ux1CgTpxXcryeCV4vWasqS1/0dB5BXNlOLa6w=
+Message-ID: <4A481B88.30806@gmail.com>
+Date: Mon, 29 Jun 2009 09:40:24 +0800
+From: Eric Miao <eric.y.miao@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Aviv Laufer <aviv.laufer@gmail.com>
+CC: Richard Purdie <rpurdie@rpsys.net>, eric.miao@marvell.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bug in tdo24m
+References: <87972c700906230516n538ad959nbd4b1ea21943ffc2@mail.gmail.com> <1245761933.5987.20.camel@dax.rpnet.com>
+In-Reply-To: <1245761933.5987.20.camel@dax.rpnet.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19016.6463.997760.757811@samba.org>
-Date: Mon, 29 Jun 2009 11:30:39 +1000
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: ebiederm@xmission.com (Eric W. Biederman), john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <87ab3sx4ch.fsf@devron.myhome.or.jp>
-References: <19013.8005.541836.436991@samba.org>
-	<m1d48p5dil.fsf@fess.ebiederm.org>
-	<19014.54044.484370.187018@samba.org>
-	<m1vdmh2e26.fsf@fess.ebiederm.org>
-	<19015.482.794111.612472@samba.org>
-	<87ab3sx4ch.fsf@devron.myhome.or.jp>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hirofumi-san,
+Richard Purdie wrote:
+> Hi,
+> 
+> On Tue, 2009-06-23 at 15:16 +0300, Aviv Laufer wrote:
+>> I have found a bug in tdo24m.c .
+>> There is a call to kmalloc with the second param is sizeeof (flag)
+>> instead of flag.
+>> This cause  a crash.
+> 
+> Thats quite a nasty bug and its surprising its not been found before
+> now! Can you resubmit the patch with description and most importantly a
+> Signed-off-by line please (see Documentation/SubmittingPatches)?
+> 
 
- > If you want, I have no problem to do. However, I'm not thinking that
- > part is a bug.  And -stable rule is also "a real bug that bothers
- > people", but there is even a no bug reporter which tell actual problem.
+Ooops - this is embarrassing, yet I didn't find this causing any crash
+by now,  tdo24m works just OK on my Littleton and thus hiding this bug
+deeply.
 
-ok, then what about pushing the whole patch into -stable?
+Aviv,
 
-The 'bug' in this case is like a security hole, with Microsoft
-demonstrating an active exploit. This falls outside the normal range
-of bug fixes for -stable, but I think you'd have to agree that the
-whole situation is unusual.
-
-Cheers, Tridge
+Any update on this patch? I'd like to queue this ASAP.
