@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbZF2Xk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755909AbZF2XlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbZF2Xk7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZF2Xkv
+	id S1755909AbZF2XlV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZF2XlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:40:51 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:39438 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZF2Xku (ORCPT
+	Mon, 29 Jun 2009 19:41:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45790 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751486AbZF2XlE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:40:50 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Fix spin_event_timeout() to be robust over context
-	switches
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, timur@freescale.com,
-       jonsmirl@gmail.com
-Date: Mon, 29 Jun 2009 17:40:51 -0600
-Message-ID: <20090629234035.12475.58493.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 29 Jun 2009 19:41:04 -0400
+Date: Mon, 29 Jun 2009 16:39:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: tj@kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, mingo@elte.hu, andi@firstfloor.org,
+       hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and
+ improve lpage NUMA support
+Message-Id: <20090629163937.94c8cedd.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0906291920100.32637@gentwo.org>
+References: <1245850216-31653-1-git-send-email-tj@kernel.org>
+	<20090624165508.30b88343.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0906291920100.32637@gentwo.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+On Mon, 29 Jun 2009 19:20:53 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Current implementation of spin_event_timeout can be interrupted by an
-IRQ or context switch after testing the condition, but before checking
-the timeout.  This can cause the loop to report a timeout when the
-condition actually became true in the middle.
+> On Wed, 24 Jun 2009, Andrew Morton wrote:
+> 
+> > I assume from the tremendous number of for_each_possible_cpu()s that
+> > CPU hotplug awareness won't be happening.
+> 
+> Per cpu areas are allocated for all possible processors. No need to handle
+> offlining and onlining them.
 
-This patch adds one final check of the condition upon exit of the loop
-if the last test of the condition was still false.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
-
- arch/powerpc/include/asm/delay.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-
-diff --git a/arch/powerpc/include/asm/delay.h b/arch/powerpc/include/asm/delay.h
-index 1e2eb41..52e4d54 100644
---- a/arch/powerpc/include/asm/delay.h
-+++ b/arch/powerpc/include/asm/delay.h
-@@ -63,6 +63,8 @@ extern void udelay(unsigned long usecs);
- 			udelay(delay);                                         \
- 		else                                                           \
- 			cpu_relax();                                           \
-+	if (!__ret)                                                            \
-+		__ret = (condition);                                           \
- 	__ret;		                                                       \
- })
- 
-
+Well yes.  My point is that this is a bug-not-a-feature ;)
