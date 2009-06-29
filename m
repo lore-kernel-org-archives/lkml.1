@@ -1,94 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZF2Ipz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbZF2Ixu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753566AbZF2Ipz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 04:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZF2Ipr
+	id S1757683AbZF2Ixu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 04:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZF2Ixl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 04:45:47 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:35092 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751182AbZF2Ipq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 04:45:46 -0400
-Message-ID: <4A487EB9.7090600@linux.vnet.ibm.com>
-Date: Mon, 29 Jun 2009 10:43:37 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Mon, 29 Jun 2009 04:53:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38453 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752714AbZF2Ixl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 04:53:41 -0400
+Message-ID: <4A488104.3080801@kernel.org>
+Date: Mon, 29 Jun 2009 17:53:24 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       michaele@au1.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] gcov: fix documentation
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH] percpu: use __weak only in the definition of weak percpu
+ variables
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Jun 2009 08:53:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+__weak is necessary only for definition and might even not work in
+declaration.  Drop it from declaration.
 
-Commonly available versions of cp and tar don't work well with special
-files created using seq_file. Mention this problem in the gcov
-documentation and update the helper script example to work around
-these problems.
+This change was suggested by Ivan Kokshaysky.
 
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 ---
- Documentation/gcov.txt |   25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+Committed to percpu#for-next.  Thanks.
 
-Index: linux-2.6.31-rc1/Documentation/gcov.txt
-===================================================================
---- linux-2.6.31-rc1.orig/Documentation/gcov.txt
-+++ linux-2.6.31-rc1/Documentation/gcov.txt
-@@ -188,13 +188,18 @@ Solution: Exclude affected source files 
-           GCOV_PROFILE := n or GCOV_PROFILE_basename.o := n in the
-           corresponding Makefile.
+ include/linux/percpu-defs.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
+index cf32838..9b7a53c 100644
+--- a/include/linux/percpu-defs.h
++++ b/include/linux/percpu-defs.h
+@@ -56,7 +56,7 @@
+  */
+ #define DECLARE_PER_CPU_SECTION(type, name, sec)			\
+ 	extern __PCPU_DUMMY_ATTRS char __pcpu_scope_##name;		\
+-	extern __PCPU_ATTRS(sec) __weak __typeof__(type) per_cpu__##name
++	extern __PCPU_ATTRS(sec) __typeof__(type) per_cpu__##name
  
-+Problem:  Files copied from sysfs appear empty or incomplete.
-+Cause:    Due to the way seq_file works, some tools such as cp or tar
-+          may not correctly copy files from sysfs.
-+Solution: Use 'cat' to read .gcda files and 'cp -d' to copy links.
-+          Alternatively use the mechanism shown in Appendix B.
-+
- 
- Appendix A: gather_on_build.sh
- ==============================
- 
- Sample script to gather coverage meta files on the build machine
- (see 6a):
--
- #!/bin/bash
- 
- KSRC=$1
-@@ -226,7 +231,7 @@ Appendix B: gather_on_test.sh
- Sample script to gather coverage data files on the test machine
- (see 6b):
- 
--#!/bin/bash
-+#!/bin/bash -e
- 
- DEST=$1
- GCDA=/sys/kernel/debug/gcov
-@@ -236,11 +241,13 @@ if [ -z "$DEST" ] ; then
-   exit 1
- fi
- 
--find $GCDA -name '*.gcno' -o -name '*.gcda' | tar cfz $DEST -T -
-+TEMPDIR=$(mktemp -d)
-+echo Collecting data..
-+find $GCDA -type d -exec mkdir -p $TEMPDIR/\{\} \;
-+find $GCDA -name '*.gcda' -exec sh -c 'cat < $0 > '$TEMPDIR'/$0' {} \;
-+find $GCDA -name '*.gcno' -exec sh -c 'cp -d $0 '$TEMPDIR'/$0' {} \;
-+tar czf $DEST -C $TEMPDIR sys
-+rm -rf $TEMPDIR
- 
--if [ $? -eq 0 ] ; then
--  echo "$DEST successfully created, copy to build system and unpack with:"
--  echo "  tar xfz $DEST"
--else
--  echo "Could not create file $DEST"
--fi
-+echo "$DEST successfully created, copy to build system and unpack with:"
-+echo "  tar xfz $DEST"
+ #define DEFINE_PER_CPU_SECTION(type, name, sec)				\
+ 	__PCPU_DUMMY_ATTRS char __pcpu_scope_##name;			\
+-- 
+1.6.0.2
 
