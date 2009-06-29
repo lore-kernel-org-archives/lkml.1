@@ -1,194 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758957AbZF2M40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbZF2M6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758957AbZF2M40 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 08:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZF2M4S
+	id S1757946AbZF2M6b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 08:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZF2M6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 08:56:18 -0400
-Received: from mga03.intel.com ([143.182.124.21]:61314 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZF2M4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 08:56:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="159575591"
-Date: Mon, 29 Jun 2009 20:55:49 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-ID: <20090629125549.GA22932@localhost>
-References: <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com> <20090628142239.GA20986@localhost> <2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com> <20090628151026.GB25076@localhost> <20090629091741.ab815ae7.minchan.kim@barrios-desktop> <17678.1246270219@redhat.com>
+	Mon, 29 Jun 2009 08:58:23 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:49171 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZF2M6W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 08:58:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ityIOSuYdl56KD2DFa2atTiS0IHKlS+GqLL28fr46AiUpMogsBA7TPjDkmIsvCaW+C
+         oct/4FB/mRoKisDPkLlkJWruumUt64UH7sRMvBL6X2ejd6eKo/eCcF0wO1ezs0AdLxJf
+         JfC1v5f0YphEUO5J4tW25NeX2hJotk1Ub3J2E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17678.1246270219@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090629125434.GA8416@localhost>
+References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2>
+	 <20090606233056.7B9F.A69D9226@jp.fujitsu.com>
+	 <20090606224538.GA6173@localhost>
+	 <20090618120436.ad3196e3.akpm@linux-foundation.org>
+	 <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net>
+	 <20090629093423.GB1315@localhost>
+	 <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com>
+	 <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost>
+Date: Mon, 29 Jun 2009 14:58:24 +0200
+Message-ID: <e2e108260906290558s59bc0475r713952fca6fa71d@mail.gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       Ronald Moesbergen <intercommit@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
+       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 06:10:19PM +0800, David Howells wrote:
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Yes, good catch! (sorry I was in a hurry at the time..)
-> 
-> That doesn't compile:
+On Mon, Jun 29, 2009 at 2:54 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> Is blockdev-perftest public available? It's not obvious from google search.
 
-Sorry! This one compiles OK:
+This script is publicly available. You can retrieve it by running the
+following command:
+svn co https://scst.svn.sourceforge.net/svnroot/scst/trunk/scripts
 
-diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-index 416f748..30bb1fe 100644
---- a/include/linux/vmstat.h
-+++ b/include/linux/vmstat.h
-@@ -166,15 +166,8 @@ static inline unsigned long zone_page_state(struct zone *zone,
- 	return x;
- }
- 
--extern unsigned long global_lru_pages(void);
--
--static inline unsigned long zone_lru_pages(struct zone *zone)
--{
--	return (zone_page_state(zone, NR_ACTIVE_ANON)
--		+ zone_page_state(zone, NR_ACTIVE_FILE)
--		+ zone_page_state(zone, NR_INACTIVE_ANON)
--		+ zone_page_state(zone, NR_INACTIVE_FILE));
--}
-+extern unsigned long global_reclaimable_pages(void);
-+extern unsigned long zone_reclaimable_pages(struct zone *zone);
- 
- #ifdef CONFIG_NUMA
- /*
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index a91b870..74c3067 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -394,7 +394,8 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
- 		struct zone *z =
- 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
- 
--		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
-+		x += zone_page_state(z, NR_FREE_PAGES) +
-+		     zone_reclaimable_pages(z);
- 	}
- 	/*
- 	 * Make sure that the number of highmem pages is never larger
-@@ -418,7 +419,7 @@ unsigned long determine_dirtyable_memory(void)
- {
- 	unsigned long x;
- 
--	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
-+	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
- 
- 	if (!vm_highmem_is_dirtyable)
- 		x -= highmem_dirtyable_memory(x);
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 026f452..1e29c7d 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1693,7 +1693,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
- 			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
- 				continue;
- 
--			lru_pages += zone_lru_pages(zone);
-+			lru_pages += zone_reclaimable_pages(zone);
- 		}
- 	}
- 
-@@ -1910,7 +1910,7 @@ loop_again:
- 		for (i = 0; i <= end_zone; i++) {
- 			struct zone *zone = pgdat->node_zones + i;
- 
--			lru_pages += zone_lru_pages(zone);
-+			lru_pages += zone_reclaimable_pages(zone);
- 		}
- 
- 		/*
-@@ -1954,7 +1954,7 @@ loop_again:
- 			if (zone_is_all_unreclaimable(zone))
- 				continue;
- 			if (nr_slab == 0 && zone->pages_scanned >=
--						(zone_lru_pages(zone) * 6))
-+					(zone_reclaimable_pages(zone) * 6))
- 					zone_set_flag(zone,
- 						      ZONE_ALL_UNRECLAIMABLE);
- 			/*
-@@ -2121,12 +2121,33 @@ void wakeup_kswapd(struct zone *zone, int order)
- 	wake_up_interruptible(&pgdat->kswapd_wait);
- }
- 
--unsigned long global_lru_pages(void)
-+unsigned long global_reclaimable_pages(void)
- {
--	return global_page_state(NR_ACTIVE_ANON)
--		+ global_page_state(NR_ACTIVE_FILE)
--		+ global_page_state(NR_INACTIVE_ANON)
--		+ global_page_state(NR_INACTIVE_FILE);
-+	int nr;
-+
-+	nr = global_page_state(NR_ACTIVE_FILE) +
-+	     global_page_state(NR_INACTIVE_FILE);
-+
-+	if (nr_swap_pages > 0)
-+		nr += global_page_state(NR_ACTIVE_ANON) +
-+		      global_page_state(NR_INACTIVE_ANON);
-+
-+	return nr;
-+}
-+
-+
-+unsigned long zone_reclaimable_pages(struct zone *zone)
-+{
-+	int nr;
-+
-+	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
-+	     zone_page_state(zone, NR_INACTIVE_FILE);
-+
-+	if (nr_swap_pages > 0)
-+		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
-+		      zone_page_state(zone, NR_INACTIVE_ANON);
-+
-+	return nr;
- }
- 
- #ifdef CONFIG_HIBERNATION
-@@ -2198,7 +2219,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 
- 	current->reclaim_state = &reclaim_state;
- 
--	lru_pages = global_lru_pages();
-+	lru_pages = global_reclaimable_pages();
- 	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
- 	/* If slab caches are huge, it's better to hit them first */
- 	while (nr_slab >= lru_pages) {
-@@ -2240,7 +2261,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 
- 			reclaim_state.reclaimed_slab = 0;
- 			shrink_slab(sc.nr_scanned, sc.gfp_mask,
--					global_lru_pages());
-+				    global_reclaimable_pages());
- 			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
- 			if (sc.nr_reclaimed >= nr_pages)
- 				goto out;
-@@ -2257,7 +2278,8 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
- 	if (!sc.nr_reclaimed) {
- 		do {
- 			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
-+			shrink_slab(nr_pages, sc.gfp_mask,
-+				    global_reclaimable_pages());
- 			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
- 		} while (sc.nr_reclaimed < nr_pages &&
- 				reclaim_state.reclaimed_slab > 0);
+Bart.
