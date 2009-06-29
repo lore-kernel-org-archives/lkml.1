@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760177AbZF2T0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbZF2T3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760177AbZF2T0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 15:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759456AbZF2TZ4
+	id S1758180AbZF2T3a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 15:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZF2T3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 15:25:56 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33582 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759555AbZF2TZz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 15:25:55 -0400
-Date: Mon, 29 Jun 2009 15:25:57 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906292025.15142.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906291504050.17436-100000@iolanthe.rowland.org>
+	Mon, 29 Jun 2009 15:29:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33291 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752384AbZF2T3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 15:29:22 -0400
+Date: Mon, 29 Jun 2009 21:29:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [perf] howto switch from pfmon
+Message-ID: <20090629192913.GA29295@elte.hu>
+References: <4A3FEF75.2020804@inria.fr> <20090623131450.GA31519@elte.hu> <20090623134749.GA6897@elte.hu> <4A40DFF5.7010207@inria.fr> <20090623143601.GA13415@elte.hu> <4A40F31F.4030609@inria.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A40F31F.4030609@inria.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
 
-> IMO one can think of pm_request_resume() as a top half of pm_runtime_resume().
+* Brice Goglin <Brice.Goglin@inria.fr> wrote:
 
-Normal top halves don't trigger before the circumstances are
-appropriate.  For example, if you enable remote wakeup on a USB device,
-it won't send a wakeup signal before it has been powered down.  A
-driver calling pm_request_resume while the device is still resumed is
-like a USB device sending a wakeup request while it is still powered
-up.  So IMO the analogy with top halves isn't a good one.
-
-> Thus, it should either queue up a request to run pm_runtime_resume() or leave
-> the status as though pm_runtime_resume() ran.  Anything else would be
-> internally inconsistent.  So, if pm_runtime_resume() cancels pending suspend
-> requests, pm_request_resume() should do the same or the other way around.
+> > How many threads does your workload typically run, and how do 
+> > you get their stats displayed?
 > 
-> Now, arguably, ignoring pending suspend requests is somewhat easier from
-> the core's point of view, but it may not be so for drivers.
+> In the aforementioned OpenMP stuff, we use pfmon to get the 
+> local/remote numa memory access ratio of each thread. In this 
+> specific case, we bind one thread per core (even with a O(1) 
+> scheduler, people tend to avoid launching hundreds of threads on 
+> current machines). pfmon gives us something similar to the output 
+> of 'perf stat' in a file whose filename contains process and 
+> thread IDs. We apply our own custom script to convert these many 
+> pfmon output files into a single summary saying for each thread, 
+> its thread ID, its core binding, its individual numa node access 
+> numbers and percentages, and if they were local or remote (with 
+> the Barcelona counters we were talking about, you need to check 
+> where you were running before you know if accesses to node X are 
+> actually local or remote accesses).
 
-The argument I gave in the previous email demonstrates that it doesn't
-make any difference to drivers.  Either way, they have to use two I/O
-pathways, they have to do a pm_runtime_get before pm_request_resume,
-and they have to do a pm_request_put after the I/O is done.
+Update: based on your feedback the latest perfcounters tree includes 
+the following new perf record features:
 
-Of course, this is all somewhat theoretical.  I still don't know of any 
-actual drivers that do the equivalent of pm_request_resume.
+    -s, --stat            per thread counts
+    -n, --no-samples      don't sample
 
-> My point is that the core should always treat pending suspend requests in the
-> same way.  If they are canceled by pm_runtime_resume(), then
-> pm_request_resume() should also cancel them and it shouldn't be possible
-> to schedule a suspend request when the resume counter is greater than 0.
-> In turn, if they are ignored by pm_runtime_resume(), then pm_request_resume()
-> should also ignore them and there's no point to prevent pm_request_suspend()
-> from scheduling a suspend request if the resume counter is greater than 0.
-> 
-> Any other type of behavior has a potential to confuse driver writers.
+--stat instructs the kernel to gather precise per task/thread stats 
+and emits those counts to the data file. Via --no-samples one can do 
+non-profiling runs - i.e. only statistics collection.
 
-Another possible approach you could take when the call to
-cancel_delayed_work fails (which should be rare) is to turn on RPM_WAKE
-in addition to RPM_IDLE and leave the suspend request queued.  When
-__pm_runtime_suspend sees both flags are set, it should abort and set
-the status directly back to RPM_ACTIVE.  At that time the idle
-notifications can start up again.
+The 'perf stat' pretty printing side is not fully implemented yet - 
+right now you can only see these stats if you look for 
+PERF_EVENT_READ counts in the raw event log:
 
-Is this any better?  I can't see how drivers would care, though.
+   perf report -D | grep PERF_EVENT_READ
 
-Alan Stern
+But the biggest piece, the kernel and perf record side is there 
+already. What kind of output would you prefer? Maybe you'd like to 
+take a stab at implementing the perf report side?
 
-P.S.: What do you think should happen if there's a delayed suspend
-request pending, then pm_request_resume is called (and it leaves the
-request queued), and then someone calls pm_runtime_suspend?  You've got
-two pending requests and a synchronous call all active at the same
-time!
-
+	Ingo
