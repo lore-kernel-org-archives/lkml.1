@@ -1,52 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZF2HpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751680AbZF2HsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbZF2HpQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZF2HpJ
+	id S1751680AbZF2HsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZF2HsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:45:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38639 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750860AbZF2HpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:45:08 -0400
-Date: Mon, 29 Jun 2009 09:45:07 +0200 (CEST)
-From: Jiri Kosina <trivial@kernel.org>
-X-X-Sender: jkosina@wotan.suse.de
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] KERNEL:  Correct routine name in comment.
-In-Reply-To: <alpine.LFD.2.00.0906282109240.25795@localhost>
-Message-ID: <alpine.LNX.2.00.0906290944400.18021@wotan.suse.de>
-References: <alpine.LFD.2.00.0906282109240.25795@localhost>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 29 Jun 2009 03:48:12 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:63228 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbZF2HsL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 03:48:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=d8IRavFyJ9TPn31rPSGBZoKFTA73UtseUrk0b5K3WVGg3Gv00tYn6FFjIVYg4oyeyB
+         JAyioX6QeWXjTS70eOtjoB0FSvATTxw3KWJrKaQpEC23L+0ruPwD4cV+C4ab9OQRZQKS
+         jdZbCTySvCG03t+IonyfLFmc0K8KcyqlV+cds=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com>
+References: <3901.1245848839@redhat.com> <2015.1245341938@redhat.com>
+	 <20090618095729.d2f27896.akpm@linux-foundation.org>
+	 <7561.1245768237@redhat.com> <26537.1246086769@redhat.com>
+	 <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost>
+	 <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com>
+	 <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com>
+	 <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com>
+Date: Mon, 29 Jun 2009 16:48:13 +0900
+X-Google-Sender-Auth: 46c9c175790c31d5
+Message-ID: <2f11576a0906290048t29667ae0sd75c96d023b113e2@mail.gmail.com>
+Subject: Re: Found the commit that causes the OOMs
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       David Howells <dhowells@redhat.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 28 Jun 2009, Robert P. J. Day wrote:
+2009/6/29 Minchan Kim <minchan.kim@gmail.com>:
+> On Sun, Jun 28, 2009 at 11:49 PM, KOSAKI
+> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+>>>> In David's OOM case, there are two symptoms:
+>>>> 1) 70000 unaccounted/leaked pages as found by Andrew
+>>>>   (plus rather big number of PG_buddy and pagetable pages)
+>>>> 2) almost zero active_file/inactive_file; small inactive_anon;
+>>>>   many slab and active_anon pages.
+>>>>
+>>>> In the situation of (2), the slab cache is _under_ scanned. So David
+>>>> got OOM when vmscan should have squeezed some free pages from the slab
+>>>> cache. Which is one important side effect of MinChan's patch?
+>>>
+>>> My patch's side effect is (2).
+>>>
+>>> My guessing is following as.
+>>>
+>>> 1. The number of page scanned in shrink_slab is increased in shrink_page_list.
+>>> And it is doubled for mapped page or swapcache.
+>>> 2. shrink_page_list is called by shrink_inactive_list
+>>> 3. shrink_inactive_list is called by shrink_list
+>>>
+>>> Look at the shrink_list.
+>>> If inactive lru list is low, it always call shrink_active_list not
+>>> shrink_inactive_list in case of anon.
+>>> It means it doesn't increased sc->nr_scanned.
+>>> Then shrink_slab can't shrink enough slab pages.
+>>> So, David OOM have a lot of slab pages and active anon pages.
+>>>
+>>> Does it make sense ?
+>>> If it make sense, we have to change shrink_slab's pressure method.
+>>> What do you think ?
+>>
+>> I'm confused.
+>>
+>> if system have no swap, get_scan_ratio() always return anon=0%.
+>> Then, the numver of inactive_anon is not effect to sc.nr_scanned.
+>>
+>
+> My patch isn't a concern since the number of anon lru list(active +
+> anon) always same.  I mean shrink_slab's lru_pages is same whether my
+> patch there is.  OOM or Pass depends on sc->nr_scanned, I think.
+>
+> Why I think it is my patch's side effect is follow as.
+>
+> Compared to old behavior, my patch can change balancing of anon lru
+> list when "swap file" is full as Hannes already pointed me out.
+>
+> It can affect reclaimable anon pages while David is going on swap test on LTP.
+> When swap file test is end, pages on swap file is inserted anon lru list, again.
+>
+> My patch can change physical location of anon pages on ram compared to old.
 
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-> 
-> ---
-> 
-> diff --git a/kernel/panic.c b/kernel/panic.c
-> index 984b3ec..b855012 100644
-> --- a/kernel/panic.c
-> +++ b/kernel/panic.c
-> @@ -177,7 +177,7 @@ static const struct tnt tnts[] = {
->   *  'W' - Taint on warning.
->   *  'C' - modules from drivers/staging are loaded.
->   *
-> - *	The string is overwritten by the next call to print_taint().
-> + *	The string is overwritten by the next call to print_tainted().
->   */
+No.
+shrink_active_list() doesn't change page physical address.
 
-Applied to trivial queue, thanks.
 
--- 
-Jiri Kosina
-SUSE Labs
+> From now on, we have no swap file so that we can reclaim only file pages.
+> But we have missed one thing. lumpy reclaim!. (In fact, we should not
+> reclaim anon pages in no swap space. A few days ago, I sended patch
+> about this problem. http://patchwork.kernel.org/patch/32651/)
+>
+> It can reclaim anon pages although we have no swap file.
+> But after all, shrink_page_list can't reclaim anon pages.  But it
+> increases sc->nr_scanned.
+>
+> So I think whether Shrink_slab can reclaim enough or not depends on
+> sc->nr_scanned.
+>
+> David's problem is very subtle.
+>
+> 1. If lumpy picks up the anon pages, it can pass LTP since
+> sc->nr_scanned is increased.
+> 2. If lumpy don't pick up the anon pages, it can meet OOM since
+> sc->nr_scanned is almost zero or very small.
+>
+> Unfortunately, my patch seems to change physical location of pages on
+> ram compared to old so that it selects 2.
+>
+> It's my imaginary novel.
+>
+> Okay. I believe Wu's patch will solve David's problem.
+> David. Could you test with Wu's patch ?
 
+However, lumpy reclaim is good viewpoint.
+Recently KAMEZAWA-san fix one serious lumpy reclaim problem. since
+2.6.28 lumpy reclaim can insert file mapped pages to anon lru list.
+Then, the page become to be not able to reclaimable.
+
+David, Can you please try to following patch? it was posted to LKML
+about 1-2 week ago.
+
+Subject "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
+isolate_lru_pages v2"
