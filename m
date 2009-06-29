@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZF2Nfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbZF2NqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbZF2Nfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZF2Nf2
+	id S1754752AbZF2NqB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbZF2Npx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:35:28 -0400
-Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:54010 "EHLO akado.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751073AbZF2Nf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:35:28 -0400
-From: Arseniy Lartsev <ars3n@yandex.ru>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: PROBLEM: USB ACM device does not work
-Date: Mon, 29 Jun 2009 17:35:15 +0400
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc1-git3-0.1-default; KDE/4.1.3; i686; ; )
-Cc: USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
-References: <200906282229.35713.ars3n@yandex.ru> <200906291543.52477.ars3n@yandex.ru> <200906291507.45281.oliver@neukum.org>
-In-Reply-To: <200906291507.45281.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1449563.q5y9PNbEXu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 29 Jun 2009 09:45:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38742 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752003AbZF2Npw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:45:52 -0400
+Subject: Re: [PATCH] fs: allow d_instantiate to be called with negative
+ parent dentry
+From: Eric Paris <eparis@redhat.com>
+To: Jeremy Kerr <jk@ozlabs.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, cbe-oss-dev@ozlabs.org
+In-Reply-To: <1246257118.265649.273423097532.1.gpush@pingu>
+References: <1246257118.265649.273423097532.1.gpush@pingu>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 09:45:43 -0400
+Message-Id: <1246283143.754.16.camel@dhcp235-23.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906291735.23024.ars3n@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1449563.q5y9PNbEXu
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 2009-06-29 at 14:31 +0800, Jeremy Kerr wrote:
+> The new fsnotify infrastructure (starting at 90586523) causes an oops in
+> spufs, where we populate a directory with files before instantiating the
+> directory itself. The new changes seem to have introduced an assumption
+> that a dentry's parent will be positive when instantiating.
+> 
+> This change makes it once again possible to d_instantiate a dentry
+> with a negative parent, and brings __fsnotify_d_instantiate() into
+> line with inotify_d_instantiate(), which already has this NULL check.
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-On Monday 29 June 2009 17:07:44 Oliver Neukum wrote:
-> Please printk xfertype in the error case of usb_submit_urb()
-It equals USB_ENDPOINT_XFER_INT.
+This problem was introduced based on a private off list comment from Al
+Viro back on Feb 17th when he was reviewing my code:
 
---nextPart1449563.q5y9PNbEXu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+fsnotify_d_instantiate(): check for NULL inode in parent?  Really?
+BTW, where's the codepath without that stuff?  I mean, for sane
+boxen that have *notify configured out.  Idiotify is at least
+configurable away...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+>From that comment I dropped the check for dentry->d_parent->d_inode.
+The old behavior (which inotify had) is exactly what you propose and
+would cause no problems for anything.  I'll leave it up to Al if he
+wants to argue that the spufs logic is illegal but I'll put this patch
+into my tree and send it toward Linus.
 
-iJwEAAECAAYFAkpIwxoACgkQIHDkq2F9exaWwgQAtT0IK+pmDxKx8DtC+dt2j8MO
-G41nzzRfr7dJD2BcbjMCF0RDiqhwkOZW84sAdc236cqOF7bYN+amPIvnxwpCMVWd
-UFKv5D1+iytSyGSXIRxfEkt04pMtz00tfmzJy06XwfSLqzfGdNzBht0pBke4Cp6K
-tgOlE/lYVaRlxbFU4Wk=
-=saFC
------END PGP SIGNATURE-----
+-Eric
 
---nextPart1449563.q5y9PNbEXu--
