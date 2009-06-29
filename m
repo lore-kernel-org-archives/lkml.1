@@ -1,82 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZF2Ctr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753466AbZF2DAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756601AbZF2Ctr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 22:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751901AbZF2Ctk
+	id S1753466AbZF2DAw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 23:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZF2DAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 22:49:40 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:44844 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbZF2Ctj (ORCPT
+	Sun, 28 Jun 2009 23:00:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:29173 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZF2DAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 22:49:39 -0400
+	Sun, 28 Jun 2009 23:00:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e3yCloYdsLRdSqyl2N9zmYg9cT6ps42RQkuFk3ayaUpJtIDgv6Hb7vihGBvfT1iVlr
-         2Us4j8q13BzRkAMGMFspUpPCokWJHlEy/LGdLUtvUV+QcVBm8p8H3MkJJ9MsWjtFMFvq
-         wn97M0K3h5NKaGNhD/dDE80ZX5jU1A9M/FYTY=
-Date: Mon, 29 Jun 2009 10:51:46 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Dick Streefland <dick@streefland.net>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
-Message-ID: <20090629025146.GA5998@cr0.nay.redhat.com>
-References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=kYWXaW5QNCY4dhZiYC6KdlUGeen+sRq1MdGwhwAdivEsHihoRMIBhrfy+XOP3nGjOg
+         snwnOS2CB8RbE5CoL01T7pJdvmYkmNUEClXpQgj/kVQnqSuG/jA6VABdLP9x4gSNn6MS
+         wzisF+q7sa9Vt0xpxqbCf4k2LiJRGdPaHIdu8=
+Message-ID: <4A482E56.1070604@gmail.com>
+Date: Mon, 29 Jun 2009 11:00:38 +0800
+From: Eric Miao <eric.y.miao@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090624133148.GA12878@streefland.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Daniel Ribeiro <drwyrm@gmail.com>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Pierre Ossman <pierre@ossman.eu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 1/2] MMC/pxamci: workaround regulator framework bugs
+References: <1246057668.10360.316.camel@brutus>	 <20090627004814.GB4379@sirena.org.uk> <1246071323.10360.386.camel@brutus>
+In-Reply-To: <1246071323.10360.386.camel@brutus>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24, 2009 at 03:31:48PM +0200, Dick Streefland wrote:
->On Wednesday 2009-06-24 13:46, Dick Streefland wrote:
->| Because I don't want to rely on a particular version of grep, I've
->| modified the script to use perl instead. I hope that's OK. Below is
->| a new patch.
-><snip>
+Daniel Ribeiro wrote:
+> Em Sáb, 2009-06-27 às 01:48 +0100, Mark Brown escreveu:
+>>> +		/*
+>>> +		 * When the bootloader leaves a supply active, it's
+>>> +		 * initialized with zero usecount ... and we can't
+>>> +		 * disable it without first enabling it.  Until the
+>>> +		 * framework is fixed, we need a workaround like this
+>>> +		 * (which is safe for MMC, but not in general).
+>> This also needs to explain the actual situation, especially the
+>> exclusivity reqirement of the MMC core.  It might be worth providing a
+>> helper in the MMC core, everything is going to need to be updated to use
+>> exclusive get whenever someone implements it.
+> 
+> Heh, this patch was copy-n-paste from twl code. I really can't put much
+> time on this. :(
+> 
+>> As discussed at some length the regulator API is not going to be changed
+>> in the way you demand.  This is not something that it should be easy for
+>> standard consumers to do since for standard consumers it normally points
+>> out a programming error.
+> 
+> Ok, so I will "fix it" hacking the bootloader to power off the voltage
+> regulator before giving control to kernel. Lets hope that the next
+> developer that tries to use the regulator framework with a mmc card and
+> stumbles on the "regulator already enabled" case has more time to fix it
+> properly. :)
+> 
 
-
-Sorry for the delay, I missed this patch...
-
->
->I found a way to work around the differences in behavior of grep.
->Older versions of grep report the byte offset of the start of the
->line instead of the byte offset of the pattern. By using tr to
->make sure the pattern is always at the start of a "line", both old
->and new versions of grep can be used.
-
-
-This is very tricky...
-
-<snip>
-
->+
->+gz1='\037\213\010'
->+gz2='01'
->+cf1='IKCFG_ST\037\213\010'
->+cf2='0123456789'
->+
->+dump_config()
-> {
->-	echo "  usage: extract-ikconfig [b]zImage_filename"
->-}
->-
->-clean_up()
->-{
->-	if [ "$TMPFILE" != "" ]; then
->-		rm -f $TMPFILE
->+	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
-
-
-Does this work?
-My quick test shows no...
-
-I still can't get the right offset number with this trick.
-
-P.S. My grep is 2.5.1.
+This looks to be running into the same issue as clocks - where for power
+savings the clocks are assumed to be off as many as possible, leaving only
+those essential ones enabled, yet the assumption of the boot loader does
+this correctly is always a big problem, putting this into the kernel,
+however, is ugly.
