@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZF2WnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059AbZF2Wqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZF2WnG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZF2Wmx
+	id S1756059AbZF2Wqu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 18:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZF2Wqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:42:53 -0400
-Received: from mail.samba.org ([66.70.73.150]:55531 "EHLO lists.samba.org"
+	Mon, 29 Jun 2009 18:46:43 -0400
+Received: from waste.org ([66.93.16.53]:60844 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbZF2Wmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:42:52 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752276AbZF2Wqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 18:46:42 -0400
+Subject: Re: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem
+ in sl[aou]b
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       penberg@cs.helsinki.fi, jdb@comx.dk
+In-Reply-To: <alpine.DEB.1.10.0906291827050.21956@gentwo.org>
+References: <20090625193137.GA16861@linux.vnet.ibm.com>
+	 <alpine.DEB.1.10.0906291827050.21956@gentwo.org>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 17:45:53 -0500
+Message-Id: <1246315553.21295.100.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19017.17250.371594.268824@samba.org>
-Date: Tue, 30 Jun 2009 08:42:42 +1000
-To: Greg KH <greg@kroah.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090629221826.GA12781@kroah.com>
-References: <19013.8005.541836.436991@samba.org>
-	<m1d48p5dil.fsf@fess.ebiederm.org>
-	<19014.54044.484370.187018@samba.org>
-	<m1vdmh2e26.fsf@fess.ebiederm.org>
-	<19015.482.794111.612472@samba.org>
-	<87ab3sx4ch.fsf@devron.myhome.or.jp>
-	<19016.6463.997760.757811@samba.org>
-	<20090629221826.GA12781@kroah.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I have no objection to take this patch for the -stable releases when it
- > goes into Linus's tree.  Just forward the git commit ids to
- > stable@kernel.org and I can take care of it.
+On Mon, 2009-06-29 at 18:30 -0400, Christoph Lameter wrote:
+> On Thu, 25 Jun 2009, Paul E. McKenney wrote:
+> 
+> > Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather
+> > than rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result
+> > in RCU callbacks accessing a kmem_cache after it had been destroyed.
+> >
+> > The following untested (might not even compile) patch proposes a fix.
+> 
+> It could be seen to be the responsibility of the caller of
+> kmem_cache_destroy to insure that no accesses are pending.
+> 
+> If the caller specified destroy by rcu on cache creation then he also
+> needs to be aware of not destroying the cache itself until all rcu actions
+> are complete. This is similar to the caution that has to be execised then
+> accessing cache data itself.
 
-ok, thanks Greg.
+This is a reasonable point, and in keeping with the design principle
+'callers should handle their own special cases'. However, I think it
+would be more than a little surprising for kmem_cache_free() to do the
+right thing, but not kmem_cache_destroy().
 
-Hirofumi-san tells me we've missed the merge window for 2.6.31, so it
-seems that this will go first into the fatfs tree, then go into
-Linus's tree via -next for 2.6.32. So hopefully the patch will get
-some more testing (perhaps in -mm?) before it needs to be considered
-for -stable.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Meanwhile some of the distros and other vendors might decide to apply
-it sooner depending on their level of legal concern.
 
-Cheers, Tridge
