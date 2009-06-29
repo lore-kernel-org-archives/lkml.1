@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZF2Sjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZF2Sr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZF2Sjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZF2Sjc
+	id S1756600AbZF2Sr4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 14:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZF2Srr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:39:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:9980 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753064AbZF2Sjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:39:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,310,1243839600"; 
-   d="scan'208";a="528810730"
-Subject: Re: [Bug #13424] possible deadlock when doing governor switching
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>, davej@redhat.com
-In-Reply-To: <20090629012558.GA22666@Krystal>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <5Hhc7UkUKEO.A.IOG.9jASKB@chimera>  <20090629012558.GA22666@Krystal>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 11:37:45 -0700
-Message-Id: <1246300665.4534.26170.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jun 2009 14:47:47 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:23582
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750755AbZF2Srq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 14:47:46 -0400
+X-SpamScore: -23
+X-BigFish: VPS-23(z1039oz1432R9370P98dR1805Mzz1202hzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KM0K76-01-AX6-01
+Date: Mon, 29 Jun 2009 20:47:06 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, tom.leiming@gmail.com,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers()
+ in dma_sync_*_for_cpu
+Message-ID: <20090629184706.GA9401@amd.com>
+References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
+ <200906291822.18334.arnd@arndb.de>
+ <20090629173121.768f2923@lxorguk.ukuu.org.uk>
+ <200906291845.16335.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200906291845.16335.arnd@arndb.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 29 Jun 2009 18:47:06.0767 (UTC) FILETIME=[004A39F0:01C9F8EA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-28 at 18:25 -0700, Mathieu Desnoyers wrote:
-> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.29 and 2.6.30.
+On Mon, Jun 29, 2009 at 06:45:15PM +0200, Arnd Bergmann wrote:
+> On Monday 29 June 2009, Alan Cox wrote:
+> > > Wouldn't it be better to put the flush_write_buffer in the specific
+> > > operation (swiotlb_sync_*_for_*) rather than the multiplexer?
+> > > 
+> > > Maybe in that case, smp_wmb() would be more appropriate because
+> > > it is defined on all architectures.
 > > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> > be listed and let me know (either way).
+> > smp_wmb() is stronger and it would slow down x86 if we did that (we'd go
+> > from no-op on a coherent platform to using mfence/lfence etc)
 > > 
+> Really? In my copy of system.h, I read
 > 
-> Yep, it still exists. Venkatesh Pallipadi from Intel is working on it.
-> We need to figure out a proper way to fix policy rwlock vs dbs_mutex vs
-> timer mutex dependency.
+> #ifdef CONFIG_SMP
+> # ifdef CONFIG_X86_OOSTORE
+> #  define smp_wmb()      wmb()
+> # else
+> #  define smp_wmb()      barrier()
+> # endif
+> #else
+> # define smp_wmb()       barrier()
+> #endif
+
+With that definition an smp_wmb() would do the right job on x86. If thats also
+true for other architectures using this generic header we can remove
+flush_write_buffer().
+
 > 
+> That actually looks weaker than flush_write_buffer, as it would turn into
+> a barrier() in case of !SMP or !X86_OOSTORE, and into an sfence instead of
+> lock addl on all modern CPUs in case of SMP && X86_OOSTORE.
 
-Yes. Still working on it. I thought I had a fix for this. But, over the
-weekend test run resulted in a WARN_ON with sysfs_remove_group as below.
-Looks like I need a day or two more to work through the web of locks
-here..
+X86_OOSTORE is defined for (MWINCHIP3D || MWINCHIPC6) && MTRR. I am not sure if
+these chips have sfence.
+It would also help to know what OOSTORE exactly means in the context of that
+chip.
 
-Thanks,
-Venki
+	Joerg
 
-[10412.466195] ------------[ cut here ]------------
-[10412.466201] WARNING:
-at /home/venkip/src/linus/linux-2.6/fs/sysfs/group.c:138
-sysfs_remove_group+0x3e/0xa3()
-[10412.466204] Hardware name: Santa Rosa platform
-[10412.466206] sysfs group c16df3b0 not found for kobject 'cpufreq'
-[10412.466207] Modules linked in:
-[10412.466210] Pid: 20609, comm: write_syscpufre Not tainted 2.6.31-rc1
-#195
-[10412.466212] Call Trace:
-[10412.466217]  [<c102a0a4>] warn_slowpath_common+0x60/0x90
-[10412.466220]  [<c102a108>] warn_slowpath_fmt+0x24/0x27
-[10412.466223]  [<c10e0422>] sysfs_remove_group+0x3e/0xa3
-[10412.466227]  [<c131b7fc>] cpufreq_governor_dbs+0x1f7/0x25b
-[10412.466231]  [<c1319469>] __cpufreq_governor+0x7c/0xb3
-[10412.466234]  [<c1319608>] __cpufreq_set_policy+0x13f/0x1c3
-[10412.466238]  [<c1319e74>] store_scaling_governor+0x18a/0x1b2
-[10412.466241]  [<c131aa50>] ? handle_update+0x0/0x28
-[10412.466244]  [<c131a2a5>] ? lock_policy_rwsem_write+0x33/0x5b
-[10412.466247]  [<c1319cea>] ? store_scaling_governor+0x0/0x1b2
-[10412.466250]  [<c131a942>] store+0x48/0x61
-[10412.466254]  [<c10de532>] sysfs_write_file+0xb4/0xdf
-[10412.466265]  [<c10de47e>] ? sysfs_write_file+0x0/0xdf
-[10412.466269]  [<c10a0172>] vfs_write+0x84/0xdf
-[10412.466272]  [<c10a0266>] sys_write+0x3b/0x60
-[10412.466276]  [<c1002a04>] sysenter_do_call+0x12/0x22
-[10412.466278] ---[ end trace 31a730d96cbc1841 ]---
-
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
