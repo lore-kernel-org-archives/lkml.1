@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZF2O1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZF2O32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZF2O1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZF2O1J
+	id S1756007AbZF2O32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZF2O3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:27:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42224 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZF2O1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:27:08 -0400
-Message-ID: <4A48CF99.40002@redhat.com>
-Date: Mon, 29 Jun 2009 17:28:41 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Mon, 29 Jun 2009 10:29:19 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55759 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751899AbZF2O3S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 10:29:18 -0400
+Date: Mon, 29 Jun 2009 10:29:20 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
+ I/O devices (rev. 6)
+In-Reply-To: <200906291609.24394.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906291016050.16075-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
-       markmc@redhat.com
-Subject: Re: [PATCHv2] kvm: remove in_range and switch to rwsem for iobus
-References: <20090628193425.GA14204@redhat.com> <20090629140632.GC14059@amt.cnet>
-In-Reply-To: <20090629140632.GC14059@amt.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29/2009 05:06 PM, Marcelo Tosatti wrote:
-> On Sun, Jun 28, 2009 at 10:34:25PM +0300, Michael S. Tsirkin wrote:
->    
->> This changes bus accesses to use high-level kvm_io_bus_read/kvm_io_bus_write
->> functions, which utilize read/write semaphore intead of mutex.  in_range now
->> becomes unused so it is removed from device ops in favor of read/write
->> callbacks performing range checks internally.
->>
->> This allows aliasing (mostly for in-kernel virtio), as well as better error
->> handling by making it possible to pass errors up to userspace. And it's enough
->> to look at the diffstat to see that it's a better API anyway.
->>      
->
-> Can you please expand a little on this? Still don't get why making
-> ->in_range part of ->read / ->write is a good thing. Aliasing?
->    
+On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
 
-Yes, if you have several devices responding to the same port (but 
-different values), in_range() by itself doesn't tell you much.  virtio 
-msi support will tie a different iosignalfd to every queue, and queues 
-are notified by writing different values to one pio port.
+> Well, not only in that cases and in fact this is where the actual problem is.
+> 
+> Namely, pm_request_suspend() and pm_request_resume() have to cancel any
+> pending requests in a reliable way so that the work struct can be used safely
+> after they've returned.
 
--- 
-error compiling committee.c: too many arguments to function
+Right.
+
+> Assume for example that there's a suspend request pending while
+> pm_request_resume() is being called.  pm_request_resume() uses
+> cancel_delayed_work() to kill off the request, but that's in interrupt and it
+> happens to return -1.  Now, there's pm_runtime_put_atomic() right after that
+> which attempts to queue up an idle notification request before the
+> delayed suspend request has a chance to run and bad things happen.
+> 
+> So, it seems, pm_request_resume() can't kill suspend requests by itself
+> and instead it has to queue up resume requests for this purpose, which
+> brings us right back to the problem of two requests queued up at a time
+> (a delayed suspend request and a resume request that is supposed to cancel it).
+
+No, you're trying to do too much.  If the state is RPM_IDLE (i.e., a 
+suspend request is pending) then rpm_request_resume doesn't need to do 
+anything.  The device is already resumed!  Sure, it can try to kill the 
+request and change the state to RPM_ACTIVE, but it doesn't need to.
+
+Think about it.  Even if the suspend request were killed off, there's 
+always the possibility that someone could call rpm_runtime_suspend 
+right afterward.  If the driver really wants to resume the device and 
+prevent it from suspending again, then the driver should call 
+pm_runtime_get before pm_request_resume.  Then it won't matter if the 
+suspend request runs.
+
+> Nevertheless, using your workqueue patch we can still simplify things quite a
+> bit, so I think it's worth doing anyway.
+
+Me too.  :-)
+
+> > Which reminds me...  The way you've got things set up, 
+> > pm_runtime_put_atomic queues an idle notification, right?  That's 
+> > a little inconsistent with the naming of the other routines.
+> > 
+> > Instead, pm_runtime_put_atomic should be a version of pm_runtime_put
+> > that can safely be called in an atomic context -- it implies that it
+> > will call the runtime_notify callback while holding the spinlock.  The
+> > routine to queue an idle-notify request should be called something like
+> > pm_request_put -- although that name isn't so great because it sounds 
+> > like the put gets deferred instead of the notification.
+> 
+> There can be pm_request_put() and pm_request_put_sync(), for example.
+> Or pm_request_put_async() and pm_request_put(), depending on which version is
+> going to be used more often.
+
+I don't follow you.  We only need one version of pm_request_put.  Did 
+you mean "pm_runtime_put" and "pm_runtime_put_async"?  That would make 
+sense.
+
+If you use that (instead of pm_request_put) then would you want to
+similarly rename pm_request_resume and pm_request_suspend to
+pm_runtime_resume_async and pm_runtime_suspend_async?
+
+Alan Stern
 
