@@ -1,99 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbZF2NYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZF2N0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758404AbZF2NYb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZF2NYY
+	id S1758716AbZF2N0H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZF2NZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:24:24 -0400
-Received: from recombinator.qemfd.net ([216.27.165.184]:50990 "EHLO qemfd.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751226AbZF2NYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:24:24 -0400
-Date: Mon, 29 Jun 2009 09:24:27 -0400
-From: nick black <dank@qemfd.net>
-To: William Irwin <wli@holomorphy.com>
-Cc: linux-kernel@vger.kernel.org, man-pages <mtk.manpages@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] hugetlbfs: publish HUGETLBFS_MAGIC via linux/magic.h
- (updated)
-Message-ID: <20090629132427.GA2677@qemfd.net>
+	Mon, 29 Jun 2009 09:25:54 -0400
+Received: from mail6.open.ch ([213.156.224.131]:55131 "EHLO mail6.open.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZF2NZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:25:53 -0400
+X-Greylist: delayed 1125 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jun 2009 09:25:53 EDT
+Message-ID: <4A48BC82.6040801@open.ch>
+Date: Mon, 29 Jun 2009 15:07:14 +0200
+From: Andreas Jaggi <aj@open.ch>
+Organization: Open Systems AG - http://www.open.ch
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru
+CC: davem@davemloft.net, kaber@trash.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When tunneling IP traffic with GRE this patch makes it possible to export the ToS/DiffServ information to the outer IP header.
+This is particularly useful in a scenario with ESP/AH where the inner IP header is encrypted but the packet priority/DiffServ information
+should still be respected by the transporting routers (for example in an MPLS backbone network).
 
---HlL+5n6rz5pIUxbD
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The feature is disabled by default and can be enabled on a per-interface basis (/proc/sys/net/ipv4/conf/ethX/gre_copy_tos).
 
-statfs(2)'s man page (release 3.21) lists HUGETLBFS_MAGIC among other
-constants of its type (these #define's really ought perhaps become an enum,
-but that's another patch). It isn't actually exported, though; it's buried
-within inode.c in fs/hugetlbfs/. This patch updates the interface against
-documentation and expectation, bringing hugetlbfs support to statfs(2).=20
-Thanks to Pekka Enberg for feedback!
+Also does this bring Linux back in the game, as JunOS/IOS provide this for quite some time:
+http://www.cisco.com/en/US/docs/ios/11_3/feature/guide/greqos.html
+http://www.juniper.net/techpubs/software/junos/junos94/swconfig-services/configuring-a-gre-tunnel-to-copy-tos-bits-to-the-outer-ip-header.html
 
-Signed-off-by: Nick Black <dank@qemfd.net>
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
--rc1-pristine/fs/hugetlbfs/inode.c linux-2.6.31-rc1/fs/hugetlbfs/inode.c
---- linux-2.6.31-rc1-pristine/fs/hugetlbfs/inode.c	2009-06-24 19:25:37.0000=
-00000 -0400
-+++ linux-2.6.31-rc1/fs/hugetlbfs/inode.c	2009-06-29 07:52:43.000000000 -04=
-00
-@@ -31,12 +31,10 @@
- #include <linux/statfs.h>
- #include <linux/security.h>
- #include <linux/ima.h>
-+#include <linux/magic.h>
-=20
- #include <asm/uaccess.h>
-=20
--/* some random number */
--#define HUGETLBFS_MAGIC	0x958458f6
--
- static const struct super_operations hugetlbfs_ops;
- static const struct address_space_operations hugetlbfs_aops;
- const struct file_operations hugetlbfs_file_operations;
-diff -uprN -X linux-2.6.31-rc1-pristine/Documentation/dontdiff linux-2.6.31=
--rc1-pristine/include/linux/magic.h linux-2.6.31-rc1/include/linux/magic.h
---- linux-2.6.31-rc1-pristine/include/linux/magic.h	2009-06-24 19:25:37.000=
-000000 -0400
-+++ linux-2.6.31-rc1/include/linux/magic.h	2009-06-29 08:55:57.000000000 -0=
-400
-@@ -13,6 +13,7 @@
- #define SECURITYFS_MAGIC	0x73636673
- #define SELINUX_MAGIC		0xf97cff8c
- #define TMPFS_MAGIC		0x01021994
-+#define HUGETLBFS_MAGIC 	0x958458f6	/* some random number */
- #define SQUASHFS_MAGIC		0x73717368
- #define EFS_SUPER_MAGIC		0x414A53
- #define EXT2_SUPER_MAGIC	0xEF53
---=20
-                                      Nick Black <dankamongmen@acm.org>
-                                             Principal Engineer, McAfee
-                                  Grad student, GT College of Computing
-                    "np: the class of dashed hopes, and idle dreams..."
+Signed-off-by: Andreas Jaggi <aj@open.ch>
 
---HlL+5n6rz5pIUxbD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpIwIsACgkQzjCRTpolKGtnnQCgm+ptHf4nwaUVTg9ygXxd+Zuo
-S8sAoKE4LuMMwIz9hBrbfQkVXpOazhuZ
-=R91u
------END PGP SIGNATURE-----
-
---HlL+5n6rz5pIUxbD--
+diff -urN vanilla-linux-2.6.29.4/include/linux/sysctl.h gre-copy-tos/include/linux/sysctl.h
+--- vanilla-linux-2.6.29.4/include/linux/sysctl.h	2009-05-19 01:52:34.000000000 +0200
++++ gre-copy-tos/include/linux/sysctl.h	2009-06-29 14:23:07.000000000 +0200
+@@ -490,6 +490,7 @@
+ 	NET_IPV4_CONF_ARP_IGNORE=19,
+ 	NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
+ 	NET_IPV4_CONF_ARP_ACCEPT=21,
++	NET_IPV4_CONF_GRE_COPY_TOS=22,
+ 	__NET_IPV4_CONF_MAX
+ };
+ 
+diff -urN vanilla-linux-2.6.29.4/kernel/sysctl_check.c gre-copy-tos/kernel/sysctl_check.c
+--- vanilla-linux-2.6.29.4/kernel/sysctl_check.c	2009-05-19 01:52:34.000000000 +0200
++++ gre-copy-tos/kernel/sysctl_check.c	2009-06-29 14:23:07.000000000 +0200
+@@ -219,6 +219,7 @@
+ 	{ NET_IPV4_CONF_ARP_IGNORE,		"arp_ignore" },
+ 	{ NET_IPV4_CONF_PROMOTE_SECONDARIES,	"promote_secondaries" },
+ 	{ NET_IPV4_CONF_ARP_ACCEPT,		"arp_accept" },
++	{ NET_IPV4_CONF_GRE_COPY_TOS,		"gre_copy_tos" },
+ 	{}
+ };
+ 
+diff -urN vanilla-linux-2.6.29.4/net/ipv4/devinet.c gre-copy-tos/net/ipv4/devinet.c
+--- vanilla-linux-2.6.29.4/net/ipv4/devinet.c	2009-05-19 01:52:34.000000000 +0200
++++ gre-copy-tos/net/ipv4/devinet.c	2009-06-29 14:23:07.000000000 +0200
+@@ -1439,6 +1439,7 @@
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_ANNOUNCE, "arp_announce"),
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_IGNORE, "arp_ignore"),
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_ACCEPT, "arp_accept"),
++		DEVINET_SYSCTL_RW_ENTRY(GRE_COPY_TOS, "gre_copy_tos"),
+ 
+ 		DEVINET_SYSCTL_FLUSHING_ENTRY(NOXFRM, "disable_xfrm"),
+ 		DEVINET_SYSCTL_FLUSHING_ENTRY(NOPOLICY, "disable_policy"),
+diff -urN vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c gre-copy-tos/net/ipv4/ip_gre.c
+--- vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c	2009-05-19 01:52:34.000000000 +0200
++++ gre-copy-tos/net/ipv4/ip_gre.c	2009-06-29 14:23:24.000000000 +0200
+@@ -610,6 +610,7 @@
+ 	struct net_device_stats *stats = &tunnel->dev->stats;
+ 	struct iphdr  *old_iph = ip_hdr(skb);
+ 	struct iphdr  *tiph;
++	struct in_device *in_dev;
+ 	u8     tos;
+ 	__be16 df;
+ 	struct rtable *rt;     			/* Route to the other host */
+@@ -677,11 +678,13 @@
+ 	}
+ 
+ 	tos = tiph->tos;
+-	if (tos&1) {
++	in_dev = in_dev_get(dev);
++	if ((in_dev && IN_DEV_ORCONF(in_dev, GRE_COPY_TOS)) || tos&1) {
+ 		if (skb->protocol == htons(ETH_P_IP))
+ 			tos = old_iph->tos;
+ 		tos &= ~1;
+ 	}
++	in_dev_put(in_dev);
+ 
+ 	{
+ 		struct flowi fl = { .oif = tunnel->parms.link,
