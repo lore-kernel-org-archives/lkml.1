@@ -1,155 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064AbZF2VHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZF2VMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753064AbZF2VHd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 17:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZF2VHS
+	id S1755769AbZF2VMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 17:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZF2VMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 17:07:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43918 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755874AbZF2VHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 17:07:16 -0400
-Message-ID: <4A492D86.5040604@redhat.com>
-Date: Mon, 29 Jun 2009 17:09:26 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 29 Jun 2009 17:12:07 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:45698 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752771AbZF2VMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 17:12:07 -0400
+Message-ID: <4A492E22.3060307@shipmail.org>
+Date: Mon, 29 Jun 2009 23:12:02 +0200
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>
-Subject: Re: [RFC][ PATCH -tip v2 2/7] kprobes: introducing generic insn_slot
-  framework
-References: <20090622212255.5384.53732.stgit@localhost.localdomain> <20090622212307.5384.41192.stgit@localhost.localdomain> <alpine.DEB.2.00.0906271558140.12592@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0906271558140.12592@gandalf.stny.rr.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jerome Glisse <glisse@freedesktop.org>
+CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: TTM page pool allocator
+References: <1245931298.13359.8.camel@localhost.localdomain>	 <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com> <1246024775.2371.0.camel@localhost>
+In-Reply-To: <1246024775.2371.0.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for reviewing.
-
-Steven Rostedt wrote:
-> Hi Masami,
-> 
-> I'm currently traveling so my responses are very slow this week.
-> 
-> 
-> On Mon, 22 Jun 2009, Masami Hiramatsu wrote:
-> 
->> Make insn_slot framework support various size slots.
->> Current insn_slot just supports one-size instruction buffer slot. However,
->> kprobes jump optimization needs larger size buffers.
+Jerome Glisse skrev:
+> On Fri, 2009-06-26 at 10:00 +1000, Dave Airlie wrote:
+>   
+>> On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org> wrote:
+>>     
+>>> Hi,
+>>>
+>>> Thomas i attach a reworked page pool allocator based on Dave works,
+>>> this one should be ok with ttm cache status tracking. It definitely
+>>> helps on AGP system, now the bottleneck is in mesa vertex's dma
+>>> allocation.
+>>>
+>>>       
+>> My original version kept a list of wb pages as well, this proved to be
+>> quite a useful
+>> optimisation on my test systems when I implemented it, without it I
+>> was spending ~20%
+>> of my CPU in getting free pages, granted I always used WB pages on
+>> PCIE/IGP systems.
 >>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> Cc: Jim Keniston <jkenisto@us.ibm.com>
->> Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->> Cc: Christoph Hellwig <hch@infradead.org>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> Cc: Frederic Weisbecker <fweisbec@gmail.com>
->> Cc: H. Peter Anvin <hpa@zytor.com>
->> Cc: Anders Kaseorg <andersk@ksplice.com>
->> Cc: Tim Abbott <tabbott@ksplice.com>
->> ---
+>> Another optimisation I made at the time was around the populate call,
+>> (not sure if this
+>> is what still happens):
 >>
->>  kernel/kprobes.c |   96 +++++++++++++++++++++++++++++++++---------------------
->>  1 files changed, 58 insertions(+), 38 deletions(-)
+>> Allocate a 64K local BO for DMA object.
+>> Write into the first 5 pages from userspace - get WB pages.
+>> Bind to GART, swap those 5 pages to WC + flush.
+>> Then populate the rest with WC pages from the list.
 >>
->> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
->> index 0b68fdc..bc9cfd0 100644
->> --- a/kernel/kprobes.c
->> +++ b/kernel/kprobes.c
->> @@ -100,26 +100,38 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
->>   * stepping on the instruction on a vmalloced/kmalloced/data page
->>   * is a recipe for disaster
->>   */
->> -#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
->> -
->>  struct kprobe_insn_page {
->>  	struct list_head list;
->>  	kprobe_opcode_t *insns;		/* Page of instruction slots */
->> -	char slot_used[INSNS_PER_PAGE];
->>  	int nused;
->>  	int ngarbage;
->> +	char slot_used[1];
-> 
-> I would recommend using [] instead of [1], that would help other 
-> developers know that it is a variable array.
+>> Granted I think allocating WC in the first place from the pool might
+>> work just as well since most of the DMA buffers are write only.
+>>
+>> Dave.
+>> --
+>>     
+>
+> Attached a new version of the patch, which integrate changes discussed.
+>
+> Cheers,
+> Jerome
+>   
+Hi, Jerome!
+Still some outstanding things:
 
-Sure.
+1) The AGP protection fixes compilation errors when AGP is not enabled, 
+but what about architectures that need the map_page_into_agp() semantics 
+for TTM even when AGP is not enabled? At the very least TTM should be 
+disabled on those architectures. The best option would be to make those 
+calls non-agp specific.
 
-[...]
->> -	list_for_each_entry(kip, &kprobe_insn_pages, list) {
->> -		if (kip->nused < INSNS_PER_PAGE) {
->> +	list_for_each_entry(kip, &c->pages, list) {
->> +		if (kip->nused < slots_per_page(c)) {
->>  			int i;
->> -			for (i = 0; i < INSNS_PER_PAGE; i++) {
->> +			for (i = 0; i < slots_per_page(c); i++) {
->>  				if (kip->slot_used[i] == SLOT_CLEAN) {
->>  					kip->slot_used[i] = SLOT_USED;
->>  					kip->nused++;
->> -					return kip->insns + (i * MAX_INSN_SIZE);
->> +					return kip->insns + (i * c->insn_size);
->>  				}
->>  			}
->> -			/* Surprise!  No unused slots.  Fix kip->nused. */
->> -			kip->nused = INSNS_PER_PAGE;
->> +			/* kip->nused is broken. */
->> +			BUG();
-> 
-> Does this deserve a bug, or can we get away with a WARN and find a way to 
-> fail nicely? Is it already too late to recover?
+2) Why is the page refcount upped with get_page() after an alloc_page()?
 
-No, WARN() is enough here.
+3) It seems like pages are cache-transitioned one-by-one when freed. 
+Again, this is a global TLB flush per page. Can't we free a large chunk 
+of pages at once?
 
-> 
->>  		}
->>  	}
->>  
->>  	/* If there are any garbage slots, collect it and try again. */
->> -	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
->> +	if (c->nr_garbage && collect_garbage_slots(c) == 0)
->>  		goto retry;
->> -	}
->> +
->>  	/* All out of space.  Need to allocate a new page. Use slot 0. */
->> -	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
->> +	kip = kmalloc(sizeof(struct kprobe_insn_page) + slots_per_page(c) - 1,
-> 
-> Why the '- 1'?  Is it because of the char [1] above?
-> 
-> Would be better to make the size of the kprobe_insn_page a macro:
-> 
-> #define KPROBE_INSN_SIZE offsetof(struct kbrobe_insn_page, slot_used)
-> 
-> and then you can do the following:
-> 
-> 	kip = kmalloc(KPROBE_INSN_SIZE + slots_per_page(c));
-
-Good idea!
-
-Thanks
+/Thanks,
+Thomas
 
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
+
 
