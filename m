@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZF2CXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZF2CYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbZF2CXJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 22:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZF2CW4
+	id S1754123AbZF2CYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 22:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZF2CYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 22:22:56 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:31628 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZF2CWz (ORCPT
+	Sun, 28 Jun 2009 22:24:10 -0400
+Received: from complete.lackof.org ([198.49.126.79]:50181 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbZF2CYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 22:22:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=l+PYUuXJEf71GEjcOxQl6WBmBmx0n/krzmXmd7LSXKdE47NgA64PVC9wpge2hCLHtW
-         p0kwsykjcDS1Wv3g/lMUm/qxkPXG4ptFLIEID1MOLuJWDK9L3Bc0FdhkPEtaghgDNkMP
-         tN1zOT1f9a+pOA+TA4AhI8sgktvERYMbkcTak=
-Subject: [PATCH]highmem_32.c : clean up comment
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 10:22:53 +0800
-Message-Id: <1246242173.2561.8.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 28 Jun 2009 22:24:09 -0400
+Date: Sun, 28 Jun 2009 20:24:11 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+	x86
+Message-ID: <20090629022411.GB20297@lackof.org>
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <20090627042556.GA31085@lackof.org> <4A45AEC5.3060407@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A45AEC5.3060407@zytor.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clean up comment.
+On Fri, Jun 26, 2009 at 10:31:49PM -0700, H. Peter Anvin wrote:
+> Grant Grundler wrote:
+>>>> +
+>>>> +	/* Cap the iomem address space to what is addressable on all CPUs */
+>>>> +	iomem_resource.end &= (1ULL << c->x86_phys_bits) - 1;
+>>
+>> Does x86_phys_bits represent the number of address lines/bits handled by
+>> the memory controller, coming out of the CPU, or handled by the
+>> "north bridge" (IO controller)?
+>>
+>
+> x86_phys_bits represents the top end of what the processor can address.
 
-Signed-off-by: Figo.zhang <figo1802@gmail.com>
----  
-arch/x86/mm/highmem_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index 58f621e..d20af06 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -24,7 +24,7 @@ void kunmap(struct page *page)
-  * no global lock is needed and because the kmap code must perform a global TLB
-  * invalidation when the kmap pool wraps.
-  *
-- * However when holding an atomic kmap is is not legal to sleep, so atomic
-+ * However when holding an atomic kmap is not legal to sleep, so atomic
-  * kmaps are appropriate for short, tight code paths only.
-  */
- void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+Ok - I interpret that to mean the number of physical address bits
+the processor can deal with regardless of the memory controller
+or IO Controller.
 
 
+>> I was assuming all three are the same thing but that might not be true
+>> with "QPI" or whatever Intel is calling it's serial interconnect these days.
+>> I'm wondering if the addressing capability of the CPU->memory controller
+>> might be different than CPU->IO Controller.
+>>
+>> Parallel interconnects are limited by the number of lines wired to
+>> transmit address data and I expect that's where x86_phys_bits originally
+>> came from. Chipsets _were_ all designed around those limits.
+>
+> Serial interconnects behave the same way, it's just that the address  
+> bits are sent in serial order.
+
+The bits going across the wire are the protocol for the interconnect
+and not necessarily what the CPU has implemented.  
+
+> Something is seriously goofy here, and  
+> it's probably reasonably straightforward to figure out what.
+
+Ok - just tracking it down will be difficult...really need to know
+the state of the machine (MCE dump?) when it wedges and can then
+determine which code is trying to access the range.
+
+thanks,
+grant
