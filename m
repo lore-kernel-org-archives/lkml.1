@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZF2O3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbZF2Oa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbZF2O3j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758484AbZF2O3Y
+	id S1759606AbZF2Oa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZF2Oat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:29:24 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:51562 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758859AbZF2O3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:29:22 -0400
-Message-ID: <4A48CFC1.2040103@msgid.tls.msk.ru>
-Date: Mon, 29 Jun 2009 18:29:21 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 29 Jun 2009 10:30:49 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:60867 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbZF2Oas (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 10:30:48 -0400
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4A4472DF.1050900@turknet.net.tr>
+	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
+Date: Mon, 29 Jun 2009 10:30:22 -0400
+In-Reply-To: <4A4878AC.3050208@turknet.net.tr> (Tarkan Erimer's message of
+	"Mon, 29 Jun 2009 11:17:48 +0300")
+Message-ID: <yq1fxdji03l.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       alsa-devel@vger.kernel.org
-Subject: Re: PC speaker beeps in 2.6.30?
-References: <4A365DA6.8000102@msgid.tls.msk.ru> <4A365DA6.8000102@msgid.tls.msk.ru> <4A4464CA.4060006@msgid.tls.msk.ru> <200906291447.08249.elendil@planet.nl>
-In-Reply-To: <200906291447.08249.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A48D001.0109:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop wrote:
-> Michael Tokarev wrote:
->> Am I the only concerned about this?  My 2.6.30 is still
->> silent w.r.t. old good PC speaker beeps, and I wasn't
->> able to make it to produce any sound.  Yes, as pointed
->> out by others there is a control now, in alsa,
-> 
-> Did you actually try compiling a kernel without CONFIG_SND_HDA_INPUT_BEEP 
-> set? If you do, does your PC speaker work again?
+>>>>> "Tarkan" == Tarkan Erimer <tarkan.erimer@turknet.net.tr> writes:
 
-Yes it works.  Even with CONFIG_SND_HDA_INPUT_BEEP set,
-but without the module loaded.  See all the details at
-http://bugzilla.kernel.org/show_bug.cgi?id=13651
+Tarkan> version=0x00 [no conformance claimed]
 
-> If it does work again, I don't think there is a bug, at least not in the 
-> fact that the old PC speaker beep no longer works: if you have a HDA 
-> soundcard in the system _and_ the driver is loaded _and_ 
-> CONFIG_SND_HDA_INPUT_BEEP is set, then it seems logical to me that that 
-> takes over system beeps.
-> The fact that the config option also existed in 2.6.29 but did not work 
-> the same seems a minor issue to me.
+Wow, that's super lame.  And somewhat odd because WDC are usually pretty
+good at USB-SATA bridge protocol compliance.  But in any case this is
+unrelated to your problems.
 
-Original issue was that I didn't know what to do.
+My concern was that our recent changes to the capacity detection in SCSI
+failed for your device.  However, given your attached log it looks like
+it's a USB issue.  And rereading your original log it also looks like
+you had a USB timeout which coincided with READ CAPACITY failing.
 
-[]
-> If it really does sound bad, maybe the ALSA developers could look into 
-> that, but you will have to describe it better (or maybe make a 
-> recording?).
+So I'm deferring to the USB folks.
 
-There was another, unrelated bug, fixed for 2.6.31-tobe.
+Tarkan> [160848.805027] usb 5-8: reset high speed USB device using
+Tarkan> ehci_hcd and address 7
 
-/mjt
+-- 
+Martin K. Petersen	Oracle Linux Engineering
