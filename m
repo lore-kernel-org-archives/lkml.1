@@ -1,228 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbZF2UIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758593AbZF2UJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759576AbZF2UIl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 16:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZF2UIe
+	id S1758593AbZF2UJQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 16:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZF2UJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 16:08:34 -0400
-Received: from mail.open.by ([193.232.92.17]:52456 "EHLO post.open.by"
+	Mon, 29 Jun 2009 16:09:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56873 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752778AbZF2UId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 16:08:33 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 8864 [Jun 29 2009]
-X-SpamTest-Info: helo_type=3
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Mon, 29 Jun 2009 23:10:14 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: kmemleak hexdump proposal
-Message-ID: <20090629201014.GA5414@localdomain.by>
-References: <20090628173632.GA3890@localdomain.by>
- <84144f020906290243u7a362465p6b1f566257fa3239@mail.gmail.com>
- <20090629101917.GA3093@localdomain.by>
- <1246270774.6364.9.camel@penberg-laptop>
- <1246271880.21450.13.camel@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246271880.21450.13.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752926AbZF2UJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 16:09:00 -0400
+Subject: fanotify: the fscking all notification system
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org, malware-list@dmesg.printk.net
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 16:08:45 -0400
+Message-Id: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-This is actually draft. We'll discuss details during next merge window (or earlier).
+So it's back to that time.  I'm not quite sure how to present fanotify.
+I can start sending patches (they are available), but this message is
+just going to be a re-into, what questions and problems are still out
+there?
 
-Thanks.
----
+Long ago the anti-malware vendors started asking the community for a
+reasonable way to do on access file scanning, historically they have
+used syscall table rewrites and binary LSM hook hacks to get their
+information.  Customers and Linux users keep demanding this stuff and in
+an effort give them a supportable method to use these products I have
+been working to develop fanotify.
 
-hex dump prints not more than HEX_MAX_LINES lines by HEX_ROW_SIZE (16 or 32) bytes.
-( min(object->size, HEX_MAX_LINES * HEX_ROW_SIZE) ).
+fanotify provides two things:
+1) a new notification system, sorta like inotify, only instead of an
+arbitrary 'watch descriptor' which userspace has to know how to map back
+to an object on the filesystem, fanotify provides an open read-only fd
+back to the original object.  It should be noted that the set of
+fanotify events is much smaller than the set of inotify events.
 
-Example (HEX_ROW_SIZE 16):
+2) an access system in which processes may be blocked until the fanotify
+userspace listener has decided if the operation should be allowed.
 
-unreferenced object 0xf68b59b8 (size 32):
-  comm "swapper", pid 1, jiffies 4294877610
-  hex dump (first 32 bytes):
-    70 6e 70 20 30 30 3a 30 31 00 5a 5a 5a 5a 5a 5a  pnp 00:01.ZZZZZZ
-    5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  ZZZZZZZZZZZZZZZ.
-  backtrace:
-    [<c10e931b>] kmemleak_alloc+0x11b/0x2b0
-    [<c10e4bc1>] kmem_cache_alloc+0x111/0x1c0
-    [<c12c426e>] reserve_range+0x3e/0x1b0
-    [<c12c4474>] system_pnp_probe+0x94/0x140
-    [<c12bafa4>] pnp_device_probe+0x84/0x100
-    [<c12f1939>] driver_probe_device+0x89/0x170
-    [<c12f1ab9>] __driver_attach+0x99/0xa0
-    [<c12f1048>] bus_for_each_dev+0x58/0x90
-    [<c12f1784>] driver_attach+0x24/0x40
-    [<c12f0824>] bus_add_driver+0xc4/0x290
-    [<c12f1e30>] driver_register+0x70/0x130
-    [<c12bacf6>] pnp_register_driver+0x26/0x40
-    [<c15d671c>] pnp_system_init+0x1b/0x2e
-    [<c100115f>] do_one_initcall+0x3f/0x1a0
-    [<c15ac4af>] kernel_init+0x13e/0x1a6
-    [<c1003e07>] kernel_thread_helper+0x7/0x10
+There was a long discussion in which I was asked to define the security
+model being implemented and at the end of the day the answer is that
+there is no security model here.  This is NOT an LSM.  This is not
+intended to provide system security.  fanotify is intended to provide an
+interface for on access file scanning and permissions gating based on
+the results of those scans.  fanotify does not prevent, nor does it
+attempt to prevent, malicious code running on the Linux machine.  Read
+that again, once malicious code is running on the Linux machine this
+interface (along with whatever magic someone creates in userspace) is
+not intended to prevent malicious actions.  There is some hope in that
+if userspace can identify the malicious code it could prevent it from
+every being executed by a normal program and so there is clearly
+security benefit possible, but it is a very very weak assurance.  Those
+long discussion can be found at:
+http://thread.gmane.org/gmane.linux.kernel.malware/22
+http://thread.gmane.org/gmane.linux.kernel/716539
 
+fanotify is close to working, although some of the 'features' are
+completely untested and a couple are unimplemented but it's pretty
+close.  It's currently implemented over 34 patches which hopefully are
+each small enough for good review, I'll be sending them a couple or so
+at a time for review but first I want to make sure we are all on the
+same page....
 
-Example (HEX_ROW_SIZE 32):
+fanotify has two basic 'modes' directed and global.  fanotify directed
+works much like inotify in that userspace marks inodes it is interested
+in and gets events from those inodes.  fanotify global instead indicates
+that it wants everything on the system and then individually marks
+inodes that it doesn't care about.  They both have the same userspace
+interface and rely on the same fsnotify in kernel infrastrucute
+(although the infrastructure did have to modified to support the global
+listener concept)
 
-unreferenced object 0xf5e2e130 (size 2048):
-  comm "modprobe", pid 2084, jiffies 4294880769
-  hex dump (first 64 bytes):
-    24 97 ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff  $...............................
-    fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff fc ff ff ff  ................................
-  backtrace:
-    [<c10e931b>] kmemleak_alloc+0x11b/0x2b0
-    [<c10e587d>] __kmalloc+0x16d/0x210
-    [<c10e73cd>] pcpu_mem_alloc+0x2d/0x80
-    [<c10e7482>] pcpu_extend_area_map+0x62/0x100
-    [<c10e7837>] pcpu_alloc+0x317/0x480
-    [<c10e79f7>] __alloc_percpu+0x17/0x30
-    [<c122fd54>] alloc_disk_node+0x54/0x150
-    [<c122fe6c>] alloc_disk+0x1c/0x40
-    [<fd61a25b>] loop_alloc+0x6b/0x170 [loop]
-    [<fd61e092>] 0xfd61e092
-    [<c100115f>] do_one_initcall+0x3f/0x1a0
-    [<c10785ad>] sys_init_module+0xdd/0x220
-    [<c100324b>] sysenter_do_call+0x12/0x22
-    [<ffffffff>] 0xffffffff
-unreferenced object 0xf5d3cd00 (size 32):
-  comm "consolechars", pid 2433, jiffies 4294894598
-  hex dump (first 32 bytes):
-    60 15 58 c1 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a a5  `.X.....ZZZZZZZZZZZZZZZZZZZZZZZ.
-  backtrace:
-    [<c10e931b>] kmemleak_alloc+0x11b/0x2b0
-    [<c10e4bc1>] kmem_cache_alloc+0x111/0x1c0
-    [<c12cf49b>] tty_ldisc_try_get+0x2b/0x130
-    [<c12cf7d7>] tty_ldisc_get+0x37/0x70
-    [<c12cfa54>] tty_ldisc_reinit+0x34/0x70
-    [<c12cfac5>] tty_ldisc_release+0x35/0x60
-    [<c12ca1fe>] tty_release_dev+0x33e/0x500
-    [<c12ca3e0>] tty_release+0x20/0x40
-    [<c10ed61d>] __fput+0xed/0x200
-    [<c10ed752>] fput+0x22/0x40
-    [<c10e96c9>] filp_close+0x49/0x90
-    [<c1045445>] put_files_struct+0xb5/0xe0
-    [<c10454b5>] exit_files+0x45/0x60
-    [<c1046fd3>] do_exit+0x133/0x6c0
-    [<c10475a5>] do_group_exit+0x45/0xa0
-    [<c1047622>] sys_exit_group+0x22/0x40
+In either case the fanotify userspace interface is based on socket calls
+loosely of this format.  
 
+1) open an fanotify socket
+2) bind the socket here you define yourself and directed or global and
+if global define all the events you want.
+2.5) if directed call setsockattr to attach marks to inodes you care
+about.
+3) call getsockattr on the socket to get back data about events that
+took place and to get fd's opened in your context
 
-hexdump.c can print prefix:
-case DUMP_PREFIX_ADDRESS:
-    f6998df0: 3c 06 00 00 00 00 00 00 78 69 00 00 ....  <.......xi......................
-case DUMP_PREFIX_OFFSET:
-    00000000: 3c 06 00 00 00 00 00 00 78 69 00 00 ....  <.......xi......................
-default:
-    3c 06 00 00 00 00 00 00 78 69 00 00 00 00 00 ....  <.......xi......................
+At the very end of the message is a small program which, might even
+build, and will printf for every single open that takes place on the
+system as a reference for a brief understanding of the interface.
+(although it does not provide an example of access decisions)
 
-hex_dump_object(struct seq_file *seq, struct kmemleak_object *object)
-can be extended to accept prefix flag either. Though I don't think it's so important. So, it prints without any prefix.
+fanotify has a limited set of events, open, close, access(read),
+modify(write) and a permissions event for open and modify.  fanotify
+provides no means to notice mv/rename.  This is something I plan to look
+into to simplify fanotify's use for use file indexers, but at this time
+the requisite information is not available in the right places in the
+kernel.
 
+When userspace gets an event it comes in the form of one or more struct
+fanotify_event_metadata in the getsockopt buffer.
 
+struct fanotify_event_metadata {
+        __u32 event_len;
+        __s32 fd;
+        __u32 mask;
+        __u32 f_flags;
+        pid_t pid;
+        pid_t tgid;
+        __u64 cookie;
+}  __attribute__((packed));
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 5063873..65c5d74 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -160,6 +160,15 @@ struct kmemleak_object {
- /* flag set to not scan the object */
- #define OBJECT_NO_SCAN		(1 << 2)
- 
-+/* number of bytes to print per line; must be 16 or 32 */
-+#define HEX_ROW_SIZE		32
-+/* number of bytes to print at a time (1, 2, 4, 8) */
-+#define HEX_GROUP_SIZE		1
-+/* include ASCII after the hex output */
-+#define HEX_ASCII		1
-+/* max number of lines to be printed */
-+#define HEX_MAX_LINES		2
-+
- /* the list of all allocated objects */
- static LIST_HEAD(object_list);
- /* the list of gray-colored objects (see color_gray comment below) */
-@@ -181,6 +190,8 @@ static atomic_t kmemleak_initialized = ATOMIC_INIT(0);
- static atomic_t kmemleak_early_log = ATOMIC_INIT(1);
- /* set if a fata kmemleak error has occurred */
- static atomic_t kmemleak_error = ATOMIC_INIT(0);
-+/* set if hex dump should be printed */
-+static atomic_t kmemleak_hex_dump = ATOMIC_INIT(1);
- 
- /* minimum and maximum address that may be valid pointers */
- static unsigned long min_addr = ULONG_MAX;
-@@ -258,6 +269,35 @@ static void kmemleak_disable(void);
- 	kmemleak_disable();		\
- } while (0)
- 
-+
-+/*
-+ * Printing of the objects hex dump to the seq file. The number on lines
-+ * to be printed is limited to HEX_MAX_LINES to prevent seq file spamming.
-+ * The actual number of printed bytes depends on HEX_ROW_SIZE.
-+ * It must be called with the object->lock held.
-+ */
-+static void hex_dump_object(struct seq_file *seq,
-+				struct kmemleak_object *object)
-+{
-+	const u8 *ptr = (const u8 *)object->pointer;
-+	/* Limit the number of lines to HEX_MAX_LINES. */
-+	int len = min(object->size, (size_t)(HEX_MAX_LINES * HEX_ROW_SIZE));
-+	int i, remaining = len;
-+	unsigned char linebuf[200];
-+
-+	seq_printf(seq, "  hex dump (first %d bytes):\n", len);
-+
-+	for (i = 0; i < len; i += HEX_ROW_SIZE) {
-+		int linelen = min(remaining, HEX_ROW_SIZE);
-+		remaining -= HEX_ROW_SIZE;
-+		hex_dump_to_buffer(ptr + i, linelen, HEX_ROW_SIZE,
-+						   HEX_GROUP_SIZE, linebuf,
-+						   sizeof(linebuf), HEX_ASCII);
-+
-+		seq_printf(seq, "    %s\n", linebuf);
-+	}
-+}
-+
- /*
-  * Object colors, encoded with count and min_count:
-  * - white - orphan object, not enough references to it (count < min_count)
-@@ -303,6 +343,11 @@ static void print_unreferenced(struct seq_file *seq,
- 		   object->pointer, object->size);
- 	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
- 		   object->comm, object->pid, object->jiffies);
-+
-+	/* check whether hex dump should be printed */
-+	if (atomic_read(&kmemleak_hex_dump))
-+		hex_dump_object(seq, object);
-+
- 	seq_printf(seq, "  backtrace:\n");
- 
- 	for (i = 0; i < object->trace_len; i++) {
-@@ -1269,6 +1314,10 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
- 		start_scan_thread();
- 	else if (strncmp(buf, "scan=off", 8) == 0)
- 		stop_scan_thread();
-+	else if (strncmp(buf, "hexdump=on", 10) == 0)
-+		atomic_set(&kmemleak_hex_dump, 1);
-+	else if (strncmp(buf, "hexdump=off", 11) == 0)
-+		atomic_set(&kmemleak_hex_dump, 0);
- 	else if (strncmp(buf, "scan=", 5) == 0) {
- 		unsigned long secs;
- 		int err;
+This provides information about the event including the type, the
+location of the new fd that was opened pointing to the object in
+question, and it provides information about the process which triggered
+the event.
 
+If the event was a permissions gating event type (FAN_ACCESS_PERM |
+FAN_OPEN_PERM) then cookie will be non-zero and userspace will need to
+tell the kernel if the original calling process should be allowed or
+denied.  This is done with a setsockopt() call passing the
 
-	Sergey
+struct fanotify_so_access {
+        __u64 cookie;
+        __u32 response;
+}  __attribute__((packed));
+
+In which this answer indicates the cookie from the event in question and
+the response (allow/deny)
+
+The third type of message, the inode mark, is done by passing
+
+struct fanotify_so_inode_mark {
+        __s32 fd;
+        __u32 mask;
+        __u32 ignored_mask;
+}  __attribute__((packed));
+
+to a setsockopt() call.  If using fanotify in a 'directed' manor this
+will mark an inode that we are interested in events in mask.  The
+ignored mask is used to indicate events we no longer want to hear,
+although the ignored mask is cleared on inode modification.  So if one
+were to register FAN_ACCESS and after the first one send FAN_ACCESS in
+the ignored_mask userspace would not get any more FAN_ACCESS events
+until after the inode was next modified.
+
+fanotify global groups use these similarly, only they are unable to set
+anything in the mask and can only use the ignored_mask.
+
+So what problems do people have?  What complaints?  What questions?
+What do you want to know?  What do you wish it could do?  How could this
+interface be better?  What other information do you want?
+
+Later today a 'working' set of fanotify patches should be available at
+  git://git.infradead.org/users/eparis/notify.git fanotify-experimental
+THIS BRANCH WILL REGULARLY REBASE, I'm not trying to work nicely with
+downstream trees!  Patches gladly accepted, merge requests? not so much.
+
+[paris@paris kernel-2]$ git diff f82c9a712458d835 | diffstat -p1
+ fs/compat.c                          |    5 
+ fs/exec.c                            |    7 
+ fs/nfsd/vfs.c                        |    4 
+ fs/notify/Kconfig                    |   13 
+ fs/notify/Makefile                   |    2 
+ fs/notify/dnotify/dnotify.c          |    7 
+ fs/notify/fanotify/Kconfig           |   27 +
+ fs/notify/fanotify/Makefile          |    1 
+ fs/notify/fanotify/af_fanotify.c     |  694 +++++++++++++++++++++++++++++++++++
+ fs/notify/fanotify/af_fanotify.h     |   21 +
+ fs/notify/fanotify/fanotify.c        |  364 ++++++++++++++++++
+ fs/notify/fanotify/fanotify.h        |   38 +
+ fs/notify/fsnotify.c                 |   86 +++-
+ fs/notify/fsnotify.h                 |    9 
+ fs/notify/group.c                    |  128 +++++-
+ fs/notify/inode_mark.c               |   16 
+ fs/notify/inotify/inotify_fsnotify.c |   50 ++
+ fs/notify/inotify/inotify_user.c     |    4 
+ fs/notify/notification.c             |  167 +++++---
+ fs/notify/second_q.c                 |  128 ++++++
+ fs/open.c                            |    2 
+ fs/read_write.c                      |    8 
+ include/linux/Kbuild                 |    1 
+ include/linux/fanotify.h             |  134 ++++++
+ include/linux/fsnotify.h             |   60 ++-
+ include/linux/fsnotify_backend.h     |   80 +++-
+ include/linux/init_task.h            |    8 
+ include/linux/sched.h                |    4 
+ include/linux/security.h             |    5 
+ include/linux/socket.h               |    5 
+ kernel/audit_tree.c                  |    7 
+ kernel/audit_watch.c                 |    7 
+ kernel/fork.c                        |    5 
+ net/core/sock.c                      |    6 
+ security/security.c                  |   18 
+ 35 files changed, 1955 insertions(+), 166 deletions(-)
+
+Example program to printf for every open on a system!
+
+int main(void) {
+	int fan_fd, len;
+	struct fanotify_addr addr;
+	socklen_t socklen;
+	char buf[4096];
+	struct fanotify_event_metadata *metadata;
+        
+        memset(&addr, 0, sizeof(addr));
+        addr.family = AF_FANOTIFY;
+        addr.group_num = 123456;
+        addr.priority = 32768;
+        addr.mask = FAN_OPEN | FAN_GLOBAL_LISTENER;
+
+        fan_fd = socket(PF_FANOTIFY, SOCK_RAW, 0);
+	bind(fan_fd, (struct sockaddr *)&addr, sizeof(addr));
+	while (1) {
+		socklen = sizeof(buf);
+		getsockopt(fan_fd, SOL_FANOTIFY, FANOTIFY_GET_EVENT,
+			   buf, &socklen);
+		metadata = &buf;
+		len = socklen;
+		while(FAN_EVENT_OK(metadata, len)) {
+			printf("got event!\n"
+			close(metadata->fd);
+			metadata = FAN_EVENT_NEXT(metadata, len);
+		}
+	}
+}
+
