@@ -1,103 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbZF2Xav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbZF2XeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759976AbZF2Xav (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbZF2Xak
+	id S1758996AbZF2XeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZF2XeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:30:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44846 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759912AbZF2Xaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:30:39 -0400
-Message-ID: <4A494E3C.70304@kernel.org>
-Date: Mon, 29 Jun 2009 16:29:00 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 29 Jun 2009 19:34:10 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59491
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753279AbZF2XeK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:34:10 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+Date: Mon, 29 Jun 2009 18:34:06 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+References: <200906281033.09842.jk@ozlabs.org>
+In-Reply-To: <200906281033.09842.jk@ozlabs.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org>
-In-Reply-To: <4A494478.7020304@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906291834.07902.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> H. Peter Anvin wrote:
->> [Add Cc: Yinghai]
->>
->> Mikael Pettersson wrote:
->>>  > >  > 
->>>  > >  > OK, this seems more than a wee bit strange, to say the least.  We
->>>  > >  > shouldn't be reserving the entire address space; this is legitimate I/O
->>>  > >  > space.
->>>  > >  > 
->>>  > >  > However, the reservation suddenly being improper for the root resource
->>>  > >  > would definitely make things unhappy...
->>>  > > 
->>>  > > Reverting the two e820 changes in 2.6.31-rc1,
->>>  > > 5d423ccd7ba4285f1084e91b26805e1d0ae978ed and then
->>>  > > 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90,
->>>  > > but keeping the iomem_resource.end cap change, makes 2.6.31-rc1
->>>  > > work on my HIGHMEM64G machine.
->>>  > > 
->>>  > > Seems the e820 and the iomem_resource.end changes are Ok in
->>>  > > isolation but break when combined.
->>>  > 
->>>  > With the e820 change reverted, what does /proc/iomem look like?
->>>
->> OK.  This is starting to make sense.  I suspect this is a similar issue
->> as 3b0fde0fac19c180317eb0601b3504083f4b9bf5 addresses, which is that the
->> e820 code assumes -- and I don't see any exception to that in
->> 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90 -- that iomem_resource covers
->> the entire 64-bit address space that e820 knows.  I wonder what happens
->> with "interestingly shaped" memory above 4 GB if resource_size_t is 32
->> bits with that code.
->>
->> In terms of address space assignment, an alternate implementation of the
->> address space cap is to mark it reserved; that would unfortunately
->> result in an ugly turd at the end of /proc/iomem, but that can be
->> addressed if need be, too.
+On Saturday 27 June 2009 21:33:09 Jeremy Kerr wrote:
+> Hi Rob,
+>
+> > I bisected the problem in the linux kernel repository, and wound up
+> > here:
+> >
+> > 60ee031940c1b09c137b617a8829e2f081961fe0 is first bad commit
+> > commit 60ee031940c1b09c137b617a8829e2f081961fe0
+> > Author: Jeremy Kerr <jk@ozlabs.org>
+> > Date:   Tue Feb 17 11:44:14 2009 +1100
+> >
+> >     powerpc/spufs: Use correct return value for spu_handle_mm_fault
+>
+> I think it's very unlikely that this commit would be causing the
+> problem, as qemu doesn't have any SPEs (they're specific to the Cell
+> architecture), which would be required to hit this code. Also, you're
+> not compiling with CONFIG_SPU_BASE, so the file that this changed
+> shouldn't even be built.
 
-Mikael, can you try following patch on your system?
+Yeah, it seemed odd.  That's why I needed help. :)
 
----
- arch/x86/kernel/e820.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+> Perhaps try the bisect again?
 
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1400,8 +1400,8 @@ void __init e820_reserve_resources_late(
- 	 * avoid stolen RAM:
- 	 */
- 	for (i = 0; i < e820.nr_map; i++) {
--		struct e820entry *entry = &e820_saved.map[i];
--		resource_size_t start, end;
-+		struct e820entry *entry = &e820.map[i];
-+		u64 start, end;
- 
- 		if (entry->type != E820_RAM)
- 			continue;
-@@ -1409,8 +1409,10 @@ void __init e820_reserve_resources_late(
- 		end = round_up(start, ram_alignment(start));
- 		if (start == end)
- 			continue;
--		reserve_region_with_split(&iomem_resource, start,
--						  end - 1, "RAM buffer");
-+		if (end != (resource_size_t)end)
-+			continue;
-+		reserve_region_with_split(&iomem_resource, (resource_size_t)start,
-+					  (resource_size_t)(end - 1), "RAM buffer");
- 	}
- }
- 
+Sorry about that.  I suck at git.
+
+Part of the reason is that git bisect assumes that "good" always comes before 
+"bad" in the repository, so if you're looking for the patch that _fixed_ a bug 
+(I.E. good == new and bad == old), you have to reverse 'em to humor git 
+bisect.  I had to do that this time to patch an intermediate version that 
+build breaks, which "git bisect run" called "skip" on over a dozen times 
+without noticeable progress.  If good and bad then mean the opposite on the 
+_next_ bisect, I tend to get 'em confused occasionally.  (Especially when I've 
+hit three or more unrelated bugs in the same bisect run.  In this case the 
+build break in kmap_atomic_prot, whatever memory glitch is corrupting the 
+squashfs root filesystem image and spamming the console about it, and this bug.  
+Oh, and the really _fun_ part is that the squashfs bug only reproduces about 
+half the time.  If you run the same binary twice, sometimes it'll work and 
+sometimes it'll spam squashfs errors to the console.  Wheee...)
+
+Anyway, on something like my fifth attempt I managed to bisect it to:
+
+28794d34ecb6815a3fa0a4256027c9b081a17c5f is first bad commit
+commit 28794d34ecb6815a3fa0a4256027c9b081a17c5f
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Tue Mar 10 17:53:27 2009 +0000
+
+    powerpc/kconfig: Kill PPC_MULTIPLATFORM
+    
+    CONFIG_PPC_MULTIPLATFORM is a remain of the pre-powerpc days and isn't
+    really meaningful anymore. It was basically equivalent to PPC64 || 6xx.
+    
+    This removes it along with the following changes:
+    
+     - 32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
+       on 6xx which is what they want anyway.
+    
+     - A new symbol, PPC_BOOK3S, is defined that represent compliance with
+       the "Server" variant of the architecture. This is set when either 6xx
+       or PPC64 is set and open the door for future BOOK3E 64-bit.
+    
+     - 64-bit platforms that relied on PPC64 && PPC_MULTIPLATFORM now use
+       PPC64 && PPC_BOOK3S
+    
+     - A separate and selectable CONFIG_PPC_OF_BOOT_TRAMPOLINE option is now
+       used to control the use of prom_init.c
+    
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLINE 
+symbol wasn't set, and once I switched that on it started working again.
+
+> linuxppc-dev@lists.ozlabs.org is the one you want for this:
+>
+>  https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
+vger.kernel.org's list info page or in the "Maling lists" page linked from 
+ozlabs.org's top level web page.)  Just curious, I couldn't find it when I 
+looked in the obvious (to me) places.
+
+Rob
+
+P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
+which links to mailing lists on the right which is the ozlabs.org page that 
+doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
+that search doesn't give a hint of the existence of that list, although some 
+of the later ones might if I clicked through more of them...
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
