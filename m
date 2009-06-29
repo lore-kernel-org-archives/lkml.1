@@ -1,98 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZF2HeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbZF2HgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbZF2HeD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZF2Hdy
+	id S1758036AbZF2HgA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZF2Hfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:33:54 -0400
-Received: from ey-out-1920.google.com ([74.125.78.147]:32099 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750778AbZF2Hdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:33:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type;
-        b=lJyJOuNf64zNXTfRzDL3WCQiJQ7Xw0fslHETQCLWjsheY3n0gF/odx6YyJg8vBcxDX
-         IaG8ygTOgRAVtl5oWZzBvuF067q31OiSKrvw/dB01HGPplpoq/teTyoGq1/M8jIvuqNa
-         EY5l/3YbVbZNOTpcPZlaPIncwPJSPII9iV7NM=
-Date: Mon, 29 Jun 2009 09:33:40 +0200 (CEST)
-From: "=?ISO-8859-15?Q?Rub=E9n_A=F3s_Garralda_=3Crubenatch=40gmail=2Ecom=3E?=" 
-	<rubenatch@gmail.com>
-X-X-Sender: root@localhost
-To: jkosina@suse.cz
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCHv3] Adding rumble support to Thrustmaster Dual Trigger
- 3-in-1
-Message-ID: <alpine.DEB.2.00.0906290926140.9132@localhost>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 29 Jun 2009 03:35:53 -0400
+Received: from mga14.intel.com ([143.182.124.37]:31688 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751201AbZF2Hfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 03:35:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,308,1243839600"; 
+   d="scan'208";a="159493612"
+Date: Mon, 29 Jun 2009 15:34:23 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       David Howells <dhowells@redhat.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: Found the commit that causes the OOMs
+Message-ID: <20090629073423.GA1315@localhost>
+References: <7561.1245768237@redhat.com> <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com> <20090628142239.GA20986@localhost> <2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com> <20090628151026.GB25076@localhost> <20090629091741.ab815ae7.minchan.kim@barrios-desktop>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-368403849-1246260836=:9132"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629091741.ab815ae7.minchan.kim@barrios-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, Jun 29, 2009 at 08:17:41AM +0800, Minchan Kim wrote:
+> On Sun, 28 Jun 2009 23:10:26 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > +unsigned long global_reclaimable_pages(void)
+> >  {
+> > -	return global_page_state(NR_ACTIVE_ANON)
+> > -		+ global_page_state(NR_ACTIVE_FILE)
+> > -		+ global_page_state(NR_INACTIVE_ANON)
+> > -		+ global_page_state(NR_INACTIVE_FILE);
+> > +	int nr;
+> > +
+> > +	nr = global_page_state(zone, NR_ACTIVE_FILE) +
+> > +	     global_page_state(zone, NR_INACTIVE_FILE);
+> > +
+> > +	if (total_swap_pages)
+> 
+> 
+> Dont' we have to change from total_swap_pages to nr_swap_pages, too ?
 
---8323328-368403849-1246260836=:9132
-Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Yes, good catch! (sorry I was in a hurry at the time..)
 
-From: Rubén Aós Garralda <rubenatch@gmail.com>
-
-This patch enables rumble in Thrustmaster Dual 3-in-1 trigger gamepads (in 
-both PC and PS3 modes). It uses the same code as Thrustmaster FireStorm 
-Dual Power 2, so it only adds new USB IDs to hid-core.c and hid-tmff.c
-
-Signed-off-by: Rubén Aós Garralda <rubenatch@gmail.com>
+Thanks,
+Fengguang
 
 ---
 
-Hope it is OK this time...
-
-diff -uprN linux-source-2.6.30/drivers/hid/hid-core.c linux-source-test/drivers/hid/hid-core.c
---- linux-source-2.6.30/drivers/hid/hid-core.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-core.c	2009-06-26 15:33:48.000000000 +0200
-@@ -1309,6 +1309,8 @@ static const struct hid_device_id hid_bl
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_SUNPLUS, USB_DEVICE_ID_SUNPLUS_WDESKTOP) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb654) },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPSEED, USB_DEVICE_ID_TOPSEED_CYBERLINK) },
-diff -uprN linux-source-2.6.30/drivers/hid/hid-tmff.c linux-source-test/drivers/hid/hid-tmff.c
---- linux-source-2.6.30/drivers/hid/hid-tmff.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/hid-tmff.c	2009-06-26 15:35:27.000000000 +0200
-@@ -236,7 +236,11 @@ err:
-  static const struct hid_device_id tm_devices[] = {
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb300),
-  		.driver_data = (unsigned long)ff_rumble },
--	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb304),	/* FireStorm Dual Power 2 (and 3) */
-+		.driver_data = (unsigned long)ff_rumble },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb323),	/* Dual Trigger 3-in-1 (PC Mode) */
-+		.driver_data = (unsigned long)ff_rumble },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb324),	/* Dual Trigger 3-in-1 (PS3 Mode) */
-  		.driver_data = (unsigned long)ff_rumble },
-  	{ HID_USB_DEVICE(USB_VENDOR_ID_THRUSTMASTER, 0xb651),	/* FGT Rumble Force Wheel */
-  		.driver_data = (unsigned long)ff_rumble },
-diff -uprN linux-source-2.6.30/drivers/hid/Kconfig linux-source-test/drivers/hid/Kconfig
---- linux-source-2.6.30/drivers/hid/Kconfig	2009-06-10 05:05:27.000000000 +0200
-+++ linux-source-test/drivers/hid/Kconfig	2009-06-26 15:58:15.000000000 +0200
-@@ -268,8 +268,9 @@ config THRUSTMASTER_FF
-  	depends on USB_HID
-  	select INPUT_FF_MEMLESS
-  	help
--	  Say Y here if you have a THRUSTMASTER FireStore Dual Power 2 or
--	  a THRUSTMASTER Ferrari GT Rumble Force or Force Feedback Wheel.
-+	  Say Y here if you have a THRUSTMASTER FireStorm Dual Power 2 or 3,
-+	  a THRUSTMASTER Dual Trigger 3-in-1 or a THRUSTMASTER Ferrari GT
-+	  Rumble Force or Force Feedback Wheel.
-
-  config ZEROPLUS_FF
-  	tristate "Zeroplus based game controller support"
---8323328-368403849-1246260836=:9132--
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 416f748..8d8aa20 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -166,15 +166,8 @@ static inline unsigned long zone_page_state(struct zone *zone,
+ 	return x;
+ }
+ 
+-extern unsigned long global_lru_pages(void);
+-
+-static inline unsigned long zone_lru_pages(struct zone *zone)
+-{
+-	return (zone_page_state(zone, NR_ACTIVE_ANON)
+-		+ zone_page_state(zone, NR_ACTIVE_FILE)
+-		+ zone_page_state(zone, NR_INACTIVE_ANON)
+-		+ zone_page_state(zone, NR_INACTIVE_FILE));
+-}
++extern unsigned long global_reclaimable_pages(void);
++extern unsigned long zone_reclaimable_pages(void);
+ 
+ #ifdef CONFIG_NUMA
+ /*
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index a91b870..74c3067 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -394,7 +394,8 @@ static unsigned long highmem_dirtyable_memory(unsigned long total)
+ 		struct zone *z =
+ 			&NODE_DATA(node)->node_zones[ZONE_HIGHMEM];
+ 
+-		x += zone_page_state(z, NR_FREE_PAGES) + zone_lru_pages(z);
++		x += zone_page_state(z, NR_FREE_PAGES) +
++		     zone_reclaimable_pages(z);
+ 	}
+ 	/*
+ 	 * Make sure that the number of highmem pages is never larger
+@@ -418,7 +419,7 @@ unsigned long determine_dirtyable_memory(void)
+ {
+ 	unsigned long x;
+ 
+-	x = global_page_state(NR_FREE_PAGES) + global_lru_pages();
++	x = global_page_state(NR_FREE_PAGES) + global_reclaimable_pages();
+ 
+ 	if (!vm_highmem_is_dirtyable)
+ 		x -= highmem_dirtyable_memory(x);
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 026f452..09976da 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1693,7 +1693,7 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
+ 			if (!cpuset_zone_allowed_hardwall(zone, GFP_KERNEL))
+ 				continue;
+ 
+-			lru_pages += zone_lru_pages(zone);
++			lru_pages += zone_reclaimable_pages(zone);
+ 		}
+ 	}
+ 
+@@ -1910,7 +1910,7 @@ loop_again:
+ 		for (i = 0; i <= end_zone; i++) {
+ 			struct zone *zone = pgdat->node_zones + i;
+ 
+-			lru_pages += zone_lru_pages(zone);
++			lru_pages += zone_reclaimable_pages(zone);
+ 		}
+ 
+ 		/*
+@@ -1954,7 +1954,7 @@ loop_again:
+ 			if (zone_is_all_unreclaimable(zone))
+ 				continue;
+ 			if (nr_slab == 0 && zone->pages_scanned >=
+-						(zone_lru_pages(zone) * 6))
++					(zone_reclaimable_pages(zone) * 6))
+ 					zone_set_flag(zone,
+ 						      ZONE_ALL_UNRECLAIMABLE);
+ 			/*
+@@ -2121,12 +2121,33 @@ void wakeup_kswapd(struct zone *zone, int order)
+ 	wake_up_interruptible(&pgdat->kswapd_wait);
+ }
+ 
+-unsigned long global_lru_pages(void)
++unsigned long global_reclaimable_pages(void)
+ {
+-	return global_page_state(NR_ACTIVE_ANON)
+-		+ global_page_state(NR_ACTIVE_FILE)
+-		+ global_page_state(NR_INACTIVE_ANON)
+-		+ global_page_state(NR_INACTIVE_FILE);
++	int nr;
++
++	nr = global_page_state(zone, NR_ACTIVE_FILE) +
++	     global_page_state(zone, NR_INACTIVE_FILE);
++
++	if (nr_swap_pages > 0)
++		nr += global_page_state(zone, NR_ACTIVE_ANON) +
++		      global_page_state(zone, NR_INACTIVE_ANON);
++
++	return nr;
++}
++
++
++unsigned long zone_reclaimable_pages(struct zone *zone)
++{
++	int nr;
++
++	nr = zone_page_state(zone, NR_ACTIVE_FILE) +
++	     zone_page_state(zone, NR_INACTIVE_FILE);
++
++	if (nr_swap_pages > 0)
++		nr += zone_page_state(zone, NR_ACTIVE_ANON) +
++		      zone_page_state(zone, NR_INACTIVE_ANON);
++
++	return nr;
+ }
+ 
+ #ifdef CONFIG_HIBERNATION
+@@ -2198,7 +2219,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+ 
+ 	current->reclaim_state = &reclaim_state;
+ 
+-	lru_pages = global_lru_pages();
++	lru_pages = global_reclaimable_pages();
+ 	nr_slab = global_page_state(NR_SLAB_RECLAIMABLE);
+ 	/* If slab caches are huge, it's better to hit them first */
+ 	while (nr_slab >= lru_pages) {
+@@ -2240,7 +2261,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+ 
+ 			reclaim_state.reclaimed_slab = 0;
+ 			shrink_slab(sc.nr_scanned, sc.gfp_mask,
+-					global_lru_pages());
++				    global_reclaimable_pages());
+ 			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+ 			if (sc.nr_reclaimed >= nr_pages)
+ 				goto out;
+@@ -2257,7 +2278,8 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+ 	if (!sc.nr_reclaimed) {
+ 		do {
+ 			reclaim_state.reclaimed_slab = 0;
+-			shrink_slab(nr_pages, sc.gfp_mask, global_lru_pages());
++			shrink_slab(nr_pages, sc.gfp_mask,
++				    global_reclaimable_pages());
+ 			sc.nr_reclaimed += reclaim_state.reclaimed_slab;
+ 		} while (sc.nr_reclaimed < nr_pages &&
+ 				reclaim_state.reclaimed_slab > 0);
