@@ -1,94 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZF2Oqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZF2OrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759659AbZF2Oqy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbZF2Oqn
+	id S1759891AbZF2OrI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZF2Oqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:46:43 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:26760 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbZF2Oql convert rfc822-to-8bit (ORCPT
+	Mon, 29 Jun 2009 10:46:45 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42010 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754954AbZF2Oqn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:46:41 -0400
-MIME-Version: 1.0
-Message-ID: <5331ec14-c599-4317-bd5b-55911b8ee916@default>
-Date: Mon, 29 Jun 2009 07:44:50 -0700 (PDT)
-From: Dan Magenheimer <dan.magenheimer@oracle.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
-       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
-       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
-       sunil.mushran@oracle.com, linux-mm@kvack.org,
-       Himanshu Raj <rhim@microsoft.com>, linux-embedded@vger.kernel.org
-Subject: RE: [RFC] transcendent memory for Linux
-In-Reply-To: <63386a3d0906270618h5be01265v759f5acd1f49682f@mail.gmail.com>
-X-Priority: 3
-X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
- 9.0.0.6627]
-Content-Type: text/plain; charset=Windows-1252
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt010.oracle.com [141.146.116.19]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.4A48D379.0154:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 29 Jun 2009 10:46:43 -0400
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <12000.1246284749@jrobl>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+	 <12000.1246284749@jrobl>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 10:46:23 -0400
+Message-Id: <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> From: Linus Walleij [mailto:linus.ml.walleij@gmail.com]
-> Sent: Saturday, June 27, 2009 7:19 AM
-> Subject: Re: [RFC] transcendent memory for Linux
+On Mon, 2009-06-29 at 23:12 +0900, hooanon05@yahoo.co.jp wrote:
+> Mimi Zohar:
+> > This patch fixes an imbalance message as reported by J.R. Okajima.
+> > The IMA file counters are incremented in ima_path_check. If the
+> > actual open fails, such as ETXTBSY, decrement the counters to
+> > prevent unnecessary imbalance messages.
 > 
-> > We call this latter class "transcendent memory" and it
-> > provides an interesting opportunity to more efficiently
-> > utilize RAM in a virtualized environment.  However this
-> > "memory but not really memory" may also have applications
-> > in NON-virtualized environments, such as hotplug-memory
-> > deletion, SSDs, and page cache compression.  Others have
-> > suggested ideas such as allowing use of highmem memory
-> > without a highmem kernel, or use of spare video memory.
+> Although I have no objection for this fix, I'd like to suggest you to
+> stop incrementing the counters in ima_path_check().
+> A while ago IMA_COUNT_LEAVE and ima_counts_get() were introduced, and
+> now ima_counts_put() appears.
+> Isn't it easier something like this,
+> - stop incrementing in ima_path_check().
+> - call ima_counts_get() in dentry_open() (or similar).
+> - delete IMA_COUNT_LEAVE/UPDATE and ima_counts_put().
 > 
-> Here is what I consider may be a use case from the embedded
-> world: we have to save power as much as possible, so we need
-> to shut off entire banks of memory.
+> How do you think?
 > 
-> Currently people do things like put memory into self-refresh
-> and then sleep, but for long lapses of time you would
-> want to compress memory towards lower addresses and
-> turn as many banks as possible off.
 > 
-> So we have something like 4x16MB banks of RAM = 64MB RAM,
-> and the most necessary stuff easily fits in one of them.
-> If we can shut down 3x16MB we save 3 x power supply of the
-> RAMs.
-> 
-> However in embedded we don't have any swap, so we'd need
-> some call that would attempt to remove a memory by paging
-> out code and data that has been demand-paged in
-> from the FS but no dirty pages, these should instead be
-> moved down to memory which will be retained, and the
-> call should fail if we didn't succeed to migrate all
-> dirty pages.
-> 
-> Would this be possible with transcendent memory?
+> J. R. Okajima
 
-Yes, I think this would work nicely as a use case for tmem.
+This suggestion has been mentioned before; and yes would definitely
+resolve the annoying imbalance and iint_free() messages.  But
+incrementing/decrementing the pointers automatically each time a file is
+opened/closed would defeat their purpose - alerting us that a file was
+possibly not measured before being read/executed. 
 
-As Avi points out, you could do this with memory defragmentation,
-but if you know in advance that you will be frequently
-powering on and off a bank of RAM, you could put only
-ephemeral memory into it (enforced by a kernel policy and
-the tmem API), then defragmentation (and compression towards
-lower addresses) would not be necessary, and you could power
-off a bank with no loss of data.
+Mimi
 
-One issue though: I would guess that copying pages of memory
-could be very slow in an inexpensive embedded processor.
-
-Dan
