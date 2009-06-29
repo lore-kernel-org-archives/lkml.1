@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752362AbZF2KeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZF2KhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752362AbZF2KeU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 06:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZF2KeI
+	id S1755997AbZF2KhR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 06:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZF2KhH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 06:34:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54526 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 06:37:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56319 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZF2KeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 06:34:06 -0400
-Date: Mon, 29 Jun 2009 13:33:58 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Sheng Yang <sheng@linux.intel.com>,
-       kvm@vger.kernel.org, avi@redhat.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH v2] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629103358.GX20289@redhat.com>
-References: <20090629100837.GW20289@redhat.com> <20090629102235.GA15372@elte.hu>
+	id S1751201AbZF2KhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 06:37:06 -0400
+Date: Mon, 29 Jun 2009 11:37:06 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
+Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
+Message-ID: <20090629103706.GA5065@csn.ul.ie>
+References: <1245686553.7799.102.camel@lts-notebook> <20090622205308.GG3981@csn.ul.ie> <20090623200846.223C.A69D9226@jp.fujitsu.com> <20090629084114.GA28597@csn.ul.ie> <20090629101819.GA2052@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090629102235.GA15372@elte.hu>
+In-Reply-To: <20090629101819.GA2052@cmpxchg.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 12:22:35PM +0200, Ingo Molnar wrote:
+On Mon, Jun 29, 2009 at 12:18:19PM +0200, Johannes Weiner wrote:
+> On Mon, Jun 29, 2009 at 09:41:14AM +0100, Mel Gorman wrote:
+> > I see the unconditionoal clearing of the flag was merged since but even
+> > that might be too heavy handed as we are making a locked bit operation
+> > on every page free. That's unfortunate overhead to incur on every page
+> > free to handle a situation that should not be occurring at all.
 > 
-> * Gleb Natapov <gleb@redhat.com> wrote:
+> Linus was probably quick to merge it as istr several people hitting
+> bad_page() triggering.  We should get rid of the locked op, I was just
+> not 100% sure and chose the safer version.
 > 
-> > KVM would like to provide x2APIC interface to a guest without emulating
-> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
-> > is that x2APIC interface is better virtualizable and provides better
-> > performance than mmio xAPIC interface:
-> > 
-> > - msr exits are faster than mmio (no page table walk, emulation)
-> > - no need to read back ICR to look at the busy bit
-> > - one 64 bit ICR write instead of two 32 bit writes
-> > - shared code with the Hyper-V paravirt interface
-> > 
-> > Included patch changes x2APIC enabling logic to enable it even if IR
-> > initialization failed, but kernel runs under KVM and no apic id is
-> > greater than 255 (if there is one spec requires BIOS to move to x2apic
-> > mode before starting an OS).
-> > 
-> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> > ---
-> > 
-> > v2:
-> >   Add help message to Kconfig
-> >   Force physical mode if IR is not available.
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index d1430ef..3e5b6ea 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -260,12 +260,15 @@ config SMP
-> >  
-> >  config X86_X2APIC
-> >  	bool "Support x2apic"
-> > -	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
-> > +	depends on X86_LOCAL_APIC && X86_64
-> 
-> Have you tried to build this with X86_X2APIC set but INTR_REMAP 
-> disabled?
-> 
-Yes. I notice that X86_X2APIC depends on INTR_REMAP when I did it.
 
---
-			Gleb.
+And I have no problem with the decision. Leaving it as it was would have
+caused a storm of bug reports, all similar.
+
+> > > > +		WARN_ONCE(1, KERN_WARNING
+> > > > +			"Sloppy page flags set process %s at pfn:%05lx\n"
+> > > > +			"page:%p flags:%p\n",
+> > > > +			current->comm, page_to_pfn(page),
+> > > > +			page, (void *)page->flags);
+> [...]
+> > > > +		page->flags &= ~PAGE_FLAGS_WARN_AT_FREE;
+> > > > +	}
+> > > > +
+> > > >  	if (unlikely(page_mapcount(page) |
+> > > >  		(page->mapping != NULL)  |
+> > > >  		(atomic_read(&page->_count) != 0) |
+> > > 
+> > > Howerver, I like this patch concept. this warning is useful and meaningful IMHO.
+> > > 
+> > 
+> > This is a version that is based on top of current mainline that just
+> > displays the warning. However, I think we should consider changing
+> > TestClearPageMlocked() back to PageMlocked() and only clearing the flags
+> > when the unusual condition is encountered.
+> 
+> I have a diff at home that makes this an unlocked
+> __TestClearPageMlocked(), would you be okay with this?
+> 
+
+It'd be an improvement for sure. Post it and I'll take a look.
+
+My preference is still to clear the flag only when found to be erroneously set
+and print a warning once but that's because it was the patch I put together
+so I'm biased :)
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
