@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZF2Ugb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZF2Ugw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbZF2Ugb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 16:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZF2UgX
+	id S1757518AbZF2Ugw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 16:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbZF2Ugo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 16:36:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43353 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbZF2UgW (ORCPT
+	Mon, 29 Jun 2009 16:36:44 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:49938 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752776AbZF2Ugn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 16:36:22 -0400
-Date: Mon, 29 Jun 2009 22:36:19 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Dan Magenheimer <dan.magenheimer@oracle.com>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
-       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
-       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
-       sunil.mushran@oracle.com, linux-mm@kvack.org,
-       Himanshu Raj <rhim@microsoft.com>
-Subject: Re: [RFC] transcendent memory for Linux
-Message-ID: <20090629203619.GA6611@elf.ucw.cz>
-References: <20090624150420.GH1784@ucw.cz> <0dbec206-c157-4482-8fd7-4ccf9c2bdc5a@default>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0dbec206-c157-4482-8fd7-4ccf9c2bdc5a@default>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 29 Jun 2009 16:36:43 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated) 
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com> <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com> <12000.1246284749@jrobl> <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com>
+Date: Tue, 30 Jun 2009 05:36:29 +0900
+Message-ID: <7959.1246307789@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> It is documented currently at:
-> 
-> http://oss.oracle.com/projects/tmem/documentation/api/
-> 
-> (just noticed I still haven't posted version 0.0.2 which
-> has a few minor changes).
-> 
-> I will add a briefer description of this API in Documentation/
+Mimi Zohar:
+> This suggestion has been mentioned before; and yes would definitely
+> resolve the annoying imbalance and iint_free() messages.  But
+> incrementing/decrementing the pointers automatically each time a file is
+> opened/closed would defeat their purpose - alerting us that a file was
+> possibly not measured before being read/executed. 
 
-Please do.
+I may be wrong since I don't fully understand IMA's purpose, but why did
+you create ima_counts_get() and make it call after dentry_open() in
+nfsd_open()? Isn't it same thing essentially?
 
-At least TMEM_NEW_POOL() looks quite ugly. Why uuid? Mixing flags into
-size argument is strange.
 
-> It is in-kernel only because some of the operations have
-> a parameter that is a physical page frame number.
-
-In-kernel API is probably better described as function prototypes.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+J. R. Okajima
