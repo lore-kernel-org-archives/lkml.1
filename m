@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbZF2Oa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbZF2OeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759606AbZF2Oa5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZF2Oat
+	id S1759724AbZF2OeW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbZF2OeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:30:49 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:60867 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbZF2Oas (ORCPT
+	Mon, 29 Jun 2009 10:34:12 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37786 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752593AbZF2OeL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:30:48 -0400
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4A4472DF.1050900@turknet.net.tr>
-	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
-Date: Mon, 29 Jun 2009 10:30:22 -0400
-In-Reply-To: <4A4878AC.3050208@turknet.net.tr> (Tarkan Erimer's message of
-	"Mon, 29 Jun 2009 11:17:48 +0300")
-Message-ID: <yq1fxdji03l.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A48D001.0109:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 29 Jun 2009 10:34:11 -0400
+Subject: Re: kmemleak reports firmware loader funnies in iwlwifi
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <84144f020906290248w474ad2ffpe6a8b5bede3d2c20@mail.gmail.com>
+References: <20090626171933.GA23170@redhat.com>
+	 <tnxy6rbv0oq.fsf@pc1117.cambridge.arm.com>
+	 <84144f020906290248w474ad2ffpe6a8b5bede3d2c20@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 29 Jun 2009 15:33:56 +0100
+Message-Id: <1246286036.21450.35.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jun 2009 14:33:56.0887 (UTC) FILETIME=[A26A7A70:01C9F8C6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Tarkan" == Tarkan Erimer <tarkan.erimer@turknet.net.tr> writes:
+On Mon, 2009-06-29 at 12:48 +0300, Pekka Enberg wrote:
+> Hi Catalin,
+> 
+> On Mon, Jun 29, 2009 at 12:39 PM, Catalin
+> Marinas<catalin.marinas@arm.com> wrote:
+> > diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+> > index ddeb819..26fb808 100644
+> > --- a/drivers/base/firmware_class.c
+> > +++ b/drivers/base/firmware_class.c
+> > @@ -179,6 +179,13 @@ static ssize_t firmware_loading_store(struct device *dev,
+> >                                dev_err(dev, "%s: vmap() failed\n", __func__);
+> >                                goto err;
+> >                        }
+> > +                       /*
+> > +                        * This block of memory is later freed using vfree.
+> > +                        * Since kmemleak does not track vmap calls, just
+> > +                        * inform it about this block but ignore it during
+> > +                        * scanning.
+> > +                        */
+> > +                       kmemleak_alloc(fw_priv->fw->data, 0, -1, GFP_KERNEL);
+> >                        /* Pages will be freed by vfree() */
+> >                        fw_priv->pages = NULL;
+> >                        fw_priv->page_array_size = 0;
+> 
+> Would it be possible to put this hook in vmap() somehow?
 
-Tarkan> version=0x00 [no conformance claimed]
+I tried to do this but it has some other implications. If I add the vmap
+hook, I would need to add vunmap as well. On ARM, at least, iounmap
+calls vunmap (but not vmap) which means that I would need to add ioremap
+support as well. That's not a bug issue but this is more like a new
+feature than a bug fix.
 
-Wow, that's super lame.  And somewhat odd because WDC are usually pretty
-good at USB-SATA bridge protocol compliance.  But in any case this is
-unrelated to your problems.
+I propose that for now I disable the kmemleak warning for unknown
+pointers and add a patch to linux-next which tracks ioremap and vmap
+mappings. Does this sound fine?
 
-My concern was that our recent changes to the capacity detection in SCSI
-failed for your device.  However, given your attached log it looks like
-it's a USB issue.  And rereading your original log it also looks like
-you had a USB timeout which coincided with READ CAPACITY failing.
-
-So I'm deferring to the USB folks.
-
-Tarkan> [160848.805027] usb 5-8: reset high speed USB device using
-Tarkan> ehci_hcd and address 7
+Thanks.
 
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+Catalin
+
