@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbZF2PqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbZF2Pvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbZF2PqG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 11:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760764AbZF2Ppx
+	id S1760114AbZF2Pvq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 11:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZF2Pvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 11:45:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33908 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760746AbZF2Ppv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 11:45:51 -0400
-Date: Mon, 29 Jun 2009 18:45:52 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629154552.GB8122@redhat.com>
-References: <20090629132926.GB20289@redhat.com> <1246287519.27006.10660.camel@localhost.localdomain> <20090629151016.GA8122@redhat.com> <1246288505.27006.10666.camel@localhost.localdomain>
+	Mon, 29 Jun 2009 11:51:36 -0400
+Received: from smtp2.tech.numericable.fr ([82.216.111.38]:54863 "EHLO
+	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZF2Pvf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 11:51:35 -0400
+Message-ID: <4A48E307.2010208@numericable.fr>
+Date: Mon, 29 Jun 2009 17:51:35 +0200
+From: Etienne Basset <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246288505.27006.10666.camel@localhost.localdomain>
+To: David Miller <davem@davemloft.net>
+CC: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       bzolnier@gmail.com, jeff.chua.linux@gmail.com
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>	<5Hhc7UkUKEO.A.RvE.BjASKB@chimera>	<4A489775.6020102@numericable.fr> <20090629.033730.193709457.davem@davemloft.net>
+In-Reply-To: <20090629.033730.193709457.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 08:15:05AM -0700, Suresh Siddha wrote:
-> On Mon, 2009-06-29 at 08:10 -0700, Gleb Natapov wrote:
-> > On Mon, Jun 29, 2009 at 07:58:39AM -0700, Suresh Siddha wrote:
-> > > Thinking more, probably we shouldn't remove this dependency. This might
-> > > encourage people (knowingly or unknowingly) to enable x2apic without
-> > > interrupt-remapping. Can we remove this? KVM mode will still work even
-> > > if we fail to enable interrupt-remapping. So this shouldn't be an issue,
-> > > correct?
-> > > 
-> > Yes, KVM will still work. I don't have strong fillings one way or the
-> > other, but why mandate an option that is no longer mandatory. What
-> > others think?
+David Miller wrote:
+> From: Etienne Basset <etienne.basset@numericable.fr>
+> Date: Mon, 29 Jun 2009 12:29:09 +0200
 > 
-> Only under the presence of KVM we are breaking this dependency. And
-> typically the same kernel runs natively and under the presence of kvm
-> correct. So thats why we shouldn't break this dependency.
+>> yes, patch is not yet upstream;
 > 
-OK, I'll drop Kconfig part in the next version. Unless someone will
-object till tomorrow. 
+> I'll take care of pushing this around today.
+> 
+Hi,
 
-> 
-> > > >  	ioapic_entries = alloc_ioapic_entries();
-> > > >  	if (!ioapic_entries) {
-> > > > -		pr_info("Allocate ioapic_entries failed: %d\n", ret);
-> > > > -		goto end;
-> > > > +		 pr_info("Allocate ioapic_entries failed\n");
-> > > > +		 return;
-> > > 
-> > > 
-> > > We should go to ir_failed ..
-> > Why? There is not more ir_failed.
-> 
-> oops. Not literally. We should goto the point where we should report the
-> x2apic or ir enabling failed and check for x2apic pre-enabled etc at the
-> end.
-> 
-Ah, OK.
+thank you ; 
+i ran a new bisection to identify the commit that cause pain after -rc1
 
---
-			Gleb.
+etienne@etienne-desktop:~/linux-2.6$ git bisect good        
+a1317f714af7aed60ddc182d0122477cbe36ee9b is first bad commit
+commit a1317f714af7aed60ddc182d0122477cbe36ee9b             
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>      
+Date:   Tue Jun 23 23:52:17 2009 -0700                      
+
+    ide: improve handling of Power Management requests
+                                                      
+    Make hwif->rq point to PM request during PM sequence and do not allow
+    any other types of requests to slip in (the old comment was never correct
+    as there should be no such requests generated during PM sequence).       
+                                                                             
+    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>            
+    Signed-off-by: David S. Miller <davem@davemloft.net>   
+
+To have STR/resume work with current git, I have to :
+1) apply Bart's patch
+2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+
+thanks
+Etienne           
+
