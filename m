@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbZF2WGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbZF2WLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757659AbZF2WGz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZF2WGs
+	id S1757075AbZF2WLR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 18:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZF2WLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:06:48 -0400
-Received: from smtprelay01.ispgateway.de ([80.67.18.13]:37699 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZF2WGr (ORCPT
+	Mon, 29 Jun 2009 18:11:07 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:39269 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZF2WLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:06:47 -0400
-X-Greylist: delayed 460 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jun 2009 18:06:47 EDT
-From: Wolfgang Illmeyer <wolfgang@illmeyer.com>
-To: akpm@linux-foundation.org
-Subject: [PATCH 001/001] hostfs: set maximum filesize in superblock for proper LFS support
-Date: Mon, 29 Jun 2009 23:59:01 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org, jdike@addtoit.com
+	Mon, 29 Jun 2009 18:11:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=H820ac9oM2RQxi/ZUgKdzdc44uAerayx+/MVth31XJzT7phbphtYzo3QaRKZnHg22e
+         OFqziY2yQz1Btt3/Vd5qFFSXV8OCmjCGWsdshYutdg3f+x+LfvNsiME5+ozQdSUGbpJ5
+         Qlsjm8lSEPDuuzBPucmhHMwTL8NgApgSAuFcI=
+Message-ID: <4A493BF9.7010304@gmail.com>
+Date: Tue, 30 Jun 2009 00:11:05 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.5 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906292359.01834.wolfgang@illmeyer.com>
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: wolfgang@illmeyer.com
+To: Daniel Ribeiro <drwyrm@gmail.com>
+CC: sameo@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
+       laforge@openezx.org
+Subject: Re: MFD: mutex from ISR in ezx-pcap?
+References: <4A49175E.3020409@gmail.com> <1246306840.18231.29.camel@brutus>
+In-Reply-To: <1246306840.18231.29.camel@brutus>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Illmeyer <wolfgang@illmeyer.com>
+On 06/29/2009 10:20 PM, Daniel Ribeiro wrote:
+> Em Seg, 2009-06-29 às 21:34 +0200, Jiri Slaby escreveu:
+>> pcap_adc_irq tries to perform non-atomic operations in ISR which is not
+>> allowed. Above that, it may deadlock.
+>>
+>> Since all the operations there (read, write, mutex locking) may sleep,
+>> any objections to convert the ISR contents to a workqueue?
+> 
+> pcap_adc_irq actually already runs from a workqueue (pcap_isr_work).
 
-Maximum file size for hostfs mounts defaults to 2GB, so bigger files cannot be 
-read/written through hostfs. This patch initializes the maximum file size to 
-MAX_LFS_SIZE.
-Signed-off-by: Wolfgang Illmeyer <wolfgang@illmeyer.com>
----
-This patch applies against linux-2.6.30. It fixes 
-http://bugzilla.kernel.org/show_bug.cgi?id=13531
-It is a revamped version of the patch I attached to the bug, using additional 
-input from Andrew Morton (thanks). This is my first patch for the kernel, I 
-hope I didn't break too many rules ;)
+Aha, thanks, there is a specific irq handler. Ok, sounds fair.
 
-For any feedback from the mailing list please add me to "To" or CC me - I'm 
-not on the list.
-
---- fs/hostfs/hostfs_kern.c.orig   2009-06-29 23:13:05.000000000 +0200
-+++ fs/hostfs/hostfs_kern.c        2009-06-29 23:14:43.000000000 +0200
-@@ -972,6 +972,7 @@ static int hostfs_fill_sb_common(struct
-        sb->s_blocksize_bits = 10;
-        sb->s_magic = HOSTFS_SUPER_MAGIC;
-        sb->s_op = &hostfs_sbops;
-+       sb->s_maxbytes = MAX_LFS_FILESIZE;
-
-        /* NULL is printed as <NULL> by sprintf: avoid that. */
-        if (req_root == NULL)
-
+But interrupts are disabled in pcap_isr_work anyway, so that
+pcap_adc_irq shouldn't sleep, right? Or maybe I missed something again...
