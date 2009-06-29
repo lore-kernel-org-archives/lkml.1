@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZF2WgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZF2WnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbZF2WgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 18:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZF2Wfy
+	id S1755997AbZF2WnG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 18:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZF2Wmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 18:35:54 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:42246 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752119AbZF2Wfx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 18:35:53 -0400
-Date: Mon, 29 Jun 2009 18:35:49 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Eric Sandeen <sandeen@redhat.com>
-cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Theodore Tso <tytso@mit.edu>,
-       Andreas Dilger <adilger@sun.com>, David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <4A493029.40601@redhat.com>
-Message-ID: <alpine.DEB.1.10.0906291834090.21956@gentwo.org>
-References: <20090624150714.c7264768.akpm@linux-foundation.org> <20090625132544.GB9995@mit.edu> <alpine.DEB.2.00.0906251135440.30090@chino.kir.corp.google.com> <20090625193806.GA6472@mit.edu> <20090625194423.GB6472@mit.edu> <alpine.DEB.2.00.0906251257040.3086@chino.kir.corp.google.com>
- <20090625203743.GD6472@mit.edu> <20090625212628.GO3385@webber.adilger.int> <20090625220504.GG6472@mit.edu> <4A43F60D.2040801@redhat.com> <20090626011155.GI6472@mit.edu> <Pine.LNX.4.64.0906260815260.18724@melkki.cs.Helsinki.FI> <4A44DE14.2080403@redhat.com>
- <alpine.DEB.1.10.0906291714520.21956@gentwo.org> <4A493029.40601@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 29 Jun 2009 18:42:53 -0400
+Received: from mail.samba.org ([66.70.73.150]:55531 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbZF2Wmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 18:42:52 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19017.17250.371594.268824@samba.org>
+Date: Tue, 30 Jun 2009 08:42:42 +1000
+To: Greg KH <greg@kroah.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <20090629221826.GA12781@kroah.com>
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org>
+	<19015.482.794111.612472@samba.org>
+	<87ab3sx4ch.fsf@devron.myhome.or.jp>
+	<19016.6463.997760.757811@samba.org>
+	<20090629221826.GA12781@kroah.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Eric Sandeen wrote:
+ > I have no objection to take this patch for the -stable releases when it
+ > goes into Linus's tree.  Just forward the git commit ids to
+ > stable@kernel.org and I can take care of it.
 
-> > Isnt the problem that the slab allocator did not align something that
-> > you did not request to be aligned?
->
-> Well, maybe that's all I needed.  At the risk of exposing myself to
-> ridicule, here's the commit:
->
-> 7fcba054373d5dfc43d26e243a5c9b92069972ee
->
-> Was there a better way?
+ok, thanks Greg.
 
-No. Good patch. Indeed the right way. Page allocations come from the page
-allocator not from the slab allocator (yes yes there are still issues with
-the performance of the page allocator that sometimes dictate the use of
-the slabs but in general I think this is what is needed).
+Hirofumi-san tells me we've missed the merge window for 2.6.31, so it
+seems that this will go first into the fatfs tree, then go into
+Linus's tree via -next for 2.6.32. So hopefully the patch will get
+some more testing (perhaps in -mm?) before it needs to be considered
+for -stable.
 
+Meanwhile some of the distros and other vendors might decide to apply
+it sooner depending on their level of legal concern.
+
+Cheers, Tridge
