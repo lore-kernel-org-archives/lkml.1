@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZF2RkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZF2Rot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbZF2RkV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZF2RkB
+	id S1756501AbZF2Rot (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZF2Rom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:40:01 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:51805 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753599AbZF2RkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:40:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=j1lDspx9wMfeLLeY3V/OhYuTqTO3pfj4NbxLTujaHJEEhwfcqzb8+wBA0rnh3YGa+J
-         SSyywxiwtWT4ya++hVpiQFz3bXhjw6oKRaV2UXOqsc+SZDxmwOhyfAd/wWbI7cTSayEk
-         rUnv8+BOROHhTrwkxl7E1q9aBfFK0LK8qp3rM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Etienne Basset <etienne.basset@numericable.fr>
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-Date: Mon, 29 Jun 2009 19:45:36 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
-Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       jeff.chua.linux@gmail.com
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <20090629.033730.193709457.davem@davemloft.net> <4A48E307.2010208@numericable.fr>
-In-Reply-To: <4A48E307.2010208@numericable.fr>
+	Mon, 29 Jun 2009 13:44:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48674 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752303AbZF2Rol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:44:41 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in cfq_find_alloc_queue()
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com>
+	<1246007120-24034-3-git-send-email-jens.axboe@oracle.com>
+	<x497hyz9d2g.fsf@segfault.boston.devel.redhat.com>
+	<20090627182617.GX23611@kernel.dk>
+	<x494otzxid3.fsf@segfault.boston.devel.redhat.com>
+	<20090629173418.GN23611@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 29 Jun 2009 13:44:07 -0400
+In-Reply-To: <20090629173418.GN23611@kernel.dk> (Jens Axboe's message of "Mon,
+	29 Jun 2009 19:34:18 +0200")
+Message-ID: <x494otzvst4.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906291945.38821.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009 17:51:35 Etienne Basset wrote:
-> David Miller wrote:
-> > From: Etienne Basset <etienne.basset@numericable.fr>
-> > Date: Mon, 29 Jun 2009 12:29:09 +0200
-> > 
-> >> yes, patch is not yet upstream;
-> > 
-> > I'll take care of pushing this around today.
-> > 
-> Hi,
-> 
-> thank you ; 
-> i ran a new bisection to identify the commit that cause pain after -rc1
-> 
-> etienne@etienne-desktop:~/linux-2.6$ git bisect good        
-> a1317f714af7aed60ddc182d0122477cbe36ee9b is first bad commit
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-Thanks for finding it.
+> On Mon, Jun 29 2009, Jeff Moyer wrote:
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > On Fri, Jun 26 2009, Jeff Moyer wrote:
+>> >> Jens Axboe <jens.axboe@oracle.com> writes:
+>> >> 
+>> >> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+>> >> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+>> >> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+>> >> > never fails without having to ensure free memory.
+>> >> >
+>> >> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+>> >> > ---
+>> >> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+>> >> >  1 files changed, 67 insertions(+), 57 deletions(-)
+>> >> >
+>> >> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> >> > index c760ae7..91e7e0b 100644
+>> >> > --- a/block/cfq-iosched.c
+>> >> > +++ b/block/cfq-iosched.c
+>> >> > +	/*
+>> >> > +	 * Fallback dummy cfqq for extreme OOM conditions
+>> >> > +	 */
+>> >> > +	struct cfq_queue oom_cfqq;
+>> >> 
+>> >> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+>> >> guess that's not too bad.
+>> >> 
+>> >> > +	/*
+>> >> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+>> >> > +	 * Grab a permanent reference to it, so that the normal code flow
+>> >> > +	 * will not attempt to free it.
+>> >> > +	 */
+>> >> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+>> >> > +	atomic_inc(&cfqd->oom_cfqq.ref);
+>> >> > +
+>> >> 
+>> >> I guess this is so we never try to free it, good.  ;)
+>> >> 
+>> >> One issue I have with this patch is that, if a task happens to run into
+>> >> this condition, there is no way out.  It will always have the oom_cfqq
+>> >> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+>> >
+>> > Yeah, I fixed that about an hour after posting the patches. See:
+>> >
+>> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
+>> >
+>> > I didn't post the 3/2 patch though.
+>> 
+>> OK, that looks better.  Are you reposting the series, then?
+>
+> Yeah, I'll fold the last two patches together and repost.
 
-Dave, please just revert this patch (it wasn't meant for Linus' tree anyway).
+When you do, you can add my:
 
-> commit a1317f714af7aed60ddc182d0122477cbe36ee9b             
-> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>      
-> Date:   Tue Jun 23 23:52:17 2009 -0700                      
-> 
->     ide: improve handling of Power Management requests
->                                                       
->     Make hwif->rq point to PM request during PM sequence and do not allow
->     any other types of requests to slip in (the old comment was never correct
->     as there should be no such requests generated during PM sequence).       
->                                                                              
->     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>            
->     Signed-off-by: David S. Miller <davem@davemloft.net>   
-> 
-> To have STR/resume work with current git, I have to :
-> 1) apply Bart's patch
-> 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-> 
-> thanks
-> Etienne           
-> 
-> 
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
+
+Cheers,
+Jeff
