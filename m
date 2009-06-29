@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757818AbZF2Mpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbZF2MrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757818AbZF2Mpe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 08:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZF2MpS
+	id S1758134AbZF2MrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 08:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZF2MrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 08:45:18 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:5211
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751894AbZF2MpR (ORCPT
+	Mon, 29 Jun 2009 08:47:08 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:49914 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751736AbZF2MrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 08:45:17 -0400
-Message-ID: <4A48B75C.5080209@panasas.com>
-Date: Mon, 29 Jun 2009 15:45:16 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Mon, 29 Jun 2009 08:47:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Subject: Re: PC speaker beeps in 2.6.30?
+Date: Mon, 29 Jun 2009 14:47:06 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       alsa-devel@vger.kernel.org
+References: <4A365DA6.8000102@msgid.tls.msk.ru> <4A365DA6.8000102@msgid.tls.msk.ru> <4A4464CA.4060006@msgid.tls.msk.ru>
+In-reply-To: <4A4464CA.4060006@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: NeilBrown <neilb@suse.de>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Mike Snitzer <snitzer@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
- of the 'queue' sysfs directory.
-References: <yq11vp8spxo.fsf@sermon.lab.mkp.net> <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name> <20090625194015.GB31415@kernel.dk> <19012.49673.454853.975682@notabene.brown> <20090626125037.GO23611@kernel.dk> <f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name> <20090626132940.GR23611@kernel.dk> <19014.4447.248248.63960@notabene.brown> <20090629101841.GF23611@kernel.dk> <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name> <20090629114121.GH23611@kernel.dk>
-In-Reply-To: <20090629114121.GH23611@kernel.dk>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jun 2009 12:45:20.0350 (UTC) FILETIME=[7641D7E0:01C9F8B7]
+Content-Disposition: inline
+Message-Id: <200906291447.08249.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Jun 2009 12:47:09.0173 (UTC) FILETIME=[B71EEA50:01C9F8B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29/2009 02:41 PM, Jens Axboe wrote:
-> On Mon, Jun 29 2009, NeilBrown wrote:
->> On Mon, June 29, 2009 8:18 pm, Jens Axboe wrote:
->>> On Sat, Jun 27 2009, Neil Brown wrote:
->>>>> There's no such thing as first or second class block devices. The fact
->>>>> that drivers using ->make_request_fn directly do not utilize the full
->>>>> scope of the queue isn't a very interesting fact, imho.
->>>>  Your phrase "drivers using ->make_request_fn directly" seems to
->>>>  suggest you are looking at things very differently to me.
->>>>
->>>>  From my perspective, all drivers use ->make_request_fn equally.
->>>>  Some set it to "__make_request", some to "md_make_request", others to
->>>>  "dm_request" or "loop_make_request" etc.
->>> Neil, will you please stop these silly games. Stop trying to invent
->>> differences based on interpretations of what you read into my replies.
->>
->> We do seem to be having trouble communicating don't we :-(
->> Be assured that it is not my intention to play games, silly or otherwise.
->>
->> Maybe I should just try sending you patches.  Maybe that will
->> make my meaning clearer.
->>
->> For the moment, I'm much more interested in the other question,
->> that of whether I can avoid having a 'queue' directory introduced into
->> md/dm/etc device directories in sysfs.
-> 
-> We already talked about this, several times. My answer is that it seems
-> pointless to begin with internally, and externally it just makes the API
-> worse since tools then have to know which device type they are talking
-> to.
-> 
+Michael Tokarev wrote:
+> Am I the only concerned about this?  My 2.6.30 is still
+> silent w.r.t. old good PC speaker beeps, and I wasn't
+> able to make it to produce any sound.  Yes, as pointed
+> out by others there is a control now, in alsa,
 
-I do however see a problem with sysfs-files that mostly work for most devices
-but for some "device type" they do nothing silently. At least make these
-directory/files read-only for the un-used cases (eg. dm/md). And return proper
-values to indicate their un-usefulness like "-1" or "NA"
+Did you actually try compiling a kernel without CONFIG_SND_HDA_INPUT_BEEP 
+set? If you do, does your PC speaker work again?
 
-> So I still see absolutely zero point in making such a change, quite the
-> opposite.
-> 
+If it does work again, I don't think there is a bug, at least not in the 
+fact that the old PC speaker beep no longer works: if you have a HDA 
+soundcard in the system _and_ the driver is loaded _and_ 
+CONFIG_SND_HDA_INPUT_BEEP is set, then it seems logical to me that that 
+takes over system beeps.
+The fact that the config option also existed in 2.6.29 but did not work 
+the same seems a minor issue to me.
 
-Just my $0.017
-Boaz
+If your PC speaker still does not work when CONFIG_SND_HDA_INPUT_BEEP is 
+not set, then there is something to look into.
+
+> and I can hear ugly and scary beeps from my stereo speakers
+> (when they're turned on and when the control is un-muted).
+
+This may be a separate issue. On my system the beep sounds "normal". It 
+has been changed in 2.6.31-rc1 to a slightly lower sound.
+
+What exactly do you mean by "ugly and scary"? I have the volume for the 
+beep set to about 50% because otherwise it is just too loud. Have you 
+tried that?
+
+If it really does sound bad, maybe the ALSA developers could look into 
+that, but you will have to describe it better (or maybe make a 
+recording?).
+
+Cheers,
+FJP
