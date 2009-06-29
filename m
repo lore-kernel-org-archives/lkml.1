@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZF2VMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZF2VOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbZF2VMS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 17:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZF2VMH
+	id S1754628AbZF2VOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 17:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZF2VOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 17:12:07 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:45698 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752771AbZF2VMH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 17:12:07 -0400
-Message-ID: <4A492E22.3060307@shipmail.org>
-Date: Mon, 29 Jun 2009 23:12:02 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 29 Jun 2009 17:14:38 -0400
+Received: from kroah.org ([198.145.64.141]:45246 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbZF2VOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 17:14:37 -0400
+Date: Mon, 29 Jun 2009 13:45:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       stefan.bader@canonical.com, woodys@xandros.com, penberg@cs.helsinki.fi,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, apw@canonical.com,
+       Andrew Morton <akpm@linux-foundation.org>, tim.gardner@canonical.com,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [stable] [Intel-gfx] Intel 915GM MCHBAR bug
+Message-ID: <20090629204557.GB29647@kroah.com>
+References: <4A298971.5080006@xandros.com> <4A2A0951.1020608@cs.helsinki.fi> <20090605232711.d8503262.akpm@linux-foundation.org> <4A2A0E8C.1010109@cs.helsinki.fi> <20090606212759.31970fae@jbarnes-x200> <20090609150757.4a2109a9@jbarnes-x200> <20090609152828.d82528f3.akpm@linux-foundation.org> <20090629173308.GB3901@kroah.com> <20090629182738.GD3901@kroah.com> <4A490D47.7030305@pardus.org.tr>
 MIME-Version: 1.0
-To: Jerome Glisse <glisse@freedesktop.org>
-CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-Subject: Re: TTM page pool allocator
-References: <1245931298.13359.8.camel@localhost.localdomain>	 <21d7e9970906251700n5f5fbd07ke24022b576b1770b@mail.gmail.com> <1246024775.2371.0.camel@localhost>
-In-Reply-To: <1246024775.2371.0.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A490D47.7030305@pardus.org.tr>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerome Glisse skrev:
-> On Fri, 2009-06-26 at 10:00 +1000, Dave Airlie wrote:
->   
->> On Thu, Jun 25, 2009 at 10:01 PM, Jerome Glisse<glisse@freedesktop.org> wrote:
->>     
->>> Hi,
->>>
->>> Thomas i attach a reworked page pool allocator based on Dave works,
->>> this one should be ok with ttm cache status tracking. It definitely
->>> helps on AGP system, now the bottleneck is in mesa vertex's dma
->>> allocation.
->>>
->>>       
->> My original version kept a list of wb pages as well, this proved to be
->> quite a useful
->> optimisation on my test systems when I implemented it, without it I
->> was spending ~20%
->> of my CPU in getting free pages, granted I always used WB pages on
->> PCIE/IGP systems.
->>
->> Another optimisation I made at the time was around the populate call,
->> (not sure if this
->> is what still happens):
->>
->> Allocate a 64K local BO for DMA object.
->> Write into the first 5 pages from userspace - get WB pages.
->> Bind to GART, swap those 5 pages to WC + flush.
->> Then populate the rest with WC pages from the list.
->>
->> Granted I think allocating WC in the first place from the pool might
->> work just as well since most of the DMA buffers are write only.
->>
->> Dave.
->> --
->>     
->
-> Attached a new version of the patch, which integrate changes discussed.
->
-> Cheers,
-> Jerome
->   
-Hi, Jerome!
-Still some outstanding things:
+On Mon, Jun 29, 2009 at 09:51:51PM +0300, Ozan Çağlayan wrote:
+> Greg KH wrote:
+> > I take it back.  It doesn't build properly on 2.6.30, can someone
+> > backport commit d765898970f35acef960581f678b9da9d5c779fa to the 2.6.30
+> > tree and send it to stable@kernel.org so that we can apply it to resolve
+> > this issue?
+> > ease read the FAQ at  http://www.tux.org/lkml/
+> >   
+> 
+> There was this commit on top of them which was fixed the build problem
+> for me:
+> http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fanholt%2Fdrm-intel.git;a=commitdiff_plain;h=34c8638bb5ee130b8151c57708284bcd4972e2e1;hp=003c9ca68810bc0a63a1f3ff6beec839b197e23b
 
-1) The AGP protection fixes compilation errors when AGP is not enabled, 
-but what about architectures that need the map_page_into_agp() semantics 
-for TTM even when AGP is not enabled? At the very least TTM should be 
-disabled on those architectures. The best option would be to make those 
-calls non-agp specific.
+No, the issue is the pnp_resource() call, that's not present in 2.6.30.
 
-2) Why is the page refcount upped with get_page() after an alloc_page()?
+Can someone backport whatever is needed in .30 and send it to us?
 
-3) It seems like pages are cache-transitioned one-by-one when freed. 
-Again, this is a global TLB flush per page. Can't we free a large chunk 
-of pages at once?
+thanks,
 
-/Thanks,
-Thomas
-
-
-
-
-
-
+greg k-h
