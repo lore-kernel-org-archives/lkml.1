@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbZF2Pvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760495AbZF2PwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760114AbZF2Pvq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 11:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756317AbZF2Pvg
+	id S1760495AbZF2PwB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 11:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759774AbZF2Pvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 11:51:36 -0400
-Received: from smtp2.tech.numericable.fr ([82.216.111.38]:54863 "EHLO
-	smtp2.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZF2Pvf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 11:51:35 -0400
-Message-ID: <4A48E307.2010208@numericable.fr>
-Date: Mon, 29 Jun 2009 17:51:35 +0200
-From: Etienne Basset <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 29 Jun 2009 11:51:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42576 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759980AbZF2Pvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 11:51:40 -0400
+Date: Mon, 29 Jun 2009 12:50:31 -0300
+From: Marcelo Tosatti <mtosatti@redhat.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, avi@redhat.com, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com,
+       markmc@redhat.com
+Subject: Re: [PATCHv3 3/4] kvm: convert bus to slots_lock
+Message-ID: <20090629155031.GA16444@amt.cnet>
+References: <cover.1246276816.git.mst@redhat.com> <20090629120911.GD21273@redhat.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       bzolnier@gmail.com, jeff.chua.linux@gmail.com
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>	<5Hhc7UkUKEO.A.RvE.BjASKB@chimera>	<4A489775.6020102@numericable.fr> <20090629.033730.193709457.davem@davemloft.net>
-In-Reply-To: <20090629.033730.193709457.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629120911.GD21273@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Etienne Basset <etienne.basset@numericable.fr>
-> Date: Mon, 29 Jun 2009 12:29:09 +0200
+On Mon, Jun 29, 2009 at 03:09:11PM +0300, Michael S. Tsirkin wrote:
+> Use slots_lock to protect device list on the bus.  slots_lock is already
+> taken for read everywhere, so we only need to take it for write when
+> registering devices.  This is in preparation to removing in_range and
+> kvm->lock around it.
 > 
->> yes, patch is not yet upstream;
+> Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+> ---
+>  arch/x86/kvm/i8254.c     |    4 ++--
+>  arch/x86/kvm/i8259.c     |    2 +-
+>  include/linux/kvm_host.h |    3 ++-
+>  virt/kvm/ioapic.c        |    2 +-
+>  virt/kvm/kvm_main.c      |    5 ++++-
+>  5 files changed, 10 insertions(+), 6 deletions(-)
 > 
-> I'll take care of pushing this around today.
-> 
-Hi,
+> diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+> index 331705f..c2387ec 100644
+> --- a/arch/x86/kvm/i8254.c
+> +++ b/arch/x86/kvm/i8254.c
+> @@ -620,11 +620,11 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+>  	kvm_register_irq_mask_notifier(kvm, 0, &pit->mask_notifier);
+>  
+>  	kvm_iodevice_init(&pit->dev, &pit_dev_ops);
+> -	kvm_io_bus_register_dev(&kvm->pio_bus, &pit->dev);
+> +	kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &pit->dev);
+>  
+>  	if (flags & KVM_PIT_SPEAKER_DUMMY) {
+>  		kvm_iodevice_init(&pit->speaker_dev, &speaker_dev_ops);
+> -		kvm_io_bus_register_dev(&kvm->pio_bus, &pit->speaker_dev);
+> +		kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &pit->speaker_dev);
+>  	}
+>  
+>  	return pit;
+> diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
+> index 148c52a..1851aec 100644
+> --- a/arch/x86/kvm/i8259.c
+> +++ b/arch/x86/kvm/i8259.c
+> @@ -548,6 +548,6 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
+>  	 * Initialize PIO device
+>  	 */
+>  	kvm_iodevice_init(&s->dev, &picdev_ops);
+> -	kvm_io_bus_register_dev(&kvm->pio_bus, &s->dev);
+> +	kvm_io_bus_register_dev(kvm, &kvm->pio_bus, &s->dev);
+>  	return s;
 
-thank you ; 
-i ran a new bisection to identify the commit that cause pain after -rc1
+case KVM_CREATE_PIT2:
+create_pit:
+mutex_lock(&kvm->lock);
+kvm_io_bus_register_dev
+down_write(slots_lock);
 
-etienne@etienne-desktop:~/linux-2.6$ git bisect good        
-a1317f714af7aed60ddc182d0122477cbe36ee9b is first bad commit
-commit a1317f714af7aed60ddc182d0122477cbe36ee9b             
-Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>      
-Date:   Tue Jun 23 23:52:17 2009 -0700                      
+But the order is slots_lock -> kvm->lock.
 
-    ide: improve handling of Power Management requests
-                                                      
-    Make hwif->rq point to PM request during PM sequence and do not allow
-    any other types of requests to slip in (the old comment was never correct
-    as there should be no such requests generated during PM sequence).       
-                                                                             
-    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>            
-    Signed-off-by: David S. Miller <davem@davemloft.net>   
-
-To have STR/resume work with current git, I have to :
-1) apply Bart's patch
-2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-
-thanks
-Etienne           
+(you might want to update the comment on top of kvm_main.c to 
+reflect that).
 
