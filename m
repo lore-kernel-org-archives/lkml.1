@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZF2DoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbZF2Dr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbZF2DoV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 23:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZF2DoF
+	id S1755072AbZF2Dr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 23:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZF2DrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 23:44:05 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:58860 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755966AbZF2Dn7 (ORCPT
+	Sun, 28 Jun 2009 23:47:20 -0400
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:51340 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZF2DrT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 23:43:59 -0400
+	Sun, 28 Jun 2009 23:47:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type;
-        b=bkb03GK6kWK/93Xg2AIT1c2n3/GxtIZfAb9e5Lq2ISlmFI6CCJi024/g8dNPIX9ATq
-         wdrjAf4ROfCukLjDsHNwrQGfF7bGbXmS4npeh38vVICvq8sy4ukIURF3zL63Qr4g3SVZ
-         e19aLCdOq0Lk5ftvQ4OB1Tq1s/nshutlO8UkI=
-Date: Mon, 29 Jun 2009 06:44:17 +0300
-From: Sergei Trofimovich <slyich@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: [Bug #13655] [Oops] 2.6.31-rc1: tun
-Message-ID: <20090629064417.2fd6ac63@mosly.slynet.org>
-In-Reply-To: <6JJ2m5kyucK.A.b1C.AJASKB@chimera>
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera>
-	<6JJ2m5kyucK.A.b1C.AJASKB@chimera>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/yzEQ.ejKCniBL9sUU6e3YAD";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mbtKI5iVu4ANRK4lCSdSR32Q+tSkOF2uUIeaeJQ/3iwoMfaZB8D8KQAKaGdA8TGo/H
+         1iCQhzqHXV+inEGc5gZmNJT5rUvCG8ur5ig1FmVUuH9Wq0Wh1Jkt9PVMmh5wjj0MtMrC
+         p1uSZyh8hIi7O4bX3X6bWzFj1S12yz35tGQxM=
+MIME-Version: 1.0
+In-Reply-To: <20090629015738.GQ20436@tamriel.snowman.net>
+References: <20090628034038.GK20436@tamriel.snowman.net>
+	 <86802c440906272126s7d3b97afh16069280bd297827@mail.gmail.com>
+	 <20090628223132.GO20436@tamriel.snowman.net>
+	 <86802c440906281849m51ab3c82u84d76a1aaceba2ef@mail.gmail.com>
+	 <20090629015738.GQ20436@tamriel.snowman.net>
+Date: Sun, 28 Jun 2009 20:47:22 -0700
+Message-ID: <86802c440906282047h23d45627pacec7a23f871fc2c@mail.gmail.com>
+Subject: Re: ACPI issues on HP DL585 G2
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Stephen Frost <sfrost@snowman.net>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/yzEQ.ejKCniBL9sUU6e3YAD
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jun 28, 2009 at 6:57 PM, Stephen Frost<sfrost@snowman.net> wrote:
+> * Yinghai Lu (yhlu.kernel@gmail.com) wrote:
+>> are you sure these two come from same BIOS ?
+>
+> They might not..  I did upgrade the BIOS to the latest revision and I
+> don't recall if the last 2.6.22 boot was before or after the BIOS
+> upgrade.  The 2.6.29 and 2.6.30 boots (both w/o APIC) are from the same
+> BIOS.  Would it help to try booting under 2.6.22 with the BIOS that's on
+> there now?
 
-On Mon, 29 Jun 2009 02:11:48 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+that would help
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->=20
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->=20
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13655
-> Subject		: [Oops] 2.6.31-rc1: tun
-> Submitter	: Sergei Trofimovich <slyich@gmail.com>
-> Date		: 2009-06-25 23:53 (4 days old)
-> References	: http://lkml.org/lkml/2009/6/25/435
-> Handled-By	: Herbert Xu <herbert@gondor.apana.org.au>
-> Patch		: http://patchwork.kernel.org/patch/32672/
->=20
->=20
-This bug is a duplicate of http://bugzilla.kernel.org/show_bug.cgi?id=3D136=
-27
+>
+> Is there some other information I could provide while the machine is
+> running?  Unfortunately, this is a rather important box for us.
 
---=20
+put debug in /boot/grub/grub.conf for the kernel
+and boot with serial console enabled...
+to capture all.
 
-  Sergei
-
---Sig_/yzEQ.ejKCniBL9sUU6e3YAD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpIOJcACgkQcaHudmEf86qExgCfUJY/6P68IDiU/pnWHWRhqh+t
-I7cAoIRtTyG8UojqgmoGYEycTuOFKp9V
-=nPcT
------END PGP SIGNATURE-----
-
---Sig_/yzEQ.ejKCniBL9sUU6e3YAD--
+YH
