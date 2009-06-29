@@ -1,162 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbZF2Q7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZF2RCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbZF2Q7Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 12:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZF2Q7S
+	id S1754631AbZF2RCN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753064AbZF2RCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 12:59:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56942 "EHLO hera.kernel.org"
+	Mon, 29 Jun 2009 13:02:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37146 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbZF2Q7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 12:59:17 -0400
-Message-ID: <4A48F2F8.5090105@kernel.org>
-Date: Tue, 30 Jun 2009 01:59:36 +0900
-From: Tejun Heo <tj@kernel.org>
+	id S1752937AbZF2RCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:02:05 -0400
+Message-ID: <4A48F377.3020008@kernel.org>
+Date: Mon, 29 Jun 2009 10:01:43 -0700
+From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       miklos@szeredi.hu, npiggin@suse.de
-Subject: Re: [PATCH 4/4] FUSE: implement direct mmap
-References: <1245317073-24000-1-git-send-email-tj@kernel.org>	<1245317073-24000-5-git-send-email-tj@kernel.org> <20090623171441.535c6c98.akpm@linux-foundation.org>
-In-Reply-To: <20090623171441.535c6c98.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
+To: alex.shi@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Chen, Tim C" <tim.c.chen@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [patch] fix hugepage unuseable issu on non-NUMA machine
+References: <1246273802.3160.28.camel@alexs-hp>
+In-Reply-To: <1246273802.3160.28.camel@alexs-hp>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 29 Jun 2009 16:57:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Andrew.
-
-Andrew Morton wrote:
->> +static int fuse_mmap_commit_prep(struct fuse_conn *fc, struct fuse_req *req)
->> +{
->> +	struct fuse_mmap_commit_in *commit_in = (void *)req->in.args[0].value;
->> +	struct file *mfile = req->misc.mmap.file;
->> +	int fd;
->> +
->> +	if (!mfile)
->> +		return 0;
->> +
->> +	/* new mmap.file has been created, assign a fd to it */
->> +	fd = commit_in->fd = get_unused_fd_flags(O_CLOEXEC);
->> +	if (fd < 0)
->> +		return 0;
+alex.shi wrote:
+> 73d60b7f747176dbdff826c4127d22e1fd3f9f74 commit introduced a nodes_clear
+> function for NUMA machine. But seems the commit omits non-NUMA machine.
+> If find_zone_movable_pfns_for_nodes/early_calculate_totalpages has no
+> chance to run. nodes_clear will block HUPEPAGE using in my specjbb2005
+> testing. 
 > 
-> Shouldn't this be `return fd;'?
-
-Non-zero return from prep aborts the command immediately and starts
-processing the next command.  However, when the fd assigning fails,
-the failure should be communicated to the userland server so that it
-can release any resource it might be holding for the mmap.  So, the
-failure state is recorded in commit_in->fd which and the prep callback
-returns 0 so that the failure status can be transmitted to the
-userland server.
-
->> +	fmmap->vm_ops = *vma->vm_ops;
->> +	vma->vm_ops = &fmmap->vm_ops;
->> +	vma->vm_ops->open = fuse_vm_open;
->> +	vma->vm_ops->close = fuse_vm_close;
->> +	vma->vm_private_data = fmmap;
->> +	err = 0;
 > 
-> Yes, the vm_operations save/overwrite/restore is the stinky part here.
-> 
-> I'm not completely clear what's going on here, and why, and what the
-> overall implications and risks are.  Some discussion in the changelog
-> would help.  With all that information we then would be better situated
-> to discuss and perhaps solve <whatever problem this solves> by more
-> pleasing means.
-> 
-> I mean, if the need for this hack indicates that there is some
-> shortcoming in core VM then perhaps we can improve core VM.  Dunno.
+> So maybe we need to disable nodes_clear sometimes. With the following
+> patch. specjbb2005 recovered. 
 
-Sorry about lack of explanation, in a nutshell, fuse direct mmap
-implementation wants to use shmem but wants to know when each mmap is
-opened and closed so that it can determine when the mmap is finally
-released and tell the userland to release related resources.  I think
-the following two approaches would be more regular for situations like
-this.
+please check if following patch fixed your problem
 
-1. Export the necessary parts of shmem operations and build our fuse's
-   own vm_ops using necessary operations.
+[PATCH] x86: only clear node_states for 64bit
 
-2. If vma can be nested, create wrapper vma around shmem vma and catch
-   open/close calls from there.
+Nathan reported that
+| commit 73d60b7f747176dbdff826c4127d22e1fd3f9f74
+| Author: Yinghai Lu <yinghai@kernel.org>
+| Date:   Tue Jun 16 15:33:00 2009 -0700
+|
+|    page-allocator: clear N_HIGH_MEMORY map before we set it again
+|    
+|    SRAT tables may contains nodes of very small size.  The arch code may
+|    decide to not activate such a node.  However, currently the early boot
+|    code sets N_HIGH_MEMORY for such nodes.  These nodes therefore seem to be
+|    active although these nodes have no present pages.
+|    
+|    For 64bit N_HIGH_MEMORY == N_NORMAL_MEMORY, so that works for 64 bit too
 
-#1 might be the better solution here but with two separate shmem
-implementations it was a bit awkward.  #2 currently can't be done, so
-I used bastardized form of #1.  So, yeap, it's ugly.
+broke the cpuset.mems cgroup attribute on an i386 kvm guest
 
-Anyways, it looks like the whole fd fiddling and shmem vma trickery
-might all go away, so please don't invest too much time into it.
+fix it by only clearing node_states[N_NORMAL_MEMORY] for 64bit only.
+and need to do save/restore for that in find_zone_movable_pfn
 
->> +	/* missing commit can cause resource leak on server side, don't fail */
->> +	req = fuse_get_req_nofail(fc, file);
-> 
-> That's an optimistically-named function.
-> 
-> <looks>
-> 
-> hm, it seems to duplicate mempool.c.
+Reported-by: Nathan Lynch <ntl@pobox.com>
+Tested-by: Nathan Lynch <ntl@pobox.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-It's much more narrowly defined but yeah in a way.
+---
+ arch/x86/mm/init_64.c |    2 ++
+ mm/page_alloc.c       |   13 +++++++------
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
->> +	if (err == -ENOSYS) {
->> +		/* Can't provide the coherency needed for MAP_SHARED */
->> +		if (vma->vm_flags & VM_MAYSHARE)
->> +			return -ENODEV;
->> +
->> +		invalidate_inode_pages2(file->f_mapping);
->> +
->> +		return generic_file_mmap(file, vma);
-> 
-> Now what's happening on this path?
-> 
-> We seem to have decided to fallback to a standard mmap of some form? 
-> Why?  If the user's request failed, shouldn't we just fail the syscall?
-> Hasn't the kernel just lied to userspace about what happened?
-> 
-> Also, this code looks like it's duplicating the behaviour of core MM? 
-> If so then it needs to be kept in sync as core MM changes - that's a
-> maintenance problem.  Can it be improved by changing core MM?
-
-That's from the original mmap implementation before the direct mmap is
-added.  It's just code movement.  No functional change by this patch
-on this path.
-
->> --- a/fs/fuse/fuse_i.h
->> +++ b/fs/fuse/fuse_i.h
->> @@ -272,6 +272,13 @@ struct fuse_req {
->>  			struct fuse_write_out out;
->>  		} write;
->>  		struct fuse_lk_in lk_in;
->> +		struct {
->> +			/** to move filp for mmap between client and server */
-> 
-> Comment pretends to be kerneldoc?
-
-Will fix.
-
->>  
->> +/**
-> 
-> kerneldoc?  Does this work?
-
-I have no idea.  Will update.
-
->> + * Mmap flags
->> + *
->> + * FUSE_MMAP_DONT_COPY: don't copy the region on fork
->> + * FUSE_MMAP_DONT_EXPAND: can't be expanded with mremap()
->> + */
->> +#define FUSE_MMAP_DONT_COPY	(1 << 0)
->> +#define FUSE_MMAP_DONT_EXPAND	(1 << 1)
->> +
-
-Thanks.
-
--- 
-tejun
+Index: linux-2.6/arch/x86/mm/init_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/init_64.c
++++ linux-2.6/arch/x86/mm/init_64.c
+@@ -598,6 +598,8 @@ void __init paging_init(void)
+ 
+ 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+ 	sparse_init();
++	/* clear the default setting with node 0 */
++	nodes_clear(node_states[N_NORMAL_MEMORY]);
+ 	free_area_init_nodes(max_zone_pfns);
+ }
+ 
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -4037,6 +4037,8 @@ static void __init find_zone_movable_pfn
+ 	int i, nid;
+ 	unsigned long usable_startpfn;
+ 	unsigned long kernelcore_node, kernelcore_remaining;
++	/* save the state before borrow the nodemask */
++	nodemask_t saved_node_state = node_states[N_HIGH_MEMORY];
+ 	unsigned long totalpages = early_calculate_totalpages();
+ 	int usable_nodes = nodes_weight(node_states[N_HIGH_MEMORY]);
+ 
+@@ -4064,7 +4066,7 @@ static void __init find_zone_movable_pfn
+ 
+ 	/* If kernelcore was not specified, there is no ZONE_MOVABLE */
+ 	if (!required_kernelcore)
+-		return;
++		goto out;
+ 
+ 	/* usable_startpfn is the lowest possible pfn ZONE_MOVABLE can be at */
+ 	find_usable_zone_for_movable();
+@@ -4163,6 +4165,10 @@ restart:
+ 	for (nid = 0; nid < MAX_NUMNODES; nid++)
+ 		zone_movable_pfn[nid] =
+ 			roundup(zone_movable_pfn[nid], MAX_ORDER_NR_PAGES);
++
++out:
++	/* restore the node_state */
++	node_states[N_HIGH_MEMORY] = saved_node_state;
+ }
+ 
+ /* Any regular memory on that node ? */
+@@ -4247,11 +4253,6 @@ void __init free_area_init_nodes(unsigne
+ 						early_node_map[i].start_pfn,
+ 						early_node_map[i].end_pfn);
+ 
+-	/*
+-	 * find_zone_movable_pfns_for_nodes/early_calculate_totalpages init
+-	 * that node_mask, clear it at first
+-	 */
+-	nodes_clear(node_states[N_HIGH_MEMORY]);
+ 	/* Initialise every node */
+ 	mminit_verify_pageflags_layout();
+ 	setup_nr_node_ids();
