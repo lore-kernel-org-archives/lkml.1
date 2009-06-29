@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZF2XzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbZF2X77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758227AbZF2XzT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbZF2XzI
+	id S1759378AbZF2X77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZF2X7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:55:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59955 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761AbZF2XzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:55:07 -0400
-Date: Tue, 30 Jun 2009 01:55:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vince Weaver <vince@deater.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: [numbers] perfmon/pfmon overhead of 17%-94%
-Message-ID: <20090629235500.GB5869@elte.hu>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy> <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu> <20090627064404.GA19368@elte.hu> <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy>
+	Mon, 29 Jun 2009 19:59:52 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64204 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751721AbZF2X7v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 19:59:51 -0400
+Message-ID: <4A49553B.2040300@oracle.com>
+Date: Mon, 29 Jun 2009 16:58:51 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: samr <sam@ravnborg.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] kernel hacking: move STRIP_ASM_SYMS from General
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A49553D.0169:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-* Vince Weaver <vince@deater.net> wrote:
+Sam suggested moving STRIP_ASM_SYMS into the Kernel hacking menu
+from the General Setup menu.  It makes more sense there.
 
->> Besides, you compare perfcounters to perfmon
->
-> what else shoud I be comparing it to?
->
->> (which you seem to be a contributor of)
->
-> is that not allowed?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ init/Kconfig      |    8 --------
+ lib/Kconfig.debug |    8 ++++++++
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Here's the full, uncropped sentence i wrote:
+--- linux-2.6.31-rc1-git5.orig/init/Kconfig
++++ linux-2.6.31-rc1-git5/init/Kconfig
+@@ -995,14 +995,6 @@ config SLUB_DEBUG
+ 	  SLUB sysfs support. /sys/slab will not exist and there will be
+ 	  no support for cache validation etc.
+ 
+-config STRIP_ASM_SYMS
+-	bool "Strip assembler-generated symbols during link"
+-	default n
+-	help
+-	  Strip internal assembler-generated symbols during a link (symbols
+-	  that look like '.Lxxx') so they don't pollute the output of
+-	  get_wchan() and suchlike.
+-
+ config COMPAT_BRK
+ 	bool "Disable heap randomization"
+ 	default y
+--- linux-2.6.31-rc1-git5.orig/lib/Kconfig.debug
++++ linux-2.6.31-rc1-git5/lib/Kconfig.debug
+@@ -50,6 +50,14 @@ config MAGIC_SYSRQ
+ 	  keys are documented in <file:Documentation/sysrq.txt>. Don't say Y
+ 	  unless you really know what this hack does.
+ 
++config STRIP_ASM_SYMS
++	bool "Strip assembler-generated symbols during link"
++	default n
++	help
++	  Strip internal assembler-generated symbols during a link (symbols
++	  that look like '.Lxxx') so they don't pollute the output of
++	  get_wchan() and suchlike.
++
+ config UNUSED_SYMBOLS
+ 	bool "Enable unused/obsolete exported symbols"
+ 	default y if X86
 
- " Besides, you compare perfcounters to perfmon (which you seem to 
-   be a contributor of), while in reality perfmon has much, much 
-   worse (and unfixable, because designed-in) measurement overhead. "
 
-Where i question the blatant hypocracy of bringing up perfmon as a 
-good example while in reality perfmon has far worse measurement 
-overhead than perfcounters, for a wide range of workloads.
 
-As far as i can see you didnt answer my questions: why are you 
-dismissing perfcounters for a minor, once per startup measurement 
-offset (which is entirely fixable - see the patch i sent), while you 
-generously allow perfmon to have serious, 90% measurement overhead 
-amounting to billions of instructions overhead per second, for 
-certain workloads?
-
-	Ingo
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
