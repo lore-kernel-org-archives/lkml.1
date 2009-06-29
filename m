@@ -1,126 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759087AbZF2OHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759414AbZF2OJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759087AbZF2OHn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZF2OHd
+	id S1759414AbZF2OJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZF2OJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:07:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57365 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 10:09:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43936 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755496AbZF2OHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:07:31 -0400
-Date: Mon, 29 Jun 2009 10:06:31 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH] io-controller: optimization for iog deletion when
-	elevator exiting
-Message-ID: <20090629140631.GA4622@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-6-git-send-email-vgoyal@redhat.com> <4A4850D3.3000700@cn.fujitsu.com>
+	id S1751906AbZF2OJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 10:09:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 6)
+Date: Mon, 29 Jun 2009 16:09:23 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0906282237180.11984-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906282237180.11984-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A4850D3.3000700@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906291609.24394.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 01:27:47PM +0800, Gui Jianfeng wrote:
-> Hi Vivek,
+On Monday 29 June 2009, Alan Stern wrote:
+> On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
 > 
-> There's no need to travel the iocg->group_data for each iog
-> when exiting a elevator, that costs too much. An alternative 
-> solution is reseting iocg_id as soon as an io group unlinking 
-> from a iocg. Make a decision that whether it's need to carry 
-> out deleting action by checking iocg_id.
+> > > The original version of __cancel_work_timer is not safe to use
+> > > in_interrupt.  If it is called from a handler whose IRQ interrupted
+> > > delayed_work_timer_fn, it can loop indefinitely.
+> > 
+> > Right, I overlooked that.
+> > 
+> > > Therefore I added a check; if it finds that the work_struct is currently
+> > > being enqueued and it is running in_interrupt, it gives up right away.
+> > 
+> > Hmm, it doesn't do the work_clear_pending(work) in that case, so we allow
+> > the work to be queued and run?
 > 
+> Yes.  That's better than leaving the work queued but with the "pending" 
+> flag cleared.  :-)
 
-Thanks Gui. This makes sense to me. We can check iog->iocg_id to determine
-wheter group is still on iocg list or not instead of traversing the list.
+So there still is a problem, I'm afraid (details below).
 
-Nauman, do you see any issues with the patch?
-
-Thanks
-Vivek
-
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |   29 ++++++++++-------------------
->  1 files changed, 10 insertions(+), 19 deletions(-)
+> >  Out of couriosity, what the caller is supposed
+> > to do then?
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index d779282..b26fe0f 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -2218,8 +2218,6 @@ void io_group_cleanup(struct io_group *iog)
->  	BUG_ON(iog->sched_data.active_entity != NULL);
->  	BUG_ON(entity != NULL && entity->tree != NULL);
->  
-> -	iog->iocg_id = 0;
-> -
->  	/*
->  	 * Wait for any rcu readers to exit before freeing up the group.
->  	 * Primarily useful when io_get_io_group() is called without queue
-> @@ -2376,6 +2374,7 @@ remove_entry:
->  			  group_node);
->  	efqd = rcu_dereference(iog->key);
->  	hlist_del_rcu(&iog->group_node);
-> +	iog->iocg_id = 0;
->  	spin_unlock_irqrestore(&iocg->lock, flags);
->  
->  	spin_lock_irqsave(efqd->queue->queue_lock, flags);
-> @@ -2403,35 +2402,27 @@ done:
->  void io_group_check_and_destroy(struct elv_fq_data *efqd, struct io_group *iog)
->  {
->  	struct io_cgroup *iocg;
-> -	unsigned short id = iog->iocg_id;
-> -	struct hlist_node *n;
-> -	struct io_group *__iog;
->  	unsigned long flags;
->  	struct cgroup_subsys_state *css;
->  
->  	rcu_read_lock();
->  
-> -	BUG_ON(!id);
-> -	css = css_lookup(&io_subsys, id);
-> +	css = css_lookup(&io_subsys, iog->iocg_id);
->  
-> -	/* css can't go away as associated io group is still around */
-> -	BUG_ON(!css);
-> +	if (!css)
-> +		goto out;
->  
->  	iocg = container_of(css, struct io_cgroup, css);
->  
->  	spin_lock_irqsave(&iocg->lock, flags);
-> -	hlist_for_each_entry_rcu(__iog, n, &iocg->group_data, group_node) {
-> -		/*
-> -		 * Remove iog only if it is still in iocg list. Cgroup
-> -		 * deletion could have deleted it already.
-> -		 */
-> -		if (__iog == iog) {
-> -			hlist_del_rcu(&iog->group_node);
-> -			__io_destroy_group(efqd, iog);
-> -			break;
-> -		}
-> +
-> +	if (iog->iocg_id) {
-> +		hlist_del_rcu(&iog->group_node);
-> +		__io_destroy_group(efqd, iog);
->  	}
-> +
->  	spin_unlock_irqrestore(&iocg->lock, flags);
-> +out:
->  	rcu_read_unlock();
->  }
->  
-> -- 1.5.4.rc3 
+> In the case of cancel_work, this is a simple race.  The work_struct was
+> being submitted at the same time as the cancellation occurred.  The end
+> result is the same as if the submission had been slightly later: The
+> work is on the queue and it will run.  If the caller can guarantee that 
+> the work is not in the process of being submitted (as described in the 
+> kerneldoc) then this situation will never arise.
+> 
+> In the case of cancel_delayed_work, things are more complicated.  If
+> the cancellation had occurred a little earlier, it would have
+> deactivated the timer.  If it had occurred a little later, it would
+> have removed the item from the workqueue.  But since it arrived at
+> exactly the wrong time -- while the timer routine is enqueuing the work
+> -- there's nothing it can do.  The caller has to cope as best he can.
+> 
+> For runtime PM this isn't a big issue.  The only delayed work we have
+> is a delayed autosuspend request.  These things get cancelled when:
+> 
+> 	pm_runtime_suspend runs synchronously.  That happens in
+> 	process context so we're okay.
+> 
+> 	pm_runtime_suspend_atomic (not yet written!) is called.
+
+This is going to be added in a separate patch.
+
+> 	If the cancellation fails, we'll have to return an error.
+> 	The suspend will happen later, when the work item runs.
+> 	Ultimately, the best we can do is recommend that people
+> 	don't mix pm_request_suspend with pm_runtime_suspend_atomic.
+
+Well, not only in that cases and in fact this is where the actual problem is.
+
+Namely, pm_request_suspend() and pm_request_resume() have to cancel any
+pending requests in a reliable way so that the work struct can be used safely
+after they've returned.
+
+Assume for example that there's a suspend request pending while
+pm_request_resume() is being called.  pm_request_resume() uses
+cancel_delayed_work() to kill off the request, but that's in interrupt and it
+happens to return -1.  Now, there's pm_runtime_put_atomic() right after that
+which attempts to queue up an idle notification request before the
+delayed suspend request has a chance to run and bad things happen.
+
+So, it seems, pm_request_resume() can't kill suspend requests by itself
+and instead it has to queue up resume requests for this purpose, which
+brings us right back to the problem of two requests queued up at a time
+(a delayed suspend request and a resume request that is supposed to cancel it).
+
+Nevertheless, using your workqueue patch we can still simplify things quite a
+bit, so I think it's worth doing anyway.
+
+> Which reminds me...  The way you've got things set up, 
+> pm_runtime_put_atomic queues an idle notification, right?  That's 
+> a little inconsistent with the naming of the other routines.
+> 
+> Instead, pm_runtime_put_atomic should be a version of pm_runtime_put
+> that can safely be called in an atomic context -- it implies that it
+> will call the runtime_notify callback while holding the spinlock.  The
+> routine to queue an idle-notify request should be called something like
+> pm_request_put -- although that name isn't so great because it sounds 
+> like the put gets deferred instead of the notification.
+
+There can be pm_request_put() and pm_request_put_sync(), for example.
+Or pm_request_put_async() and pm_request_put(), depending on which version is
+going to be used more often.
+
+Thanks,
+Rafael
