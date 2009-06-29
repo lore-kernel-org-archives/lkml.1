@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZF2SE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZF2SF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbZF2SE4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZF2SEo
+	id S1756277AbZF2SF2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 14:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZF2SFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:04:44 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:46380 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750860AbZF2SEn (ORCPT
+	Mon, 29 Jun 2009 14:05:16 -0400
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:33284 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753629AbZF2SFP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:04:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lOZnt5VaEfkaZkd+be1V6QRtaxPdhxe4Cj/CshYGnvBS8j/NKPSJtU8xFxw29tfrXq
-         jfc8KRIVY7bDs8w5YHidJgXJDv8M/s9pl4dNP0rfOtYRFeIGc+W4iSL2B7a6d2oRdbsz
-         QzR+jN+jC7LjGJsZsy9TW47Eqo4dS9v2kMTGo=
-Date: Mon, 29 Jun 2009 20:04:31 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
-	callbacks
-Message-ID: <20090629180431.GE2742@ami.dom.local>
-References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906290826300.29966@makko.or.mcafeemobile.com> <20090629173217.GC2742@ami.dom.local> <alpine.DEB.1.10.0906291033140.30244@makko.or.mcafeemobile.com>
+	Mon, 29 Jun 2009 14:05:15 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAO+eSEpR9cBV/2dsb2JhbADOVgmEBAU
+Date: Mon, 29 Jun 2009 20:05:16 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 52/62] drivers/watchdog/bcm47xx_wdt.c: Remove
+	unnecessary semicolons
+Message-ID: <20090629180516.GH3982@infomag.iguana.be>
+References: <cover.1246173664.git.joe@perches.com> <24eea6cba10492e0a19cbb341335e0e024b2a949.1246173683.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906291033140.30244@makko.or.mcafeemobile.com>
+In-Reply-To: <24eea6cba10492e0a19cbb341335e0e024b2a949.1246173683.git.joe@perches.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 10:36:30AM -0700, Davide Libenzi wrote:
-> On Mon, 29 Jun 2009, Jarek Poplawski wrote:
+Hi Joe,
+
+Will add this to the linux-2.6-watchdog trees.
+
+Thanks,
+Wim.
+
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/watchdog/bcm47xx_wdt.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> > > I think Oleg already said this, but you can use directly poll_wait() 
-> > > without adding another abstraction, and the compiler will drop the double 
-> > > check for you:
-> > 
-> > I think Oleg told about cosmetics and let Jiri to choose. I'd only
-> > add it's not mainly about optimization, but easy showing the main
-> > difference, of course depending on taste.
+> diff --git a/drivers/watchdog/bcm47xx_wdt.c b/drivers/watchdog/bcm47xx_wdt.c
+> index 5c7011c..751c003 100644
+> --- a/drivers/watchdog/bcm47xx_wdt.c
+> +++ b/drivers/watchdog/bcm47xx_wdt.c
+> @@ -161,7 +161,7 @@ static long bcm47xx_wdt_ioctl(struct file *file,
+>  {
+>  	void __user *argp = (void __user *)arg;
+>  	int __user *p = argp;
+> -	int new_value, retval = -EINVAL;;
+> +	int new_value, retval = -EINVAL;
+>  
+>  	switch (cmd) {
+>  	case WDIOC_GETSUPPORT:
+> -- 
+> 1.6.3.1.10.g659a0.dirty
 > 
-> We already have a universally used function to do that, and that's 
-> poll_wait().
-> That code (adding an extra __poll_wait()) was entirely about 
-> optimizations (otherwise why not use the existing poll_wait()?), so if 
-> the optimization does not actually take place, IMO it's better to not add 
-> an extra API.
-
-OK, you're right, it is about optimization! But IMHO mainly about
-reading optimization... I simply guess me and probably Jiri too,
-after reading Oleg's variant thought about compiler, instead of the
-real difference.
-
-Btw., maybe I miss something but I guess Oleg proposed something in
-between: inlining __poll_wait(), which would save us 'extra API' and
-compiler doubts. (But I still prefer Jiri's choice. ;-)
-
-Jarek P.
