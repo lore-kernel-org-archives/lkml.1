@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZF2Rrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZF2RsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757212AbZF2Rrj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbZF2Rr2
+	id S1753610AbZF2RsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZF2RsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:47:28 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:42480 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbZF2Rr1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:47:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MIJcvDKj1nwLRIdW4UXCainJ8P01Wu81aU0ZqFDMP1QhNbdeCI2zO4a71uOkOF4/lg
-         IcUefABEGlu4MXbisiM4BUu6LWo1Tc+6oGgA72EycBfOXePOFUJ8uW6cllw40DkWIb9C
-         M/NNRbbIZAztk3AKVLLGld6kifO5m/RSoJMHs=
-Date: Mon, 29 Jun 2009 19:47:20 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org, eric.dumazet@gmail.com
-Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
-	callbacks
-Message-ID: <20090629174720.GD2742@ami.dom.local>
-References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com>
+	Mon, 29 Jun 2009 13:48:08 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51053 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754406AbZF2RsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 13:48:07 -0400
+Date: Mon, 29 Jun 2009 19:48:09 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] cfq-iosched: get rid of the need for __GFP_FAIL in
+	cfq_find_alloc_queue()
+Message-ID: <20090629174809.GO23611@kernel.dk>
+References: <1246007120-24034-1-git-send-email-jens.axboe@oracle.com> <1246007120-24034-3-git-send-email-jens.axboe@oracle.com> <x497hyz9d2g.fsf@segfault.boston.devel.redhat.com> <20090627182617.GX23611@kernel.dk> <x494otzxid3.fsf@segfault.boston.devel.redhat.com> <20090629173418.GN23611@kernel.dk> <x494otzvst4.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <x494otzvst4.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 04:14:45PM +0200, Jiri Olsa wrote:
-...
-> +/**
-> + * sk_has_sleeper - check if there are any waiting processes
-> + * @sk: socket
-> + *
-> + * Returns true if socket has waiting processes
-> + */
-> +static inline int sk_has_sleeper(struct sock *sk)
-> +{
-> +	/*
-> +	 * We need to be sure we are in sync with the
-> +	 * add_wait_queue modifications to the wait queue.
-> +	 *
-> +	 * This memory barrier is paired in the sock_poll_wait.
-> +	 */
-> +	smp_mb();
-> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> +}
-> +
+On Mon, Jun 29 2009, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> > On Mon, Jun 29 2009, Jeff Moyer wrote:
+> >> Jens Axboe <jens.axboe@oracle.com> writes:
+> >> 
+> >> > On Fri, Jun 26 2009, Jeff Moyer wrote:
+> >> >> Jens Axboe <jens.axboe@oracle.com> writes:
+> >> >> 
+> >> >> > Setup an emergency fallback cfqq that we allocate at IO scheduler init
+> >> >> > time. If the slab allocation fails in cfq_find_alloc_queue(), we'll just
+> >> >> > punt IO to that cfqq instead. This ensures that cfq_find_alloc_queue()
+> >> >> > never fails without having to ensure free memory.
+> >> >> >
+> >> >> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >> >> > ---
+> >> >> >  block/cfq-iosched.c |  124 +++++++++++++++++++++++++++-----------------------
+> >> >> >  1 files changed, 67 insertions(+), 57 deletions(-)
+> >> >> >
+> >> >> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> >> >> > index c760ae7..91e7e0b 100644
+> >> >> > --- a/block/cfq-iosched.c
+> >> >> > +++ b/block/cfq-iosched.c
+> >> >> > +	/*
+> >> >> > +	 * Fallback dummy cfqq for extreme OOM conditions
+> >> >> > +	 */
+> >> >> > +	struct cfq_queue oom_cfqq;
+> >> >> 
+> >> >> OK, so you're embedding a cfqq into the cfqd.  That's 136 bytes, so I
+> >> >> guess that's not too bad.
+> >> >> 
+> >> >> > +	/*
+> >> >> > +	 * Our fallback cfqq if cfq_find_alloc_queue() runs into OOM issues.
+> >> >> > +	 * Grab a permanent reference to it, so that the normal code flow
+> >> >> > +	 * will not attempt to free it.
+> >> >> > +	 */
+> >> >> > +	cfq_init_cfqq(cfqd, &cfqd->oom_cfqq, 1, 0);
+> >> >> > +	atomic_inc(&cfqd->oom_cfqq.ref);
+> >> >> > +
+> >> >> 
+> >> >> I guess this is so we never try to free it, good.  ;)
+> >> >> 
+> >> >> One issue I have with this patch is that, if a task happens to run into
+> >> >> this condition, there is no way out.  It will always have the oom_cfqq
+> >> >> as it's cfqq.  Can't we fix that if we recover from the OOM condition?
+> >> >
+> >> > Yeah, I fixed that about an hour after posting the patches. See:
+> >> >
+> >> > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=0370bc158cb1d5faa4b8a38c0de3211f0fd5bd64
+> >> >
+> >> > I didn't post the 3/2 patch though.
+> >> 
+> >> OK, that looks better.  Are you reposting the series, then?
+> >
+> > Yeah, I'll fold the last two patches together and repost.
+> 
+> When you do, you can add my:
+> 
+> Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
 
-Btw. I hope Jiri won't "listen" to me, but I can't stop to mention
-sock_waitqueue_active() looks to me quite naturally better paired
-with sock_poll_wait() than sk_has_sleeper(which otherwise is more
-conspicuous, sorry Eric.)
+Will do, thanks!
 
-Jarek P.
+-- 
+Jens Axboe
 
-> +/**
-> + * sock_poll_wait - place memory barrier behind the __poll_wait call.
-> + * @filp: file
-> + * @sk:   socket
-> + * @p:    poll_table
-> + */
-> +static inline void sock_poll_wait(struct file *filp, struct sock *sk,
-> +		poll_table *p)
-> +{
-> +	if (p && sk->sk_sleep) {
-> +		__poll_wait(filp, sk->sk_sleep, p);
-> +		/*
-> +		 * We need to be sure we are in sync with the
-> +		 * socket flags modification.
-> +		 *
-> +		 * This memory barrier is paired in the sk_has_sleeper.
-> +		*/
-> +		smp_mb();
-> +	}
-> +}
