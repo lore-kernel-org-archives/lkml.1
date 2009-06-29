@@ -1,171 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbZF2IMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZF2IOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757163AbZF2IMZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 04:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZF2IMQ
+	id S1753215AbZF2IOT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 04:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZF2IOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 04:12:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39300 "EHLO mx2.redhat.com"
+	Mon, 29 Jun 2009 04:14:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46143 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbZF2IMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 04:12:15 -0400
-Date: Mon, 29 Jun 2009 11:12:14 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Sheng Yang <sheng@linux.intel.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629081214.GS20289@redhat.com>
-References: <20090628125114.GO20289@redhat.com> <200906291549.46581.sheng@linux.intel.com>
+	id S1751611AbZF2IOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 04:14:05 -0400
+Date: Mon, 29 Jun 2009 10:13:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>, Corentin Chary <corentincj@iksaif.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Matthew Garrett <mjg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH, v3] eeepc-laptop: Fix build failure with HOTPLUG_PCI &&
+	!SYSFS (was: [git pull request] ACPI & driver patches for
+	2.6.31-rc1)
+Message-ID: <20090629081339.GA321@elte.hu>
+References: <alpine.LFD.2.00.0906260025380.20608@localhost.localdomain> <20090629080754.GA28336@elte.hu> <20090629081016.GA31398@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906291549.46581.sheng@linux.intel.com>
+In-Reply-To: <20090629081016.GA31398@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 03:49:45PM +0800, Sheng Yang wrote:
-> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index d1430ef..7438c5c 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -260,7 +260,7 @@ config SMP
-> >
-> >  config X86_X2APIC
-> >  	bool "Support x2apic"
-> > -	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
-> > +	depends on X86_LOCAL_APIC && X86_64
-> >  	---help---
-> >  	  This enables x2apic support on CPUs that have this feature.
-> 
-> We may need to note x2apic won't work without interrupt remapping or as a 
-> guest in KVM here?
-Will add help text to say this.
 
-> >
-> > diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-> > index 8c7c042..48a63b6 100644
-> > --- a/arch/x86/kernel/apic/apic.c
-> > +++ b/arch/x86/kernel/apic/apic.c
-> > @@ -49,6 +49,7 @@
-> >  #include <asm/mtrr.h>
-> >  #include <asm/smp.h>
-> >  #include <asm/mce.h>
-> > +#include <asm/kvm_para.h>
-> >
-> >  unsigned int num_processors;
-> >
-> > @@ -1363,11 +1364,10 @@ void enable_x2apic(void)
-> >  }
-> >  #endif /* CONFIG_X86_X2APIC */
-> >
-> > -void __init enable_IR_x2apic(void)
-> > +int __init enable_IR(void)
-> >  {
-> >  #ifdef CONFIG_INTR_REMAP
-> >  	int ret;
-> > -	unsigned long flags;
-> >  	struct IO_APIC_route_entry **ioapic_entries = NULL;
-> >
-> >  	ret = dmar_table_init();
-> > @@ -1381,11 +1381,10 @@ void __init enable_IR_x2apic(void)
-> >  		goto ir_failed;
-> >  	}
-> >
-> > -
-> >  	if (!x2apic_preenabled && skip_ioapic_setup) {
-> >  		pr_info("Skipped enabling intr-remap because of skipping "
-> >  			"io-apic setup\n");
-> > -		return;
-> > +		goto ir_failed;
-> >  	}
-> >
-> >  	ioapic_entries = alloc_ioapic_entries();
-> > @@ -1400,22 +1399,14 @@ void __init enable_IR_x2apic(void)
-> >  		goto end;
-> >  	}
-> >
-> > -	local_irq_save(flags);
-> >  	mask_IO_APIC_setup(ioapic_entries);
-> > -	mask_8259A();
-> >
-> >  	ret = enable_intr_remapping(x2apic_supported());
-> >  	if (ret)
-> >  		goto end_restore;
-> > -
-> 
-> Unrelated...
-> 
-> >  	pr_info("Enabled Interrupt-remapping\n");
-> >
-> > -	if (x2apic_supported() && !x2apic_mode) {
-> > -		x2apic_mode = 1;
-> > -		enable_x2apic();
-> > -		pr_info("Enabled x2apic\n");
-> > -	}
-> > -
-> > +	return 1;
-> >  end_restore:
-> >  	if (ret)
-> >  		/*
-> > @@ -1423,30 +1414,50 @@ end_restore:
-> >  		 */
-> >  		restore_IO_APIC_setup(ioapic_entries);
-> >
-> > -	unmask_8259A();
-> > -	local_irq_restore(flags);
-> > -
-> >  end:
-> >  	if (ioapic_entries)
-> >  		free_ioapic_entries(ioapic_entries);
-> >
-> > -	if (!ret)
-> > -		return;
-> > -
-> >  ir_failed:
-> > -	if (x2apic_preenabled)
-> > +#endif
-> > +	return 0;
-> > +}
-> > +
-> > +void __init enable_IR_x2apic(void)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	local_irq_save(flags);
-> > +	mask_8259A();
-> > +
-> > +	/* IR is required if x2apic is enabled by BIOS even when running in kvm
-> > +	 * since this indicates present of APIC ID > 255 */
-> > +	if (!enable_IR() && (x2apic_preenabled || !kvm_para_available()))
-> > +		goto nox2apic;
-> > +
-> 
-> Not quite understand the comment here. Could you explain why "since this 
-> indicates present of APIC ID > 255?" In another word, why enable_IR() needed 
-> for KVM even it would be fail at dmar_table_init()?
-> 
-The x2APIC doc says:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-  The default will be for the BIOS to pass the control to the OS with the
-  local x2APICs in xAPIC mode if all x2APIC IDs reported by CPUID.0BH:EDX
-  are less than 255, and in x2APIC mode if there are any logical processor
-  reporting its x2APIC ID at 255 or greater.
-
-So x2apic_preenabled will be true if there is an APIC ID greater then 255
-and in this case we don't want to allow x2APIC use without IR even in KVM
-for the reason you mention: IOAPIC and MSI will not be able to address
-all CPUs. The reason to try to enable IR first is so that when KVM will
-want to support more then 255 CPUs it will be possible to implement IR
-device and use existing kernel without additional changes.
-
-> Another question is, we supposed KVM would use physical mode of x2apic, for 
-> IOAPIC and MSI won't support APIC ID > 255. But seems not, or I miss 
-> something?
+> > The patch below fixes the build failure by turning the select 
+> > lines into a single 'depends on' line. [...]
 > 
-Good point. The patch should be fixed to require physical mode for x2apic.
+> i did the fix against the bisection point and the patch has a 
+> conflict against later mainline - below is a merged up patch.
+
+> -	select HOTPLUG
+> -	select HOTPLUG_PCI if PCI
+> +       select HOTPLUG
+> +       select HOTPLUG_PCI if PCI
+
+uhm, not a very nice conflict resolution this is.
+
+The one below is actually tested ;-)
+
+	Ingo
+
+-------------------->
+>From de3e1cacc93ca48a288e27af5e82a365ba90020f Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 29 Jun 2009 10:07:54 +0200
+Subject: [PATCH] eeepc-laptop: Fix build failure with HOTPLUG_PCI && !SYSFS (was: ACPI & driver patches for 2.6.31-rc1)
+
+FYI, there's a post-rc1 build regression with certain configs:
+
+ drivers/built-in.o: In function `pci_hp_deregister':
+ (.text+0xb166): undefined reference to `pci_hp_remove_module_link'
+ drivers/built-in.o: In function `pci_hp_deregister':
+ (.text+0xb19f): undefined reference to `pci_destroy_slot'
+ drivers/built-in.o: In function `__pci_hp_register':
+ (.text+0xb583): undefined reference to `pci_create_slot'
+ drivers/built-in.o: In function `__pci_hp_register':
+ (.text+0xb5b1): undefined reference to `pci_hp_create_module_link'
+ make: *** [.tmp_vmlinux1] Error 1
+
+Caused by:
+
+| 2b121bc262fa03c94e653b2d44356c2f86c1bcdc is first bad commit
+| commit 2b121bc262fa03c94e653b2d44356c2f86c1bcdc
+| Date:   Thu Jun 25 13:25:36 2009 +0200
+|
+|     eeepc-laptop: Register as a pci-hotplug device
+
+The problem is caused by this portion of the commit:
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/platform/x86/Kconfig |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 4bc72d0..c0be866 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -356,10 +356,9 @@ config EEEPC_LAPTOP
+ 	depends on INPUT
+ 	depends on EXPERIMENTAL
+ 	depends on RFKILL || RFKILL = n
++	depends on HOTPLUG_PCI
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	select HWMON
+-	select HOTPLUG
+-	select HOTPLUG_PCI if PCI
+ 	---help---
+ 	  This driver supports the Fn-Fx keys on Eee PC laptops.
  
---
-			Gleb.
