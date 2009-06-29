@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZF2S5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZF2TAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757699AbZF2S5w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZF2S5p
+	id S1757184AbZF2TAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 15:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZF2TAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:57:45 -0400
-Received: from mga03.intel.com ([143.182.124.21]:16541 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZF2S5o convert rfc822-to-8bit (ORCPT
+	Mon, 29 Jun 2009 15:00:22 -0400
+Received: from lider.uludag.org.tr ([193.140.100.216]:41135 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZF2TAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:57:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,310,1243839600"; 
-   d="scan'208";a="159712715"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Date: Mon, 29 Jun 2009 11:57:45 -0700
-Subject: RE: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
-Thread-Topic: [PATCH 9/9] x86/apic: support moorestown interrupt subsystem
-Thread-Index: Acn2uFQRXFCwfxmPQJ+HsGofaweP3QCMWaJg
-Message-ID: <43F901BD926A4E43B106BF17856F0755641A4D19@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F07556412B7E8@orsmsx508.amr.corp.intel.com>
-	<m1ab3ubx4q.fsf@fess.ebiederm.org>
-	<43F901BD926A4E43B106BF17856F0755641A47CD@orsmsx508.amr.corp.intel.com>
- <m163eieey7.fsf@fess.ebiederm.org>
-In-Reply-To: <m163eieey7.fsf@fess.ebiederm.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 29 Jun 2009 15:00:22 -0400
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Mon, 29 Jun 2009 15:00:21 EDT
+Message-ID: <4A490D47.7030305@pardus.org.tr>
+Date: Mon, 29 Jun 2009 21:51:51 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, intel-gfx@lists.freedesktop.org,
+       woodys@xandros.com, stefan.bader@canonical.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, apw@canonical.com,
+       tim.gardner@canonical.com, torvalds@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: [stable] [Intel-gfx] Intel 915GM MCHBAR bug
+References: <4A242C81.6020906@cs.helsinki.fi> <4A298971.5080006@xandros.com> <4A2A0951.1020608@cs.helsinki.fi> <20090605232711.d8503262.akpm@linux-foundation.org> <4A2A0E8C.1010109@cs.helsinki.fi> <20090606212759.31970fae@jbarnes-x200> <20090609150757.4a2109a9@jbarnes-x200> <20090609152828.d82528f3.akpm@linux-foundation.org> <20090629173308.GB3901@kroah.com> <20090629182738.GD3901@kroah.com>
+In-Reply-To: <20090629182738.GD3901@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Yes, completely separate out the 8259.  I believe that complete
->separation will come for free if you move the ioapic earlier.
->
->What kind of PIC is native?
->
+Greg KH wrote:
+> I take it back.  It doesn't build properly on 2.6.30, can someone
+> backport commit d765898970f35acef960581f678b9da9d5c779fa to the 2.6.30
+> tree and send it to stable@kernel.org so that we can apply it to resolve
+> this issue?
+> ease read the FAQ at  http://www.tux.org/lkml/
+>   
 
-[[JPAN]] the emulated IOAPIC is for the south complex, and north complex 
-has true PCI MSI capability so it does not need an ioapic. There is no native
-hw interrupt controller, all interrupts are forwarded by the FW and delivered
- to local APIC via FSB writes (kind of).
-
-The programming interface for the emulated ioapic is compatiable but there are 
-are some special "features" such as no special/legacy entries such as cascade 
-i8259, hpet legacy replacement routes (2,8), etc.
-
-I will add a more detail introduction in the next version of this patch set.
+There was this commit on top of them which was fixed the build problem
+for me:
+http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Fanholt%2Fdrm-intel.git;a=commitdiff_plain;h=34c8638bb5ee130b8151c57708284bcd4972e2e1;hp=003c9ca68810bc0a63a1f3ff6beec839b197e23b
