@@ -1,120 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbZF2XeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbZF2Xfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbZF2XeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZF2XeK
+	id S1760133AbZF2Xfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZF2Xfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:34:10 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:59491
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbZF2XeK (ORCPT
+	Mon, 29 Jun 2009 19:35:31 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:8803 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752938AbZF2Xfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:34:10 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
-Date: Mon, 29 Jun 2009 18:34:06 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-References: <200906281033.09842.jk@ozlabs.org>
-In-Reply-To: <200906281033.09842.jk@ozlabs.org>
+	Mon, 29 Jun 2009 19:35:30 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=hMHBVyhpmA+YTs6zYr1oWemwCKf5toSFuwpwJ98pSXW4XctfpuJ2hDZPqg5dhqwsn
+	geT4nMnng5KBDqJbetUrw==
+Date: Mon, 29 Jun 2009 16:35:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, npiggin@suse.de
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <20090629153007.GD5065@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0906291625580.17663@chino.kir.corp.google.com>
+References: <4A426825.80905@cs.helsinki.fi> <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
+ <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org>
+ <20090629153007.GD5065@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906291834.07902.rob@landley.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 27 June 2009 21:33:09 Jeremy Kerr wrote:
-> Hi Rob,
->
-> > I bisected the problem in the linux kernel repository, and wound up
-> > here:
-> >
-> > 60ee031940c1b09c137b617a8829e2f081961fe0 is first bad commit
-> > commit 60ee031940c1b09c137b617a8829e2f081961fe0
-> > Author: Jeremy Kerr <jk@ozlabs.org>
-> > Date:   Tue Feb 17 11:44:14 2009 +1100
-> >
-> >     powerpc/spufs: Use correct return value for spu_handle_mm_fault
->
-> I think it's very unlikely that this commit would be causing the
-> problem, as qemu doesn't have any SPEs (they're specific to the Cell
-> architecture), which would be required to hit this code. Also, you're
-> not compiling with CONFIG_SPU_BASE, so the file that this changed
-> shouldn't even be built.
+On Mon, 29 Jun 2009, Mel Gorman wrote:
 
-Yeah, it seemed odd.  That's why I needed help. :)
+> page-allocator: Ensure that processes that have been OOM killed exit the page allocator
+> 
+> Processes that have been OOM killed set the thread flag TIF_MEMDIE. A
+> process such as this is expected to exit the page allocator but in the
+> event it happens to have set __GFP_NOFAIL, it potentially loops forever.
+> 
 
-> Perhaps try the bisect again?
+That's not the expected behavior for TIF_MEMDIE, although your patch 
+certainly changes that.
 
-Sorry about that.  I suck at git.
+Your patch is simply doing
 
-Part of the reason is that git bisect assumes that "good" always comes before 
-"bad" in the repository, so if you're looking for the patch that _fixed_ a bug 
-(I.E. good == new and bad == old), you have to reverse 'em to humor git 
-bisect.  I had to do that this time to patch an intermediate version that 
-build breaks, which "git bisect run" called "skip" on over a dozen times 
-without noticeable progress.  If good and bad then mean the opposite on the 
-_next_ bisect, I tend to get 'em confused occasionally.  (Especially when I've 
-hit three or more unrelated bugs in the same bisect run.  In this case the 
-build break in kmap_atomic_prot, whatever memory glitch is corrupting the 
-squashfs root filesystem image and spamming the console about it, and this bug.  
-Oh, and the really _fun_ part is that the squashfs bug only reproduces about 
-half the time.  If you run the same binary twice, sometimes it'll work and 
-sometimes it'll spam squashfs errors to the console.  Wheee...)
+	if (test_thread_flag(TIF_MEMDIE))
+		gfp_mask |= __GFP_NORETRY;
 
-Anyway, on something like my fifth attempt I managed to bisect it to:
+in the slowpath.
 
-28794d34ecb6815a3fa0a4256027c9b081a17c5f is first bad commit
-commit 28794d34ecb6815a3fa0a4256027c9b081a17c5f
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Tue Mar 10 17:53:27 2009 +0000
+TIF_MEMDIE is supposed to allow allocations to succeed, not automatically 
+fail, so that it can quickly handle its SIGKILL without getting blocked in 
+the exit path seeking more memory.
 
-    powerpc/kconfig: Kill PPC_MULTIPLATFORM
-    
-    CONFIG_PPC_MULTIPLATFORM is a remain of the pre-powerpc days and isn't
-    really meaningful anymore. It was basically equivalent to PPC64 || 6xx.
-    
-    This removes it along with the following changes:
-    
-     - 32-bit platforms that relied on PPC32 && PPC_MULTIPLATFORM now rely
-       on 6xx which is what they want anyway.
-    
-     - A new symbol, PPC_BOOK3S, is defined that represent compliance with
-       the "Server" variant of the architecture. This is set when either 6xx
-       or PPC64 is set and open the door for future BOOK3E 64-bit.
-    
-     - 64-bit platforms that relied on PPC64 && PPC_MULTIPLATFORM now use
-       PPC64 && PPC_BOOK3S
-    
-     - A separate and selectable CONFIG_PPC_OF_BOOT_TRAMPOLINE option is now
-       used to control the use of prom_init.c
-    
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> This patch checks TIF_MEMDIE when deciding whether to loop again in the
+> page allocator. Such a process will now return NULL after direct reclaim
+> and OOM killing have both been considered as options. The potential
+> problem is that a __GFP_NOFAIL allocation can still return failure so
+> callers must still handle getting returned NULL.
+> 
 
-Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLINE 
-symbol wasn't set, and once I switched that on it started working again.
+All __GFP_NOFAIL allocations should ensure that alloc_pages() never 
+returns NULL.  Although it's unfortunate, that's the requirement that 
+callers have been guaranteed and until they are fixed, the page allocator 
+should respect it.
 
-> linuxppc-dev@lists.ozlabs.org is the one you want for this:
->
->  https://lists.ozlabs.org/listinfo/linuxppc-dev
+I disagree with this change because it unconditionally fails allocations 
+when a task has been oom killed, a scenario which should be the _highest_ 
+priority for allocations to succeed since it leads to future memory 
+freeing.
 
-Cool!  Is there a reason it's hidden?  (Or at least not listed in either 
-vger.kernel.org's list info page or in the "Maling lists" page linked from 
-ozlabs.org's top level web page.)  Just curious, I couldn't find it when I 
-looked in the obvious (to me) places.
-
-Rob
-
-P.S.  Yes I tried google: top hit for "linux powerpc list" is penguinppc.org, 
-which links to mailing lists on the right which is the ozlabs.org page that 
-doesn't list linuxppc-dev.  In fact the entire first page of google hits for 
-that search doesn't give a hint of the existence of that list, although some 
-of the later ones might if I clicked through more of them...
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+Additionally, this will fail all GFP_ATOMIC allocations for oom killed 
+tasks if allocating without watermarks fails although pdflush may 
+concurrently be doing writeback or other allocation attempts are invoking 
+direct reclaim.
