@@ -1,83 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZF2KhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbZF2Khl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZF2KhR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 06:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZF2KhH
+	id S1758821AbZF2Khl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 06:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbZF2Kh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 06:37:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56319 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbZF2KhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 06:37:06 -0400
-Date: Mon, 29 Jun 2009 11:37:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
-Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
-Message-ID: <20090629103706.GA5065@csn.ul.ie>
-References: <1245686553.7799.102.camel@lts-notebook> <20090622205308.GG3981@csn.ul.ie> <20090623200846.223C.A69D9226@jp.fujitsu.com> <20090629084114.GA28597@csn.ul.ie> <20090629101819.GA2052@cmpxchg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090629101819.GA2052@cmpxchg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 29 Jun 2009 06:37:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48247
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754528AbZF2KhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 06:37:25 -0400
+Date: Mon, 29 Jun 2009 03:37:30 -0700 (PDT)
+Message-Id: <20090629.033730.193709457.davem@davemloft.net>
+To: etienne.basset@numericable.fr
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       bzolnier@gmail.com, jeff.chua.linux@gmail.com
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A489775.6020102@numericable.fr>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
+	<5Hhc7UkUKEO.A.RvE.BjASKB@chimera>
+	<4A489775.6020102@numericable.fr>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 12:18:19PM +0200, Johannes Weiner wrote:
-> On Mon, Jun 29, 2009 at 09:41:14AM +0100, Mel Gorman wrote:
-> > I see the unconditionoal clearing of the flag was merged since but even
-> > that might be too heavy handed as we are making a locked bit operation
-> > on every page free. That's unfortunate overhead to incur on every page
-> > free to handle a situation that should not be occurring at all.
-> 
-> Linus was probably quick to merge it as istr several people hitting
-> bad_page() triggering.  We should get rid of the locked op, I was just
-> not 100% sure and chose the safer version.
-> 
+From: Etienne Basset <etienne.basset@numericable.fr>
+Date: Mon, 29 Jun 2009 12:29:09 +0200
 
-And I have no problem with the decision. Leaving it as it was would have
-caused a storm of bug reports, all similar.
+> yes, patch is not yet upstream;
 
-> > > > +		WARN_ONCE(1, KERN_WARNING
-> > > > +			"Sloppy page flags set process %s at pfn:%05lx\n"
-> > > > +			"page:%p flags:%p\n",
-> > > > +			current->comm, page_to_pfn(page),
-> > > > +			page, (void *)page->flags);
-> [...]
-> > > > +		page->flags &= ~PAGE_FLAGS_WARN_AT_FREE;
-> > > > +	}
-> > > > +
-> > > >  	if (unlikely(page_mapcount(page) |
-> > > >  		(page->mapping != NULL)  |
-> > > >  		(atomic_read(&page->_count) != 0) |
-> > > 
-> > > Howerver, I like this patch concept. this warning is useful and meaningful IMHO.
-> > > 
-> > 
-> > This is a version that is based on top of current mainline that just
-> > displays the warning. However, I think we should consider changing
-> > TestClearPageMlocked() back to PageMlocked() and only clearing the flags
-> > when the unusual condition is encountered.
-> 
-> I have a diff at home that makes this an unlocked
-> __TestClearPageMlocked(), would you be okay with this?
-> 
-
-It'd be an improvement for sure. Post it and I'll take a look.
-
-My preference is still to clear the flag only when found to be erroneously set
-and print a warning once but that's because it was the patch I put together
-so I'm biased :)
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I'll take care of pushing this around today.
