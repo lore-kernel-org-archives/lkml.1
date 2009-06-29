@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZF2OqC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZF2Oqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZF2OqC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:46:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZF2Opx
+	id S1759659AbZF2Oqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbZF2Oqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:45:53 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:47498
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752782AbZF2Opx convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:45:53 -0400
-X-SpamScore: -28
-X-BigFish: VPS-28(z1039oz1432R9370P98dR936eN1805Mzz1202hzz5a6ciz32i6bh43j65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KM08ZX-03-JOH-01
-Date: Mon, 29 Jun 2009 16:45:36 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ming Lei <tom.leiming@gmail.com>
-CC: Arnd Bergmann <arnd@arndb.de>, fujita.tomonori@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers()
-	in dma_sync_*_for_cpu
-Message-ID: <20090629144536.GP5139@amd.com>
-References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com> <200906281534.37148.arnd@arndb.de> <20090629123142.GL5139@amd.com> <d82e647a0906290651yc25e38dkce7d59df5dd86d1f@mail.gmail.com>
+	Mon, 29 Jun 2009 10:46:43 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:26760 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752283AbZF2Oql convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 10:46:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <d82e647a0906290651yc25e38dkce7d59df5dd86d1f@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-ID: <5331ec14-c599-4317-bd5b-55911b8ee916@default>
+Date: Mon, 29 Jun 2009 07:44:50 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
+       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>, jeremy@goop.org,
+       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>, linux-embedded@vger.kernel.org
+Subject: RE: [RFC] transcendent memory for Linux
+In-Reply-To: <63386a3d0906270618h5be01265v759f5acd1f49682f@mail.gmail.com>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
 Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 29 Jun 2009 14:45:36.0625 (UTC) FILETIME=[437E0610:01C9F8C8]
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A48D379.0154:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 09:51:34PM +0800, Ming Lei wrote:
-> 2009/6/29 Joerg Roedel <joerg.roedel@amd.com>:
-> > On Sun, Jun 28, 2009 at 03:34:35PM +0000, Arnd Bergmann wrote:
-> >> On Sunday 28 June 2009 14:39:19 tom.leiming@gmail.com wrote:
-> >> > From: Ming Lei <tom.leiming@gmail.com>
-> >> >
-> >> > dma_sync_*_for_cpu() is introduced to make cpu access dma buffers safely when
-> >> > dma transfer is over, it seems there is nothing to do with cpu write buffer,
-> >> > so remove it.
-> >> >
-> >> > Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> >>
-> >> Right, this looks correct. On a related note, flush_write_buffers is
-> >> architecture specific right now: only x86 and frv implement it at all,
-> >> though and with slightly different semantics.
-> >
-> > This doen't look correct to me. The sync functions may do bounce buffering
-> > which is all about copying data from one place in main memory to another. So we
-> > need these flush_write_buffer() calls in the _for_cpu path too.
+
+
+> From: Linus Walleij [mailto:linus.ml.walleij@gmail.com]
+> Sent: Saturday, June 27, 2009 7:19 AM
+> Subject: Re: [RFC] transcendent memory for Linux
 > 
-> IMHO, even we do not call flush_write_buffer(), CPU can read correct
-> data from the
-> dma buffer since write buffer can't affect cache, right?
+> > We call this latter class "transcendent memory" and it
+> > provides an interesting opportunity to more efficiently
+> > utilize RAM in a virtualized environment.  However this
+> > "memory but not really memory" may also have applications
+> > in NON-virtualized environments, such as hotplug-memory
+> > deletion, SSDs, and page cache compression.  Others have
+> > suggested ideas such as allowing use of highmem memory
+> > without a highmem kernel, or use of spare video memory.
+> 
+> Here is what I consider may be a use case from the embedded
+> world: we have to save power as much as possible, so we need
+> to shut off entire banks of memory.
+> 
+> Currently people do things like put memory into self-refresh
+> and then sleep, but for long lapses of time you would
+> want to compress memory towards lower addresses and
+> turn as many banks as possible off.
+> 
+> So we have something like 4x16MB banks of RAM = 64MB RAM,
+> and the most necessary stuff easily fits in one of them.
+> If we can shut down 3x16MB we save 3 x power supply of the
+> RAMs.
+> 
+> However in embedded we don't have any swap, so we'd need
+> some call that would attempt to remove a memory by paging
+> out code and data that has been demand-paged in
+> from the FS but no dirty pages, these should instead be
+> moved down to memory which will be retained, and the
+> call should fail if we didn't succeed to migrate all
+> dirty pages.
+> 
+> Would this be possible with transcendent memory?
 
-flush_write_buffer is not about cache flushing. It is about read/write
-reordering in the CPU. Think of it as a memory barrier. On most x86
-systems this function is therefore a nop. Cache flushing for
-architectures without cache-coherent DMA is typically handled in their
-low-level dma-api code (I have seen that at least in parisc32).
+Yes, I think this would work nicely as a use case for tmem.
 
-	Joerg
+As Avi points out, you could do this with memory defragmentation,
+but if you know in advance that you will be frequently
+powering on and off a bank of RAM, you could put only
+ephemeral memory into it (enforced by a kernel policy and
+the tmem API), then defragmentation (and compression towards
+lower addresses) would not be necessary, and you could power
+off a bank with no loss of data.
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+One issue though: I would guess that copying pages of memory
+could be very slow in an inexpensive embedded processor.
 
+Dan
