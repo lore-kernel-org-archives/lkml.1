@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZF2Rih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZF2RkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbZF2Rih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZF2Ri0
+	id S1757249AbZF2RkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZF2RkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:38:26 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:44727 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZF2Ri0 (ORCPT
+	Mon, 29 Jun 2009 13:40:01 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:51805 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753599AbZF2RkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:38:26 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 29 Jun 2009 10:36:30 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Jarek Poplawski <jarkao2@gmail.com>
-cc: Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
- callbacks
-In-Reply-To: <20090629173217.GC2742@ami.dom.local>
-Message-ID: <alpine.DEB.1.10.0906291033140.30244@makko.or.mcafeemobile.com>
-References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906290826300.29966@makko.or.mcafeemobile.com> <20090629173217.GC2742@ami.dom.local>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 29 Jun 2009 13:40:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=j1lDspx9wMfeLLeY3V/OhYuTqTO3pfj4NbxLTujaHJEEhwfcqzb8+wBA0rnh3YGa+J
+         SSyywxiwtWT4ya++hVpiQFz3bXhjw6oKRaV2UXOqsc+SZDxmwOhyfAd/wWbI7cTSayEk
+         rUnv8+BOROHhTrwkxl7E1q9aBfFK0LK8qp3rM=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Etienne Basset <etienne.basset@numericable.fr>
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+Date: Mon, 29 Jun 2009 19:45:36 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090619-10934-gace1e80-dirty; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       jeff.chua.linux@gmail.com
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <20090629.033730.193709457.davem@davemloft.net> <4A48E307.2010208@numericable.fr>
+In-Reply-To: <4A48E307.2010208@numericable.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906291945.38821.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Jarek Poplawski wrote:
-
-> > I think Oleg already said this, but you can use directly poll_wait() 
-> > without adding another abstraction, and the compiler will drop the double 
-> > check for you:
+On Monday 29 June 2009 17:51:35 Etienne Basset wrote:
+> David Miller wrote:
+> > From: Etienne Basset <etienne.basset@numericable.fr>
+> > Date: Mon, 29 Jun 2009 12:29:09 +0200
+> > 
+> >> yes, patch is not yet upstream;
+> > 
+> > I'll take care of pushing this around today.
+> > 
+> Hi,
 > 
-> I think Oleg told about cosmetics and let Jiri to choose. I'd only
-> add it's not mainly about optimization, but easy showing the main
-> difference, of course depending on taste.
+> thank you ; 
+> i ran a new bisection to identify the commit that cause pain after -rc1
+> 
+> etienne@etienne-desktop:~/linux-2.6$ git bisect good        
+> a1317f714af7aed60ddc182d0122477cbe36ee9b is first bad commit
 
-We already have a universally used function to do that, and that's 
-poll_wait().
-That code (adding an extra __poll_wait()) was entirely about 
-optimizations (otherwise why not use the existing poll_wait()?), so if 
-the optimization does not actually take place, IMO it's better to not add 
-an extra API.
+Thanks for finding it.
 
+Dave, please just revert this patch (it wasn't meant for Linus' tree anyway).
 
-
-- Davide
-
-
+> commit a1317f714af7aed60ddc182d0122477cbe36ee9b             
+> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>      
+> Date:   Tue Jun 23 23:52:17 2009 -0700                      
+> 
+>     ide: improve handling of Power Management requests
+>                                                       
+>     Make hwif->rq point to PM request during PM sequence and do not allow
+>     any other types of requests to slip in (the old comment was never correct
+>     as there should be no such requests generated during PM sequence).       
+>                                                                              
+>     Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>            
+>     Signed-off-by: David S. Miller <davem@davemloft.net>   
+> 
+> To have STR/resume work with current git, I have to :
+> 1) apply Bart's patch
+> 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+> 
+> thanks
+> Etienne           
+> 
+> 
