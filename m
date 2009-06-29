@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbZF2IOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZF2IQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbZF2IOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 04:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZF2IOI
+	id S1755351AbZF2IQe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 04:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZF2IQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 04:14:08 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46143 "EHLO mx2.mail.elte.hu"
+	Mon, 29 Jun 2009 04:16:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47526 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751611AbZF2IOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 04:14:05 -0400
-Date: Mon, 29 Jun 2009 10:13:39 +0200
+	id S1751019AbZF2IQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 04:16:18 -0400
+Date: Mon, 29 Jun 2009 10:16:15 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Len Brown <lenb@kernel.org>, Corentin Chary <corentincj@iksaif.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Matthew Garrett <mjg@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: [PATCH, v3] eeepc-laptop: Fix build failure with HOTPLUG_PCI &&
-	!SYSFS (was: [git pull request] ACPI & driver patches for
-	2.6.31-rc1)
-Message-ID: <20090629081339.GA321@elte.hu>
-References: <alpine.LFD.2.00.0906260025380.20608@localhost.localdomain> <20090629080754.GA28336@elte.hu> <20090629081016.GA31398@elte.hu>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com,
+       venkatesh.pallipadi@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC patch] Use IPI_shortcut for lapic timer broadcast
+Message-ID: <20090629081615.GB571@elte.hu>
+References: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com> <20090629072047.GB20225@elte.hu> <3877989d0906290104q11a767b6qcc1acc4c2d1feba6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629081016.GA31398@elte.hu>
+In-Reply-To: <3877989d0906290104q11a767b6qcc1acc4c2d1feba6@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -40,71 +35,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+* Luming Yu <luming.yu@gmail.com> wrote:
 
-> > The patch below fixes the build failure by turning the select 
-> > lines into a single 'depends on' line. [...]
+> On Mon, Jun 29, 2009 at 3:20 PM, Ingo Molnar<mingo@elte.hu> wrote:
+> >
+> > * Luming Yu <luming.yu@gmail.com> wrote:
+> >
+> >> Hello,
+> >>
+> >> We need to use IPI shortcut to send lapic timer broadcast
+> >> to avoid the latency of sending IPI one bye one on systems with many
+> >> logical processors when NO_HZ is disabled.
+> >> Without this patch,I have seen upstream kernel with RHEL 5 kernel
+> >> config boot hang .
+> >
+> > hm, that might be a valid optimization - but why does the lack of
+> > this optimization result in a hang?
 > 
-> i did the fix against the bisection point and the patch has a 
-> conflict against later mainline - below is a merged up patch.
+> It is hang caused by kernel code for work around lapic-timer-stop 
+> issue. With HZ=1000, and a lot of cpus (eg. 64 logical cpus), cpu 
+> 0 will be busy working on send TIMER IPI instead of making 
+> progress in boot (right after deep-C-state has been used).
 
-> -	select HOTPLUG
-> -	select HOTPLUG_PCI if PCI
-> +       select HOTPLUG
-> +       select HOTPLUG_PCI if PCI
-
-uhm, not a very nice conflict resolution this is.
-
-The one below is actually tested ;-)
+that's a bit weird. With HZ=1000 we have 1000 usecs between each 
+timer tick. Assuming a CPU sends to a lot of CPUs (64 logical CPUs) 
+that means that each IPI takes more than ~15 microseconds to 
+process. On what hardware/platform can this happen realistically?
 
 	Ingo
-
--------------------->
->From de3e1cacc93ca48a288e27af5e82a365ba90020f Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 29 Jun 2009 10:07:54 +0200
-Subject: [PATCH] eeepc-laptop: Fix build failure with HOTPLUG_PCI && !SYSFS (was: ACPI & driver patches for 2.6.31-rc1)
-
-FYI, there's a post-rc1 build regression with certain configs:
-
- drivers/built-in.o: In function `pci_hp_deregister':
- (.text+0xb166): undefined reference to `pci_hp_remove_module_link'
- drivers/built-in.o: In function `pci_hp_deregister':
- (.text+0xb19f): undefined reference to `pci_destroy_slot'
- drivers/built-in.o: In function `__pci_hp_register':
- (.text+0xb583): undefined reference to `pci_create_slot'
- drivers/built-in.o: In function `__pci_hp_register':
- (.text+0xb5b1): undefined reference to `pci_hp_create_module_link'
- make: *** [.tmp_vmlinux1] Error 1
-
-Caused by:
-
-| 2b121bc262fa03c94e653b2d44356c2f86c1bcdc is first bad commit
-| commit 2b121bc262fa03c94e653b2d44356c2f86c1bcdc
-| Date:   Thu Jun 25 13:25:36 2009 +0200
-|
-|     eeepc-laptop: Register as a pci-hotplug device
-
-The problem is caused by this portion of the commit:
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/platform/x86/Kconfig |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 4bc72d0..c0be866 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -356,10 +356,9 @@ config EEEPC_LAPTOP
- 	depends on INPUT
- 	depends on EXPERIMENTAL
- 	depends on RFKILL || RFKILL = n
-+	depends on HOTPLUG_PCI
- 	select BACKLIGHT_CLASS_DEVICE
- 	select HWMON
--	select HOTPLUG
--	select HOTPLUG_PCI if PCI
- 	---help---
- 	  This driver supports the Fn-Fx keys on Eee PC laptops.
- 
