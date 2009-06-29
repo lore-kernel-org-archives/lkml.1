@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZF2DSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZF2DWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZF2DSr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 23:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZF2DSh
+	id S1753431AbZF2DWQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 23:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbZF2DWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 23:18:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59834 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbZF2DSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 23:18:36 -0400
-Date: Mon, 29 Jun 2009 05:18:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org, x86@kernel.org
-Subject: Re: kerneloops.org report for the week
-Message-ID: <20090629031804.GA6764@elte.hu>
-References: <20090628091055.12a4fb9e@infradead.org>
+	Sun, 28 Jun 2009 23:22:00 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:29685 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZF2DV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 23:21:59 -0400
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4A4472DF.1050900@turknet.net.tr>
+Date: Sun, 28 Jun 2009 23:21:36 -0400
+In-Reply-To: <4A4472DF.1050900@turknet.net.tr> (Tarkan Erimer's message of
+	"Fri, 26 Jun 2009 10:03:59 +0300")
+Message-ID: <yq1zlbrn2rj.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090628091055.12a4fb9e@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A483343.00B5:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>>>> "Tarkan" == Tarkan Erimer <tarkan.erimer@turknet.net.tr> writes:
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+Tarkan> Hi, I just tried to plug a "Western Digital, My Book Series" USB
+Tarkan> disk on 2.6.31-rc1. But, it failed to recognize it by saying
+Tarkan> "READ CAPACITY failed". The same disk works fine with =<
+Tarkan> 2.6.30.
 
-> Few "highlights" this week
-> * mem_cgroup_add_lru_list (rank 2) is a high rising issue;
->   it's list corruption, question is why this is new
-> * rank 13 (memcmp in the raid code) is also new
-> * the warning in get_free_pages that has been discussed on lkml is dropping
->   from the ranks again
-> 
-> 
-> This week, a total of 15273 oopses and warnings have been reported,
-> compared to 13384 reports in the previous week.
-> 
-> 
-> Rank 2: mem_cgroup_add_lru_list (warn)
-> 	Reported 1554 times (1622 total reports)
-> 	List corruption in the VM code
-> 	This oops was last seen in version 2.6.30-git19, and first seen in 2.6.29.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=mem_cgroup_add_lru_list
+Can you please mail us the output of...
 
-At least one list corruption bug was fixed by:
+# sg_inq /dev/sdb
+# sg_readcap /dev/sdb
+# sg_readcap -l /dev/sdb
 
-   cb4cbcf: mm: fix incorrect page removal from LRU
+... for that WD drive?
 
-> Rank 3: getnstimeofday (warning)
-> 	Reported 1319 times (4893 total reports)
-> 	[suspend resume] getnstimeofday() is called before timekeeping is resumed
-> 	This oops was last seen in version 2.6.30, and first seen in 2.6.24.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=getnstimeofday
+You may have to install the sg3_utils package.
 
-Probably caused by some buggy driver callback?
+-- 
+Martin K. Petersen	Oracle Linux Engineering
 
-> Rank 7: hres_timers_resume (warning)
-> 	Reported 763 times (2368 total reports)
-> 	[suspend resume] hres_timers_resume() is incorrectly called with interrupts on
-> 	This warning was last seen in version 2.6.30, and first seen in 2.6.24.7.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=hres_timers_resume
-
-This is probably a driver incorrectly enabling irqs in a resume 
-callback. This should be easier and more specific to debug with the 
-lockdep based annotation i suggested for the suspend code in various 
-`mails.
-
-> Rank 8: generic_get_mtrr (warning)
-> 	Reported 544 times (2061 total reports)
-> 	BIOS bug where the MTRRs are not set up correctly
-> 	This warning was last seen in version 2.6.30, and first seen in 2.6.25.3.
-> 	More info: http://www.kerneloops.org/searchweek.php?search=generic_get_mtrr
-
-I think this calls for enabling the x86 MTRR sanitizer by default - 
-500 out of 15000 reports suggests a significant proportion of Linux 
-systems is affected by MTRR setup problems.
-
-I.e. we should change:
-
-config MTRR_SANITIZER_ENABLE_DEFAULT
-        int "MTRR cleanup enable value (0-1)"
-        range 0 1
-        default "0"
-
-To 'default "1"'. Any objections?
-
-If the MTRR sanitizer is enabled then i think the above warning in 
-generic_get_mtrr() should never trigger.
-
-	Ingo
