@@ -1,301 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZF2N3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbZF2N3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbZF2N3K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF2N24
+	id S1759495AbZF2N3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZF2N3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:28:56 -0400
-Received: from mga14.intel.com ([143.182.124.37]:10577 "EHLO mga14.intel.com"
+	Mon, 29 Jun 2009 09:29:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57054 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbZF2N2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:28:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="159586062"
-Date: Mon, 29 Jun 2009 21:28:41 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Ronald Moesbergen <intercommit@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090629132841.GA26171@localhost>
-References: <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net> <20090629093423.GB1315@localhost> <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com> <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost> <4A48BBF9.6050408@vlnb.net> <20090629131326.GA23668@localhost>
+	id S1751226AbZF2N3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:29:31 -0400
+Date: Mon, 29 Jun 2009 16:29:26 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: [PATCH v3] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090629132926.GB20289@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="uAKRQypu60I7Lcqm"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629131326.GA23668@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KVM would like to provide x2APIC interface to a guest without emulating
+interrupt remapping device. The reason KVM prefers guest to use x2APIC
+is that x2APIC interface is better virtualizable and provides better
+performance than mmio xAPIC interface:
 
---uAKRQypu60I7Lcqm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+- msr exits are faster than mmio (no page table walk, emulation)
+- no need to read back ICR to look at the busy bit
+- one 64 bit ICR write instead of two 32 bit writes
+- shared code with the Hyper-V paravirt interface
+    
+Included patch changes x2APIC enabling logic to enable it even if IR
+initialization failed, but kernel runs under KVM and no apic id is
+greater than 255 (if there is one spec requires BIOS to move to x2apic
+mode before starting an OS).
 
-On Mon, Jun 29, 2009 at 09:13:27PM +0800, Wu Fengguang wrote:
-> On Mon, Jun 29, 2009 at 09:04:57PM +0800, Vladislav Bolkhovitin wrote:
-> > Wu Fengguang, on 06/29/2009 04:54 PM wrote:
-> > > 
-> > > Why not 2.6.30? :)
-> > 
-> > We started with 2.6.29, so why not complete with it (to save additional 
-> > Ronald's effort to move on 2.6.30)?
-> 
-> OK, that's fair enough.
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
-btw, I backported the 2.6.31 context readahead patches to 2.6.29, just
-in case it will help the SCST performance.
+v2:
+  Add help message to Kconfig
+  Force physical mode if IR is not available.
 
-Ronald, if you run context readahead, please make sure that the server
-side readahead size is bigger than the client side readahead size.
+v3:
+  disable io-apic in outer function. Enable x2apic mode with masked
+  io-apic
 
-Thanks,
-Fengguang
-
---uAKRQypu60I7Lcqm
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="readahead-context-2.6.29.patch"
-
---- linux.orig/mm/readahead.c
-+++ linux/mm/readahead.c
-@@ -337,6 +337,59 @@ static unsigned long get_next_ra_size(st
-  */
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index d1430ef..3e5b6ea 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -260,12 +260,15 @@ config SMP
  
- /*
-+ * Count contiguously cached pages from @offset-1 to @offset-@max,
-+ * this count is a conservative estimation of
-+ * 	- length of the sequential read sequence, or
-+ * 	- thrashing threshold in memory tight systems
-+ */
-+static pgoff_t count_history_pages(struct address_space *mapping,
-+				   struct file_ra_state *ra,
-+				   pgoff_t offset, unsigned long max)
-+{
-+	pgoff_t head;
-+
-+	rcu_read_lock();
-+	head = radix_tree_prev_hole(&mapping->page_tree, offset - 1, max);
-+	rcu_read_unlock();
-+
-+	return offset - 1 - head;
-+}
-+
-+/*
-+ * page cache context based read-ahead
-+ */
-+static int try_context_readahead(struct address_space *mapping,
-+				 struct file_ra_state *ra,
-+				 pgoff_t offset,
-+				 unsigned long req_size,
-+				 unsigned long max)
-+{
-+	pgoff_t size;
-+
-+	size = count_history_pages(mapping, ra, offset, max);
-+
-+	/*
-+	 * no history pages:
-+	 * it could be a random read
-+	 */
-+	if (!size)
+ config X86_X2APIC
+ 	bool "Support x2apic"
+-	depends on X86_LOCAL_APIC && X86_64 && INTR_REMAP
++	depends on X86_LOCAL_APIC && X86_64
+ 	---help---
+ 	  This enables x2apic support on CPUs that have this feature.
+ 
+ 	  This allows 32-bit apic IDs (so it can support very large systems),
+-	  and accesses the local apic via MSRs not via mmio.
++	  and accesses the local apic via MSRs not via mmio. CONFIG_INTR_REMAP
++	  is required for x2apic to take affect when running on physical
++	  machine. If you intend to run the kernel as KVM guest x2apic can
++	  be used without interrupt remapping.
+ 
+ 	  If you don't know what to do here, say N.
+ 
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 8c7c042..f5f02c3 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -49,6 +49,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/smp.h>
+ #include <asm/mce.h>
++#include <asm/kvm_para.h>
+ 
+ unsigned int num_processors;
+ 
+@@ -1363,52 +1364,76 @@ void enable_x2apic(void)
+ }
+ #endif /* CONFIG_X86_X2APIC */
+ 
+-void __init enable_IR_x2apic(void)
++int __init enable_IR(void)
+ {
+ #ifdef CONFIG_INTR_REMAP
+ 	int ret;
+-	unsigned long flags;
+-	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 
+ 	ret = dmar_table_init();
+ 	if (ret) {
+ 		pr_debug("dmar_table_init() failed with %d:\n", ret);
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+ 	if (!intr_remapping_supported()) {
+ 		pr_debug("intr-remapping not supported\n");
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+-
+ 	if (!x2apic_preenabled && skip_ioapic_setup) {
+ 		pr_info("Skipped enabling intr-remap because of skipping "
+ 			"io-apic setup\n");
+-		return;
++		return 0;
+ 	}
+ 
++	if (enable_intr_remapping(x2apic_supported()))
 +		return 0;
 +
-+	/*
-+	 * starts from beginning of file:
-+	 * it is a strong indication of long-run stream (or whole-file-read)
-+	 */
-+	if (size >= offset)
-+		size *= 2;
-+
-+	ra->start = offset;
-+	ra->size = get_init_ra_size(size + req_size, max);
-+	ra->async_size = ra->size;
++	pr_info("Enabled Interrupt-remapping\n");
 +
 +	return 1;
++
++#endif
++	return 0;
 +}
 +
-+/*
-  * A minimal readahead algorithm for trivial sequential/random reads.
-  */
- static unsigned long
-@@ -345,34 +398,26 @@ ondemand_readahead(struct address_space 
- 		   bool hit_readahead_marker, pgoff_t offset,
- 		   unsigned long req_size)
- {
--	int	max = ra->ra_pages;	/* max readahead pages */
--	pgoff_t prev_offset;
--	int	sequential;
-+	unsigned long max = max_sane_readahead(ra->ra_pages);
-+
-+	/*
-+	 * start of file
-+	 */
-+	if (!offset)
-+		goto initial_readahead;
- 
- 	/*
- 	 * It's the expected callback offset, assume sequential access.
- 	 * Ramp up sizes, and push forward the readahead window.
- 	 */
--	if (offset && (offset == (ra->start + ra->size - ra->async_size) ||
--			offset == (ra->start + ra->size))) {
-+	if ((offset == (ra->start + ra->size - ra->async_size) ||
-+	     offset == (ra->start + ra->size))) {
- 		ra->start += ra->size;
- 		ra->size = get_next_ra_size(ra, max);
- 		ra->async_size = ra->size;
- 		goto readit;
- 	}
- 
--	prev_offset = ra->prev_pos >> PAGE_CACHE_SHIFT;
--	sequential = offset - prev_offset <= 1UL || req_size > max;
--
--	/*
--	 * Standalone, small read.
--	 * Read as is, and do not pollute the readahead state.
--	 */
--	if (!hit_readahead_marker && !sequential) {
--		return __do_page_cache_readahead(mapping, filp,
--						offset, req_size, 0);
--	}
--
- 	/*
- 	 * Hit a marked page without valid readahead state.
- 	 * E.g. interleaved reads.
-@@ -383,7 +428,7 @@ ondemand_readahead(struct address_space 
- 		pgoff_t start;
- 
- 		rcu_read_lock();
--		start = radix_tree_next_hole(&mapping->page_tree, offset,max+1);
-+		start = radix_tree_next_hole(&mapping->page_tree, offset+1,max);
- 		rcu_read_unlock();
- 
- 		if (!start || start - offset > max)
-@@ -391,23 +436,53 @@ ondemand_readahead(struct address_space 
- 
- 		ra->start = start;
- 		ra->size = start - offset;	/* old async_size */
-+		ra->size += req_size;
- 		ra->size = get_next_ra_size(ra, max);
- 		ra->async_size = ra->size;
- 		goto readit;
- 	}
- 
- 	/*
--	 * It may be one of
--	 * 	- first read on start of file
--	 * 	- sequential cache miss
--	 * 	- oversize random read
--	 * Start readahead for it.
-+	 * oversize read
-+	 */
-+	if (req_size > max)
-+		goto initial_readahead;
-+
-+	/*
-+	 * sequential cache miss
- 	 */
-+	if (offset - (ra->prev_pos >> PAGE_CACHE_SHIFT) <= 1UL)
-+		goto initial_readahead;
-+
-+	/*
-+	 * Query the page cache and look for the traces(cached history pages)
-+	 * that a sequential stream would leave behind.
-+	 */
-+	if (try_context_readahead(mapping, ra, offset, req_size, max))
-+		goto readit;
-+
-+	/*
-+	 * standalone, small random read
-+	 * Read as is, and do not pollute the readahead state.
-+	 */
-+	return __do_page_cache_readahead(mapping, filp, offset, req_size, 0);
-+
-+initial_readahead:
- 	ra->start = offset;
- 	ra->size = get_init_ra_size(req_size, max);
- 	ra->async_size = ra->size > req_size ? ra->size - req_size : ra->size;
- 
- readit:
-+	/*
-+	 * Will this read hit the readahead marker made by itself?
-+	 * If so, trigger the readahead marker hit now, and merge
-+	 * the resulted next readahead window into the current one.
-+	 */
-+	if (offset == ra->start && ra->size == ra->async_size) {
-+		ra->async_size = get_next_ra_size(ra, max);
-+		ra->size += ra->async_size;
-+	}
-+
- 	return ra_submit(ra, mapping, filp);
- }
- 
---- linux.orig/lib/radix-tree.c
-+++ linux/lib/radix-tree.c
-@@ -666,6 +666,43 @@ unsigned long radix_tree_next_hole(struc
- }
- EXPORT_SYMBOL(radix_tree_next_hole);
- 
-+/**
-+ *	radix_tree_prev_hole    -    find the prev hole (not-present entry)
-+ *	@root:		tree root
-+ *	@index:		index key
-+ *	@max_scan:	maximum range to search
-+ *
-+ *	Search backwards in the range [max(index-max_scan+1, 0), index]
-+ *	for the first hole.
-+ *
-+ *	Returns: the index of the hole if found, otherwise returns an index
-+ *	outside of the set specified (in which case 'index - return >= max_scan'
-+ *	will be true). In rare cases of wrap-around, LONG_MAX will be returned.
-+ *
-+ *	radix_tree_next_hole may be called under rcu_read_lock. However, like
-+ *	radix_tree_gang_lookup, this will not atomically search a snapshot of
-+ *	the tree at a single point in time. For example, if a hole is created
-+ *	at index 10, then subsequently a hole is created at index 5,
-+ *	radix_tree_prev_hole covering both indexes may return 5 if called under
-+ *	rcu_read_lock.
-+ */
-+unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
-+				   unsigned long index, unsigned long max_scan)
++void __init enable_IR_x2apic(void)
 +{
-+	unsigned long i;
++	unsigned long flags;
++	struct IO_APIC_route_entry **ioapic_entries = NULL;
++	int ret, x2apic_enabled = 0;
 +
-+	for (i = 0; i < max_scan; i++) {
-+		if (!radix_tree_lookup(root, index))
-+			break;
-+		index--;
-+		if (index == LONG_MAX)
-+			break;
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
+-		pr_info("Allocate ioapic_entries failed: %d\n", ret);
+-		goto end;
++		 pr_info("Allocate ioapic_entries failed\n");
++		 return;
+ 	}
+ 
+ 	ret = save_IO_APIC_setup(ioapic_entries);
+ 	if (ret) {
+ 		pr_info("Saving IO-APIC state failed: %d\n", ret);
+-		goto end;
++		free_ioapic_entries(ioapic_entries);
++		return;
+ 	}
+ 
+ 	local_irq_save(flags);
+-	mask_IO_APIC_setup(ioapic_entries);
+ 	mask_8259A();
++	mask_IO_APIC_setup(ioapic_entries);
+ 
+-	ret = enable_intr_remapping(x2apic_supported());
+-	if (ret)
+-		goto end_restore;
++	ret = enable_IR();
++	if (!ret) {
++		/* IR is required if x2apic is enabled by BIOS even
++		 * when running in kvm since this indicates present
++		 * of APIC ID > 255 */
++	       	if (x2apic_preenabled || !kvm_para_available())
++			goto nox2apic;
++		else
++			/* without IR all CPUs can be addressed by IOAPIC/MSI
++			 * only in physical mode */
++			x2apic_phys = 1;
 +	}
-+
-+	return index;
-+}
-+EXPORT_SYMBOL(radix_tree_prev_hole);
-+
- static unsigned int
- __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 	unsigned int max_items, unsigned long *next_index)
---- linux.orig/include/linux/radix-tree.h
-+++ linux/include/linux/radix-tree.h
-@@ -167,6 +167,8 @@ radix_tree_gang_lookup_slot(struct radix
- 			unsigned long first_index, unsigned int max_items);
- unsigned long radix_tree_next_hole(struct radix_tree_root *root,
- 				unsigned long index, unsigned long max_scan);
-+unsigned long radix_tree_prev_hole(struct radix_tree_root *root,
-+				unsigned long index, unsigned long max_scan);
- int radix_tree_preload(gfp_t gfp_mask);
- void radix_tree_init(void);
- void *radix_tree_tag_set(struct radix_tree_root *root,
-
---uAKRQypu60I7Lcqm--
+ 
+-	pr_info("Enabled Interrupt-remapping\n");
++	x2apic_enabled = 1;
+ 
+ 	if (x2apic_supported() && !x2apic_mode) {
+ 		x2apic_mode = 1;
+@@ -1416,41 +1441,28 @@ void __init enable_IR_x2apic(void)
+ 		pr_info("Enabled x2apic\n");
+ 	}
+ 
+-end_restore:
+-	if (ret)
+-		/*
+-		 * IR enabling failed
+-		 */
++nox2apic:
++	if (!ret) /* IR enabling failed */
+ 		restore_IO_APIC_setup(ioapic_entries);
+-
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+-end:
+-	if (ioapic_entries)
+-		free_ioapic_entries(ioapic_entries);
++	free_ioapic_entries(ioapic_entries);
+ 
+-	if (!ret)
++	if (x2apic_enabled)
+ 		return;
+ 
+-ir_failed:
+-	if (x2apic_preenabled)
++	if (x2apic_preenabled) {
++#ifdef CONFIG_INTR_REMAP
+ 		panic("x2apic enabled by bios. But IR enabling failed");
+-	else if (cpu_has_x2apic)
+-		pr_info("Not enabling x2apic,Intr-remapping\n");
+ #else
+-	if (!cpu_has_x2apic)
+-		return;
+-
+-	if (x2apic_preenabled)
+ 		panic("x2apic enabled prior OS handover,"
+-		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
++				" enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
+ #endif
+-
+-	return;
++	} else if (cpu_has_x2apic)
++		pr_info("Not enabling x2apic,Intr-remapping\n");
+ }
+ 
+-
+ #ifdef CONFIG_X86_64
+ /*
+  * Detect and enable local APICs on non-SMP boards.
+--
+			Gleb.
