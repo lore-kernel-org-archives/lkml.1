@@ -1,156 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbZF2J6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755724AbZF2KHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbZF2J6k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF2J6c
+	id S1755724AbZF2KHa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 06:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF2KHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:58:32 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37933 "EHLO gir.skynet.ie"
+	Mon, 29 Jun 2009 06:07:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52437 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201AbZF2J6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:58:31 -0400
-Date: Mon, 29 Jun 2009 10:58:32 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alok Kataria <akataria@vmware.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org
-Subject: Re: [PATCH] Hugepages should be accounted as unevictable pages.
-Message-ID: <20090629095832.GF28597@csn.ul.ie>
-References: <1245705941.26649.19.camel@alok-dev1>
+	id S1753292AbZF2KHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 06:07:15 -0400
+Date: Mon, 29 Jun 2009 13:06:45 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
+       paulmck@linux.vnet.ibm.com, markmc@redhat.com
+Subject: Re: [PATCHv2] kvm: remove in_range and switch to rwsem for iobus
+Message-ID: <20090629100645.GE19167@redhat.com>
+References: <20090628193425.GA14204@redhat.com> <4A487D2C.2020007@redhat.com> <20090629094146.GC19167@redhat.com> <4A488F2C.2060400@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1245705941.26649.19.camel@alok-dev1>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4A488F2C.2060400@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 22, 2009 at 02:25:41PM -0700, Alok Kataria wrote:
-> Looking at the output of /proc/meminfo, a user might get confused in thinking
-> that there are zero unevictable pages, though, in reality their can be
-> hugepages which are inherently unevictable. 
-> 
+On Mon, Jun 29, 2009 at 12:53:48PM +0300, Avi Kivity wrote:
+> On 06/29/2009 12:41 PM, Michael S. Tsirkin wrote:
+>> On Mon, Jun 29, 2009 at 11:37:00AM +0300, Avi Kivity wrote:
+>>    
+>>> On 06/28/2009 10:34 PM, Michael S. Tsirkin wrote:
+>>>      
+>>>> This changes bus accesses to use high-level kvm_io_bus_read/kvm_io_bus_write
+>>>> functions, which utilize read/write semaphore intead of mutex.  in_range now
+>>>> becomes unused so it is removed from device ops in favor of read/write
+>>>> callbacks performing range checks internally.
+>>>>
+>>>> This allows aliasing (mostly for in-kernel virtio), as well as better error
+>>>> handling by making it possible to pass errors up to userspace. And it's enough
+>>>> to look at the diffstat to see that it's a better API anyway.
+>>>>
+>>>> While we are at it, document locking rules for kvm_io_device_ops.
+>>>>
+>>>> Note: since the use of the new bus_lock is localized to a small number of
+>>>> places, it will be easy to switch to srcu in the future if we so desire.
+>>>>
+>>>>        
+>>> Looks good. But please split into a locking change patch and an API
+>>> change patch (in whatever order makes more sense).
+>>>      
+>>
+>> This is harder than it seems. Is this really important?
+>>
+>> The locking change itself is about 6 lines, but
+>> 1. if I do it after in_range removal I get deadlocks
+>> as after marcelo's change kvm->lock is taken internally by writers.
+>>    
+>
+> slots_lock is an outer lock to kvm->lock.
+>
+>> 2. if I do it before in_range removal it's a lot of churn:
+>> one of the reasons for code reorg is so that there are less
+>> places to change locking.
+>>
+>>
+>>    
+>
+> I don't think you really need to change anything.  slots_lock is already  
+> taken (except where you modify the list).
 
-I think the problem may be with what meaning different people are
-getting from "Unevictable"
+Are you sure about this? I don't understand the code well enough, so
+this reuse of an apparently unrelated lock just makes me nervious.  For
+example what about emulate_instruction? It is sometimes called from
+svm/vmx without slot lock ...
 
-For those of us that saw the Unevitable patches going by it means the number
-of pages that could potentially be on the LRU lists but are not because
-they are unevitable due to some action taken by the program - mlock() for
-example. This does not include hugepages because we know they cannot be
-reclaimed by any action other than directly freeing them.
+> How about this:
+>
+> 1. add slots_lock for write when modifying the list
+> 2. change the api
+> 3. drop kvm->lock
+>
+> ?
 
-The meaning you want is that Unevitable represents a count of the pages
-that are unpagable such as pagetable pages, mlocked pages, hugepages,
-etc.
-
-> Though hugepages are not handled by the unevictable lru framework, they are
-> infact unevictable in nature and global statistics counter should reflect that. 
-> 
-
-I somewhat disagree as the full count of unreclaimable pages can be
-aggregated by looking at various statistics such as page table counts,
-slab pages, locked, etc.
-
-> For instance, I have allocated 20 huge pages on my system, meminfo shows this 
-> 
-> Unevictable:           0 kB
-> Mlocked:               0 kB
-> HugePages_Total:      20
-> HugePages_Free:       20
-> HugePages_Rsvd:        0
-> HugePages_Surp:        0
-> 
-
-Note that the hugepages_total here is for the default hugepage size. If
-there are other hugepages, you need to go to sysfs for them. If you are in
-the kernel, you need to walk through the hstates and aggregate the counters.
-
-> After the patch:
-> 
-> Unevictable:       81920 kB
-> Mlocked:               0 kB
-> HugePages_Total:      20
-> HugePages_Free:       20
-> HugePages_Rsvd:        0
-> HugePages_Surp:        0
-> 
-
-I'm not keen on this to be honest but that's because I know Unevitable to
-mean pages that potentially could be on the LRU but are not. I think that
-people will want to consider that separetly from hugepage usage.
-
-What I would be ok with is changing the output of meminfo slightly.
-Output "Pinned" which is a total count of pages that cannot be reclaimed at
-the moment. Give subheadings for that such as Unevitable LRU (potentially
-broken further down to what makes up the unevictable LRU count), pagetables,
-hugepages, etc.
-
-At minimum, your changelog needs to state why you need this information and
-how it's going to be used. It's not clear why you cannot just add Unevitable
-+ pagetables + slab + HugePages_Total to get an approximation of the amount
-of pinned memory for example.
-
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
-> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> 
-> Index: linux-2.6/Documentation/vm/unevictable-lru.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/vm/unevictable-lru.txt	2009-06-22 11:49:27.000000000 -0700
-> +++ linux-2.6/Documentation/vm/unevictable-lru.txt	2009-06-22 13:57:32.000000000 -0700
-> @@ -71,6 +71,12 @@ The unevictable list addresses the follo
->  
->   (*) Those mapped into VM_LOCKED [mlock()ed] VMAs.
->  
-> + (*) Hugetlb pages are also unevictable. Hugepages are already implemented in
-> +     a way that these pages don't reside on the LRU and hence are not iterated
-> +     over during the vmscan. So there is no need to move around these pages
-> +     across different LRU's. We just account these pages as unevictable for
-> +     correct statistics.
-> +
->  The infrastructure may also be able to handle other conditions that make pages
->  unevictable, either by definition or by circumstance, in the future.
->  
-> Index: linux-2.6/mm/hugetlb.c
-> ===================================================================
-> --- linux-2.6.orig/mm/hugetlb.c	2009-06-22 11:49:57.000000000 -0700
-> +++ linux-2.6/mm/hugetlb.c	2009-06-22 14:04:05.000000000 -0700
-> @@ -533,6 +533,8 @@ static void update_and_free_page(struct 
->  				1 << PG_dirty | 1 << PG_active | 1 << PG_reserved |
->  				1 << PG_private | 1<< PG_writeback);
->  	}
-> +	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
-> +				-(pages_per_huge_page(h)));
->  	set_compound_page_dtor(page, NULL);
->  	set_page_refcounted(page);
->  	arch_release_hugepage(page);
-> @@ -584,6 +586,8 @@ static void prep_new_huge_page(struct hs
->  	spin_lock(&hugetlb_lock);
->  	h->nr_huge_pages++;
->  	h->nr_huge_pages_node[nid]++;
-> +	mod_zone_page_state(page_zone(page), NR_LRU_BASE + LRU_UNEVICTABLE,
-> +				pages_per_huge_page(h));
->  	spin_unlock(&hugetlb_lock);
->  	put_page(page); /* free it into the hugepage allocator */
->  }
-> @@ -749,6 +753,9 @@ static struct page *alloc_buddy_huge_pag
->  		 */
->  		h->nr_huge_pages_node[nid]++;
->  		h->surplus_huge_pages_node[nid]++;
-> +		mod_zone_page_state(page_zone(page),
-> +					NR_LRU_BASE + LRU_UNEVICTABLE,
-> +					pages_per_huge_page(h));
->  		__count_vm_event(HTLB_BUDDY_PGALLOC);
->  	} else {
->  		h->nr_huge_pages--;
-> 
-> 
+Looks like I will just have to bite the bullet and switch to RCU.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+MST
