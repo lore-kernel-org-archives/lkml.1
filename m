@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZF2LFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZF2LGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbZF2LFc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbZF2LFY
+	id S1758896AbZF2LGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbZF2LG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:05:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:31939 "EHLO mga09.intel.com"
+	Mon, 29 Jun 2009 07:06:29 -0400
+Received: from mail.open.by ([193.232.92.17]:57650 "EHLO post.open.by"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752362AbZF2LFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:05:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="426149705"
-Subject: [patch] fix hugepage unuseable issu on non-NUMA machine
-From: "alex.shi" <alex.shi@intel.com>
-Reply-To: alex.shi@intel.com
-To: Yinghai@kernel.org
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Chen, Tim C" <tim.c.chen@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 19:10:02 +0800
-Message-Id: <1246273802.3160.28.camel@alexs-hp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	id S1752484AbZF2LG2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:06:28 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 8857 [Jun 29 2009]
+X-SpamTest-Info: helo_type=3
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Mon, 29 Jun 2009 14:08:12 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: kmemleak hexdump proposal
+Message-ID: <20090629110812.GC3731@localdomain.by>
+References: <20090628173632.GA3890@localdomain.by>
+ <84144f020906290243u7a362465p6b1f566257fa3239@mail.gmail.com>
+ <20090629101917.GA3093@localdomain.by>
+ <1246270774.6364.9.camel@penberg-laptop>
+ <20090629104553.GA3731@localdomain.by>
+ <1246273108.21450.19.camel@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246273108.21450.19.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-73d60b7f747176dbdff826c4127d22e1fd3f9f74 commit introduced a nodes_clear
-function for NUMA machine. But seems the commit omits non-NUMA machine.
-If find_zone_movable_pfns_for_nodes/early_calculate_totalpages has no
-chance to run. nodes_clear will block HUPEPAGE using in my specjbb2005
-testing. 
+On (06/29/09 11:58), Catalin Marinas wrote:
+> On Mon, 2009-06-29 at 13:45 +0300, Sergey Senozhatsky wrote:
+> > BTW, printing it all the time we can spam kmemleak (in case there are objects sized 2K, 4K and so on).
+> > That's why I wrote about hexdump=OBJECT_POINTER.
+> 
+> I'm more in favour of an on/off hexdump feature (maybe even permanently
+> on) and with a limit to the number of bytes it displays. For larger
+> blocks, the hexdump=OBJECT_POINTER is easily achievable in user space
+> via /dev/kmem.
+> 
+Yeah. Good point.
 
+> My proposal is for an always on hexdump but with no more than 2-3 lines
+> of hex values. 
+I like it.
 
-So maybe we need to disable nodes_clear sometimes. With the following
-patch. specjbb2005 recovered. 
+> As Pekka said, I should get it into linux-next before the
+> next merging window.
+I'll send new patch to you (today evening)/(tomorrow). 
+Ok?
 
+> 
+> -- 
+> Catalin
+> 
 
-Signed-off-by: Alex Shi <alex.shi@intel.com>
----
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 5d714f8..46ff861 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -4246,7 +4246,8 @@ void __init free_area_init_nodes(unsigned long *max_zone_pfn)
- 	 * find_zone_movable_pfns_for_nodes/early_calculate_totalpages init
- 	 * that node_mask, clear it at first
- 	 */
--	nodes_clear(node_states[N_HIGH_MEMORY]);
-+	if (required_kernelcore)
-+		nodes_clear(node_states[N_HIGH_MEMORY]);
- 	/* Initialise every node */
- 	mminit_verify_pageflags_layout();
- 	setup_nr_node_ids();
-
-
-
-
+	Sergey
