@@ -1,72 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZF2Rau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZF2Rcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZF2Rau (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 13:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZF2Ral
+	id S1756214AbZF2Rcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 13:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZF2Rc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 13:30:41 -0400
-Received: from www17.your-server.de ([213.133.104.17]:38242 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757AbZF2Rak (ORCPT
+	Mon, 29 Jun 2009 13:32:28 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:58375 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752761AbZF2Rc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 13:30:40 -0400
-Subject: Re: 2.6.30: suspend-to-ram, second s2r wakes up immediately
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jkosina@suse.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-In-Reply-To: <200906180024.42998.elendil@planet.nl>
-References: <Pine.LNX.4.44L0.0906161429060.5125-100000@iolanthe.rowland.org>
-	 <1245275412.22520.7.camel@localhost> <200906180024.42998.elendil@planet.nl>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 19:30:08 +0200
-Message-Id: <1246296608.21516.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+	Mon, 29 Jun 2009 13:32:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iXzPTQRSLyqnSC932QpHHxk3E5J+ClakcO7DDjoRsGQ1XtZmYQMniXZ5RDaexbeOxE
+         i31uLZN/W6rlZZUeoZ4Bm4gfm22yDRAZCxiqGGO9julT8BsWxCmvAIt8r/1Eb+RX0LzF
+         g1+6uY+S8NW0XC17EolerHo4ZEWYIYr1/ueDc=
+Date: Mon, 29 Jun 2009 19:32:17 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCH 1/2] net: adding memory barrier to the poll and receive
+	callbacks
+Message-ID: <20090629173217.GC2742@ami.dom.local>
+References: <20090629140434.GE3845@jolsa.lab.eng.brq.redhat.com> <20090629141445.GF3845@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906290826300.29966@makko.or.mcafeemobile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906290826300.29966@makko.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, den 18.06.2009, 00:24 +0200 schrieb Frans Pop: 
-> On Wednesday 17 June 2009, Thomas Meyer wrote:
-> > Sure. Rearranging the usb devices and removing some hubs makes the
-> > problem go away in most cases...
+On Mon, Jun 29, 2009 at 08:34:55AM -0700, Davide Libenzi wrote:
+> On Mon, 29 Jun 2009, Jiri Olsa wrote:
 > 
-> I see that you still have the Broadcom "Wireless RNDIS device" attached 
-> that was my initial suspect after looking through your boot log.
+> > -static inline void poll_wait(struct file * filp, wait_queue_head_t * wait_address, poll_table *p)
+> > +static inline void __poll_wait(struct file *filp,
+> > +				wait_queue_head_t *wait_address, poll_table *p)
+> > +{
+> > +	p->qproc(filp, wait_address, p);
+> > +}
+> > +
+> > +static inline void poll_wait(struct file *filp,
+> > +				wait_queue_head_t *wait_address, poll_table *p)
+> >  {
+> >  	if (p && wait_address)
+> > -		p->qproc(filp, wait_address, p);
+> > +		__poll_wait(filp, wait_address, p);
+> >  }
 > 
-> Does removing that device make the problem go away?
-
-No.
-
-> Can you reproduce the problem at all without that device connected (during boot)?
-
-yes!
-
+> > +static inline void sock_poll_wait(struct file *filp, struct sock *sk,
+> > +		poll_table *p)
+> > +{
+> > +	if (p && sk->sk_sleep) {
+> > +		__poll_wait(filp, sk->sk_sleep, p);
+> > +		/*
+> > +		 * We need to be sure we are in sync with the
+> > +		 * socket flags modification.
+> > +		 *
+> > +		 * This memory barrier is paired in the sk_has_sleeper.
+> > +		*/
+> > +		smp_mb();
+> > +	}
+> > +}
 > 
-> Probably moving that device to a different controller than used for your 
-> keyboard and mouse will also get rid of the problem. Correct?
+> I think Oleg already said this, but you can use directly poll_wait() 
+> without adding another abstraction, and the compiler will drop the double 
+> check for you:
 
-Not tested yet.
+I think Oleg told about cosmetics and let Jiri to choose. I'd only
+add it's not mainly about optimization, but easy showing the main
+difference, of course depending on taste.
 
-> 
-> If removing that device does solve the problem, I would guess that without 
-> it you will also no longer have that "PME+" value in the output of lspci 
-> for the USB Controller it is connected to.
-
-With network device removed (during boot and later on) the PME+ doesn't
-appear anymore for the USB controller.
-
-> Hopefully someone else can then explain how/why that device forces the 
-> PME+ setting for the controller.
-> 
-> But I must also say that to me it seems rather fragile that in default 
-> configuration a random USB device can suddenly cause wakeups as result of 
-> a change caused by a totally different device.
-> 
-> Cheers,
-> FJP
-
+Jarek P. 
