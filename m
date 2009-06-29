@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758404AbZF2LZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZF2LgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758404AbZF2LZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 07:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZF2LZb
+	id S1755084AbZF2LgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 07:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZF2LgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 07:25:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56238 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbZF2LZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 07:25:31 -0400
-Date: Mon, 29 Jun 2009 14:25:31 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: Re: [PATCH v2] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090629112531.GA20289@redhat.com>
-References: <20090629100837.GW20289@redhat.com> <1246272416.27006.10632.camel@localhost.localdomain>
+	Mon, 29 Jun 2009 07:36:14 -0400
+Received: from smtpq4.gn.mail.iss.as9143.net ([212.54.34.167]:33947 "EHLO
+	smtpq4.gn.mail.iss.as9143.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751484AbZF2LgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 07:36:13 -0400
+Date: Mon, 29 Jun 2009 13:36:13 +0200
+From: Dick Streefland <dick@streefland.net>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig: simplification of scripts/extract-ikconfig
+Message-ID: <20090629113613.GA6853@streefland.net>
+References: <20090623225245.GA10443@streefland.net> <20090624021506.GA5871@cr0.nay.redhat.com> <20090624114607.GA10817@streefland.net> <20090624133148.GA12878@streefland.net> <20090629025146.GA5998@cr0.nay.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246272416.27006.10632.camel@localhost.localdomain>
+In-Reply-To: <20090629025146.GA5998@cr0.nay.redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-ZiggoSMTP-MailScanner-Information: Please contact the ISP for more information
+X-ZiggoSMTP-MailScanner-ID: 1MLF9i-00029Z-Ao
+X-ZiggoSMTP-MailScanner: Found to be clean
+X-ZiggoSMTP-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.322, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60, TW_IK 0.08)
+X-ZiggoSMTP-MailScanner-From: dick@streefland.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 03:46:56AM -0700, Suresh Siddha wrote:
-> On Mon, 2009-06-29 at 03:08 -0700, Gleb Natapov wrote:
-> >  
-> > -	local_irq_save(flags);
-> >  	mask_IO_APIC_setup(ioapic_entries);
-> > -	mask_8259A();
-> 
-> Is there a reason why the 8259 mask/unmask operations are separated from
-> io-apic mask/unmask operations.
-> 
-I left interrupt masking in enable_IR_x2apic() because interrupt should
-be masked during transition to x2apic mode, so it can't be moved to
-enable_IR(). I moved io-apic into enable_IR() because the state of
-io-apic depend on whether IR was enabled or not, so I left it close to
-IR enabling logic. Also io-apic masking can fail, but we still want to
-enable x2apic on KVM if possible, and moving io-apic masking to
-enable_IR_x2apic() will complicate the logic.
+On Monday 2009-06-29 10:51, Amerigo Wang wrote:
+| Does this work?
+| My quick test shows no...
+| 
+| I still can't get the right offset number with this trick.
+| 
+| P.S. My grep is 2.5.1.
 
-> Can we keep it together so that it will be easy to read and understand
-> that we first do the interrupt subsystem mask, try enabling IR and
-> x2apic and  unmask the interrupt subsystem.
-> 
-For io-apic this is not 100% symmetric. We mask io-apic, enable IR and
-if this succeeds we do not unmask io-apic.
+I've tested the script with grep 2.5.1, and it works for me. Can you be
+more specific about what you think is wrong with the offsets? You need
+to be aware of the fact that because "tr" replaces the first character
+of the pattern by a newline, an offset will be 1 higher than the start
+of the original pattern. The resulting offsets are therefore 1-based
+instead of 0-based, which is exactly what "tail" expects for the "-c"
+option.
 
-> Otherwise I am ok with this change.
-> 
-> thanks,
-> suresh
-
---
-			Gleb.
+-- 
+Dick
