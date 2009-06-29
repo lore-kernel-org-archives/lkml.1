@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468AbZF2B5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZF2CI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756468AbZF2B5q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 21:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZF2B5h
+	id S1754986AbZF2CI2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 22:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZF2CIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 21:57:37 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:58311 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbZF2B5g (ORCPT
+	Sun, 28 Jun 2009 22:08:19 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:13730 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbZF2CIS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 21:57:36 -0400
-Date: Sun, 28 Jun 2009 21:57:38 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ACPI issues on HP DL585 G2
-Message-ID: <20090629015738.GQ20436@tamriel.snowman.net>
-References: <20090628034038.GK20436@tamriel.snowman.net> <86802c440906272126s7d3b97afh16069280bd297827@mail.gmail.com> <20090628223132.GO20436@tamriel.snowman.net> <86802c440906281849m51ab3c82u84d76a1aaceba2ef@mail.gmail.com>
+	Sun, 28 Jun 2009 22:08:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uEXreSryDBF13gOoH7zSYRlWsWxZ+ujvfM57ipNatAFpnbSOLK/PCeAJVtp4oHPocA
+         XCOPGr5UcLQ1hSCdMk5+ET3BKKaQTmlk8Q1bd7C2cZ6rrLmzL5zZ8Hy/L+ZArDph71jl
+         WtilLrShmAK7R8OV88QNoWg2fYBn8msFqH5Fw=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="WkmTq0Xj5pNQBic9"
-Content-Disposition: inline
-In-Reply-To: <86802c440906281849m51ab3c82u84d76a1aaceba2ef@mail.gmail.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
-X-Uptime: 21:52:16 up 17 days, 23:19, 19 users,  load average: 0.16, 0.17,
-	0.09
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a5d9929e0906270807s4c0ef74ap2296dce4c790ea9a@mail.gmail.com>
+References: <a5d9929e0906270807s4c0ef74ap2296dce4c790ea9a@mail.gmail.com>
+Date: Mon, 29 Jun 2009 10:08:19 +0800
+Message-ID: <2375c9f90906281908k7aa089a3v932dd368d572194b@mail.gmail.com>
+Subject: Re: Crashes during boot on 2.6.30 / 2.6.31-rc, random programs
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Joao Correia <joaomiguelcorreia@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jun 27, 2009 at 11:07 PM, Joao
+Correia<joaomiguelcorreia@gmail.com> wrote:
+> Hello
+>
 
---WkmTq0Xj5pNQBic9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hello,
 
-* Yinghai Lu (yhlu.kernel@gmail.com) wrote:
-> are you sure these two come from same BIOS ?
+> Since midway through the 2.6.30 series, and continuing on the rc1 for
+> .31, im having this at every boot, during the boot process:
+>
+> (...)
+> Jun 26 21:07:03 hightech kernel: NET: Registered protocol family 10
+> Jun 26 21:07:03 hightech kernel: lo: Disabled Privacy Extensions
+> Jun 26 21:07:03 hightech kernel: BUG: MAX_STACK_TRACE_ENTRIES too low!
+> Jun 26 21:07:03 hightech kernel: turning off the locking correctness validator.
+> Jun 26 21:07:03 hightech kernel: Pid: 672, comm: modprobe Not tainted
+> 2.6.31-rc1 #1
 
-They might not..  I did upgrade the BIOS to the latest revision and I
-don't recall if the last 2.6.22 boot was before or after the BIOS
-upgrade.  The 2.6.29 and 2.6.30 boots (both w/o APIC) are from the same
-BIOS.  Would it help to try booting under 2.6.22 with the BIOS that's on
-there now?
+Could you please try the patch from Ingo below?
 
-Is there some other information I could provide while the machine is
-running?  Unfortunately, this is a rather important box for us.
+http://article.gmane.org/gmane.linux.kernel/852005
 
-	Thanks,
+Does it help?
 
-		Stephen
+That value was already doubled from 131072 when the last time it was seen. :)
 
---WkmTq0Xj5pNQBic9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpIH5IACgkQrzgMPqB3kiheIACgifhnp5Cr4CKo062uFl82+goN
-swgAnjd67g0a9O0Mbw6J0CEpsjkvDbkG
-=piWN
------END PGP SIGNATURE-----
-
---WkmTq0Xj5pNQBic9--
+Thanks.
