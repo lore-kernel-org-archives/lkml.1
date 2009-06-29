@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZF2SF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZF2SIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZF2SF2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 14:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZF2SFQ
+	id S1755952AbZF2SIf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 14:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZF2SI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 14:05:16 -0400
-Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:33284 "EHLO
-	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753629AbZF2SFP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 14:05:15 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAO+eSEpR9cBV/2dsb2JhbADOVgmEBAU
-Date: Mon, 29 Jun 2009 20:05:16 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH 52/62] drivers/watchdog/bcm47xx_wdt.c: Remove
-	unnecessary semicolons
-Message-ID: <20090629180516.GH3982@infomag.iguana.be>
-References: <cover.1246173664.git.joe@perches.com> <24eea6cba10492e0a19cbb341335e0e024b2a949.1246173683.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <24eea6cba10492e0a19cbb341335e0e024b2a949.1246173683.git.joe@perches.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 29 Jun 2009 14:08:26 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10157 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750860AbZF2SI0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 14:08:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,310,1243839600"; 
+   d="scan'208";a="426260135"
+Subject: Re: iwl3945 in 2.6.31-rc0: ad-hoc mode broken?
+From: reinette chatre <reinette.chatre@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090619222431.GA2398@elf.ucw.cz>
+References: <20090619222431.GA2398@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 11:08:28 -0700
+Message-Id: <1246298908.17896.391.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe,
+Hi Pavel,
 
-Will add this to the linux-2.6-watchdog trees.
+On Fri, 2009-06-19 at 15:24 -0700, Pavel Machek wrote:
+> I tried using ad-hoc mode (against t-mobile G1) on -rc0, and was
+> unsuccessful -- never got dhcp. I had to reboot back to
+> 2.6.30... Should I try it few more times or is something broken?
 
-Thanks,
-Wim.
+I have tried ad-hoc mode in 2.6.31-rc1
+(52989765629e7d182b4f146050ebba0abf2cb0b7) and did not have issues. I
+tested ad-hoc between 3945 (iwl3945) and 5100 (iwlagn), testing that
+both are able to create the IBSS network and both are able to join
+another IBSS network.
 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/watchdog/bcm47xx_wdt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Do you get any errors? Is it just the dhcp that fails (does association
+succeed?) mac80211 does have extra debugging for ad-hoc that can be
+enabled with CONFIG_MAC80211_IBSS_DEBUG=y. Could you please try that?
+
 > 
-> diff --git a/drivers/watchdog/bcm47xx_wdt.c b/drivers/watchdog/bcm47xx_wdt.c
-> index 5c7011c..751c003 100644
-> --- a/drivers/watchdog/bcm47xx_wdt.c
-> +++ b/drivers/watchdog/bcm47xx_wdt.c
-> @@ -161,7 +161,7 @@ static long bcm47xx_wdt_ioctl(struct file *file,
->  {
->  	void __user *argp = (void __user *)arg;
->  	int __user *p = argp;
-> -	int new_value, retval = -EINVAL;;
-> +	int new_value, retval = -EINVAL;
->  
->  	switch (cmd) {
->  	case WDIOC_GETSUPPORT:
-> -- 
-> 1.6.3.1.10.g659a0.dirty
-> 
+> (Also wifi LED stopped working on x60, but that's older issue).
+
+Is there a bug report for this?
+
+Reinette
+
+
