@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZF2HNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZF2HOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbZF2HNv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 03:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbZF2HNn
+	id S1757678AbZF2HOj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 03:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZF2HOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 03:13:43 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54585 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751969AbZF2HNm (ORCPT
+	Mon, 29 Jun 2009 03:14:30 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:47229 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbZF2HO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 03:13:42 -0400
-Date: Mon, 29 Jun 2009 09:12:31 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sascha Hauer <kernel@pengutronix.de>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [PATCH 50/62] drivers/video/imxfb.c: Remove unnecessary
-	semicolons
-Message-ID: <20090629071231.GJ31396@pengutronix.de>
-References: <cover.1246173664.git.joe@perches.com> <b3809f274f910612520e30bc4a53d4fcb905771c.1246173683.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3809f274f910612520e30bc4a53d4fcb905771c.1246173683.git.joe@perches.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 09:11:58 up 48 days, 21:36, 13 users,  load average: 0.00, 0.02,
-	0.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 29 Jun 2009 03:14:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=GoO7lAAe4MRCz+0EN+vu+lnWXFfG2lwZe5EYtcXoBiQ7xjuKffhN/D6lsFqvrA0ZvR
+         XoBtJ1AoVpZKeN+NJobW30JuAtw0ImDVmymaQyzog8S9lSN70Ede7lPSZ9SKPinn9UxG
+         RQynp304pmsH5jy2KVkkronIeOdEdISCp+g38=
+Date: Mon, 29 Jun 2009 10:15:12 +0300
+From: Jarkko Nikula <jhnikula@gmail.com>
+To: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+Cc: ext Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Tony Lindgren <tony@atomide.com>,
+       "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       broonie@opensource.wolfsonmicro.com
+Subject: Re: [PATCH] [RFC] ASoC: OMAP: fix OMAP1510 broken PCM pointer
+ callback
+Message-Id: <20090629101512.38ebaaee.jhnikula@gmail.com>
+In-Reply-To: <200906290937.58786.peter.ujfalusi@nokia.com>
+References: <200906280021.05931.jkrzyszt@tis.icnet.pl>
+	<20090628223732.53954402.jhnikula@gmail.com>
+	<200906290008.59640.jkrzyszt@tis.icnet.pl>
+	<200906290937.58786.peter.ujfalusi@nokia.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 09:26:55AM -0700, Joe Perches wrote:
-> Signed-off-by: Joe Perches <joe@perches.com>
+On Mon, 29 Jun 2009 09:37:58 +0300
+Peter Ujfalusi <peter.ujfalusi@nokia.com> wrote:
 
-Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Hmmm, I had taken a look at the 2.4.21 kernel sources, which I have
+> laying around in my disk from an old project which used OMAP1510. The
+> OSS audio code does use the CPC register for determining the DMA
+> progress both for playback and recording. I know that the audio was
+> working OK on that board, since we had doom running there.
+> The difference that I can see is that the OSS code also configured
+> the CCR:SYNC(4:0) bits as well.
+> Looking at the DMA_CPC register description in the OMAP1510 TRM: it
+> list two cases on how it behaves and both require the DMA_CCR:SYNC !=
+> 0...
+> 
+> The current DMA code for OMAP1510 just plain ignores the DMA_CCR:SYNC
+> for some reason.
+> Can you try the following patch:
+> 
+> iff --git a/arch/arm/plat-omap/dma.c b/arch/arm/plat-omap/dma.c
+> index 7fc8c04..38874e4 100644
+> --- a/arch/arm/plat-omap/dma.c
+> +++ b/arch/arm/plat-omap/dma.c
+> @@ -266,6 +266,8 @@ void omap_set_dma_transfer_params(int lch, int
+> data_type, int elem_count,
+>                 ccr &= ~(1 << 5);
+>                 if (sync_mode == OMAP_DMA_SYNC_FRAME)
+>                         ccr |= 1 << 5;
+> +               if (dma_trigger)
+> +                       ccr |= dma_trigger & 0x1f;
+>                 dma_write(ccr, CCR(lch));
+> 
+>                 ccr = dma_read(CCR2(lch));
+> 
+> Than can you print out in case of playback both the destination and
+> source addresses supplied to the DMA, than in the pointer callback
+> also print out the value returned by the omap_get_dma_src_pos
+> function to see if this actually helps?
+> 
+Thanks for info Peter. So, Mark, put the workaround patch and my
+acked-by on hold until this is also tried.
 
-
-> ---
->  drivers/video/imxfb.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/video/imxfb.c b/drivers/video/imxfb.c
-> index 15a0ee6..89e6f1e 100644
-> --- a/drivers/video/imxfb.c
-> +++ b/drivers/video/imxfb.c
-> @@ -677,7 +677,7 @@ static int __init imxfb_probe(struct platform_device *pdev)
->  
->  	fbi->clk = clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(fbi->clk)) {
-> -		ret = PTR_ERR(fbi->clk);;
-> +		ret = PTR_ERR(fbi->clk);
->  		dev_err(&pdev->dev, "unable to get clock: %d\n", ret);
->  		goto failed_getclock;
->  	}
-> -- 
-> 1.6.3.1.10.g659a0.dirty
-> 
-> 
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Jarkko
