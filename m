@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760133AbZF2Xfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760308AbZF2Xg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760133AbZF2Xfi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 19:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZF2Xfb
+	id S1760308AbZF2Xg3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 19:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZF2XgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 19:35:31 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:8803 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752938AbZF2Xfa (ORCPT
+	Mon, 29 Jun 2009 19:36:19 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:44068 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbZF2XgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 19:35:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=hMHBVyhpmA+YTs6zYr1oWemwCKf5toSFuwpwJ98pSXW4XctfpuJ2hDZPqg5dhqwsn
-	geT4nMnng5KBDqJbetUrw==
-Date: Mon, 29 Jun 2009 16:35:26 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, npiggin@suse.de
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <20090629153007.GD5065@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0906291625580.17663@chino.kir.corp.google.com>
-References: <4A426825.80905@cs.helsinki.fi> <20090624113037.7d72ed59.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain>
- <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org>
- <20090629153007.GD5065@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 29 Jun 2009 19:36:18 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
+	<87ab3sx4ch.fsf@devron.myhome.or.jp>
+	<19016.6463.997760.757811@samba.org>
+	<20090629221826.GA12781@kroah.com>
+	<19017.17250.371594.268824@samba.org>
+Date: Tue, 30 Jun 2009 08:36:13 +0900
+In-Reply-To: <19017.17250.371594.268824@samba.org> (tridge@samba.org's message
+	of "Tue, 30 Jun 2009 08:42:42 +1000")
+Message-ID: <87tz1ymx3m.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Mel Gorman wrote:
+tridge@samba.org writes:
 
-> page-allocator: Ensure that processes that have been OOM killed exit the page allocator
-> 
-> Processes that have been OOM killed set the thread flag TIF_MEMDIE. A
-> process such as this is expected to exit the page allocator but in the
-> event it happens to have set __GFP_NOFAIL, it potentially loops forever.
-> 
+>  > I have no objection to take this patch for the -stable releases when it
+>  > goes into Linus's tree.  Just forward the git commit ids to
+>  > stable@kernel.org and I can take care of it.
+>
+> ok, thanks Greg.
+>
+> Hirofumi-san tells me we've missed the merge window for 2.6.31, so it
+> seems that this will go first into the fatfs tree, then go into
+> Linus's tree via -next for 2.6.32. So hopefully the patch will get
+> some more testing (perhaps in -mm?) before it needs to be considered
+> for -stable.
 
-That's not the expected behavior for TIF_MEMDIE, although your patch 
-certainly changes that.
+Yes. And I will not drop this patch even if it's not perfect on test. I
+can understand it would not be the option for some users. The default
+may be arguable though, like I said at first.
 
-Your patch is simply doing
+My choice is to provide the option of those to users.
 
-	if (test_thread_flag(TIF_MEMDIE))
-		gfp_mask |= __GFP_NORETRY;
+> Meanwhile some of the distros and other vendors might decide to apply
+> it sooner depending on their level of legal concern.
 
-in the slowpath.
+Yes, it's good.
 
-TIF_MEMDIE is supposed to allow allocations to succeed, not automatically 
-fail, so that it can quickly handle its SIGKILL without getting blocked in 
-the exit path seeking more memory.
-
-> This patch checks TIF_MEMDIE when deciding whether to loop again in the
-> page allocator. Such a process will now return NULL after direct reclaim
-> and OOM killing have both been considered as options. The potential
-> problem is that a __GFP_NOFAIL allocation can still return failure so
-> callers must still handle getting returned NULL.
-> 
-
-All __GFP_NOFAIL allocations should ensure that alloc_pages() never 
-returns NULL.  Although it's unfortunate, that's the requirement that 
-callers have been guaranteed and until they are fixed, the page allocator 
-should respect it.
-
-I disagree with this change because it unconditionally fails allocations 
-when a task has been oom killed, a scenario which should be the _highest_ 
-priority for allocations to succeed since it leads to future memory 
-freeing.
-
-Additionally, this will fail all GFP_ATOMIC allocations for oom killed 
-tasks if allocating without watermarks fails although pdflush may 
-concurrently be doing writeback or other allocation attempts are invoking 
-direct reclaim.
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
