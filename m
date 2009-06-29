@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZF2CQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbZF2CXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZF2CQz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 22:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbZF2CQs
+	id S1754432AbZF2CXJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 22:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbZF2CW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 22:16:48 -0400
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:54639 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751585AbZF2CQr (ORCPT
+	Sun, 28 Jun 2009 22:22:56 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:31628 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbZF2CWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 22:16:47 -0400
-Message-ID: <4A482410.2090704@xyzw.org>
-Date: Sun, 28 Jun 2009 19:16:48 -0700
-From: Brian Rogers <brian@xyzw.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090616)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: Re: [Bug #13633] [bisected] No sound on HDA Intel (ALC268)
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.mfD.KJASKB@chimera>
-In-Reply-To: <6JJ2m5kyucK.A.mfD.KJASKB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 28 Jun 2009 22:22:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=l+PYUuXJEf71GEjcOxQl6WBmBmx0n/krzmXmd7LSXKdE47NgA64PVC9wpge2hCLHtW
+         p0kwsykjcDS1Wv3g/lMUm/qxkPXG4ptFLIEID1MOLuJWDK9L3Bc0FdhkPEtaghgDNkMP
+         tN1zOT1f9a+pOA+TA4AhI8sgktvERYMbkcTak=
+Subject: [PATCH]highmem_32.c : clean up comment
+From: "Figo.zhang" <figo1802@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 10:22:53 +0800
+Message-Id: <1246242173.2561.8.camel@myhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13633
-> Subject		: [bisected] No sound on HDA Intel (ALC268)
-> Submitter	: Brian Rogers <brian@xyzw.org>
-> Date		: 2009-06-27 04:42 (2 days old)
->   
+clean up comment.
 
-Yes, this is still a current issue in mainline and a regression from 2.6.30.
+Signed-off-by: Figo.zhang <figo1802@gmail.com>
+---  
+arch/x86/mm/highmem_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 58f621e..d20af06 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -24,7 +24,7 @@ void kunmap(struct page *page)
+  * no global lock is needed and because the kmap code must perform a global TLB
+  * invalidation when the kmap pool wraps.
+  *
+- * However when holding an atomic kmap is is not legal to sleep, so atomic
++ * However when holding an atomic kmap is not legal to sleep, so atomic
+  * kmaps are appropriate for short, tight code paths only.
+  */
+ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+
 
