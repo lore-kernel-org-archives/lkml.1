@@ -1,234 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756559AbZF1X56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZF2APe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756559AbZF1X56 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 28 Jun 2009 19:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZF1X5t
+	id S1756600AbZF2APe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 28 Jun 2009 20:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZF2APZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 28 Jun 2009 19:57:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54060 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477AbZF1X5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 28 Jun 2009 19:57:48 -0400
-Date: Mon, 29 Jun 2009 08:56:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Paul Menage <menage@google.com>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] memcg: cgroup fix rmdir hang
-Message-Id: <20090629085616.7c523508.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090629085026.82e0674d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090623160720.36230fa2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090626141020.849a081e.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830906261316x52d6c115t720b87ba16b3617@mail.gmail.com>
-	<20090629085026.82e0674d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 28 Jun 2009 20:15:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38420 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752530AbZF2APY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 28 Jun 2009 20:15:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] PM: Introduce core framework for run-time PM of I/O devices (rev. 6)
+Date: Mon, 29 Jun 2009 02:15:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0906281642500.7576-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906281642500.7576-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906290215.39517.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009 08:50:26 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Sunday 28 June 2009, Alan Stern wrote:
+> On Sun, 28 Jun 2009, Rafael J. Wysocki wrote:
+> 
+> > It seems that if we do something like in the appended patch, then
+> > cancel_work() and cancel_delayed_work_dequeue() can be used to simplify the
+> > $subject patch slightly.
+> 
+> I merged your patch with my own work, leading to the patch below.
+> 
+> There were a bunch of things I didn't like about the existing code,
+> particularly cancel_delayed_work.  To start with, it seems like a large
+> enough routine that it shouldn't be inlined.
 
-> > Maybe we should name this wakeup_rmdir_waiter() to emphasise that fact
-> > that there will only be one waiter (the thread doing the rmdir).
-> > 
-> Hm, but, there is no guarantee that there will "an" waiter.
-> 
-Ignore above comment....I forget inode->mutex is held.
+Agreed.
 
-Thanks,
--Kame
+> More importantly, it foolishly calls del_timer_sync, resulting in the
+> unnecessary restriction that it cannot be used in_interrupt.  Finally,
+> although it will deactivate a delayed_work's timer, it doesn't even try to
+> remove the item from the workqueue if the timer has already expired.
+> 
+> Your cancel_delayed_work_dequeue is better -- so much better that I
+> don't see any reason to keep the original cancel_delayed_work at all.  
+> I got rid of it and used your routine instead.
+> 
+> I also changed the comments you wrote for cancel_work.  You can see 
+> that now they are much more explicit and complete.
+> 
+> The original version of __cancel_work_timer is not safe to use
+> in_interrupt.  If it is called from a handler whose IRQ interrupted
+> delayed_work_timer_fn, it can loop indefinitely.
 
-> 
-> > > -       if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
-> > > -               wake_up_all(&cgroup_rmdir_waitq);
-> > > +       wake_up_all(&cgroup_rmdir_waitq);
-> > >  }
-> > >
-> > >  static int rebind_subsystems(struct cgroupfs_root *root,
-> > > @@ -2696,33 +2695,40 @@ again:
-> > >        mutex_unlock(&cgroup_mutex);
-> > >
-> > >        /*
-> > > +        * css_put/get is provided for subsys to grab refcnt to css. In typical
-> > > +        * case, subsystem has no reference after pre_destroy(). But, under
-> > > +        * hierarchy management, some *temporal* refcnt can be hold.
-> > 
-> > This sentence needs improvement/clarification. (Yes, I know it's just
-> > copied from later in the file, but it wasn't clear there either :-) )
-> > 
-> ok, I'll modify here. How about this ?
-> ==
-> In general, subsystem has no css->refcnt after pre_destroy(). But in racy cases,
-> subsystem may have to get css->refcnt after pre_destroy() and it makes rmdir
-> return with -EBUSY. But we don't like frequent -EBUSY. To avoid that, we use
-> waitqueue for cgroup's rmdir. CGROUP_WAIT_ON_RMDIR bit is for synchronizing
-> rmdir waitqueue and subsystem behavior. Please see css_get()/put()/tryget()
-> implementation, it allows subsystem to avoid unnecessary failure of rmdir().
-> If css_put()/get()/tryget() is not enough, cgroup_wakeup_rmdir_waiter() can be
-> used.
-> ==
-> 
-> 
-> > 
-> > > +        * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
-> > > +        * is really busy, it should return -EBUSY at pre_destroy(). wake_up
-> > > +        * is called when css_put() is called and refcnt goes down to 0.
-> > > +        * And this WAIT_ON_RMDIR flag is cleared when subsys detect a race
-> > > +        * condition under pre_destroy()->rmdir.
-> > 
-> > What exactly do you mean by pre_destroy()->rmdir ?
-> > 
-> Ah, between pre_destroy() and "cgroup is removed" state. I'll remove this.
-> Maybe above comment is enough.
-> 
-> 
-> > > If flag is cleared, we need
-> > > +        * to call pre_destroy(), again.
-> > > +        */
-> > > +       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-> > > +
-> > > +       /*
-> > >         * Call pre_destroy handlers of subsys. Notify subsystems
-> > >         * that rmdir() request comes.
-> > >         */
-> > >        ret = cgroup_call_pre_destroy(cgrp);
-> > > -       if (ret)
-> > > +       if (ret) {
-> > > +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-> > >                return ret;
-> > > +       }
-> > >
-> > >        mutex_lock(&cgroup_mutex);
-> > >        parent = cgrp->parent;
-> > >        if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
-> > > +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-> > >                mutex_unlock(&cgroup_mutex);
-> > >                return -EBUSY;
-> > >        }
-> > > -       /*
-> > > -        * css_put/get is provided for subsys to grab refcnt to css. In typical
-> > > -        * case, subsystem has no reference after pre_destroy(). But, under
-> > > -        * hierarchy management, some *temporal* refcnt can be hold.
-> > > -        * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
-> > > -        * is really busy, it should return -EBUSY at pre_destroy(). wake_up
-> > > -        * is called when css_put() is called and refcnt goes down to 0.
-> > > -        */
-> > > -       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-> > >        prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
-> > > -
-> > >        if (!cgroup_clear_css_refs(cgrp)) {
-> > >                mutex_unlock(&cgroup_mutex);
-> > > -               schedule();
-> > > +               if (test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags))
-> > > +                       schedule();
-> > 
-> > The need for this test_bit() should be commented, I think - at first
-> > sight it doesn't seem necessary since if we've already been woken up,
-> > then the schedule() is logically a no-op anyway. We only need it
-> > because we are worried about the case where someone calls
-> > wakeup_rmdir_waiters() prior to the prepare_to_wait()
-> > 
-> > 
-> yes. will add comments.
-> 
-> 
-> > > ===================================================================
-> > > --- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
-> > > +++ mmotm-2.6.31-Jun25/mm/memcontrol.c
-> > > @@ -1234,6 +1234,12 @@ static int mem_cgroup_move_account(struc
-> > >        ret = 0;
-> > >  out:
-> > >        unlock_page_cgroup(pc);
-> > > +       /*
-> > > +        * We charges against "to" which may not have any tasks. Then, "to"
-> > > +        * can be under rmdir(). But in current implementation, caller of
-> > > +        * this function is just force_empty() and it's garanteed that
-> > > +        * "to" is never removed. So, we don't check rmdir status here.
-> > > +        */
-> > >        return ret;
-> > >  }
-> > >
-> > > @@ -1455,6 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
-> > >                return;
-> > >        if (!ptr)
-> > >                return;
-> > > +       css_get(&ptr->css);
-> > >        pc = lookup_page_cgroup(page);
-> > >        mem_cgroup_lru_del_before_commit_swapcache(page);
-> > >        __mem_cgroup_commit_charge(ptr, pc, ctype);
-> > > @@ -1484,7 +1491,13 @@ __mem_cgroup_commit_charge_swapin(struct
-> > >                }
-> > >                rcu_read_unlock();
-> > >        }
-> > > -       /* add this page(page_cgroup) to the LRU we want. */
-> > > +       /*
-> > > +        * At swapin, we may charge account against cgroup which has no tasks.
-> > > +        * So, rmdir()->pre_destroy() can be called while we do this charge.
-> > > +        * In that case, we need to call pre_destroy() again. check it here.
-> > > +        */
-> > > +       cgroup_wakeup_rmdir_waiters(ptr->css.cgroup);
-> > > +       css_put(&ptr->css);
-> > >
-> > >  }
-> > >
-> > > @@ -1691,7 +1704,7 @@ void mem_cgroup_end_migration(struct mem
-> > >
-> > >        if (!mem)
-> > >                return;
-> > > -
-> > > +       css_get(&mem->css);
-> > >        /* at migration success, oldpage->mapping is NULL. */
-> > >        if (oldpage->mapping) {
-> > >                target = oldpage;
-> > > @@ -1731,6 +1744,14 @@ void mem_cgroup_end_migration(struct mem
-> > >         */
-> > >        if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
-> > >                mem_cgroup_uncharge_page(target);
-> > > +       /*
-> > > +        * At migration, we may charge account against cgroup which has no tasks
-> > > +        * So, rmdir()->pre_destroy() can be called while we do this charge.
-> > > +        * In that case, we need to call pre_destroy() again. check it here.
-> > > +        */
-> > > +       cgroup_wakeup_rmdir_waiters(mem->css.cgroup);
-> > > +       css_put(&mem->css);
-> > 
-> > Having to do an extra get/put purely in order to seems unfortunate -
-> > is that purely to force the cgroup_clear_css_refs() to fail?
-> > 
-> yes.
-> 
-> > Maybe we could wrap the get and the wakeup/put inside functions named
-> > "cgroup_exclude_rmdir()" "cgroup_release_rmdir()" so that the mm
-> > cgroup code is more self-explanatory.
-> > 
-> Ah, it sounds nice idea. I'll prepare that as [2/2] patch.
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> > Paul
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Right, I overlooked that.
 
+> Therefore I added a check; if it finds that the work_struct is currently
+> being enqueued and it is running in_interrupt, it gives up right away.
+
+Hmm, it doesn't do the work_clear_pending(work) in that case, so we allow
+the work to be queued and run?  Out of couriosity, what the caller is supposed
+to do then?
+
+> There are a few other improvements too.
+> 
+> Consequently it is now safe to call cancel_work and cancel_delayed_work
+> in_interrupt or while holding a spinlock.  This means you can use these
+> functions to cancel the various PM runtime work items whenever needed.  
+> As a result, you don't need two work_structs in dev_pm_info; a single
+> delayed_work will be enough.
+
+Yes, I'm going to rebase the framework patch on top of this one.
+
+> Tell me what you think.
+
+I like the patch. :-)
+
+Best,
+Rafael
+
+ 
+> Index: usb-2.6/include/linux/workqueue.h
+> ===================================================================
+> --- usb-2.6.orig/include/linux/workqueue.h
+> +++ usb-2.6/include/linux/workqueue.h
+> @@ -223,24 +223,10 @@ int execute_in_process_context(work_func
+>  extern int flush_work(struct work_struct *work);
+>  
+>  extern int cancel_work_sync(struct work_struct *work);
+> -
+> -/*
+> - * Kill off a pending schedule_delayed_work().  Note that the work callback
+> - * function may still be running on return from cancel_delayed_work(), unless
+> - * it returns 1 and the work doesn't re-arm itself. Run flush_workqueue() or
+> - * cancel_work_sync() to wait on it.
+> - */
+> -static inline int cancel_delayed_work(struct delayed_work *work)
+> -{
+> -	int ret;
+> -
+> -	ret = del_timer_sync(&work->timer);
+> -	if (ret)
+> -		work_clear_pending(&work->work);
+> -	return ret;
+> -}
+> +extern int cancel_work(struct work_struct *work);
+>  
+>  extern int cancel_delayed_work_sync(struct delayed_work *work);
+> +extern int cancel_delayed_work(struct delayed_work *dwork);
+>  
+>  /* Obsolete. use cancel_delayed_work_sync() */
+>  static inline
+> Index: usb-2.6/kernel/workqueue.c
+> ===================================================================
+> --- usb-2.6.orig/kernel/workqueue.c
+> +++ usb-2.6/kernel/workqueue.c
+> @@ -465,6 +465,7 @@ static int try_to_grab_pending(struct wo
+>  {
+>  	struct cpu_workqueue_struct *cwq;
+>  	int ret = -1;
+> +	unsigned long flags;
+>  
+>  	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+>  		return 0;
+> @@ -478,7 +479,7 @@ static int try_to_grab_pending(struct wo
+>  	if (!cwq)
+>  		return ret;
+>  
+> -	spin_lock_irq(&cwq->lock);
+> +	spin_lock_irqsave(&cwq->lock, flags);
+>  	if (!list_empty(&work->entry)) {
+>  		/*
+>  		 * This work is queued, but perhaps we locked the wrong cwq.
+> @@ -491,7 +492,7 @@ static int try_to_grab_pending(struct wo
+>  			ret = 1;
+>  		}
+>  	}
+> -	spin_unlock_irq(&cwq->lock);
+> +	spin_unlock_irqrestore(&cwq->lock, flags);
+>  
+>  	return ret;
+>  }
+> @@ -536,18 +537,26 @@ static void wait_on_work(struct work_str
+>  		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+>  }
+>  
+> -static int __cancel_work_timer(struct work_struct *work,
+> +static int __cancel_work_timer(struct work_struct *work, bool wait,
+>  				struct timer_list* timer)
+>  {
+>  	int ret;
+>  
+> -	do {
+> -		ret = (timer && likely(del_timer(timer)));
+> -		if (!ret)
+> -			ret = try_to_grab_pending(work);
+> -		wait_on_work(work);
+> -	} while (unlikely(ret < 0));
+> +	if (timer && likely(del_timer(timer))) {
+> +		ret = 1;
+> +		goto done;
+> +	}
+>  
+> +	for (;;) {
+> +		ret = try_to_grab_pending(work);
+> +		if (likely(ret >= 0))
+> +			break;
+> +		if (in_interrupt())
+> +			return ret;
+> +	}
+> +	if (ret == 0 && wait)
+> +		wait_on_work(work);
+> + done:
+>  	work_clear_pending(work);
+>  	return ret;
+>  }
+> @@ -575,11 +584,43 @@ static int __cancel_work_timer(struct wo
+>   */
+>  int cancel_work_sync(struct work_struct *work)
+>  {
+> -	return __cancel_work_timer(work, NULL);
+> +	return __cancel_work_timer(work, true, NULL);
+>  }
+>  EXPORT_SYMBOL_GPL(cancel_work_sync);
+>  
+>  /**
+> + * cancel_work - try to cancel a pending work_struct.
+> + * @work: the work_struct to cancel
+> + *
+> + * Try to cancel a pending work_struct before it starts running.
+> + * Upon return, @work may safely be reused if the return value
+> + * is 1 or the return value is 0 and the work callback function
+> + * doesn't resubmit @work.
+> + *
+> + * The callback function may be running upon return if the return value
+> + * is <= 0; use cancel_work_sync() to wait for the callback function
+> + * to finish.
+> + *
+> + * There's not much point using this routine unless you can guarantee
+> + * that neither the callback function nor anything else is in the
+> + * process of submitting @work (or is about to do so).  The only good
+> + * reason might be that optimistically trying to cancel @work has less
+> + * overhead than letting it go ahead and run.
+> + *
+> + * This routine may be called from interrupt context.
+> + *
+> + * Returns: 1 if @work was removed from its workqueue,
+> + *	    0 if @work was not pending (may be running),
+> + *	   -1 if @work was concurrently being enqueued and we were
+> + *		called in_interrupt.
+> + */
+> +int cancel_work(struct work_struct *work)
+> +{
+> +	return __cancel_work_timer(work, false, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(cancel_work);
+> +
+> +/**
+>   * cancel_delayed_work_sync - reliably kill off a delayed work.
+>   * @dwork: the delayed work struct
+>   *
+> @@ -590,10 +631,24 @@ EXPORT_SYMBOL_GPL(cancel_work_sync);
+>   */
+>  int cancel_delayed_work_sync(struct delayed_work *dwork)
+>  {
+> -	return __cancel_work_timer(&dwork->work, &dwork->timer);
+> +	return __cancel_work_timer(&dwork->work, true, &dwork->timer);
+>  }
+>  EXPORT_SYMBOL(cancel_delayed_work_sync);
+>  
+> +/**
+> + * cancel_delayed_work - try to cancel a delayed_work_struct.
+> + * @dwork: the delayed_work_struct to cancel
+> + *
+> + * Try to cancel a pending delayed_work, either by deactivating its
+> + * timer or by removing it from its workqueue.  This routine is just
+> + * like cancel_work() except that it handles a delayed_work.
+> + */
+> +int cancel_delayed_work(struct delayed_work *dwork)
+> +{
+> +	return __cancel_work_timer(&dwork->work, false, &dwork->timer);
+> +}
+> +EXPORT_SYMBOL(cancel_delayed_work);
+> +
+>  static struct workqueue_struct *keventd_wq __read_mostly;
+>  
+>  /**
