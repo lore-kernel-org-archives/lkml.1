@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbZF2Jeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbZF2Jjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbZF2Jeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758735AbZF2Jeg
+	id S1758457AbZF2Jjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 05:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZF2Jji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:34:36 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55011 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758744AbZF2Jed (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:34:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,308,1243839600"; 
-   d="scan'208";a="159524657"
-Date: Mon, 29 Jun 2009 17:34:23 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Beheer InterCommIT <intercommit@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090629093423.GB1315@localhost>
-References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2> <4A2936A7.9070309@gmail.com> <20090606233056.7B9F.A69D9226@jp.fujitsu.com> <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net>
+	Mon, 29 Jun 2009 05:39:38 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:35903 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751073AbZF2Jjh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 05:39:37 -0400
+To: Dave Jones <davej@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: kmemleak reports firmware loader funnies in iwlwifi
+References: <20090626171933.GA23170@redhat.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Mon, 29 Jun 2009 10:39:17 +0100
+In-Reply-To: <20090626171933.GA23170@redhat.com> (Dave Jones's message of "Fri\, 26 Jun 2009 13\:19\:33 -0400")
+Message-ID: <tnxy6rbv0oq.fsf@pc1117.cambridge.arm.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A3CD62B.1020407@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 29 Jun 2009 09:39:23.0987 (UTC) FILETIME=[7C8BF230:01C9F89D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 20, 2009 at 08:29:31PM +0800, Vladislav Bolkhovitin wrote:
-> 
-> Wu Fengguang, on 06/20/2009 07:55 AM wrote:
-> > On Fri, Jun 19, 2009 at 03:04:36AM +0800, Andrew Morton wrote:
-> >> On Sun, 7 Jun 2009 06:45:38 +0800
-> >> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >>
-> >>>>> Do you have a place where the raw blktrace data can be retrieved for
-> >>>>> more in-depth analysis?
-> >>>> I think your comment is really adequate. In another thread, Wu Fengguang pointed
-> >>>> out the same issue.
-> >>>> I and Wu also wait his analysis.
-> >>> And do it with a large readahead size :)
-> >>>
-> >>> Alan, this was my analysis:
-> >>>
-> >>> : Hifumi, can you help retest with some large readahead size?
-> >>> :
-> >>> : Your readahead size (128K) is smaller than your max_sectors_kb (256K),
-> >>> : so two readahead IO requests get merged into one real IO, that means
-> >>> : half of the readahead requests are delayed.
-> >>>
-> >>> ie. two readahead requests get merged and complete together, thus the effective
-> >>> IO size is doubled but at the same time it becomes completely synchronous IO.
-> >>>
-> >>> :
-> >>> : The IO completion size goes down from 512 to 256 sectors:
-> >>> :
-> >>> : before patch:
-> >>> :   8,0    3   177955    50.050313976     0  C   R 8724991 + 512 [0]
-> >>> :   8,0    3   177966    50.053380250     0  C   R 8725503 + 512 [0]
-> >>> :   8,0    3   177977    50.056970395     0  C   R 8726015 + 512 [0]
-> >>> :   8,0    3   177988    50.060326743     0  C   R 8726527 + 512 [0]
-> >>> :   8,0    3   177999    50.063922341     0  C   R 8727039 + 512 [0]
-> >>> :
-> >>> : after patch:
-> >>> :   8,0    3   257297    50.000760847     0  C   R 9480703 + 256 [0]
-> >>> :   8,0    3   257306    50.003034240     0  C   R 9480959 + 256 [0]
-> >>> :   8,0    3   257307    50.003076338     0  C   R 9481215 + 256 [0]
-> >>> :   8,0    3   257323    50.004774693     0  C   R 9481471 + 256 [0]
-> >>> :   8,0    3   257332    50.006865854     0  C   R 9481727 + 256 [0]
-> >>>
-> >> I haven't sent readahead-add-blk_run_backing_dev.patch in to Linus yet
-> >> and it's looking like 2.6.32 material, if ever.
-> >>
-> >> If it turns out to be wonderful, we could always ask the -stable
-> >> maintainers to put it in 2.6.x.y I guess.
-> > 
-> > Agreed. The expected (and interesting) test on a properly configured
-> > HW RAID has not happened yet, hence the theory remains unsupported.
-> 
-> Hmm, do you see anything improper in the Ronald's setup (see
-> http://sourceforge.net/mailarchive/forum.php?thread_name=a0272b440906030714g67eabc5k8f847fb1e538cc62%40mail.gmail.com&forum_name=scst-devel)?
-> It is HW RAID based.
+Dave Jones <davej@redhat.com> wrote:
+> iwlagn 0000:03:00.0: loaded firmware version 8.24.2.12
+> kmemleak: Freeing unknown object at 0xffffc90018070000
+> Pid: 1034, comm: NetworkManager Not tainted 2.6.31-0.25.rc0.git22.fc12.x86_64
+> #1
+> Call Trace:
+>  [<ffffffff81139f74>] delete_object+0x5b/0x13b
+>  [<ffffffff8113b012>] kmemleak_free+0x5b/0xb5
+>  [<ffffffff8111dc51>] vfree+0x40/0x68
+>  [<ffffffff813485e6>] release_firmware+0x49/0x6c
+>  [<ffffffffa021997c>] ? iwl_mac_start+0xc5c/0x106b [iwlagn]
+>  [<ffffffffa0219adc>] iwl_mac_start+0xdbc/0x106b [iwlagn]
+>  [<ffffffff8109df9b>] ? __module_text_address+0x25/0x85
+>
+>
+> So it appears to be vfree'ing something that it had no knowledge of
+> ever allocating.  afaict _request_firmware only vmallocs when it's
+> using a firmware image built into the driver, which isn't the case
+> here, so I'm not sure why we end up trying to vfree instead of kfree
+> when we call release_firmware
 
-No. Ronald's HW RAID performance is reasonably good.  I meant Hifumi's
-RAID performance is too bad and may be improved by increasing the
-readahead size, hehe.
+It seems that firmware_loading_store uses vmap() to set fw->data and
+it later calls vfree() on this (maybe as a short-cut to vunmap +
+__free_page).
 
-> As I already wrote, we can ask Ronald to perform any needed tests.
+Kmemleak doesn't track vmap allocations but tracks vmalloc/vfree
+calls. A solution here is to track vmap/vunmap calls (setting the
+block size to 0 or adding extra checks to make sure it doesn't scan
+I/O or user pages).
 
-Thanks!  Ronald's test results are:
+Another solution (my preferred one) is to annotate some of the few
+places where vmap may be used with vfree. In this particular case:
 
-231   MB/s   HW RAID                        
- 69.6 MB/s   HW RAID + SCST                 
- 89.7 MB/s   HW RAID + SCST + this patch
 
-So this patch seem to help SCST, but again it would be better to
-improve the SCST throughput first - it is now quite sub-optimal.
-(Sorry for the long delay: currently I have not got an idea on
- how to measure such timing issues.)
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index ddeb819..26fb808 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -179,6 +179,13 @@ static ssize_t firmware_loading_store(struct device *dev,
+ 				dev_err(dev, "%s: vmap() failed\n", __func__);
+ 				goto err;
+ 			}
++			/*
++			 * This block of memory is later freed using vfree.
++			 * Since kmemleak does not track vmap calls, just
++			 * inform it about this block but ignore it during
++			 * scanning.
++			 */
++			kmemleak_alloc(fw_priv->fw->data, 0, -1, GFP_KERNEL);
+ 			/* Pages will be freed by vfree() */
+ 			fw_priv->pages = NULL;
+ 			fw_priv->page_array_size = 0;
 
-And if Ronald could provide the HW RAID performance with this patch,
-then we can confirm if this patch really makes a difference for RAID.
 
-Thanks,
-Fengguang
+-- 
+Catalin
