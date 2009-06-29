@@ -1,268 +1,267 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbZF2OUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759766AbZF2OVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbZF2OUp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 10:20:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433AbZF2OUh
+	id S1759766AbZF2OVu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 10:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759570AbZF2OVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 10:20:37 -0400
-Received: from demumfd001.nsn-inter.net ([217.115.75.233]:11704 "EHLO
-	demumfd001.nsn-inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754852AbZF2OUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 10:20:36 -0400
-Subject: Re: RapidIO - general questions
-From: Jan Neskudla <jan.neskudla.ext@nsn.com>
-To: ext Li Yang <leoli@freescale.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
-       "IDT - Kim,Chul" <Chul.Kim@idt.com>
-In-Reply-To: <1242802800.9160.143.camel@demuxf9c>
-References: <1242119872.16400.113.camel@demuxf9c>
-	 <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
-	 <1242372791.26759.34.camel@demuxf9c>
-	 <2a27d3730905150056m7298b66ckb9db92f9432953d6@mail.gmail.com>
-	 <1242802800.9160.143.camel@demuxf9c>
-Content-Type: text/plain
-Date: Mon, 29 Jun 2009 16:19:53 +0200
-Message-Id: <1246285193.10035.245.camel@demux9hc>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-41.el4_7.2) 
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jun 2009 10:21:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:38624 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759129AbZF2OVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 10:21:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
+   d="scan'208";a="159604293"
+Date: Mon, 29 Jun 2009 22:21:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ronald Moesbergen <intercommit@gmail.com>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
+       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090629142124.GA28945@localhost>
+References: <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net> <20090629093423.GB1315@localhost> <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com> <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost> <4A48BBF9.6050408@vlnb.net> <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi as I already informed you, 
-we'd like to contribute to the Linux RapidIO subsystem, with several
-features, Here are few general information about the design of
-implementation of such features.
-
-naming: 
-domain - a several boards connected together via rio, with only one host
-host -  a MCU with host bit set, only one per domain
-domain master - a host which have also domain_master_bit set ( boot
-param), only one in overall system. 
-
-* Domains configuration - traverse the whole rio network by domain
-master to find all the hosts, providing a domain IDs to them and finally
-programing domain routing tables to the switches. Since we are
-cooperating with a IDT as a switch supplier, the IDT will public their
-private API for setting such a domain routing tables under GPL. 
-- there is an issue how to proceed with a locking of the switches,
-during enumeration of domains and later on during enumeration of
-endpoint by hosts. All the time, of running system, there  will be two
-MCUs trying to configure the same switch in certain situation,
-especially during hot-plug of domain. So this is not clear yet.
-
-* Static ID configuration based on port numbers  
-  tree sysfs files for providing necessary info : 
-      host_id - this is the same like riohdid boot parameter now
-      switch_ids - this file is for providing source ids for switches to
-be able to report problems via port-write packets 
-      endpoint_ids - to provide list of all endpoint in one domain.  
-  I read somewhere that passing of structures via sysFS is not
-acceptable, but how to pass some more information to the kernel. 
-I expect to pass those structures via bin sysFS files, analyze the input
-not only cast it, and than use it. Is it this OK ? 
-
-* User triggered enumeration/discovery
-This is necessary because of the static IDs. They have to be know before
-enumeration can start, and this is most general way of doing this. 
-So once the static Ids are provided over sysFS files, then via another
-sysFS file a enumeration is triggered. I am talking about enumeration
-only because the endpoints that wait for the enumeration are going to
-preform discovery as usual, after enumeration. 
-This needs some changes. Whole enumeration process have to be put into
-the kthread and discovery as well. Then kernel can boots up to user
-space and enumeration can be triggered. 
-Is there any standard way in the kernel how to postpone and than trigger
-a configuration of a bus from the user space ? 
-
-* User space library for configuring switches 
-IDT is going to provide user space GPL library that will covers an rio
-switch configuration based on rio spec 2.0. 
-
-* Error handling (port-write packets - configuration, handling of them)
-This should be as general as possible, and IDT is designing this part.
-So a port-write packet (have to be written) driver will receive a
-packet, analyze this and perform an action: - two scenarios can happen.
-1. The port-write info is part of the rio spec 2.0 and the packet is
-processed by kernel directly 
-2. The port-write info is vendor specific and it is passed to the user
-space, where is processed and proper action is than taken via current
-sysFS config files. 
-
-* Hot-plug (hot-insert/hot-remove) of devices
-This is case of error handling. 
-In case of any error covered by rio spec 2.0 (bad CRC, bad
-character, .. ) the ports of the switch that generates this port-write
-info are scanned for PORT_OK status or PORT_UNINITIALIZED so we are able
-to catch the hot-plug/hot-extract of any device. 
-Hotplug should be functional in the time of enumeration, because
-enumeration process traverse the system port by port, and if some
-endpoint is powered on after enumeration process testes its port but
-before the end of the standard enumeration process, this device can be
-missed. 
-
-* Aux driver - basic driver, for sending messages over different
-mboxes, 
-right now we implemented this as a character device. If any one is
-interested let me know, I will send this to you. 
-
-On the end we'd like to support already existing scenario of dynamic
-assignment of the devID as well as static ID and user space triggered
-enumeration. 
-
-The question is if there is a static table of IDs, do we still needs an
-discovery process on every endpoint ? Propagating any hot-plug/hot-
-extract event to every endpoint to reflect this in local sysfs structure
-would be quite hard. 
-
-Any comment to this topics is highly appreciated, as well as forwarding
-this to anyone who can be interested. 
-
-                           Jan 
-
-
- 
-
-On Wed, 2009-05-20 at 09:00 +0200, ext Jan Neskudla wrote:
-> n Fri, 2009-05-15 at 15:56 +0800, ext Li Yang wrote:
-> > On Fri, May 15, 2009 at 3:33 PM, Jan Neskudla
-> <jan.neskudla.ext@nsn.com> wrote:
-> > > On Wed, 2009-05-13 at 18:57 +0800, ext Li Yang wrote:
-> > >> cc'ed LKML
-> > >>
-> > >> On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla
-> <jan.neskudla.ext@nsn.com> wrote:
-> > >> > Hallo
-> > >> >
-> > >> > we'd likes to use a RapidIO as a general communication bus on
-> our new
-> > >> > product, and so I have some questions about general design of
-> Linux RIO
-> > >> > subsystem. I did not find any better mailing list for RapidIO
-> > >> > discussion.
-> > >> >
-> > >> > [1] - we'd like to implement following features
-> > >> >    * Hot-plug (hot-insert/hot-remove) of devices
-> > >> >    * Error handling (port-write packets - configuration,
-> handling of
-> > >> > them)
-> > >> >    * Static ID configuration based on port numbers
-> > >> >    * Aux driver - basic driver, for sending messages over
-> different
-> > >> > mboxes, handling ranges of doorbells
-> > >> >
-> > >> >    Is it here anyone who is working on any improvement, or
-> anyone who
-> > >> > knows the development plans for RapidIO subsystem?
-> > >> >
-> > >>
-> > >> AFAIK, there is no one currently working on these features for
-> Linux.
-> > >> It will be good if you can add these useful features.
-> > > Yes it looks like that, currently we are analyzing current rapidIO
-> > > system, and how we can add these features.
-> > >
-> > >>
-> > >> > [2] - I have a following problem with a current implementation
-> of
-> > >> > loading drivers. The driver probe-function call is based on
-> comparison
-> > >> > of VendorID (VID) and DeviceID (DID) only. Thus if I have 3
-> devices with
-> > >> > same DID and VID connected to the same network (bus), the
-> driver is
-> > >> > loaded 3times, instead only once for the actual device Master
-> port.
-> > >>
-> > >> This should be the correct way as you actually have 3 instances
-> of the device.
-> > >>
-> > >> >
-> > >> > Rionet driver solved this by enabling to call initialization
-> function
-> > >> > just once, and it expect that this is the Master port.
-> > >>
-> > >> Rionet is kind of special.  It's not working like a simple device
-> > >> driver, but more like a customized protocol stack to support
-> multiple
-> > >> ethernet over rio links.
-> > >>
-> > >> >
-> > >> > Is it this correct behavior  ? It looks to me that RapidIO is
-> handled
-> > >> > like a local bus (like PCI)
-> > >>
-> > >> This is correct behavior.  All of them are using Linux
-> device/driver
-> > >> infrastructure, but rionet is a special device.
-> > >
-> > > But I do not have a 3 devices on one silicon. I am talking about 3
-> > > devices (3 x EP8548 boards + IDT switch) connected over rapidIO
-> through
-> > > the switch. And in this case I'd like to have only one driver
-> siting on
-> > > the top of Linux RapidIO subsystem. I don't see the advantage of
-> loading
+On Mon, Jun 29, 2009 at 10:00:20PM +0800, Ronald Moesbergen wrote:
+> ... tests ...
+> 
+> > We started with 2.6.29, so why not complete with it (to save additional
+> > Ronald's effort to move on 2.6.30)?
 > >
-> > You are having one driver, but it probes 3 times for each device
-> using
-> > the driver.
+> >>> 2. Default vanilla 2.6.29 kernel, 512 KB read-ahead, the rest is default
+> >>
+> >> How about 2MB RAID readahead size? That transforms into about 512KB
+> >> per-disk readahead size.
 > >
-> > > a driver locally for remote device. Am I missing something  ?
+> > OK. Ronald, can you 4 more test cases, please:
 > >
-> > If you want to interact with the remote device, you need the driver
-> to
-> > do the work locally.
-> 
-> We are going to use a RapidIO as a bigger network of active devices,
-> and
-> each will have each own driver (sitting on its own), and all the
-> settings will be done over maintenance packets.
-> 
-> May be it will be solved by the fact, that we are going to use a
-> staticIDs, so there will be no discovery as it is now. And thus there
-> will be only one device visible in the internal structures of the
-> subsystem, and thus only one drive will be loaded.
-> 
+> > 7. Default vanilla 2.6.29 kernel, 2MB read-ahead, the rest is default
 > >
-> > >
-> > > And one more think, I am getting so much Bus errors OOPSes.
-> Whenever
-> > > there is a problem with a comunication over Rio I get such a
-> kernel OPS.
-> > > I had to add some delays into some function to be able to finish
-> the
-> > > enum+discovery process. Did you have some experience with some
-> bigger
-> > > rio network running under linux ?
+> > 8. Default vanilla 2.6.29 kernel, 2MB read-ahead, 64 KB
+> > max_sectors_kb, the rest is default
 > >
-> > It looks like an known issue for switched rio network, but I don't
-> > have the correct equipment to reproduce the problem here.  Could you
-> > do some basic debugging and share your findings?  Thanks.
-> 
-> I tried to acquired some info about the problem, I found that the OOPS
-> always occur when there is no respond from the device or the respond
-> is
-> too slow. I always got that error during function call
-> rio_get_host_deviceid_lock when it tries to access a remote device or
-> switch. This function is the first call of the
-> rio_mport_read_config_32
-> so is also first try of remote access to any device.
-> 
-> It is a timing issue, and after placing a printk into the
-> rio_get_host_deviceid_lock the OOPSing almost disappeared.
-> 
->                                  Jan
-> 
+> > 9. Patched by the Fengguang's patch vanilla 2.6.29 kernel, 2MB
+> > read-ahead, the rest is default
 > >
-> > - Leo
+> > 10. Patched by the Fengguang's patch vanilla 2.6.29 kernel, 2MB
+> > read-ahead, 64 KB max_sectors_kb, the rest is default
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
-> 
+> The results:
 
+I made a blindless average:
+
+N       MB/s          IOPS      case
+
+0      114.859       984.148    Unpatched, 128KB readahead, 512 max_sectors_kb
+1      122.960       981.213    Unpatched, 512KB readahead, 512 max_sectors_kb
+2      120.709       985.111    Unpatched, 2MB readahead, 512 max_sectors_kb
+3      158.732      1004.714    Unpatched, 512KB readahead, 64 max_sectors_kb
+4      159.237       979.659    Unpatched, 2MB readahead, 64 max_sectors_kb
+
+5      114.583       982.998    Patched, 128KB readahead, 512 max_sectors_kb
+6      124.902       987.523    Patched, 512KB readahead, 512 max_sectors_kb
+7      127.373       984.848    Patched, 2MB readahead, 512 max_sectors_kb
+8      161.218       986.698    Patched, 512KB readahead, 64 max_sectors_kb
+9      163.908       574.651    Patched, 2MB readahead, 64 max_sectors_kb
+
+So before/after patch:
+
+        avg throughput      135.299 => 138.397  by +2.3%
+        avg IOPS            986.969 => 903.344  by -8.5%     
+
+The IOPS is a bit weird.
+
+Summaries:
+- this patch improves RAID throughput by +2.3% on average
+- after this patch, 2MB readahead performs slightly better
+  (by 1-2%) than 512KB readahead
+
+Thanks,
+Fengguang
+
+> Unpatched, 128KB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   5.621    5.503    5.419  185.744    2.780    2.902
+>  33554432   6.628    5.897    6.242  164.068    7.827    5.127
+>  16777216   7.312    7.165    7.614  139.148    3.501    8.697
+>   8388608   8.719    8.408    8.694  119.003    1.973   14.875
+>   4194304  11.836   12.192   12.137   84.958    1.111   21.239
+>   2097152  13.452   13.992   14.035   74.090    1.442   37.045
+>   1048576  12.759   11.996   12.195   83.194    2.152   83.194
+>    524288  11.895   12.297   12.587   83.570    1.945  167.140
+>    262144   7.325    7.285    7.444  139.304    1.272  557.214
+>    131072   7.992    8.832    7.952  124.279    5.901  994.228
+>     65536  10.940   10.062   10.122   98.847    3.715 1581.545
+>     32768   9.973   10.012    9.945  102.640    0.281 3284.493
+>     16384  11.377   10.538   10.692   94.316    3.100 6036.222
+> 
+> Unpatched, 512KB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   5.032    4.770    5.265  204.228    8.271    3.191
+>  33554432   5.569    5.712    5.863  179.263    3.755    5.602
+>  16777216   6.661    6.857    6.550  153.132    2.888    9.571
+>   8388608   8.022    8.000    7.978  127.998    0.288   16.000
+>   4194304  10.959   11.579   12.208   88.586    3.902   22.146
+>   2097152  13.692   12.670   12.625   78.906    2.914   39.453
+>   1048576  11.120   11.144   10.878   92.703    1.018   92.703
+>    524288  11.234   10.915   11.374   91.667    1.587  183.334
+>    262144   6.848    6.678    6.795  151.191    1.594  604.763
+>    131072   7.393    7.367    7.337  139.025    0.428 1112.202
+>     65536  10.003   10.919   10.015   99.466    4.019 1591.462
+>     32768  10.117   10.124   10.169  101.018    0.229 3232.574
+>     16384  11.614   11.027   11.029   91.293    2.207 5842.771
+> 
+> Unpatched, 2MB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   5.268    5.316    5.418  191.996    2.241    3.000
+>  33554432   5.831    6.459    6.110  167.259    6.977    5.227
+>  16777216   7.313    7.069    7.197  142.385    1.972    8.899
+>   8388608   8.657    8.500    8.498  119.754    1.039   14.969
+>   4194304  11.846   12.116   11.801   85.911    0.994   21.478
+>   2097152  12.917   13.652   13.100   77.484    1.808   38.742
+>   1048576   9.544   10.667   10.807   99.345    5.640   99.345
+>    524288  11.736    7.171    6.599  128.410   29.539  256.821
+>    262144   7.530    7.403    7.416  137.464    1.053  549.857
+>    131072   8.741    8.002    8.022  124.256    5.029  994.051
+>     65536  10.701   10.138   10.090   99.394    2.629 1590.311
+>     32768   9.978    9.950    9.934  102.875    0.188 3291.994
+>     16384  11.435   10.823   10.907   92.684    2.234 5931.749
+> 
+> Unpatched, 512KB readahead, 64 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   3.994    3.991    4.123  253.774    3.838    3.965
+>  33554432   4.100    4.329    4.161  244.111    5.569    7.628
+>  16777216   5.476    4.835    5.079  200.148   10.177   12.509
+>   8388608   5.484    5.258    5.227  192.470    4.084   24.059
+>   4194304   6.429    6.458    6.435  158.989    0.315   39.747
+>   2097152   7.219    7.744    7.306  138.081    4.187   69.040
+>   1048576   6.850    6.897    6.776  149.696    1.089  149.696
+>    524288   6.406    6.393    6.469  159.439    0.814  318.877
+>    262144   6.865    7.508    6.861  144.931    6.041  579.726
+>    131072   8.435    8.482    8.307  121.792    1.076  974.334
+>     65536   9.616    9.610   10.262  104.279    3.176 1668.462
+>     32768   9.682    9.932   10.015  103.701    1.497 3318.428
+>     16384  10.962   10.852   11.565   92.106    2.547 5894.813
+> 
+> Unpatched, 2MB readahead, 64 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   3.730    3.714    3.914  270.615    6.396    4.228
+>  33554432   4.445    3.999    3.989  247.710   12.276    7.741
+>  16777216   4.763    4.712    4.709  216.590    1.122   13.537
+>   8388608   5.001    5.086    5.229  200.649    3.673   25.081
+>   4194304   6.365    6.362    6.905  156.710    5.948   39.178
+>   2097152   7.390    7.367    7.270  139.470    0.992   69.735
+>   1048576   7.038    7.050    7.090  145.052    0.456  145.052
+>    524288   6.862    7.167    7.278  144.272    3.617  288.544
+>    262144   7.266    7.313    7.265  140.635    0.436  562.540
+>    131072   8.677    8.735    8.821  117.108    0.790  936.865
+>     65536  10.865   10.040   10.038   99.418    3.658 1590.685
+>     32768  10.167   10.130   10.177  100.805    0.201 3225.749
+>     16384  11.643   11.017   11.103   91.041    2.203 5826.629
+> 
+> Patched, 128KB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   5.670    5.188    5.636  186.555    7.671    2.915
+>  33554432   6.069    5.971    6.141  168.992    1.954    5.281
+>  16777216   7.821    7.501    7.372  135.451    3.340    8.466
+>   8388608   9.147    8.618    9.000  114.849    2.908   14.356
+>   4194304  12.199   12.914   12.381   81.981    1.964   20.495
+>   2097152  13.449   13.891   14.288   73.842    1.828   36.921
+>   1048576  11.890   12.182   11.519   86.360    1.984   86.360
+>    524288  11.899   12.706   12.135   83.678    2.287  167.357
+>    262144   7.460    7.559    7.563  136.041    0.864  544.164
+>    131072   7.987    8.003    8.530  125.403    3.792 1003.220
+>     65536  10.179   10.119   10.131  100.957    0.255 1615.312
+>     32768   9.899    9.923   10.589  101.114    3.121 3235.656
+>     16384  10.849   10.835   10.876   94.351    0.150 6038.474
+> 
+> Patched, 512KB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   5.062    5.111    5.083  201.358    0.795    3.146
+>  33554432   5.589    5.713    5.657  181.165    1.625    5.661
+>  16777216   6.337    7.220    6.457  154.002    8.690    9.625
+>   8388608   7.952    7.880    7.527  131.588    3.192   16.448
+>   4194304  10.695   11.224   10.736   94.119    2.047   23.530
+>   2097152  10.898   12.072   12.358   87.215    4.839   43.607
+>   1048576  10.890   11.347    9.290   98.166    8.664   98.166
+>    524288  10.898   11.032   10.887   93.611    0.560  187.223
+>    262144   6.714    7.230    6.804  148.219    4.724  592.875
+>    131072   7.325    7.342    7.363  139.441    0.295 1115.530
+>     65536   9.773    9.988   10.592  101.327    3.417 1621.227
+>     32768  10.031    9.995   10.086  102.019    0.377 3264.620
+>     16384  11.041   10.987   11.564   91.502    2.093 5856.144
+> 
+> Patched, 2MB readahead, 512 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   4.970    5.097    5.188  201.435    3.559    3.147
+>  33554432   5.588    5.793    5.169  186.042    8.923    5.814
+>  16777216   6.151    6.414    6.526  161.012    4.027   10.063
+>   8388608   7.836    7.299    7.475  135.980    3.989   16.998
+>   4194304  11.792   10.964   10.158   93.683    5.706   23.421
+>   2097152  11.225   11.492   11.357   90.162    0.866   45.081
+>   1048576  12.017   11.258   11.432   88.580    2.449   88.580
+>    524288   5.974   10.883   11.840  117.323   38.361  234.647
+>    262144   6.774    6.765    6.526  153.155    2.661  612.619
+>    131072   8.036    7.324    7.341  135.579    5.766 1084.633
+>     65536   9.964   10.595    9.999  100.608    2.806 1609.735
+>     32768  10.132   10.036   10.190  101.197    0.637 3238.308
+>     16384  11.133   11.568   11.036   91.093    1.850 5829.981
+> 
+> Patched, 512KB readahead, 64 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   3.722    3.698    3.721  275.759    0.809    4.309
+>  33554432   4.058    3.849    3.957  259.063    5.580    8.096
+>  16777216   4.601    4.613    4.738  220.212    2.913   13.763
+>   8388608   5.039    5.534    5.017  197.452    8.791   24.682
+>   4194304   6.302    6.270    6.282  162.942    0.341   40.735
+>   2097152   7.314    7.302    7.069  141.700    2.233   70.850
+>   1048576   6.881    7.655    6.909  143.597    6.951  143.597
+>    524288   7.163    7.025    6.951  145.344    1.803  290.687
+>    262144   7.315    7.233    7.299  140.621    0.689  562.482
+>    131072   9.292    8.756    8.807  114.475    3.036  915.803
+>     65536   9.942    9.985    9.960  102.787    0.181 1644.598
+>     32768  10.721   10.091   10.192   99.154    2.605 3172.935
+>     16384  11.049   11.016   11.065   92.727    0.169 5934.531
+> 
+> Patched, 2MB readahead, 64 max_sectors_kb
+> blocksize       R        R        R   R(avg,    R(std        R
+>   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+>  67108864   3.697    3.819    3.741  272.931    3.661    4.265
+>  33554432   3.951    3.905    4.038  258.320    3.586    8.073
+>  16777216   5.595    5.182    4.864  197.044   11.236   12.315
+>   8388608   5.267    5.156    5.116  197.725    2.431   24.716
+>   4194304   6.411    6.335    6.290  161.389    1.267   40.347
+>   2097152   7.329    7.663    7.462  136.860    2.502   68.430
+>   1048576   7.225    7.077    7.215  142.784    1.352  142.784
+>    524288   6.903    7.015    7.095  146.210    1.647  292.419
+>    262144   7.365    7.926    7.278  136.309    5.076  545.237
+>    131072   8.796    8.819    8.814  116.233    0.130  929.862
+>     65536   9.998   10.609    9.995  100.464    2.786 1607.423
+>     32768  10.161   10.124   10.246  100.623    0.505 3219.943
+> 
+> Regards,
+> Ronald.
