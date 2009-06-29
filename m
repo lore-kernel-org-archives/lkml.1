@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZF2Mob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757818AbZF2Mpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbZF2Mob (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 08:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZF2MoW
+	id S1757818AbZF2Mpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 08:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZF2MpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 08:44:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49871 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755686AbZF2MoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 08:44:21 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <2f11576a0906290048t29667ae0sd75c96d023b113e2@mail.gmail.com>
-References: <2f11576a0906290048t29667ae0sd75c96d023b113e2@mail.gmail.com> <3901.1245848839@redhat.com> <2015.1245341938@redhat.com> <20090618095729.d2f27896.akpm@linux-foundation.org> <7561.1245768237@redhat.com> <26537.1246086769@redhat.com> <20090627125412.GA1667@cmpxchg.org> <20090628113246.GA18409@localhost> <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <2f11576a0906280749v25ab725dn8f98fbc1d2e5a5fd@mail.gmail.com> <28c262360906280947o6f9358ddh20ab549e875282a9@mail.gmail.com> 
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: dhowells@redhat.com, Minchan Kim <minchan.kim@gmail.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: Found the commit that causes the OOMs
-Date: Mon, 29 Jun 2009 13:43:55 +0100
-Message-ID: <17087.1246279435@redhat.com>
+	Mon, 29 Jun 2009 08:45:18 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:5211
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751894AbZF2MpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 08:45:17 -0400
+Message-ID: <4A48B75C.5080209@panasas.com>
+Date: Mon, 29 Jun 2009 15:45:16 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: NeilBrown <neilb@suse.de>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Mike Snitzer <snitzer@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out
+ of the 'queue' sysfs directory.
+References: <yq11vp8spxo.fsf@sermon.lab.mkp.net> <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name> <20090625194015.GB31415@kernel.dk> <19012.49673.454853.975682@notabene.brown> <20090626125037.GO23611@kernel.dk> <f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name> <20090626132940.GR23611@kernel.dk> <19014.4447.248248.63960@notabene.brown> <20090629101841.GF23611@kernel.dk> <b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name> <20090629114121.GH23611@kernel.dk>
+In-Reply-To: <20090629114121.GH23611@kernel.dk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jun 2009 12:45:20.0350 (UTC) FILETIME=[7641D7E0:01C9F8B7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-
-> David, Can you please try to following patch? it was posted to LKML
-> about 1-2 week ago.
+On 06/29/2009 02:41 PM, Jens Axboe wrote:
+> On Mon, Jun 29 2009, NeilBrown wrote:
+>> On Mon, June 29, 2009 8:18 pm, Jens Axboe wrote:
+>>> On Sat, Jun 27 2009, Neil Brown wrote:
+>>>>> There's no such thing as first or second class block devices. The fact
+>>>>> that drivers using ->make_request_fn directly do not utilize the full
+>>>>> scope of the queue isn't a very interesting fact, imho.
+>>>>  Your phrase "drivers using ->make_request_fn directly" seems to
+>>>>  suggest you are looking at things very differently to me.
+>>>>
+>>>>  From my perspective, all drivers use ->make_request_fn equally.
+>>>>  Some set it to "__make_request", some to "md_make_request", others to
+>>>>  "dm_request" or "loop_make_request" etc.
+>>> Neil, will you please stop these silly games. Stop trying to invent
+>>> differences based on interpretations of what you read into my replies.
+>>
+>> We do seem to be having trouble communicating don't we :-(
+>> Be assured that it is not my intention to play games, silly or otherwise.
+>>
+>> Maybe I should just try sending you patches.  Maybe that will
+>> make my meaning clearer.
+>>
+>> For the moment, I'm much more interested in the other question,
+>> that of whether I can avoid having a 'queue' directory introduced into
+>> md/dm/etc device directories in sysfs.
 > 
-> Subject "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
-> isolate_lru_pages v2"
+> We already talked about this, several times. My answer is that it seems
+> pointless to begin with internally, and externally it just makes the API
+> worse since tools then have to know which device type they are talking
+> to.
+> 
 
-It is already committed, but I ran a test on the latest Linus kernel anyway:
+I do however see a problem with sysfs-files that mostly work for most devices
+but for some "device type" they do nothing silently. At least make these
+directory/files read-only for the un-used cases (eg. dm/md). And return proper
+values to indicate their un-usefulness like "-1" or "NA"
 
-msgctl11 invoked oom-killer: gfp_mask=0xd0, order=1, oom_adj=0
-msgctl11 cpuset=/ mems_allowed=0
-Pid: 20366, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #144
-Call Trace:
- [<ffffffff810718d2>] ? oom_kill_process.clone.0+0xa9/0x245
- [<ffffffff81071b99>] ? __out_of_memory+0x12b/0x142
- [<ffffffff81071c1a>] ? out_of_memory+0x6a/0x94
- [<ffffffff810742e4>] ? __alloc_pages_nodemask+0x42e/0x51d
- [<ffffffff81031416>] ? copy_process+0x95/0x114f
- [<ffffffff8107443c>] ? __get_free_pages+0x12/0x4f
- [<ffffffff81031439>] ? copy_process+0xb8/0x114f
- [<ffffffff8108192e>] ? handle_mm_fault+0x5dd/0x62f
- [<ffffffff8103260f>] ? do_fork+0x13f/0x2ba
- [<ffffffff81022c22>] ? do_page_fault+0x1f8/0x20d
- [<ffffffff8100b0d3>] ? stub_clone+0x13/0x20
- [<ffffffff8100ad6b>] ? system_call_fastpath+0x16/0x1b
-Mem-Info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 159
-CPU    1: hi:  186, btch:  31 usd:   2
-Active_anon:70477 active_file:1 inactive_anon:4514
- inactive_file:7 unevictable:0 dirty:0 writeback:0 unstable:0
- free:1954 slab:42078 mapped:237 pagetables:57791 bounce:0
-DMA free:3932kB min:60kB low:72kB high:88kB active_anon:236kB inactive_anon:0kB active_file:4kB inactive_file:4kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 968 968 968
-DMA32 free:3884kB min:3948kB low:4932kB high:5920kB active_anon:281672kB inactive_anon:18056kB active_file:0kB inactive_file:24kB unevictable:0kB present:992032kB pages_scanned:6 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 180*4kB 36*8kB 3*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB = 3936kB
-DMA32: 491*4kB 0*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3884kB
-1808 total pagecache pages
-0 pages in swap cache
-Swap cache stats: add 0, delete 0, find 0/0
-Free swap  = 0kB
-Total swap = 0kB
-255744 pages RAM
-5589 pages reserved
-249340 pages shared
-219039 pages non-shared
-Out of memory: kill process 11471 (msgctl11) score 112393 or a child
-Killed process 12318 (msgctl11)
+> So I still see absolutely zero point in making such a change, quite the
+> opposite.
+> 
 
-
-David
+Just my $0.017
+Boaz
