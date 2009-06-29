@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZF2Qp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZF2QrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753431AbZF2Qp7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 12:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZF2Qpw
+	id S1754775AbZF2QrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 12:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZF2QrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 12:45:52 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63645 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZF2Qpv (ORCPT
+	Mon, 29 Jun 2009 12:47:03 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:46505 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbZF2QrC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 12:45:51 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in dma_sync_*_for_cpu
-Date: Mon, 29 Jun 2009 18:45:15 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: Joerg Roedel <joerg.roedel@amd.com>, tom.leiming@gmail.com,
-       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com> <200906291822.18334.arnd@arndb.de> <20090629173121.768f2923@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090629173121.768f2923@lxorguk.ukuu.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906291845.16335.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+TdV1Bsl7AZxu/A4X+/hTJjBz5QXwj7moXAIQ
- YC/QmqcAoCk/ZCS+evqJbgfZ8s26gJ9FhVJV3pZyGmEOIWY97k
- DShAvMEZ12hSzfE7r+adg==
+	Mon, 29 Jun 2009 12:47:02 -0400
+Date: Mon, 29 Jun 2009 18:46:51 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Minkyu Kang <promsoft@gmail.com>
+Cc: Minkyu Kang <mk7.kang@samsung.com>, linux-kernel@vger.kernel.org,
+       linux-i2c@vger.kernel.org, lm-sensors@lm-sensors.org,
+       suchang.woo@samsung.com, kyungmin.park@samsung.com
+Subject: Re: [PATCH] hwmon: add GP2A002 proximity/ambient sensor
+Message-ID: <20090629184651.6fc3dca5@hyperion.delvare>
+In-Reply-To: <1f3430fb0906290347r92201acpb35087c55049d8c5@mail.gmail.com>
+References: <4A448926.1030701@samsung.com>
+	<20090626113059.4c0c2fb3@hyperion.delvare>
+	<1f3430fb0906290347r92201acpb35087c55049d8c5@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009, Alan Cox wrote:
-> > Wouldn't it be better to put the flush_write_buffer in the specific
-> > operation (swiotlb_sync_*_for_*) rather than the multiplexer?
-> > 
-> > Maybe in that case, smp_wmb() would be more appropriate because
-> > it is defined on all architectures.
+On Mon, 29 Jun 2009 19:47:26 +0900, Minkyu Kang wrote:
+> Hi Jean,
 > 
-> smp_wmb() is stronger and it would slow down x86 if we did that (we'd go
-> from no-op on a coherent platform to using mfence/lfence etc)
+> 2009/6/26 Jean Delvare <khali@linux-fr.org>:
+> > On Fri, 26 Jun 2009 17:39:02 +0900, Minkyu Kang wrote:
+> >> The GP2A002 is a I2C interfaced Sensor for Proximity/Ambient
+> >> This patch adds support the GP2A002 sensor
+> >>
+> >> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
+> >> Signed-off-by: Suchang Woo <suchang.woo@samsung.com>
+> >> ---
+> >>  drivers/hwmon/Kconfig    |    7 +
+> >>  drivers/hwmon/Makefile   |    1 +
+> >>  drivers/hwmon/gp2ap002.c |  471 ++++++++++++++++++++++++++++++++++++++++++++++
+> >>  include/linux/gp2ap002.h |   21 ++
+> >>  4 files changed, 500 insertions(+), 0 deletions(-)
+> >>  create mode 100644 drivers/hwmon/gp2ap002.c
+> >>  create mode 100644 include/linux/gp2ap002.h
+> >>
+> >> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> >> index 2d50166..cc4e200 100644
+> >> --- a/drivers/hwmon/Kconfig
+> >> +++ b/drivers/hwmon/Kconfig
+> >> @@ -1017,6 +1017,13 @@ config SENSORS_APPLESMC
+> >>         Say Y here if you have an applicable laptop and want to experience
+> >>         the awesome power of applesmc.
+> >>
+> >> +config SENSORS_GP2AP002
+> >> +     tristate "GP2AP002 series Proximity/Ambient Sensor"
+> >> +     depends on HWMON && I2C
+> >> +     help
+> >> +       This driver provides support for Proximity/Ambient Sensor.
+> >> +
+> >
+> > This doesn't have anything to do with hardware monitoring, so this
+> > doesn't belong to drivers/hwmon.
+> >
 > 
-Really? In my copy of system.h, I read
+> Can you please explain about belong to hardware monitoring?
+> did i missing something?
 
-#ifdef CONFIG_SMP
-# ifdef CONFIG_X86_OOSTORE
-#  define smp_wmb()      wmb()
-# else
-#  define smp_wmb()      barrier()
-# endif
-#else
-# define smp_wmb()       barrier()
-#endif
+I'm not sure how I can explain it better. Your driver is for a device
+which is no a hardware monitoring chip, so this driver should not be
+located in the drivers/hwmon directory.
 
-That actually looks weaker than flush_write_buffer, as it would turn into
-a barrier() in case of !SMP or !X86_OOSTORE, and into an sfence instead of
-lock addl on all modern CPUs in case of SMP && X86_OOSTORE.
-
-Of course that raises the question of whether smp_wmb() is too weak in case of
-!SMP or X86_PPRO_FENCE, but with the described scenario, I don't think
-it does.
-
-	Arnd <><
+-- 
+Jean Delvare
