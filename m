@@ -1,150 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZF2POk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbZF2PQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbZF2POk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 11:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZF2POd
+	id S1759560AbZF2PQu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 11:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZF2PQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 11:14:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31533 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753041AbZF2POc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 11:14:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="159623201"
-Date: Mon, 29 Jun 2009 23:14:18 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: David Howells <dhowells@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-ID: <20090629151417.GA29796@localhost>
-References: <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com> <28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com> <20090628142239.GA20986@localhost> <2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com> <20090628151026.GB25076@localhost> <20090629091741.ab815ae7.minchan.kim@barrios-desktop> <17678.1246270219@redhat.com> <20090629125549.GA22932@localhost> <29432.1246285300@redhat.com> <28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
+	Mon, 29 Jun 2009 11:16:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:64344 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZF2PQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 11:16:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=JK9fGRo5ARNuaxrLi6hbW3yz9kJRsancYPxBXMBp3DNkk+BS2oA8YYrLEM1zxSW5PW
+         2/LqWPYWiTISUMmGCvq9Hnajp4R8/9/x6B6wLFPEl94Qydj5nYCmx9KYoyv5w3mPPXU+
+         RjsbZOQpzca74eVSNQ5NGIvqFJto/Ym8GTsAE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Mon, 29 Jun 2009 11:16:40 -0400
+Message-ID: <817ecb6f0906290816t2537e5des3b78b32c6fd16700@mail.gmail.com>
+Subject: [PATCH v2] RO/NX protection for loadable kernel modules
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>, Andi Kleen <ak@muc.de>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 11:00:26PM +0800, Minchan Kim wrote:
-> On Mon, Jun 29, 2009 at 11:21 PM, David Howells<dhowells@redhat.com> wrote:
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >
-> >> Sorry! This one compiles OK:
-> >
-> > Sadly that doesn't seem to work either:
-> >
-> > msgctl11 invoked oom-killer: gfp_mask=0x200da, order=0, oom_adj=0
-> > msgctl11 cpuset=/ mems_allowed=0
-> > Pid: 30858, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #146
-> > Call Trace:
-> >  [<ffffffff8107207e>] ? oom_kill_process.clone.0+0xa9/0x245
-> >  [<ffffffff81072345>] ? __out_of_memory+0x12b/0x142
-> >  [<ffffffff810723c6>] ? out_of_memory+0x6a/0x94
-> >  [<ffffffff81074a90>] ? __alloc_pages_nodemask+0x42e/0x51d
-> >  [<ffffffff81080843>] ? do_wp_page+0x2c6/0x5f5
-> >  [<ffffffff810820c1>] ? handle_mm_fault+0x5dd/0x62f
-> >  [<ffffffff81022c32>] ? do_page_fault+0x1f8/0x20d
-> >  [<ffffffff812e069f>] ? page_fault+0x1f/0x30
-> > Mem-Info:
-> > DMA per-cpu:
-> > CPU    0: hi:    0, btch:   1 usd:   0
-> > CPU    1: hi:    0, btch:   1 usd:   0
-> > DMA32 per-cpu:
-> > CPU    0: hi:  186, btch:  31 usd:  38
-> > CPU    1: hi:  186, btch:  31 usd: 106
-> > Active_anon:75040 active_file:0 inactive_anon:2031
-> >  inactive_file:0 unevictable:0 dirty:0 writeback:0 unstable:0
-> >  free:1951 slab:41499 mapped:301 pagetables:60674 bounce:0
-> > DMA free:3932kB min:60kB low:72kB high:88kB active_anon:2868kB inactive_anon:384kB active_file:0kB inactive_file:0kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
-> > lowmem_reserve[]: 0 968 968 968
-> > DMA32 free:3872kB min:3948kB low:4932kB high:5920kB active_anon:297292kB inactive_anon:7740kB active_file:0kB inactive_file:0kB unevictable:0kB present:992032kB pages_scanned:0 all_unreclaimable? no
-> > lowmem_reserve[]: 0 0 0 0
-> > DMA: 7*4kB 0*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3932kB
-> > DMA32: 500*4kB 2*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3872kB
-> > 1928 total pagecache pages
-> > 0 pages in swap cache
-> > Swap cache stats: add 0, delete 0, find 0/0
-> > Free swap  = 0kB
-> > Total swap = 0kB
-> > 255744 pages RAM
-> > 5589 pages reserved
-> > 238251 pages shared
-> > 216210 pages non-shared
-> > Out of memory: kill process 25221 (msgctl11) score 130560 or a child
-> > Killed process 26379 (msgctl11)
-> 
-> Totally, I can't understand this situation.
-> Now, this page allocation is order zero and It is just likely GFP_HIGHUSER.
-> So it's unlikely interrupt context.
-> 
-> Buddy already has enough fallback DMA32, I think.
-> Why kernel can't allocate page for order 0 ?
-> Is it allocator bug ?
+This patch is a logical extension of the protection provided by
+CONFIG_DEBUG_RODATA to LKMs. The protection is provided by splitting
+module_core and module_init into three logical parts each and setting
+appropriate page access permissions for each individual section:
 
-Yes this time the OOM order/flags are much different from all previous OOMs.
+  1. Code: RO+X
+  2. RO data: RO+NX
+  3. RW data: RW+NX
 
-btw, I found that msgctl11 is pretty good at making a lot of SUnreclaim and PageTables pages:
+In order to achieve proper protection, layout_sections() have been
+modified to align each of the three parts mentioned above onto page
+boundary. Next, the corresponding page access permissions are set
+right before successful exit from load_module(). Further,
+module_free() have been modified to set module_core or module_init as
+RW+NX right before calling vfree(). Functionality of this patch is
+enabled only when CONFIG_DEBUG_RODATA defined at compile time.
 
-before                           during 1                       during 2                       after
+This is the second revision of the patch: it have been re-written to reduce the
+number of #ifdefs and to make it architecture-agnostic. Code formatting have
+been corrected also.
 
-MemTotal:        3931880 kB      MemTotal:        3931880 kB    MemTotal:        3931880 kB    MemTotal:        3931880 kB
-MemFree:          985944 kB      MemFree:         1489364 kB    MemFree:         2069184 kB    MemFree:         2853900 kB
-Buffers:           41704 kB      Buffers:           16080 kB    Buffers:           16104 kB    Buffers:           16200 kB
-Cached:          1899740 kB      Cached:           126780 kB    Cached:           129092 kB    Cached:           130552 kB
-SwapCached:            0 kB      SwapCached:            0 kB    SwapCached:            0 kB    SwapCached:            0 kB
-Active:           402420 kB      Active:           812320 kB    Active:           643868 kB    Active:           354880 kB
-Inactive:        2325644 kB      Inactive:         576732 kB    Inactive:         578792 kB    Inactive:         579640 kB
-Active(anon):     333720 kB      Active(anon):     781264 kB    Active(anon):     612632 kB    Active(anon):     323448 kB
-Inactive(anon):   470764 kB      Inactive(anon):   482792 kB    Inactive(anon):   482680 kB    Inactive(anon):   482268 kB
-Active(file):      68700 kB      Active(file):      31056 kB    Active(file):      31236 kB    Active(file):      31432 kB
-Inactive(file):  1854880 kB      Inactive(file):    93940 kB    Inactive(file):    96112 kB    Inactive(file):    97372 kB
-Unevictable:           4 kB      Unevictable:           4 kB    Unevictable:           4 kB    Unevictable:           4 kB
-Mlocked:               4 kB      Mlocked:               4 kB    Mlocked:               4 kB    Mlocked:               4 kB
-SwapTotal:             0 kB      SwapTotal:             0 kB    SwapTotal:             0 kB    SwapTotal:             0 kB
-SwapFree:              0 kB      SwapFree:              0 kB    SwapFree:              0 kB    SwapFree:              0 kB
-Dirty:               996 kB      Dirty:               536 kB    Dirty:              1348 kB    Dirty:               212 kB
-Writeback:             0 kB      Writeback:             0 kB    Writeback:             0 kB    Writeback:             0 kB
-AnonPages:        786772 kB      AnonPages:       1246280 kB    AnonPages:       1077352 kB    AnonPages:        787856 kB
-Mapped:            53504 kB      Mapped:            50420 kB    Mapped:            50668 kB    Mapped:            50716 kB
-Slab:             159340 kB      Slab:             339708 kB    Slab:             227164 kB    Slab:              85272 kB
-SReclaimable:     125152 kB      SReclaimable:      49188 kB    SReclaimable:      48944 kB    SReclaimable:      48508 kB
-SUnreclaim:        34188 kB      SUnreclaim:       290520 kB    SUnreclaim:       178220 kB    SUnreclaim:        36764 kB
-PageTables:        17068 kB      PageTables:       363716 kB    PageTables:       204336 kB    PageTables:        16620 kB
-NFS_Unstable:          0 kB      NFS_Unstable:          0 kB    NFS_Unstable:          0 kB    NFS_Unstable:          0 kB
-Bounce:                0 kB      Bounce:                0 kB    Bounce:                0 kB    Bounce:                0 kB
-WritebackTmp:          0 kB      WritebackTmp:          0 kB    WritebackTmp:          0 kB    WritebackTmp:          0 kB
-CommitLimit:     1965940 kB      CommitLimit:     1965940 kB    CommitLimit:     1965940 kB    CommitLimit:     1965940 kB
-Committed_AS:    1130516 kB      Committed_AS:   79437584 kB    Committed_AS:   43472636 kB    Committed_AS:    1122240 kB
-VmallocTotal:   34359738367 kB   VmallocTotal:   34359738367 kB VmallocTotal:   34359738367 kB VmallocTotal:   34359738367 kB
-VmallocUsed:       91504 kB      VmallocUsed:       91504 kB    VmallocUsed:       91504 kB    VmallocUsed:       91504 kB
-VmallocChunk:   34359582075 kB   VmallocChunk:   34359582075 kB VmallocChunk:   34359582075 kB VmallocChunk:   34359582075 kB
-HugePages_Total:       0         HugePages_Total:       0       HugePages_Total:       0       HugePages_Total:       0
-HugePages_Free:        0         HugePages_Free:        0       HugePages_Free:        0       HugePages_Free:        0
-HugePages_Rsvd:        0         HugePages_Rsvd:        0       HugePages_Rsvd:        0       HugePages_Rsvd:        0
-HugePages_Surp:        0         HugePages_Surp:        0       HugePages_Surp:        0       HugePages_Surp:        0
-Hugepagesize:       2048 kB      Hugepagesize:       2048 kB    Hugepagesize:       2048 kB    Hugepagesize:       2048 kB
-DirectMap4k:        6848 kB      DirectMap4k:        6848 kB    DirectMap4k:        6848 kB    DirectMap4k:        6848 kB
-DirectMap2M:     4120576 kB      DirectMap2M:     4120576 kB    DirectMap2M:     4120576 kB    DirectMap2M:     4120576 kB
+The patch have been developed for Linux 2.6.30.
+
+Signed-off-by: Siarhei Liakh <sliakh.lkml@gmail.com>
+Signed-off-by: Xuxian Jiang <jiang@cs.ncsu.edu>
 
 
-My kernel is 2.6.30.
+diff --git a/include/linux/module.h b/include/linux/module.h
+index 627ac08..75e7428 100644
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -293,6 +293,11 @@ struct module
+ 	/* The size of the executable code in each section.  */
+ 	unsigned int init_text_size, core_text_size;
 
-Thanks,
-Fengguang
++#ifdef CONFIG_DEBUG_RODATA
++	/* Size of RO sections of the module (text+rodata) */
++	unsigned int init_ro_size, core_ro_size;
++#endif
++
+ 	/* Arch-specific module values */
+ 	struct mod_arch_specific arch;
 
+diff --git a/kernel/module.c b/kernel/module.c
+index e797812..7a35321 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -63,6 +63,125 @@
+ #define ARCH_SHF_SMALL 0
+ #endif
+
++#ifdef CONFIG_DEBUG_RODATA
++/* LKM RO/NX protection: set of macros to protect module's text/ro-data
++ * from modification and any data from execution.
++ * Siarhei Liakh, Xuxian Jiang  */
++
++/* Given BASE and SIZE this macro calculates the number of pages this
++ * memory regions occupies */
++#define NUMBER_OF_PAGES(BASE, SIZE) ((unsigned long) \
++	(((unsigned long) BASE + (unsigned long) SIZE) >> PAGE_SHIFT) - \
++	(((unsigned long) BASE) >> PAGE_SHIFT) + ((SIZE > 0) ? 1 : 0))
++
++/* Sets RO and NX regions for module core and init sections */
++#define SET_SECTION_RO_NX(BASE, TEXT_PAGES, RO_PAGES, TOTAL_PAGES) 	\
++	do {								\
++		DEBUGP("MODULE SECTION: 0x%lx %lu\n"			\
++			"  RO: 0x%lx %lu\n"				\
++			"  NX: 0x%lx %lu\n",				\
++			(unsigned long)BASE, (unsigned long)TOTAL_PAGES,\
++			(unsigned long)BASE, (unsigned long)RO_PAGES,	\
++			(unsigned long)BASE +				\
++			  ((unsigned long)TEXT_PAGES << PAGE_SHIFT),	\
++			(unsigned long)TOTAL_PAGES -			\
++			  (unsigned long)TEXT_PAGES);			\
++		if (RO_PAGES > 0)					\
++			set_memory_ro((unsigned long)BASE,		\
++					(unsigned long)RO_PAGES);	\
++		if (TOTAL_PAGES > TEXT_PAGES)				\
++			set_memory_nx((unsigned long)BASE + 		\
++					  ((unsigned long)TEXT_PAGES <<	\
++					    PAGE_SHIFT) ,		\
++					(unsigned long)TOTAL_PAGES -	\
++					  (unsigned long)TEXT_PAGES);	\
++	} while (0)
++
++#define PROTECT_MODULE(MOD) 					\
++	do {							\
++		/* Set RO and NX regions for core */		\
++		SET_SECTION_RO_NX(MOD->module_core,		\
++			NUMBER_OF_PAGES(MOD->module_core,	\
++					 MOD->core_text_size),	\
++			NUMBER_OF_PAGES(MOD->module_core,	\
++					 MOD->core_ro_size),	\
++			NUMBER_OF_PAGES(MOD->module_core,	\
++					 MOD->core_size));	\
++		/* Set RO and NX regions for init */		\
++		SET_SECTION_RO_NX(MOD->module_init,		\
++			NUMBER_OF_PAGES(MOD->module_init,	\
++					 MOD->init_text_size),	\
++			NUMBER_OF_PAGES(MOD->module_init,	\
++					 MOD->init_ro_size),	\
++			NUMBER_OF_PAGES(MOD->module_init,	\
++					 MOD->init_size));	\
++	} while (0)
++
++#define DEFINE_ALIGNMENT_FLAG(ALIGN_FLAG) int ALIGN_FLAG
++#define SET_ALIGNMENT_FLAG(ALIGN_FLAG, VAL)			\
++	do { ALIGN_FLAG = VAL; } while (0)
++
++#define ALIGN_MODULE_SECTION(SECTION_SIZE, ALIGN_FLAG)		\
++	do {							\
++		if (ALIGN_FLAG) {				\
++			SECTION_SIZE = ALIGN(SECTION_SIZE,	\
++						PAGE_SIZE);	\
++			ALIGN_FLAG = 0;				\
++		}						\
++	} while (0)
++
++#define CATCH_MODULE_RO_SECTION(SEC_GROUP, RO_SIZE, SIZE, ALIGN_FLAG)	\
++	do {								\
++		if (SEC_GROUP == 1) {					\
++			/* module RO size (text+rodata)	*/		\
++			RO_SIZE = SIZE;					\
++			/* next section should start on new page */	\
++			SET_ALIGNMENT_FLAG(ALIGN_FLAG, 1);		\
++		}							\
++	} while (0)
++
++
++/* Free memory returned from generic_module_alloc, since
++ * module_free() is platform-specific */
++void generic_module_free(struct module *mod, void *module_region)
++{
++	unsigned long total_pages;
++
++	if (mod->module_core == module_region) {
++		/* Set core as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_core, mod->core_size);
++		DEBUGP("RELEASING MODULE CORE: 0x%lx %lu\n",
++				(unsigned long)mod->module_core, total_pages);
++		set_memory_nx((unsigned long)mod->module_core, total_pages);
++		set_memory_rw((unsigned long)mod->module_core, total_pages);
++
++	} else if (mod->module_init == module_region) {
++		/* Set init as NX+RW */
++		total_pages = NUMBER_OF_PAGES(mod->module_init, mod->init_size);
++		DEBUGP("RELEASING MODULE INIT: 0x%lx %lu\n",
++				(unsigned long)mod->module_init, total_pages);
++		set_memory_nx((unsigned long)mod->module_init, total_pages);
++		set_memory_rw((unsigned long)mod->module_init, total_pages);
++	}
++	module_free(mod, module_region);
++}
++
++#else
++
++#define PROTECT_MODULE(MOD) do { ; } while (0)
++#define generic_module_free(mod, module_region) module_free(mod ,
+module_region)
++
++#define DEFINE_ALIGNMENT_FLAG(ALIGN_FLAG)
++#define SET_ALIGNMENT_FLAG(ALIGN_FLAG, VAL)
++#define ALIGN_MODULE_SECTION(SECTION_SIZE, ALIGN_FLAG)
++#define CATCH_MODULE_RO_SECTION(SEC_GROUP, RO_SIZE, SIZE, ALIGN_FLAG)
++
++#endif
++
++/* Generic memory allocation for modules, since
++ * module_alloc() is platform-specific */
++#define generic_module_alloc(size) module_alloc(size)
++
+ /* If this is set, the section belongs in the init part of the module */
+ #define INIT_OFFSET_MASK (1UL << (BITS_PER_LONG-1))
+
+@@ -1493,7 +1612,7 @@ static void free_module(struct module *mod)
+ 	ftrace_release(mod->module_core, mod->core_size);
+
+ 	/* This may be NULL, but that's OK */
+-	module_free(mod, mod->module_init);
++	generic_module_free(mod, mod->module_init);
+ 	kfree(mod->args);
+ 	if (mod->percpu)
+ 		percpu_modfree(mod->percpu);
+@@ -1505,7 +1624,7 @@ static void free_module(struct module *mod)
+ 	lockdep_free_key_range(mod->module_core, mod->core_size);
+
+ 	/* Finally, free the core (containing the module structure) */
+-	module_free(mod, mod->module_core);
++	generic_module_free(mod, mod->module_core);
+ }
+
+ void *__symbol_get(const char *symbol)
+@@ -1661,10 +1780,12 @@ static void layout_sections(struct module *mod,
+ 		{ ARCH_SHF_SMALL | SHF_ALLOC, 0 }
+ 	};
+ 	unsigned int m, i;
++	DEFINE_ALIGNMENT_FLAG(need_alignment);
+
+ 	for (i = 0; i < hdr->e_shnum; i++)
+ 		sechdrs[i].sh_entsize = ~0UL;
+
++	SET_ALIGNMENT_FLAG(need_alignment, 1);
+ 	DEBUGP("Core section allocation order:\n");
+ 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
+ 		for (i = 0; i < hdr->e_shnum; ++i) {
+@@ -1675,13 +1796,22 @@ static void layout_sections(struct module *mod,
+ 			    || s->sh_entsize != ~0UL
+ 			    || strstarts(secstrings + s->sh_name, ".init"))
+ 				continue;
++			ALIGN_MODULE_SECTION(mod->core_size, need_alignment);
+ 			s->sh_entsize = get_offset(mod, &mod->core_size, s, i);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		if (m == 0) {
++			/* module code size */
+ 			mod->core_text_size = mod->core_size;
++			/* Align next section, if needed */
++			SET_ALIGNMENT_FLAG(need_alignment, 1);
++		}
++
++		CATCH_MODULE_RO_SECTION(m, mod->core_ro_size,
++					mod->core_size,	need_alignment);
+ 	}
+
++	SET_ALIGNMENT_FLAG(need_alignment, 1);
+ 	DEBUGP("Init section allocation order:\n");
+ 	for (m = 0; m < ARRAY_SIZE(masks); ++m) {
+ 		for (i = 0; i < hdr->e_shnum; ++i) {
+@@ -1692,12 +1822,20 @@ static void layout_sections(struct module *mod,
+ 			    || s->sh_entsize != ~0UL
+ 			    || !strstarts(secstrings + s->sh_name, ".init"))
+ 				continue;
++			ALIGN_MODULE_SECTION(mod->init_size, need_alignment);
+ 			s->sh_entsize = (get_offset(mod, &mod->init_size, s, i)
+ 					 | INIT_OFFSET_MASK);
+ 			DEBUGP("\t%s\n", secstrings + s->sh_name);
+ 		}
+-		if (m == 0)
++		if (m == 0) {
++			/* module code size */
+ 			mod->init_text_size = mod->init_size;
++			/* Align next section, if needed */
++			SET_ALIGNMENT_FLAG(need_alignment, 1);
++		}
++
++		CATCH_MODULE_RO_SECTION(m, mod->init_ro_size,
++					mod->init_size,	need_alignment);
+ 	}
+ }
+
+@@ -1866,7 +2004,7 @@ static void dynamic_debug_setup(struct _ddebug
+*debug, unsigned int num)
+
+ static void *module_alloc_update_bounds(unsigned long size)
+ {
+-	void *ret = module_alloc(size);
++	void *ret = generic_module_alloc(size);
+
+ 	if (ret) {
+ 		/* Update module bounds. */
+@@ -2291,6 +2429,9 @@ static noinline struct module *load_module(void
+__user *umod,
+ 	/* Get rid of temporary copy */
+ 	vfree(hdr);
+
++	/* Set RO/NX protection, if enabled*/
++	PROTECT_MODULE(mod);
++
+ 	/* Done! */
+ 	return mod;
+
+@@ -2309,9 +2450,9 @@ static noinline struct module *load_module(void
+__user *umod,
+  free_init:
+ 	percpu_modfree(mod->refptr);
+ #endif
+-	module_free(mod, mod->module_init);
++	generic_module_free(mod, mod->module_init);
+  free_core:
+-	module_free(mod, mod->module_core);
++	generic_module_free(mod, mod->module_core);
+ 	/* mod will be freed with core. Don't access it beyond this line! */
+  free_percpu:
+ 	if (percpu)
+@@ -2394,7 +2535,7 @@ SYSCALL_DEFINE3(init_module, void __user *, umod,
+ 	mutex_lock(&module_mutex);
+ 	/* Drop initial reference. */
+ 	module_put(mod);
+-	module_free(mod, mod->module_init);
++	generic_module_free(mod, mod->module_init);
+ 	mod->module_init = NULL;
+ 	mod->init_size = 0;
+ 	mod->init_text_size = 0;
