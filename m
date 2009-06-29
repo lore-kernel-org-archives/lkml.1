@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZF2NNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZF2NPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZF2NNt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 09:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbZF2NNk
+	id S1758601AbZF2NPP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 09:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZF2NPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 09:13:40 -0400
-Received: from mga14.intel.com ([143.182.124.37]:33371 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbZF2NNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 09:13:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,309,1243839600"; 
-   d="scan'208";a="159581684"
-Date: Mon, 29 Jun 2009 21:13:27 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Ronald Moesbergen <intercommit@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "Alan.Brunelle@hp.com" <Alan.Brunelle@hp.com>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-Message-ID: <20090629131326.GA23668@localhost>
-References: <20090606233056.7B9F.A69D9226@jp.fujitsu.com> <20090606224538.GA6173@localhost> <20090618120436.ad3196e3.akpm@linux-foundation.org> <20090620035504.GA19516@localhost> <4A3CD62B.1020407@vlnb.net> <20090629093423.GB1315@localhost> <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com> <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost> <4A48BBF9.6050408@vlnb.net>
+	Mon, 29 Jun 2009 09:15:04 -0400
+Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:52194 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754171AbZF2NPD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 09:15:03 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(z21eWz98dRzz1202hzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KM04SF-03-FZA-01
+Date: Mon, 29 Jun 2009 15:14:40 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.30-rc1] lockdep false positive in DMA debug API...
+Message-ID: <20090629131440.GN5139@amd.com>
+References: <6278d2220906280405y731f7f2l65472ec5f62dbc83@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <4A48BBF9.6050408@vlnb.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <6278d2220906280405y731f7f2l65472ec5f62dbc83@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 29 Jun 2009 13:14:40.0922 (UTC) FILETIME=[8FA3CFA0:01C9F8BB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 09:04:57PM +0800, Vladislav Bolkhovitin wrote:
-> Wu Fengguang, on 06/29/2009 04:54 PM wrote:
-> > 
-> > Why not 2.6.30? :)
-> 
-> We started with 2.6.29, so why not complete with it (to save additional 
-> Ronald's effort to move on 2.6.30)?
+On Sun, Jun 28, 2009 at 12:05:17PM +0100, Daniel J Blueman wrote:
+> With 2.6.30-rc1, I'm seeing the lockdep validator spinning it's wheels
+> [1] (also already seen [2]) on the DMA debug interface, with the
+> hashed locks.
 
-OK, that's fair enough.
+If you don't actually mean 2.6.3_1_-rc1 this is a known bug which was
+fixed for 2.6.30-final.
 
-Fengguang
+	Joerg
+
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
