@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbZF2JJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbZF2JMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752972AbZF2JJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 05:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF2JJm
+	id S1756394AbZF2JMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 05:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZF2JMc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 05:09:42 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:62529 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbZF2JJm (ORCPT
+	Mon, 29 Jun 2009 05:12:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42505 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbZF2JMb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 05:09:42 -0400
-Message-ID: <4A4884D6.3090404@monstr.eu>
-Date: Mon, 29 Jun 2009 11:09:42 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 29 Jun 2009 05:12:31 -0400
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, oleg@redhat.com,
+       eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: fix race in the receive/select
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com>
+Date: Mon, 29 Jun 2009 11:12:33 +0200
+In-Reply-To: <20090625122545.GA3625@jolsa.lab.eng.brq.redhat.com> (Jiri Olsa's message of "Thu, 25 Jun 2009 14:25:45 +0200")
+Message-ID: <87eit3l7y6.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
-       benh@kernel.crashing.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, linux@arm.linux.org.uk
-Subject: Move of_node_to_nid to generic location
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+Jiri Olsa <jolsa@redhat.com> writes:
 
-I have on my list one task which needs to be discuss with you.
-I look at of_node_to_nid for non NUMA systems. I think we should
-move this function to asm-generic/topology.h.
+> Adding memory barrier to the __pollwait function paired with 
+> receive callbacks.  The smp_mb__after_lock define is added, 
+> since {read|write|spin}_lock() on x86 are full memory barriers.
 
-This function is used for powerpc, sparc, microblaze (and maybe future arm?)
+I was wondering did you see that race actually happening in practice?
+If yes on which system?
 
-Arnd what do you think?
+At least on x86 I can't see how it happens. mb() is only a compile
+time barrier and the compiler doesn't optimize over indirect callbacks
+like __pollwait() anyways.
 
-Michal
+It might be still needed on some weaker ordered architectures, but did you
+actually see it there?
+
+-Andi
 
 -- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+ak@linux.intel.com -- Speaking for myself only.
