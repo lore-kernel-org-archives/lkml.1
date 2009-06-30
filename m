@@ -1,145 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZFZPwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbZF3WBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbZFZPwy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 26 Jun 2009 11:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFZPwm
+	id S1756608AbZF3WBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZF3WB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 26 Jun 2009 11:52:42 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:62581 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757395AbZFZPwj (ORCPT
+	Tue, 30 Jun 2009 18:01:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59028 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753063AbZF3WB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 26 Jun 2009 11:52:39 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i6bh43j67h)
-X-Spam-TCS-SCL: 6:0
-X-WSS-ID: 0KLUS3B-02-VM5-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: linux-kernel@vger.kernel.org, davej@redhat.com, cpufreq@vger.kernel.org
-Subject: [PATCH][cpufreq][Powernow-k8] support family 0xf with 2 low p-states
-Date: Sun, 26 Jul 2009 10:55:25 -0500
-User-Agent: KMail/1.9.10
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200907261055.25501.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 26 Jun 2009 15:52:30.0519 (UTC) FILETIME=[1CB86470:01C9F676]
+	Tue, 30 Jun 2009 18:01:26 -0400
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH tip 3/3] perf_counter tools: Add --symbols parameter to 'perf report'
+Date: Tue, 30 Jun 2009 19:01:22 -0300
+Message-Id: <1246399282-20934-4-git-send-email-acme@redhat.com>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1246399282-20934-3-git-send-email-acme@redhat.com>
+References: <1246399282-20934-1-git-send-email-acme@redhat.com>
+ <1246399282-20934-2-git-send-email-acme@redhat.com>
+ <1246399282-20934-3-git-send-email-acme@redhat.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide support for family 0xf processors with 2 P-states
-below the elevator voltage.  Remove the checks that prevent
-this configuration from being supported and increase the
-transition voltage to prevent errors during the transition.
+So that we can filter by symbol name.
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+The 'pfunct' utility in the 'dwarves' package can be used to create a
+file with the functions one wants.
+
+Example:
+
+[acme@doppio pahole]$ pfunct /usr/lib/debug/usr/lib64/libdw-0.141.so.debug | grep dwarf > /tmp/dwarf.symbols
+[acme@doppio pahole]$ wc -l /tmp/dwarf.symbols
+93 /tmp/dwarf.symbols
+[acme@doppio pahole]$ head -3 /tmp/dwarf.symbols
+dwfl_addrdwarf
+dwfl_module_getdwarf
+dwfl_getdwarf
+[acme@doppio pahole]$ perf report --sort comm,dso,symbol --comms pahole --dsos /usr/lib64/libdw-0.141.so --symbols file:///tmp/dwarf.symbols
+
+    33.99%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_tag
+    29.07%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_decl_file
+    27.71%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_getsrclines
+     4.54%            pahole  /usr/lib64/libdw-0.141.so  0x00000000007400
+     3.93%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_decl_line
+     0.46%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_getlocation
+     0.18%            pahole  /usr/lib64/libdw-0.141.so  [.] __libdwarf_next_prime
+     0.13%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_diecu
+
+[acme@doppio pahole]$
+
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   30 ++++++++++------------------
- arch/x86/kernel/cpu/cpufreq/powernow-k8.h |    3 +-
- 2 files changed, 13 insertions(+), 20 deletions(-)
+ tools/perf/Documentation/perf-report.txt |    4 ++++
+ tools/perf/builtin-report.c              |   10 ++++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-index 81cbe64..ae068f5 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -299,7 +299,7 @@ static int transition_pstate(struct powernow_k8_data *data, u32 pstate)
- static int transition_fid_vid(struct powernow_k8_data *data,
- 		u32 reqfid, u32 reqvid)
- {
--	if (core_voltage_pre_transition(data, reqvid))
-+	if (core_voltage_pre_transition(data, reqvid, reqfid))
- 		return 1;
+diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+index 4c44ef1..8aa3f8c 100644
+--- a/tools/perf/Documentation/perf-report.txt
++++ b/tools/perf/Documentation/perf-report.txt
+@@ -28,6 +28,10 @@ OPTIONS
+ --comms=::
+ 	Only consider symbols in these comms. CSV that understands
+ 	file://filename entries.
++-S::
++--symbols=::
++	Only consider these symbols. CSV that understands
++	file://filename entries.
  
- 	if (core_frequency_transition(data, reqfid))
-@@ -327,17 +327,20 @@ static int transition_fid_vid(struct powernow_k8_data *data,
+ SEE ALSO
+ --------
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 8143477..135b783 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -33,8 +33,8 @@ static char		*vmlinux = NULL;
  
- /* Phase 1 - core voltage transition ... setup voltage */
- static int core_voltage_pre_transition(struct powernow_k8_data *data,
--		u32 reqvid)
-+		u32 reqvid, u32 reqfid)
- {
- 	u32 rvosteps = data->rvo;
- 	u32 savefid = data->currfid;
--	u32 maxvid, lo;
-+	u32 maxvid, lo, rvomult = 1;
+ static char		default_sort_order[] = "comm,dso";
+ static char		*sort_order = default_sort_order;
+-static char		*dso_list_str, *comm_list_str;
+-static struct strlist	*dso_list, *comm_list;
++static char		*dso_list_str, *comm_list_str, *sym_list_str;
++static struct strlist	*dso_list, *comm_list, *sym_list;
  
- 	dprintk("ph1 (cpu%d): start, currfid 0x%x, currvid 0x%x, "
- 		"reqvid 0x%x, rvo 0x%x\n",
- 		smp_processor_id(),
- 		data->currfid, data->currvid, reqvid, data->rvo);
+ static int		input;
+ static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+@@ -1281,6 +1281,9 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		if (dso_list && dso && dso->name && !strlist__has_entry(dso_list, dso->name))
+ 			return 0;
  
-+	if ((savefid < LO_FID_TABLE_TOP) && (reqfid < LO_FID_TABLE_TOP))
-+		rvomult = 2;
-+	rvosteps *= rvomult;
- 	rdmsr(MSR_FIDVID_STATUS, lo, maxvid);
- 	maxvid = 0x1f & (maxvid >> 16);
- 	dprintk("ph1 maxvid=0x%x\n", maxvid);
-@@ -351,7 +354,8 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
- 			return 1;
- 	}
- 
--	while ((rvosteps > 0) && ((data->rvo + data->currvid) > reqvid)) {
-+	while ((rvosteps > 0) &&
-+			((rvomult * data->rvo + data->currvid) > reqvid)) {
- 		if (data->currvid == maxvid) {
- 			rvosteps = 0;
- 		} else {
-@@ -384,13 +388,6 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
- 	u32 vcoreqfid, vcocurrfid, vcofiddiff;
- 	u32 fid_interval, savevid = data->currvid;
- 
--	if ((reqfid < HI_FID_TABLE_BOTTOM) &&
--	    (data->currfid < HI_FID_TABLE_BOTTOM)) {
--		printk(KERN_ERR PFX "ph2: illegal lo-lo transition "
--				"0x%x 0x%x\n", reqfid, data->currfid);
--		return 1;
--	}
--
- 	if (data->currfid == reqfid) {
- 		printk(KERN_ERR PFX "ph2 null fid transition 0x%x\n",
- 				data->currfid);
-@@ -407,6 +404,9 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid)
- 	vcofiddiff = vcocurrfid > vcoreqfid ? vcocurrfid - vcoreqfid
- 	    : vcoreqfid - vcocurrfid;
- 
-+	if ((reqfid <= LO_FID_TABLE_TOP) && (data->currfid <= LO_FID_TABLE_TOP))
-+		vcofiddiff = 0;
++		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
++			return 0;
 +
- 	while (vcofiddiff > 2) {
- 		(data->currfid & 1) ? (fid_interval = 1) : (fid_interval = 2);
+ 		if (hist_entry__add(thread, map, dso, sym, ip, chain, level, period)) {
+ 			eprintf("problem incrementing symbol count, skipping event\n");
+ 			return -1;
+@@ -1672,6 +1675,8 @@ static const struct option options[] = {
+ 		   "only consider symbols in these dsos"),
+ 	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
+ 		   "only consider symbols in these comms"),
++	OPT_STRING('S', "symbols", &sym_list_str, "symbol[,symbol...]",
++		   "only consider these symbols"),
+ 	OPT_END()
+ };
  
-@@ -1081,14 +1081,6 @@ static int transition_frequency_fidvid(struct powernow_k8_data *data,
- 		return 0;
- 	}
+@@ -1726,6 +1731,7 @@ int cmd_report(int argc, const char **argv, const char *prefix)
  
--	if ((fid < HI_FID_TABLE_BOTTOM) &&
--	    (data->currfid < HI_FID_TABLE_BOTTOM)) {
--		printk(KERN_ERR PFX
--		       "ignoring illegal change in lo freq table-%x to 0x%x\n",
--		       data->currfid, fid);
--		return 1;
--	}
--
- 	dprintk("cpu %d, changing to fid 0x%x, vid 0x%x\n",
- 		smp_processor_id(), fid, vid);
- 	freqs.old = find_khz_freq_from_fid(data->currfid);
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-index c9c1190..02ce824 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
-@@ -215,7 +215,8 @@ struct pst_s {
+ 	setup_list(&dso_list, dso_list_str, "dso");
+ 	setup_list(&comm_list, comm_list_str, "comm");
++	setup_list(&sym_list, sym_list_str, "symbol");
  
- #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "powernow-k8", msg)
- 
--static int core_voltage_pre_transition(struct powernow_k8_data *data, u32 reqvid);
-+static int core_voltage_pre_transition(struct powernow_k8_data *data,
-+	u32 reqvid, u32 regfid);
- static int core_voltage_post_transition(struct powernow_k8_data *data, u32 reqvid);
- static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid);
+ 	setup_pager();
  
 -- 
-1.6.0.2
-
+1.6.2.5
 
