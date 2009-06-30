@@ -1,114 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZF3PLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZF3PLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbZF3PLE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZF3PKx
+	id S1753750AbZF3PLW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 11:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbZF3PLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:10:53 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:38191 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752829AbZF3PKw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:10:52 -0400
-Date: Tue, 30 Jun 2009 11:10:54 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [patch update] PM: Introduce core framework for run-time PM of
- I/O devices (rev. 6)
-In-Reply-To: <200906300050.56304.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906301027540.3049-100000@iolanthe.rowland.org>
+	Tue, 30 Jun 2009 11:11:03 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51042 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756725AbZF3PLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 11:11:01 -0400
+Date: Tue, 30 Jun 2009 16:11:03 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Jiri Slaby <jirislaby@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
+Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
+Message-ID: <20090630151103.GF17561@csn.ul.ie>
+References: <20090623200846.223C.A69D9226@jp.fujitsu.com> <20090629084114.GA28597@csn.ul.ie> <20090630092847.A730.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090630092847.A730.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Rafael J. Wysocki wrote:
-
-> > There are three natural policies:
-> > 
-> > 	The first request takes precedence over the second;
-> > 
-> > 	The second request takes precedence over the first;
-> > 
-> > 	Resumes take precedence over suspends.
-> > 
-> > Any one of those would be acceptable.
+On Tue, Jun 30, 2009 at 09:31:04AM +0900, KOSAKI Motohiro wrote:
+> Hi
 > 
-> IMO resumes should take precedence over suspends, because resume usually means
-> "there's I/O to process" and we usually we want the I/O to be processed as soon
-> as possible (deferred wake-up will usually mean deferred I/O and that would
-> hurt user experience).
+> Thank you new version.
+> 
+> > ==== CUT HERE ====
+> > mm: Warn once when a page is freed with PG_mlocked set
+> >     
+> > When a page is freed with the PG_mlocked set, it is considered an unexpected
+> > but recoverable situation. A counter records how often this event happens
+> > but it is easy to miss that this event has occured at all. This patch warns
+> > once when PG_mlocked is set to prompt debuggers to check the counter to
+> > see how often it is happening.
+> >     
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > --- 
+> >  mm/page_alloc.c |   16 ++++++++++++----
+> >  1 file changed, 12 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 5d714f8..519ea6e 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -495,8 +495,16 @@ static inline void free_page_mlock(struct page *page)
+> >  static void free_page_mlock(struct page *page) { }
+> >  #endif
+> >  
+> > -static inline int free_pages_check(struct page *page)
+> > -{
+> > +static inline int free_pages_check(struct page *page, int wasMlocked)
+> > +{
+> > +	if (unlikely(wasMlocked)) {
+> > +		WARN_ONCE(1, KERN_WARNING
+> > +			"Page flag mlocked set for process %s at pfn:%05lx\n"
+> > +			"page:%p flags:0x%lX\n",
+> 
+> 0x%lX is a bit redundunt.
+> %lX insert "0x" string by itself, I think.
+> 
 
-I don't know.  I gave this a lot of thought last night, and it seems
-that the best approach would be to always obey the most recent request.  
-(In the case of delayed suspend requests, this is ambiguous because
-there are two times involved: when the request was originally submitted
-and when the delay expires.  We should use the time of original
-submission.)  The only exception is pm_request_put; it shouldn't
-override an existing suspend request just to send an idle notification.
+It does not automatically insert the 0x for me and I just did a quick
+test there. Can you double check please?
 
-If this seems difficult to implement, it's an indication that the
-overall design needs to be reworked.  Here's what I came up with:
+> 
+> > +			current->comm, page_to_pfn(page),
+> > +			page, page->flags|__PG_MLOCKED);
+> > +	}
+> > +
+> >  	if (unlikely(page_mapcount(page) |
+> >  		(page->mapping != NULL)  |
+> >  		(atomic_read(&page->_count) != 0) |
+> > @@ -562,7 +570,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
+> >  	kmemcheck_free_shadow(page, order);
+> >  
+> >  	for (i = 0 ; i < (1 << order) ; ++i)
+> > -		bad += free_pages_check(page + i);
+> > +		bad += free_pages_check(page + i, wasMlocked);
+> >  	if (bad)
+> >  		return;
+> >  
+> > @@ -1027,7 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
+> >  
+> >  	if (PageAnon(page))
+> >  		page->mapping = NULL;
+> > -	if (free_pages_check(page))
+> > +	if (free_pages_check(page, wasMlocked))
+> >  		return;
+> >  
+> >  	if (!PageHighMem(page)) {
+> 
+> Other part looks fine. thanks.
+> 
+> 
+> 
 
-The possible statuses are reduced to: RPM_ACTIVE, RPM_SUSPENDING, 
-RPM_SUSPENDED, RPM_RESUMING, and RPM_ERROR.  These most directly 
-correspond to the core's view of the device state.  Transitions are:
-
-	RPM_ACTIVE <-> RPM_SUSPENDING -> RPM_SUSPENDED ->
-		RPM_RESUMING -> RPM_ACTIVE ...
-
-Failure of a suspend causes the backward transition from RPM_SUSPENDING 
-to RPM_ACTIVE, and errors cause a transition to RPM_ERROR.  Otherwise 
-we always go forward.
-
-Instead of a delayed_work_struct, we'll have a regular work_struct plus 
-a separate timer_list structure.  That way we get more control over 
-what happens when the timer expires.  The timer callback routine will 
-submit the work_struct, but it will do so under the spinlock and only 
-after making the proper checks.
-
-There will be only one work callback routine.  It decides what to do
-based on the status and a new field: async_action.  The possible values
-for async_action are 0 (do nothing), ASYNC_SUSPEND, ASYNC_RESUME, and
-ASYNC_NOTIFY.
-
-There will be a few extra fields: a work_pending flag, the timer 
-expiration value (which doubles as a timer_pending flag by being set
-to 0 when the timer isn't pending), and maybe some others.
-
-There are restrictions on what can happen in each state.  The timer is
-allowed to run only in RPM_RESUMING and RPM_ACTIVE, and ASYNC_NOTIFY is
-allowed only in those states.  ASYNC_RESUME isn't allowed in
-RPM_RESUMING or RPM_ACTIVE, and ASYNC_SUSPEND isn't allowed in
-RPM_SUSPENDING or RPM_SUSPENDED.  Pending work isn't allowed in
-RPM_RESUMING or RPM_SUSPENDING; if a request is submitted at such times
-is merely sets async_action, and the work will be scheduled when the
-resume or suspend finishes.  This is to avoid forcing the workqueue
-thread to wait unnecessarily.
-
-__pm_runtime_suspend and __pm_runtime_resume start out by cancelling 
-the timer and the work_struct (if they are pending) and by setting 
-async_action to 0.  The cancellations don't have to wait; if a callback 
-routine is already running then when it gets the spinlock it will see 
-that it has nothing to do.
-
-If __pm_runtime_suspend was called asynchronously and the status is
-already RPM_SUSPENDING, it can return after taking these actions.  If
-the status is already RPM_RESUMING, it should set async_action to
-ASYNC_SUSPEND and then return.  __pm_runtime_resume behaves similarly.
-
-The pm_request_* routines similarly cancel a pending timer and clear
-async_action.  They should cancel any pending work unless they're going
-to submit new work anyway.
-
-That's enough to give you the general idea.  I think this design is 
-a lot cleaner than the current one.
-
-Alan Stern
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
