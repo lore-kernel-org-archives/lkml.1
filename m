@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZF3Fat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbZF3FbC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbZF3Fat (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 01:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZF3Faj
+	id S1752911AbZF3FbC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 01:31:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZF3Far
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 01:30:39 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:52843 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751462AbZF3Fai convert rfc822-to-8bit (ORCPT
+	Tue, 30 Jun 2009 01:30:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:62966 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbZF3Fap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 01:30:38 -0400
+	Tue, 30 Jun 2009 01:30:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=s10w3o/HeY27B3Zf3BmmtxhanGvWOXVzXyILHsgPcBiN0Q10wvKLD1FUC5FOIjT4wI
-         QrE/njkbhQL1rZ1n30+HyLcK7KHFJkR52q/OiyBgJ25YdnXivAArX+2b+tyhbuyjb/X1
-         T5WrdtncICT+TPscOxXGugwKzziqtx/O2TzLA=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NnZPt5rz7J8i9D5v2X+msB6lPh7zz5epjSwuVbTfG5/fJxF+VAR/JLW6sbvQRpLWrx
+         yG0ib82j2ENxW3EbzckHGOCEDoUV8oWKTj83wabBAip/vHzc9X0lfgBVa1BdL/iMFXGD
+         QF4mGhi9g4sSRNljbsf6IgrqMUaltUnb1b+iQ=
+Message-ID: <4A49A349.8030702@gmail.com>
+Date: Mon, 29 Jun 2009 22:31:53 -0700
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
-In-Reply-To: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE1A06@SJEXCHCCR02.corp.ad.broadcom.com>
-References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C3@SJEXCHCCR02.corp.ad.broadcom.com>
-	 <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broadcom.com>
-	 <20090627053317.GG8587@game.jcrosoft.org>
-	 <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE1A06@SJEXCHCCR02.corp.ad.broadcom.com>
-Date: Tue, 30 Jun 2009 11:00:41 +0530
-Message-ID: <5d5443650906292230k27e70863l49566462328f0a43@mail.gmail.com>
-Subject: Re: [PATCH v1 3/6][ARM] new ARM SoC support: BCMRing
-From: Trilok Soni <soni.trilok@gmail.com>
-To: "Leo (Hao) Chen" <leochen@broadcom.com>
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Larry Finger <Larry.Finger@lwfinger.net>
+CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: need help figuring out what makes my wireless"iwconfig" not respond
+References: <4A499531.4040001@gmail.com> <4A49980E.2010405@lwfinger.net>
+In-Reply-To: <4A49980E.2010405@lwfinger.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Leo,
-
+Larry Finger wrote:
+> Justin P. Mattock wrote:
+>    
+>> from 2.6.31-rc1 to present there was a couple of commits for
+>> wireless. prior to that the wireless on my machine(imac)
+>> was o.k.,
+>> Now the wireless does work(streams music,t.v. etc..)
+>> but when I look at iwconfig there's nothing no info.
+>> (I use wicd as my connection manager, and in the bottom corner
+>> of the screen the transmit power is down to almost nothing,
+>> causing wicd to constantly reconnect)
 >>
->> On 16:29 Fri 26 Jun     , Leo (Hao) Chen wrote:
->> > Hi,
->> >
->> > This is the third patch.  This big patch contains the core
->> arch code in arch/arm/mach-bcmring directory.
->> > Header files in arch/arm/mach-bcmring/include/mach are
->> included as well.
->> You need to check your patches with checkpatch.pl as your
->> patches do not respect
->> the linux conding style in a lot's of space
+>> out of a random guess what commit might have caused this, so I can at least
+>> fix this over here(that is until the manufacturer comes out with a new
+>> version). I can go in and individually revert all of the wireless, but
+>> before that
+>> I want a quick lead.
 >>
-> I'll fix the errors found by the checkpatch.pl script.  Is it okay to pass the checkpatch.pl with some warnings?
+>> any ideas?
+>>
+>>      
 >
+> If you have a git tree, use the "git bisect" commands to find the bad
+> commit.
+>
+>    
+alright. I'll give that a try.
 
-I don't think so, but if you find any false positives you can report to ML.
-
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Justin P. Mattock
