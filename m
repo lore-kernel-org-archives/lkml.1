@@ -1,93 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbZF3WrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbZF3Wre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758423AbZF3WrV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757581AbZF3WrD
+	id S1756959AbZF3Wre (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbZF3WrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:47:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:53299 "EHLO ogre.sisk.pl"
+	Tue, 30 Jun 2009 18:47:25 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51495 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757227AbZF3WrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:47:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: Problems with snd-hda-intel on hp 6930p (2.6.30)
-Date: Wed, 1 Jul 2009 00:47:38 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org
-References: <200906292037.09597.rjw@sisk.pl> <200906301615.38244.rjw@sisk.pl> <s5h8wj994do.wl%tiwai@suse.de>
-In-Reply-To: <s5h8wj994do.wl%tiwai@suse.de>
+	id S1757581AbZF3WrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 18:47:24 -0400
+Date: Wed, 1 Jul 2009 00:47:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3 -tip] perf_counter tools: Add support to set of
+	multiple events in one shot
+Message-ID: <20090630224704.GJ1241@elte.hu>
+References: <1246051927.2988.10.camel@hpdv5.satnam> <1246051996.2988.12.camel@hpdv5.satnam> <20090627163821.GA17638@elte.hu> <1246129498.32198.27.camel@hpdv5.satnam> <20090628132926.GD31988@elte.hu> <1246202166.2982.8.camel@hpdv5.satnam> <20090629035708.GD8059@elte.hu> <1246351114.2476.38.camel@ht.satnam> <20090630095738.GD6942@elte.hu> <1246368165.2434.1.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907010047.39525.rjw@sisk.pl>
+In-Reply-To: <1246368165.2434.1.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 June 2009, Takashi Iwai wrote:
-> At Tue, 30 Jun 2009 16:15:37 +0200,
-> Rafael J. Wysocki wrote:
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Tue, 2009-06-30 at 11:57 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > > 
-> > On Tuesday 30 June 2009, Rafael J. Wysocki wrote:
-> > > On Tuesday 30 June 2009, Takashi Iwai wrote:
-> > > > At Mon, 29 Jun 2009 20:37:09 +0200,
-> > > > Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > Hi Takashi,
-> > > > > 
-> > > > > I have a problem with snd-hda-intel from 2.6.30 on an hp EliteBook 6930p, which
-> > > > > is that the sound is not audible, although everything appears to work just
-> > > > > fine.  Except maybe that when the box is rebooted and KDE (3.5) is started,
-> > > > > the master control is "muted" and the led indicator next to the keyboard shows
-> > > > > "no sound".  Then, changing the "muted" status of the master control doesn't
-> > > > > change the state of the led indicator and vice versa (the two things appear to
-> > > > > be totally independent of each other).
-> > > > > 
-> > > > > Can you please tell me what I can do to debug this issue?
+> > > On Mon, 2009-06-29 at 05:57 +0200, Ingo Molnar wrote:
+> > > 
+> > > > The above patterns i suggested _already cover_ 'multiple events'.
 > > > > 
-> > > > Could you run alsa-info.sh with --no-upload option on both "muted"
-> > > > and "not muted" states, and attach the generated files?
+> > > > We might define further aliases like:
+> > > > 
+> > > > 	all := "*"
+> > > >         all-sw := "sw-*"
+> > > > 
+> > > > but it should all be in terms of patterns and regular 
+> > > > expressions, not via some hardcoded special-case thing as your 
+> > > > posted patches did.
+> > > > 
 > > > 
-> > > Sure.  In the meantime it turned out that after a power off and cold boot the
-> > > status of the master control is 'on', but the led indicator shows 'no sound', so
-> > > there are 5 outputs:
-> > > * alsa-info-postboot.txt - after power off and cold boot
-> > > * alsa-info-led.txt - led indicator switched to 'on' when it was in the
-> > >   alsa-info-postboot.txt state
-> > > Now I switched to AC power and rebooted the box without powering off:
-> > > * alsa-info-muted.txt - initial state with the 'muted' master control
-> > > * alsa-info-on.txt - master control switched to 'on' when it was in the
-> > >   alsa-info-muted.txt state
-> > > * alsa-info.txt - led indicator switched to 'on' when it was in the
-> > >   alsa-info-on.txt state
+> > > It seems to me very confusing and needs lot of book-keeping and 
+> > > need to rewrite whole tools/perf/util/parse-events.c because :
 > > > 
-> > > > If it's a regression (heh :), please give alsa-info.sh output on
-> > > > older kernels.
+> > > * means all perf_event_types :
+> > > 	PERF_TYPE_HARDWARE,
+> > >         PERF_TYPE_SOFTWARE,
+> > >         PERF_TYPE_TRACEPOINT,
+> > >         PERF_TYPE_HW_CACHE,
+> > >         PERF_TYPE_RAW
 > > > 
-> > > No, it's not a regression.  At least not from 2.6.27.
+> > > hw-* means all hardware events :
+> > > 	PERF_TYPE_HARDWARE,
+> > >         PERF_TYPE_HW_CACHE,
+> > >         PERF_TYPE_RAW
 > > > 
-> > > Please let me know if you need more information.
+> > > sw-* means all software events :
+> > >         PERF_TYPE_SOFTWARE,
+> > >         PERF_TYPE_TRACEPOINT
+> > > 
+> > > *cache* means all cache based events :
+> > > 	PERF_COUNT_CACHE_REFERENCES, 	/* Generalized H/W */
+> > > 	PERF_COUNT_CACHE_MISSES,	/* Generalized H/W */
+> > >         PERF_TYPE_HW_CACHE,		/* Generalized Cache */
+> > > 
+> > > *write* means all write based events :
+> > > 	(L1D,       WRITE,          ACCESS),
+> > > 	(L1D,       WRITE,          MISS),
+> > > 	(LL,        WRITE,          ACCESS),
+> > > 	(LL,        WRITE,          MISS),
+> > > 	(DTLB,      WRITE,          ACCESS),
+> > > 	(DTLB,      WRITE,          MISS)
+> > > 
+> > > Please let me know why it looks complex to me, is it really 
+> > > complex or I am going in wrong direction.
 > > 
-> > One more thing.  The headphones output actually works regardless of the
-> > led indicator status, so only the built-in speakers output seems to be
-> > affected.
+> > It would certainly need some reorganization of the code but the end 
+> > result would be more flexible and other places could use it too, for 
+> > example:
+> > 
+> > 	perf test -e hw-*
+> > 
+> > would test all (known) hardware counters.
+> > 
 > 
-> How can you turn on/off LED?
+> Its true.
+> 
+> Can you please verify that the assumptions I made above are 
+> correct.
 
-There's a button switch attached to it (basically, you press the led and the
-status changes :-)).
+Well, the right way to approach this is to assign each event a "full 
+name" and a list of aliases/shortcuts (like we have now), and then 
+do pattern matching on the full name.
 
-> From your explanation, it seems not directly bound with the audio mute.
+So we'd have full/long event names like:
 
-That's correct, it seems independent.
+  hw-cycles
+  hw-instructions
+  hw-l1-cache-load-misses
+  sw-minor-page-faults
+  ...
 
-> Anyway, try model=mobile or model=laptop for snd-hda-intel module
-> option.  Does the speaker work?
+to implement regex patterns over these, no event specific knowledge 
+should be put into the pattern matching engine itself - it just 
+blindly goes over the full names as strings.
 
-I'll check tomorrow, the box is at my university office.
+As long as the full names are unique and structured well, this will 
+work fine. The only non-trivial piece of restructuring is to make it 
+easy for the pattern matching engine to iterate over all events. 
+Right now they are in separate tables - perhaps they should be 
+collected into a single table or so.
 
-Thanks,
-Rafael
+	Ingo
