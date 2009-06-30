@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZF3QAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZF3QAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756188AbZF3QAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 12:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZF3QAZ
+	id S1754896AbZF3QAt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 12:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751886AbZF3QAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 12:00:25 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:33477 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZF3QAY (ORCPT
+	Tue, 30 Jun 2009 12:00:41 -0400
+Received: from outbound-mail-126.bluehost.com ([67.222.38.26]:60256 "HELO
+	outbound-mail-126.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752474AbZF3QAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 12:00:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=EEIlVV2TfqjDB6OeD34rW+KRtuElcgDGHwKr7CRdsANZq3L2Mu2jnxJ9scSBRqCUTY
-         H3WtlDmHUzA9PLaBUAsRBFTFnkAvHbHCKEiXSjIOmWle4fQpX3tKKs6qyOfeCIZHVG21
-         NZb1snkkOav42krCvCta0c87tFhDd6W6egAFg=
-Message-ID: <4A4A3697.7020804@tuffmail.co.uk>
-Date: Tue, 30 Jun 2009 17:00:23 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: kristen.c.accardi@intel.com
-CC: linux-pci@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: pciehp resume handler - racy?
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 30 Jun 2009 12:00:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=klI2BIJYlESNI7QBTYEJJUHPWTsGzz1GqwmOmYgay84ViM9k4M2EvHhj2Dlu1UDXbLgtQflazKmzhx9QXdKYJTxDtNXQcy6wt0zS1mjLJ+TdZG4ExQ9gJsUREJnRI2GM;
+Date: Tue, 30 Jun 2009 09:00:38 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Matthew Wilcox <willy@linux.intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Alex Chiang <achiang@hp.com>
+Subject: Re: linux-next: manual merge of the pci tree with Linus' tree
+Message-ID: <20090630090038.6c490b7e@jbarnes-g45>
+In-Reply-To: <20090630021612.GD24061@linux.intel.com>
+References: <20090630115638.7bfb8e21.sfr@canb.auug.org.au>
+	<20090629190135.7ff6a089@jbarnes-g45>
+	<20090630021612.GD24061@linux.intel.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 29 Jun 2009 19:16:13 -0700
+Matthew Wilcox <willy@linux.intel.com> wrote:
 
-I've been hacking on the PCI hotplug driver otherwise known as
-eeepc-laptop.  At one point I reliably triggered a race on resume.  In
-the hot-unplug case, it seemed that the resume handler would try to
-remove the PCI device at the same time as an acpi notification (run in a
-workqueue) tried to do the same thing.  The result was an OOPS.  My
-conclusion is that the PCI hotplug core does not protect against
-multiple simultaneous removals of the same device.
+> On Mon, Jun 29, 2009 at 07:01:35PM -0700, Jesse Barnes wrote:
+> > On Tue, 30 Jun 2009 11:56:38 +1000
+> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > 
+> > > Hi Jesse,
+> > > 
+> > > Today's linux-next merge of the pci tree got conflicts in
+> > > arch/ia64/include/asm/pci.h, arch/mn10300/include/asm/pci.h and
+> > > include/asm-generic/pci.h between commit
+> > > a6c140969b4685f9b9f6773c0760f55ca66d1825 ("Delete
+> > > pcibios_select_root") from Linus' tree and commit
+> > > a53cd7419b22c14b5a1e6859a940fb6bfa77963f ("PCI: remove
+> > > pcibios_scan_all_fns()") from the pci tree.
+> > > 
+> > > Just context changes (adjacent removals).  I fixed it up (see
+> > > below) and can carry the fix for a while.
+> > 
+> > Ah ok, thanks.  That'll get fixed up after I send the current
+> > for-linus bits over and refresh my PCI tree.
+> 
+> I think you need to pull from Linus' tree before you send the bits
+> over -- that's a conflict between Linus' tree and your tree, and you
+> don't want to annoy Linus by making him merge them ;-)
 
-pciehp appears to have an analogous problem.  Assuming pciehp_force is
-set, the resume handler can hot-unplug the device.  The interrupt
-handler could try to hot-unplug the device at the same time.  Should the
-resume handler take the slot mutex to avoid this problem?
+Ah but I don't want to annoy Linus by merging either.  In fact, he's
+stated explicitly several times that I should *not* pull his tree into
+mine, either by rebasing or merging; his position is that pulling an
+old tree from me should be fine, since no one else should have commits
+in the PCI area, or if they do they'll be trivial and he'll fix them
+up.
 
-diff --faked-up a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -382,15 +382,18 @@ static int pciehp_resume (struct pcie_device *dev)
- 		/* reinitialize the chipset's event detection logic */
- 		pcie_enable_notification(ctrl);
- 
- 		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
-+		mutex_lock(&t_slot->lock);
- 
- 		/* Check if slot is occupied */
- 		t_slot->hpc_ops->get_adapter_status(t_slot, &status);
- 		if (status)
- 			pciehp_enable_slot(t_slot);
- 		else
- 			pciehp_disable_slot(t_slot);
-+
-+		mutex_unlock(&t_slot->lock);
- 	}
- 	return 0;
- }
- #endif /* PM */
-
-
-Regards
-Alan
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
