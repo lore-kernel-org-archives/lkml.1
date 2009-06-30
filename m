@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759351AbZF3Bvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZF3A0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759351AbZF3Bvp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 21:51:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZF3Bvi
+	id S1754908AbZF3A0x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 20:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZF3A0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 21:51:38 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:53562 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752324AbZF3Bvh (ORCPT
+	Mon, 29 Jun 2009 20:26:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41218 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbZF3A0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 21:51:37 -0400
-Date: Mon, 29 Jun 2009 21:51:40 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: dann frazier <dannf@hp.com>, Alex Chiang <achiang@hp.com>,
-       linux-kernel@vger.kernel.org, David Altobelli <david.altobelli@hp.com>,
-       nagananda.chumbalkar@hp.com
-Subject: Re: ACPI issues on HP DL585 G2
-Message-ID: <20090630015140.GV20436@tamriel.snowman.net>
-References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com> <20090630011709.GT20436@tamriel.snowman.net> <86802c440906291847p302d47eau1d1cbd07be59c61@mail.gmail.com>
+	Mon, 29 Jun 2009 20:26:44 -0400
+Message-ID: <4A495ABC.1090306@zytor.com>
+Date: Mon, 29 Jun 2009 17:22:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uMD30mxrM/iO8yI3"
-Content-Disposition: inline
-In-Reply-To: <86802c440906291847p302d47eau1d1cbd07be59c61@mail.gmail.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
-X-Uptime: 21:49:59 up 18 days, 23:16, 22 users,  load average: 0.16, 0.08,
-	0.06
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org>
+In-Reply-To: <4A494478.7020304@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+>>>
+>> OK.  This is starting to make sense.  I suspect this is a similar issue
+>> as 3b0fde0fac19c180317eb0601b3504083f4b9bf5 addresses, which is that the
+>> e820 code assumes -- and I don't see any exception to that in
+>> 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90 -- that iomem_resource covers
+>> the entire 64-bit address space that e820 knows.  I wonder what happens
+>> with "interestingly shaped" memory above 4 GB if resource_size_t is 32
+>> bits with that code.
+>>
+>> In terms of address space assignment, an alternate implementation of the
+>> address space cap is to mark it reserved; that would unfortunately
+>> result in an ugly turd at the end of /proc/iomem, but that can be
+>> addressed if need be, too.
+> 
+> always enable 64bit resource for 32bit too?
+> 
 
---uMD30mxrM/iO8yI3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That would address the problem if combined with the "alternative
+implementation" that I described below, but I'm not sure how well it
+would go over, especially since the 32-bit x86 world is increasingly
+getting concentrated on the very-resource-starved end of the computing
+spectrum.
 
-* Yinghai Lu (yhlu.kernel@gmail.com) wrote:
-> it seems storage cards are different.
->=20
-> dann's is 42:01.0 the LSI
-> your's is 42.02.0 the cciss?
+The bottom-line problem is the same: e820, and the e820 allocator, can
+describe address space that lies outside our real range of possible
+address space.  What to do with that is easy -- it should simply be
+ignored -- but it does lead to oddball sequencing issues.  In that
+sense, reserving a chunk of address space at the end is cleaner, but
+that doesn't address the issue of what happens with a 32-bit
+resource_size_t.
 
-Yeah, I have a P600 installed in this DL585.
+Unfortunately, my attempts at reproducing the problem locally has failed
+so far.
 
-lspci -v for the P600:
+	-hpa
 
-42:02.0 RAID bus controller: Hewlett-Packard Company Smart Array P600
-        Subsystem: Hewlett-Packard Company 3 Gb/s SAS RAID
-        Flags: bus master, 66MHz, medium devsel, latency 120, IRQ 11
-        Memory at dfef0000 (64-bit, non-prefetchable) [size=3D8K]
-        I/O ports at 3000 [size=3D256]
-        Memory at dfe80000 (64-bit, non-prefetchable) [size=3D256K]
-        [virtual] Expansion ROM at de000000 [disabled] [size=3D256K]
-        Capabilities: <access denied>
-        Kernel driver in use: cciss
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Of course, it seems to work ok under 2.6.22..
-
-	Thanks,
-	=09
-		Stephen
-
---uMD30mxrM/iO8yI3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpJb6wACgkQrzgMPqB3kiiIagCfR40x0EefAlLSMydZJkThl8l7
-yL8An0tlZiNP2fOn6skzrXu7CUqcNYSf
-=MfWz
------END PGP SIGNATURE-----
-
---uMD30mxrM/iO8yI3--
