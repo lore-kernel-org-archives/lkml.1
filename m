@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZF3KGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZF3KI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbZF3KGv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZF3KGm
+	id S1752908AbZF3KI6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZF3KIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:06:42 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:57930 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755AbZF3KGl (ORCPT
+	Tue, 30 Jun 2009 06:08:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:51836 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbZF3KIu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:06:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=E81Pj/rvY3MCtbjOkFI9HUSPqeppQ+W0zvu8FL2MASYGb78G7pGdAJWW6W37m7U4j1
-         H5HwiNu/GGg9LdbiCm3iym7SfDZ6ovWZSDHSTadgLBPwwvr+RXOJODrJh7Z/0/tJzMpb
-         xItdA1u/75s15RTQh05iv4e/2To5kBbiUlSFI=
-Date: Tue, 30 Jun 2009 18:08:50 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Tao Ma <tao.ma@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Alexey Dobriyan <adobriyan@gmail.com>, mtk.manpages@gmail.com
-Subject: [RESEND Patch] kcore: remove its pointless size
-Message-ID: <20090630100850.GD5873@cr0.nay.redhat.com>
-References: <m11vpqvozl.fsf@fess.ebiederm.org> <20090613040958.GA2959@cr0> <m17hzdhkr8.fsf@fess.ebiederm.org> <2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com> <m1my88568n.fsf@fess.ebiederm.org> <20090618030051.GA6133@cr0.nay.redhat.com> <m1tz2ei54r.fsf@fess.ebiederm.org> <20090618044055.GB6133@cr0.nay.redhat.com> <m1prd2rtdf.fsf@fess.ebiederm.org> <20090622085405.GA6499@cr0.nay.redhat.com>
+	Tue, 30 Jun 2009 06:08:50 -0400
+Date: Tue, 30 Jun 2009 03:07:57 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: LKML <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       mingo@elte.hu, jeremy.fitzhardinge@citrix.com
+Subject: Re: WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem
+In-Reply-To: <1246351243.8014.14.camel@penberg-laptop>
+Message-ID: <alpine.DEB.2.01.0906300300000.6439@bogon>
+References: <alpine.DEB.2.01.0906291950280.6439@bogon> <1246351243.8014.14.camel@penberg-laptop>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090622085405.GA6499@cr0.nay.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19ftxDiO0Q2FQk2CdQMjhqJR6MImskYE7sJYWT
+ NLVXaEZMZ4SwrfRlnXe+0mhcDWNceHD0SUmU5kn68q4xpKu3yw
+ nmw+guZBd7ffJvKdabTqA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Jun 2009, Pekka Enberg wrote:
+> I think you're the first one to report this. The warning is harmless but
+> the following patch should fix things up. Thanks!
 
-Linus fixes wrong size of /proc/kcore problem in commit 9063c61fd5cbd.
+Yes, your patch makes the warning go away, Thanks!
 
-But its size still looks insane, since it never equals to the size
-of physical memory.
+But, I think the patch description should read:
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: mtk.manpages@gmail.com
+> Fixes the following boot-time warning:
+> ------------[ cut here ]------------
+> WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem+0x27/0x45()
+> Modules linked in:
+> Pid: 0, comm: swapper Not tainted 2.6.30 #1
+> Call Trace:
+>  [<ffffffff8102d6e3>] ? warn_slowpath_common+0x73/0xb0
+>  [<ffffffff810210d9>] ? pvclock_clocksource_read+0x49/0x90
+>  [<ffffffff812e522f>] ? alloc_arch_preferred_bootmem+0x27/0x45
+>  [<ffffffff812e5761>] ? ___alloc_bootmem_nopanic+0x39/0xc9
+>  [<ffffffff812e57fa>] ? ___alloc_bootmem+0x9/0x2f
+>  [<ffffffff812e9e21>] ? xen_init_IRQ+0x25/0x61
+>  [<ffffffff812d69ee>] ? start_kernel+0x1b5/0x29e
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+[...]
 
-(Andrew, could you please just cut off the kernel part from below? :)
-
----
-diff --git a/fs/proc/kcore.c b/fs/proc/kcore.c
-index 59b43a0..eca5201 100644
---- a/fs/proc/kcore.c
-+++ b/fs/proc/kcore.c
-@@ -405,9 +405,6 @@ read_kcore(struct file *file, char __user *buffer, size_t buflen, loff_t *fpos)
- static int __init proc_kcore_init(void)
- {
- 	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
--	if (proc_root_kcore)
--		proc_root_kcore->size =
--				(size_t)high_memory - PAGE_OFFSET + PAGE_SIZE;
- 	return 0;
- }
- module_init(proc_kcore_init);
-
+(I myself forgot to put this warning into my initial message too)
 
 
----
-diff --git a/man5/proc.5 b/man5/proc.5
-index ed47f70..e31aae4 100644
---- a/man5/proc.5
-+++ b/man5/proc.5
-@@ -1246,8 +1246,6 @@ kernel
- binary, GDB can be used to
- examine the current state of any kernel data structures.
- 
--The total length of the file is the size of physical memory (RAM) plus
--4KB.
- .TP
- .I /proc/kmsg
- This file can be used instead of the
+Thanks for the fast response and the fix!
+
+Christian.
+-- 
+BOFH excuse #65:
+
+system needs to be rebooted
