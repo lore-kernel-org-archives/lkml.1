@@ -1,160 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZF3JFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZF3JFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZF3JFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 05:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZF3JFS
+	id S1757449AbZF3JFm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 05:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbZF3JF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 05:05:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60148 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbZF3JFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 05:05:17 -0400
-Date: Tue, 30 Jun 2009 18:03:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>
-Subject: [PATCH 2/2] cgroup: exlclude release rmdir
-Message-Id: <20090630180344.d7274644.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Jun 2009 05:05:27 -0400
+Received: from mail6.open.ch ([213.156.224.131]:9624 "EHLO mail6.open.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756230AbZF3JFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 05:05:23 -0400
+Message-ID: <4A49D55A.4050600@open.ch>
+Date: Tue, 30 Jun 2009 11:05:30 +0200
+From: Andreas Jaggi <aj@open.ch>
+Organization: Open Systems AG - http://www.open.ch
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, shemminger@osdl.org
+Subject: Re: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
+References: <4A48BC82.6040801@open.ch> <4A48C643.5030709@trash.net>
+In-Reply-To: <4A48C643.5030709@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Now using the rtnl_link interface.
 
-Paul Menage pointed out that css_get()/put() only for avoiding race with
-rmdir() is complicated and these should be treated as it is for.
+>> When tunneling IP traffic with GRE this patch makes it possible to 
+>> export the ToS/DiffServ information to the outer IP header.
+>> This is particularly useful in a scenario with ESP/AH where the inner 
+>> IP header is encrypted but the packet priority/DiffServ information
+>> should still be respected by the transporting routers (for example in 
+>> an MPLS backbone network).
+>>
+>> The feature is disabled by default and can be enabled on a 
+>> per-interface basis.
+>>
+>> Also does this bring Linux back in the game, as JunOS/IOS provide this 
+>> for quite some time:
+>> http://www.cisco.com/en/US/docs/ios/11_3/feature/guide/greqos.html
+>> http://www.juniper.net/techpubs/software/junos/junos94/swconfig-services/configuring-a-gre-tunnel-to-copy-tos-bits-to-the-outer-ip-header.html 
 
-This adds
-   - cgroup_exclude_rmdir() ....prevent rmdir() for a while.
-   - cgroup_release_rmdir() ....rerun rmdir() if necessary.
-And hides cgroup_wakeup_rmdir_waiter() into kernel/cgroup.c, again.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- include/linux/cgroup.h |   21 +++++++++++----------
- kernel/cgroup.c        |   17 +++++++++++++++--
- mm/memcontrol.c        |   12 ++++--------
- 3 files changed, 30 insertions(+), 20 deletions(-)
-
-Index: mmotm-2.6.31-Jun25/include/linux/cgroup.h
-===================================================================
---- mmotm-2.6.31-Jun25.orig/include/linux/cgroup.h
-+++ mmotm-2.6.31-Jun25/include/linux/cgroup.h
-@@ -366,17 +366,18 @@ int cgroup_task_count(const struct cgrou
- int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task);
+diff -urN vanilla-linux-2.6.29.4/include/linux/if_tunnel.h dev-gre/include/linux/if_tunnel.h
+--- vanilla-linux-2.6.29.4/include/linux/if_tunnel.h	2009-05-19 01:52:34.000000000 +0200
++++ dev-gre/include/linux/if_tunnel.h	2009-06-30 08:22:52.000000000 +0200
+@@ -34,6 +34,7 @@
+ 	__be32			i_key;
+ 	__be32			o_key;
+ 	struct iphdr		iph;
++	__u8			copy_tos;
+ };
  
- /*
-- * Allow to use CGRP_WAIT_ON_RMDIR flag to check race with rmdir() for subsys.
-- * Subsys can call this function if it's necessary to call pre_destroy() again
-- * because it adds not-temporary refs to css after or while pre_destroy().
-- * The caller of this function should use css_tryget(), too.
-+ * When the subsys has to access css and may add permanent refcnt to css,
-+ * it should take care of racy conditions with rmdir(). Following set of
-+ * functions, is for stop/restart rmdir if necessary.
-+ * Because these will call css_get/put, "css" should be alive css.
-+ *
-+ *  cgroup_exclude_rmdir();
-+ *  ...do some jobs which may access arbitrary empty cgroup
-+ *  cgroup_release_rmdir();
-  */
--void __cgroup_wakeup_rmdir_waiters(void);
--static inline void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
--{
--	if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
--		__cgroup_wakeup_rmdir_waiters();
--}
+ /* SIT-mode i_flags */
+@@ -63,6 +64,7 @@
+ 	IFLA_GRE_REMOTE,
+ 	IFLA_GRE_TTL,
+ 	IFLA_GRE_TOS,
++	IFLA_GRE_COPY_TOS,
+ 	IFLA_GRE_PMTUDISC,
+ 	__IFLA_GRE_MAX,
+ };
+diff -urN vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c dev-gre/net/ipv4/ip_gre.c
+--- vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c	2009-05-19 01:52:34.000000000 +0200
++++ dev-gre/net/ipv4/ip_gre.c	2009-06-30 10:48:57.000000000 +0200
+@@ -677,7 +677,7 @@
+ 	}
+ 
+ 	tos = tiph->tos;
+-	if (tos&1) {
++	if (tunnel->parms.copy_tos || tos&1) {
+ 		if (skb->protocol == htons(ETH_P_IP))
+ 			tos = old_iph->tos;
+ 		tos &= ~1;
+@@ -991,6 +991,7 @@
+ 				t->parms.iph.ttl = p.iph.ttl;
+ 				t->parms.iph.tos = p.iph.tos;
+ 				t->parms.iph.frag_off = p.iph.frag_off;
++				t->parms.copy_tos = p.copy_tos;
+ 				if (t->parms.link != p.link) {
+ 					t->parms.link = p.link;
+ 					dev->mtu = ipgre_tunnel_bind_dev(dev);
+@@ -1383,6 +1384,9 @@
+ 	if (data[IFLA_GRE_TOS])
+ 		parms->iph.tos = nla_get_u8(data[IFLA_GRE_TOS]);
+ 
++	if (data[IFLA_GRE_COPY_TOS])
++		parms->copy_tos = nla_get_u8(data[IFLA_GRE_COPY_TOS]);
 +
-+void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
-+void cgroup_release_rmdir(struct cgroup_subsys_state *css);
- 
- /*
-  * Control Group subsystem type.
-Index: mmotm-2.6.31-Jun25/kernel/cgroup.c
-===================================================================
---- mmotm-2.6.31-Jun25.orig/kernel/cgroup.c
-+++ mmotm-2.6.31-Jun25/kernel/cgroup.c
-@@ -738,11 +738,24 @@ static void cgroup_d_remove_dir(struct d
-  */
- DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
- 
--void __cgroup_wakeup_rmdir_waiters(void)
-+static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
- {
--	wake_up_all(&cgroup_rmdir_waitq);
-+	if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
-+		wake_up_all(&cgroup_rmdir_waitq);
+ 	if (!data[IFLA_GRE_PMTUDISC] || nla_get_u8(data[IFLA_GRE_PMTUDISC]))
+ 		parms->iph.frag_off = htons(IP_DF);
  }
+@@ -1536,6 +1540,8 @@
+ 		nla_total_size(1) +
+ 		/* IFLA_GRE_TOS */
+ 		nla_total_size(1) +
++		/* IFLA_GRE_COPY_TOS */
++		nla_total_size(1) +
+ 		/* IFLA_GRE_PMTUDISC */
+ 		nla_total_size(1) +
+ 		0;
+@@ -1555,6 +1561,7 @@
+ 	NLA_PUT_BE32(skb, IFLA_GRE_REMOTE, p->iph.daddr);
+ 	NLA_PUT_U8(skb, IFLA_GRE_TTL, p->iph.ttl);
+ 	NLA_PUT_U8(skb, IFLA_GRE_TOS, p->iph.tos);
++	NLA_PUT_U8(skb, IFLA_GRE_COPY_TOS, p->copy_tos);
+ 	NLA_PUT_U8(skb, IFLA_GRE_PMTUDISC, !!(p->iph.frag_off & htons(IP_DF)));
  
-+void cgroup_exclude_rmdir(struct cgroup_subsys_state *css)
-+{
-+	css_get(css);
-+}
-+
-+void cgroup_release_rmdir(struct cgroup_subsys_state *css)
-+{
-+	cgroup_wakeup_rmdir_waiter(css->cgroup);
-+	css_put(css);
-+}
-+
-+
- static int rebind_subsystems(struct cgroupfs_root *root,
- 			      unsigned long final_bits)
- {
-Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
-+++ mmotm-2.6.31-Jun25/mm/memcontrol.c
-@@ -1461,7 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
- 		return;
- 	if (!ptr)
- 		return;
--	css_get(&ptr->css);
-+	cgroup_exclude_rmdir(&ptr->css);
- 	pc = lookup_page_cgroup(page);
- 	mem_cgroup_lru_del_before_commit_swapcache(page);
- 	__mem_cgroup_commit_charge(ptr, pc, ctype);
-@@ -1496,9 +1496,7 @@ __mem_cgroup_commit_charge_swapin(struct
- 	 * So, rmdir()->pre_destroy() can be called while we do this charge.
- 	 * In that case, we need to call pre_destroy() again. check it here.
- 	 */
--	cgroup_wakeup_rmdir_waiter(ptr->css.cgroup);
--	css_put(&ptr->css);
--
-+	cgroup_release_rmdir(&ptr->css);
- }
+ 	return 0;
+@@ -1573,6 +1580,7 @@
+ 	[IFLA_GRE_REMOTE]	= { .len = FIELD_SIZEOF(struct iphdr, daddr) },
+ 	[IFLA_GRE_TTL]		= { .type = NLA_U8 },
+ 	[IFLA_GRE_TOS]		= { .type = NLA_U8 },
++	[IFLA_GRE_COPY_TOS]	= { .type = NLA_U8 },
+ 	[IFLA_GRE_PMTUDISC]	= { .type = NLA_U8 },
+ };
  
- void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
-@@ -1704,7 +1702,7 @@ void mem_cgroup_end_migration(struct mem
- 
- 	if (!mem)
- 		return;
--	css_get(&mem->css);
-+	cgroup_exclude_rmdir(&mem->css);
- 	/* at migration success, oldpage->mapping is NULL. */
- 	if (oldpage->mapping) {
- 		target = oldpage;
-@@ -1749,9 +1747,7 @@ void mem_cgroup_end_migration(struct mem
- 	 * So, rmdir()->pre_destroy() can be called while we do this charge.
- 	 * In that case, we need to call pre_destroy() again. check it here.
- 	 */
--	cgroup_wakeup_rmdir_waiter(mem->css.cgroup);
--	css_put(&mem->css);
--
-+	cgroup_release_rmdir(&mem->css);
- }
- 
- /*
-
