@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZF3CHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbZF3CHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZF3CHI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 22:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZF3CGs
+	id S1759834AbZF3CHk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 22:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZF3CHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 22:06:48 -0400
-Received: from fmailhost04.isp.att.net ([204.127.217.104]:57803 "EHLO
-	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755676AbZF3CGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 22:06:47 -0400
-X-Originating-IP: [65.28.94.183]
-Message-ID: <4A49733D.9030602@lwfinger.net>
-Date: Mon, 29 Jun 2009 21:06:53 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net> <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 29 Jun 2009 22:07:31 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37704 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751680AbZF3CHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 22:07:30 -0400
+Date: Tue, 30 Jun 2009 12:07:27 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: linux-next: pci tree build failure
+Message-Id: <20090630120727.24450bab.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Mon, 29 Jun 2009, Larry Finger wrote:
-> 
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
->>> Subject		: Page allocation failures with b43 and p54usb
->>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
->>> Date		: 2009-04-29 21:01 (61 days old)
->>> References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
->>> 		  http://lkml.org/lkml/2009/6/7/136
->>> Handled-By	: Johannes Berg <johannes@sipsolutions.net>
->> The cause of these failures has been determined. The wireless
->> subsystem frequently requests buffers of size 4096, but when SLUB
->> debugging is enabled and the debug info is added, the request becomes
->> of order 1 and memory becomes fragmented.
->>
->> A controversial "fix" in which SLUB debugging was disabled for
->> allocations where adding such debugging info would increase the order
->> was discussed and tried. With a quick look at the commit list for
->> Linus's tree, I don't see that such a patch is available, but I will
->> be corrected if I missed it.
->>
-> 
-> I'd disagree with disabling slub debugging by default for caches where 
-> oo_order(s->min) increases as the result of using it.  This particular 
-> page allocation failure is happening for, presumably, kmalloc-4096, and 
-> the system has 4K pages.  Disabling debugging for that cache (and any of 
-> its aliases) implicitly will lead to errors going undiagnosed as a result.
+--Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If the current behavior is not changed, I will be forced to disable
-SLUB debugging, which will explicitly lead to errors that are
-undiagnosed. It seems better to me to debug when you can, but turn off
-debugging in cases like this.
+Hi Jesse,
 
-Larry
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+ERROR: "pci_claim_resource" [drivers/pcmcia/yenta_socket.ko] undefined!
+
+Caused by commit 6bb04b65dbff5a5bb01617351dbb0af577084752 ("yenta: Use
+pci_claim_resource").  yenta can be built as a module, but
+pci_claim_resource is not exported ...
+
+I have used the pci tree from next-20090629 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpJc18ACgkQjjKRsyhoI8xSkACdGky5a6WV/6qSok7ttDugdFD2
+OUcAoLtUNjXQRX3DMr6Q7wd47swnZ5v5
+=QJ+B
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq--
