@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbZF3TO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZF3TPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbZF3TO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZF3TOr
+	id S1755722AbZF3TPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZF3TPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:14:47 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:44749 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZF3TOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:14:46 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 30 Jun 2009 12:13:40 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Jiri Olsa <jolsa@redhat.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and receive
- callbacks
-In-Reply-To: <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com>
-Message-ID: <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com>
-References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 30 Jun 2009 15:15:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59214 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752342AbZF3TPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:15:36 -0400
+Date: Tue, 30 Jun 2009 21:15:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, tj@kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and
+	improve lpage NUMA support
+Message-ID: <20090630191517.GB20567@elte.hu>
+References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090629163937.94c8cedd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Jiri Olsa wrote:
 
-> Adding memory barrier after the poll_wait function, paired with
-> receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
-> to wrap the memory barrier.
-> 
-> Without the memory barrier, following race can happen.
-> The race fires, when following code paths meet, and the tp->rcv_nxt 
-> and __add_wait_queue updates stay in CPU caches.
-> 
-> 
-> CPU1                         CPU2
-> 
-> sys_select                   receive packet
->   ...                        ...
->   __add_wait_queue           update tp->rcv_nxt
->   ...                        ...
->   tp->rcv_nxt check          sock_def_readable
->   ...                        {
->   schedule                      ...
->                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
->                                         wake_up_interruptible(sk->sk_sleep)
->                                 ...
->                              }
-> 
-> If there was no cache the code would work ok, since the wait_queue and
-> rcv_nxt are opposit to each other.
-> 
-> Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> tp->rcv_nxt and will return with new data mask.
-> In both cases the process (CPU1) is being added to the wait queue, so the
-> waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> 
-> The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> endup calling schedule and sleep forever if there are no more data on the
-> socket.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> +static inline int sk_has_sleeper(struct sock *sk)
-> +{
-> +	/*
-> +	 * We need to be sure we are in sync with the
-> +	 * add_wait_queue modifications to the wait queue.
-> +	 *
-> +	 * This memory barrier is paired in the sock_poll_wait.
-> +	 */
-> +	smp_mb();
-> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> +}
+> On Mon, 29 Jun 2009 19:20:53 -0400 (EDT)
+> Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+> > On Wed, 24 Jun 2009, Andrew Morton wrote:
+> > 
+> > > I assume from the tremendous number of 
+> > > for_each_possible_cpu()s that CPU hotplug awareness won't be 
+> > > happening.
+> > 
+> > Per cpu areas are allocated for all possible processors. No need 
+> > to handle offlining and onlining them.
+> 
+> Well yes.  My point is that this is a bug-not-a-feature ;)
 
-Jiri, since this is a pretty tricky condition, would you mind to have a 
-reduced version of the patch comment added to the source code?
-Patch comments are not really useful when you're trying to make sense of 
-some code ;)
+Yeah, it's a bug for something like a virtual environment which 
+boots generic kernels that might have 64 possible CPUs (on a true 
+64-way system), but which will have fewer in practice.
 
+It's pretty basic stuff: the on-demand allocation of percpu 
+resources.
 
-- Davide
-
-
+	Ingo
