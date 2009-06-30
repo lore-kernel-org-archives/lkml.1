@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZF3B2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZF3BRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899AbZF3B2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 21:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZF3B2f
+	id S1752490AbZF3BRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 21:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759012AbZF3BRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 21:28:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42382 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753054AbZF3B2e (ORCPT
+	Mon, 29 Jun 2009 21:17:08 -0400
+Received: from tamriel.snowman.net ([72.66.115.51]:59938 "EHLO
+	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbZF3BRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 21:28:34 -0400
-Date: Mon, 29 Jun 2009 18:26:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-In-Reply-To: <4A4966EF.6010809@kernel.org>
-Message-ID: <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com>
- <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com>
- <4A4966EF.6010809@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 29 Jun 2009 21:17:07 -0400
+Date: Mon, 29 Jun 2009 21:17:09 -0400
+From: Stephen Frost <sfrost@snowman.net>
+To: dann frazier <dannf@hp.com>
+Cc: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
+       David Altobelli <david.altobelli@hp.com>, nagananda.chumbalkar@hp.com
+Subject: Re: ACPI issues on HP DL585 G2
+Message-ID: <20090630011709.GT20436@tamriel.snowman.net>
+References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="1MV0VfA6Y2yiVCnw"
+Content-Disposition: inline
+In-Reply-To: <20090630011541.GL22480@ldl.fc.hp.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snowman.net
+X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
+X-Uptime: 21:16:40 up 18 days, 22:43, 24 users,  load average: 0.06, 0.06,
+	0.03
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--1MV0VfA6Y2yiVCnw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 29 Jun 2009, Yinghai Lu wrote:
-> +		end = round_up(start, ram_alignment(start)) - 1;
-> +		if (start > (resource_size_t)end)
->  			continue;
-> -		reserve_region_with_split(&iomem_resource, start,
-> -						  end - 1, "RAM buffer");
-> +		reserve_region_with_split(&iomem_resource, (resource_size_t)start,
-> +					  (resource_size_t)end, "RAM buffer");
+* dann frazier (dannf@hp.com) wrote:
+> On Sun, Jun 28, 2009 at 06:32:58PM -0400, Stephen Frost wrote:
+> > * Alex Chiang (achiang@hp.com) wrote:
+> > > I'm just scanning mail on the weekend, but what version of the
+> > > BIOS are you on? Do you have the latest?
+> >=20
+> > Check the message I just posted, it includes a dmesg under 2.6.30 (also
+> > with noapic, since it didn't boot w/o it again).
+>=20
+> fyi, I tested an HP DL585 G2 w/ the same 2.6.30 kernel build
+> and didn't have any problems. I am running the A07 3/11/2009 BIOS.
+> dmesg output follows:
 
-Hmm. You shouldn't need the casts with reserve_region_with_split(), and 
-they just make things uglier.
+Yeah, it's working fine on some of my other DL585's too. :/  I've really
+got no idea what's up with this box.  Thanks for the info tho.
 
-Also, I wonder if we should do something like this instead
+	Stephen
 
-	#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
+--1MV0VfA6Y2yiVCnw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-	...
-	end = round_up(start, ram_alignment(start)) - 1;
-	if (end > MAX_RESOURCE_SIZE)
-		end = MAX_RESOURCE_SIZE;
-	if (start > end)
-		continue;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Because otherwise we'll just be ignoring resources that cross the resource 
-size boundary, which sounds wrong.
+iEYEARECAAYFAkpJZ5UACgkQrzgMPqB3kijsrACdHEsrIFk7dYnzCcdHXFAfXov0
+WmsAnjSWknjywW6E70MYVs4AaxlOco6y
+=24gE
+-----END PGP SIGNATURE-----
 
-We _could_ have a RAM resource that crosses the 4GB boundary, after all.
-
-Yeah, it doesn't happen much in practice, because usually the 3G-4G range 
-is left for PCI mappings etc, so we might never hit this in practice, but 
-still, this sounds like a more correct thing to do.
-
-It also avoids the cast. We simply cap the end to the max that 
-'resource_size_t' can hold.
-
-That said, I have to admit that I'm getting tired of these bugs that only 
-happen when we have a 32-bit resource_size_t. So I can understand the 
-attraction to just forcing it to 64-bit and forgetting about these 
-irritating issues.
-
-		Linus
+--1MV0VfA6Y2yiVCnw--
