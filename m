@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZF3XO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbZF3XO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbZF3XO1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZF3XOT
+	id S1756197AbZF3XO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbZF3XOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:14:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33802 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZF3XOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:14:19 -0400
-Message-ID: <4A4A9C2F.80808@kernel.org>
-Date: Tue, 30 Jun 2009 16:13:51 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 30 Jun 2009 19:14:47 -0400
+Received: from ru.mvista.com ([213.79.90.228]:22457 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752949AbZF3XOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:14:47 -0400
+Date: Wed, 1 Jul 2009 03:14:50 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andres Salomon <dilinger@collabora.co.uk>
+Cc: cbou@mail.ru, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       richard@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
+       Paul Fox <pgf@laptop.org>, dsaxena@laptop.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 5/5] power_supply: add a charge_type status to the api,
+ and use it for olpc driver
+Message-ID: <20090630231450.GD12076@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090630021730.44f86185@mycelium.queued.net>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com> <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com> <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org> <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain> <alpine.LFD.2.01.0906301603280.3605@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906301603280.3605@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20090630021730.44f86185@mycelium.queued.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Tue, Jun 30, 2009 at 02:17:30AM -0400, Andres Salomon wrote:
 > 
-> On Tue, 30 Jun 2009, Linus Torvalds wrote:
->> I don't see any single-use trick then, and so it needs the whole statement 
->> expression mess.
+> This adds a new sysfs file called 'charge_type' which displays the type of
+> charging (n/a, trickle charge, slow charge, or fast charging).  This allows
+> things like battery diagnostics to determine what the battery/EC is doing
+> without resorting to changing the 'status' sysfs output.
 > 
-> Hmm. Does (((x)-1) | mask)+1) work?
-> 
-> I haven't thought it fully through, but that _should_ take care of the 
-> "already aligned" case, no?
+> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
+> ---
 
-yes. that is right.
+The patch didn't apply cleanly (not sure why, maybe because
+of my "cosmetic" changes in the previous patches? hm.)
 
-then how about
-roundup(x,y)
-round_up(x,y)
+Can you please add "Unknown" state before "N/A", and
+per Mark's comments also remove "Slow" charge type, and
+resend the patch against battery-2.6.git tree?
 
-roundup doesn't need y is 2^n
-but round_up does need y is 2^n, and only for x86
+Mark, since you seem to be interested in this addition, it
+would be great to see your ack/nak status on an updated
+patch, so we'll be sure that this is suitable for WM8350.
 
-the name is confusing.
+Thanks!
 
-YH
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
