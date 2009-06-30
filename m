@@ -1,161 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZF3KJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZF3KL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZF3KJo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZF3KJK
+	id S1754876AbZF3KL1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZF3KLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:09:10 -0400
-Received: from mail.opencsw.org ([147.87.98.73]:50900 "EHLO mail.opencsw.org"
+	Tue, 30 Jun 2009 06:11:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50979 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753858AbZF3KJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:09:08 -0400
-X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 06:09:07 EDT
-Date: Tue, 30 Jun 2009 11:58:19 +0200
-From: Attila Kinali <attila@kinali.ch>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Long lasting MM bug when swap is smaller than RAM
-Message-Id: <20090630115819.38b40ba4.attila@kinali.ch>
-Organization: GEHIRN
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1750755AbZF3KLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 06:11:19 -0400
+Date: Tue, 30 Jun 2009 12:11:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter: Add Generalized Hardware FPU
+	support for AMD
+Message-ID: <20090630101105.GF6942@elte.hu>
+References: <1246267985.3185.3.camel@hpdv5.satnam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246267985.3185.3.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Moin,
 
-There has been a bug back in the 2.4.17 days that is somehow
-triggered by swap being smaller than RAM, which i thought had
-been fixed long ago, reappeared on one of the machines i manage.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-<history>
-Back in 2002, i had a few machines, running 2.4.x kernels, which
-i upgraded heavily from some 16-64MB RAM to a couple 100MB
-(changing mainboards at times, but keeping the harddisks).
-Due to the upgrade of RAM, the swap size became a lot smaller
-than RAM size, sometimes not even half as much.
-Under most conditions these machines worked fine, but sometimes,
-they showed a strange behavior: At times, the swap use would grow
-(depending on the machine and its use faster or slower, sometimes
-at 1MB/minute) until it was full. I couldnt figure out what filled
-swap back then, couldnt find any programm that used a lot of memory.
-And even more, the RAM portion that was used as cache and buffers
-was most times still very large, ie it didnt seem like something using
-a lot of memory.
-After swap was full, nothing happend. No programms crashing, no errors
-in the logs, nothing.... Until later (between hours and a few weeks),
-the OOM would suddenly start to kick in and kill applications. This
-time, something would use a lot of memory, but i couldn't figure out
-what. None of the applications running would use more than usual.
-And even killing the usual culprits (Mozilla, X11,...) wouldnt help.
-The only cure was to reboot.
+>  $./perf stat -e add -e multiply -e fpu-store -e fpu-empty -e fpu-busy -e x87 -e mmx-3dnow -e sse-sse2 -- ls -lR /usr/include/ > /dev/null
+> 
+>  Performance counter stats for 'ls -lR /usr/include/':
+> 
+>            7335  add                       (   2.00x scaled)
+>            8012  multiply                  (   1.99x scaled)
+>            5229  fpu-store                 (   2.00x scaled)
+>       793097355  fpu-empty                 (   2.00x scaled)
+>             182  fpu-busy                  (   2.00x scaled)
+>               6  x87                       (   2.01x scaled)
+>               4  mmx-3dnow                 (   2.00x scaled)
+>            8933  sse-sse2                  (   2.00x scaled)
+> 
+>     0.393548820  seconds time elapsed
+> 
+>  $./perf stat -e add -e multiply -e fpu-store -e fpu-empty -e fpu-busy -e x87 -e mmx-3dnow -e sse-sse2 -- /usr/bin/rhythmbox ~jaswinder/Music/singhiskinng.mp3
+> 
+>  Performance counter stats for '/usr/bin/rhythmbox /home/jaswinder/Music/singhiskinng.mp3':
+> 
+>        19583739  add                       (   2.01x scaled)
+>        20856051  multiply                  (   2.01x scaled)
+>        18669503  fpu-store                 (   2.00x scaled)
+>     25100224054  fpu-empty                 (   1.99x scaled)
+>        12540131  fpu-busy                  (   1.99x scaled)
+>          207228  x87                       (   1.99x scaled)
+>         1768418  mmx-3dnow                 (   2.00x scaled)
+>        42286702  sse-sse2                  (   2.01x scaled)
+> 
+>   302.698647617  seconds time elapsed
+> 
+>  $./perf stat -e add -e multiply -e fpu-store -e fpu-empty -e fpu-busy -e x87 -e mmx-3dnow -e sse-sse2 -- /usr/bin/vlc ~jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv
+> 
+>  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
+> 
+>      6572682335  add                       (   2.00x scaled)
+>     11131555181  multiply                  (   2.00x scaled)
+>      1317520699  fpu-store                 (   2.00x scaled)
+>      9089415134  fpu-empty                 (   1.99x scaled)
+>      2902772713  fpu-busy                  (   2.00x scaled)
+>           26047  x87                       (   2.00x scaled)
+>     24850978532  mmx-3dnow                 (   2.00x scaled)
+>       262276117  sse-sse2                  (   2.01x scaled)
+> 
+>    96.169312358  seconds time elapsed
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/kernel/cpu/perf_counter.c |   34 ++++++++++++++++++++++++++++++
+>  include/linux/perf_counter.h       |   17 +++++++++++++++
+>  kernel/perf_counter.c              |    1 +
+>  tools/perf/util/parse-events.c     |   40 ++++++++++++++++++++++++++++++++++++
+>  4 files changed, 92 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+> index b83474b..4417edf 100644
+> --- a/arch/x86/kernel/cpu/perf_counter.c
+> +++ b/arch/x86/kernel/cpu/perf_counter.c
+> @@ -372,6 +372,12 @@ static const u64 atom_hw_cache_event_ids
+>   },
+>  };
+>  
+> +/*
+> + * Generalized hw fpu event table
+> + */
+> +
+> +static u64 __read_mostly hw_fpu_event_ids[PERF_COUNT_HW_FPU_MAX];
 
-All the machines back then were running Debian, a vanilla kernel,
-and had more RAM than swap and were x86 boxes. Other than that,
-they didnt had much in common. One was a machine with an Adaptec
-2940UW, others had IDE, one had a K6-III CPU, others were Intel.
-Some had a lot of disk, others very little. Machine usage was
-fileserver, firewall/router, desktop, laptop.
+ok, this looks genuinely useful, but there are some gaps. Where's 
+the divides? Plus things like mmx-3dnow are AMD specific, sse-sse2 
+is x86 specific. We definitely want this general table, but the 
+events should be truly general.
 
-I reported this bug back then but never got an answer, so i used
-the only fix i had available back then: disable swap completely.
-</history>
+Also, how would this look like on Intel, roughly?
 
-Now, 7 years later, i have a machine that shows the same behavior.
-
-Some data:
-
-We have a HP DL380 G4 currently running a 2.6.29.4 vanilla kernel,
-compiled for x86 32 bit.
-It was originaly purchased in 2005 with 2GB RAM and a few weeks
-ago upgraded to 6GB (no other changes beside this and a kernel upgrade).
-The machine, being the MPlayer main server, runs a lighttpd, svnserve,
-mailman, postfix, bind. Ie nothing unusual and the applications didn't
-change in the last months (since the update from debian/etch to lenny).
-
----
-root@natsuki:/home/attila# uname -a
-Linux natsuki 2.6.29.4 #1 SMP Sun May 31 22:13:21 CEST 2009 i686 GNU/Linux
-root@natsuki:/home/attila# uptime
- 11:41:07 up 29 days, 13:17,  5 users,  load average: 0.15, 0.36, 0.54
-root@natsuki:/home/attila# free -m
-             total       used       free     shared    buffers     cached
-Mem:          6023       5919        103          0        415       3873
--/+ buffers/cache:       1630       4393
-Swap:         3812        879       2932
----
-
-I want to point your attention at the fact that the machine has now
-more RAM installed than it previously had RAM+Swap (ie before the upgrade).
-Ie there is no reason it would need to swap out, at least not so much.
-
-What is even more interesting is the amount of swap used over time.
-Sampled every day at 10:00 CEST:
-
----
-Date: Wed, 17 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5893        130          0        405       3834
-Swap:         3812        190       3622
-
-Date: Thu, 18 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5793        229          0        340       3939
-Swap:         3812        225       3586
-
-Date: Fri, 19 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5820        203          0        341       3899
-Swap:         3812        275       3536
-
-Date: Sun, 21 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5264        758          0        459       3181
-Swap:         3812        325       3486
-
-Date: Sat, 20 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5761        262          0        348       3865
-Swap:         3812        297       3514
-
-Date: Mon, 22 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5875        147          0        397       3681
-Swap:         3812        353       3458
-
-Date: Tue, 23 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5748        275          0        193       3949
-Swap:         3812        415       3396
-
-Date: Wed, 24 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5779        244          0        176       3924
-Swap:         3812        519       3292
-
-Date: Thu, 25 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5812        210          0        345       3856
-Swap:         3812        611       3200
-
-Date: Fri, 26 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5830        192          0        431       3688
-Swap:         3812        682       3129
-
-Date: Sat, 27 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5697        326          0        442       3621
-Swap:         3812        719       3093
-
-Date: Sun, 28 Jun 2009 10:00:02 +0200 (CEST)
-Mem:          6023       5890        132          0        402       3886
-Swap:         3812        784       3028
-
-Date: Mon, 29 Jun 2009 10:00:01 +0200 (CEST)
-Mem:          6023       5388        635          0        425       3321
-Swap:         3812        826       2985
----
-
-As you can see, although memory usage didnt change much over time,
-swap usage increased from 190MB to 826MB in about two weeks.
-
-As i'm pretty much clueless when it commes to how the linux VM works,
-i would appreciate it if someone could give me some pointers on how
-to figure out what causes this bug so that it could be fixed finally.
-
-Thanks a lot in advance
-
-			Attila Kinali
+	Ingo
