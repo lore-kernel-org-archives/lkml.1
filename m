@@ -1,185 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZF3RoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZF3Roa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbZF3RoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 13:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZF3Rn5
+	id S1755604AbZF3Roa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 13:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbZF3RoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 13:43:57 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:33581 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750731AbZF3Rn4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 13:43:56 -0400
-Date: Tue, 30 Jun 2009 13:43:51 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
-	concurrent dumps to pipes (v4)
-Message-ID: <20090630174351.GC15612@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090630173836.GA15612@hmsreliant.think-freely.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630173836.GA15612@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+	Tue, 30 Jun 2009 13:44:18 -0400
+Received: from mga02.intel.com ([134.134.136.20]:49924 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751781AbZF3RoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 13:44:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,317,1243839600"; 
+   d="scan'208";a="529114189"
+Subject: Re: [2.6.31-rc1] iwlagn (4965): regression when hardware rf switch
+ is used
+From: reinette chatre <reinette.chatre@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200906291128.05639.elendil@planet.nl>
+References: <200906291128.05639.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 30 Jun 2009 10:44:18 -0700
+Message-Id: <1246383858.17896.527.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Introduce core pipe limiting sysctl
+Hi Frans,
 
-Since we can dump cores to pipe, rather than directly to the filesystem, we
-create a condition in which a user can create a very high load on the system
-simply by running bad applications.  If the pipe reader specified in
-core_pattern is poorly written, we can have lots of ourstandig resources and
-processes in the system.  This sysctl introduces an ability to limit that
-resource consumption.  core_pipe_limit defines how many in-flight dumps may be
-run in parallel, dumps beyond this value are skipped and a note is made in the
-kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
-dumps may be handled (this is the default value).
+On Mon, 2009-06-29 at 02:28 -0700, Frans Pop wrote:
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+> But with 2.6.31 I get this:
+> [disable]
+> wlan0: deauthenticating by local choice (reason=3)
+> iwlagn 0000:10:00.0: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+> mac80211-phy0: failed to remove key (0, 00:14:c1:38:e5:15) from hardware (-5)
+> iwlagn 0000:10:00.0: Error sending REPLY_ADD_STA: enqueue_hcmd failed: -5
+> mac80211-phy0: failed to remove key (1, ff:ff:ff:ff:ff:ff) from hardware (-5)
+
+Here the driver is trying to remove the keys from the device but with
+rfkill enabled it is not able to do so.
+
+> usb 3-1: USB disconnect, address 2
+> [enable]
+> usb 3-1: new full speed USB device using uhci_hcd and address 3
+> usb 3-1: configuration #1 chosen from 1 choice
+> 
+> A lot uglier with those errors. And after that I have to run ifdown/ifup
+> before networking is up again (ifup only does not work as it will complain
+> "interface already configured"):
+
+yes, as Johannes mentioned this is a new required step to get networking
+back up after rfkill state changes.
 
 
-Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
-fs/exec.c                       |   21 +++++++++++++++++----
-kernel/sysctl.c                 |    9 +++++++++
-3 files changed, 48 insertions(+), 4 deletions(-)
+> BTW, would it make sense to bring back the first two lines shown with .30
+> (or at least the first one):
+>    iwlagn 0000:10:00.0: Radio Frequency Kill Switch is On:
+>    Kill switch must be turned off for wireless networking to work.
+> IMHO it's good to register the reason for the disconnect.
 
-diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
-index 322a00b..bb226ba 100644
---- a/Documentation/sysctl/kernel.txt
-+++ b/Documentation/sysctl/kernel.txt
-@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
- - acct
- - auto_msgmni
- - core_pattern
-+- core_pipe_limit
- - core_uses_pid
- - ctrl-alt-del
- - dentry-state
-@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+It would be nice to get this from the upper layers, but the device can
+do it also as it is getting the interrupt. 
+
+Could you please try the patch below? It will not send command to device
+when rfkill is enabled and it will also print messages indicating that
+rfkill state changed.
+
+
+>From 9935d8bab97448f9ab5418602849172dcb0ba00a Mon Sep 17 00:00:00 2001
+From: Reinette Chatre <reinette.chatre@intel.com>
+Date: Tue, 30 Jun 2009 10:14:25 -0700
+Subject: [PATCH] iwlagn: do not send key clear commands when rfkill enabled
+
+Do all key clearing except sending sommands to device when rfkill
+enabled. When rfkill enabled the interface is brought down and will
+be brought back up correctly after rfkill is enabled again.
+
+Same change is not needed for iwl3945 as it ignores return code when
+sending key clearing command to device.
+
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+---
+ drivers/net/wireless/iwlwifi/iwl-agn.c |    4 ++--
+ drivers/net/wireless/iwlwifi/iwl-sta.c |   12 ++++++++++++
+ drivers/net/wireless/iwlwifi/iwl-tx.c  |    2 +-
+ 3 files changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
+index ad50022..32aebd7 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -960,7 +960,7 @@ static void iwl_irq_tasklet_legacy(struct iwl_priv *priv)
+ 				CSR_GP_CNTRL_REG_FLAG_HW_RF_KILL_SW))
+ 			hw_rf_kill = 1;
  
- ==============================================================
+-		IWL_DEBUG_RF_KILL(priv, "RF_KILL bit toggled to %s.\n",
++		IWL_WARN(priv, "RF_KILL bit toggled to %s.\n",
+ 				hw_rf_kill ? "disable radio" : "enable radio");
  
-+core_pipe_limit:
-+
-+This sysctl is only applicable when core_pattern is configured to pipe core
-+files to user space helper a (when the first character of core_pattern is a '|',
-+see above).  When collecting cores via a pipe to an application, it is
-+occasionally usefull for the collecting application to gather data about the
-+crashing process from its /proc/pid directory.  In order to do this safely, the
-+kernel must wait for the collecting process to exit, so as not to remove the
-+crashing processes proc files prematurely.  This in turn creates the possibility
-+that a misbehaving userspace collecting process can block the reaping of a
-+crashed process simply by never exiting.  This sysctl defends against that.  It
-+defines how many concurrent crashing processes may be piped to user space
-+applications in parallel.  If this value is exceeded, then those crashing
-+processes above that value are noted via the kernel log and their cores are
-+skipped.  0 is a special value, indicating that unlimited processes may be
-+captured in parallel, but that no waiting will take place (i.e. the collecting
-+process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-+to 0.
-+
-+==============================================================
-+
- core_uses_pid:
+ 		priv->isr_stats.rfkill++;
+@@ -1133,7 +1133,7 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
+ 				CSR_GP_CNTRL_REG_FLAG_HW_RF_KILL_SW))
+ 			hw_rf_kill = 1;
  
- The default coredump filename is "core".  By setting
-diff --git a/fs/exec.c b/fs/exec.c
-index 9defd20..93ab6eb 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -63,6 +63,7 @@
+-		IWL_DEBUG_RF_KILL(priv, "RF_KILL bit toggled to %s.\n",
++		IWL_WARN(priv, "RF_KILL bit toggled to %s.\n",
+ 				hw_rf_kill ? "disable radio" : "enable radio");
  
- int core_uses_pid;
- char core_pattern[CORENAME_MAX_SIZE] = "core";
-+unsigned int core_pipe_limit;
- int suid_dumpable = 0;
+ 		priv->isr_stats.rfkill++;
+diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c b/drivers/net/wireless/iwlwifi/iwl-sta.c
+index 2addf73..ffd5c61 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-sta.c
++++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
+@@ -566,6 +566,8 @@ int iwl_remove_default_wep_key(struct iwl_priv *priv,
+ 	unsigned long flags;
  
- /* The maximal length of core_pattern is also specified in sysctl.c */
-@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	char **helper_argv = NULL;
- 	int helper_argc = 0;
--	char *delimit;
-+	int dump_count = 0;
-+	static atomic_t core_dump_count = ATOMIC_INIT(0);
+ 	spin_lock_irqsave(&priv->sta_lock, flags);
++	IWL_DEBUG_WEP(priv, "Removing default WEP key: idx=%d\n",
++		      keyconf->keyidx);
  
- 	audit_core_dumps(signr);
+ 	if (!test_and_clear_bit(keyconf->keyidx, &priv->ucode_key_table))
+ 		IWL_ERR(priv, "index %d not used in uCode key table.\n",
+@@ -573,6 +575,11 @@ int iwl_remove_default_wep_key(struct iwl_priv *priv,
  
-@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 			goto fail_unlock;
- 		}
+ 	priv->default_wep_key--;
+ 	memset(&priv->wep_keys[keyconf->keyidx], 0, sizeof(priv->wep_keys[0]));
++	if (iwl_is_rfkill(priv)) {
++		IWL_DEBUG_WEP(priv, "Not sending REPLY_WEPKEY command due to RFKILL.\n");
++		spin_unlock_irqrestore(&priv->sta_lock, flags);
++		return 0;
++	}
+ 	ret = iwl_send_static_wepkey_cmd(priv, 1);
+ 	IWL_DEBUG_WEP(priv, "Remove default WEP key: idx=%d ret=%d\n",
+ 		      keyconf->keyidx, ret);
+@@ -853,6 +860,11 @@ int iwl_remove_dynamic_key(struct iwl_priv *priv,
+ 	priv->stations[sta_id].sta.sta.modify_mask = STA_MODIFY_KEY_MASK;
+ 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
  
-+		dump_count = atomic_inc_return(&core_dump_count);
-+		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
-+			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
-+			       task_tgid_vnr(current), current->comm);
-+			printk(KERN_WARNING "Skipping core dump\n");
-+			goto fail_dropcount;
-+		}
-+
- 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
- 		if (!helper_argv) {
- 			printk(KERN_WARNING "%s failed to allocate memory\n",
- 			       __func__);
--			goto fail_unlock;
-+			goto fail_dropcount;
- 		}
++	if (iwl_is_rfkill(priv)) {
++		IWL_DEBUG_WEP(priv, "Not sending REPLY_ADD_STA command because RFKILL enabled. \n");
++		spin_unlock_irqrestore(&priv->sta_lock, flags);
++		return 0;
++	}
+ 	ret =  iwl_send_add_sta(priv, &priv->stations[sta_id].sta, CMD_ASYNC);
+ 	spin_unlock_irqrestore(&priv->sta_lock, flags);
+ 	return ret;
+diff --git a/drivers/net/wireless/iwlwifi/iwl-tx.c b/drivers/net/wireless/iwlwifi/iwl-tx.c
+index 753fca3..acff7a2 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@ -939,7 +939,7 @@ int iwl_enqueue_hcmd(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
+ 	       !(cmd->meta.flags & CMD_SIZE_HUGE));
  
- 		core_limit = RLIM_INFINITY;
+ 	if (iwl_is_rfkill(priv)) {
+-		IWL_DEBUG_INFO(priv, "Not sending command - RF KILL");
++		IWL_DEBUG_INFO(priv, "Not sending command - RF KILL\n");
+ 		return -EIO;
+ 	}
  
- 		/* SIGPIPE can happen, but it's just never processed */
-- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
-+ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
- 				&file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
- 			       corename);
-- 			goto fail_unlock;
-+ 			goto fail_dropcount;
-  		}
- 	} else {
- 		if (core_limit < binfmt->min_coredump)
-@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 
- close_fail:
- 	filp_close(file, NULL);
-+fail_dropcount:
-+	if (dump_count)
-+		atomic_dec(&core_dump_count);
- fail_unlock:
- 	if (helper_argv)
- 		argv_free(helper_argv);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 62e4ff9..681052f 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -77,6 +77,7 @@ extern int max_threads;
- extern int core_uses_pid;
- extern int suid_dumpable;
- extern char core_pattern[];
-+extern unsigned int core_pipe_limit;
- extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
-@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dostring,
- 		.strategy	= &sysctl_string,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "core_pipe_limit",
-+		.data		= &core_pipe_limit,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #ifdef CONFIG_PROC_SYSCTL
- 	{
- 		.procname	= "tainted",
+-- 
+1.5.6.3
+
+
+
