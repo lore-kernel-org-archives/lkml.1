@@ -1,122 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbZF3BJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZF3BJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbZF3BJF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 21:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF3BIz
+	id S1755423AbZF3BJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 21:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZF3BJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 21:08:55 -0400
-Received: from mga09.intel.com ([134.134.136.24]:52783 "EHLO mga09.intel.com"
+	Mon, 29 Jun 2009 21:09:12 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:3252 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZF3BIz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 21:08:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,312,1243839600"; 
-   d="scan'208";a="528901977"
-Date: Tue, 30 Jun 2009 09:08:56 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       "mel@csn.ul.ie" <mel@csn.ul.ie>, "Zhao, Yakui" <yakui.zhao@intel.com>
-Subject: Re: + memory-hotplug-migrate-swap-cache-page.patch added to -mm
-	tree
-Message-ID: <20090630010856.GE21254@sli10-desk.sh.intel.com>
-References: <200906291949.n5TJnwFx028865@imap1.linux-foundation.org> <alpine.DEB.1.10.0906291813260.21956@gentwo.org>
+	id S1751486AbZF3BJM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 21:09:12 -0400
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+From: "Leo (Hao) Chen" <leochen@broadcom.com>
+To: "Jean-Christophe PLAGNIOL-VILLARD" <plagnioj@jcrosoft.com>
+cc: "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Leo (Hao) Chen" <leochen@broadcom.com>
+Date: Mon, 29 Jun 2009 18:09:02 -0700
+Subject: RE: [PATCH v1 3/6][ARM]  new ARM SoC support: BCMRing
+Thread-Topic: [PATCH v1 3/6][ARM]  new ARM SoC support: BCMRing
+Thread-Index: Acn26dQsQ/DevaaLS9ukpiv3e//jUwCNVhfQ
+Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE1A06@SJEXCHCCR02.corp.ad.broadcom.com>
+References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C3@SJEXCHCCR02.corp.ad.broadcom.com>
+ <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broadcom.com>
+ <20090627053317.GG8587@game.jcrosoft.org>
+In-Reply-To: <20090627053317.GG8587@game.jcrosoft.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906291813260.21956@gentwo.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-WSS-ID: 6657BA3A4CG12574038-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, last mail sent to wrong list.
 
-On Tue, Jun 30, 2009 at 06:13:54AM +0800, Christoph Lameter wrote:
-> When does this occur? From user space you are typically not able to get to
-> pages that are not mapped into your address space.
-migrate.c has comments about this. swap readahead will make this happen too.
+ 
 
-Thanks,
-Shaohua
-> >
-> > The patch titled
-> >      memory hotplug: migrate swap cache page
-> > has been added to the -mm tree.  Its filename is
-> >      memory-hotplug-migrate-swap-cache-page.patch
-> >
-> > Before you just go and hit "reply", please:
-> >    a) Consider who else should be cc'ed
-> >    b) Prefer to cc a suitable mailing list as well
-> >    c) Ideally: find the original patch on the mailing list and do a
-> >       reply-to-all to that, adding suitable additional cc's
-> >
-> > *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> >
-> > See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> > out what to do about this
-> >
-> > The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> >
-> > ------------------------------------------------------
-> > Subject: memory hotplug: migrate swap cache page
-> > From: Shaohua Li <shaohua.li@intel.com>
-> >
-> > In test, some pages in swap-cache can't be migrated, as they aren't rmap.
-> >
-> > unmap_and_move() ignores swap-cache page which is just read in and hasn't
-> > rmap (see the comments in the code), but swap_aops provides .migratepage.
-> > Better to migrate such pages instead of ignore them.
-> >
-> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > Cc: Mel Gorman <mel@csn.ul.ie>
-> > Cc: Christoph Lameter <cl@linux-foundation.org>
-> > Cc: Yakui Zhao <yakui.zhao@intel.com>
-> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> > ---
-> >
-> >  mm/migrate.c |    6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> >
-> > diff -puN mm/migrate.c~memory-hotplug-migrate-swap-cache-page mm/migrate.c
-> > --- a/mm/migrate.c~memory-hotplug-migrate-swap-cache-page
-> > +++ a/mm/migrate.c
-> > @@ -147,7 +147,7 @@ out:
-> >  static void remove_file_migration_ptes(struct page *old, struct page *new)
-> >  {
-> >  	struct vm_area_struct *vma;
-> > -	struct address_space *mapping = page_mapping(new);
-> > +	struct address_space *mapping = new->mapping;
-> >  	struct prio_tree_iter iter;
-> >  	pgoff_t pgoff = new->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-> >
-> > @@ -664,13 +664,15 @@ static int unmap_and_move(new_page_t get
-> >  			 *    needs to be effective.
-> >  			 */
-> >  			try_to_free_buffers(page);
-> > +			goto rcu_unlock;
-> >  		}
-> > -		goto rcu_unlock;
-> > +		goto skip_unmap;
-> >  	}
-> >
-> >  	/* Establish migration ptes or remove ptes */
-> >  	try_to_unmap(page, 1);
-> >
-> > +skip_unmap:
-> >  	if (!page_mapped(page))
-> >  		rc = move_to_new_page(newpage, page);
-> >
-> > _
-> >
-> > Patches currently in -mm which might be from shaohua.li@intel.com are
-> >
-> > linux-next.patch
-> > memory-hotplug-update-zone-pcp-at-memory-online.patch
-> > memory-hotplug-exclude-isolated-page-from-pco-page-alloc.patch
-> > memory-hotplug-make-pages-from-movable-zone-always-isolatable.patch
-> > memory-hotplug-alloc-page-from-other-node-in-memory-online.patch
-> > memory-hotplug-migrate-swap-cache-page.patch
-> >
-> >
+> -----Original Message-----
+> From: Jean-Christophe PLAGNIOL-VILLARD [mailto:plagnioj@jcrosoft.com] 
+> Sent: Friday, June 26, 2009 10:33 PM
+> To: Leo (Hao) Chen
+> Cc: linux-arm-kernel@lists.arm.linux.org.uk; Linux Kernel
+> Subject: Re: [PATCH v1 3/6][ARM] new ARM SoC support: BCMRing
+> 
+> On 16:29 Fri 26 Jun     , Leo (Hao) Chen wrote:
+> > Hi,
+> > 
+> > This is the third patch.  This big patch contains the core 
+> arch code in arch/arm/mach-bcmring directory.
+> > Header files in arch/arm/mach-bcmring/include/mach are 
+> included as well.
+> You need to check your patches with checkpatch.pl as your 
+> patches do not respect
+> the linux conding style in a lot's of space
+> 
+I'll fix the errors found by the checkpatch.pl script.  Is it okay to pass the checkpatch.pl with some warnings?
+
+> > 
+> > >From 8c38c714343f1cc203c55db8fd28505b1ec4f914 Mon Sep 17 
+> 00:00:00 2001
+> > From: Leo Chen <leochen@broadcom.com>
+> > Date: Fri, 26 Jun 2009 15:46:41 -0700
+> > Subject: [PATCH 3/6] add bcmring arch core code and header files
+> > 
+> a few more details will be nice
+> please split a few too it will help for review
+> 
+> Best Regards,
+> J.
+> 
+> 
+
+
+ 
+Leo Hao Chen
+Software Engineer
+Broadcom Canada Inc.
+
