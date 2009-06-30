@@ -1,85 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbZF3GlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbZF3Gp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758361AbZF3GlN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 02:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZF3Gk6
+	id S1758020AbZF3Gp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 02:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZF3GpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 02:40:58 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62096 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbZF3Gk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 02:40:57 -0400
-Message-ID: <4A49B364.5000508@cn.fujitsu.com>
-Date: Tue, 30 Jun 2009 14:40:36 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 30 Jun 2009 02:45:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51987 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753594AbZF3GpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 02:45:14 -0400
+Date: Tue, 30 Jun 2009 09:45:15 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: [PATCH v4] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090630064515.GG20289@redhat.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
- elevaotor layer
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +
-> +/*
-> + * Do the accounting. Determine how much service (in terms of time slices)
-> + * current queue used and adjust the start, finish time of queue and vtime
-> + * of the tree accordingly.
-> + *
-> + * Determining the service used in terms of time is tricky in certain
-> + * situations. Especially when underlying device supports command queuing
-> + * and requests from multiple queues can be there at same time, then it
-> + * is not clear which queue consumed how much of disk time.
-> + *
-> + * To mitigate this problem, cfq starts the time slice of the queue only
-> + * after first request from the queue has completed. This does not work
-> + * very well if we expire the queue before we wait for first and more
-> + * request to finish from the queue. For seeky queues, we will expire the
-> + * queue after dispatching few requests without waiting and start dispatching
-> + * from next queue.
-> + *
-> + * Not sure how to determine the time consumed by queue in such scenarios.
-> + * Currently as a crude approximation, we are charging 25% of time slice
-> + * for such cases. A better mechanism is needed for accurate accounting.
-> + */
+KVM would like to provide x2APIC interface to a guest without emulating
+interrupt remapping device. The reason KVM prefers guest to use x2APIC
+is that x2APIC interface is better virtualizable and provides better
+performance than mmio xAPIC interface:
 
-  Hi Vivek,
+- msr exits are faster than mmio (no page table walk, emulation)
+- no need to read back ICR to look at the busy bit
+- one 64 bit ICR write instead of two 32 bit writes
+- shared code with the Hyper-V paravirt interface
+    
+Included patch changes x2APIC enabling logic to enable it even if IR
+initialization failed, but kernel runs under KVM and no apic id is
+greater than 255 (if there is one spec requires BIOS to move to x2apic
+mode before starting an OS).
 
-  The comment is out of date, would you update it accordingly?
-
-> +void __elv_ioq_slice_expired(struct request_queue *q, struct io_queue *ioq)
-> +{
-> +	struct elv_fq_data *efqd = &q->elevator->efqd;
-> +	struct io_entity *entity = &ioq->entity;
-> +	long slice_unused = 0, slice_used = 0, slice_overshoot = 0;
-> +
-> +	assert_spin_locked(q->queue_lock);
-> +	elv_log_ioq(efqd, ioq, "slice expired");
-> +
-> +	if (elv_ioq_wait_request(ioq))
-> +		del_timer(&efqd->idle_slice_timer);
-> +
-> +	elv_clear_ioq_wait_request(ioq);
-> +
-> +	/*
-
--- 
-Regards
-Gui Jianfeng
-
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 8c7c042..351d55a 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -49,6 +49,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/smp.h>
+ #include <asm/mce.h>
++#include <asm/kvm_para.h>
+ 
+ unsigned int num_processors;
+ 
+@@ -1363,52 +1364,75 @@ void enable_x2apic(void)
+ }
+ #endif /* CONFIG_X86_X2APIC */
+ 
+-void __init enable_IR_x2apic(void)
++int __init enable_IR(void)
+ {
+ #ifdef CONFIG_INTR_REMAP
+ 	int ret;
+-	unsigned long flags;
+-	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 
+ 	ret = dmar_table_init();
+ 	if (ret) {
+ 		pr_debug("dmar_table_init() failed with %d:\n", ret);
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+ 	if (!intr_remapping_supported()) {
+ 		pr_debug("intr-remapping not supported\n");
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+-
+ 	if (!x2apic_preenabled && skip_ioapic_setup) {
+ 		pr_info("Skipped enabling intr-remap because of skipping "
+ 			"io-apic setup\n");
+-		return;
++		return 0;
+ 	}
+ 
++	if (enable_intr_remapping(x2apic_supported()))
++		return 0;
++
++	pr_info("Enabled Interrupt-remapping\n");
++
++	return 1;
++
++#endif
++	return 0;
++}
++
++void __init enable_IR_x2apic(void)
++{
++	unsigned long flags;
++	struct IO_APIC_route_entry **ioapic_entries = NULL;
++	int ret, x2apic_enabled = 0;
++
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
+-		pr_info("Allocate ioapic_entries failed: %d\n", ret);
+-		goto end;
++		 pr_info("Allocate ioapic_entries failed\n");
++		 goto out;
+ 	}
+ 
+ 	ret = save_IO_APIC_setup(ioapic_entries);
+ 	if (ret) {
+ 		pr_info("Saving IO-APIC state failed: %d\n", ret);
+-		goto end;
++		goto out;
+ 	}
+ 
+ 	local_irq_save(flags);
+-	mask_IO_APIC_setup(ioapic_entries);
+ 	mask_8259A();
++	mask_IO_APIC_setup(ioapic_entries);
+ 
+-	ret = enable_intr_remapping(x2apic_supported());
+-	if (ret)
+-		goto end_restore;
++	ret = enable_IR();
++	if (!ret) {
++		/* IR is required if x2apic is enabled by BIOS even
++		 * when running in kvm since this indicates present
++		 * of APIC ID > 255 */
++	       	if (x2apic_preenabled || !kvm_para_available())
++			goto nox2apic;
++		else
++			/* without IR all CPUs can be addressed by IOAPIC/MSI
++			 * only in physical mode */
++			x2apic_phys = 1;
++	}
+ 
+-	pr_info("Enabled Interrupt-remapping\n");
++	x2apic_enabled = 1;
+ 
+ 	if (x2apic_supported() && !x2apic_mode) {
+ 		x2apic_mode = 1;
+@@ -1416,41 +1440,30 @@ void __init enable_IR_x2apic(void)
+ 		pr_info("Enabled x2apic\n");
+ 	}
+ 
+-end_restore:
+-	if (ret)
+-		/*
+-		 * IR enabling failed
+-		 */
++nox2apic:
++	if (!ret) /* IR enabling failed */
+ 		restore_IO_APIC_setup(ioapic_entries);
+-
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+-end:
++out:
+ 	if (ioapic_entries)
+ 		free_ioapic_entries(ioapic_entries);
+ 
+-	if (!ret)
++	if (x2apic_enabled)
+ 		return;
+ 
+-ir_failed:
+-	if (x2apic_preenabled)
++	if (x2apic_preenabled) {
++#ifdef CONFIG_INTR_REMAP
+ 		panic("x2apic enabled by bios. But IR enabling failed");
+-	else if (cpu_has_x2apic)
+-		pr_info("Not enabling x2apic,Intr-remapping\n");
+ #else
+-	if (!cpu_has_x2apic)
+-		return;
+-
+-	if (x2apic_preenabled)
+ 		panic("x2apic enabled prior OS handover,"
+-		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
++				" enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
+ #endif
+-
+-	return;
++	} else if (cpu_has_x2apic)
++		pr_info("Not enabling x2apic,Intr-remapping\n");
+ }
+ 
+-
+ #ifdef CONFIG_X86_64
+ /*
+  * Detect and enable local APICs on non-SMP boards.
+--
+			Gleb.
