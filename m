@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZF3Veg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbZF3Vif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZF3Veg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbZF3Ve2
+	id S1758487AbZF3Vif (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZF3Vi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:34:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43197 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753235AbZF3Ve1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:34:27 -0400
-Date: Tue, 30 Jun 2009 23:34:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Wire up new syscalls
-Message-ID: <20090630213406.GB17492@elte.hu>
-References: <20090630212454.19294.75622.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630212454.19294.75622.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 30 Jun 2009 17:38:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36223 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753721AbZF3Vi1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:38:27 -0400
+Date: Tue, 30 Jun 2009 14:38:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: torvalds@linux-foundation.org, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org, mhiramat@redhat.com
+Subject: Re: [BUGFIX][ PATCH] kprobes: fix kprobe selftest configuration
+ dependency
+Message-Id: <20090630143806.9ab4519d.akpm@linux-foundation.org>
+In-Reply-To: <20090622210302.4984.82798.stgit@localhost.localdomain>
+References: <20090622210302.4984.82798.stgit@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 22 Jun 2009 17:03:02 -0400
+Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-* David Howells <dhowells@redhat.com> wrote:
+> Select CONFIG_KALLSYMS_ALL when CONFIG_KPROBES_SANITY_TEST=y.
+> Kprobe selftest always fail without CONFIG_KALLSYMS_ALL=y, because
+> kallsyms doesn't list up the target functions which are probed in this
+> test.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> ---
+> 
+>  lib/Kconfig.debug |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 23067ab..661c675 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -727,6 +727,7 @@ config KPROBES_SANITY_TEST
+>  	bool "Kprobes sanity tests"
+>  	depends on DEBUG_KERNEL
+>  	depends on KPROBES
+> +	select KALLSYMS_ALL
+>  	default n
+>  	help
+>  	  This option provides for testing basic kprobes functionality on
 
-> Wire up new syscalls rt_tgsigqueueinfo and perf_counter_open.
+KALLSYMS_ALL depends on KALLSYMS, so what happens here if KALLSYMS=n?
 
-> +	.long sys_perf_counter_open
+Ah, KPROBES depends on KALLSYMS, so that problem won't be occurring.
 
-Hm, i suspect this should be sys_ni because FRV does not set 
-HAVE_PERF_COUNTERS so perfcounters cannot be enabled. (Or do you 
-have patches in the pipeline that enable perfcounters for FRV?)
+Still, the end result is significently more complex and fragile than a
+`depends on' would have been.  But I suppose we've done worse.  Oh well.
 
-	Ingo
+
