@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbZF3AYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZF3BDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756808AbZF3AYo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 20:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZF3AYh
+	id S1757247AbZF3BDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 21:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZF3BDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 20:24:37 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:45617 "EHLO bilbo.ozlabs.org"
+	Mon, 29 Jun 2009 21:03:01 -0400
+Received: from mga09.intel.com ([134.134.136.24]:15015 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753006AbZF3AYh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 20:24:37 -0400
-Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Rob Landley <rob@landley.net>
-Cc: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
-       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <200906291834.07902.rob@landley.net>
-References: <200906281033.09842.jk@ozlabs.org>
-	 <200906291834.07902.rob@landley.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-09JIW95yaypzlhlHwAmq"
-Date: Tue, 30 Jun 2009 10:24:38 +1000
-Message-Id: <1246321478.4621.11.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1751680AbZF3BDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 21:03:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,312,1243839600"; 
+   d="scan'208";a="426360007"
+Date: Tue, 30 Jun 2009 09:03:02 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>, "Zhao, Yakui" <yakui.zhao@intel.com>
+Subject: Re: +
+	memory-hotplug-exclude-isolated-page-from-pco-page-alloc.patch
+	added to -mm tree
+Message-ID: <20090630010302.GD21254@sli10-desk.sh.intel.com>
+References: <200906291949.n5TJnrsO028716@imap1.linux-foundation.org> <alpine.DEB.1.10.0906291818460.21956@gentwo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906291818460.21956@gentwo.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 30, 2009 at 06:20:00AM +0800, Christoph Lameter wrote:
+> On Mon, 29 Jun 2009, akpm@linux-foundation.org wrote:
+> 
+> > Pages marked as isolated should not be allocated again.  If such pages
+> > reside in pcp list, they can be allocated too, so there is a ping-pong
+> > memory offline frees some pages to pcp list and the pages get allocated
+> > and then memory offline frees them again, this loop will happen again and
+> > again.
+> 
+> Isolated pages are freed? Could they not be kept on a separate
+> list with refcount elevated until the isolation procedure is complete?
+Yes, they can be freed and add into pcp list. Moving them to a separate list
+is feasible, but the approach is more intrusive to me. As I explained in the
+patch, adding check in buffered_rmqueue() should hasn't impact for normal path.
 
---=-09JIW95yaypzlhlHwAmq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
-> Which suggested that the problem was the new CONFIG_PPC_OF_BOOT_TRAMPOLIN=
-E=20
-> symbol wasn't set, and once I switched that on it started working again.
-
-What defconfig are you using? It sounds like maybe something should be
-'select'ing OF_BOOT_TRAMPOLINE.
-
-
-> > linuxppc-dev@lists.ozlabs.org is the one you want for this:
-> >
-> >  https://lists.ozlabs.org/listinfo/linuxppc-dev
->=20
-> Cool!  Is there a reason it's hidden?  (Or at least not listed in either=20
-> vger.kernel.org's list info page or in the "Maling lists" page linked fro=
-m=20
-> ozlabs.org's top level web page.)  Just curious, I couldn't find it when =
-I=20
-> looked in the obvious (to me) places.
-
-It's not hidden, it's just in the process of moving from ozlabs.org to
-lists.ozlabs.org - and it's a bit hard to find in the process. I've
-updated the ozlabs.org page to point to it in the meantime.
-
-It's also in maintainers :D
-
-LINUX FOR POWERPC (32-BIT AND 64-BIT)                                      =
-                                   =20
-P:      Benjamin Herrenschmidt
-M:      benh@kernel.crashing.org
-P:      Paul Mackerras
-M:      paulus@samba.org
-W:      http://www.penguinppc.org/
-L:      linuxppc-dev@ozlabs.org
-T:      git git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
-S:      Supported
-
-
-cheers
-
---=-09JIW95yaypzlhlHwAmq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpJWzwACgkQdSjSd0sB4dIS5ACgt9cW2NcDis8oj/3Jr3JdhLy1
-hV4An02xbRKHME4V/dOd2kIc9gY4zWhz
-=n1Sd
------END PGP SIGNATURE-----
-
---=-09JIW95yaypzlhlHwAmq--
-
+Thanks,
+Shaohua
