@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbZF3Il2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbZF3Iom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755018AbZF3Il2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 04:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZF3IlU
+	id S1753437AbZF3Iom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 04:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZF3Ioe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 04:41:20 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:4825 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751326AbZF3IlT (ORCPT
+	Tue, 30 Jun 2009 04:44:34 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:48323 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751326AbZF3Ioe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 04:41:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=MDIRTWwo731JFeejPp5erBNjC0ga3usRfZr+5AZ7T4phSuVfTLqKkgoeWfq1Z7jjJ
-	Uuyf5O7lRpVn9NbYp/pTA==
-Date: Tue, 30 Jun 2009 01:41:12 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
-       arjan@infradead.org, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-In-Reply-To: <20090630082415.GC11980@wotan.suse.de>
-Message-ID: <alpine.DEB.2.00.0906300128510.16291@chino.kir.corp.google.com>
-References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org>
- <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <alpine.DEB.2.00.0906291625580.17663@chino.kir.corp.google.com> <20090630074717.GA11980@wotan.suse.de>
- <alpine.DEB.2.00.0906300050530.11018@chino.kir.corp.google.com> <20090630082415.GC11980@wotan.suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 30 Jun 2009 04:44:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=WdvfnjiZjtMvi3QbzktHkV5QMdETxJOlQEDmOjqzX/9xQm7FFfZ3Rs9QuuwZTWoSOI
+         Zqe9S9m1AfljnsOD9IHeMHvudJOPeVKvakU+ZQRdDh2c21m3t+YVg1vfemi4bDGDA0QU
+         BqmtPMzapo0yKPczsoAK6Tz6E36ftkEZwv3T0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Date: Tue, 30 Jun 2009 10:44:35 +0200
+Message-ID: <233789ed0906300144q209886b3qfb6737175a3660a0@mail.gmail.com>
+Subject: Problem with wake_up using real-time scheduling
+From: Zoltan Bus <zoltan.bus@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Nick Piggin wrote:
+Hello,
 
-> > I'd agree with Mel's added check for TIF_MEMDIE upon returning from the 
-> > oom killer, but only for __GFP_NOMEMALLOC.
-> 
-> NOMEMALLOC indeed should always be kept away from memalloc/memdie
-> reserves. That's how it should have worked when I added it (but
-> I may have forgotten TIF_MEMDIE, I can't remember).
-> 
+I have a problem on kernel 2.6.26.3. I have a real-time task which
+uses the select system call to poll my audio driver. The sleeping task
+is waken up by wake_up() from an interrupt handler.
+The problem is, that the wake_up() function  sometimes does not wake
+up the task if real-time priority is used.
 
-Yeah, so if test_thread_flag(TIF_MEMDIE) and __GFP_NOMEMALLOC, then it 
-makes sense to return NULL immediately following the call to the oom 
-killer for !__GFP_NOFAIL since retrying the allocation is pointless 
-(reclaim failed already and TIF_MEMDIE doesn't help us on the next 
-attempt) at that time.
+The try_to_wake_up() returns from the out_running section, because of the check
 
-> > The oom killer currently is a no-op if any eligible task has TIF_MEMDIE, 
-> > so this would require adding an oom killer timeout so that if a task fails 
-> > to exit after a predefined period, TIF_MEMDIE is cleared and the task is 
-> > marked to no longer be selected (which would require an addition to 
-> > task_struct) although it may have already completely depleted memory 
-> > reserves.
-> 
-> It wouldn't have to be a timeout, it could be a call back to the
-> oom killer.
-> 
+      if (p->se.on_rq)
+              goto out_running;
 
-Calling the oom killer won't do anything since it will not kill another 
-task while another has TIF_MEMDIE to protect those memory reserves and 
-give the oom killed task a chance to exit.
+There are no other tasks running when the poll function is called.
 
-Panicking when a thread with TIF_MEMDIE set cannot find any memory and the 
-allocation is __GFP_NOFAIL makes sense, but only for order 0.
+Is this a known problem? Is it fixed somehow in newer versions?
+Unfortunately I do not have the possibility to change the newest kernel version.
+I am a newbie at linux, thank you very much for your help.
+
+Zoltan
