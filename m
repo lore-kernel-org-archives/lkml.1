@@ -1,224 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZF3XCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZF3XCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757551AbZF3XCA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbZF3XBx
+	id S1756213AbZF3XCW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbZF3XCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:01:53 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:30201 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbZF3XBw (ORCPT
+	Tue, 30 Jun 2009 19:02:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33765 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759228AbZF3XCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:01:52 -0400
-X-IronPort-AV: E=Sophos;i="4.42,319,1243828800"; 
-   d="scan'208";a="3269410"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: RFC - printk handling more than one CON_BOOT
-Date: Tue, 30 Jun 2009 19:05:12 -0400
-User-Agent: KMail/1.9.5
-CC: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Paul Mundt" <lethal@linux-sh.org>
-References: <200906290703.21539.rgetz@blackfin.uclinux.org> <20090630222520.GG1241@elte.hu>
-In-Reply-To: <20090630222520.GG1241@elte.hu>
+	Tue, 30 Jun 2009 19:02:00 -0400
+Date: Tue, 30 Jun 2009 16:00:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+In-Reply-To: <4A4A921F.7080100@kernel.org>
+Message-ID: <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain>
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com>
+ <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com>
+ <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com>
+ <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200906301905.13095.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 30 Jun 2009 23:01:55.0096 (UTC) FILETIME=[C341D980:01C9F9D6]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 30 Jun 2009 18:25, Ingo Molnar pondered:
+
+
+On Tue, 30 Jun 2009, Yinghai Lu wrote:
 > 
-> * Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> 
-> > Today, register_console() assumes the following usage (with 
-> > respect to boot consoles/early_printk).
-> > 
-> > The first console to register with register_console() with a flags 
-> > set to CON_BOOT is the one and only bootconsole.
-> > 
-> > If another register_console() is called with an additional 
-> > CON_BOOT, today it is silently rejected.
-> > 
-> > As soon as a console without the CON_BOOT set calls 
-> > register_console(), the one and only bootconsole is automatically 
-> > unregistered.
-> > 
-> > Once there is a "standard" console - register_console() will 
-> > silently reject any consoles with it's CON_BOOT, set.
-> > 
-> > 
-> > This changeset allows multiple boot consoles, and changes the 
-> > functionality to, be mostly the same as the above.
-> > 
-> > Any number of bootconsoles can be registered. A "real" console 
-> > will unregister all the bootconsoles. Once a "real" console is 
-> > registered, no more bootconsoles can be added.
-> > 
-> > Thoughts?
-> >
-> > The use case is to have a console buffer which goes to serial, and 
-> > a console buffer which goes to a fixed memory buffer at the same 
-> > time. (serial is what most people use, but if serial is hosed for 
-> > some reason, having things in a buffer (which gets printed out by 
-> > the bootloader) is the only way to tell what is going on).
-> 
-> Looks genuinely useful ...
+> how about x = 0, y = 0x100?
 
-Yeah, I found it so.
+Yeah, no. Peter's trick doesn't work. Good catch. 
 
-> > If you don't object I will send a properly formatted patch...
-> 
-> Find some minor comments below:
-> 
-> > -------------
-> > 
-> > 
-> > Index: kernel/printk.c
-> > ===================================================================
-> > --- kernel/printk.c	(revision 6860)
-> > +++ kernel/printk.c	(working copy)
-> > @@ -1126,9 +1126,24 @@
-> >  	unsigned long flags;
-> >  	struct console *bootconsole = NULL;
-> >  
-> > +	/* before we register a new CON_BOOT console, make sure we don't
-> > +	 * already have a valid console
-> > +	 */
-> 
-> please use the customary comment style:
-> 
->   /*
->    * Comment .....
->    * ...... goes here:
->    */
-> 
-> specified in Documentation/CodingStyle.
+I don't see any single-use trick then, and so it needs the whole statement 
+expression mess.
 
-OK.
-
-> >  	if (console_drivers) {
-> > -		if (console->flags & CON_BOOT)
-> > -			return;
-> > +		if (console->flags & CON_BOOT) {
-> > +			for (bootconsole = console_drivers;
-> > +				bootconsole != NULL;
-> > +				bootconsole = bootconsole->next) {
-> > +				if (!(bootconsole->flags & CON_BOOT))
-> > +					break;
-> > +			}
-> > +			if ((console->flags & CON_BOOT) &&
-> > +				!(bootconsole->flags & CON_BOOT))
-> > +				return;
-> > +			if (!(bootconsole->flags & CON_BOOT))
-> > +				bootconsole = NULL;
-> > +		}
-> 
-> This is really ugly to read mainly because the meat of the function, 
-> the loop over all console drivers, is two indentation levels to the 
-> right which creates line break artifacts. I'd suggest to put this 
-> portion into a helper inline.
-> 
-> Also, the name 'bootconsole' is way too long for an iterator. 
-> Something like 'con' would be more than enough. (and the new console 
-> that is being registered could be new_con or so, to bring it in line 
-> with this naming.)
-
-I was just re-using what was already there. If you don't mind reviewing a 
-larger patch - I'll change it to something shorter.
-
-> Also, the new semantics here seem overly complex.
-
-They are - I fixed things a little, but not as much as you suggest.
-
-> Why not have a  
-> state variable that tells us whether we are in the early boot phase 
-> or not and warn about early consoles that get registered too late 
-> and real consoles that get registered too early?
-
-That makes sense to me. Today - there are some bootconsoles (x86 and sh) that 
-accept a "keep" - still register early - but don't set the CON_BOOT, so they 
-get treated like a normal console (but are hooked up before console_init()).
-
-This would not allow that to happen.... - is that really desired?
-
-> That way the CON_BOOT flag is really reduntant in terms of 
-> semantics: all consoles registered before console_init() are early 
-> ones, and all consoles registered after that are final consoles. (or 
-> something like that)
-
-Again - just using what is already there...
-
-> Is there any reason why we'd want to do something more complex than 
-> such simple rules?
->  
-> > +
-> >  		if (console_drivers->flags & CON_BOOT)
-> >  			bootconsole = console_drivers;
-> >  	}
-> > @@ -1195,15 +1210,32 @@
-> >  	if (!(console->flags & CON_ENABLED))
-> >  		return;
-> >  
-> > -	if (bootconsole && (console->flags & CON_CONSDEV)) {
-> > -		printk(KERN_INFO "console handover: boot [%s%d] -> real
-> [%s%d]\n",
-> > -		       bootconsole->name, bootconsole->index,
-> > -		       console->name, console->index);
-> > -		unregister_console(bootconsole);
-> > +	if (bootconsole && (console->flags & CON_CONSDEV) &&
-> > +		!(console->flags & CON_BOOT)) {
-> > +		/* we need to iterate through twice, to make sure we
-> print
-> > +		 * everything out, before we unregister the console(s)
-> > +		 */
-> 
-> (please fix the comment.)
-
-will do.
-
-> > +		printk(KERN_INFO "console handover: ");
-> > +		for (bootconsole = console_drivers; bootconsole != NULL;
-> > +			bootconsole = bootconsole->next) {
-> > +			if (bootconsole->flags & CON_BOOT)
-> > +				printk("boot [%s%d] ",
-> bootconsole->name,
-> > +					bootconsole->index);
-> > +		}
-> > +		printk(" -> real [%s%d]\n", console->name,
-> console->index);
-> > +		for (bootconsole = console_drivers; bootconsole != NULL;
-> > +			bootconsole = bootconsole->next) {
-> > +			if (bootconsole->flags & CON_BOOT)
-> > +				unregister_console(bootconsole);
-> > +		}
-> 
-> this too should probably move into a helper inline.
-
-OK
-
-> >  		console->flags &= ~CON_PRINTBUFFER;
-> >  	} else {
-> > -		printk(KERN_INFO "console [%s%d] enabled\n",
-> > -		       console->name, console->index);
-> > +		if (console->flags & CON_BOOT)
-> > +			printk(KERN_INFO "bootconsole [%s%d] enabled\n",
-> > +				console->name, console->index);
-> > +		else
-> > +			printk(KERN_INFO "console [%s%d] enabled\n",
-> > +				console->name, console->index);
-> 
-> multi-line branch statemens should preferably come with curly 
-> braces. And this could probably be written simpler as well, as:
-> 
-> 	printk(KERN_INFO "%sconsole [%s%d] enabled\n",
-> 		(con->flags & CON_BOOT) ? "boot" : "",
-> 		 con->name, con->index);
-
-OK.
+		Linus
