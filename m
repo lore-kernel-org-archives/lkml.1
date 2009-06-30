@@ -1,157 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZF3Rqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311AbZF3R6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZF3Rqq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 13:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbZF3Rqj
+	id S1754311AbZF3R6z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 13:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZF3R6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 13:46:39 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37680 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbZF3Rqi (ORCPT
+	Tue, 30 Jun 2009 13:58:48 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:15484 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751735AbZF3R6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 13:46:38 -0400
-Date: Tue, 30 Jun 2009 13:46:34 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, earl_chew@agilent.com,
-       Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v4)
-Message-ID: <20090630174634.GD15612@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090630173836.GA15612@hmsreliant.think-freely.org>
+	Tue, 30 Jun 2009 13:58:47 -0400
+X-Trace: 219289566/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.44.181/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.44.181
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIGAH/vSUpQKSy1/2dsb2JhbACBUZFCHQGuWgmPPoJJD4E3BQ
+X-IronPort-AV: E=Sophos;i="4.42,317,1243810800"; 
+   d="scan'208";a="219289566"
+Date: Tue, 30 Jun 2009 18:58:29 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Attila Kinali <attila@kinali.ch>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Long lasting MM bug when swap is smaller than RAM
+In-Reply-To: <20090630115819.38b40ba4.attila@kinali.ch>
+Message-ID: <Pine.LNX.4.64.0906301801500.9988@sister.anvils>
+References: <20090630115819.38b40ba4.attila@kinali.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630173836.GA15612@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Allow core_pattern pipes to wait for user space to complete
+On Tue, 30 Jun 2009, Attila Kinali wrote:
+> 
+> There has been a bug back in the 2.4.17 days that is somehow
+> triggered by swap being smaller than RAM, which i thought had
+> been fixed long ago, reappeared on one of the machines i manage.
 
-One of the things that user space processes like to do is look at metadata for a
-crashing process in their /proc/<pid> directory.  this is racy however, since
-do_coredump in the kernel doesn't wait for the user space process to complete
-before it reaps the crashing process.  This patch corrects that.  Allowing the
-kernel to wait for the user space process to complete before cleaning up the
-crashing process.  This is a bit tricky to do for a few reasons:
+Snipped <history>, which I hope won't be repeated to the point of OOM.
 
-1) The user space process isn't our child, so we can't sys_wait4 on it
-2) We need to close the pipe before waiting for the user process to complete,
-since the user process may rely on an EOF condition
+> 
+> Now, 7 years later, i have a machine that shows the same behavior.
+> 
+> Some data:
+> 
+> We have a HP DL380 G4 currently running a 2.6.29.4 vanilla kernel,
+> compiled for x86 32 bit.
+> It was originaly purchased in 2005 with 2GB RAM and a few weeks
+> ago upgraded to 6GB (no other changes beside this and a kernel upgrade).
+> The machine, being the MPlayer main server, runs a lighttpd, svnserve,
+> mailman, postfix, bind. Ie nothing unusual and the applications didn't
+> change in the last months (since the update from debian/etch to lenny).
+> 
+> ---
+> root@natsuki:/home/attila# uname -a
+> Linux natsuki 2.6.29.4 #1 SMP Sun May 31 22:13:21 CEST 2009 i686 GNU/Linux
+> root@natsuki:/home/attila# uptime
+>  11:41:07 up 29 days, 13:17,  5 users,  load average: 0.15, 0.36, 0.54
+> root@natsuki:/home/attila# free -m
+>              total       used       free     shared    buffers     cached
+> Mem:          6023       5919        103          0        415       3873
+> -/+ buffers/cache:       1630       4393
+> Swap:         3812        879       2932
+> ---
+> 
+> I want to point your attention at the fact that the machine has now
+> more RAM installed than it previously had RAM+Swap (ie before the upgrade).
+> Ie there is no reason it would need to swap out, at least not so much.
+> 
+> What is even more interesting is the amount of swap used over time.
+> Sampled every day at 10:00 CEST:
+> 
+> ---
+> Date: Wed, 17 Jun 2009 10:00:01 +0200 (CEST)
+> Mem:          6023       5893        130          0        405       3834
+> Swap:         3812        190       3622
+> 
+> Date: Thu, 18 Jun 2009 10:00:01 +0200 (CEST)
+> Mem:          6023       5793        229          0        340       3939
+> Swap:         3812        225       3586
+> 
+...
+> 
+> Date: Sun, 28 Jun 2009 10:00:02 +0200 (CEST)
+> Mem:          6023       5890        132          0        402       3886
+> Swap:         3812        784       3028
+> 
+> Date: Mon, 29 Jun 2009 10:00:01 +0200 (CEST)
+> Mem:          6023       5388        635          0        425       3321
+> Swap:         3812        826       2985
+> ---
+> 
+> As you can see, although memory usage didnt change much over time,
+> swap usage increased from 190MB to 826MB in about two weeks.
+> 
+> As i'm pretty much clueless when it commes to how the linux VM works,
+> i would appreciate it if someone could give me some pointers on how
+> to figure out what causes this bug so that it could be fixed finally.
 
-I've discussed several solutions with Oleg Nesterov off-list about this, and
-this is the one we've come up with.  We basically add ourselves as an additional
-reader (to prevent cleanup of the pipe), write the dump in ->core_dump(), then
-iteratively remove ourselves as a writer (to create the EOF condition) and wake
-up the user process.  note that we add ourselves as a reader before writing the
-file.  this closes the race in the window between the time we write the dump and
-the time we start checking for the user space process to be done with the pipe.
+I'm not sure that there's any problem here at all.  Beyond hibernation
+to disk wanting enough swapspace to write its image, I can't think of
+any reason why the kernel would misbehave if your swapspace is smaller
+than your RAM.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+One possibility is that this steady rise in swap usage just reflects
+memory pressure (a nightly cron job?) pushing pages out to swap,
+slightly different choices each time, and what's not modified later
+gets left with a copy on swap.  That would tend to rise (at a slower
+and slower rate) until swap is 50% full, then other checks should
+keep it around that level.
 
+If you do see it at more than 50% full in the morning, then yes,
+I think you do have a leak: but it's more likely to be an
+application than the kernel itself.  When kernel leaks occur,
+they're often of "Slab:" memory - is that rising in /proc/meminfo?
 
-exec.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++++++--
-1 file changed, 50 insertions(+), 2 deletions(-)
+Are you sure this steady rise in swap usage wasn't happening before
+you added that RAM?  It's possible that you have an application which
+decides how much memory to use, based on the amount of RAM in the
+machine, itself assuming there's more than that of swap.
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 93ab6eb..8dbf5a4 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -55,6 +55,7 @@
- #include <linux/kmod.h>
- #include <linux/fsnotify.h>
- #include <linux/fs_struct.h>
-+#include <linux/pipe_fs_i.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1711,14 +1712,48 @@ int get_dumpable(struct mm_struct *mm)
- 	return (ret >= 2) ? 2 : ret;
- }
- 
-+static void wait_for_dump_helpers(struct file *file)
-+{
-+	struct inode *inode;
-+	struct pipe_inode_info *pipe;
-+ 
-+	if (!file)
-+		return;
-+ 
-+	inode = file->f_path.dentry->d_inode;
-+ 
-+	if (!S_ISFIFO(inode->i_mode))
-+		return;
-+ 
-+	pipe = inode->i_pipe;
-+ 
-+	pipe_lock(pipe);
-+	while (pipe->readers > 1) {
-+		pipe->writers--;
-+		wake_up_interruptible_sync(&pipe->wait);
-+		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-+		pipe_wait(pipe);
-+		pipe->writers++;
-+	}
-+ 
-+	/*
-+	 * This reclaims the additional readers count we took in
-+	 * do_coredump
-+	 */
-+	pipe->readers--;
-+	pipe_unlock(pipe);
-+ 
-+}
-+ 
-+
- void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- {
- 	struct core_state core_state;
- 	char corename[CORENAME_MAX_SIZE + 1];
- 	struct mm_struct *mm = current->mm;
- 	struct linux_binfmt * binfmt;
--	struct inode * inode;
--	struct file * file;
-+	struct inode * inode = NULL;
-+	struct file * file = NULL;
- 	const struct cred *old_cred;
- 	struct cred *cred;
- 	int retval = 0;
-@@ -1729,6 +1764,7 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	int helper_argc = 0;
- 	int dump_count = 0;
- 	static atomic_t core_dump_count = ATOMIC_INIT(0);
-+	struct pipe_inode_info *pipe;
- 
- 	audit_core_dumps(signr);
- 
-@@ -1824,6 +1860,17 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 			       corename);
-  			goto fail_dropcount;
-  		}
-+
-+		/*
-+		 * This lets us wait on a pipe after we close the writing
-+		 * end.  The extra reader count prevents the pipe_inode_info
-+		 * from getting freed.  This extra count is reclaimed in
-+		 * wait_for_dump_helpers
-+		 */
-+		pipe = file->f_path.dentry->d_inode->i_pipe;
-+		pipe_lock(pipe);
-+		pipe->readers++;
-+		pipe_unlock(pipe);
- 	} else {
- 		if (core_limit < binfmt->min_coredump)
- 			goto fail_unlock;
-@@ -1862,6 +1909,7 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 		current->signal->group_exit_code |= 0x80;
- 
- close_fail:
-+	wait_for_dump_helpers(file);
- 	filp_close(file, NULL);
- fail_dropcount:
- 	if (dump_count)
+Do you have unwanted temporary files accumulating in a tmpfs?
+Their pages get pushed out to swap.  Or a leak in shared memory:
+does ipcs show increasing usage of shared memory?
+
+Hugh
