@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbZF3CBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbZF3CGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759877AbZF3CBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 22:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZF3CBg
+	id S1758840AbZF3CGv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 22:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZF3CGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 22:01:36 -0400
-Received: from outbound-mail-139.bluehost.com ([67.222.39.29]:38204 "HELO
-	outbound-mail-139.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752542AbZF3CBf (ORCPT
+	Mon, 29 Jun 2009 22:06:42 -0400
+Received: from tamriel.snowman.net ([72.66.115.51]:45977 "EHLO
+	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbZF3CGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 22:01:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=GjvPXUDvnMVmDR28+XPK7IsWmW3bzPFrHV3/qwuxLjD6dHMEWQ+ZXqa+S9HpI4tMrUTTe2oYNtBR3blV1qQVFCImchCM2LjqJFCMCoCk0FOwuvfunxRelbOJmiRxWvQh;
-Date: Mon, 29 Jun 2009 19:01:35 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>, Alex Chiang <achiang@hp.com>
-Subject: Re: linux-next: manual merge of the pci tree with Linus' tree
-Message-ID: <20090629190135.7ff6a089@jbarnes-g45>
-In-Reply-To: <20090630115638.7bfb8e21.sfr@canb.auug.org.au>
-References: <20090630115638.7bfb8e21.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 29 Jun 2009 22:06:42 -0400
+Date: Mon, 29 Jun 2009 22:06:44 -0400
+From: Stephen Frost <sfrost@snowman.net>
+To: dann frazier <dannf@dannf.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Alex Chiang <achiang@hp.com>,
+       linux-kernel@vger.kernel.org, David Altobelli <david.altobelli@hp.com>,
+       nagananda.chumbalkar@hp.com
+Subject: Re: ACPI issues on HP DL585 G2
+Message-ID: <20090630020644.GW20436@tamriel.snowman.net>
+References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com> <20090630011709.GT20436@tamriel.snowman.net> <86802c440906291847p302d47eau1d1cbd07be59c61@mail.gmail.com> <20090630015140.GV20436@tamriel.snowman.net> <20090630015302.GN22480@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="4kYG1Ol6LYbfFhUk"
+Content-Disposition: inline
+In-Reply-To: <20090630015302.GN22480@ldl.fc.hp.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snowman.net
+X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
+X-Uptime: 21:54:19 up 18 days, 23:21, 22 users,  load average: 0.00, 0.05,
+	0.06
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009 11:56:38 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> Hi Jesse,
-> 
-> Today's linux-next merge of the pci tree got conflicts in
-> arch/ia64/include/asm/pci.h, arch/mn10300/include/asm/pci.h and
-> include/asm-generic/pci.h between commit
-> a6c140969b4685f9b9f6773c0760f55ca66d1825 ("Delete
-> pcibios_select_root") from Linus' tree and commit
-> a53cd7419b22c14b5a1e6859a940fb6bfa77963f ("PCI: remove
-> pcibios_scan_all_fns()") from the pci tree.
-> 
-> Just context changes (adjacent removals).  I fixed it up (see below)
-> and can carry the fix for a while.
+--4kYG1Ol6LYbfFhUk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Ah ok, thanks.  That'll get fixed up after I send the current for-linus
-bits over and refresh my PCI tree.
+* dann frazier (dannf@dannf.org) wrote:
+> What about your other working DL585 boxes? Are they G2's, and are they
+> also using P600s?
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+The other DL585 G2 that I've got with the latest BIOS/etc, running under
+2.6.29, has a P800 installed, and it's working fine.  Actually, the
+other DL585 G2's that we had problems running something newer than
+2.6.22 on also had P600's..  It was quite a while ago that we tried to
+upgrade those (around 2.6.26), but I'm guessing if we tried now we'd hit
+the same issue.
+
+Don't suppose you can grab a P600 from somewhere and try?
+
+	Thanks,
+
+		Stephen
+
+--4kYG1Ol6LYbfFhUk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpJczQACgkQrzgMPqB3kii82QCeNsUKIlZM0jZMwCBBWhkmHAGK
+ywQAnjjyflTDwi9bzqauBO2Hwpar57ho
+=O/cH
+-----END PGP SIGNATURE-----
+
+--4kYG1Ol6LYbfFhUk--
