@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZF3Uis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZF3Uj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZF3Uis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZF3Uil
+	id S1756850AbZF3Uj7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZF3Ujw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:38:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43819 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753140AbZF3Uik (ORCPT
+	Tue, 30 Jun 2009 16:39:52 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:60029 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbZF3Ujv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:38:40 -0400
-Date: Tue, 30 Jun 2009 13:38:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
+	Tue, 30 Jun 2009 16:39:51 -0400
+Message-ID: <4A4A77F1.4010405@oracle.com>
+Date: Tue, 30 Jun 2009 13:39:13 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, Valdis.Kletnieks@vt.edu,
+       linux-kernel@vger.kernel.org
 Subject: Re: mmotm 2009-06-30-12-50 uploaded
-Message-Id: <20090630133816.f62b0cb4.akpm@linux-foundation.org>
-In-Reply-To: <56465.1246393621@turing-police.cc.vt.edu>
-References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>
-	<54770.1246392952@turing-police.cc.vt.edu>
-	<56465.1246393621@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>	<54770.1246392952@turing-police.cc.vt.edu>	<4A4A7364.1090108@oracle.com> <20090630133550.bf34a0ba.akpm@linux-foundation.org>
+In-Reply-To: <20090630133550.bf34a0ba.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A4A77F3.0078:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009 16:27:01 -0400
-Valdis.Kletnieks@vt.edu wrote:
+Andrew Morton wrote:
+> On Tue, 30 Jun 2009 13:19:48 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+>> Valdis.Kletnieks@vt.edu wrote:
+> 
+> (I wasn't cc'ed?)
 
-> Not sure why that line did it.  Repeated truncate-and-try shows that if the
-> line contained just the 4 chars '0804', it applied fine, but '0804a' dies.
+mm-commits but not you... (from Valdis)
 
-That's patch(1) thinking it's a regular diff:
+>>> On Tue, 30 Jun 2009 12:51:30 PDT, akpm@linux-foundation.org said:
+>>>> The mm-of-the-moment snapshot 2009-06-30-12-50 has been uploaded to
+>>> This dies with quilt 0.44, thusly:
+>>>
+>>> Applying patch procfs-provide-stack-information-for-threads-v08.patch
+>>> can't find file to patch at input line 20
+>>> Perhaps you used the wrong -p or --strip option?
+>>> The text leading up to this was:
+>>> --------------------------
+>>> |From: Stefani Seibold <stefani@seibold.net>
+>>> |
+>>> |A patch to give a better overview of the userland application stack usage,
+>>> |especially for embedded linux.
+>>> |
+>>> |Currently you are only able to dump the main process/thread stack usage
+>>> |which is showed in /proc/pid/status by the "VmStk" Value.  But you get no
+>>> |information about the consumed stack memory of the the threads.
+>>> |
+>>> |There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which marks
+>>> |the vm mapping where the thread stack pointer reside with "[thread stack
+>>> |xxxxxxxx]".  xxxxxxxx is the maximum size of stack.  This is a value
+>>> |information, because libpthread doesn't set the start of the stack to the
+>>> |top of the mapped area, depending of the pthread usage.
+>>> |
+>>> |A sample output of /proc/<pid>/task/<tid>/maps looks like:
+>>> |
+>>> |08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
+>>> |08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
+> 
+> The next line is:
+> 
+> a7d12000-a7d13000 ---p 00000000 00:00 0
+> 
+> And I bet stupid patch(1) saw that "---" and decided that it was the
+> start of a diff.
+> 
+> Try adding `-u' to the patch(1) command?
+> 
+> I use something like
+> 
+> 	patch -u -f -p1 --fuzz=1 -s
 
-akpm:/usr/src/25> diff Makefile Makefile~linux-next
-4c4
-< EXTRAVERSION = -rc1-mm1
----
-> EXTRAVERSION = -rc1
-142a143,144
-> TOPDIR                := $(srctree)
-> # FIXME - TOPDIR is obsolete, use srctree/objtree
-149c151
-< export srctree objtree VPATH
----
-> export srctree objtree VPATH TOPDIR
-328c330
-< LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
----
-> LDFLAGS_MODULE  =
-345,346c347
-<                  -Werror-implicit-function-declaration \
-<                  -Wno-format-security
----
->                  -Werror-implicit-function-declaration
+Yes, my .quiltrc file contains -u for QUILT_PATCH_OPTS.
 
-
-So the "0804a" means "at line 804, start appending stuff", or something
-like that.
-
-Use -u.
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
