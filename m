@@ -1,122 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758145AbZF3Umm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZF3UtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758145AbZF3Umm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbZF3UmS
+	id S1756189AbZF3UtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZF3UtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:42:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40438 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756906AbZF3UmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:42:16 -0400
-Date: Tue, 30 Jun 2009 17:42:04 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 3/3] perf_counter tools: Add --symbols parameter to
-	'perf report'
-Message-ID: <20090630204204.GD15682@ghostprotocols.net>
+	Tue, 30 Jun 2009 16:49:00 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:38674 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752670AbZF3Us7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:48:59 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC] vfat: change the default from shortname=lower to shortname=mixed
+References: <20090630032257.GA32096@shareable.org>
+Date: Wed, 01 Jul 2009 05:48:58 +0900
+In-Reply-To: <20090630032257.GA32096@shareable.org> (Jamie Lokier's message of
+	"Tue, 30 Jun 2009 04:22:57 +0100")
+Message-ID: <87skhhh2h1.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So that we can filter by symbol name.
+Jamie Lokier <jamie@shareable.org> writes:
 
-The 'pfunct' utility in the 'dwarves' package can be used to create a
-file with the functions one wants.
+> I agree with the change to "shortname=mixed" being the default.
+>
+> Not only does it solve problems with Linux seeing files it created
+> _itself_ change, "shortname=mixed" is the only option where files
+> created on all versions of Windows appear the same in Linux, and vice
+> versa.  It is better than Windows itself in that respect...
+>
+> "shortname=winnt" is not as good.  It solves the problem of
+> Linux<->itself compatibility and Linux<->Windows-NT/2000/XP/Vista
+> compatibility, but not Linux<->Windows-95/98/ME compatibility.
+>
+> I don't see any problems with changing the option from it's default,
+> for filesystems which were written as VFAT by any OS.  For filesystems
+> written as plain FAT, it may change them to appear as upper case in
+> Linux, when they previously showed as lower case.  If there is a
+> reliable way to detect filenames written by a plain FAT system, it
+> might be desirable to show the names as lower case from them.
+>
+> Below are my notes, when I had to add "shortname=mixed" to a program
+> because of user bug reports when they created files on various
+> versions of Windows and they didn't work on an embedded Linux media
+> player.  Feel free to use the notes in the Changelog or documentation.
+>
+>     Why use shortname=mixed.
+>
+>     This affects 8.3 filename reading and creation for maximum
+>     compatibility with the behaviour of all versions of Windows.
+>
+>     There is a classic conflict between Windows 95 derivatives and
+>     Windows NT derivatives, which causes spurious case changes when
+>     moving some file names between them on removable media.  This
+>     Linux setting manages to be compatible with both of them reliably,
+>     and is therefore superior to all versions of Windows.
+>
+>     1. Filename reading uses the algorithm of Windows NT: if there
+>        is only an 8.3 short name, its case is calculated from flags in
+>        byte 12 of the short name entry.
+>
+>        This is needed for compatibility with files written by Windows
+>        NT derivatives (including 2000, XP and Vista).  When Windows NT
+>        creates two files called "PLAYLIST" and "file.ogg", the default
+>        Linux algorithm ("shortname=lower") would see them as
+>        "playlist" and "file.ogg" together, and the Windows 95
+>        algorithm would see them as "PLAYLIST" and "FILE.OGG" together.
+>        Both cause problems.
+>
+>     2. Filename creation uses the algorithm of Windows 95: Linux
+>        creates a long name entry unless the original name fits into
+>        8.3 and is entirely upper case.  This is more compatible than
+>        shortname=winnt, because it creates a long name in more cases
+>        to remove uncertainty.
+>
+>        This is needed for compatability with files created by Linux
+>        and read by Windows 95 derivatives (and MS-DOS).  Windows 95
+>        derivatives and MS-DOS interpret short name entries as upper
+>        case, even when case flags are set in byte 12.  By storing a
+>        long name entry, files stored by Linux will be read in the
+>        desired case by all versions of Windows.
+>
+> The patch has my
+>
+> Signed-Off-By: Jamie Lokier <jamie@shareable.org>
 
-Example:
+Thanks for comment. I don't know whether signed-off-by is desirable for
+this, so I'll add one Acked-by: simply if I apply this. Is it ok?
 
-[acme@doppio pahole]$ pfunct /usr/lib/debug/usr/lib64/libdw-0.141.so.debug | grep dwarf > /tmp/dwarf.symbols
-[acme@doppio pahole]$ wc -l /tmp/dwarf.symbols
-93 /tmp/dwarf.symbols
-[acme@doppio pahole]$ head -3 /tmp/dwarf.symbols
-dwfl_addrdwarf
-dwfl_module_getdwarf
-dwfl_getdwarf
-[acme@doppio pahole]$ perf report --sort comm,dso,symbol --comms pahole --dsos /usr/lib64/libdw-0.141.so --symbols file:///tmp/dwarf.symbols
-
-    33.99%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_tag
-    29.07%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_decl_file
-    27.71%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_getsrclines
-     4.54%            pahole  /usr/lib64/libdw-0.141.so  0x00000000007400
-     3.93%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_decl_line
-     0.46%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_getlocation
-     0.18%            pahole  /usr/lib64/libdw-0.141.so  [.] __libdwarf_next_prime
-     0.13%            pahole  /usr/lib64/libdw-0.141.so  [.] dwarf_diecu
-
-[acme@doppio pahole]$
-
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Documentation/perf-report.txt |    4 ++++
- tools/perf/builtin-report.c              |   10 ++++++++--
- 2 files changed, 12 insertions(+), 2 deletions(-)
-
-diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
-index 4c44ef1..8aa3f8c 100644
---- a/tools/perf/Documentation/perf-report.txt
-+++ b/tools/perf/Documentation/perf-report.txt
-@@ -28,6 +28,10 @@ OPTIONS
- --comms=::
- 	Only consider symbols in these comms. CSV that understands
- 	file://filename entries.
-+-S::
-+--symbols=::
-+	Only consider these symbols. CSV that understands
-+	file://filename entries.
- 
- SEE ALSO
- --------
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 60bdcd9..87c286e 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -33,8 +33,8 @@ static char		*vmlinux = NULL;
- 
- static char		default_sort_order[] = "comm,dso";
- static char		*sort_order = default_sort_order;
--static char		*dso_list_str, *comm_list_str;
--static struct strlist	*dso_list, *comm_list;
-+static char		*dso_list_str, *comm_list_str, *sym_list_str;
-+static struct strlist	*dso_list, *comm_list, *sym_list;
- 
- static int		input;
- static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
-@@ -1281,6 +1281,9 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 		if (dso_list && dso && dso->name && !strlist__has_entry(dso_list, dso->name))
- 			return 0;
- 
-+		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
-+			return 0;
-+
- 		if (hist_entry__add(thread, map, dso, sym, ip, chain, level, period)) {
- 			eprintf("problem incrementing symbol count, skipping event\n");
- 			return -1;
-@@ -1672,6 +1675,8 @@ static const struct option options[] = {
- 		   "only consider symbols in these dsos"),
- 	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
- 		   "only consider symbols in these comms"),
-+	OPT_STRING('S', "symbols", &sym_list_str, "symbol[,symbol...]",
-+		   "only consider these symbols"),
- 	OPT_END()
- };
- 
-@@ -1726,6 +1731,7 @@ int cmd_report(int argc, const char **argv, const char *prefix)
- 
- 	setup_list(&dso_list, dso_list_str, "dso");
- 	setup_list(&comm_list, comm_list_str, "comm");
-+	setup_list(&sym_list, sym_list_str, "symbol");
- 
- 	setup_pager();
- 
+Thanks.
 -- 
-1.6.2.5
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
