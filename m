@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZF3Kgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZF3Kha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZF3Kgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZF3Kgq
+	id S1753432AbZF3Kha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZF3KhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:36:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54291 "EHLO mx2.redhat.com"
+	Tue, 30 Jun 2009 06:37:21 -0400
+Received: from gate.crashing.org ([63.228.1.57]:50243 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbZF3Kgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:36:45 -0400
-Date: Tue, 30 Jun 2009 12:36:42 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org, eric.dumazet@gmail.com
-Subject: [PATCHv2 0/2] net: fix race in the receive/select
-Message-ID: <20090630103642.GB9657@jolsa.lab.eng.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751508AbZF3KhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 06:37:19 -0400
+Subject: Re: Can't boot 2.6.30 powerpc kernel under qemu.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Landley <rob@landley.net>
+Cc: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org,
+       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <200906291834.07902.rob@landley.net>
+References: <200906281033.09842.jk@ozlabs.org>
+	 <200906291834.07902.rob@landley.net>
+Content-Type: text/plain
+Date: Tue, 30 Jun 2009 20:24:48 +1000
+Message-Id: <1246357488.31413.2.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset fixies the race within the poll_wait call and the receive callbacks,
-by adding memory barrier.
+On Mon, 2009-06-29 at 18:34 -0500, Rob Landley wrote:
+> 
+> Which suggested that the problem was the new
+> CONFIG_PPC_OF_BOOT_TRAMPOLINE 
+> symbol wasn't set, and once I switched that on it started working
+> again.
 
-- 1/2 includes the actual fix
-- 2/2 includes optimization for the x86 arch
+Ah, I might have forgot to set it to default y...
 
-It is discussed and described in the following discussions:
+> > linuxppc-dev@lists.ozlabs.org is the one you want for this:
+> >
+> >  https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> Cool!  Is there a reason it's hidden?  (Or at least not listed in
+> either 
+> vger.kernel.org's list info page or in the "Maling lists" page linked
+> from 
+> ozlabs.org's top level web page.)  Just curious, I couldn't find it
+> when I 
+> looked in the obvious (to me) places.
 
-http://lkml.org/lkml/2009/6/18/124
-http://lkml.org/lkml/2009/6/25/188
-http://lkml.org/lkml/2009/6/29/216
+It's a glitch of the transition from ozlabs.org to lists.ozlabs.org for
+lists... they haven't all moved over yet so it's still a bit messy.
 
-Patchset is made on top of Linus'es tree 5a4f13fad1ab5bd08dea78fc55321e429d83cddf .
+> Rob
+> 
+> P.S.  Yes I tried google: top hit for "linux powerpc list" is
+> penguinppc.org, 
+> which links to mailing lists on the right which is the ozlabs.org page
+> that 
+> doesn't list linuxppc-dev.  In fact the entire first page of google
+> hits for 
+> that search doesn't give a hint of the existence of that list,
+> although some 
+> of the later ones might if I clicked through more of them...
 
-Booted on x86_64.
+I'll check with Stephen if we can get the ozlabs.org page a link to the
+new lists.ozlabs.org or something like that...
 
-wbr,
-jirka
+Cheers,
+Ben.
 
 
----
- arch/x86/include/asm/spinlock.h |    3 ++
- include/linux/spinlock.h        |    5 ++++
- include/net/sock.h              |   40 +++++++++++++++++++++++++++++++++++++++
- net/atm/common.c                |    6 ++--
- net/core/datagram.c             |    2 +-
- net/core/sock.c                 |    8 +++---
- net/dccp/output.c               |    2 +-
- net/dccp/proto.c                |    2 +-
- net/ipv4/tcp.c                  |    2 +-
- net/iucv/af_iucv.c              |    4 +-
- net/rxrpc/af_rxrpc.c            |    4 +-
- net/unix/af_unix.c              |    8 +++---
- 12 files changed, 67 insertions(+), 19 deletions(-)
