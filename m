@@ -1,181 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZF3ACg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZF3ACr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbZF3ACg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 20:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZF3ACS
+	id S1759480AbZF3ACr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 20:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbZF3ACS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 29 Jun 2009 20:02:18 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3390 "EHLO
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3388 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752513AbZF3ACR (ORCPT
+	with ESMTP id S1751721AbZF3ACR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 29 Jun 2009 20:02:17 -0400
 From: Joe Perches <joe@perches.com>
 To: Pavel Machek <pavel@ucw.cz>
 Cc: linux-kernel@vger.kernel.org, pierre@ossman.eu, swetland@google.com,
        Andrew Morton <akpm@linux-foundation.org>, San Mehat <san@google.com>
-Subject: [PATCH 3/3] msm_sdcc.c: Move overly indented code to separate function
-Date: Mon, 29 Jun 2009 17:02:05 -0700
-Message-Id: <98dc100779556187833a21a38926771cddd929c0.1246319479.git.joe@perches.com>
+Subject: [PATCH 0/3] msm_sdcc: A few more cleanups
+Date: Mon, 29 Jun 2009 17:02:02 -0700
+Message-Id: <cover.1246319479.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.10.g659a0.dirty
-In-Reply-To: <cover.1246319479.git.joe@perches.com>
-References: <20090629214101.GA12043@elf.ucw.cz> <cover.1246319479.git.joe@perches.com>
+In-Reply-To: <20090629214101.GA12043@elf.ucw.cz>
+References: <20090629214101.GA12043@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- drivers/mmc/host/msm_sdcc.c |  126 ++++++++++++++++++++-----------------------
- 1 files changed, 59 insertions(+), 67 deletions(-)
+Perhaps these are appropriate as well.
+Uncompiled, I haven't set up an ARM cross compiler yet.
 
-diff --git a/drivers/mmc/host/msm_sdcc.c b/drivers/mmc/host/msm_sdcc.c
-index d4ce7b8..010f4f4 100644
---- a/drivers/mmc/host/msm_sdcc.c
-+++ b/drivers/mmc/host/msm_sdcc.c
-@@ -584,6 +584,62 @@ static void msmsdcc_do_cmdirq(struct msmsdcc_host *host, uint32_t status)
- 		msmsdcc_start_data(host, cmd->data);
- }
- 
-+static void
-+msmsdcc_handle_irq_data(struct msmsdcc_host *host, struct mmc_data *data,
-+			u32 status)
-+{
-+	/* Check for data errors */
-+	if (status & (MCI_DATACRCFAIL | MCI_DATATIMEOUT | 
-+		      MCI_TXUNDERRUN | MCI_RXOVERRUN)) {
-+		msmsdcc_data_err(host, data, status);
-+		host->curr.data_xfered = 0;
-+		if (host->dma.sg)
-+			msm_dmov_stop_cmd(host->dma.channel,
-+					  &host->dma.hdr, 0);
-+		else {
-+			msmsdcc_stop_data(host);
-+			if (!data->stop)
-+				msmsdcc_request_end(host, data->mrq);
-+			else
-+				msmsdcc_start_command(host, data->stop, 0);
-+		}
-+	}
-+
-+	/* Check for data done */
-+	if (!host->curr.got_dataend && (status & MCI_DATAEND))
-+		host->curr.got_dataend = 1;
-+
-+	if (!host->curr.got_datablkend && (status & MCI_DATABLOCKEND))
-+		host->curr.got_datablkend = 1;
-+
-+	/*
-+	 * If DMA is still in progress, we complete via the completion handler
-+	 */
-+	if (host->curr.got_dataend && host->curr.got_datablkend &&
-+	    !host->dma.busy) {
-+		/*
-+		 * There appears to be an issue in the controller where
-+		 * if you request a small block transfer (< fifo size),
-+		 * you may get your DATAEND/DATABLKEND irq without the
-+		 * PIO data irq.
-+		 *
-+		 * Check to see if there is still data to be read,
-+		 * and simulate a PIO irq.
-+		 */
-+		if (readl(base + MMCISTATUS) & MCI_RXDATAAVLBL)
-+			msmsdcc_pio_irq(1, host);
-+
-+		msmsdcc_stop_data(host);
-+		if (!data->error)
-+			host->curr.data_xfered = host->curr.xfer_size;
-+
-+		if (!data->stop)
-+			msmsdcc_request_end(host, data->mrq);
-+		else
-+			msmsdcc_start_command(host, data->stop, 0);
-+	}
-+}
-+
- static irqreturn_t
- msmsdcc_irq(int irq, void *dev_id)
- {
-@@ -599,76 +655,12 @@ msmsdcc_irq(int irq, void *dev_id)
- 		struct mmc_data *data;
- 		status = readl(base + MMCISTATUS);
- 
--		status &= (readl(base + MMCIMASK0) |
--					      MCI_DATABLOCKENDMASK);
-+		status &= (readl(base + MMCIMASK0) | MCI_DATABLOCKENDMASK);
- 		writel(status, base + MMCICLEAR);
- 
- 		data = host->curr.data;
--		if (data) {
--			/* Check for data errors */
--			if (status & (MCI_DATACRCFAIL|MCI_DATATIMEOUT|
--				      MCI_TXUNDERRUN|MCI_RXOVERRUN)) {
--				msmsdcc_data_err(host, data, status);
--				host->curr.data_xfered = 0;
--				if (host->dma.sg)
--					msm_dmov_stop_cmd(host->dma.channel,
--							  &host->dma.hdr, 0);
--				else {
--					msmsdcc_stop_data(host);
--					if (!data->stop)
--						msmsdcc_request_end(host,
--								    data->mrq);
--					else
--						msmsdcc_start_command(host,
--								     data->stop,
--								     0);
--				}
--			}
--
--			/* Check for data done */
--			if (!host->curr.got_dataend && (status & MCI_DATAEND))
--				host->curr.got_dataend = 1;
--
--			if (!host->curr.got_datablkend &&
--			    (status & MCI_DATABLOCKEND)) {
--				host->curr.got_datablkend = 1;
--			}
--
--			if (host->curr.got_dataend &&
--			    host->curr.got_datablkend) {
--				/*
--				 * If DMA is still in progress, we complete
--				 * via the completion handler
--				 */
--				if (!host->dma.busy) {
--					/*
--					 * There appears to be an issue in the
--					 * controller where if you request a
--					 * small block transfer (< fifo size),
--					 * you may get your DATAEND/DATABLKEND
--					 * irq without the PIO data irq.
--					 *
--					 * Check to see if theres still data
--					 * to be read, and simulate a PIO irq.
--					 */
--					if (readl(base + MMCISTATUS) &
--							       MCI_RXDATAAVLBL)
--						msmsdcc_pio_irq(1, host);
--
--					msmsdcc_stop_data(host);
--					if (!data->error)
--						host->curr.data_xfered =
--							host->curr.xfer_size;
--
--					if (!data->stop)
--						msmsdcc_request_end(host,
--								    data->mrq);
--					else
--						msmsdcc_start_command(host,
--							      data->stop, 0);
--				}
--			}
--		}
-+		if (data)
-+			msmsdcc_handle_irq_data(host, data, status);
- 
- 		if (status & (MCI_CMDSENT | MCI_CMDRESPEND | MCI_CMDCRCFAIL |
- 			      MCI_CMDTIMEOUT) && host->curr.cmd) {
--- 
-1.6.3.1.10.g659a0.dirty
+Signed-off-by: Joe Perches <joe@perches.com>
+
+Joe Perches (3):
+  msm_sdcc.c: Convert printk(KERN_<level> to pr_<level>(
+  msm_sdcc.c: stylistic cleaning
+  msm_sdcc.c: Move overly indented code to separate function
+
+ drivers/mmc/host/msm_sdcc.c |  274 ++++++++++++++++++++-----------------------
+ 1 files changed, 129 insertions(+), 145 deletions(-)
 
