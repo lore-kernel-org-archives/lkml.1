@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbZF3AG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbZF3AH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbZF3AG5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 20:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZF3AGt
+	id S1760549AbZF3AH3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 20:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZF3AHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 20:06:49 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:14909 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbZF3AGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 20:06:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=vsv+6Y1sVhi26UHzQMl7QD/fpL4l9sVkcmAiOUSm/IUtIhk4KYs6JI+pgVF6w7vn6
-	2MqL6Fu0yR5cAoAmq4mug==
-Date: Mon, 29 Jun 2009 17:06:42 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Thomas Meyer <thomas@m3y3r.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       dccp@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <6JJ2m5kyucK.A.cBC.0IASKB@chimera>
-Message-ID: <alpine.DEB.2.00.0906291703430.17663@chino.kir.corp.google.com>
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.cBC.0IASKB@chimera>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 29 Jun 2009 20:07:19 -0400
+Received: from waste.org ([66.93.16.53]:38964 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758663AbZF3AHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 20:07:18 -0400
+Subject: Re: [PATCH RFC] fix RCU-callback-after-kmem_cache_destroy problem
+ in sl[aou]b
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       penberg@cs.helsinki.fi, jdb@comx.dk
+In-Reply-To: <alpine.DEB.1.10.0906291910130.32637@gentwo.org>
+References: <20090625193137.GA16861@linux.vnet.ibm.com>
+	 <alpine.DEB.1.10.0906291827050.21956@gentwo.org>
+	 <1246315553.21295.100.camel@calx>
+	 <alpine.DEB.1.10.0906291910130.32637@gentwo.org>
+Content-Type: text/plain
+Date: Mon, 29 Jun 2009 19:06:34 -0500
+Message-Id: <1246320394.21295.105.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
+On Mon, 2009-06-29 at 19:19 -0400, Christoph Lameter wrote:
+> On Mon, 29 Jun 2009, Matt Mackall wrote:
+> 
+> > This is a reasonable point, and in keeping with the design principle
+> > 'callers should handle their own special cases'. However, I think it
+> > would be more than a little surprising for kmem_cache_free() to do the
+> > right thing, but not kmem_cache_destroy().
+> 
+> kmem_cache_free() must be used carefully when using SLAB_DESTROY_BY_RCU.
+> The freed object can be accessed after free until the rcu interval
+> expires (well sortof, it may even be reallocated within the interval).
+> 
+> There are special RCU considerations coming already with the use of
+> kmem_cache_free().
+> 
+> Adding RCU operations to the kmem_cache_destroy() logic may result in
+> unnecessary RCU actions for slabs where the coder is ensuring that the
+> RCU interval has passed by other means.
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13666
-> Subject		: WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
-> Submitter	: Thomas Meyer <thomas@m3y3r.de>
-> Date		: 2009-06-27 16:15 (2 days old)
-> References	: http://lkml.org/lkml/2009/6/27/75
-> 
+Do we care? Cache destruction shouldn't be in anyone's fast path.
+Correctness is more important and users are more liable to be correct
+with this patch.
 
-dccp_init() is trying to allocate a goal that causes the order in 
-__get_free_pages() to be >= MAX_ORDER.  
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Arnaldo, can we cap ehash_order and bhash_order at MAX_ORDER - 1?
+
