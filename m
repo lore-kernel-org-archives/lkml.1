@@ -1,62 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZF3OAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZF3OCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbZF3OAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbZF3OAD
+	id S1753518AbZF3OCJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZF3OB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:00:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41989 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbZF3OAC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:00:02 -0400
-Date: Tue, 30 Jun 2009 10:58:51 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: rientjes@google.com, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, thomas@m3y3r.de, rjw@sisk.pl,
-       dccp@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
-	__alloc_pages_nodemask
-Message-ID: <20090630135851.GA12663@ghostprotocols.net>
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.cBC.0IASKB@chimera> <alpine.DEB.2.00.0906291703430.17663@chino.kir.corp.google.com> <20090629.191655.193712233.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090629.191655.193712233.davem@davemloft.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 30 Jun 2009 10:01:58 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:38449 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbZF3OB5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 10:01:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=HdnmLu3dp3jKhX+WaJto3xzdAF8g5XB72DqR0oH1ZuagwL/mVbtUhBfJWQvrb/P4Yl
+         0JkG6DsD3Bc2qTk9U4zXIjl9+j5YP/vGopis17rraP7i6hYC/AWEVqNs6gASfEu28dS7
+         ZNzUBXF/zq/4MN6Yc3X671mZOcU9TZU+WtB3c=
+Date: Tue, 30 Jun 2009 23:00:58 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>, David Howells <dhowells@redhat.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: Found the commit that causes the OOMs
+Message-Id: <20090630230058.87e530c6.minchan.kim@barrios-desktop>
+In-Reply-To: <20090630092235.GA17561@csn.ul.ie>
+References: <20090628142239.GA20986@localhost>
+	<2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com>
+	<20090628151026.GB25076@localhost>
+	<20090629091741.ab815ae7.minchan.kim@barrios-desktop>
+	<17678.1246270219@redhat.com>
+	<20090629125549.GA22932@localhost>
+	<29432.1246285300@redhat.com>
+	<28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
+	<20090629160725.GF5065@csn.ul.ie>
+	<20090630130741.c191d042.minchan.kim@barrios-desktop>
+	<20090630092235.GA17561@csn.ul.ie>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Jun 29, 2009 at 07:16:55PM -0700, David Miller escreveu:
-> From: David Rientjes <rientjes@google.com>
-> Date: Mon, 29 Jun 2009 17:06:42 -0700 (PDT)
-> 
-> > On Mon, 29 Jun 2009, Rafael J. Wysocki wrote:
-> > 
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >> 
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.30.  Please verify if it still should be listed and let me know
-> >> (either way).
-> >> 
-> >> 
-> >> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13666
-> >> Subject		: WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
-> >> Submitter	: Thomas Meyer <thomas@m3y3r.de>
-> >> Date		: 2009-06-27 16:15 (2 days old)
-> >> References	: http://lkml.org/lkml/2009/6/27/75
-> >> 
-> > 
-> > dccp_init() is trying to allocate a goal that causes the order in 
-> > __get_free_pages() to be >= MAX_ORDER.  
-> > 
-> > Arnaldo, can we cap ehash_order and bhash_order at MAX_ORDER - 1?
-> 
-> There was a patch going arond for this already.
+Hi, David. 
 
-http://patchwork.kernel.org/patch/31784/
+On Tue, 30 Jun 2009 10:22:36 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-- Arnaldo
+> > > I think this system might be genuinely OOM. It can't reclaim memory and
+> > > we are below the minimum watermarks.
+> > > 
+> > > Is it possible there are pages that are counted as active_anon that in
+> > > fact are reclaimable because they are on the wrong LRU list? If that was
+> > > the case, the lack of rotation to inactive list would prevent them
+> > > getting discovered.
+> > 
+> > I agree. 
+> > One of them is that "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
+> > isolate_lru_pages v2" as Kosaki already said. 
+> > 
+> > Unfortunately, David said it's not. 
+> > But I think your guessing make sense. 
+> > 
+> > David. Doesn't it happen OOM if you revert my patch, still?
+> > 
+> 
+> In the event the OOM does not happen with the patch reverted, I suggest
+> you put together a debugging patch that prints out details of all pages
+> on the active_anon LRU list in the event of an OOM. The intention is to
+> figure out what pages are on the active_anon list that shouldn't be.
+
+Befor I go to the trip, I made debugging patch in a hurry. 
+Mel and I suspect to put the wrong page in lru list.
+
+This patch's goal is that print page's detail on active anon lru when it happen OOM.
+Maybe you could expand your log buffer size. 
+
+Could you show me the information with OOM, please ?
+
+---
+ include/linux/mm.h |    1 +
+ lib/show_mem.c     |    2 +-
+ mm/page_alloc.c    |   22 ++++++++++++++++++++++
+ mm/vmstat.c        |   14 ++++++++++++++
+ 4 files changed, 38 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index ba3a7cb..cfd8111 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -713,6 +713,7 @@ extern void pagefault_out_of_memory(void);
+ 
+ #define offset_in_page(p)	((unsigned long)(p) & ~PAGE_MASK)
+ 
++extern void show_active_anonpages(void);
+ extern void show_free_areas(void);
+ 
+ #ifdef CONFIG_SHMEM
+diff --git a/lib/show_mem.c b/lib/show_mem.c
+index 238e72a..32a3a32 100644
+--- a/lib/show_mem.c
++++ b/lib/show_mem.c
+@@ -17,7 +17,7 @@ void show_mem(void)
+ 
+ 	printk(KERN_INFO "Mem-Info:\n");
+ 	show_free_areas();
+-
++	show_active_anonpages();
+ 	for_each_online_pgdat(pgdat) {
+ 		unsigned long i, flags;
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 5d714f8..d666f9e 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2090,6 +2090,28 @@ void si_meminfo_node(struct sysinfo *val, int nid)
+ 
+ #define K(x) ((x) << (PAGE_SHIFT-10))
+ 
++void show_active_anonpages(void)
++{
++	struct zone *zone;
++	struct list_head *list;
++	struct page *page;
++
++	for_each_populated_zone(zone) {
++		if (list_empty(&zone->lru[LRU_ACTIVE_ANON].list))
++			continue;
++
++		spin_lock_irq(&zone->lru_lock);
++		list = &zone->lru[LRU_ACTIVE_ANON].list;				
++		printk("==== %s ==== \n", zone->name);
++		list_for_each_entry(page, list, lru) {
++			printk(KERN_INFO "pfn:0x%08lx F:0x%08lx anon:%d C:%d M:%d\n",
++				page_to_pfn(page), page->flags, PageAnon(page), 
++				atomic_read(&page->_count), atomic_read(&page->_mapcount));
++		}
++		spin_unlock_irq(&zone->lru_lock);
++	}
++		
++}
+ /*
+  * Show free area list (used inside shift_scroll-lock stuff)
+  * We also calculate the percentage fragmentation. We do this by counting the
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 138bed5..c23ecaa 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -575,6 +575,12 @@ static int fragmentation_open(struct inode *inode, struct file *file)
+ 	return seq_open(file, &fragmentation_op);
+ }
+ 
++static int active_anon_open(struct inode *inode, struct file *file)
++{
++	show_active_anonpages();
++	return -ENOENT;
++}
++
+ static const struct file_operations fragmentation_file_operations = {
+ 	.open		= fragmentation_open,
+ 	.read		= seq_read,
+@@ -582,6 +588,13 @@ static const struct file_operations fragmentation_file_operations = {
+ 	.release	= seq_release,
+ };
+ 
++static const struct file_operations active_anon_file_operations = {
++	.open		= active_anon_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= seq_release,
++};
++
+ static const struct seq_operations pagetypeinfo_op = {
+ 	.start	= frag_start,
+ 	.next	= frag_next,
+@@ -938,6 +951,7 @@ static int __init setup_vmstat(void)
+ #endif
+ #ifdef CONFIG_PROC_FS
+ 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
++	proc_create("activelruinfo", S_IRUGO, NULL, &active_anon_file_operations);
+ 	proc_create("pagetypeinfo", S_IRUGO, NULL, &pagetypeinfo_file_ops);
+ 	proc_create("vmstat", S_IRUGO, NULL, &proc_vmstat_file_operations);
+ 	proc_create("zoneinfo", S_IRUGO, NULL, &proc_zoneinfo_file_operations);
+-- 
+1.5.4.3
+
+
+-- 
+Kinds Regards
+Minchan Kim
