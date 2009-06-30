@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZF3UhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZF3Uis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbZF3UhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZF3UhE
+	id S1757572AbZF3Uis (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:38:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZF3Uil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:37:04 -0400
-Received: from 65-115-68-195.dia.static.qwest.net ([65.115.68.195]:39929 "EHLO
-	chronus.3leafnetworks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752165AbZF3UhC (ORCPT
+	Tue, 30 Jun 2009 16:38:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753140AbZF3Uik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:37:02 -0400
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 16:37:02 EDT
-Date: Tue, 30 Jun 2009 13:21:53 -0700
-From: Scott Lurndal <scott.lurndal@3leafsystems.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       tj@kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
-Message-ID: <20090630202153.GB28043@pendragon.3leafnetworks.com>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org>
+	Tue, 30 Jun 2009 16:38:40 -0400
+Date: Tue, 30 Jun 2009 13:38:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-06-30-12-50 uploaded
+Message-Id: <20090630133816.f62b0cb4.akpm@linux-foundation.org>
+In-Reply-To: <56465.1246393621@turing-police.cc.vt.edu>
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>
+	<54770.1246392952@turing-police.cc.vt.edu>
+	<56465.1246393621@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906301533400.29795@gentwo.org>
-User-Agent: Mutt/1.4.2.2i
-X-OriginalArrivalTime: 30 Jun 2009 20:21:54.0122 (UTC) FILETIME=[68A17AA0:01C9F9C0]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 03:39:52PM -0400, Christoph Lameter wrote:
-> On Tue, 30 Jun 2009, Ingo Molnar wrote:
-> 
-> > Yeah, it's a bug for something like a virtual environment which
-> > boots generic kernels that might have 64 possible CPUs (on a true
-> > 64-way system), but which will have fewer in practice.
-> 
-> A machine (and a virtual environment) can indicate via the BIOS tables or
-> ACPI that there are less "possible" cpus. That is actually very common.
-> 
-> The difference between actual and possible cpus only has to be the number
-> of processors that could be brought up later. In a regular system that is
-> pretty much zero. In a fancy system with actual hotpluggable cpus there
-> would be a difference but usually the number of hotpluggable cpus is
-> minimal.
+On Tue, 30 Jun 2009 16:27:01 -0400
+Valdis.Kletnieks@vt.edu wrote:
 
-A hypervisor running on a 4-socket Beckton platform will have 32
-(without hyperthreading) or 64 (with hyperthreading) CPUs to
-allocate 1Q2010.   A hypervisor supporting ACPI hot-plug would be able
-then to hot-plug from one to 64 cores into a single linux guest if it
-wanted to (and didn't overcommit, so gang-scheduling wasn't required).
+> Not sure why that line did it.  Repeated truncate-and-try shows that if the
+> line contained just the 4 chars '0804', it applied fine, but '0804a' dies.
 
-Such a hypervisor might typically pass the maximum number of
-CPUs in via the guest ACPI tables when the guest boots, to provide
-the maximum flexibility in being able to grow and shrink the guest,
-with only a subset marked as initially present.
+That's patch(1) thinking it's a regular diff:
 
-I've been working recently with a 128 (shanghai) / 192 (istanbul)
-core shared memory system which supports hot plugging CPUs into Linux,
-and the feature would be less useful if a hot-plug event could fail
-because the per-cpu area couldn't be allocated at the time of the
-event (which argues for pre-allocation, if a large physically contiguous
-region is required).
+akpm:/usr/src/25> diff Makefile Makefile~linux-next
+4c4
+< EXTRAVERSION = -rc1-mm1
+---
+> EXTRAVERSION = -rc1
+142a143,144
+> TOPDIR                := $(srctree)
+> # FIXME - TOPDIR is obsolete, use srctree/objtree
+149c151
+< export srctree objtree VPATH
+---
+> export srctree objtree VPATH TOPDIR
+328c330
+< LDFLAGS_MODULE  = -T $(srctree)/scripts/module-common.lds
+---
+> LDFLAGS_MODULE  =
+345,346c347
+<                  -Werror-implicit-function-declaration \
+<                  -Wno-format-security
+---
+>                  -Werror-implicit-function-declaration
 
-That said, I don't see much use for 32-bit kernels in environments with
-such CPU counts.
 
-scott
+So the "0804a" means "at line 804, start appending stuff", or something
+like that.
+
+Use -u.
