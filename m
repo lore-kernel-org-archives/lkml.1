@@ -1,259 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZF3UYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZF3U0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbZF3UYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZF3UYj
+	id S1757048AbZF3U0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZF3U0E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:24:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60440 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbZF3UYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:24:38 -0400
-Date: Tue, 30 Jun 2009 16:24:32 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Neil Brown <neilb@suse.de>
-Cc: jens.axboe@oracle.com, "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: md: Use new topology calls to indicate alignment and I/O sizes
-Message-ID: <20090630202432.GG7888@redhat.com>
-References: <yq1ws73turf.fsf@sermon.lab.mkp.net> <170fa0d20906231444t5432998eo8cc2335c6d4a3a0d@mail.gmail.com> <19009.42494.925771.283731@notabene.brown>
+	Tue, 30 Jun 2009 16:26:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:43509 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752939AbZF3U0C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:26:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Do44QdNvkp2uAf9TNC/Q6YqHdpykNw1J2XIvWpXkkKpUNnfE3efkrcJioxnsvK2dV
+	R2pl4/CGY2SVDDOUdTvZQ==
+Date: Tue, 30 Jun 2009 13:25:57 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+In-Reply-To: <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0906301318270.20326@chino.kir.corp.google.com>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net> <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com> <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
+ <alpine.DEB.2.00.0906300032310.11018@chino.kir.corp.google.com> <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19009.42494.925771.283731@notabene.brown>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 24 2009 at 12:05am -0400,
-Neil Brown <neilb@suse.de> wrote:
+On Tue, 30 Jun 2009, Pekka Enberg wrote:
 
-> On Tuesday June 23, snitzer@gmail.com wrote:
-> >
-> > On Tue, Jun 23, 2009 at 12:54 AM, Martin K.
-> > Petersen<martin.petersen@oracle.com> wrote:
-> > >
-> > > Neil,
-> > >
-> > > Looks like this one missed the boat on the first MD pull request.
-> > > Here's an updated patch that applies to Linus' current tree in case you
-> > > are planning a second round...
-> > >
-> > >
-> > > Switch MD over to the new disk_stack_limits() function which checks for
-> > > aligment and adjusts preferred I/O sizes when stacking.
-> > >
-> > > Also indicate preferred I/O sizes where applicable.
-> > 
-> > Given that Linus has not yet pulled in the DM changes for 2.6.31
-> > (which includes DM's topology support) I'd imagine it shouldn't be a
-> > problem to get this patch in.  In fact it would be a real shame if
-> > this somehow missed 2.6.31 seeing as MD is the only consumer of the
-> > topology infrastructure's disk_stack_limits().
-> > 
-> > Neil, please push to Linus for 2.6.31, thanks!
-> > 
+> On Tue, Jun 30, 2009 at 10:47 AM, David Rientjes<rientjes@google.com> wrote:
+> > I don't think CONFIG_SLUB_DEBUG_ON is generally the configuration used in
+> > the real world.
 > 
-> It looks mostly OK and can now be pulled from
->    git://neil.brown.name/md/ for-linus
-> though I'll send a more formal pull request later (if necessary)
+> It is, hence the epic bug report that's eaten too many man hours
+> already! Look, we encourage _testers_ to turn all as much as debugging
+> options as possible so we catch bugs early. That why the only sane
+> defaults are the ones that don't cause other problems!
+> 
 
-Neil,
+I feel that asking a user to add a command line parameter such as 
+`slub_debug=A' in addition to CONFIG_SLUB_DEBUG_ON will likely lead to 
+less testing coverage and bugs going unreported.  CONFIG_SLUB_DEBUG_ON is 
+not something that a distro is going to enable or would be used in a 
+production environment, it's something that's used to debug slub and/or 
+slab allocations either during the development of new kernel code or when 
+an underlying problem is realized.
 
-Any chance you could make a formal pull request for this MD topology
-support patch for 2.6.31-rc2?
+> I don't know why you want to argue this. It's simply not an option to
+> say "stupid user, fix your config" in core code like the slab
+> allocator. Enabling CONFIG_SLUB_DEBUG_ON is a very reasonable thing to
+> do when you are a tester looking for bugs.
+> 
 
-NOTE: all the disk_stack_limits() calls must pass the 3rd 'offset' arg
-in terms of bytes and _not_ sectors.  So all of MD's calls to
-disk_stack_limits() should pass: rdev->data_offset << 9
-
-Here is an updated patch, please advise, thanks!
-
-
-From: Martin K. Petersen <martin.petersen@oracle.com>
-
-Switch MD over to the new disk_stack_limits() function which checks for
-alignment and adjusts preferred I/O sizes when stacking.
-
-Also indicate preferred I/O sizes where applicable.
-
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-Signed-off-by: Mike Snitzer <snitzer@redhat.com>
-
---
-diff --git a/drivers/md/linear.c b/drivers/md/linear.c
-index 15c8b7b..5810fa9 100644
---- a/drivers/md/linear.c
-+++ b/drivers/md/linear.c
-@@ -166,8 +166,8 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
- 			rdev->sectors = sectors * mddev->chunk_sectors;
- 		}
- 
--		blk_queue_stack_limits(mddev->queue,
--				       rdev->bdev->bd_disk->queue);
-+		disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				  rdev->data_offset << 9);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
-index cbe368f..3e320ac 100644
---- a/drivers/md/multipath.c
-+++ b/drivers/md/multipath.c
-@@ -294,7 +294,8 @@ static int multipath_add_disk(mddev_t *mddev, mdk_rdev_t *rdev)
- 	for (path = first; path <= last; path++)
- 		if ((p=conf->multipaths+path)->rdev == NULL) {
- 			q = rdev->bdev->bd_disk->queue;
--			blk_queue_stack_limits(mddev->queue, q);
-+			disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				rdev->data_offset << 9);
- 
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
-@@ -463,9 +464,9 @@ static int multipath_run (mddev_t *mddev)
- 
- 		disk = conf->multipaths + disk_idx;
- 		disk->rdev = rdev;
-+		disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				  rdev->data_offset << 9);
- 
--		blk_queue_stack_limits(mddev->queue,
--				       rdev->bdev->bd_disk->queue);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, not that we ever expect a device with
- 		 * a merge_bvec_fn to be involved in multipath */
-diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
-index ab4a489..335f490 100644
---- a/drivers/md/raid0.c
-+++ b/drivers/md/raid0.c
-@@ -170,8 +170,8 @@ static int create_strip_zones(mddev_t *mddev)
- 		}
- 		dev[j] = rdev1;
- 
--		blk_queue_stack_limits(mddev->queue,
--				       rdev1->bdev->bd_disk->queue);
-+		disk_stack_limits(mddev->gendisk, rdev1->bdev,
-+				  rdev1->data_offset << 9);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-@@ -250,6 +250,11 @@ static int create_strip_zones(mddev_t *mddev)
- 		       mddev->chunk_sectors << 9);
- 		goto abort;
- 	}
-+
-+	blk_queue_io_min(mddev->queue, mddev->chunk_sectors << 9);
-+	blk_queue_io_opt(mddev->queue,
-+			 (mddev->chunk_sectors << 9) * mddev->raid_disks);
-+
- 	printk(KERN_INFO "raid0: done.\n");
- 	mddev->private = conf;
- 	return 0;
-diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
-index 89939a7..0569efb 100644
---- a/drivers/md/raid1.c
-+++ b/drivers/md/raid1.c
-@@ -1123,8 +1123,8 @@ static int raid1_add_disk(mddev_t *mddev, mdk_rdev_t *rdev)
- 	for (mirror = first; mirror <= last; mirror++)
- 		if ( !(p=conf->mirrors+mirror)->rdev) {
- 
--			blk_queue_stack_limits(mddev->queue,
--					       rdev->bdev->bd_disk->queue);
-+			disk_stack_limits(mddev->gendisk, rdev->bdev,
-+					  rdev->data_offset << 9);
- 			/* as we don't honour merge_bvec_fn, we must never risk
- 			 * violating it, so limit ->max_sector to one PAGE, as
- 			 * a one page request is never in violation.
-@@ -1988,9 +1988,8 @@ static int run(mddev_t *mddev)
- 		disk = conf->mirrors + disk_idx;
- 
- 		disk->rdev = rdev;
--
--		blk_queue_stack_limits(mddev->queue,
--				       rdev->bdev->bd_disk->queue);
-+		disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				  rdev->data_offset << 9);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
-index ae12cea..7298a5e 100644
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -1151,8 +1151,8 @@ static int raid10_add_disk(mddev_t *mddev, mdk_rdev_t *rdev)
- 	for ( ; mirror <= last ; mirror++)
- 		if ( !(p=conf->mirrors+mirror)->rdev) {
- 
--			blk_queue_stack_limits(mddev->queue,
--					       rdev->bdev->bd_disk->queue);
-+			disk_stack_limits(mddev->gendisk, rdev->bdev,
-+					  rdev->data_offset << 9);
- 			/* as we don't honour merge_bvec_fn, we must never risk
- 			 * violating it, so limit ->max_sector to one PAGE, as
- 			 * a one page request is never in violation.
-@@ -2044,7 +2044,7 @@ raid10_size(mddev_t *mddev, sector_t sectors, int raid_disks)
- static int run(mddev_t *mddev)
- {
- 	conf_t *conf;
--	int i, disk_idx;
-+	int i, disk_idx, chunk_size;
- 	mirror_info_t *disk;
- 	mdk_rdev_t *rdev;
- 	int nc, fc, fo;
-@@ -2130,6 +2130,14 @@ static int run(mddev_t *mddev)
- 	spin_lock_init(&conf->device_lock);
- 	mddev->queue->queue_lock = &conf->device_lock;
- 
-+	chunk_size = mddev->chunk_sectors << 9;
-+	blk_queue_io_min(mddev->queue, chunk_size);
-+	if (conf->raid_disks % conf->near_copies)
-+		blk_queue_io_opt(mddev->queue, chunk_size * conf->raid_disks);
-+	else
-+		blk_queue_io_opt(mddev->queue, chunk_size *
-+				 (conf->raid_disks / conf->near_copies));
-+
- 	list_for_each_entry(rdev, &mddev->disks, same_set) {
- 		disk_idx = rdev->raid_disk;
- 		if (disk_idx >= mddev->raid_disks
-@@ -2138,9 +2146,8 @@ static int run(mddev_t *mddev)
- 		disk = conf->mirrors + disk_idx;
- 
- 		disk->rdev = rdev;
--
--		blk_queue_stack_limits(mddev->queue,
--				       rdev->bdev->bd_disk->queue);
-+		disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				  rdev->data_offset << 9);
- 		/* as we don't honour merge_bvec_fn, we must never risk
- 		 * violating it, so limit ->max_sector to one PAGE, as
- 		 * a one page request is never in violation.
-diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index f9f991e..92ef9b6 100644
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -4452,7 +4452,7 @@ static raid5_conf_t *setup_conf(mddev_t *mddev)
- static int run(mddev_t *mddev)
- {
- 	raid5_conf_t *conf;
--	int working_disks = 0;
-+	int working_disks = 0, chunk_size;
- 	mdk_rdev_t *rdev;
- 
- 	if (mddev->recovery_cp != MaxSector)
-@@ -4607,6 +4607,14 @@ static int run(mddev_t *mddev)
- 	md_set_array_sectors(mddev, raid5_size(mddev, 0, 0));
- 
- 	blk_queue_merge_bvec(mddev->queue, raid5_mergeable_bvec);
-+	chunk_size = mddev->chunk_sectors << 9;
-+	blk_queue_io_min(mddev->queue, chunk_size);
-+	blk_queue_io_opt(mddev->queue, chunk_size *
-+			 (conf->raid_disks - conf->max_degraded));
-+
-+	list_for_each_entry(rdev, &mddev->disks, same_set)
-+		disk_stack_limits(mddev->gendisk, rdev->bdev,
-+				  rdev->data_offset << 9);
- 
- 	return 0;
- abort:
+Quite the contrary, I agree completely with the above, and that's why I'm 
+arguing for full debugging to be enabled when a well-defined configuration 
+option is enabled.  I simply don't believe that such debugging should be 
+coupled with a command line option to be fully activated for all caches.
