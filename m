@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZF3WMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbZF3WRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbZF3WMW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZF3WMM
+	id S1756782AbZF3WRB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753955AbZF3WQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:12:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54490 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753849AbZF3WML (ORCPT
+	Tue, 30 Jun 2009 18:16:53 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:47271 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753913AbZF3WQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:12:11 -0400
-Date: Tue, 30 Jun 2009 15:10:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-In-Reply-To: <4A4A88A2.7010509@kernel.org>
-Message-ID: <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain>
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com>
- <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com>
- <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com>
- <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 30 Jun 2009 18:16:52 -0400
+Date: Tue, 30 Jun 2009 18:16:23 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
+ lpage NUMA support
+In-Reply-To: <20090630213146.GA17492@elte.hu>
+Message-ID: <alpine.DEB.1.10.0906301809330.11362@gentwo.org>
+References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu>
+ <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Jun 2009, Ingo Molnar wrote:
 
+> > The difference between actual and possible cpus only has to be the
+> > number of processors that could be brought up later. In a regular
+> > system that is pretty much zero. In a fancy system with actual
+> > hotpluggable cpus there would be a difference but usually the
+> > number of hotpluggable cpus is minimal.
+>
+> You are arguing against the concept of the demand-allocation of
+> resources, and i dont think that technical argument can be won.
 
-On Tue, 30 Jun 2009, Yinghai Lu wrote:
-?
-> +#define round_up(x, y) ({ __typeof__(x) __mask = (y)-1; \
-> +			 ((x)+__mask) & ~__mask; })
-> +#define round_down(x, y) ({ __typeof__(x) __mask = (y)-1; (x) & ~__mask; })
+I looked at allocating for online cpus only a couple of years back but at
+that per cpu state was kept for offlined cpus in per cpu areas. There are
+numerous assumptions in per cpu handling all over the kernel that a percpu
+area is always available. We successfully restricted it to only possible
+cpus. ACPI may be the worst offender there. If you can get all of that
+addressed then we can move to pure on demand allocation. Which also would
+complicate a per cpu memory allocator allocator.
 
-Yes, except we might as well simplify it. Do it without the statement 
-expressions, using just a single 'y'. Like this:
+> Sure you dont have to demand-allocate if you know the demand
+> beforehand and can preallocate and size accordingly.
 
-  #define __round_mask(x,y) ((__typeof__(x))((y)-1))
-  #define round_up(x,y) (((x) | __round_mask(x,y))+1)
-  #define round_down(x,y) ((x) & ~__round_mask(x,y))
+Well you know the demand from the BIOS information.
 
-(Yeah, it uses 'x' twice, but the second one is for 'typeof', which 
-doesn't actually cause the value to be evaluated, so it's ok).
+> But what if not? What if the kernel can run on up to 4096 CPUs and
+> runs on a big box. Why should a virtual machine have the illogical
+> choice between either wasting a lot of RAM preallocating stuff, or
+> limiting its own extendability.
 
-Now those 'round_xyz()' operations will always return a value of a type 
-that is the same as the type of 'x' except it's gone through the normal C 
-integer promotion rules (ie if 'x' is a smaller type than 'int', then it 
-will be promoted to 'int').
+The kernel may be able to run on 4096 but the machines config information
+that is available via ACPI knows how many processors the machine we are
+booting on is able to add.
 
-Not very well tested, but it _looks_ correct, and uses Peter's trick, and 
-willlet the compiler notice that
+> In other words: your proposed change in essence reduces the utility
+> of CPU hotplug. It's a bad idea.
 
-	round_up(x,y)-1
-
-is the same thing as
-
-	x | (y-1)
-
-which it _could_ have perhaps figured out before, but now it's way more 
-obvious.
-		Linus
+Change? I am talking about what is the case.
