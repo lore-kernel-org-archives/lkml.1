@@ -1,238 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZF3MKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZF3MN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbZF3MKi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 08:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZF3MKR
+	id S1756397AbZF3MN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 08:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZF3MNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 08:10:17 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:46833 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbZF3MKQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 08:10:16 -0400
-Message-Id: <4A4A1CCC0200007800008374@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 30 Jun 2009 13:10:20 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] reduce string table for loaded modules
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Tue, 30 Jun 2009 08:13:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37184 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752974AbZF3MNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 08:13:20 -0400
+Date: Tue, 30 Jun 2009 14:13:18 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv2 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090630121318.GA4406@jolsa.lab.eng.brq.redhat.com>
+References: <20090630103642.GB9657@jolsa.lab.eng.brq.redhat.com> <20090630104106.GD9657@jolsa.lab.eng.brq.redhat.com> <4A49F38C.80104@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A49F38C.80104@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also remove all parts of the string table (referenced by the symbol
-table) that are not needed for kallsyms use (i.e. which were only
-referenced by symbols discarded by the previous patch, or not
-referenced at all for whatever reason).
+On Tue, Jun 30, 2009 at 01:14:20PM +0200, Eric Dumazet wrote:
+> Jiri Olsa a écrit :
+> > Adding smp_mb__after_lock define to be used as a smp_mb call after
+> > a lock.  
+> > 
+> > Making it nop for x86, since {read|write|spin}_lock() on x86 are 
+> > full memory barriers.
+> > 
+> > wbr,
+> > jirka
+> > 
+> > 
+> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> > 
+> > ---
+> >  arch/x86/include/asm/spinlock.h |    3 +++
+> >  include/linux/spinlock.h        |    5 +++++
+> >  include/net/sock.h              |    2 +-
+> >  3 files changed, 9 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+> > index b7e5db8..39ecc5f 100644
+> > --- a/arch/x86/include/asm/spinlock.h
+> > +++ b/arch/x86/include/asm/spinlock.h
+> > @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> >  #define _raw_read_relax(lock)	cpu_relax()
+> >  #define _raw_write_relax(lock)	cpu_relax()
+> >  
+> > +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > +#define smp_mb__after_lock() do { } while (0)
+> > +
+> >  #endif /* _ASM_X86_SPINLOCK_H */
+> > diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+> > index 252b245..ae053bd 100644
+> > --- a/include/linux/spinlock.h
+> > +++ b/include/linux/spinlock.h
+> > @@ -132,6 +132,11 @@ do {								\
+> >  #endif /*__raw_spin_is_contended*/
+> >  #endif
+> >  
+> > +/* The lock does not imply full memory barrier. */
+> > +#ifndef smp_mb__after_lock
+> > +#define smp_mb__after_lock() smp_mb()
+> > +#endif
+> > +
+> >  /**
+> >   * spin_unlock_wait - wait until the spinlock gets unlocked
+> >   * @lock: the spinlock in question.
+> > diff --git a/include/net/sock.h b/include/net/sock.h
+> > index a12df10..0d57e83 100644
+> > --- a/include/net/sock.h
+> > +++ b/include/net/sock.h
+> > @@ -1277,7 +1277,7 @@ static inline void sock_poll_wait(struct file *filp,
+> >  		 *
+> >  		 * This memory barrier is paired in the sk_has_sleeper.
+> >  		*/
+> > -		smp_mb();
+> > +		smp_mb__after_lock();
+> >  	}
+> >  }
+> 
+> I believe you took wrong point to use this new thing :)
+> 
+> It was meant to be used in sk_has_sleeper() only (as sk_has_sleeper()
+>  follows a read_lock())
+>
 
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+shoot, you're right.. I'll resend 2/2, thanks
 
----
- include/linux/module.h |    2 -
- kernel/module.c        |   71 +++++++++++++++++++++++++++++++++++++++----------
- 2 files changed, 58 insertions(+), 15 deletions(-)
-
---- 2.6.31-rc1-module-strip.orig/include/linux/module.h
-+++ 2.6.31-rc1-module-strip/include/linux/module.h
-@@ -310,7 +310,7 @@ struct module
- 	/* We keep the symbol and string tables for kallsyms. */
- 	Elf_Sym *symtab, *core_symtab;
- 	unsigned int num_symtab, core_num_syms;
--	char *strtab;
-+	char *strtab, *core_strtab;
- 
- 	/* Section attributes */
- 	struct module_sect_attrs *sect_attrs;
---- 2.6.31-rc1-module-strip.orig/kernel/module.c
-+++ 2.6.31-rc1-module-strip/kernel/module.c
-@@ -1843,6 +1843,7 @@ static char elf_type(const Elf_Sym *sym,
- 
- static unsigned int filter_symbols(Elf_Sym *dst,
- 				   const Elf_Sym *src, unsigned int nsrc,
-+				   const char *strtab, unsigned long *strmap,
- 				   const Elf_Shdr *sechdrs, unsigned int shnum)
- {
- 	unsigned int i, ndst;
-@@ -1863,8 +1864,16 @@ static unsigned int filter_symbols(Elf_S
- #endif
- 		    || (sec->sh_entsize & INIT_OFFSET_MASK))
- 			continue;
--		if (dst)
-+		if (dst) {
- 			dst[ndst] = *src;
-+			dst[ndst].st_name = bitmap_weight(strmap,
-+							  dst[ndst].st_name);
-+		} else {
-+			unsigned int j = src->st_name;
-+
-+			while(!__test_and_set_bit(j, strmap) && strtab[j])
-+				++j;
-+		}
- 		++ndst;
- 	}
- 
-@@ -1874,11 +1883,15 @@ static unsigned int filter_symbols(Elf_S
- static unsigned long layout_symtab(struct module *mod,
- 				   Elf_Shdr *sechdrs,
- 				   unsigned int symindex,
-+				   unsigned int strindex,
- 				   const Elf_Ehdr *hdr,
--				   const char *secstrings)
-+				   const char *secstrings,
-+				   unsigned long *pstroffs,
-+				   unsigned long *strmap)
- {
- 	unsigned long symoffs;
- 	Elf_Shdr *symsect = sechdrs + symindex;
-+	Elf_Shdr *strsect = sechdrs + strindex;
- 
- 	symsect->sh_flags |= SHF_ALLOC;
- 	symsect->sh_entsize = get_offset(mod, &mod->init_size, symsect,
-@@ -1890,9 +1903,19 @@ static unsigned long layout_symtab(struc
- 			 + filter_symbols(NULL,
- 			 		  (void *)hdr + symsect->sh_offset,
- 					  symsect->sh_size / sizeof(Elf_Sym),
--					  sechdrs, hdr->e_shnum)
-+			 		  (void *)hdr + strsect->sh_offset,
-+			 		  strmap, sechdrs, hdr->e_shnum)
- 			 * sizeof(Elf_Sym);
- 
-+	strsect->sh_flags |= SHF_ALLOC;
-+	strsect->sh_entsize = get_offset(mod, &mod->init_size, strsect,
-+					 strindex) | INIT_OFFSET_MASK;
-+	DEBUGP("\t%s\n", secstrings + strsect->sh_name);
-+
-+	*pstroffs = mod->core_size;
-+	__set_bit(0, strmap);
-+	mod->core_size += bitmap_weight(strmap, strsect->sh_size);
-+
- 	return symoffs;
- }
- 
-@@ -1902,9 +1925,12 @@ static void add_kallsyms(struct module *
- 			 unsigned int symindex,
- 			 unsigned int strindex,
- 			 unsigned long symoffs,
--			 const char *secstrings)
-+			 unsigned long stroffs,
-+			 const char *secstrings,
-+			 unsigned long *strmap)
- {
- 	unsigned int i;
-+	char *s;
- 
- 	mod->symtab = (void *)sechdrs[symindex].sh_addr;
- 	mod->num_symtab = sechdrs[symindex].sh_size / sizeof(Elf_Sym);
-@@ -1918,14 +1944,21 @@ static void add_kallsyms(struct module *
- 	mod->core_symtab = mod->module_core + symoffs;
- 	mod->core_num_syms = filter_symbols(mod->core_symtab,
- 					    mod->symtab, mod->num_symtab,
--					    sechdrs, shnum);
-+					    NULL, strmap, sechdrs, shnum);
-+	mod->core_strtab = s = mod->module_core + stroffs;
-+	for (*s = 0, i = 1; i < sechdrs[strindex].sh_size; ++i)
-+		if (test_bit(i, strmap))
-+			*++s = mod->strtab[i];
- }
- #else
- static inline unsigned long layout_symtab(struct module *mod,
- 					  Elf_Shdr *sechdrs,
- 					  unsigned int symindex,
-+					  unsigned int strindex,
- 					  const Elf_Hdr *hdr,
--					  const char *secstrings)
-+					  const char *secstrings,
-+					  unsigned long *pstroffs,
-+					  unsigned long *strmap)
- {
- }
- static inline void add_kallsyms(struct module *mod,
-@@ -1934,7 +1967,9 @@ static inline void add_kallsyms(struct m
- 				unsigned int symindex,
- 				unsigned int strindex,
- 				unsigned long symoffs,
--				const char *secstrings)
-+				unsigned long stroffs,
-+				const char *secstrings,
-+				const unsigned long *strmap)
- {
- }
- #endif /* CONFIG_KALLSYMS */
-@@ -2010,7 +2045,7 @@ static noinline struct module *load_modu
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
- #ifdef CONFIG_KALLSYMS
--	unsigned long symoffs;
-+	unsigned long symoffs, stroffs, *strmap;
- #endif
- 	mm_segment_t old_fs;
- 
-@@ -2093,10 +2128,6 @@ static noinline struct module *load_modu
- 	/* Don't keep modinfo and version sections. */
- 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
- 	sechdrs[versindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
--#ifdef CONFIG_KALLSYMS
--	/* Keep string table for decoding later. */
--	sechdrs[strindex].sh_flags |= SHF_ALLOC;
--#endif
- 
- 	/* Check module struct version now, before we try to use module. */
- 	if (!check_modstruct_version(sechdrs, versindex, mod)) {
-@@ -2132,6 +2163,13 @@ static noinline struct module *load_modu
- 		goto free_hdr;
- 	}
- 
-+	strmap = kzalloc(BITS_TO_LONGS(sechdrs[strindex].sh_size)
-+			 * sizeof(long), GFP_KERNEL);
-+	if (!strmap) {
-+		err = -ENOMEM;
-+		goto free_mod;
-+	}
-+
- 	if (find_module(mod->name)) {
- 		err = -EEXIST;
- 		goto free_mod;
-@@ -2161,7 +2199,8 @@ static noinline struct module *load_modu
- 	   this is done generically; there doesn't appear to be any
- 	   special cases for the architectures. */
- 	layout_sections(mod, hdr, sechdrs, secstrings);
--	symoffs = layout_symtab(mod, sechdrs, symindex, hdr, secstrings);
-+	symoffs = layout_symtab(mod, sechdrs, symindex, strindex, hdr,
-+				secstrings, &stroffs, strmap);
- 
- 	/* Do the allocs. */
- 	ptr = module_alloc_update_bounds(mod->core_size);
-@@ -2371,7 +2410,9 @@ static noinline struct module *load_modu
- 		       sechdrs[pcpuindex].sh_size);
- 
- 	add_kallsyms(mod, sechdrs, hdr->e_shnum, symindex, strindex,
--		     symoffs, secstrings);
-+		     symoffs, stroffs, secstrings, strmap);
-+	kfree(strmap);
-+	strmap = NULL;
- 
- 	if (!mod->taints) {
- 		struct _ddebug *debug;
-@@ -2458,6 +2499,7 @@ static noinline struct module *load_modu
- 		percpu_modfree(percpu);
-  free_mod:
- 	kfree(args);
-+	kfree(strmap);
-  free_hdr:
- 	vfree(hdr);
- 	return ERR_PTR(err);
-@@ -2550,6 +2592,7 @@ SYSCALL_DEFINE3(init_module, void __user
- #ifdef CONFIG_KALLSYMS
- 	mod->num_symtab = mod->core_num_syms;
- 	mod->symtab = mod->core_symtab;
-+	mod->strtab = mod->core_strtab;
- #endif
- 	module_free(mod, mod->module_init);
- 	mod->module_init = NULL;
-
+jirka
 
