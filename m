@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZF3X52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZF3X6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbZF3X52 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZF3X5V
+	id S1756791AbZF3X6D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbZF3X5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:57:21 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:3111 "EHLO mms1.broadcom.com"
+	Tue, 30 Jun 2009 19:57:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53546 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753214AbZF3X5V convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:57:21 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-From: "Scott Branden" <sbranden@broadcom.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Jean-Christophe PLAGNIOL-VILLARD" <plagnioj@jcrosoft.com>
-cc: "Leo (Hao) Chen" <leochen@broadcom.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Date: Tue, 30 Jun 2009 16:57:13 -0700
-Subject: RE: [PATCH v1 6/6][ARM]  new ARM SoC support: BCMRing
-Thread-Topic: [PATCH v1 6/6][ARM]  new ARM SoC support: BCMRing
-Thread-Index: Acn52kNGWbjeWRx9QNWAYoGnXdAPhgAAokUQ
-Message-ID: <9383297B60843144AC17878B479520F1109EEFC25D@SJEXCHCCR01.corp.ad.broadcom.com>
-In-Reply-To: <20090701002054.44e6f688@lxorguk.ukuu.org.uk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	id S1753294AbZF3X5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:57:51 -0400
+From: Neil Brown <neilb@suse.de>
+To: Mike Snitzer <snitzer@redhat.com>
+Date: Wed, 1 Jul 2009 09:58:32 +1000
 MIME-Version: 1.0
-X-WSS-ID: 665479D00EG14815220-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19018.42664.764760.682918@notabene.brown>
+Cc: jens.axboe@oracle.com, "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: md: Use new topology calls to indicate alignment and I/O sizes
+In-Reply-To: message from Mike Snitzer on Tuesday June 30
+References: <yq1ws73turf.fsf@sermon.lab.mkp.net>
+	<170fa0d20906231444t5432998eo8cc2335c6d4a3a0d@mail.gmail.com>
+	<19009.42494.925771.283731@notabene.brown>
+	<20090630202432.GG7888@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan,
+On Tuesday June 30, snitzer@redhat.com wrote:
+> 
+> Neil,
+> 
+> Any chance you could make a formal pull request for this MD topology
+> support patch for 2.6.31-rc2?
 
-We would really like to know what needs to change in our patchset.  We have a large codebase of drivers for multiple chipsets already written that we have been maintaining internally and releasing for customer development.  For code that patches existing linux code we follow the style dictated in those files.  But for our new code we do not.
+Yes.. I want to include a couple of other patches in the same batch
+and I've been a bit distracted lately (by a cold among other things).
+I'll try to get this sorted out today.
 
-For our new code we have many developers who have written the code and thus a few "linux standard" coding styles have not been followed.  Much driver code is split into an os-less portion and a linux wrapper portion.  People have written following ISO/IEC 9899:1999 coding which allows such things as // comments.  Also using tabs in our code is not a requirement.  
+> 
+> NOTE: all the disk_stack_limits() calls must pass the 3rd 'offset' arg
+> in terms of bytes and _not_ sectors.  So all of MD's calls to
+> disk_stack_limits() should pass: rdev->data_offset << 9
 
-My question is do we need to change our entire codebase over to match linux coding standards for comments and whitespace so it can pass a checkpatch script?  I'm sure there is a standard linux kernel community response to this but I need to forward that answer (whatever it is) to our many developers so we know what it is required to get our existing code integrated into the standard linux kernel.
+Noted, thanks.
 
-Thanks,
- Scott
-
-
------Original Message-----
-From: linux-arm-kernel-bounces@lists.arm.linux.org.uk [mailto:linux-arm-kernel-bounces@lists.arm.linux.org.uk] On Behalf Of Alan Cox
-Sent: June 30, 2009 4:21 PM
-To: Jean-Christophe PLAGNIOL-VILLARD
-Cc: Leo (Hao) Chen; linux-arm-kernel@lists.arm.linux.org.uk; Linux Kernel
-Subject: Re: [PATCH v1 6/6][ARM] new ARM SoC support: BCMRing
-
-On Tue, 30 Jun 2009 20:41:01 +0200
-Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> wrote:
-
-> On 16:30 Fri 26 Jun     , Leo (Hao) Chen wrote:
-> > Hi,
-> > 
-> > The last patch. This big patch includes the minimal set of our CSP (chip support package), which is our OS independent chip supporting code and headers.  All the codes are under arch/arm/mach-bcmring directory.
-> This patch is unreadable
-> you need
-> 1) Respect the Linux coding Style
-
-For an OS independant set of chip support defines that usually makes no sense
-
-> 2) to split in small changeset
-
-For a new submission that generally doesn't make much sense either - not for all the new files stuff.
-
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
-
-
+NeilBrown
