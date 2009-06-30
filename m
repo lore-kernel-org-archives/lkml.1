@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZF3Svr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZF3Sx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbZF3Svr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 14:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZF3Svk
+	id S1756002AbZF3Sx6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 14:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZF3Sxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 14:51:40 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:51166 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751379AbZF3Svk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 14:51:40 -0400
-Date: Tue, 30 Jun 2009 20:43:18 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: "Leo (Hao) Chen" <leochen@broadcom.com>
-Cc: "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v1 4/6][ARM]  new ARM SoC support: BCMRing
-Message-ID: <20090630184318.GK23292@game.jcrosoft.org>
-References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broadcom.com>
- <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C6@SJEXCHCCR02.corp.ad.broadcom.com>
+	Tue, 30 Jun 2009 14:53:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58160 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbZF3Sxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 14:53:48 -0400
+Date: Tue, 30 Jun 2009 21:53:48 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: Re: [PATCH v4] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090630185347.GD8122@redhat.com>
+References: <20090630064515.GG20289@redhat.com> <86802c440906300018p8c5156dy3e8d84b8c263797e@mail.gmail.com> <20090630075457.GH20289@redhat.com> <86802c440906301143s14d0cc9ej9b666271a1ce15ba@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C6@SJEXCHCCR02.corp.ad.broadcom.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Ovh-Tracer-Id: 6825486710739807123
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+In-Reply-To: <86802c440906301143s14d0cc9ej9b666271a1ce15ba@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16:30 Fri 26 Jun     , Leo (Hao) Chen wrote:
-> Hi,
+On Tue, Jun 30, 2009 at 11:43:41AM -0700, Yinghai Lu wrote:
+> 2009/6/30 Gleb Natapov <gleb@redhat.com>:
 > 
-> This is the fourth one. We add Kconfig option and Makefile entries of the nand driver.
+> >>
+> >> how about kexec second kernel in KVM ?
+> >>
+> >> x2apic_preenabled will be set in second kernel.
+> >>
+> > Yes, bummer. But the similar problem exist now and without KVM. After
+> > running x2apic enabled kernel you can't kexec kernel without x2apic
+> > support.
 > 
-> >From 64d367c7a2b97cd71b4c4ed215dd8247271fda8b Mon Sep 17 00:00:00 2001
-> From: Leo Chen <leochen@broadcom.com>
-> Date: Fri, 26 Jun 2009 15:47:04 -0700
-> Subject: [PATCH 4/6] add bcmring umi nand driver in mtd/nand Kconfig and Makefile
-ditto as patch 5 please send it to the linux-mtd ML too
-linux-mtd@lists.infradead.org
+> if the first kernel enable x2apic and intr_remapping, and second
+> kernel has x2apic and intr_remap support.
+> we can kexec the second kernel.
+> 
+And if it hasn't we cannot, that is what I am trying to point out.
 
-Best Regards,
-J.
+> restoring to original state is not possible for kdump case.
+> 
+Shouldn't it be enough to run UP kernel for kdump? So kdump can reset BSP
+apic to xAPIC mode before starting a kernel with maxcpus=1.
+
+> maybe with minor change to your patch, you could kexec the in kexec
+> second kernel with x2apic support.
+> 
+My patch can easily avoid the issue by checking max_physical_apicid > 255
+instead of x2apic_preenabled.
+
+--
+			Gleb.
