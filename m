@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZF3Poa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZF3Pol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZF3Poa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZF3PoR
+	id S1756928AbZF3Pol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 11:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZF3PoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:44:17 -0400
-Received: from kroah.org ([198.145.64.141]:58378 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 11:44:22 -0400
+Received: from kroah.org ([198.145.64.141]:58384 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752545AbZF3PoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:44:16 -0400
-Date: Tue, 30 Jun 2009 08:34:18 -0700
+	id S1753006AbZF3PoT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 11:44:19 -0400
+Date: Tue, 30 Jun 2009 08:43:36 -0700
 From: Greg KH <greg@kroah.com>
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] accessibility, speakup, speech synthesis & /sys
-Message-ID: <20090630153418.GB16038@kroah.com>
-References: <20090625220452.GF5540@const.famille.thibault.fr> <20090630041833.GA13034@kroah.com> <20090630130822.GR6405@const.bordeaux.inria.fr>
+To: Marc Aurele La France <tsi@ualberta.ca>
+Cc: hpa@kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "H. Peter Anvin" <hpa@linux.intel.com>,
+       Research.Support@ualberta.ca
+Subject: Re: [rs] Re: [stable] [PATCH] x86, setup (2.6.30-stable) fix 80x34
+	and 80x60 console modes
+Message-ID: <20090630154336.GE16038@kroah.com>
+References: <alpine.BSO.1.10.0906291746410.14658@fanir.ucs.ualberta.ca> <4A496A0C.809@kernel.org> <20090630034822.GC12373@kroah.com> <4A49B1C6.9040900@kernel.org> <alpine.WNT.1.10.0906300743550.2004@cluij.ucs.ualberta.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090630130822.GR6405@const.bordeaux.inria.fr>
+In-Reply-To: <alpine.WNT.1.10.0906300743550.2004@cluij.ucs.ualberta.ca>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 03:08:22PM +0200, Samuel Thibault wrote:
-> Hello,
+On Tue, Jun 30, 2009 at 08:01:47AM -0600, Marc Aurele La France wrote:
+> On Mon, 29 Jun 2009, H. Peter Anvin wrote:
+> > Greg KH wrote:
+> >> On Mon, Jun 29, 2009 at 06:27:40PM -0700, H. Peter Anvin wrote:
+> >>> Marc Aurele La France wrote:
+> >>>> As coded, most INT10 calls in video-vga.c allow the compiler to assume EAX
+> >>>> remains unchanged across them, which is not always the case.  This
+> >>>> triggers an optimisation issue that causes vga_set_vertical_end() to be
+> >>>> called with an incorrect number of scanlines.  Fix this by beefing up the
+> >>>> asm constraints on these calls.
 > 
-> Greg KH, le Mon 29 Jun 2009 21:18:33 -0700, a écrit :
-> > > I believe there are two things:
-> > > 
-> > > - per- harware speech synthesizer parameters (e.g. speed, pitch, etc.)
-> > > - screen reading parameters (e.g. characters pronunciation, key_echo,
-> > >   current synthesizer being used etc.)
-> > > 
-> > > Speech synthesizers should probably have their own device class, how
-> > > should it be called? "synth"? "speech"?
-> > 
-> > Which do you think it should?
+> >>>> Reported-by: Marc Aurele La France <tsi@xfree86.org>
+> >>>> Signed-off-by: Marc Aurele La France <tsi@xfree86.org>
+> >>>> Acked-by: H. Peter Anvin <hpa@zytor.com>
 > 
-> Speakup used to call them "synth", but anything else than speech could
-> be synthesized, so speech may be better.
-
-Ok.
-
-> > > Then there are the screen reading parameters. I'd tend to think that
-> > > like there are /sys/{block,firmware,fs,power}, there could be a
-> > > /sys/accessibility, or even shorter, /sys/a11y?  Speakup parameters
-> > > could then be in /sys/a11y/speakup?
-> > 
-> > Wouldn't these be on a "per-screen" basis?
+> >>> Note: this is not in upstream since upstream is not affected due to the
+> >>> new "BIOS glovebox" subsystem.
 > 
-> Mmm, what do you call a screen?  I guess you mean
-> /sys/class/vtconsole/vtcon0?  It would make sense indeed.
-
-Yes, that is what I was referring to.
-
-> > So they would live under the screen reader device itself, not way up
-> > high in the device tree.
+> >> So it is a ".30 only" type patch?  Any older kernel versions affected?
 > 
-> One problem is usability.  That's something that users
-> will often want to tune, and /sys/a11y/speakup/key_echo is
-> definitely easier for the very common case of one head, than
-> /sys/class/vtconsole/vtcon0/reader/speakup/key_echo :)
-
-But as you can have multiple "screens" or readers, you really need to
-set this on a per-device basis.
-
-And just wrap all of that up in a simple userspace program if you think
-users are going to want to tweak things on the devices.  Don't worry
-where in /sys/ things live just for user "ease-of-use" as that's not the
-point for sysfs.  Otherwise we would just cram everything into the root
-directory so people wouldn't have to type 'cd' :)
-
-> > Actually, you are proposing them outside of the device tree, which I
-> > do not think you want at all.
+> > Yes, all the way back to .23 or something like that.
 > 
-> It depends on what you call a "device".  It's probably not obvious that
-> a screen reader is a device, but why not.
-
-But it is within the kernel, so please treat it as one.
-
-> > What specific files are you thinking you would need?
+> No.  The problem can only arise in 2.6.30 and is a consequence of commit 
+> 5f641356127712fbdce0eee120e5ce115860c17f.  It disappears with subsequent 
+> mainline commit cf06de7b9cdd3efee7a59dced1977b3c21d43732.
 > 
-> There are a lot of them actually, like 20, tuning various aspects of
-> reading what happens on the console.
+> Prior to 2.6.30, vga_set_480_scanlines() was passed a byte-size value (as 
+> an int), which means the compiler was forced to load EAX, instead of only 
+> AL, even if it did assume AH still contained 0x01.  That 0x01 is what the 
+> last INT10 call in the vga_set_{8,14}font() functions sets AH to.
+> 
+> In truth, only those two INT10's need beefing up.  But I did them all for 
+> completeness.
 
-Ok, I suggest writing them all out, as you will need to add them to
-Documentation/ABI/ when the patch goes in.
+Ah, thanks.  Next time, putting that information into the patch itself
+would be most helpful :)
 
-thanks,
+I'll go queue it up.
 
 greg k-h
