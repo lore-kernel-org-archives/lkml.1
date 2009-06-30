@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbZF3WKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZF3WMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbZF3WKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZF3WK0
+	id S1756639AbZF3WMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbZF3WMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:10:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46651 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbZF3WKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:10:25 -0400
-Date: Wed, 1 Jul 2009 00:10:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luck, Tony" <tony.luck@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jan Beulich <JBeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/ia64: adjust section annotation for  pcibios_setup()
-Message-ID: <20090630221016.GF1241@elte.hu>
-References: <4A4A11AF020000780000831D@vpn.id2.novell.com> <57C9024A16AD2D4C97DC78E552063EA3A8D9EA80@orsmsx505.amr.corp.intel.com>
+	Tue, 30 Jun 2009 18:12:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54490 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753849AbZF3WML (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 18:12:11 -0400
+Date: Tue, 30 Jun 2009 15:10:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+In-Reply-To: <4A4A88A2.7010509@kernel.org>
+Message-ID: <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain>
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com>
+ <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com>
+ <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com>
+ <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3A8D9EA80@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Luck, Tony <tony.luck@intel.com> wrote:
 
-> --- linux-2.6.31-rc1/arch/ia64/pci/pci.c	2009-06-26 17:49:37.000000000 +0200
-> +++ 2.6.31-rc1-pcibios_setup/arch/ia64/pci/pci.c	2009-05-04 11:39:32.000000000 +0200
-> @@ -537,7 +537,7 @@ pcibios_align_resource (void *data, stru
->  /*
->   * PCI BIOS setup, always defaults to SAL interface
->   */
-> -char * __devinit
-> +char * __init
->  pcibios_setup (char *str)
->  {
->  	return str;
-> 
-> ia64 part Acked-by: Tony Luck <tony.luck@intel.com>
-> 
-> Ingo/Thomas/Peter: please run this through the tip tree.
+On Tue, 30 Jun 2009, Yinghai Lu wrote:
+?
+> +#define round_up(x, y) ({ __typeof__(x) __mask = (y)-1; \
+> +			 ((x)+__mask) & ~__mask; })
+> +#define round_down(x, y) ({ __typeof__(x) __mask = (y)-1; (x) & ~__mask; })
 
-I think this one's for Jesse's PCI tree.
+Yes, except we might as well simplify it. Do it without the statement 
+expressions, using just a single 'y'. Like this:
 
-	Ingo
+  #define __round_mask(x,y) ((__typeof__(x))((y)-1))
+  #define round_up(x,y) (((x) | __round_mask(x,y))+1)
+  #define round_down(x,y) ((x) & ~__round_mask(x,y))
+
+(Yeah, it uses 'x' twice, but the second one is for 'typeof', which 
+doesn't actually cause the value to be evaluated, so it's ok).
+
+Now those 'round_xyz()' operations will always return a value of a type 
+that is the same as the type of 'x' except it's gone through the normal C 
+integer promotion rules (ie if 'x' is a smaller type than 'int', then it 
+will be promoted to 'int').
+
+Not very well tested, but it _looks_ correct, and uses Peter's trick, and 
+willlet the compiler notice that
+
+	round_up(x,y)-1
+
+is the same thing as
+
+	x | (y-1)
+
+which it _could_ have perhaps figured out before, but now it's way more 
+obvious.
+		Linus
