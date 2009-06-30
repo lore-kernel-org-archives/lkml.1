@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZF3IdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZF3Ija@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbZF3IdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 04:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZF3IdA
+	id S1752886AbZF3Ija (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 04:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZF3IjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 04:33:00 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54029 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751088AbZF3Ic7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 04:32:59 -0400
-Date: Tue, 30 Jun 2009 09:34:18 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Lennart Poettering <lennart@poettering.net>
-Cc: linux-kernel@vger.kernel.org, William Jon McCann <jmccann@redhat.com>
-Subject: Re: [PATCH] vt: extend VT_WAITACTIVE ioctl to allow waiting until a
- specific VT becomes inactive
-Message-ID: <20090630093418.4670980e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090630000003.GA21004@omega>
-References: <20090630000003.GA21004@omega>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Tue, 30 Jun 2009 04:39:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54981 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZF3IjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 04:39:21 -0400
+Subject: Re: [PATCH 2/3 -tip] perf_counter tools: Add support to set of
+ multiple events in one shot
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090629035708.GD8059@elte.hu>
+References: <1246051852.2988.8.camel@hpdv5.satnam>
+	 <1246051927.2988.10.camel@hpdv5.satnam>
+	 <1246051996.2988.12.camel@hpdv5.satnam> <20090627163821.GA17638@elte.hu>
+	 <1246129498.32198.27.camel@hpdv5.satnam> <20090628132926.GD31988@elte.hu>
+	 <1246202166.2982.8.camel@hpdv5.satnam>  <20090629035708.GD8059@elte.hu>
+Content-Type: text/plain
+Date: Tue, 30 Jun 2009 14:08:34 +0530
+Message-Id: <1246351114.2476.38.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009 02:00:04 +0200
-Lennart Poettering <lennart@poettering.net> wrote:
+On Mon, 2009-06-29 at 05:57 +0200, Ingo Molnar wrote:
 
-> Currently, the VT_WAITACTIVE ioctl can be used to wait until a
-> specific VT becomes _active_. 
+> The above patterns i suggested _already cover_ 'multiple events'.
+> 
+> We might define further aliases like:
+> 
+> 	all := "*"
+>         all-sw := "sw-*"
+> 
+> but it should all be in terms of patterns and regular expressions, 
+> not via some hardcoded special-case thing as your posted patches 
+> did.
+> 
 
-Well sort of - by the time it returns another VT may have switched again
-unless you are using all the VT locking mess. Ditto with your changesit
-seems.
+It seems to me very confusing and needs lot of book-keeping and need to
+rewrite whole tools/perf/util/parse-events.c because :
 
-> This is used by ConsoleKit
+* means all perf_event_types :
+	PERF_TYPE_HARDWARE,
+        PERF_TYPE_SOFTWARE,
+        PERF_TYPE_TRACEPOINT,
+        PERF_TYPE_HW_CACHE,
+        PERF_TYPE_RAW
 
-Yes someone posted a similar patch over a year ago (but ignored the
-request for a signed-off-by) and his consolekit bug which was marked "Not
-a bug" and ignored. I'm aware of this issue and the original patch would
-have been merged but for the signed-off-by: issue.
+hw-* means all hardware events :
+	PERF_TYPE_HARDWARE,
+        PERF_TYPE_HW_CACHE,
+        PERF_TYPE_RAW
 
-> which VT is the active one.  This patch extends this logic in a simple
-> way, so that it can be used to wait until a specific VT becomes
-> _inactive_.
+sw-* means all software events :
+        PERF_TYPE_SOFTWARE,
+        PERF_TYPE_TRACEPOINT
 
-Only it may have become active again by the time the call returns or it
-may have become active and inactive again and be missed.
+*cache* means all cache based events :
+	PERF_COUNT_CACHE_REFERENCES, 	/* Generalized H/W */
+	PERF_COUNT_CACHE_MISSES,	/* Generalized H/W */
+        PERF_TYPE_HW_CACHE,		/* Generalized Cache */
 
-> will get a woken up once for each VT change. Having that many threads
-> around is certainly ugly and also racy, since multiple quick VT changes
+*write* means all write based events :
+	(L1D,       WRITE,          ACCESS),
+	(L1D,       WRITE,          MISS),
+	(LL,        WRITE,          ACCESS),
+	(LL,        WRITE,          MISS),
+	(DTLB,      WRITE,          ACCESS),
+	(DTLB,      WRITE,          MISS)
 
-Good to see this has finally been accepted.
+Please let me know why it looks complex to me, is it really complex or I am going in wrong direction.
 
->   /* this will wait until VT 5 is activated */
->   ioctl(0, VT_WAITACTIVE, 5L);
+Thanks,
 
-I'd rather
-	ioctl(0, VT_WAITINACTIVE, ...)
-
-[and both waits should be bitmasks of consoles but its a bit late for
-that]
-
-but wouldn't the following be a more useful looking call for most stuff
-
-	struct vtevent vtinfo {
-		int event;
-#define VT_EVENT_SWITCH		1
-#define VT_EVENT_BLANK		2
-#define VT_EVENT_UNBLANK	3
-#define VT_EVENT_RESIZE		4
-		unsigned int old;
-		unsigned int new;
-		unsigned int pad[4];
-	}
-	ioctl(0, VT_WAITEVENT, &vtinfo);
-
-either way adding magic "negative number" semantics to VT_WAITACTIVE
-isn't very nice.
-
-We have an open bug for VT blank reporting to user space (and the
-notifier hooks internally to do it). We also have races with the implicit
-races in the WAITfoo APIs unless you are using the VT locking/change
-stuff for things like X11
-
-It looks like the job could be done better once even if for the moment it
-simply reports VT changes.
-
+--
+JSR
+ 
 
