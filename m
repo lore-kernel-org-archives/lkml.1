@@ -1,139 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZF3Tcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZF3Teb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbZF3Tcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZF3Tcg
+	id S1756626AbZF3Teb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZF3TeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:32:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59899 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Jun 2009 15:34:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49261 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbZF3Tcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:32:35 -0400
-Date: Tue, 30 Jun 2009 21:32:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Markus Metzger <markus.t.metzger@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: bts & perf_counters
-Message-ID: <20090630193229.GD20567@elte.hu>
-References: <928CFBE8E7CB0040959E56B4EA41A77EBBD00DC5@irsmsx504.ger.corp.intel.com> <928CFBE8E7CB0040959E56B4EA41A77EBE2DB8EB@irsmsx504.ger.corp.intel.com> <20090624133645.GE6224@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EBE2DB9B9@irsmsx504.ger.corp.intel.com> <20090624153229.GA24346@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EBE2DC3D9@irsmsx504.ger.corp.intel.com> <20090626122948.GC10850@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EBE519869@irsmsx504.ger.corp.intel.com> <20090629202002.GF31577@elte.hu> <928CFBE8E7CB0040959E56B4EA41A77EBE519AE5@irsmsx504.ger.corp.intel.com>
+	id S1752723AbZF3TeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:34:23 -0400
+Message-ID: <4A4A6888.30001@kernel.org>
+Date: Tue, 30 Jun 2009 12:33:28 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EBE519AE5@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com>
+In-Reply-To: <4A4A25B1.5010102@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
-
-> > How does 'interval' get mixed with BTS?
+H. Peter Anvin wrote:
+> Mikael Pettersson wrote:
+>> Thanks, 2.6.31-rc1 vanilla (which didn't boot) plus this one does boot.
+>> /proc/iomem now looks as follows:
+>>
 > 
-> We could view BTS as event-based sampling with interval=1. The 
-> sample we collect is the <from, to> address pair of an executed 
-> branch and the sampling interval is 1, i.e. we store a sample for 
-> every branch. Wouldn't this be how BTS integrates into 
-> perf_counters?
-
-Yeah, this is how i view it too.
-
-> One of the big advantages that comes with using the perf_counter 
-> framework is that you could mix branch tracing with other forms of 
-> profiling and sampling.
-
-Correct.
-
-> >> Would it be possible for a user to profile the same task twice? 
-> >> He could then use different buffers for different sampling 
-> >> intervals.
-> >
-> > It's possibe to open multiple counters to the same task, yes.
+> ... as it should.  So far so good, and this is a real problem.
 > 
-> That's good. And users could mmap every counter they open in order 
-> to get multiple perf event streams?
-
-Yes.
-
-> OK. The existing implementation reconfigured DS area to have the 
-> h/w already collect the trace into the correct buffer. The only 
-> copying that is ever needed is to copy it into user-space while 
-> translating the arch-specific format into an arch-independent 
-> format.
+> However, there is something that really bothers me: *why does this help
+> on Mikael's system, which is PAE and therefore has a 64-bit
+> resource_size_t*?  This whole patch should be a no-op!  There is still
+> something that doesn't make sense.
 > 
-> This is obviously only possible for a single user. Copying the 
-> data is definitely more flexible if we expect multiple users of 
-> that data with different-sized buffers.
-
-Yeah. [ That decoupling is nice as it also allows multiplexing - 
-there's nothing that prevents from two independent monitor tasks 
-from sampling the same task. (beyond the inevitable runtime overhead 
-that is inherent in BTS anyway.) ]
-
-> > If a task schedules out then it will have its DS area drained 
-> > already to the mmap buffer - i.e. it's all properly 
-> > synchronized.
+> The use of "unsigned long" in ram_alignment() will overflow after 2^52
+> bytes, but again, that's not the issue here, since the highest "start"
+> value we have is (0x2 << 32).
 > 
-> When is that draining done? Somewhere in schedule()? Wouldn't that 
-> be quite expensive for a few pages of BTS buffer?
-
-Well, it is an open question how frequently we want to move 
-information from the DS area into the mmap pages.
-
-The most direct approach would be to 'flush' the DS from two places: 
-the threshold IRQ handler plus from the context switch code if the 
-BTS counter gets deactivated. In the latter case BTS activities have 
-to stop anyway, so the DS can be flushed to the mmap pages.
-
-Or is your mental model for getting the BTS records from the DS to 
-the mmap pages significantly different?
-
-I think we should shoot for the simplest approach initially - we can 
-do other, more sophisticated streaming modes later as well - they 
-will not differ in functionality, only in performance.
-
-> Hmmm, I'll see what I can do. Please don't expect a minimally 
-> working prototype to be bug-free from the beginning.
-
-Sure, i dont.
-
-> I see identifying the beginning of the stream as well as random 
-> accesses into the stream as bigger open points.
+> By process of elimination, the culprit must be round_up(), which reveals
+> that the macro definition of round_up() has a *very* sublte behavior
+> with mixed types:
 > 
-> Maybe we could add a mode where records are zero-extended to a 
-> fixed size. This would leave the choice to the user: compact 
-> format or random access.
+> #define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+> 
+> ram_alignment() returns unsigned long, which becomes (y).  This means
+> that the mask word on the right hand of the & gets truncated to 32 bits
+> *before* the masking happens -- since ((y) - 1) is still unsigned long,
+> inverting it will not set bits [63..32] to on.
+> 
+> I think this macro is actively dangerous.  Better would be:
+> 
+> ({ __typeof__(x) __mask = (y)-1;  ((x)+__mask) & ~__mask; })
+> 
+> ... which is also multiple-inclusion-free at the cost of using gcc
+> ({...}) constructs.
+> 
+> The deep irony in this is that in our particular case is perhaps that
+> align_up(x,y)-1 is the same thing as x | (y-1) which would have avoided
+> the problem...
 
-I agree that streaming is a problem because the debugger does not 
-want to poll() really - such an output mode and a 'ignore data_tail 
-and overwrite old entries' ring-buffer modus operandi should be 
-added.
+agreed, that is why we change round_up to take u64.
 
-The latter would be useful for tracepoints too for example, so such 
-a 'flight recorder' or 'history buffer' mode is not limited to BTS.
+wonder if we should kill round_up and use roundup instead.
 
-So feel free to add something that meets your constant-size records 
-needs - and we'll make sure it fits well into the rest of 
-perfcounters.
+in include/linux/kernel.h
+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
-So based on your suggestion we'd have two streaming models:
-
- - 'no information loss' output model where user-space poll()s and 
-   tries hard not to lose events (this is what profilers and 
-   reliable tracers do)
-
- - 'history ring-buffer' model - this is useful for debuggers and is 
-   useful for certain modes of tracing as well. (crash-tracing for 
-   example)
-
-	Ingo
+YH
