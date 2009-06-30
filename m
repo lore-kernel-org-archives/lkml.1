@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbZF3FbC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZF3Fhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbZF3FbC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 01:31:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZF3Far
+	id S1755821AbZF3Fhl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 01:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZF3Fhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 01:30:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:62966 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754198AbZF3Fap (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 01:30:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NnZPt5rz7J8i9D5v2X+msB6lPh7zz5epjSwuVbTfG5/fJxF+VAR/JLW6sbvQRpLWrx
-         yG0ib82j2ENxW3EbzckHGOCEDoUV8oWKTj83wabBAip/vHzc9X0lfgBVa1BdL/iMFXGD
-         QF4mGhi9g4sSRNljbsf6IgrqMUaltUnb1b+iQ=
-Message-ID: <4A49A349.8030702@gmail.com>
-Date: Mon, 29 Jun 2009 22:31:53 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Tue, 30 Jun 2009 01:37:33 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59194 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752231AbZF3Fhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 01:37:32 -0400
+X-Authenticated: #1512929
+X-Provags-ID: V01U2FsdGVkX18kOq9iKxokoqGzYRzggtYB85PMzl4UU50KYRPqD+
+	f2Ku58VgI8yzoK
+Message-ID: <4A49A49C.10104@warlich.name>
+Date: Tue, 30 Jun 2009 07:37:32 +0200
+From: Christof Warlich <christof@warlich.name>
+Organization: Warlich Consulting
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: need help figuring out what makes my wireless"iwconfig" not respond
-References: <4A499531.4040001@gmail.com> <4A49980E.2010405@lwfinger.net>
-In-Reply-To: <4A49980E.2010405@lwfinger.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: "EXT3-fs error" after resume from s2ram
+References: <4A4771FD.1020207@warlich.name> <4A480859.5010206@gmail.com> <4A48C799.2010102@warlich.name> <4A495C2D.1040706@gmail.com>
+In-Reply-To: <4A495C2D.1040706@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------050103060304080909090905"
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
-> Justin P. Mattock wrote:
->    
->> from 2.6.31-rc1 to present there was a couple of commits for
->> wireless. prior to that the wireless on my machine(imac)
->> was o.k.,
->> Now the wireless does work(streams music,t.v. etc..)
->> but when I look at iwconfig there's nothing no info.
->> (I use wicd as my connection manager, and in the bottom corner
->> of the screen the transmit power is down to almost nothing,
->> causing wicd to constantly reconnect)
->>
->> out of a random guess what commit might have caused this, so I can at least
->> fix this over here(that is until the manufacturer comes out with a new
->> version). I can go in and individually revert all of the wireless, but
->> before that
->> I want a quick lead.
->>
->> any ideas?
->>
->>      
->
-> If you have a git tree, use the "git bisect" commands to find the bad
-> commit.
->
->    
-alright. I'll give that a try.
+This is a multi-part message in MIME format.
+--------------050103060304080909090905
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Justin P. Mattock
+No, really nothing else but these EXT3-fs error messages are printed to vt1,
+and as the disk is not accessible,  nothing can be found in 
+/var/log/kern.log either.
+
+With respect to libata and SCSI and on a normal system boot, 
+/var/log/kern.log just
+contains:
+
+SCSI subsystem initialized
+libata version 3.00 loaded.
+
+so nothing helpful either.  Do you want me to send an entire boot - 
+suspend cycle
+from /var/log/kern.log?
+
+Robert Hancock schrieb:
+> Hmm.. How about any normal output from the libata, scsi, etc? Seems 
+> odd you wouldn't get anything unusual there if the file system was 
+> complaining..
+
+
+--------------050103060304080909090905
+Content-Type: text/x-vcard; charset=utf-8;
+ name="christof.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="christof.vcf"
+
+begin:vcard
+fn:Christof Warlich
+n:Warlich;Christof
+org:Warlich Consulting
+adr:;;Am Haselhang 7;Hilpoltstein;Bayern;91161;Deutschland
+email;internet:christof@warlich.name
+tel;work:09174/492914
+tel;home:09174/492914
+x-mozilla-html:TRUE
+url:www.warlich.name
+version:2.1
+end:vcard
+
+
+--------------050103060304080909090905--
