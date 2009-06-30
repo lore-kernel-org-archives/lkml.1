@@ -1,54 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZF3Riz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZF3Rmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429AbZF3Riz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 13:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZF3Ris
+	id S1753548AbZF3Rmi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 13:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZF3Rmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 13:38:48 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:46977 "EHLO
+	Tue, 30 Jun 2009 13:42:31 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:33568 "EHLO
 	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbZF3Rir (ORCPT
+	with ESMTP id S1751781AbZF3Rma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 13:38:47 -0400
-Date: Tue, 30 Jun 2009 13:38:36 -0400
+	Tue, 30 Jun 2009 13:42:30 -0400
+Date: Tue, 30 Jun 2009 13:42:26 -0400
 From: Neil Horman <nhorman@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, earl_chew@agilent.com,
        Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>, nhorman@tuxdriver.com
-Subject: Re: [PATCH 0/3] exec: Make do_coredump more robust and safer when
-	using pipes in core_pattern (v4)
-Message-ID: <20090630173836.GA15612@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH 1/3] exec: Make do_coredump more resilient to recursive
+	crashes (v4)
+Message-ID: <20090630174226.GB15612@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090630173836.GA15612@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090622172818.GB14673@hmsreliant.think-freely.org>
+In-Reply-To: <20090630173836.GA15612@hmsreliant.think-freely.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, Heres version 4 of this patch set.  Based on feedback from the past few days
-I've made some changes (noted below).  I've tested all of these patches here,
-and they work quite well, I'm able to prevent recursive core dumps, wait on
-dumps to complete, and limit the number of dupms I handle in parallel
+core_pattern: Change how we detect recursive dumps with core_pattern pipes
 
-Change Notes:
+Change how we detect recursive dumps.  Currently we have a mechanism by which
+we try to compare pathnames of the crashing process to the core_pattern path.
+This is broken for a dozen reasons, and just doesn't work in any sort of robust
+way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
+apps set RLIMIT_CORE to zero, we don't write out core files for any process with
+that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
+translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
+prevents infinite recursion in the event that the core_pattern process itself
+crashes.
 
-1) Diffed against latest Linus kernel + Olegs cleanup patches to do_coredump
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Reported-by: Earl Chew <earl_chew@agilent.com>
 
-2) Refactored into 3 patches instead of two (I still don't think its needed, but
-I've received more than one request to pull the sysctl into a separate patch, so
-I'm going with consensus here, and it won't hurt anything anyway)
 
-3) Changed how we detect completed user space processes.  We need to be able to
-close a pipe and then wait on the pipe reader to finish with it.  As such we
-have to do some trickery with the pipe readers and writers counts to make that
-happen.
+exec.c |   43 +++++++++++++++++++++----------------------
+1 file changed, 21 insertions(+), 22 deletions(-)
 
-Patches in subsequent mails
-Regards
-Neil
-
+diff --git a/fs/exec.c b/fs/exec.c
+index 9e05bd8..9defd20 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1776,35 +1776,34 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+  	lock_kernel();
+ 	ispipe = format_corename(corename, signr);
+ 	unlock_kernel();
+-	/*
+-	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
+-	 * to a pipe.  Since we're not writing directly to the filesystem
+-	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
+-	 * created unless the pipe reader choses to write out the core file
+-	 * at which point file size limits and permissions will be imposed
+-	 * as it does with any other process
+-	 */
++
+  	if (ispipe) {
++		if (core_limit == 0) {
++			 /*
++			  * Normally core limits are irrelevant to pipes, since
++			  * we're not writing to the file system, but we use
++			  * core_limit of 0 here as a speacial value. Any
++			  * non-zero limit gets set to RLIM_INFINITY below, but
++			  * a limit of 0 skips the dump.  This is a consistent
++			  * way to catch recursive crashes.  We can still crash
++			  * if the core_pattern binary sets RLIM_CORE =  !0
++			  * but it runs as root, and can do lots of stupid things
++			  * Note that we use task_tgid_vnr here to grab the pid of the
++			  * process group leader.  That way we get the right pid if a thread
++			  * in a multi-threaded core_pattern process dies.
++			  */
++			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
++			       task_tgid_vnr(current), current->comm);
++			printk(KERN_WARNING "Aborting core\n");
++			goto fail_unlock;
++		}
++
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+ 			goto fail_unlock;
+ 		}
+-		/* Terminate the string before the first option */
+-		delimit = strchr(corename, ' ');
+-		if (delimit)
+-			*delimit = '\0';
+-		delimit = strrchr(helper_argv[0], '/');
+-		if (delimit)
+-			delimit++;
+-		else
+-			delimit = helper_argv[0];
+-		if (!strcmp(delimit, current->comm)) {
+-			printk(KERN_NOTICE "Recursive core dump detected, "
+-					"aborting\n");
+-			goto fail_unlock;
+-		}
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
