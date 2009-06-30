@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZF3Teb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZF3TgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbZF3Teb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZF3TeY
+	id S1754976AbZF3TgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZF3TgD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:34:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49261 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbZF3TeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:34:23 -0400
-Message-ID: <4A4A6888.30001@kernel.org>
-Date: Tue, 30 Jun 2009 12:33:28 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 30 Jun 2009 15:36:03 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:49803 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752939AbZF3TgC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:36:02 -0400
+To: Avi Kivity <avi@redhat.com>
+Cc: Gleb Natapov <gleb@redhat.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>
+References: <20090629132926.GB20289@redhat.com>
+	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>
+	<m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com>
+	<m1ljn94k16.fsf@fess.ebiederm.org> <4A4A6499.9000406@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 30 Jun 2009 12:36:01 -0700
+In-Reply-To: <4A4A6499.9000406@redhat.com> (Avi Kivity's message of "Tue\, 30 Jun 2009 22\:16\:41 +0300")
+Message-ID: <m1k52t1plq.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Mikael Pettersson <mikpe@it.uu.se>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com>
-In-Reply-To: <4A4A25B1.5010102@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org, gleb@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Avi Kivity <avi@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0003]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Mikael Pettersson wrote:
->> Thanks, 2.6.31-rc1 vanilla (which didn't boot) plus this one does boot.
->> /proc/iomem now looks as follows:
+Avi Kivity <avi@redhat.com> writes:
+
+> On 06/30/2009 10:08 PM, Eric W. Biederman wrote:
+>>> Can you elaborate?  For kvm guests, the hardware is reasonably will implemented
+>>> and if not we will fix it.  We need not cripple a feature just because some
+>>> hardware is broken.
+>>>      
 >>
-> 
-> ... as it should.  So far so good, and this is a real problem.
-> 
-> However, there is something that really bothers me: *why does this help
-> on Mikael's system, which is PAE and therefore has a 64-bit
-> resource_size_t*?  This whole patch should be a no-op!  There is still
-> something that doesn't make sense.
-> 
-> The use of "unsigned long" in ram_alignment() will overflow after 2^52
-> bytes, but again, that's not the issue here, since the highest "start"
-> value we have is (0x2 << 32).
-> 
-> By process of elimination, the culprit must be round_up(), which reveals
-> that the macro definition of round_up() has a *very* sublte behavior
-> with mixed types:
-> 
-> #define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
-> 
-> ram_alignment() returns unsigned long, which becomes (y).  This means
-> that the mask word on the right hand of the & gets truncated to 32 bits
-> *before* the masking happens -- since ((y) - 1) is still unsigned long,
-> inverting it will not set bits [63..32] to on.
-> 
-> I think this macro is actively dangerous.  Better would be:
-> 
-> ({ __typeof__(x) __mask = (y)-1;  ((x)+__mask) & ~__mask; })
-> 
-> ... which is also multiple-inclusion-free at the cost of using gcc
-> ({...}) constructs.
-> 
-> The deep irony in this is that in our particular case is perhaps that
-> align_up(x,y)-1 is the same thing as x | (y-1) which would have avoided
-> the problem...
+>> The short version is I don't know what work arounds we will ultimately
+>> decide to deploy to work with real hardware.
+>>
+>> I have been seriously contemplating causing a cpu hot-unplug request
+>> to fail if we are in ioapic mode and we have irqs routed to the cpu
+>> that is being unplugged.
+>>    
+>
+> Well, obviously we need to disassociate any irqs from such a cpu.  Could be done
+> from the kernel or only enforced by the kernel.
 
-agreed, that is why we change round_up to take u64.
+Using the normal irq migration path we can move irqs off of a cpu reliably
+there just aren't any progress guarantees.
 
-wonder if we should kill round_up and use roundup instead.
+>> Even with perfectly working hardware it is not possible in the general
+>> case to migrate an ioapic irq from one cpu to another outside of an
+>> interrupt handler without without risking dropping an interrupt.
+>>    
+>
+> Can't you generate a spurious interrupt immediately after the migration?  An
+> extra interrupt shouldn't hurt.
 
-in include/linux/kernel.h
-#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+Nope.  The ioapics can't be told to send an interrupt.
 
-YH
+>> There is no general way to know you have seen the last interrupt
+>> floating around your system.  PCI ordering rules don't help because
+>> the ioapics can potentially take an out of band channel.
+>>    
+>
+> Can you describe the problem scenario? an ioapic->lapic message delivered to a
+> dead cpu?
+
+Dropped irqs..  Driver hangs because it is waiting for an irq.  Hardware
+hangs because it is waiting for the cpu to process the irq.
+
+Potentially we get a level triggered irq that is never acked by
+the cpu that won't arm until the cpu send an ack, and we can't
+send an ack from another cpu.
+
+Eric
