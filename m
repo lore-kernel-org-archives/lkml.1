@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbZF3Ohg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZF3Oie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbZF3Ohg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbZF3OhL
+	id S1758649AbZF3Oie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZF3Oi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:37:11 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56473 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752063AbZF3OhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:37:07 -0400
-To: linux-input@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-Subject: RFC: Remote control sensors and Linux input layer
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 30 Jun 2009 16:37:08 +0200
-Message-ID: <m3ab3prdnv.fsf@intrepid.localdomain>
+	Tue, 30 Jun 2009 10:38:26 -0400
+Received: from fmailhost03.isp.att.net ([207.115.11.53]:46520 "EHLO
+	fmailhost03.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbZF3OiZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 10:38:25 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A4A2369.60409@lwfinger.net>
+Date: Tue, 30 Jun 2009 09:38:33 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: David Rientjes <rientjes@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>	 <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>	 <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>	 <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>	 <alpine.DEB.2.00.0906300032310.11018@chino.kir.corp.google.com> <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
+In-Reply-To: <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Pekka Enberg wrote:
+> 
+> Yup, I was referring to slub_debug=A and no, I don't agree with you
+> that it should be on by default. Only people who know what they're
+> doing should enable the option and a random tester by definition
+> doesn't (no offence to Mr. Random Tester).
 
-Any feedback, pointers etc. will be appreciated:
+None taken.
 
-I'm currently implementing RC support for AverMedia Super 007 TV
-adapter. The hardware is apparently simple: a TSOP18xx-style sensor jack
-is connected almost directly to GPIO18 ball (active-low) of SAA7131E.
+For me, the next step is clear. As I'm much more interested in finding
+bugs in the wireless system than in the mechanics of SLUB allocation,
+I need to disable CONFIG_SLUB_DEBUG_ON. BTW, I use SLAB on Linus's
+mainline tree and SLUB on the wireless testing tree. I build and boot
+the mainline kernels mostly to look for quick failures/regressions,
+but run the w-t kernels looking for longer-term effects such as memory
+fragmentation or slow memory leaks.
 
-I added mask_keyup = 0x40000 and rc5_gpio = 1 in saa7134-input.c but the
-existing code doesn't seem to work correctly for me. It looks like the
-timings of my RC (using TV set RC) are a bit different than those of the
-PC and it goes out of sync after. Currently the code depends on the
-timestamp of the first transmission (rising edge) and doesn't check the
-validity of all received bits. It doesn't process falling edges at all.
-I thought my RC uses a different "gap" value but it doesn't seem to be
-the case.
+For Rafael's benefit, we do need to decide if this is a bug or merely
+an unintended side effect. My sense is the latter and Bug #13319
+should have a summary of this discussion added to the record, and then
+the bug should be closed.
 
-1. I propose a bit different algorithm, the most important thing is the
-code would not depend on the absolute time from the first edge but it
-would use the "last bit" (or two bits) time instead. It would make it
-much more reliable and at the same time would allow detecting of many
-spurious / faulty transmissions (which currently can't be detected).
+Larry
 
-I also considered acting on both (rising and falling) edges but it would
-means twice as many IRQs. Another idea is acting on falling edge
-(instead of rising), that would mean the last bit (in case it's 0) could
-be detected by the IRQ handler instead of "timeout" routine. Will think
-about it.
-SAA713x is able to act on either (or both edges), but the code is also
-used by the bttv driver, does it have the same capability?
-
-Now this changed algorithm recognizes my RC5 remote's codes perfectly.
-
-
-2. Currently a single board type seems to be limited to a particular RC
-type. This is a problem with HTPC approach, where using the display's RC
-would be natural (most TV set RCs have additional "modes" to work with
-VCRs, SATs etc). I'm thinking about something similar to the keyboards
-map (which can be modified on the fly).
-Or perhaps there is something like that already available?
-
-
-3. The existing RC5 decoder(s) assume 2-bit start, 1 toggle bit, 5-bit
-"group code" and 6-bit command. This assumption doesn't seem valid
-anymore - now the second start bit became MSB of command (it's inverted
-for compatibility). Modifications to the decoder are trivial, though.
-
-
-4. The raw "key" value (i.e., raw RC5). Is it available via the input
-layer? That would make sense for multiple RCs, with LIRC daemon or
-something similar. The current code only supports one RC5 "group" code
-for each input (i.e., one RC or RC "mode").
-
-I'm attaching a test patch for "1" and "3". It's incomplete, breaks
-bttv, but it currently works with my Philips RC and Super 007 DVB-T
-board.
--- 
-Krzysztof Halasa
