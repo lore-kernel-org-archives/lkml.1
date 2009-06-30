@@ -1,97 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZF3Phg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZF3Poa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZF3Phg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZF3PhS
+	id S1753411AbZF3Poa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 11:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZF3PoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:37:18 -0400
-Received: from ru.mvista.com ([213.79.90.228]:21598 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753307AbZF3PhR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:37:17 -0400
-Date: Tue, 30 Jun 2009 19:37:19 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>, cbou@mail.ru,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org, richard@laptop.org,
-       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
-       dsaxena@laptop.org
-Subject: Re: [PATCH 5/5] power_supply: add a charge_type status to the api,
- and use it for olpc driver
-Message-ID: <20090630153719.GA13300@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090630021730.44f86185@mycelium.queued.net>
- <20090630113135.GD13961@sirena.org.uk>
- <20090630110430.6c7c5cdf@mycelium.queued.net>
+	Tue, 30 Jun 2009 11:44:17 -0400
+Received: from kroah.org ([198.145.64.141]:58378 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752545AbZF3PoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 11:44:16 -0400
+Date: Tue, 30 Jun 2009 08:34:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] accessibility, speakup, speech synthesis & /sys
+Message-ID: <20090630153418.GB16038@kroah.com>
+References: <20090625220452.GF5540@const.famille.thibault.fr> <20090630041833.GA13034@kroah.com> <20090630130822.GR6405@const.bordeaux.inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090630110430.6c7c5cdf@mycelium.queued.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090630130822.GR6405@const.bordeaux.inria.fr>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 11:04:30AM -0400, Andres Salomon wrote:
-> On Tue, 30 Jun 2009 12:31:35 +0100
-> Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+On Tue, Jun 30, 2009 at 03:08:22PM +0200, Samuel Thibault wrote:
+> Hello,
 > 
-> > On Tue, Jun 30, 2009 at 02:17:30AM -0400, Andres Salomon wrote:
+> Greg KH, le Mon 29 Jun 2009 21:18:33 -0700, a écrit :
+> > > I believe there are two things:
+> > > 
+> > > - per- harware speech synthesizer parameters (e.g. speed, pitch, etc.)
+> > > - screen reading parameters (e.g. characters pronunciation, key_echo,
+> > >   current synthesizer being used etc.)
+> > > 
+> > > Speech synthesizers should probably have their own device class, how
+> > > should it be called? "synth"? "speech"?
 > > 
-> > > This adds a new sysfs file called 'charge_type' which displays the
-> > > type of charging (n/a, trickle charge, slow charge, or fast
-> > > charging).  This allows things like battery diagnostics to
-> > > determine what the battery/EC is doing without resorting to
-> > > changing the 'status' sysfs output.
-> > 
-> > > Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
-> > 
-> > This looks good to me.  Could you please keep me on the CC for any
-> > future revisions of this patch, I can make use of this in the WM8350
-> > driver.
+> > Which do you think it should?
 > 
-> Sure.
-> 
+> Speakup used to call them "synth", but anything else than speech could
+> be synthesized, so speech may be better.
+
+Ok.
+
+> > > Then there are the screen reading parameters. I'd tend to think that
+> > > like there are /sys/{block,firmware,fs,power}, there could be a
+> > > /sys/accessibility, or even shorter, /sys/a11y?  Speakup parameters
+> > > could then be in /sys/a11y/speakup?
 > > 
-> > > +	static char *charge_type[] = {
-> > > +		"N/A", "Trickle", "Slow", "Fast"
-> > > +	};
-> > 
-> > I'd be tempted to make "N/A" be "Unknown" to match the style of the
-> > rest of the attributes.  I'm also not sure that we need a slow type,
-> > but equally it shouldn't do any harm.
+> > Wouldn't these be on a "per-screen" basis?
 > 
+> Mmm, what do you call a screen?  I guess you mean
+> /sys/class/vtconsole/vtcon0?  It would make sense indeed.
+
+Yes, that is what I was referring to.
+
+> > So they would live under the screen reader device itself, not way up
+> > high in the device tree.
 > 
-> It's known though, right? :)   It could just as easily be "None",
-> "Unknown", etc, but I'm not particularly picky.
+> One problem is usability.  That's something that users
+> will often want to tune, and /sys/a11y/speakup/key_echo is
+> definitely easier for the very common case of one head, than
+> /sys/class/vtconsole/vtcon0/reader/speakup/key_echo :)
 
-These are quite different states, and thinking about it, we might
-want to introduce both. Default is "Unknown" (0), means that the
-driver can't report the charging mode at this very moment. And "N/A"
-is "not applicable", i.e. we're not charging anything right now.
+But as you can have multiple "screens" or readers, you really need to
+set this on a per-device basis.
 
-> As far as the slow type, I don't see the need either, but I assumed
-> Anton was aware of devices that differentiated between slow and
-> trickle charging.
+And just wrap all of that up in a simple userspace program if you think
+users are going to want to tweak things on the devices.  Don't worry
+where in /sys/ things live just for user "ease-of-use" as that's not the
+point for sysfs.  Otherwise we would just cram everything into the root
+directory so people wouldn't have to type 'cd' :)
 
-Yep, there are two charging modes in Openmoko Neo FreeRunners:
+> > Actually, you are proposing them outside of the device tree, which I
+> > do not think you want at all.
+> 
+> It depends on what you call a "device".  It's probably not obvious that
+> a screen reader is a device, but why not.
 
-- 100 mA. It's "slow" mode -- used when the Neo couldn't negotiate
-  with USB host, so it is permitted to only draw 100 mA from VBUS.
+But it is within the kernel, so please treat it as one.
 
-- 500/1000 mA. It's so-called "fast" mode, can be enabled after
-  successful negotiation with the USB host.
+> > What specific files are you thinking you would need?
+> 
+> There are a lot of them actually, like 20, tuning various aspects of
+> reading what happens on the console.
 
+Ok, I suggest writing them all out, as you will need to add them to
+Documentation/ABI/ when the patch goes in.
 
-Well, this kind slow charging isn't official terminology, and
-I'm not sure if we should use it. But I'm fine with it since we
-can always remove "Slow" mode (i.e. report it as "Fast"), and
-userspace won't break.
+thanks,
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+greg k-h
