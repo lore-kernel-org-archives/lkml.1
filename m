@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbZF3CHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbZF3CKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759834AbZF3CHk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 22:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbZF3CHb
+	id S1755951AbZF3CKU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 22:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZF3CKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 22:07:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37704 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751680AbZF3CHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 22:07:30 -0400
-Date: Tue, 30 Jun 2009 12:07:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: linux-next: pci tree build failure
-Message-Id: <20090630120727.24450bab.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq"
+	Mon, 29 Jun 2009 22:10:10 -0400
+Received: from tamriel.snowman.net ([72.66.115.51]:36916 "EHLO
+	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbZF3CKJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 22:10:09 -0400
+Date: Mon, 29 Jun 2009 22:10:13 -0400
+From: Stephen Frost <sfrost@snowman.net>
+To: dann frazier <dannf@dannf.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Alex Chiang <achiang@hp.com>,
+       linux-kernel@vger.kernel.org, David Altobelli <david.altobelli@hp.com>,
+       nagananda.chumbalkar@hp.com
+Subject: Re: ACPI issues on HP DL585 G2
+Message-ID: <20090630021013.GX20436@tamriel.snowman.net>
+References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com> <20090630011709.GT20436@tamriel.snowman.net> <86802c440906291847p302d47eau1d1cbd07be59c61@mail.gmail.com> <20090630015140.GV20436@tamriel.snowman.net> <20090630015302.GN22480@ldl.fc.hp.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="JbaLeU65fPBt7QWN"
+Content-Disposition: inline
+In-Reply-To: <20090630015302.GN22480@ldl.fc.hp.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snowman.net
+X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
+X-Uptime: 22:09:10 up 18 days, 23:36, 22 users,  load average: 0.06, 0.06,
+	0.07
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq
-Content-Type: text/plain; charset=US-ASCII
+
+--JbaLeU65fPBt7QWN
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jesse,
+* dann frazier (dannf@dannf.org) wrote:
+> What about your other working DL585 boxes? Are they G2's, and are they
+> also using P600s?
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+On the other hand, my coworker tells me that he tried swapping in a P800
+on this DL585 and it didn't solve the problem at the time.  Specifics
+are a bit difficult (this was last year sometime).
 
-ERROR: "pci_claim_resource" [drivers/pcmcia/yenta_socket.ko] undefined!
+	Thanks,
 
-Caused by commit 6bb04b65dbff5a5bb01617351dbb0af577084752 ("yenta: Use
-pci_claim_resource").  yenta can be built as a module, but
-pci_claim_resource is not exported ...
+		Stephen
 
-I have used the pci tree from next-20090629 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq
-Content-Type: application/pgp-signature
+--JbaLeU65fPBt7QWN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkpJc18ACgkQjjKRsyhoI8xSkACdGky5a6WV/6qSok7ttDugdFD2
-OUcAoLtUNjXQRX3DMr6Q7wd47swnZ5v5
-=QJ+B
+iEYEARECAAYFAkpJdAUACgkQrzgMPqB3kihJIACeI607GO3CSmPoIS5srCoeHb28
+104AnRezgwhfbhZmMYUKslYjpo2leDfj
+=TnUf
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__30_Jun_2009_12_07_27_+1000_BafRszOHhfXccwBq--
+--JbaLeU65fPBt7QWN--
