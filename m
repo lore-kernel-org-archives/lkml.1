@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZF3Ger@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbZF3GlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbZF3Ger (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 02:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZF3Gej
+	id S1758361AbZF3GlN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 02:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbZF3Gk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 02:34:39 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36760 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751305AbZF3Gej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 02:34:39 -0400
-Message-ID: <4A49B1C6.9040900@kernel.org>
-Date: Mon, 29 Jun 2009 23:33:42 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 30 Jun 2009 02:40:58 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62096 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752483AbZF3Gk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 02:40:57 -0400
+Message-ID: <4A49B364.5000508@cn.fujitsu.com>
+Date: Tue, 30 Jun 2009 14:40:36 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Marc Aurele La France <root@ualberta.ca>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, x86@kernel.org,
-       stable@kernel.org, Research.Support@ualberta.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH] x86, setup (2.6.30-stable) fix 80x34 and	80x60
- console modes
-References: <alpine.BSO.1.10.0906291746410.14658@fanir.ucs.ualberta.ca> <4A496A0C.809@kernel.org> <20090630034822.GC12373@kroah.com>
-In-Reply-To: <20090630034822.GC12373@kroah.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
+ elevaotor layer
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Jun 29, 2009 at 06:27:40PM -0700, H. Peter Anvin wrote:
->> Marc Aurele La France wrote:
->>> As coded, most INT10 calls in video-vga.c allow the compiler to assume EAX 
->>> remains unchanged across them, which is not always the case.  This 
->>> triggers an optimisation issue that causes vga_set_vertical_end() to be 
->>> called with an incorrect number of scanlines.  Fix this by beefing up the 
->>> asm constraints on these calls.
->>>
->>> Reported-by: Marc Aurele La France <tsi@xfree86.org>
->>> Signed-off-by: Marc Aurele La France <tsi@xfree86.org>
->>> Acked-by: H. Peter Anvin <hpa@zytor.com>
->> Note: this is not in upstream since upstream is not affected due to the
->> new "BIOS glovebox" subsystem.
-> 
-> So it is a ".30 only" type patch?  Any older kernel versions affected?
-> 
+Vivek Goyal wrote:
+...
+> +
+> +/*
+> + * Do the accounting. Determine how much service (in terms of time slices)
+> + * current queue used and adjust the start, finish time of queue and vtime
+> + * of the tree accordingly.
+> + *
+> + * Determining the service used in terms of time is tricky in certain
+> + * situations. Especially when underlying device supports command queuing
+> + * and requests from multiple queues can be there at same time, then it
+> + * is not clear which queue consumed how much of disk time.
+> + *
+> + * To mitigate this problem, cfq starts the time slice of the queue only
+> + * after first request from the queue has completed. This does not work
+> + * very well if we expire the queue before we wait for first and more
+> + * request to finish from the queue. For seeky queues, we will expire the
+> + * queue after dispatching few requests without waiting and start dispatching
+> + * from next queue.
+> + *
+> + * Not sure how to determine the time consumed by queue in such scenarios.
+> + * Currently as a crude approximation, we are charging 25% of time slice
+> + * for such cases. A better mechanism is needed for accurate accounting.
+> + */
 
-Yes, all the way back to .23 or something like that.
+  Hi Vivek,
 
-	-hpa
+  The comment is out of date, would you update it accordingly?
+
+> +void __elv_ioq_slice_expired(struct request_queue *q, struct io_queue *ioq)
+> +{
+> +	struct elv_fq_data *efqd = &q->elevator->efqd;
+> +	struct io_entity *entity = &ioq->entity;
+> +	long slice_unused = 0, slice_used = 0, slice_overshoot = 0;
+> +
+> +	assert_spin_locked(q->queue_lock);
+> +	elv_log_ioq(efqd, ioq, "slice expired");
+> +
+> +	if (elv_ioq_wait_request(ioq))
+> +		del_timer(&efqd->idle_slice_timer);
+> +
+> +	elv_clear_ioq_wait_request(ioq);
+> +
+> +	/*
+
+-- 
+Regards
+Gui Jianfeng
+
