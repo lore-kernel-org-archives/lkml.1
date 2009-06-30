@@ -1,271 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZF3IXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZF3IYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZF3IXO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 04:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZF3IXD
+	id S1752974AbZF3IYc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 04:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZF3IYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 04:23:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40314 "EHLO smtps.tip.net.au"
+	Tue, 30 Jun 2009 04:24:18 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51527 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbZF3IW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 04:22:59 -0400
-Date: Tue, 30 Jun 2009 18:22:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 30
-Message-Id: <20090630182251.2de03ceb.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1751770AbZF3IYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 04:24:15 -0400
+Date: Tue, 30 Jun 2009 10:24:15 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090630082415.GC11980@wotan.suse.de>
+References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <alpine.DEB.2.00.0906291625580.17663@chino.kir.corp.google.com> <20090630074717.GA11980@wotan.suse.de> <alpine.DEB.2.00.0906300050530.11018@chino.kir.corp.google.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__30_Jun_2009_18_22_51_+1000_q7GxatimxgdUjwY."
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906300050530.11018@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__30_Jun_2009_18_22_51_+1000_q7GxatimxgdUjwY.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jun 30, 2009 at 01:13:08AM -0700, David Rientjes wrote:
+> On Tue, 30 Jun 2009, Nick Piggin wrote:
+> 
+> > > That's not the expected behavior for TIF_MEMDIE, although your patch 
+> > > certainly changes that.
+> > > 
+> > > Your patch is simply doing
+> > > 
+> > > 	if (test_thread_flag(TIF_MEMDIE))
+> > > 		gfp_mask |= __GFP_NORETRY;
+> > > 
+> > > in the slowpath.
+> > > 
+> > > TIF_MEMDIE is supposed to allow allocations to succeed, not automatically 
+> > > fail, so that it can quickly handle its SIGKILL without getting blocked in 
+> > > the exit path seeking more memory.
+> > 
+> > Yes, it need to just ignore all watermarks, do not reclaim (we've
+> > already decided reclaim will not work at this point), and return a
+> > page if we have one otherwise NULL (unless GFP_NOFAIL is set).
+> > 
+> 
+> Right, there's no sense in looping endlessly for ~__GFP_NOFAIL if 
+> allocations continue to fail for a thread with TIF_MEMDIE set.
+> 
+> TIF_MEMDIE doesn't check any watermarks as opposed to GFP_ATOMIC, which 
+> only reduces the min watermark by half, so we can access more memory 
+> reserves with TIF_MEMDIE.  Instead of immediately failing an oom killed 
+> task's allocation as in Mel's patch, there is a higher liklihood that it 
+> will succeed on the next attempt.
 
-Hi all,
+Yes. This is how it should have worked prior to Mel's patches, so we
+should aim to restore that.
 
-Changes since 20090629:
+ 
+> I'd agree with Mel's added check for TIF_MEMDIE upon returning from the 
+> oom killer, but only for __GFP_NOMEMALLOC.
 
-New tree: sfi
+NOMEMALLOC indeed should always be kept away from memalloc/memdie
+reserves. That's how it should have worked when I added it (but
+I may have forgotten TIF_MEMDIE, I can't remember).
 
-Dropped tree: sfi (build problems)
+ 
+> > > All __GFP_NOFAIL allocations should ensure that alloc_pages() never 
+> > > returns NULL.  Although it's unfortunate, that's the requirement that 
+> > > callers have been guaranteed and until they are fixed, the page allocator 
+> > > should respect it.
+> > 
+> > Yes.
+> > 
+> > Interesting thing is what to do when we have 0 pages left, we are
+> > TIF_MEMDIE, and GFP_NOFAIL is set. Looping will most likely just
+> > deadlock the system. Returning NULL will probably oops caller with
+> > various locks held and then deadlock the system. It really needs to
+> > punt back to the OOM killer so it can select another task. Until
+> > then, maybe a simple panic would be reasonable? (it's *never* going
+> > to hit anyone in practice I'd say, but if it does then a panic
+> > would be better than lockup at least we know what the problem was).
+> > 
+> 
+> The oom killer currently is a no-op if any eligible task has TIF_MEMDIE, 
+> so this would require adding an oom killer timeout so that if a task fails 
+> to exit after a predefined period, TIF_MEMDIE is cleared and the task is 
+> marked to no longer be selected (which would require an addition to 
+> task_struct) although it may have already completely depleted memory 
+> reserves.
 
-My fixes tree contains this commit:
+It wouldn't have to be a timeout, it could be a call back to the
+oom killer.
 
-	fbdev: work around old compiler bug
+ 
+> The best alternative is just to increase min_free_kbytes to ensure that 
+> adequate memory reserves (and its partial exemptions allowed by 
+> GFP_ATOMIC, ALLOC_HARDER, and PF_MEMALLOC) are sustained for an oom killed 
+> task to exit and that we try hard to avoid getting stuck in 
+> TASK_UNINTERRUPTIBLE.
 
-This tree fails to build for powerpc allyesconfig.
+Well we're discussing what to do when reserves run out and NOFAIL
+is set. So increasing min_free_kbytes is not a valid alternative :)
+My vote is a simple panic with a clear message.
 
-The pci tree gained conflicts against Linus' tree and a build failure so
-I used the version from next-20090629.
+ 
+> > > I disagree with this change because it unconditionally fails allocations 
+> > > when a task has been oom killed, a scenario which should be the _highest_ 
+> > > priority for allocations to succeed since it leads to future memory 
+> > 
+> > That's another interesting point. I do agree with you because that
+> > would restore previous behaviour which got broken. But I wonder if
+> > possibly it would be a better idea to fail all allocations? That
+> > would a) protect reserves more, and b) probably quite likely to
+> > exit the syscall *sooner* than if we try to satisfy all allocations.
+> > 
+> 
+> You could only fail the single allocation where you triggered the oom 
+> killer and you were the task chosen to die, which is what Mel's patch 
+> implemented in the first half.  I agree that would protect the memory 
+> reserves more.
 
-The acpi tree gained a build failure for which I reverted a commit.
-
-The kvm tree lost its conflicts and build failure.
-
-The sfi tree gained a build failure so I dropped it for today (since I
-have no previous version to go back to).
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in arch/ia64/include/asm/pci.h
-CONFLICT (content): Merge conflict in arch/mn10300/include/asm/pci.h
-CONFLICT (content): Merge conflict in include/asm-generic/pci.h
-$ git reset --hard HEAD^
-Merging refs/next/20090629/pci
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-$ git checkout HEAD drivers/platform/x86/eeepc-laptop.c
-[master b72a127] Revert "eeepc-laptop: Register as a pci-hotplug device"
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/powermac/setup=
-.c
-CONFLICT (content): Merge conflict in kernel/cpu.c
-Applying: rr/pmac: fix for cpumask accessor changes
-Applying: UML: Fix some apparent bitrot in mmu_context.h
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/char/tty_ldisc.c
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/mn10300/kernel/vmlinux.lds.S
-Merging sfi/sfi-test
-$ git reset --hard HEAD^
-Merging asm-generic/next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Tue__30_Jun_2009_18_22_51_+1000_q7GxatimxgdUjwY.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpJy1sACgkQjjKRsyhoI8zTvQCfQ15aobdR9sa8Phzo7PAWWiYP
-u/oAn3tq9lOnzeBNZhUrpg6sY1M5wGOu
-=yAEn
------END PGP SIGNATURE-----
-
---Signature=_Tue__30_Jun_2009_18_22_51_+1000_q7GxatimxgdUjwY.--
