@@ -1,88 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbZF3JF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZF3JGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbZF3JF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 05:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZF3JFr
+	id S1756191AbZF3JGz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 05:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZF3JGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 05:05:47 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:38816 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755966AbZF3JFq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 05:05:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=QiRateLPl/OVmC3rROrXShN2ms36IMsKByXwFsL5aRTaztxAkC9vdcm35zj0C6f1Dd
-         7eYVBXG7c9JddCPjCOCjz/Ii687FsY8CGxKSW0uryMUGNcjDHwo95rL9/theEfRUZU1j
-         4aTRl/fmM1E0gezqJBeQ+ouyYnA8ekrXkKaXI=
-From: Albin Tonnerre <albin.tonnerre@gmail.com>
-To: hskinnemoen@atmel.com
-Cc: linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: [PATCH] Add poll_get_char and poll_put_char uart_ops to atmel_serial.
-Date: Tue, 30 Jun 2009 11:05:45 +0200
-Message-Id: <1246352745-31323-1-git-send-email-albin.tonnerre@free-electrons.com>
-X-Mailer: git-send-email 1.6.0.4
+	Tue, 30 Jun 2009 05:06:44 -0400
+Received: from mail6.open.ch ([213.156.224.131]:9661 "EHLO mail6.open.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbZF3JGm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 05:06:42 -0400
+Message-ID: <4A49D5A9.1060409@open.ch>
+Date: Tue, 30 Jun 2009 11:06:49 +0200
+From: Andreas Jaggi <aj@open.ch>
+Organization: Open Systems AG - http://www.open.ch
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, shemminger@osdl.org
+Subject: Re: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
+References: <4A48BC82.6040801@open.ch> <4A48C643.5030709@trash.net>
+In-Reply-To: <4A48C643.5030709@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Please CC: me on replies, I'm not subscribed]
+And the corresponding patch for iproute2.
 
-This patch allows using KGDB over the console with the atmel_serial
-driver.
+>> When tunneling IP traffic with GRE this patch makes it possible to 
+>> export the ToS/DiffServ information to the outer IP header.
+>> This is particularly useful in a scenario with ESP/AH where the inner 
+>> IP header is encrypted but the packet priority/DiffServ information
+>> should still be respected by the transporting routers (for example in 
+>> an MPLS backbone network).
+>>
+>> The feature is disabled by default and can be enabled on a 
+>> per-interface basis (/proc/sys/net/ipv4/conf/ethX/gre_copy_tos).
+>>
+>> Also does this bring Linux back in the game, as JunOS/IOS provide this 
+>> for quite some time:
+>> http://www.cisco.com/en/US/docs/ios/11_3/feature/guide/greqos.html
+>> http://www.juniper.net/techpubs/software/junos/junos94/swconfig-services/configuring-a-gre-tunnel-to-copy-tos-bits-to-the-outer-ip-header.html 
 
-Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
----
- drivers/serial/atmel_serial.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index b3497d7..aaab321 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1211,6 +1211,29 @@ static int atmel_verify_port(struct uart_port *port, struct serial_struct *ser)
- 	return ret;
- }
- 
-+#ifdef CONFIG_CONSOLE_POLL
-+static int atmel_poll_get_char(struct uart_port *port)
-+{
-+	struct atmel_uart_port *aup = to_atmel_uart_port(port);
-+
-+	while (!(readb(aup->uart.membase + ATMEL_US_CSR) & ATMEL_US_RXRDY))
-+		barrier();
-+
-+	return readb(aup->uart.membase + ATMEL_US_RHR);
-+}
-+
-+static void atmel_poll_put_char(struct uart_port *port, unsigned char ch)
-+{
-+	struct atmel_uart_port *aup = to_atmel_uart_port(port);
-+	unsigned int status;
-+
-+	while (!(readb(aup->uart.membase + ATMEL_US_CSR) & ATMEL_US_TXRDY))
-+		barrier();
-+
-+	writeb(ch, aup->uart.membase + ATMEL_US_THR);
-+}
-+#endif
-+
- static struct uart_ops atmel_pops = {
- 	.tx_empty	= atmel_tx_empty,
- 	.set_mctrl	= atmel_set_mctrl,
-@@ -1230,6 +1253,10 @@ static struct uart_ops atmel_pops = {
- 	.config_port	= atmel_config_port,
- 	.verify_port	= atmel_verify_port,
- 	.pm		= atmel_serial_pm,
-+#ifdef CONFIG_CONSOLE_POLL
-+	.poll_get_char	= atmel_poll_get_char,
-+	.poll_put_char	= atmel_poll_put_char,
-+#endif
+diff -urN iproute2-2.6.29-1/include/linux/if_tunnel.h iproute2-2.6.29-1-gre-dev/include/linux/if_tunnel.h
+--- iproute2-2.6.29-1/include/linux/if_tunnel.h	2009-03-24 23:40:54.000000000 +0100
++++ iproute2-2.6.29-1-gre-dev/include/linux/if_tunnel.h	2009-06-30 08:39:18.000000000 +0200
+@@ -31,6 +31,7 @@
+ 	__be32			i_key;
+ 	__be32			o_key;
+ 	struct iphdr		iph;
++	__u8			copy_tos;
  };
  
- /*
--- 
-1.6.0.4
-
+ /* SIT-mode i_flags */
+@@ -60,6 +61,7 @@
+ 	IFLA_GRE_REMOTE,
+ 	IFLA_GRE_TTL,
+ 	IFLA_GRE_TOS,
++	IFLA_GRE_COPY_TOS,
+ 	IFLA_GRE_PMTUDISC,
+ 	__IFLA_GRE_MAX,
+ };
+diff -urN iproute2-2.6.29-1/ip/iptunnel.c iproute2-2.6.29-1-gre-dev/ip/iptunnel.c
+--- iproute2-2.6.29-1/ip/iptunnel.c	2009-03-24 23:40:54.000000000 +0100
++++ iproute2-2.6.29-1-gre-dev/ip/iptunnel.c	2009-06-30 10:31:19.000000000 +0200
+@@ -41,7 +41,7 @@
+ 	fprintf(stderr, "Usage: ip tunnel { add | change | del | show } [ NAME ]\n");
+ 	fprintf(stderr, "          [ mode { ipip | gre | sit | isatap } ] [ remote ADDR ] [ local ADDR ]\n");
+ 	fprintf(stderr, "          [ [i|o]seq ] [ [i|o]key KEY ] [ [i|o]csum ]\n");
+-	fprintf(stderr, "          [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ dev PHYS_DEV ]\n");
++	fprintf(stderr, "          [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ [no]copytos ] [ dev PHYS_DEV ]\n");
+ 	fprintf(stderr, "\n");
+ 	fprintf(stderr, "Where: NAME := STRING\n");
+ 	fprintf(stderr, "       ADDR := { IP_ADDRESS | any }\n");
+@@ -160,6 +160,10 @@
+ 			p->iph.frag_off = 0;
+ 		} else if (strcmp(*argv, "pmtudisc") == 0) {
+ 			p->iph.frag_off = htons(IP_DF);
++		} else if (strcmp(*argv, "nocopytos") == 0) {
++			p->copy_tos = 0;
++		} else if (strcmp(*argv, "copytos") == 0) {
++			p->copy_tos = 1;
+ 		} else if (strcmp(*argv, "remote") == 0) {
+ 			NEXT_ARG();
+ 			if (strcmp(*argv, "any"))
+@@ -353,6 +357,9 @@
+ 	if (!(p->iph.frag_off&htons(IP_DF)))
+ 		printf(" nopmtudisc");
+ 
++	if (p->copy_tos)
++		printf(" copytos");
++
+ 	if ((p->i_flags&GRE_KEY) && (p->o_flags&GRE_KEY) && p->o_key == p->i_key)
+ 		printf(" key %s", s3);
+ 	else if ((p->i_flags|p->o_flags)&GRE_KEY) {
+diff -urN iproute2-2.6.29-1/ip/link_gre.c iproute2-2.6.29-1-gre-dev/ip/link_gre.c
+--- iproute2-2.6.29-1/ip/link_gre.c	2009-03-24 23:40:54.000000000 +0100
++++ iproute2-2.6.29-1-gre-dev/ip/link_gre.c	2009-06-30 10:31:48.000000000 +0200
+@@ -29,7 +29,7 @@
+ 	fprintf(stderr, "Usage: ip link { add | set | change | replace | del } NAME\n");
+ 	fprintf(stderr, "          type { gre | gretap } [ remote ADDR ] [ local ADDR ]\n");
+ 	fprintf(stderr, "          [ [i|o]seq ] [ [i|o]key KEY ] [ [i|o]csum ]\n");
+-	fprintf(stderr, "          [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ dev PHYS_DEV ]\n");
++	fprintf(stderr, "          [ ttl TTL ] [ tos TOS ] [ [no]pmtudisc ] [ [no]copytos ] [ dev PHYS_DEV ]\n");
+ 	fprintf(stderr, "\n");
+ 	fprintf(stderr, "Where: NAME := STRING\n");
+ 	fprintf(stderr, "       ADDR := { IP_ADDRESS | any }\n");
+@@ -61,6 +61,7 @@
+ 	__u8 pmtudisc = 1;
+ 	__u8 ttl = 0;
+ 	__u8 tos = 0;
++	__u8 copy_tos = 0;
+ 	int len;
+ 
+ 	if (!(n->nlmsg_flags & NLM_F_CREATE)) {
+@@ -125,6 +126,9 @@
+ 		if (greinfo[IFLA_GRE_TOS])
+ 			tos = *(__u8 *)RTA_DATA(greinfo[IFLA_GRE_TOS]);
+ 
++		if (greinfo[IFLA_GRE_COPY_TOS])
++			copy_tos = *(__u8 *)RTA_DATA(greinfo[IFLA_GRE_COPY_TOS]);
++
+ 		if (greinfo[IFLA_GRE_LINK])
+ 			link = *(__u8 *)RTA_DATA(greinfo[IFLA_GRE_LINK]);
+ 	}
+@@ -196,6 +200,10 @@
+ 			pmtudisc = 0;
+ 		} else if (!matches(*argv, "pmtudisc")) {
+ 			pmtudisc = 1;
++		} else if (!matches(*argv, "nocopytos")) {
++			copy_tos = 0;
++		} else if (!matches(*argv, "copytos")) {
++			copy_tos = 1;
+ 		} else if (!matches(*argv, "remote")) {
+ 			NEXT_ARG();
+ 			if (strcmp(*argv, "any"))
+@@ -262,6 +270,7 @@
+ 		addattr32(n, 1024, IFLA_GRE_LINK, link);
+ 	addattr_l(n, 1024, IFLA_GRE_TTL, &ttl, 1);
+ 	addattr_l(n, 1024, IFLA_GRE_TOS, &tos, 1);
++	addattr_l(n, 1024, IFLA_GRE_COPY_TOS, &copy_tos, 1);
+ 
+ 	return 0;
+ }
+@@ -325,6 +334,10 @@
+ 	    !*(__u8 *)RTA_DATA(tb[IFLA_GRE_PMTUDISC]))
+ 		fputs("nopmtudisc ", f);
+ 
++	if (tb[IFLA_GRE_COPY_TOS] &&
++	    *(__u8 *)RTA_DATA(tb[IFLA_GRE_COPY_TOS]))
++		fputs("copytos ", f);
++
+ 	if (tb[IFLA_GRE_IFLAGS])
+ 		iflags = *(__u16 *)RTA_DATA(tb[IFLA_GRE_IFLAGS]);
+ 
