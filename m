@@ -1,51 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZF3DtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZF3EIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbZF3DtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 23:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZF3DtB
+	id S1753113AbZF3EIn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 00:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbZF3EId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 23:49:01 -0400
-Received: from kroah.org ([198.145.64.141]:60555 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191AbZF3DtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 23:49:01 -0400
-Date: Mon, 29 Jun 2009 20:48:22 -0700
-From: Greg KH <greg@kroah.com>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Marc Aurele La France <root@ualberta.ca>,
-       "H. Peter Anvin" <hpa@linux.intel.com>, x86@kernel.org,
-       stable@kernel.org, Research.Support@ualberta.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH] x86, setup (2.6.30-stable) fix 80x34 and
-	80x60 console modes
-Message-ID: <20090630034822.GC12373@kroah.com>
-References: <alpine.BSO.1.10.0906291746410.14658@fanir.ucs.ualberta.ca> <4A496A0C.809@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A496A0C.809@kernel.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 30 Jun 2009 00:08:33 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:38294 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZF3EIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 00:08:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=w8ckpzp45B9uHQMqy/sM4XtJsqbTLnV+UcGfbya+0BBaatLGlKm5cA1qJebOlG7bC3
+         N/xr+VpSehjeR/AVJidzkOR1z6936HE74jP9mgR9swuBLigHRJtl9HxYHNcNZ2UO02oP
+         1csoYXpgMW9enfcKWiXkQkVHvhPejdwBR3bbQ=
+Date: Tue, 30 Jun 2009 13:07:41 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>, David Howells <dhowells@redhat.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: Found the commit that causes the OOMs
+Message-Id: <20090630130741.c191d042.minchan.kim@barrios-desktop>
+In-Reply-To: <20090629160725.GF5065@csn.ul.ie>
+References: <28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com>
+	<28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com>
+	<20090628142239.GA20986@localhost>
+	<2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com>
+	<20090628151026.GB25076@localhost>
+	<20090629091741.ab815ae7.minchan.kim@barrios-desktop>
+	<17678.1246270219@redhat.com>
+	<20090629125549.GA22932@localhost>
+	<29432.1246285300@redhat.com>
+	<28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
+	<20090629160725.GF5065@csn.ul.ie>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 06:27:40PM -0700, H. Peter Anvin wrote:
-> Marc Aurele La France wrote:
-> > As coded, most INT10 calls in video-vga.c allow the compiler to assume EAX 
-> > remains unchanged across them, which is not always the case.  This 
-> > triggers an optimisation issue that causes vga_set_vertical_end() to be 
-> > called with an incorrect number of scanlines.  Fix this by beefing up the 
-> > asm constraints on these calls.
+On Mon, 29 Jun 2009 17:07:25 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
+
+> On Tue, Jun 30, 2009 at 12:00:26AM +0900, Minchan Kim wrote:
+> > On Mon, Jun 29, 2009 at 11:21 PM, David Howells<dhowells@redhat.com> wrote:
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > >
+> > >> Sorry! This one compiles OK:
+> > >
+> > > Sadly that doesn't seem to work either:
+> > >
+> > > msgctl11 invoked oom-killer: gfp_mask=0x200da, order=0, oom_adj=0
+> > > msgctl11 cpuset=/ mems_allowed=0
+> > > Pid: 30858, comm: msgctl11 Not tainted 2.6.31-rc1-cachefs #146
+> > > Call Trace:
+> > >  [<ffffffff8107207e>] ? oom_kill_process.clone.0+0xa9/0x245
+> > >  [<ffffffff81072345>] ? __out_of_memory+0x12b/0x142
+> > >  [<ffffffff810723c6>] ? out_of_memory+0x6a/0x94
+> > >  [<ffffffff81074a90>] ? __alloc_pages_nodemask+0x42e/0x51d
+> > >  [<ffffffff81080843>] ? do_wp_page+0x2c6/0x5f5
+> > >  [<ffffffff810820c1>] ? handle_mm_fault+0x5dd/0x62f
+> > >  [<ffffffff81022c32>] ? do_page_fault+0x1f8/0x20d
+> > >  [<ffffffff812e069f>] ? page_fault+0x1f/0x30
+> > > Mem-Info:
+> > > DMA per-cpu:
+> > > CPU    0: hi:    0, btch:   1 usd:   0
+> > > CPU    1: hi:    0, btch:   1 usd:   0
+> > > DMA32 per-cpu:
+> > > CPU    0: hi:  186, btch:  31 usd:  38
+> > > CPU    1: hi:  186, btch:  31 usd: 106
+> > > Active_anon:75040 active_file:0 inactive_anon:2031
+> > >  inactive_file:0 unevictable:0 dirty:0 writeback:0 unstable:0
+> > >  free:1951 slab:41499 mapped:301 pagetables:60674 bounce:0
+> > > DMA free:3932kB min:60kB low:72kB high:88kB active_anon:2868kB inactive_anon:384kB active_file:0kB inactive_file:0kB unevictable:0kB present:15364kB pages_scanned:0 all_unreclaimable? no
+> > > lowmem_reserve[]: 0 968 968 968
+> > > DMA32 free:3872kB min:3948kB low:4932kB high:5920kB active_anon:297292kB inactive_anon:7740kB active_file:0kB inactive_file:0kB unevictable:0kB present:992032kB pages_scanned:0 all_unreclaimable? no
+> > > lowmem_reserve[]: 0 0 0 0
+> > > DMA: 7*4kB 0*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 1*2048kB 0*4096kB = 3932kB
+> > > DMA32: 500*4kB 2*8kB 0*16kB 0*32kB 1*64kB 0*128kB 1*256kB 1*512kB 1*1024kB 0*2048kB 0*4096kB = 3872kB
+> > > 1928 total pagecache pages
+> > > 0 pages in swap cache
+> > > Swap cache stats: add 0, delete 0, find 0/0
+> > > Free swap  = 0kB
+> > > Total swap = 0kB
+> > > 255744 pages RAM
+> > > 5589 pages reserved
+> > > 238251 pages shared
+> > > 216210 pages non-shared
+> > > Out of memory: kill process 25221 (msgctl11) score 130560 or a child
+> > > Killed process 26379 (msgctl11)
 > > 
-> > Reported-by: Marc Aurele La France <tsi@xfree86.org>
-> > Signed-off-by: Marc Aurele La France <tsi@xfree86.org>
-> > Acked-by: H. Peter Anvin <hpa@zytor.com>
+> > Totally, I can't understand this situation.
+> > Now, this page allocation is order zero and It is just likely GFP_HIGHUSER.
+> > So it's unlikely interrupt context.
 > 
-> Note: this is not in upstream since upstream is not affected due to the
-> new "BIOS glovebox" subsystem.
+> The GFP flags that are set are
+> 
+> #define __GFP_HIGHMEM	(0x02)
+> #define __GFP_MOVABLE	(0x08)  /* Page is movable */
+> #define __GFP_WAIT	(0x10)	/* Can wait and reschedule? */
+> #define __GFP_IO	(0x40)	/* Can start physical IO? */
+> #define __GFP_FS	(0x80)	/* Can call down to low-level FS? */
+> #define __GFP_HARDWALL   (0x20000) /* Enforce hardwall cpuset memory allocs */
+> 
+> which are fairly permissive in terms of what action can be taken.
+> 
+> > Buddy already has enough fallback DMA32, I think.
+> 
+> It doesn't really. We are below the minimum watermark. It wouldn't be
+> able to grant the allocation until a few pages had been freed.
 
-So it is a ".30 only" type patch?  Any older kernel versions affected?
+Yes. I missed that. 
 
-thanks,
+> > Why kernel can't allocate page for order 0 ?
+> > Is it allocator bug ?
+> > 
+> 
+> If it is, it is not because the allocation failed as the watermarks were not
+> being met. For this situation to be occuring, it has to be scanning the LRU
+> lists and making no forward progress. Odd things to note;
+> 
+> o active_anon is very large in comparison to inactive_anon. Is this
+>   because there is no swap and they are no longer being rotated?
 
-greg k-h
+Yes. My patch's intention was that. 
+
+       commit 69c854817566db82c362797b4a6521d0b00fe1d8
+       Author: MinChan Kim <minchan.kim@gmail.com>
+       Date:   Tue Jun 16 15:32:44 2009 -0700
+
+> o Slab and pagetables are very large. Is slab genuinely unshrinkable?
+>
+> I think this system might be genuinely OOM. It can't reclaim memory and
+> we are below the minimum watermarks.
+> 
+> Is it possible there are pages that are counted as active_anon that in
+> fact are reclaimable because they are on the wrong LRU list? If that was
+> the case, the lack of rotation to inactive list would prevent them
+> getting discovered.
+
+I agree. 
+One of them is that "[BUGFIX][PATCH] fix lumpy reclaim lru handiling at
+isolate_lru_pages v2" as Kosaki already said. 
+
+Unfortunately, David said it's not. 
+But I think your guessing make sense. 
+
+David. Doesn't it happen OOM if you revert my patch, still?
+
+
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+
+
+-- 
+Kinds Regards
+Minchan Kim
