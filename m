@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZF3TP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZF3TQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756241AbZF3TP7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZF3TPr
+	id S1756651AbZF3TQT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZF3TPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:15:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34779 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755975AbZF3TPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:15:45 -0400
-Date: Tue, 30 Jun 2009 22:15:45 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: Re: [PATCH v4] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090630191545.GF8122@redhat.com>
-References: <20090630064515.GG20289@redhat.com> <86802c440906300018p8c5156dy3e8d84b8c263797e@mail.gmail.com> <20090630155820.GC8122@redhat.com> <m11vp18xmp.fsf@fess.ebiederm.org>
+	Tue, 30 Jun 2009 15:15:49 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42936 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754729AbZF3TPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:15:46 -0400
+Date: Tue, 30 Jun 2009 20:15:47 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Andres Salomon <dilinger@collabora.co.uk>, cbou@mail.ru,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org, richard@laptop.org,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Fox <pgf@laptop.org>,
+       dsaxena@laptop.org
+Subject: Re: [PATCH 5/5] power_supply: add a charge_type status to the api,
+ and use it for olpc driver
+Message-ID: <20090630191547.GA24002@rakim.wolfsonmicro.main>
+References: <20090630021730.44f86185@mycelium.queued.net>
+ <20090630113135.GD13961@sirena.org.uk>
+ <20090630110430.6c7c5cdf@mycelium.queued.net>
+ <20090630153719.GA13300@oksana.dev.rtsoft.ru>
+ <20090630155713.GG13961@sirena.org.uk>
+ <20090630190239.GA21667@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m11vp18xmp.fsf@fess.ebiederm.org>
+In-Reply-To: <20090630190239.GA21667@oksana.dev.rtsoft.ru>
+X-Cookie: BOFH excuse
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 10:00:46AM -0700, Eric W. Biederman wrote:
-> Gleb Natapov <gleb@redhat.com> writes:
-> 
-> > On Tue, Jun 30, 2009 at 12:18:19AM -0700, Yinghai Lu wrote:
-> >> how about kexec second kernel in KVM ?
-> >> 
-> >> x2apic_preenabled will be set in second kernel.
-> >> 
-> > By the way anybody knows why kexec does not use BIOS reset code
-> > (cmos 0xf offset) to jump into new kernel after hard reset?
-> 
-> After a hard reset.  That simply isn't possible. A hard
-> reset clears everything even memory.
-> 
-I mean "soft reset". At least on 286 in order to move from protected
-mode to real mode "soft reset" was issued via kbd controller or via
-triple fault. BIOS reset code was used to avoid POST. Obviously back
-than this kind of reset haven't cleared memory. I'll try to check what
-happens on a modern HW.
+On Tue, Jun 30, 2009 at 11:02:39PM +0400, Anton Vorontsov wrote:
+> On Tue, Jun 30, 2009 at 04:57:14PM +0100, Mark Brown wrote:
 
-BTW Linux sets BIOS reset code to "return by long jump" in
-smpboot_setup_warm_reset() for some reason.
+> > I strongly suspect you will find that the "slow" mode there is actually
+> > a trickle charge.  It's a lot more practical to trickle charge in mobile
+> > phone sized systems since the batteries are so much smaller than laptop
+> > batteries. 
 
-> You might be able to get a full cpu reset but not a reset of the I/O
-> devices.
-> 
-> The premise of kexec is that we are doing things on our own, and don't
-> get a 3rd piece of software involved that has not been heavily tested
-> on the path we want to use.  Occassionally it is a pain to do everything
-> ourselves but at least when we do and we test it we know it is going
-> to work.
-> 
-> Cpu designers lately seem fond of adding features that require all
-> kind of coordination to turn on and off.  We handle the hardware
-> virtualization mode features now, and if x2apic has similar problems
-> being turned on and off I am certain we can handle that case in a
-> similar fashion.
-> 
-> When we can my preference is to keep code like that out of the
-> kexec on panic path if we can figure out how to write the software
-> to do something reasonable.
-> 
-> Once we figure out how to work without putting the interrupt controllers
-> in legacy mode to handle the timer interrupts I expect all kinds of
-> things will become simpler.
-> 
-If the "soft reset" method can work it worth to implemented. I am not
-suggesting we should make it default (just line --real-mode is not default).
+...
 
---
-			Gleb.
+>  For a Li-ion battery, the precharge current is typically 0.1C
+>  (C = charge rate = the charge current which will fully charge the
+>  battery in one hour)."
+
+Yup, that sounds like a trickle charge all right.
+
+> There is also precharge-wait and fastcharge-wait modes, FWIW.
+> But we don't expose this information to the userspace.
+
+Those *probably* boil down to one of the other states - without looking
+at the datasheet they sound like waiting for the conditions required to
+do one of the other charges to be satisfied.
+
+> Probably not, Fast/Slow/Trickle are quite vague terms anyway.
+> I'd prefer if we could measure this in some real units, but alas...
+
+Fast and trickle charge are fairly well understood terms, I think.  For
+specific numbers you'd need to look at the particular batteries
+involved, unfortunately, but they do tend to be fairly obvious when
+looking at a particular charger and/or battery.
