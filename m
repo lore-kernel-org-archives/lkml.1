@@ -1,111 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750AbZF3PLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZF3PLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750AbZF3PLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758460AbZF3PLD
+	id S1759688AbZF3PLs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 11:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbZF3PLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:11:03 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51042 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756725AbZF3PLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:11:01 -0400
-Date: Tue, 30 Jun 2009 16:11:03 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Jiri Slaby <jirislaby@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>
-Subject: Re: BUG: Bad page state [was: Strange oopses in 2.6.30]
-Message-ID: <20090630151103.GF17561@csn.ul.ie>
-References: <20090623200846.223C.A69D9226@jp.fujitsu.com> <20090629084114.GA28597@csn.ul.ie> <20090630092847.A730.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090630092847.A730.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 30 Jun 2009 11:11:39 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:47457 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758439AbZF3PLi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 11:11:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=jkbW9elYJe6mP2nduQMBnsnDQWH0WwGhn0mxsN9ogLzomzTcN7qFQ81f01CLVI/78i
+         99GTjJsTs6PlmrYXCZY1VKM5dK0Qvg1v+VrZ4v3u7kMY0tQBRqkdIFBXmdeh5dUTbNxX
+         AMntqUjs3A5gXxKnyDV3t3BDXhGKy0y1W/59c=
+Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
+ not work
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20090630144540.GA18212@linux-mips.org>
+References: <1246372868.19049.17.camel@falcon>
+	 <20090630144540.GA18212@linux-mips.org>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Tue, 30 Jun 2009 23:11:27 +0800
+Message-Id: <1246374687.20482.10.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 09:31:04AM +0900, KOSAKI Motohiro wrote:
-> Hi
+On Tue, 2009-06-30 at 15:45 +0100, Ralf Baechle wrote:
+> On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
 > 
-> Thank you new version.
-> 
-> > ==== CUT HERE ====
-> > mm: Warn once when a page is freed with PG_mlocked set
-> >     
-> > When a page is freed with the PG_mlocked set, it is considered an unexpected
-> > but recoverable situation. A counter records how often this event happens
-> > but it is easy to miss that this event has occured at all. This patch warns
-> > once when PG_mlocked is set to prompt debuggers to check the counter to
-> > see how often it is happening.
-> >     
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > --- 
-> >  mm/page_alloc.c |   16 ++++++++++++----
-> >  1 file changed, 12 insertions(+), 4 deletions(-)
+> > I just updated my git repository to the master branch of the latest
+> > linux-mips git repository, and tested the STD/Hibernation support on
+> > fuloong2e and yeeloong2f, it failed:
 > > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 5d714f8..519ea6e 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -495,8 +495,16 @@ static inline void free_page_mlock(struct page *page)
-> >  static void free_page_mlock(struct page *page) { }
-> >  #endif
-> >  
-> > -static inline int free_pages_check(struct page *page)
-> > -{
-> > +static inline int free_pages_check(struct page *page, int wasMlocked)
-> > +{
-> > +	if (unlikely(wasMlocked)) {
-> > +		WARN_ONCE(1, KERN_WARNING
-> > +			"Page flag mlocked set for process %s at pfn:%05lx\n"
-> > +			"page:%p flags:0x%lX\n",
+> > when using the no_console_suspend kernel command line to debug, it
+> > stopped on:
+> > 
+> > PM: Shringking memory... done (1000 pages freed)
+> > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
+> > PM: Creating hibernation image:
+> > PM: Need to copy 5053 pages
+> > PM: Hibernation image created (4195 pages copied)
+> > 
+> > and then, the number indicator light of keyboard works well, but can not
+> > type anything. 
+> > 
+> > anybody have tested it on another platform? does it work?
 > 
-> 0x%lX is a bit redundunt.
-> %lX insert "0x" string by itself, I think.
-> 
+> At the time of the merge I tested it on Malta and found it to be working.
 
-It does not automatically insert the 0x for me and I just did a quick
-test there. Can you double check please?
+thanks! I will test it again and analyze why.
 
-> 
-> > +			current->comm, page_to_pfn(page),
-> > +			page, page->flags|__PG_MLOCKED);
-> > +	}
-> > +
-> >  	if (unlikely(page_mapcount(page) |
-> >  		(page->mapping != NULL)  |
-> >  		(atomic_read(&page->_count) != 0) |
-> > @@ -562,7 +570,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
-> >  	kmemcheck_free_shadow(page, order);
-> >  
-> >  	for (i = 0 ; i < (1 << order) ; ++i)
-> > -		bad += free_pages_check(page + i);
-> > +		bad += free_pages_check(page + i, wasMlocked);
-> >  	if (bad)
-> >  		return;
-> >  
-> > @@ -1027,7 +1035,7 @@ static void free_hot_cold_page(struct page *page, int cold)
-> >  
-> >  	if (PageAnon(page))
-> >  		page->mapping = NULL;
-> > -	if (free_pages_check(page))
-> > +	if (free_pages_check(page, wasMlocked))
-> >  		return;
-> >  
-> >  	if (!PageHighMem(page)) {
-> 
-> Other part looks fine. thanks.
-> 
-> 
-> 
+hi, ralf, in the latest master branch of linux-mips git repo, seems
+there is a need to select the SYS_SUPPORTS_HOTPLUG_CPU option in every
+uni-processor board, otherwise, the suspend/hibernation can not be used,
+because you have set:
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+config ARCH_HIBERNATION_POSSIBLE
+    def_bool y
+    depends on SYS_SUPPORTS_HOTPLUG_CPU
+
+config ARCH_SUSPEND_POSSIBLE
+    def_bool y
+    depends on SYS_SUPPORTS_HOTPLUG_CPU
+
+so, the board-specific patch must be pushed by the maintainers of
+boards. and if the board support SMP, they must implement the
+mips-specific hotplug support, is this right? I have selected
+SYS_SUPPORTS_HOTPLUG_CPU in LEMOTE_FULONG and will push a relative patch
+later.
+
+Regards,
+Wu Zhangjin
+
