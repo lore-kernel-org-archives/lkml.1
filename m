@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZF3BSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbZF3A3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZF3BSf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 21:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZF3BS1
+	id S1759627AbZF3A3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 20:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbZF3A3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 21:18:27 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:33029 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752886AbZF3BS1 (ORCPT
+	Mon, 29 Jun 2009 20:29:07 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41234 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753466AbZF3A3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 21:18:27 -0400
-Date: Mon, 29 Jun 2009 21:18:30 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: dann frazier <dannf@hp.com>
-Cc: Alex Chiang <achiang@hp.com>, linux-kernel@vger.kernel.org,
-       David Altobelli <david.altobelli@hp.com>, nagananda.chumbalkar@hp.com
-Subject: Re: ACPI issues on HP DL585 G2
-Message-ID: <20090630011830.GU20436@tamriel.snowman.net>
-References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com>
+	Mon, 29 Jun 2009 20:29:06 -0400
+Message-ID: <4A495C0D.2020807@zytor.com>
+Date: Mon, 29 Jun 2009 17:27:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FxQkOwrLuQ+yAGv2"
-Content-Disposition: inline
-In-Reply-To: <20090630011541.GL22480@ldl.fc.hp.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
-X-Uptime: 21:17:25 up 18 days, 22:44, 24 users,  load average: 0.09, 0.07,
-	0.03
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org>
+In-Reply-To: <4A494E3C.70304@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+>  			continue;
+> @@ -1409,8 +1409,10 @@ void __init e820_reserve_resources_late(
+>  		end = round_up(start, ram_alignment(start));
+>  		if (start == end)
+>  			continue;
+> -		reserve_region_with_split(&iomem_resource, start,
+> -						  end - 1, "RAM buffer");
+> +		if (end != (resource_size_t)end)
+> +			continue;
+> +		reserve_region_with_split(&iomem_resource, (resource_size_t)start,
+> +					  (resource_size_t)(end - 1), "RAM buffer");
+>  	}
+>  }
+>  
 
---FxQkOwrLuQ+yAGv2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+That doesn't quite look right; for one thing it doesn't handle the
+(admittedly somewhat unlikely) case of end pointing to the end of the
+address space.
 
-* dann frazier (dannf@hp.com) wrote:
-> fyi, I tested an HP DL585 G2 w/ the same 2.6.30 kernel build
-> and didn't have any problems. I am running the A07 3/11/2009 BIOS.
-> dmesg output follows:
+Something like:
 
-I did post updates including dmesg output from the problem box w/ ACPI
-enabled and 'debug' on the cmdline.  If you'd like me to send them
-directly to you also, just let me know.
+	if (start > (resource_size_t)end-1)
+		continue;
 
-	Thanks,
+... should work better.
 
-		Stephen
+	-hpa
 
---FxQkOwrLuQ+yAGv2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpJZ+YACgkQrzgMPqB3kii4+wCdEjOUf0mFJHC7GjmJ4kcCE0dB
-k4kAnjO9aTVh/gFCZ+Yyl8bisXmlU5b/
-=R+05
------END PGP SIGNATURE-----
-
---FxQkOwrLuQ+yAGv2--
