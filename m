@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZF3TQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZF3TQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbZF3TQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756215AbZF3TPv
+	id S1757146AbZF3TQo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZF3TQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:15:51 -0400
-Received: from smtp-out-1.desy.de ([131.169.56.84]:57576 "EHLO
-	smtp-out-1.desy.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756080AbZF3TPu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:15:50 -0400
-X-Greylist: delayed 1308 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 15:15:50 EDT
-Content-class: urn:content-classes:message
+	Tue, 30 Jun 2009 15:16:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45879 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756927AbZF3TQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:16:27 -0400
+Message-ID: <4A4A6499.9000406@redhat.com>
+Date: Tue, 30 Jun 2009 22:16:41 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: Important: Email Account Verification Update!! !?
-Date: Tue, 30 Jun 2009 20:52:44 +0200
-Message-ID: <49D6A88645FA8C4BB88DF005C1727A890103E6E7@ADXV2.win.desy.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Important: Email Account Verification Update!! !?
-Thread-Index: Acn5s/NKCt4N/bzPTf6BB8TBx+IxcQ==
-From: "Lindstroem, Gunnar" <gunnar.lindstroem@desy.de>
-X-OriginalArrivalTime: 30 Jun 2009 18:52:45.0532 (UTC) FILETIME=[F49F69C0:01C9F9B3]
-To: undisclosed-recipients:;
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Gleb Natapov <gleb@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
+References: <20090629132926.GB20289@redhat.com>	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>	<m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com> <m1ljn94k16.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ljn94k16.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 06/30/2009 10:08 PM, Eric W. Biederman wrote:
+>> Can you elaborate?  For kvm guests, the hardware is reasonably will implemented
+>> and if not we will fix it.  We need not cripple a feature just because some
+>> hardware is broken.
+>>      
+>
+> The short version is I don't know what work arounds we will ultimately
+> decide to deploy to work with real hardware.
+>
+> I have been seriously contemplating causing a cpu hot-unplug request
+> to fail if we are in ioapic mode and we have irqs routed to the cpu
+> that is being unplugged.
+>    
 
- Your mailbox quota has been exceeded the storage limit which is 20GB 
-as set by your administrator,You are currently running on 20.9GB.
+Well, obviously we need to disassociate any irqs from such a cpu.  Could 
+be done from the kernel or only enforced by the kernel.
 
-You may not be able to send or receive new mails until you re-validate 
-your mailbox.
+> Even with perfectly working hardware it is not possible in the general
+> case to migrate an ioapic irq from one cpu to another outside of an
+> interrupt handler without without risking dropping an interrupt.
+>    
 
-To re-activate your account please click the link below
+Can't you generate a spurious interrupt immediately after the 
+migration?  An extra interrupt shouldn't hurt.
 
-http://www.emailform.com/html/emailform.cfm?acct=updatemail&list=1322209260 
+> There is no general way to know you have seen the last interrupt
+> floating around your system.  PCI ordering rules don't help because
+> the ioapics can potentially take an out of band channel.
+>    
 
-you are to click on close on the final page so we can re-validate 
-your mailbox.
+Can you describe the problem scenario? an ioapic->lapic message 
+delivered to a dead cpu?
 
-Thanks and we are sorry for the inconviniences
 
-Localhost
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
