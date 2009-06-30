@@ -1,88 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZF3PLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbZF3POU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbZF3PLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbZF3PLj
+	id S1759509AbZF3POU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 11:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZF3POH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:11:39 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:47457 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758439AbZF3PLi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=jkbW9elYJe6mP2nduQMBnsnDQWH0WwGhn0mxsN9ogLzomzTcN7qFQ81f01CLVI/78i
-         99GTjJsTs6PlmrYXCZY1VKM5dK0Qvg1v+VrZ4v3u7kMY0tQBRqkdIFBXmdeh5dUTbNxX
-         AMntqUjs3A5gXxKnyDV3t3BDXhGKy0y1W/59c=
-Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
- not work
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20090630144540.GA18212@linux-mips.org>
-References: <1246372868.19049.17.camel@falcon>
-	 <20090630144540.GA18212@linux-mips.org>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Tue, 30 Jun 2009 23:11:27 +0800
-Message-Id: <1246374687.20482.10.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jun 2009 11:14:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50483 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752045AbZF3POF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 11:14:05 -0400
+Date: Tue, 30 Jun 2009 15:12:50 GMT
+From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090630144317.GB12663@ghostprotocols.net>
+References: <20090630144317.GB12663@ghostprotocols.net>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Adjust only prelinked symbol's addresses
+Message-ID: <tip-f5812a7a336fb952d819e4427b9a2dce02368e82@git.kernel.org>
+Git-Commit-ID: f5812a7a336fb952d819e4427b9a2dce02368e82
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Jun 2009 15:12:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 15:45 +0100, Ralf Baechle wrote:
-> On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
-> 
-> > I just updated my git repository to the master branch of the latest
-> > linux-mips git repository, and tested the STD/Hibernation support on
-> > fuloong2e and yeeloong2f, it failed:
-> > 
-> > when using the no_console_suspend kernel command line to debug, it
-> > stopped on:
-> > 
-> > PM: Shringking memory... done (1000 pages freed)
-> > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
-> > PM: Creating hibernation image:
-> > PM: Need to copy 5053 pages
-> > PM: Hibernation image created (4195 pages copied)
-> > 
-> > and then, the number indicator light of keyboard works well, but can not
-> > type anything. 
-> > 
-> > anybody have tested it on another platform? does it work?
-> 
-> At the time of the merge I tested it on Malta and found it to be working.
+Commit-ID:  f5812a7a336fb952d819e4427b9a2dce02368e82
+Gitweb:     http://git.kernel.org/tip/f5812a7a336fb952d819e4427b9a2dce02368e82
+Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
+AuthorDate: Tue, 30 Jun 2009 11:43:17 -0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 30 Jun 2009 17:09:30 +0200
 
-thanks! I will test it again and analyze why.
+perf_counter tools: Adjust only prelinked symbol's addresses
 
-hi, ralf, in the latest master branch of linux-mips git repo, seems
-there is a need to select the SYS_SUPPORTS_HOTPLUG_CPU option in every
-uni-processor board, otherwise, the suspend/hibernation can not be used,
-because you have set:
+I.e. we can't handle these two kinds of files in the same way:
 
-config ARCH_HIBERNATION_POSSIBLE
-    def_bool y
-    depends on SYS_SUPPORTS_HOTPLUG_CPU
+1) prelinked system library:
 
-config ARCH_SUSPEND_POSSIBLE
-    def_bool y
-    depends on SYS_SUPPORTS_HOTPLUG_CPU
+[acme@doppio pahole]$ readelf -s /usr/lib64/libdw-0.141.so | egrep 'FUNC.+GLOBAL.+dwfl_report_elf'
+   278: 00000030450105a0   261 FUNC    GLOBAL DEFAULT   12 dwfl_report_elf@@ELFUTILS_0.122
 
-so, the board-specific patch must be pushed by the maintainers of
-boards. and if the board support SMP, they must implement the
-mips-specific hotplug support, is this right? I have selected
-SYS_SUPPORTS_HOTPLUG_CPU in LEMOTE_FULONG and will push a relative patch
-later.
+2) not prelinked library with debug information from a -debuginfo package:
 
-Regards,
-Wu Zhangjin
+[acme@doppio pahole]$ readelf -s /usr/lib/debug/usr/lib64/libdw-0.141.so.debug | egrep 'FUNC.+GLOBAL.+dwfl_report_elf'
+   629: 00000000000105a0   261 FUNC    GLOBAL DEFAULT   12 dwfl_report_elf
+[acme@doppio pahole]$
 
+Now the numbers I got for a pahole perf run are in line with
+the numbers I get from oprofile.
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <20090630144317.GB12663@ghostprotocols.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/util/symbol.c |   16 +++++++++++-----
+ tools/perf/util/symbol.h |    3 ++-
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 9c659ef..78c2efd 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -520,7 +520,9 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 	nr_syms = shdr.sh_size / shdr.sh_entsize;
+ 
+ 	memset(&sym, 0, sizeof(sym));
+-
++	self->prelinked = elf_section_by_name(elf, &ehdr, &shdr,
++					      ".gnu.prelink_undo",
++					      NULL) != NULL;
+ 	elf_symtab__for_each_symbol(syms, nr_syms, index, sym) {
+ 		struct symbol *f;
+ 		u64 obj_start;
+@@ -535,11 +537,13 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 		gelf_getshdr(sec, &shdr);
+ 		obj_start = sym.st_value;
+ 
+-		if (verbose >= 2)
+-			printf("adjusting symbol: st_value: %Lx sh_addr: %Lx sh_offset: %Lx\n",
+-				(u64)sym.st_value, (u64)shdr.sh_addr, (u64)shdr.sh_offset);
++		if (self->prelinked) {
++			if (verbose >= 2)
++				printf("adjusting symbol: st_value: %Lx sh_addr: %Lx sh_offset: %Lx\n",
++					(u64)sym.st_value, (u64)shdr.sh_addr, (u64)shdr.sh_offset);
+ 
+-		sym.st_value -= shdr.sh_addr - shdr.sh_offset;
++			sym.st_value -= shdr.sh_addr - shdr.sh_offset;
++		}
+ 
+ 		f = symbol__new(sym.st_value, sym.st_size,
+ 				elf_sym__name(&sym, symstrs),
+@@ -573,6 +577,8 @@ int dso__load(struct dso *self, symbol_filter_t filter, int verbose)
+ 	if (!name)
+ 		return -1;
+ 
++	self->prelinked = 0;
++
+ 	if (strncmp(self->name, "/tmp/perf-", 10) == 0)
+ 		return dso__load_perf_map(self, filter, verbose);
+ 
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 940b432..2c48ace 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -20,8 +20,9 @@ struct symbol {
+ struct dso {
+ 	struct list_head node;
+ 	struct rb_root	 syms;
+-	unsigned int	 sym_priv_size;
+ 	struct symbol    *(*find_symbol)(struct dso *, u64 ip);
++	unsigned int	 sym_priv_size;
++	unsigned char	 prelinked;
+ 	char		 name[0];
+ };
+ 
