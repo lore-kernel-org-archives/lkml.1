@@ -1,158 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbZF3Kyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZF3KzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbZF3Kyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbZF3Kyq
+	id S1757360AbZF3KzZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZF3KzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:54:46 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:56754 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755791AbZF3Kyp (ORCPT
+	Tue, 30 Jun 2009 06:55:13 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:43936 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752783AbZF3KzM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:54:45 -0400
-Message-ID: <4A49EEF9.6010205@vlnb.net>
-Date: Tue, 30 Jun 2009 14:54:49 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>,
-       Ronald Moesbergen <intercommit@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-References: <4A3CD62B.1020407@vlnb.net> <20090629093423.GB1315@localhost> <a0272b440906290326rcd63849j2513f6ee9b9bf93e@mail.gmail.com> <4A489DAC.7000007@vlnb.net> <20090629125434.GA8416@localhost> <4A48BBF9.6050408@vlnb.net> <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com> <20090629142124.GA28945@localhost> <20090629150109.GA3534@localhost> <4A48DFC5.3090205@vlnb.net> <20090630010414.GB31418@localhost>
-In-Reply-To: <20090630010414.GB31418@localhost>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+rpDU/0q/uEfSXlXqzDoo00Yhb06rUyOI/2xK
- /6+O/YW+qQ0dnN4LfsWv+Xp8jATkMDuCB2nUPIQ7wzgiOJj5po
- HeSPvtZ/at6dPNhondWfA==
+	Tue, 30 Jun 2009 06:55:12 -0400
+Message-Id: <4A4A0B2E02000078000082FE@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 30 Jun 2009 11:55:10 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <hpa@zytor.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ix86: minor highmem related Kconfig cleanup
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang, on 06/30/2009 05:04 AM wrote:
-> On Mon, Jun 29, 2009 at 11:37:41PM +0800, Vladislav Bolkhovitin wrote:
->> Wu Fengguang, on 06/29/2009 07:01 PM wrote:
->>> On Mon, Jun 29, 2009 at 10:21:24PM +0800, Wu Fengguang wrote:
->>>> On Mon, Jun 29, 2009 at 10:00:20PM +0800, Ronald Moesbergen wrote:
->>>>> ... tests ...
->>>>>
->>>>>> We started with 2.6.29, so why not complete with it (to save additional
->>>>>> Ronald's effort to move on 2.6.30)?
->>>>>>
->>>>>>>> 2. Default vanilla 2.6.29 kernel, 512 KB read-ahead, the rest is default
->>>>>>> How about 2MB RAID readahead size? That transforms into about 512KB
->>>>>>> per-disk readahead size.
->>>>>> OK. Ronald, can you 4 more test cases, please:
->>>>>>
->>>>>> 7. Default vanilla 2.6.29 kernel, 2MB read-ahead, the rest is default
->>>>>>
->>>>>> 8. Default vanilla 2.6.29 kernel, 2MB read-ahead, 64 KB
->>>>>> max_sectors_kb, the rest is default
->>>>>>
->>>>>> 9. Patched by the Fengguang's patch vanilla 2.6.29 kernel, 2MB
->>>>>> read-ahead, the rest is default
->>>>>>
->>>>>> 10. Patched by the Fengguang's patch vanilla 2.6.29 kernel, 2MB
->>>>>> read-ahead, 64 KB max_sectors_kb, the rest is default
->>>>> The results:
->>>> I made a blindless average:
->>>>
->>>> N       MB/s          IOPS      case
->>>>
->>>> 0      114.859       984.148    Unpatched, 128KB readahead, 512 max_sectors_kb
->>>> 1      122.960       981.213    Unpatched, 512KB readahead, 512 max_sectors_kb
->>>> 2      120.709       985.111    Unpatched, 2MB readahead, 512 max_sectors_kb
->>>> 3      158.732      1004.714    Unpatched, 512KB readahead, 64 max_sectors_kb
->>>> 4      159.237       979.659    Unpatched, 2MB readahead, 64 max_sectors_kb
->>>>
->>>> 5      114.583       982.998    Patched, 128KB readahead, 512 max_sectors_kb
->>>> 6      124.902       987.523    Patched, 512KB readahead, 512 max_sectors_kb
->>>> 7      127.373       984.848    Patched, 2MB readahead, 512 max_sectors_kb
->>>> 8      161.218       986.698    Patched, 512KB readahead, 64 max_sectors_kb
->>>> 9      163.908       574.651    Patched, 2MB readahead, 64 max_sectors_kb
->>>>
->>>> So before/after patch:
->>>>
->>>>         avg throughput      135.299 => 138.397  by +2.3%
->>>>         avg IOPS            986.969 => 903.344  by -8.5%
->>>>
->>>> The IOPS is a bit weird.
->>>>
->>>> Summaries:
->>>> - this patch improves RAID throughput by +2.3% on average
->>>> - after this patch, 2MB readahead performs slightly better
->>>>   (by 1-2%) than 512KB readahead
->>> and the most important one:
->>> - 64 max_sectors_kb performs much better than 256 max_sectors_kb, by ~30% !
->> Yes, I've just wanted to point it out ;)
-> 
-> OK, now I tend to agree on decreasing max_sectors_kb and increasing
-> read_ahead_kb. But before actually trying to push that idea I'd like
-> to
-> - do more benchmarks
-> - figure out why context readahead didn't help SCST performance
->   (previous traces show that context readahead is submitting perfect
->    large io requests, so I wonder if it's some io scheduler bug)
+Remove a redundant conditional and consolidate a dependency.
 
-Because, as we found out, without your 
-http://lkml.org/lkml/2009/5/21/319 patch read-ahead was nearly disabled, 
-hence there were no difference which algorithm was used?
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
 
-Ronald, can you run the following tests, please? This time with 2 hosts, 
-initiator (client) and target (server) connected using 1 Gbps iSCSI. It 
-would be the best if on the client vanilla 2.6.29 will be ran, but any 
-other kernel will be fine as well, only specify which. Blockdev-perftest 
-should be ran as before in buffered mode, i.e. with "-a" switch.
+---
+ arch/x86/Kconfig |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-1. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 patch with all default 
-settings.
+--- linux-2.6.31-rc1/arch/x86/Kconfig	2009-06-26 17:49:41.000000000 +0200
++++ 2.6.31-rc1-x86-kconfig-cleanup/arch/x86/Kconfig	2009-06-23 14:07:12.000000000 +0200
+@@ -1001,8 +1001,8 @@ config X86_CPU_DEBUG
+ 
+ choice
+ 	prompt "High Memory Support"
+-	default HIGHMEM4G if !X86_NUMAQ
+ 	default HIGHMEM64G if X86_NUMAQ
++	default HIGHMEM4G
+ 	depends on X86_32
+ 
+ config NOHIGHMEM
+@@ -1251,7 +1251,7 @@ source "mm/Kconfig"
+ 
+ config HIGHPTE
+ 	bool "Allocate 3rd-level pagetables from highmem"
+-	depends on X86_32 && (HIGHMEM4G || HIGHMEM64G)
++	depends on HIGHMEM
+ 	---help---
+ 	  The VM uses one page table entry for each page of physical memory.
+ 	  For systems with a lot of RAM, this can be wasteful of precious
 
-2. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 patch with default RA 
-size and 64KB max_sectors_kb.
 
-3. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size 
-and default max_sectors_kb.
-
-4. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size 
-and 64KB max_sectors_kb.
-
-5. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 patch and with context RA 
-patch. RA size and max_sectors_kb are default. For your convenience I 
-committed the backported context RA patches into the SCST SVN repository.
-
-6. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA patches 
-with default RA size and 64KB max_sectors_kb.
-
-7. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA patches 
-with 2MB RA size and default max_sectors_kb.
-
-8. All defaults on the client, on the server vanilla 2.6.29 with 
-Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA patches 
-with 2MB RA size and 64KB max_sectors_kb.
-
-9. On the client default RA size and 64KB max_sectors_kb. On the server 
-vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and 
-context RA patches with 2MB RA size and 64KB max_sectors_kb.
-
-10. On the client 2MB RA size and default max_sectors_kb. On the server 
-vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and 
-context RA patches with 2MB RA size and 64KB max_sectors_kb.
-
-11. On the client 2MB RA size and 64KB max_sectors_kb. On the server 
-vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and 
-context RA patches with 2MB RA size and 64KB max_sectors_kb.
-
-(I guess, the results will be interesting not only to us, so I restored 
-linux-kernel@)
-
-Thanks,
-Vlad
 
