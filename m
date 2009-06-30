@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZF3XTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbZF3XTp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760682AbZF3XTd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759767AbZF3XRX
+	id S1760771AbZF3XTp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760232AbZF3XSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:17:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:39650 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759612AbZF3XRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:17:19 -0400
-Message-Id: <20090630230141.294083597@samba.org>
-References: <20090630230043.464194676@samba.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 01 Jul 2009 09:00:50 +1000
-From: Anton Blanchard <anton@samba.org>
-To: a.p.zijlstra@chello.nl, paulus@samba.org, mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 7/8] powerpc: Cleanup PCL output by hiding and adding symbols
-Content-Disposition: inline; filename=pci_make_symbols_local.patch
+	Tue, 30 Jun 2009 19:18:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:59346 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758718AbZF3XSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:18:11 -0400
+Message-ID: <4A4A9CDD.4070204@zytor.com>
+Date: Tue, 30 Jun 2009 16:16:45 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com> <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com> <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org> <alpine.LFD.2.01.0906301559390.3605@localhost.localdo!
+ main>
+In-Reply-To: <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A lot of hits in "setup" doesn't make much sense, so hide this symbol and
-allow all the hits to end up in copy_4k_page.
+Linus Torvalds wrote:
+> 
+> On Tue, 30 Jun 2009, Yinghai Lu wrote:
+>> how about x = 0, y = 0x100?
+> 
+> Yeah, no. Peter's trick doesn't work. Good catch. 
+> 
+> I don't see any single-use trick then, and so it needs the whole statement 
+> expression mess.
+> 
 
-Also add some dummy symbols for the branches at 0xf00, 0xf20 and 0xf40,
-otherwise hits end up in trap_0e which is confusing.
+Yes, the | trick only works if you know you have a nonzero alignment pad
+(or you want a full-block pad in the empty case.)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: linux-2.6-tip/arch/powerpc/lib/copypage_64.S
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/lib/copypage_64.S	2009-07-01 08:21:12.000000000 +1000
-+++ linux-2.6-tip/arch/powerpc/lib/copypage_64.S	2009-07-01 08:21:50.000000000 +1000
-@@ -26,11 +26,11 @@
- 	srd	r8,r5,r11
- 
- 	mtctr	r8
--setup:
-+.Lsetup:
- 	dcbt	r9,r4
- 	dcbz	r9,r3
- 	add	r9,r9,r12
--	bdnz	setup
-+	bdnz	.Lsetup
- END_FTR_SECTION_IFSET(CPU_FTR_CP_USE_DCBTZ)
- 	addi	r3,r3,-8
- 	srdi    r8,r5,7		/* page is copied in 128 byte strides */
-Index: linux-2.6-tip/arch/powerpc/kernel/exceptions-64s.S
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/kernel/exceptions-64s.S	2009-07-01 08:21:12.000000000 +1000
-+++ linux-2.6-tip/arch/powerpc/kernel/exceptions-64s.S	2009-07-01 08:21:50.000000000 +1000
-@@ -185,12 +185,15 @@
- 	 * prolog code of the PerformanceMonitor one. A little
- 	 * trickery is thus necessary
- 	 */
-+performance_monitor_pSeries_1:
- 	. = 0xf00
- 	b	performance_monitor_pSeries
- 
-+altivec_unavailable_pSeries_1:
- 	. = 0xf20
- 	b	altivec_unavailable_pSeries
- 
-+vsx_unavailable_pSeries_1:
- 	. = 0xf40
- 	b	vsx_unavailable_pSeries
- 
-
--- 
+	-hpa
 
