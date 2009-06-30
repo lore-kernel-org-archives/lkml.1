@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbZF3VRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZF3VWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbZF3VRc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZF3VRY
+	id S1757961AbZF3VWm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZF3VWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:17:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60856 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753271AbZF3VRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:17:24 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Fix a warning due to an unnecessary #include of an MTD
-	header
-To: torvalds@osdl.org, akpm@linux-foundation.org, dwmw2@redhat.com
-Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Date: Tue, 30 Jun 2009 22:16:51 +0100
-Message-ID: <20090630211651.17049.6602.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 30 Jun 2009 17:22:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48229 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752496AbZF3VWe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:22:34 -0400
+Message-ID: <4A4A81C9.9070008@zytor.com>
+Date: Tue, 30 Jun 2009 14:21:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org>
+In-Reply-To: <4A4A701F.3050700@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a warning due to an unnecessary #inclusion of linux/mtd/partitions:
+Yinghai Lu wrote:
+> H. Peter Anvin wrote:
+>> Yinghai Lu wrote:
+>>> agreed, that is why we change round_up to take u64.
+>>>
+>> round_up() is a macro, it doesn't "take" anything per se...
+>>
+> i mean
+>  end = roundup(start, ram_alignment(start)) - 1;
+> 
+> static u64 ram_alignment(u64 pos)
+> 
+> and other calling to round_up
+> 
 
-  CC      arch/frv/mb93090-mb00/flash.o
-In file included from arch/frv/mb93090-mb00/flash.c:15:
-include/linux/mtd/partitions.h:50: warning: 'struct mtd_info' declared inside parameter list
-include/linux/mtd/partitions.h:50: warning: its scope is only this definition or declaration, which is probably not what you want
-include/linux/mtd/partitions.h:51: warning: 'struct mtd_info' declared inside parameter list
-include/linux/mtd/partitions.h:61: warning: 'struct mtd_info' declared inside parameter list
-include/linux/mtd/partitions.h:67: warning: 'struct mtd_info' declared inside parameter list
+This is fixing the wrong problem.  Fixing round_up is the right thing,
+not working around its brain damage.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- arch/frv/mb93090-mb00/flash.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-
-diff --git a/arch/frv/mb93090-mb00/flash.c b/arch/frv/mb93090-mb00/flash.c
-index c0e3707..6aad117 100644
---- a/arch/frv/mb93090-mb00/flash.c
-+++ b/arch/frv/mb93090-mb00/flash.c
-@@ -11,7 +11,6 @@
- 
- #include <linux/init.h>
- #include <linux/platform_device.h>
--#include <linux/mtd/partitions.h>
- #include <linux/mtd/physmap.h>
- 
- #define MB93090_BOOTROM_ADDR	0xFF000000	/* Boot ROM */
-
+	-hpa
