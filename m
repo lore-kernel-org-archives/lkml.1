@@ -1,79 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZF3Ouz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZF3OxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbZF3Ouz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbZF3Our
+	id S1755437AbZF3OxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZF3OxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:50:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48176 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752303AbZF3Ouq (ORCPT
+	Tue, 30 Jun 2009 10:53:10 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:57268 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750946AbZF3OxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:50:46 -0400
-Message-ID: <4A4A25B1.5010102@zytor.com>
-Date: Tue, 30 Jun 2009 07:48:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se>
-In-Reply-To: <19017.53428.834539.389495@pilspetsen.it.uu.se>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jun 2009 10:53:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=LZ8NkiOzu+/w+NBDkohRa9tCjE3qBa8ecJJilyHLnWvqekwkMD4lY7m1fLCXG7qQXK
+         p0Bqfwk3dXRTNvyvHyZ3Zn7JeaLdJ5NeLHcIiflJCCOD+Lxi1EOwPRK9rea1sbZmrENy
+         tr4tPRRmIqeio3Izoj2QCpqvBsL9jFGihRUZI=
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org
+Cc: Pavel Machek <pavel@ucw.cz>, Ralf Baechle <ralf@linux-mips.org>,
+       Wu Zhangjin <wuzj@lemote.com>
+Subject: [PATCH] [MIPS] Hibernation: only save pages in system ram
+Date: Tue, 30 Jun 2009 22:52:50 +0800
+Message-Id: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> 
-> Thanks, 2.6.31-rc1 vanilla (which didn't boot) plus this one does boot.
-> /proc/iomem now looks as follows:
-> 
+From: Wu Zhangjin <wuzj@lemote.com>
 
-... as it should.  So far so good, and this is a real problem.
+when using hibernation(STD) with CONFIG_FLATMEM in linux-mips-64bit, it
+fails for the current mips-specific hibernation implementation save the
+pages in all of the memory space(except the nosave section) and make
+there will be not enough memory left to the STD task itself, and then
+fail. in reality, we only need to save the pages in system rams.
 
-However, there is something that really bothers me: *why does this help
-on Mikael's system, which is PAE and therefore has a 64-bit
-resource_size_t*?  This whole patch should be a no-op!  There is still
-something that doesn't make sense.
+here is the reason why it fail:
 
-The use of "unsigned long" in ram_alignment() will overflow after 2^52
-bytes, but again, that's not the issue here, since the highest "start"
-value we have is (0x2 << 32).
+kernel/power/snapshot.c:
 
-By process of elimination, the culprit must be round_up(), which reveals
-that the macro definition of round_up() has a *very* sublte behavior
-with mixed types:
+static void mark_nosave_pages(struct memory_bitmap *bm)
+{
+		...
+		if (pfn_valid(pfn)) {
+			...
+		}
+}
 
-#define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+arch/mips/include/asm/page.h:
 
-ram_alignment() returns unsigned long, which becomes (y).  This means
-that the mask word on the right hand of the & gets truncated to 32 bits
-*before* the masking happens -- since ((y) - 1) is still unsigned long,
-inverting it will not set bits [63..32] to on.
+	...
+	#ifdef CONFIG_FLATMEM
 
-I think this macro is actively dangerous.  Better would be:
+	#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
 
-({ __typeof__(x) __mask = (y)-1;  ((x)+__mask) & ~__mask; })
+	#elif defined(CONFIG_SPARSEMEM)
 
-... which is also multiple-inclusion-free at the cost of using gcc
-({...}) constructs.
+	/* pfn_valid is defined in linux/mmzone.h */
+	...
 
-The deep irony in this is that in our particular case is perhaps that
-align_up(x,y)-1 is the same thing as x | (y-1) which would have avoided
-the problem...
+we can rewrite pfn_valid(pfn) to fix this problem, but I really do not
+want to touch such a widely-used macro, so, I used another solution:
 
-	-hpa
+static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+{
+	...
+	if ( .... pfn_is_nosave(pfn)
+		return NULL;
+	...
+}
 
+and pfn_is_nosave is implemented in arch/mips/power/cpu.c, so, hacking
+this one is better.
+
+Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+---
+ arch/mips/power/cpu.c |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
+
+diff --git a/arch/mips/power/cpu.c b/arch/mips/power/cpu.c
+index 7995df4..ef472e3 100644
+--- a/arch/mips/power/cpu.c
++++ b/arch/mips/power/cpu.c
+@@ -10,6 +10,7 @@
+ #include <asm/suspend.h>
+ #include <asm/fpu.h>
+ #include <asm/dsp.h>
++#include <asm/bootinfo.h>
+ 
+ static u32 saved_status;
+ struct pt_regs saved_regs;
+@@ -34,10 +35,26 @@ void restore_processor_state(void)
+ 		restore_dsp(current);
+ }
+ 
++int pfn_in_system_ram(unsigned long pfn)
++{
++	int i;
++
++	for (i = 0; i < boot_mem_map.nr_map; i++) {
++		if (boot_mem_map.map[i].type == BOOT_MEM_RAM) {
++			if ((pfn >= (boot_mem_map.map[i].addr >> PAGE_SHIFT)) &&
++				((pfn) < ((boot_mem_map.map[i].addr +
++					boot_mem_map.map[i].size) >> PAGE_SHIFT)))
++				return 1;
++		}
++	}
++	return 0;
++}
++
+ int pfn_is_nosave(unsigned long pfn)
+ {
+ 	unsigned long nosave_begin_pfn = PFN_DOWN(__pa(&__nosave_begin));
+ 	unsigned long nosave_end_pfn = PFN_UP(__pa(&__nosave_end));
+ 
+-	return	(pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
++	return ((pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn))
++			|| !pfn_in_system_ram(pfn);
+ }
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.0.4
 
