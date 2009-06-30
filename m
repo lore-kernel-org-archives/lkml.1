@@ -1,261 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759256AbZF3JHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbZF3JJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759256AbZF3JHx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 05:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbZF3JHp
+	id S1759348AbZF3JJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 05:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZF3JJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 05:07:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39283 "EHLO mx2.redhat.com"
+	Tue, 30 Jun 2009 05:09:37 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53040 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZF3JHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 05:07:44 -0400
-Date: Tue, 30 Jun 2009 12:07:15 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com
-Subject: Re: [PATCH v4] slow-work: add (module*)work->ops->owner to fix
-	races with module clients
-Message-ID: <20090630090715.GD29725@redhat.com>
-References: <20090629191653.14240.44995.stgit@dev.haskins.net> <1246351383.3383.1.camel@localhost.localdomain>
-MIME-Version: 1.0
+	id S1750802AbZF3JJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 05:09:36 -0400
+Date: Tue, 30 Jun 2009 11:09:36 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, penberg@cs.helsinki.fi,
+       arjan@infradead.org, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090630090936.GC1114@wotan.suse.de>
+References: <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <alpine.DEB.2.00.0906291625580.17663@chino.kir.corp.google.com> <20090630074717.GA11980@wotan.suse.de> <alpine.DEB.2.00.0906300050530.11018@chino.kir.corp.google.com> <20090630082415.GC11980@wotan.suse.de> <alpine.DEB.2.00.0906300128510.16291@chino.kir.corp.google.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246351383.3383.1.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <alpine.DEB.2.00.0906300128510.16291@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 09:43:03AM +0100, Steven Whitehouse wrote:
-> Hi,
+On Tue, Jun 30, 2009 at 01:41:12AM -0700, David Rientjes wrote:
+> On Tue, 30 Jun 2009, Nick Piggin wrote:
 > 
-> I'm happy to ACK this, but the race doesn't exist in GFS2's case because
-> we wait for all work related to each GFS2 fs at umount time and the
-> module unload cannot happen until all GFS2 fs are umounted,
+> > > I'd agree with Mel's added check for TIF_MEMDIE upon returning from the 
+> > > oom killer, but only for __GFP_NOMEMALLOC.
+> > 
+> > NOMEMALLOC indeed should always be kept away from memalloc/memdie
+> > reserves. That's how it should have worked when I added it (but
+> > I may have forgotten TIF_MEMDIE, I can't remember).
+> > 
 > 
-> Steve.
+> Yeah, so if test_thread_flag(TIF_MEMDIE) and __GFP_NOMEMALLOC, then it 
+> makes sense to return NULL immediately following the call to the oom 
+> killer for !__GFP_NOFAIL since retrying the allocation is pointless 
+> (reclaim failed already and TIF_MEMDIE doesn't help us on the next 
+> attempt) at that time.
 
-I wonder whether the following holds:
+I don't see the importance of calling the oom killer. If a thread
+is TIF_MEMDIE, then we should not try to enter reclaim nor try to
+call the oom killer. The oom killer has already been activated and
+because it has been determined that nothing can be reclaimed...
 
-static void gfs2_recover_put_ref(struct slow_work *work)
-{
-        struct gfs2_jdesc *jd = container_of(work, struct gfs2_jdesc, jd_work);
-        clear_bit(JDF_RECOVERY, &jd->jd_flags);
-        smp_mb__after_clear_bit();
-        wake_up_bit(&jd->jd_flags, JDF_RECOVERY);
+ 
+> > > The oom killer currently is a no-op if any eligible task has TIF_MEMDIE, 
+> > > so this would require adding an oom killer timeout so that if a task fails 
+> > > to exit after a predefined period, TIF_MEMDIE is cleared and the task is 
+> > > marked to no longer be selected (which would require an addition to 
+> > > task_struct) although it may have already completely depleted memory 
+> > > reserves.
+> > 
+> > It wouldn't have to be a timeout, it could be a call back to the
+> > oom killer.
+> > 
+> 
+> Calling the oom killer won't do anything since it will not kill another 
+> task while another has TIF_MEMDIE to protect those memory reserves and 
+> give the oom killed task a chance to exit.
 
-<- umount can complete here?
+I don't mean the normal oom-killer path, but another call to say
+"this thread got stuck, un-kill me and look for someone else to kill"
+or somesuch.
 
-}
+ 
+> Panicking when a thread with TIF_MEMDIE set cannot find any memory and the 
+> allocation is __GFP_NOFAIL makes sense, but only for order 0.
 
+Why only order-0? What would you do at order>0?
 
-If yes, .text of the module could go away between the point marked by <-
-and return from gfs2_recover_put_ref.
-
-
-> On Mon, 2009-06-29 at 15:24 -0400, Gregory Haskins wrote:
-> > (Applies to Linus' linux-2.6.git/master:626f380d)
-> > 
-> > [ Changelog:
-> > 
-> >     v4:
-> > 	*) added ".owner = THIS_MODULE" fields to all current slow-work
-> > 	   clients (fscache, gfs2).
-> > 
-> >     v3:
-> >         *) moved (module*)owner to slow_work_ops 
-> >         *) removed useless barrier()
-> > 	*) updated documentation/comments 
-> > 
-> >     v2:
-> > 	*) cache "owner" value to prevent invalid access after put_ref
-> > 
-> >     v1:
-> > 	*) initial release
-> > ]
-> > 
-> > I've retained Michael's "Reviewed-by:" tag from v3 since v4 is identical
-> > in every way except the new hunks added to gfs2/fscache that he asked for.
-> > 
-> > Michael, if you want to recind your tag, please speak up.
-> > 
-> > Otherwise, please consider for inclusion.
-> > 
-> > Regards,
-> > -Greg
-> > 
-> > ---------------------------------
-> > 
-> > slow-work: add (module*)work->ops->owner to fix races with module clients
-> > 
-> > The slow_work facility was designed to use reference counting instead of
-> > barriers for synchronization.  The reference counting mechanism is
-> > implemented as a vtable op (->get_ref, ->put_ref) callback.  This is
-> > problematic for module use of the slow_work facility because it is
-> > impossible to synchronize against the .text installed in the callbacks:
-> > There is no way to ensure that the slow-work threads have completely
-> > exited the .text in question and rmmod may yank it out from under the
-> > slow_work thread.
-> > 
-> > This patch attempts to address this issue by mapping "struct module* owner"
-> > to the slow_work_ops item, and maintaining a module reference
-> > count coincident with the more externally visible reference count.  Since
-> > the slow_work facility is resident in kernel, it should be a race-free
-> > location to issue a module_put() call.  This will ensure that modules
-> > can properly cleanup before exiting.
-> > 
-> > A module_get()/module_put() pair on slow_work_enqueue() and the subsequent
-> > dequeue technically adds the overhead of the atomic operations for every
-> > work item scheduled.  However, slow_work is designed for deferring
-> > relatively long-running and/or sleepy tasks to begin with, so this
-> > overhead will hopefully be negligible.
-> > 
-> > Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> > Reviewed-by: Michael S. Tsirkin <mst@redhat.com>
-> > CC: David Howells <dhowells@redhat.com>
-> > CC: Steven Whitehouse <swhiteho@redhat.com>
-> > ---
-> > 
-> >  Documentation/slow-work.txt |    6 +++++-
-> >  fs/fscache/object.c         |    1 +
-> >  fs/fscache/operation.c      |    1 +
-> >  fs/gfs2/recovery.c          |    1 +
-> >  include/linux/slow-work.h   |    3 +++
-> >  kernel/slow-work.c          |   20 +++++++++++++++++++-
-> >  6 files changed, 30 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/Documentation/slow-work.txt b/Documentation/slow-work.txt
-> > index ebc50f8..2a38878 100644
-> > --- a/Documentation/slow-work.txt
-> > +++ b/Documentation/slow-work.txt
-> > @@ -80,6 +80,7 @@ Slow work items may then be set up by:
-> >   (2) Declaring the operations to be used for this item:
-> >  
-> >  	struct slow_work_ops myitem_ops = {
-> > +	        .owner   = THIS_MODULE,
-> >  		.get_ref = myitem_get_ref,
-> >  		.put_ref = myitem_put_ref,
-> >  		.execute = myitem_execute,
-> > @@ -102,7 +103,10 @@ A suitably set up work item can then be enqueued for processing:
-> >  	int ret = slow_work_enqueue(&myitem);
-> >  
-> >  This will return a -ve error if the thread pool is unable to gain a reference
-> > -on the item, 0 otherwise.
-> > +on the item, 0 otherwise.  Loadable modules may only enqueue work if at least
-> > +one reference to the module is known to be held.  The slow-work infrastructure
-> > +will acquire a reference to the module and hold it until after the item's
-> > +reference is dropped, assuring the stability of the callback.
-> >  
-> > 
-> >  The items are reference counted, so there ought to be no need for a flush
-> > diff --git a/fs/fscache/object.c b/fs/fscache/object.c
-> > index 392a41b..d236eb1 100644
-> > --- a/fs/fscache/object.c
-> > +++ b/fs/fscache/object.c
-> > @@ -45,6 +45,7 @@ static void fscache_enqueue_dependents(struct fscache_object *);
-> >  static void fscache_dequeue_object(struct fscache_object *);
-> >  
-> >  const struct slow_work_ops fscache_object_slow_work_ops = {
-> > +	.owner		= THIS_MODULE,
-> >  	.get_ref	= fscache_object_slow_work_get_ref,
-> >  	.put_ref	= fscache_object_slow_work_put_ref,
-> >  	.execute	= fscache_object_slow_work_execute,
-> > diff --git a/fs/fscache/operation.c b/fs/fscache/operation.c
-> > index e7f8d53..f1a2857 100644
-> > --- a/fs/fscache/operation.c
-> > +++ b/fs/fscache/operation.c
-> > @@ -453,6 +453,7 @@ static void fscache_op_execute(struct slow_work *work)
-> >  }
-> >  
-> >  const struct slow_work_ops fscache_op_slow_work_ops = {
-> > +	.owner		= THIS_MODULE,
-> >  	.get_ref	= fscache_op_get_ref,
-> >  	.put_ref	= fscache_op_put_ref,
-> >  	.execute	= fscache_op_execute,
-> > diff --git a/fs/gfs2/recovery.c b/fs/gfs2/recovery.c
-> > index 59d2695..0c2a6aa 100644
-> > --- a/fs/gfs2/recovery.c
-> > +++ b/fs/gfs2/recovery.c
-> > @@ -593,6 +593,7 @@ fail:
-> >  }
-> >  
-> >  struct slow_work_ops gfs2_recover_ops = {
-> > +	.owner   = THIS_MODULE,
-> >  	.get_ref = gfs2_recover_get_ref,
-> >  	.put_ref = gfs2_recover_put_ref,
-> >  	.execute = gfs2_recover_work,
-> > diff --git a/include/linux/slow-work.h b/include/linux/slow-work.h
-> > index b65c888..1382918 100644
-> > --- a/include/linux/slow-work.h
-> > +++ b/include/linux/slow-work.h
-> > @@ -17,6 +17,7 @@
-> >  #ifdef CONFIG_SLOW_WORK
-> >  
-> >  #include <linux/sysctl.h>
-> > +#include <linux/module.h>
-> >  
-> >  struct slow_work;
-> >  
-> > @@ -24,6 +25,8 @@ struct slow_work;
-> >   * The operations used to support slow work items
-> >   */
-> >  struct slow_work_ops {
-> > +	struct module *owner;
-> > +
-> >  	/* get a ref on a work item
-> >  	 * - return 0 if successful, -ve if not
-> >  	 */
-> > diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-> > index 09d7519..18dee34 100644
-> > --- a/kernel/slow-work.c
-> > +++ b/kernel/slow-work.c
-> > @@ -145,6 +145,15 @@ static unsigned slow_work_calc_vsmax(void)
-> >  	return min(vsmax, slow_work_max_threads - 1);
-> >  }
-> >  
-> > +static void slow_work_put(struct slow_work *work)
-> > +{
-> > +	/* cache values that are needed during/after pointer invalidation */
-> > +	struct module *owner = work->ops->owner;
-> > +
-> > +	work->ops->put_ref(work);
-> > +	module_put(owner);
-> > +}
-> > +
-> >  /*
-> >   * Attempt to execute stuff queued on a slow thread.  Return true if we managed
-> >   * it, false if there was nothing to do.
-> > @@ -219,7 +228,7 @@ static bool slow_work_execute(void)
-> >  		spin_unlock_irq(&slow_work_queue_lock);
-> >  	}
-> >  
-> > -	work->ops->put_ref(work);
-> > +	slow_work_put(work);
-> >  	return true;
-> >  
-> >  auto_requeue:
-> > @@ -299,6 +308,14 @@ int slow_work_enqueue(struct slow_work *work)
-> >  		if (test_bit(SLOW_WORK_EXECUTING, &work->flags)) {
-> >  			set_bit(SLOW_WORK_ENQ_DEFERRED, &work->flags);
-> >  		} else {
-> > +			/*
-> > +			 * Callers must ensure that their module has at least
-> > +			 * one reference held while the work is enqueued.  We
-> > +			 * will acquire another reference here and drop it
-> > +			 * once we do the last ops->put_ref()
-> > +			 */
-> > +			__module_get(work->ops->owner);
-> > +
-> >  			if (work->ops->get_ref(work) < 0)
-> >  				goto cant_get_ref;
-> >  			if (test_bit(SLOW_WORK_VERY_SLOW, &work->flags))
-> > @@ -313,6 +330,7 @@ int slow_work_enqueue(struct slow_work *work)
-> >  	return 0;
-> >  
-> >  cant_get_ref:
-> > +	module_put(work->ops->owner);
-> >  	spin_unlock_irqrestore(&slow_work_queue_lock, flags);
-> >  	return -EAGAIN;
-> >  }
-> > 
