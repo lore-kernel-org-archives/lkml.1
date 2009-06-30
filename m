@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZF3Tn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbZF3TqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZF3Tn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbZF3Tnv
+	id S1756443AbZF3TqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZF3TqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:43:51 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:59367 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbZF3Tnu (ORCPT
+	Tue, 30 Jun 2009 15:46:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44097 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbZF3TqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:43:50 -0400
-To: Gleb Natapov <gleb@redhat.com>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi\@redhat.com" <avi@redhat.com>
-References: <20090629132926.GB20289@redhat.com>
-	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>
-	<m1eit1acxl.fsf@fess.ebiederm.org> <20090630190307.GE8122@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 30 Jun 2009 12:43:47 -0700
-In-Reply-To: <20090630190307.GE8122@redhat.com> (Gleb Natapov's message of "Tue\, 30 Jun 2009 22\:03\:07 +0300")
-Message-ID: <m17hyt1p8s.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 30 Jun 2009 15:46:01 -0400
+Message-ID: <4A4A6B1C.7030405@zytor.com>
+Date: Tue, 30 Jun 2009 12:44:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: gleb@redhat.com, avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Gleb Natapov <gleb@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Mikael Pettersson <mikpe@it.uu.se>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org>
+In-Reply-To: <4A4A6888.30001@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gleb Natapov <gleb@redhat.com> writes:
+Yinghai Lu wrote:
+> 
+> agreed, that is why we change round_up to take u64.
+>
 
-> Considering that interrupt remapping is fairly new feature
-> are you saying that hotplug (pci and cpu) on x86 is a horrible
-> hack on Linux?
+round_up() is a macro, it doesn't "take" anything per se...
 
-Just the current cpu hotplug path.
+> wonder if we should kill round_up and use roundup instead.
+> 
+> in include/linux/kernel.h
+> #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
 
->> It is better than nothing but it certainly is not something
->> I would expect to work all of the time.
->> 
-> Because of horrible code or non-complaint ioapic implementation out
-> there? If later this is not a big issue for KVM.
+Either that or we should change it to the form I specified...
 
-Both.  And even in spec ioapics can't be made to work 100% reliably.
+	-hpa
 
->> Interrupt remapping is the one case where we have hardware
->> that works according to spec and that works reasonably well.
->> 
-> I am sure when there was only one ioapic implementation in existence
-> it worked according to a spec (and if not spec was changed :)) Give
-> interrupt remapping some time and than we will see how above statement
-> holds.
-
-What we need for cpu hotplug/unplug is on the tested path now.
-That is a significant difference.
-
-Eric
