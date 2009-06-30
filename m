@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759666AbZGAAaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbZGAAag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759666AbZGAAaN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZGAA3z
+	id S1759940AbZGAAag (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757953AbZGAA34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:29:55 -0400
-Received: from kroah.org ([198.145.64.141]:34285 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:29:56 -0400
+Received: from kroah.org ([198.145.64.141]:34291 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755622AbZGAA3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:29:54 -0400
+	id S1755260AbZGAA3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:29:55 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:56 2009
-Message-Id: <20090701000356.273052636@mini.kroah.org>
+Message-Id: <20090701000356.430732937@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:45 -0700
+Date: Tue, 30 Jun 2009 16:59:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Philippe De Muyter <phdm@macqel.be>
-Subject: [patch 01/30] parport: netmos 9845 & 9855 1P4S fixes
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Andrew Victor <avictor.za@gmail.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [patch 02/30] atmel_lcdfb: correct fifo size for some products
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=parport-netmos-9845-9855-1p4s-fixes.patch
+Content-Disposition: inline; filename=atmel_lcdfb-correct-fifo-size-for-some-products.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,125 +32,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Philippe De Muyter <phdm@macqel.be>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-commit 50db9d8e4ca17974595e3848cb65f9371a304de4 upstream.
+commit 53b7479bbdaedcc7846c66fd608fe66f1b5aa35b upstream.
 
-netmos serial/parallel adapters come in different flavour differing only
-by the number of parallel and serial ports, which are encoded in the
-subdevice ID.
+Remove wrong fifo size definition for some AT91 products.
 
-Last fix of Christian Pellegrin for 9855 2P2S broke support for 9855 1P4S,
-and works only by side-effect for the first parallel port of a 2P2S, as
-this first parallel port is found by reading the second addr entry of
-(struct parport_pc_pci) cards[netmos_9855], which is not initialized, and
-hence has value 0, which happens to be the BAR of the first parallel port.
+Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048
+(words) has been introduced by mistake.  In fact, all products (AT91/AT32)
+are sharing the same fifo size of 512 words.
 
-netmos_9xx5_combo entry in (struct parport_pc_pci) cards[], which is used
-for a 9845 1P4S must also be fixed for the parallel port support when
-there are 4 serial ports because this entry currently gives 2 as BAR index
-for the parallel port.  Actually, in this case, BAR 2 is the 3rd serial
-port while the parallel port is at BAR 4.
-
-I fixed 9845 1P4S and 9855 1P4S support, while preserving 9855 2P2S support,
-
-- by creating a netmos_9855_2p entry and using it for 9855 boards with 2
-  parallel ports : 9855 2P2S and 9855 2P0S boards,
-
-- and by allowing netmos_parallel_init to change not only the number of
-  parallel ports (0 or 1), but making it also change the BAR index of the
-  parallel port when the serial ports are before the parallel port.
-
-PS: the netmos_9855_2p entry in (struct pciserial_board)
-pci_parport_serial_boards[] is needed because netmos_parallel_init has no
-clean way to replace FL_BASE2 by FL_BASE4 in the description of the serial
-ports in function of the number of parallel ports on the card.
-
-Tested with 9845 1P4S, 9855 1P4S and 9855 2P2S boards.
-
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-Tested-by: Christian Pellegrin <chripell@fsfe.org>
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Andrew Victor <avictor.za@gmail.com>
+Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/parport/parport_serial.c |   30 +++++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ drivers/video/atmel_lcdfb.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
---- a/drivers/parport/parport_serial.c
-+++ b/drivers/parport/parport_serial.c
-@@ -30,6 +30,7 @@ enum parport_pc_pci_cards {
- 	titan_210l,
- 	netmos_9xx5_combo,
- 	netmos_9855,
-+	netmos_9855_2p,
- 	avlab_1s1p,
- 	avlab_1s2p,
- 	avlab_2s1p,
-@@ -62,7 +63,7 @@ struct parport_pc_pci {
- 				struct parport_pc_pci *card, int failed);
- };
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -29,14 +29,8 @@
  
--static int __devinit netmos_parallel_init(struct pci_dev *dev, struct parport_pc_pci *card, int autoirq, int autodma)
-+static int __devinit netmos_parallel_init(struct pci_dev *dev, struct parport_pc_pci *par, int autoirq, int autodma)
- {
- 	/* the rule described below doesn't hold for this device */
- 	if (dev->device == PCI_DEVICE_ID_NETMOS_9835 &&
-@@ -74,9 +75,17 @@ static int __devinit netmos_parallel_ini
- 	 * and serial ports.  The form is 0x00PS, where <P> is the number of
- 	 * parallel ports and <S> is the number of serial ports.
- 	 */
--	card->numports = (dev->subsystem_device & 0xf0) >> 4;
--	if (card->numports > ARRAY_SIZE(card->addr))
--		card->numports = ARRAY_SIZE(card->addr);
-+	par->numports = (dev->subsystem_device & 0xf0) >> 4;
-+	if (par->numports > ARRAY_SIZE(par->addr))
-+		par->numports = ARRAY_SIZE(par->addr);
-+	/*
-+	 * This function is currently only called for cards with up to
-+	 * one parallel port.
-+	 * Parallel port BAR is either before or after serial ports BARS;
-+	 * hence, lo should be either 0 or equal to the number of serial ports.
-+	 */
-+	if (par->addr[0].lo != 0)
-+		par->addr[0].lo = dev->subsystem_device & 0xf;
- 	return 0;
- }
+ /* configurable parameters */
+ #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
+-#define ATMEL_LCDC_DMA_BURST_LEN	8
+-
+-#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
+-	defined(CONFIG_ARCH_AT91SAM9RL)
+-#define ATMEL_LCDC_FIFO_SIZE		2048
+-#else
+-#define ATMEL_LCDC_FIFO_SIZE		512
+-#endif
++#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
++#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
  
-@@ -84,7 +93,8 @@ static struct parport_pc_pci cards[] __d
- 	/* titan_110l */		{ 1, { { 3, -1 }, } },
- 	/* titan_210l */		{ 1, { { 3, -1 }, } },
- 	/* netmos_9xx5_combo */		{ 1, { { 2, -1 }, }, netmos_parallel_init },
--	/* netmos_9855 */		{ 1, { { 2, -1 }, }, netmos_parallel_init },
-+	/* netmos_9855 */		{ 1, { { 0, -1 }, }, netmos_parallel_init },
-+	/* netmos_9855_2p */		{ 2, { { 0, -1 }, { 2, -1 }, } },
- 	/* avlab_1s1p     */		{ 1, { { 1, 2}, } },
- 	/* avlab_1s2p     */		{ 2, { { 1, 2}, { 3, 4 },} },
- 	/* avlab_2s1p     */		{ 1, { { 2, 3}, } },
-@@ -110,6 +120,10 @@ static struct pci_device_id parport_seri
- 	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9845,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9xx5_combo },
- 	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9855,
-+	  0x1000, 0x0020, 0, 0, netmos_9855_2p },
-+	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9855,
-+	  0x1000, 0x0022, 0, 0, netmos_9855_2p },
-+	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9855,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9855 },
- 	/* PCI_VENDOR_ID_AVLAB/Intek21 has another bunch of cards ...*/
- 	{ PCI_VENDOR_ID_AFAVLAB, 0x2110,
-@@ -192,6 +206,12 @@ static struct pciserial_board pci_parpor
- 		.uart_offset	= 8,
- 	},
- 	[netmos_9855] = {
-+		.flags		= FL_BASE2 | FL_BASE_BARS,
-+		.num_ports	= 1,
-+		.base_baud	= 115200,
-+		.uart_offset	= 8,
-+	},
-+	[netmos_9855_2p] = {
- 		.flags		= FL_BASE4 | FL_BASE_BARS,
- 		.num_ports	= 1,
- 		.base_baud	= 115200,
+ #if defined(CONFIG_ARCH_AT91)
+ #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
 
 
