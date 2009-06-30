@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756927AbZF3Vmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZF3Vp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756927AbZF3Vmh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZF3Vma
+	id S1755130AbZF3Vp2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZF3VpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:42:30 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:58474 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439AbZF3Vm3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:42:29 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] FRV: Wire up new syscalls
-Date: Tue, 30 Jun 2009 23:41:58 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
-Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu>
-In-Reply-To: <20090630213406.GB17492@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 30 Jun 2009 17:45:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51889 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754156AbZF3VpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:45:18 -0400
+Message-ID: <4A4A8804.1040004@redhat.com>
+Date: Tue, 30 Jun 2009 17:47:48 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 3/3] kprobes: cleanup: use list instead of hlist
+ for insn_pages
+References: <20090630210757.17851.409.stgit@localhost.localdomain> <20090630210814.17851.64651.stgit@localhost.localdomain> <20090630212512.GA10831@elte.hu>
+In-Reply-To: <20090630212512.GA10831@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906302341.58582.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/ezHrrtgFUt5X08nqgR6zetWP9K+jCsz7y4cE
- yqHI9lVVlFTNOkDjXME1usXGebcdtremyEajaMaZyBMZw0/Nry
- cjCWpJQp7HhufoVQ0cinw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 June 2009, Ingo Molnar wrote:
-> * David Howells <dhowells@redhat.com> wrote:
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> > Wire up new syscalls rt_tgsigqueueinfo and perf_counter_open.
+>> Use struct list instead of struct hlist for managing insn_pages, 
+>> because insn_pages doesn't use hash table.
 > 
-> > +     .long sys_perf_counter_open
+>>  struct kprobe_insn_page {
+>> -	struct hlist_node hlist;
+>> +	struct list_head list;
 > 
-> Hm, i suspect this should be sys_ni because FRV does not set 
-> HAVE_PERF_COUNTERS so perfcounters cannot be enabled. (Or do you 
-> have patches in the pipeline that enable perfcounters for FRV?)
+> Hm, you know that this increases the size of kprobe_insn_page by 4/8 
+> bytes, right?
 
-It doesn't matter because of the cond_syscall() in kernel/sys_ni.c.
-Right now, scripts/checksyscalls.sh causes a warning on each architecture
-that does not assign a system call number for sys_perf_counter_open,
-so they might as well make it point to sys_ni though cond_syscall().
+Sure, that will increase size.
 
-	Arnd <><
+> hlists are not just used for hashes - but also when we want a more 
+> compact / smaller list head.
+
+Oh, I thought hlists are used for hash tables...
+
+> 
+> How many kprobe_insn_page's can be allocated in the system, 
+> maximally?
+
+It's depends on how many probes you will use, but logically,
+1 kprobe_insn_pages is allocated per 4096/16 = 256 probes.
+So, if you use 25,600 probes on your system, memory
+consumption will increase 400/800 bytes.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
