@@ -1,68 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757388AbZF3Ubq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZF3Ucz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757388AbZF3Ubq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZF3Ubj
+	id S1757021AbZF3Ucz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZF3Ucs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:31:39 -0400
-Received: from outbound-mail-309.bluehost.com ([67.222.54.2]:35053 "HELO
-	outbound-mail-309.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754335AbZF3Ubi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:31:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=hX5+YDtC3+Vjrm4fvdt/KO1bS1LH1tE+kY95nrwp591Vfmpwjj0w9o2F+CFCL7dmPdBtBHHP6KOme76FprgfexBg0zswVwgplAcZvaTFMd6QurV5FOKSMv2TdIx01vjs;
-Date: Tue, 30 Jun 2009 13:31:37 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <willy@linux.intel.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: pci tree build failure
-Message-ID: <20090630133137.1bde0dc6@jbarnes-g45>
-In-Reply-To: <20090630022453.GE24061@linux.intel.com>
-References: <20090630120727.24450bab.sfr@canb.auug.org.au>
-	<20090629191324.5c86bbc0@jbarnes-g45>
-	<20090630022453.GE24061@linux.intel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 30 Jun 2009 16:32:48 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:35787 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752271AbZF3Ucr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:32:47 -0400
+Date: Tue, 30 Jun 2009 21:32:49 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+Message-ID: <20090630203249.GC6689@csn.ul.ie>
+References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <20090629122029.93cdcc39.akpm@linux-foundation.org> <20090630110011.GB17561@csn.ul.ie> <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 29 Jun 2009 19:24:53 -0700
-Matthew Wilcox <willy@linux.intel.com> wrote:
-
-> On Mon, Jun 29, 2009 at 07:13:24PM -0700, Jesse Barnes wrote:
-> > On Tue, 30 Jun 2009 12:07:27 +1000
-> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > Hi Jesse,
-> > > 
-> > > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > > 
-> > > ERROR: "pci_claim_resource" [drivers/pcmcia/yenta_socket.ko]
-> > > undefined!
-> > > 
-> > > Caused by commit 6bb04b65dbff5a5bb01617351dbb0af577084752
-> > > ("yenta: Use pci_claim_resource").  yenta can be built as a
-> > > module, but pci_claim_resource is not exported ...
-> > > 
-> > > I have used the pci tree from next-20090629 for today.
-> > 
-> > Damn, thought I built that.  linux-next earns its keep yet again.
+On Tue, Jun 30, 2009 at 12:35:59PM -0700, David Rientjes wrote:
+> On Tue, 30 Jun 2009, Mel Gorman wrote:
 > 
-> Sorry about that.  I thought I'd checked that.  Must have been
-> confused with another function.  There do seem to be legitimate
-> *drivers* that could use it (i2o for one), so I propose making it a
-> full-bodied 'EXPORT_SYMBOL' and not bother with the _GPL tag.
-> Thoughts?
+> > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> > index 175a67a..5f4656e 100644
+> > --- a/mm/oom_kill.c
+> > +++ b/mm/oom_kill.c
+> > @@ -230,14 +230,21 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+> >  		/*
+> >  		 * This task already has access to memory reserves and is
+> >  		 * being killed. Don't allow any other task access to the
+> > -		 * memory reserve.
+> > +		 * memory reserve unless the current process is the one
+> > +		 * selected for OOM-killing. If the current process has
+> > +		 * been OOM-killed and we are OOM again, another process
+> > +		 * needs to be considered for OOM-kill
+> >  		 *
+> >  		 * Note: this may have a chance of deadlock if it gets
+> >  		 * blocked waiting for another task which itself is waiting
+> >  		 * for memory. Is there a better alternative?
+> >  		 */
+> > -		if (test_tsk_thread_flag(p, TIF_MEMDIE))
+> > -			return ERR_PTR(-1UL);
+> > +		if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
+> > +			if (p == current)
+> > +				continue;
+> > +			else
+> > +				return ERR_PTR(-1UL);
+> > +		}
+> >  
+> >  		/*
+> >  		 * This is in the process of releasing memory so wait for it
+> 
+> This will panic the machine if current is the only user thread running or 
+> eligible for oom kill (all others could have mm's with OOM_DISABLE set).  
+> Currently, such tasks can exit or kthreads can free memory so that the oom 
+> is recoverable.
+> 
 
-Fine by me; that matches most of the PCI core (though the slots bits
-are _GPL).
+Good point, would the following be ok instead?
+
++           if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
++                   if (p == current) {
++			    chosen = ERR_PTR(-1UL);
++                           continue;
++                   } else
++                           return ERR_PTR(-1UL);
+
+
+> The problem with this approach is that it increases the liklihood that 
+> memory reserves will be totally depleted when several threads are 
+> competing for them.
+> 
+
+How so? 
+
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 5d714f8..5896469 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -1539,6 +1539,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+> >  	if (gfp_mask & __GFP_NORETRY)
+> >  		return 0;
+> >  
+> > +	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
+> > +	if (test_thread_flag(TIF_MEMDIE)) {
+> > +		if (gfp_mask & __GFP_NOFAIL)
+> > +			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
+> > +		else
+> > +			return 0;
+> > +	}
+> > +
+> 
+> There's a second bug in the refactored page allocator: when the oom killer 
+> is invoked and it happens to kill current, alloc_flags is never updated 
+> because it loops back to `restart', which is past gfp_to_alloc_flags().
+> 
+> When that is fixed with the patch below, gfp_mask & __GFP_NOFAIL will 
+> never be true here in your scenario, where the oom killer kills current, 
+> because __alloc_pages_high_priority() will infinitely loop.
+> 
+> >  	/*
+> >  	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
+> >  	 * means __GFP_NOFAIL, but that may not be true in other
+> > 
+> 
+> This is needed for 2.6.31-rc2.
+> 
+> 
+> mm: update alloc_flags after oom killer has been called
+> 
+> It is possible for the oom killer to select current as the task to kill.  
+> When this happens, alloc_flags needs to be updated accordingly to set 
+> ALLOC_NO_WATERMARKS so the subsequent allocation attempt may use memory 
+> reserves as the result of its thread having TIF_MEMDIE set if the 
+> allocation is not __GFP_NOMEMALLOC.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+> ---
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1756,6 +1756,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+>  
+>  	wake_all_kswapd(order, zonelist, high_zoneidx);
+>  
+> +restart:
+>  	/*
+>  	 * OK, we're below the kswapd watermark and have kicked background
+>  	 * reclaim. Now things get more complex, so set up alloc_flags according
+> @@ -1763,7 +1764,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+>  	 */
+>  	alloc_flags = gfp_to_alloc_flags(gfp_mask);
+>  
+> -restart:
+>  	/* This is the last chance, in general, before the goto nopage. */
+>  	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+>  			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
+> 
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
