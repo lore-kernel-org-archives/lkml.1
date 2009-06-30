@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbZF3W4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbZF3W56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759757AbZF3W4q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759465AbZF3W4N
+	id S1760008AbZF3W56 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbZF3W5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:56:13 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:46181 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759410AbZF3W4J (ORCPT
+	Tue, 30 Jun 2009 18:57:50 -0400
+Received: from ru.mvista.com ([213.79.90.228]:22410 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754025AbZF3W5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:56:09 -0400
-Date: Tue, 30 Jun 2009 18:55:55 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-In-Reply-To: <20090630223138.GH1241@elte.hu>
-Message-ID: <alpine.DEB.1.10.0906301847260.19482@gentwo.org>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu>
- <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Jun 2009 18:57:50 -0400
+Date: Wed, 1 Jul 2009 02:57:52 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andres Salomon <dilinger@collabora.co.uk>
+Cc: cbou@mail.ru, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       richard@laptop.org, Andrew Morton <akpm@linux-foundation.org>,
+       Paul Fox <pgf@laptop.org>, dsaxena@laptop.org
+Subject: Re: [PATCH 2/5] power_supply: fix up olpc_battery's eeprom read
+ function
+Message-ID: <20090630225752.GA12076@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090630021400.6a9f2482@mycelium.queued.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20090630021400.6a9f2482@mycelium.queued.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Ingo Molnar wrote:
+On Tue, Jun 30, 2009 at 02:14:00AM -0400, Andres Salomon wrote:
+> 
+> The eeprom read function was placing values into the wrong place in
+> 'buf'; we were starting from buf[off], rather than buf[0].
+> 
+> Also, the for loop that we were using was much uglier than it needed to
+> be.  This cleans it up a bit.
+> 
+> Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 
-> The usecase i'm talking about is to boot a generic,
-> many-CPUs-capable kernel in a guest image.
+Applied to battery-2.6.31.git w/ some cosmtic changes.
+Please ensure that everything is OK.
 
-The many-cpu-capable kernel is not the issue. The number of potential cpus
-is config information provided by the hardware. In your case the host
-system provides the number of possible processors.
+Thanks!
 
-> How would you allow that guest to stay on 2 virtual CPUs but still
-> be able to hot-plug many other CPUs if the guest context rises above
-> its original CPU utilization?
+> ---
+>  drivers/power/olpc_battery.c |   14 ++++++--------
+>  1 files changed, 6 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+> index 0d1928d..d2df0db 100644
+> --- a/drivers/power/olpc_battery.c
+> +++ b/drivers/power/olpc_battery.c
+> @@ -343,21 +343,19 @@ static ssize_t olpc_bat_eeprom_read(struct kobject *kobj,
+>  		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
+>  {
+>  	uint8_t ec_byte;
+> -	int ret, end;
+> +	int ret, i;
+>  
+>  	if (off >= EEPROM_SIZE)
+>  		return 0;
+>  	if (off + count > EEPROM_SIZE)
+>  		count = EEPROM_SIZE - off;
+>  
+> -	end = EEPROM_START + off + count;
+> -	for (ec_byte = EEPROM_START + off; ec_byte < end; ec_byte++) {
+> -		ret = olpc_ec_cmd(EC_BAT_EEPROM, &ec_byte, 1,
+> -				&buf[ec_byte - EEPROM_START], 1);
+> +	for (i = 0; i < count; i++) {
+> +		ec_byte = EEPROM_START + off + i;
+> +		ret = olpc_ec_cmd(EC_BAT_EEPROM, &ec_byte, 1, &buf[i], 1);
+>  		if (ret) {
+> -			printk(KERN_ERR "olpc-battery:  EC command "
+> -					"EC_BAT_EEPROM @ 0x%x failed -"
+> -					" %d!\n", ec_byte, ret);
+> +			printk(KERN_ERR "olpc-battery:  EC_BAT_EEPROM cmd @ 0x%x failed - %d!\n",
+> +					ec_byte, ret);
+>  			return -EIO;
+>  		}
+>  	}
+> -- 
+> 1.5.6.5
+> 
 
-The use case is a guest that needs to add a couple of thousand processors?
-
-That will require lots of memory and special configuration of the guest
-environment simulated. Yes that is an extreme case that will require lots
-of per cpu memory.
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
