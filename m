@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761108AbZF3XVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZF3XVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761108AbZF3XVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758462AbZF3XVa
+	id S1754025AbZF3XVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760975AbZF3XVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:21:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:38612 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760975AbZF3XVY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:21:24 -0400
-Message-ID: <4A4A9D8E.5080500@zytor.com>
-Date: Tue, 30 Jun 2009 16:19:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 30 Jun 2009 19:21:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54996 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760713AbZF3XV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:21:27 -0400
+Date: Wed, 1 Jul 2009 01:21:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Anton Blanchard <anton@samba.org>
+Cc: a.p.zijlstra@chello.nl, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/8] perf top: Add ppc64 specific skip symbols and
+	strip ppc64 . prefix
+Message-ID: <20090630232118.GE17968@elte.hu>
+References: <20090630230043.464194676@samba.org> <20090630230140.995643441@samba.org>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com> <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com> <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org> <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain> <alpine.LFD.2.01.0906301603280.3605@localhost.localdomain> <4A4A9C2F.80808@kernel.org>
-In-Reply-To: <4A4A9C2F.80808@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090630230140.995643441@samba.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> Linus Torvalds wrote:
->> On Tue, 30 Jun 2009, Linus Torvalds wrote:
->>> I don't see any single-use trick then, and so it needs the whole statement 
->>> expression mess.
->> Hmm. Does (((x)-1) | mask)+1) work?
->>
->> I haven't thought it fully through, but that _should_ take care of the 
->> "already aligned" case, no?
-> 
-> yes. that is right.
-> 
-> then how about
-> roundup(x,y)
-> round_up(x,y)
-> 
-> roundup doesn't need y is 2^n
-> but round_up does need y is 2^n, and only for x86
-> 
 
-We should definitely move whatever to global.  However, I do think it is
-valuable to have something that can avoid divides even if the argument
-is not necessarily a constant.
+* Anton Blanchard <anton@samba.org> wrote:
 
-	-hpa
+> Filter out some ppc64 specific idle loop functions and remove leading '.' on
+> ppc64 text symbols.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Do we want to wrap them with #ifdef __PPC__ ?
+
+>  	"enter_idle",
+>  	"exit_idle",
+>  	"mwait_idle",
+> +	"ppc64_runlatch_off",
+> +	"pseries_dedicated_idle_sleep",
+
+We only want to wrap them into #ifdef __PPC__ if we do so for the 
+x86 ones too.
+
+I think it's fine as-is - the names should be pretty unique, right?
+
+	Ingo
