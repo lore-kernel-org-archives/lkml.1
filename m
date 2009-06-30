@@ -1,81 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbZF3U5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZF3U7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbZF3U5W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZF3U5O
+	id S1756693AbZF3U7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZF3U7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:57:14 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:55481 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbZF3U5N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:57:13 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: steve@digidescorp.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FAT: optimize FSINFO writeback
-References: <1246392130-4261-1-git-send-email-steve@digidescorp.com>
-Date: Wed, 01 Jul 2009 05:57:15 +0900
-In-Reply-To: <1246392130-4261-1-git-send-email-steve@digidescorp.com>
-	(steve@digidescorp.com's message of "Tue, 30 Jun 2009 15:02:10 -0500")
-Message-ID: <87ocs5h238.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Tue, 30 Jun 2009 16:59:07 -0400
+Received: from claw.goop.org ([74.207.240.146]:55221 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753894AbZF3U7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:59:07 -0400
+Message-ID: <4A4A7C9B.9060409@goop.org>
+Date: Tue, 30 Jun 2009 13:59:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem
+References: <alpine.DEB.2.01.0906291950280.6439@bogon> <1246351243.8014.14.camel@penberg-laptop>
+In-Reply-To: <1246351243.8014.14.camel@penberg-laptop>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-steve@digidescorp.com writes:
-
-> Only write the FSINFO block back to disk when its contents change.
-> This optimization can be important when the underlying physical media
-> can wear out, i.e. Flash.
-
-I have no objection to this though.  Was this tested on recent version?
-Well, now, we are using sb->s_dirty for fsinfo, so I'm wondering why
-this happen frequently.
-
-Thanks.
-
-> Signed-off-by: Steven J. Magnani <steve@digidescorp.com>
-> ---
-> diff -uprN a/fs/fat/misc.c b/fs/fat/misc.c
-> --- a/fs/fat/misc.c	2009-06-29 11:12:40.000000000 -0500
-> +++ b/fs/fat/misc.c	2009-06-29 11:46:45.000000000 -0500
-> @@ -61,11 +61,25 @@ void fat_clusters_flush(struct super_blo
->  		       le32_to_cpu(fsinfo->signature2),
->  		       sbi->fsinfo_sector);
->  	} else {
-> -		if (sbi->free_clusters != -1)
-> -			fsinfo->free_clusters = cpu_to_le32(sbi->free_clusters);
-> -		if (sbi->prev_free != -1)
-> -			fsinfo->next_cluster = cpu_to_le32(sbi->prev_free);
-> -		mark_buffer_dirty(bh);
-> +		char write_needed = 0;
-> +		__le32 le_value;
-> +
-> +		if (sbi->free_clusters != -1) {
-> +			le_value = cpu_to_le32(sbi->free_clusters);
-> +			if (fsinfo->free_clusters != le_value) {
-> +				fsinfo->free_clusters = le_value;
-> +				write_needed = 1;
-> +			}
-> +		}
-> +		if (sbi->prev_free != -1) {
-> +			le_value = cpu_to_le32(sbi->prev_free);
-> +			if (fsinfo->next_cluster != le_value) {
-> +				fsinfo->next_cluster = le_value;
-> +				write_needed = 1;
-> +			}
-> +		}
-> +		if (write_needed)
-> +			mark_buffer_dirty(bh);
->  	}
->  	brelse(bh);
->  }
+On 06/30/09 01:40, Pekka Enberg wrote:
+> Hi Christian,
 >
+> On Mon, 2009-06-29 at 20:01 -0700, Christian Kujau wrote:
+>   
+>> Hi there,
+>>
+>> this topic has been discussed [0] already and a bug for powerpc[1] has 
+>> been opened, I'm still seeing this with the latest -git in a x86_64 Xen 
+>> DomU. The domain continues to boot however, no oopses or crashes so far, 
+>> it's just this warning during bootup. The thread about the "early boot 
+>> SLAB" came to a halt, but the warning is still there - is a fix for this 
+>> still in the works?
+>>
+>> Full dmesg/.config: http://nerdbynature.de/bits/2.6.31-rc1/
+>>
+>> Thanks,
+>> Christian.
+>>
+>> [0] http://bugzilla.kernel.org/show_bug.cgi?id=13650 / Badness on the Warp
+>> [1] http://lkml.org/lkml/2009/6/10/396 / Early boot SLAB for 2.6.31
+>>     
+>
+> I think you're the first one to report this. The warning is harmless but
+> the following patch should fix things up. Thanks!
+>   
 
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Thanks for this.  I'd noticed it locally, but I hadn't got around to
+checking to see if it affected mainline.
+
+> 			Pekka
+>
+> >From dc231c59194a973b80e6932bb4c162f2076635cb Mon Sep 17 00:00:00 2001
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> Date: Tue, 30 Jun 2009 11:35:19 +0300
+> Subject: [PATCH] xen: Use kcalloc() in xen_init_IRQ()
+>
+> The init_IRQ() function is now called with slab allocator initialized.
+> Therefore, we must not use the bootmem allocator in xen_init_IRQ().
+> Fixes the following boot-time warning:
+>
+>   [    0.000000] Linux version 2.6.30 (dummy@sid) (gcc version 4.4.0 (Debian 4.4.0-8) ) #1 Tue Jun 23 02:13:42 CEST 2009
+>   [    0.000000] Command line: root=/dev/xvda1 console=hvc0 init=/sbin/init
+>   [    0.000000] KERNEL supported cpus:
+>   [    0.000000]   Intel GenuineIntel
+>   [    0.000000]   AMD AuthenticAMD
+>   [    0.000000]   Centaur CentaurHauls
+>   [    0.000000] BIOS-provided physical RAM map:
+>   [    0.000000]  Xen: 0000000000000000 - 00000000000a0000 (usable)
+>   [    0.000000]  Xen: 00000000000a0000 - 0000000000100000 (reserved)
+>   [    0.000000]  Xen: 0000000000100000 - 0000000008000000 (usable)
+>   [    0.000000] DMI not present or invalid.
+>   [    0.000000] last_pfn = 0x8000 max_arch_pfn = 0x400000000
+>   [    0.000000] initial memory mapped : 0 - 20000000
+>
+> Reported-by: Christian Kujau <lists@nerdbynature.de>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>   
+
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+> ---
+>  drivers/xen/events.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+> index 891d2e9..abad71b 100644
+> --- a/drivers/xen/events.c
+> +++ b/drivers/xen/events.c
+> @@ -927,9 +927,9 @@ static struct irq_chip xen_dynamic_chip __read_mostly = {
+>  void __init xen_init_IRQ(void)
+>  {
+>  	int i;
+> -	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+>  
+> -	cpu_evtchn_mask_p = alloc_bootmem(size);
+> +	cpu_evtchn_mask_p = kcalloc(nr_cpu_ids, sizeof(struct cpu_evtchn_s),
+> +				    GFP_KERNEL);
+>  	BUG_ON(cpu_evtchn_mask_p == NULL);
+>  
+>  	init_evtchn_cpu_bindings();
+>   
+
