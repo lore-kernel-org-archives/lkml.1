@@ -1,94 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZF3UEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZF3UGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZF3UEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZF3UEm
+	id S1754335AbZF3UGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZF3UGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:04:42 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:40620 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbZF3UEl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:04:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=GJsk6PrUk5sZaprioNgK+KFgaCxF5op5htnuvw4KRrFmmEmrqxxv7r2eBMA61/BgF
-	MpOVOQ45bjizdqBUeTgSQ==
-Date: Tue, 30 Jun 2009 13:04:35 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.1.10.0906301114450.3879@gentwo.org>
-Message-ID: <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>  <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>  <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>  <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
- <alpine.DEB.1.10.0906301030260.6124@gentwo.org> <1246374095.8014.28.camel@penberg-laptop> <alpine.DEB.1.10.0906301114450.3879@gentwo.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 30 Jun 2009 16:06:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60402 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752540AbZF3UGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:06:24 -0400
+Message-ID: <4A4A701F.3050700@kernel.org>
+Date: Tue, 30 Jun 2009 13:05:51 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com>
+In-Reply-To: <4A4A6B1C.7030405@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Christoph Lameter wrote:
-
-> >   printk(KERN_INFO ": debugging disabled for %s. Use slub_debug=a to "
-> >                     "enable it blah blah blah\n");
-> >
-> > Does that work for you?
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> agreed, that is why we change round_up to take u64.
+>>
 > 
-> Its definitely better.
+> round_up() is a macro, it doesn't "take" anything per se...
 > 
+i mean
+ end = roundup(start, ram_alignment(start)) - 1;
 
-I don't see how that's different from enabling debugging on all caches 
-like CONFIG_SLAB_DEBUG_ON currently does and then warning at the time of 
-slab allocation failure that it may be the result of the debugging 
-metadata so the user can subsequently prevent it.  In other words, if we 
-use MAX_DEBUG_SIZE as Pekka originally implemented as
-(3 * sizeof(void *) + 2 * sizeof(struct track)), do this:
+static u64 ram_alignment(u64 pos)
 
-diff --git a/mm/slub.c b/mm/slub.c
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -142,6 +142,11 @@
- 				SLAB_POISON | SLAB_STORE_USER)
+and other calling to round_up
+
+
+please check
+
+[PATCH] x86: add boundary check for 32bit res before expand e820 resource to alignment -v2
+
+fix hang with HIGHMEM_64G and 32bit resource.
+according to hpa and Linus, use (resource_size_t)-1 to fend off big ranges.
+
+analyzed by hpa
+
+v2: use roundup instead
+
+Reported-and-tested-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/e820.c |   20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1367,9 +1367,9 @@ void __init e820_reserve_resources(void)
+ }
  
- /*
-+ * The maximum amount of metadata added to a slab when debugging is enabled.
-+ */
-+#define MAX_DEBUG_SIZE (3 * sizeof(void *) + 2 * sizeof(struct track))
-+
-+/*
-  * Set of flags that will prevent slab merging
-  */
- #define SLUB_NEVER_MERGE (SLAB_RED_ZONE | SLAB_POISON | SLAB_STORE_USER | \
-@@ -1561,6 +1566,21 @@ slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
- 		"default order: %d, min order: %d\n", s->name, s->objsize,
- 		s->size, oo_order(s->oo), oo_order(s->min));
+ /* How much should we pad RAM ending depending on where it is? */
+-static unsigned long ram_alignment(resource_size_t pos)
++static u64 ram_alignment(u64 pos)
+ {
+-	unsigned long mb = pos >> 20;
++	u64 mb = pos >> 20;
  
-+	if (s->flags & (SLAB_POISON | SLAB_RED_ZONE | SLAB_STORE_USER)) {
-+		int min_order;
+ 	/* To 64kB in the first megabyte */
+ 	if (!mb)
+@@ -1383,6 +1383,8 @@ static unsigned long ram_alignment(resou
+ 	return 32*1024*1024;
+ }
+ 
++#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 +
-+		/*
-+		 * Debugging is enabled, which may increase oo_order(s->min), so
-+		 * warn the user that allocation failures may be avoided if
-+		 * debugging is enabled for this cache.
-+		 */
-+		min_order = get_order(s->size - MAX_DEBUG_SIZE);
-+		if (min_order < oo_order(s->min))
-+			printk(KERN_WARNING "  %s debugging increased min order "
-+			       "from %d to %d, use slab_debug=-,%s to disable.",
-+			       s->name, min_order, oo_order(s->min), s->name);
-+	}
-+
- 	for_each_online_node(node) {
- 		struct kmem_cache_node *n = get_node(s, node);
- 		unsigned long nr_slabs;
+ void __init e820_reserve_resources_late(void)
+ {
+ 	int i;
+@@ -1400,17 +1402,19 @@ void __init e820_reserve_resources_late(
+ 	 * avoid stolen RAM:
+ 	 */
+ 	for (i = 0; i < e820.nr_map; i++) {
+-		struct e820entry *entry = &e820_saved.map[i];
+-		resource_size_t start, end;
++		struct e820entry *entry = &e820.map[i];
++		u64 start, end;
+ 
+ 		if (entry->type != E820_RAM)
+ 			continue;
+ 		start = entry->addr + entry->size;
+-		end = round_up(start, ram_alignment(start));
+-		if (start == end)
++		end = roundup(start, ram_alignment(start)) - 1;
++		if (end > MAX_RESOURCE_SIZE)
++			end = MAX_RESOURCE_SIZE;
++		if (start > end)
+ 			continue;
+-		reserve_region_with_split(&iomem_resource, start,
+-						  end - 1, "RAM buffer");
++		reserve_region_with_split(&iomem_resource, start, end,
++					  "RAM buffer");
+ 	}
+ }
+ 
