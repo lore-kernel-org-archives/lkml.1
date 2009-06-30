@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbZF3WJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbZF3WKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756379AbZF3WJx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZF3WJp
+	id S1759564AbZF3WKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZF3WK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:09:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46439 "EHLO mx3.mail.elte.hu"
+	Tue, 30 Jun 2009 18:10:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46651 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbZF3WJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:09:44 -0400
-Date: Wed, 1 Jul 2009 00:09:32 +0200
+	id S1753254AbZF3WKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 18:10:25 -0400
+Date: Wed, 1 Jul 2009 00:10:16 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: tony.luck@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, hpa@zytor.com,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit archs
-Message-ID: <20090630220932.GE1241@elte.hu>
-References: <4A4A18780200007800008345@vpn.id2.novell.com>
+To: "Luck, Tony" <tony.luck@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jan Beulich <JBeulich@novell.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/ia64: adjust section annotation for  pcibios_setup()
+Message-ID: <20090630221016.GF1241@elte.hu>
+References: <4A4A11AF020000780000831D@vpn.id2.novell.com> <57C9024A16AD2D4C97DC78E552063EA3A8D9EA80@orsmsx505.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4A18780200007800008345@vpn.id2.novell.com>
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3A8D9EA80@orsmsx505.amr.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,40 +37,24 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Beulich <JBeulich@novell.com> wrote:
+* Luck, Tony <tony.luck@intel.com> wrote:
 
-> Since these CRCs are really only 32-bit quantities, there's no 
-> need to store them in 64-bit slots. Since, however, gcc doesn't 
-> allow respective initializations, asm() constructs get used to 
-> create the CRC tables (and its for that reason that the patch only 
-> makes x86-64 and ia64 utilize that functionality, as I can't 
-> verify this doesn't break in some subtle way elsewhere).
+> --- linux-2.6.31-rc1/arch/ia64/pci/pci.c	2009-06-26 17:49:37.000000000 +0200
+> +++ 2.6.31-rc1-pcibios_setup/arch/ia64/pci/pci.c	2009-05-04 11:39:32.000000000 +0200
+> @@ -537,7 +537,7 @@ pcibios_align_resource (void *data, stru
+>  /*
+>   * PCI BIOS setup, always defaults to SAL interface
+>   */
+> -char * __devinit
+> +char * __init
+>  pcibios_setup (char *str)
+>  {
+>  	return str;
 > 
-> Observed size reduction (x86-64):
-> - 16k kernel resident size
-> - 2k module resident size
-> - 1M vmlinux image size
+> ia64 part Acked-by: Tony Luck <tony.luck@intel.com>
 > 
-> If the asm() construct could be extended to all architectures, and 
-> if modpost would guarantee generation of CRCs for all exported, 
-> then the __crc_* symbols wouldn't need to be declared weak 
-> anymore, could hence remain local to the exporting object. By 
-> adding -Wa,-strip-local-absolute to the second compilation step 
-> the __crc_* symbols could even be prevented from making it into 
-> any object file at all.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+> Ingo/Thomas/Peter: please run this through the tip tree.
 
-> 
-> ---
->  arch/ia64/include/asm/module.h |    2 ++
->  arch/x86/include/asm/module.h  |    1 +
->  include/linux/module.h         |   41 ++++++++++++++++++++++++++---------------
->  include/linux/moduleparam.h    |   10 +++++++++-
->  kernel/module.c                |   26 +++++++++++++-------------
->  scripts/genksyms/genksyms.c    |   16 ++++++++--------
->  6 files changed, 59 insertions(+), 37 deletions(-)
-
-No objections to the (minor) x86 bits.
+I think this one's for Jesse's PCI tree.
 
 	Ingo
