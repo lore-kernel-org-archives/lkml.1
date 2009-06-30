@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZGAAdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZGAAeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759500AbZGAAdt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759660AbZGAAaN
+	id S1760065AbZGAAeD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759767AbZGAAaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:13 -0400
-Received: from kroah.org ([198.145.64.141]:34344 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:15 -0400
+Received: from kroah.org ([198.145.64.141]:34350 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759493AbZGAAaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:07 -0400
+	id S1759669AbZGAAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:08 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:58 2009
-Message-Id: <20090701000358.476669583@mini.kroah.org>
+Message-Id: <20090701000358.640178641@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:58 -0700
+Date: Tue, 30 Jun 2009 16:59:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Scott James Remnant <scott@canonical.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
        Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Philippe De Muyter <phdm@macqel.be>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [patch 14/30] floppy: provide a PNP device table in the module.
+       Philippe De Muyter <phdm@macqel.be>, Adam M Belay <abelay@mit.edu>,
+       Robert Hancock <hancockrwd@gmail.com>
+Subject: [patch 15/30] floppy: request and release only the ports we actually use
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=floppy-provide-a-pnp-device-table-in-the-module.patch
+Content-Disposition: inline; filename=floppy-request-and-release-only-the-ports-we-actually-use.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,53 +32,200 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Scott James Remnant <scott@canonical.com>
+From: Philippe De Muyter <phdm@macqel.be>
 
-commit 83f9ef463bcb4ba7b4fee1d6212fac7d277010d3 upstream.
+commit 5a74db06cc8d36a325913aa4968ae169f997a466 upstream.
 
-The missing device table means that the floppy module is not auto-loaded,
-even when the appropriate PNP device (0700) is found.
+The floppy driver requests an I/O port it doesn't need, and sometimes this
+causes a conflict with a motherboard device reported by PNPBIOS.
 
-We don't actually use the table in the module, since the device doesn't
-have a struct pnp_driver, but it's sufficient to cause an alias in the
-module that udev/modprobe will use.
+This patch makes the floppy driver request and release only the ports it
+actually uses.  It also factors out the request/release stuff and the
+io-ports list so they're all in one place now.
 
-Signed-off-by: Scott James Remnant <scott@canonical.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Philippe De Muyter <phdm@macqel.be>
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+The current floppy driver uses only these ports:
+
+    0x3f2 (FD_DOR)
+    0x3f4 (FD_STATUS)
+    0x3f5 (FD_DATA)
+    0x3f7 (FD_DCR/FD_DIR)
+
+but it requests 0x3f2-0x3f5 and 0x3f7, which includes the unused port
+0x3f3.
+
+Some BIOSes report 0x3f3 as a motherboard resource.  The PNP system driver
+reserves that, which causes a conflict when the floppy driver requests
+0x3f2-0x3f5 later.
+
+Philippe reported that this conflict broke the floppy driver between
+2.6.11 and 2.6.22.  His PNPBIOS reports these devices:
+
+    $ cat 00:07/id 00:07/resources	# motherboard device
+    PNP0c02
+    state = active
+    io 0x80-0x80
+    io 0x10-0x1f
+    io 0x22-0x3f
+    io 0x44-0x5f
+    io 0x90-0x9f
+    io 0xa2-0xbf
+    io 0x3f0-0x3f1
+    io 0x3f3-0x3f3
+
+    $ cat 00:03/id 00:03/resources	# floppy device
+    PNP0700
+    state = active
+    io 0x3f4-0x3f5
+    io 0x3f2-0x3f2
+
+Reference:
+    http://lkml.org/lkml/2009/1/31/162
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+Reported-by: Philippe De Muyter <phdm@macqel.be>
+Tested-by: Philippe De Muyter <phdm@macqel.be>
+Cc: Adam M Belay <abelay@mit.edu>
+Cc: Robert Hancock <hancockrwd@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/floppy.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/block/floppy.c |   79 ++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 52 insertions(+), 27 deletions(-)
 
 --- a/drivers/block/floppy.c
 +++ b/drivers/block/floppy.c
-@@ -177,6 +177,7 @@ static int print_unex = 1;
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/buffer_head.h>	/* for invalidate_buffers() */
- #include <linux/mutex.h>
+@@ -552,6 +552,8 @@ static void process_fd_request(void);
+ static void recalibrate_floppy(void);
+ static void floppy_shutdown(unsigned long);
  
-@@ -4572,6 +4573,13 @@ MODULE_AUTHOR("Alain L. Knaff");
- MODULE_SUPPORTED_DEVICE("fd");
- MODULE_LICENSE("GPL");
++static int floppy_request_regions(int);
++static void floppy_release_regions(int);
+ static int floppy_grab_irq_and_dma(void);
+ static void floppy_release_irq_and_dma(void);
  
-+/* This doesn't actually get used other than for module information */
-+static const struct pnp_device_id floppy_pnpids[] = {
-+	{ "PNP0700", 0 },
-+	{ }
+@@ -4274,8 +4276,7 @@ static int __init floppy_init(void)
+ 		FDCS->rawcmd = 2;
+ 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
+ 			/* free ioports reserved by floppy_grab_irq_and_dma() */
+-			release_region(FDCS->address + 2, 4);
+-			release_region(FDCS->address + 7, 1);
++			floppy_release_regions(fdc);
+ 			FDCS->address = -1;
+ 			FDCS->version = FDC_NONE;
+ 			continue;
+@@ -4284,8 +4285,7 @@ static int __init floppy_init(void)
+ 		FDCS->version = get_fdc_version();
+ 		if (FDCS->version == FDC_NONE) {
+ 			/* free ioports reserved by floppy_grab_irq_and_dma() */
+-			release_region(FDCS->address + 2, 4);
+-			release_region(FDCS->address + 7, 1);
++			floppy_release_regions(fdc);
+ 			FDCS->address = -1;
+ 			continue;
+ 		}
+@@ -4358,6 +4358,47 @@ out_put_disk:
+ 
+ static DEFINE_SPINLOCK(floppy_usage_lock);
+ 
++static const struct io_region {
++	int offset;
++	int size;
++} io_regions[] = {
++	{ 2, 1 },
++	/* address + 3 is sometimes reserved by pnp bios for motherboard */
++	{ 4, 2 },
++	/* address + 6 is reserved, and may be taken by IDE.
++	 * Unfortunately, Adaptec doesn't know this :-(, */
++	{ 7, 1 },
 +};
-+MODULE_DEVICE_TABLE(pnp, floppy_pnpids);
 +
- #else
++static void floppy_release_allocated_regions(int fdc, const struct io_region *p)
++{
++	while (p != io_regions) {
++		p--;
++		release_region(FDCS->address + p->offset, p->size);
++	}
++}
++
++#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
++
++static int floppy_request_regions(int fdc)
++{
++	const struct io_region *p;
++
++	for (p = io_regions; p < ARRAY_END(io_regions); p++) {
++		if (!request_region(FDCS->address + p->offset, p->size, "floppy")) {
++			DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + p->offset);
++			floppy_release_allocated_regions(fdc, p);
++			return -EBUSY;
++		}
++	}
++	return 0;
++}
++
++static void floppy_release_regions(int fdc)
++{
++	floppy_release_allocated_regions(fdc, ARRAY_END(io_regions));
++}
++
+ static int floppy_grab_irq_and_dma(void)
+ {
+ 	unsigned long flags;
+@@ -4399,18 +4440,8 @@ static int floppy_grab_irq_and_dma(void)
  
- __setup("floppy=", floppy_setup);
+ 	for (fdc = 0; fdc < N_FDC; fdc++) {
+ 		if (FDCS->address != -1) {
+-			if (!request_region(FDCS->address + 2, 4, "floppy")) {
+-				DPRINT("Floppy io-port 0x%04lx in use\n",
+-				       FDCS->address + 2);
+-				goto cleanup1;
+-			}
+-			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
+-				DPRINT("Floppy io-port 0x%04lx in use\n",
+-				       FDCS->address + 7);
+-				goto cleanup2;
+-			}
+-			/* address + 6 is reserved, and may be taken by IDE.
+-			 * Unfortunately, Adaptec doesn't know this :-(, */
++			if (floppy_request_regions(fdc))
++				goto cleanup;
+ 		}
+ 	}
+ 	for (fdc = 0; fdc < N_FDC; fdc++) {
+@@ -4432,15 +4463,11 @@ static int floppy_grab_irq_and_dma(void)
+ 	fdc = 0;
+ 	irqdma_allocated = 1;
+ 	return 0;
+-cleanup2:
+-	release_region(FDCS->address + 2, 4);
+-cleanup1:
++cleanup:
+ 	fd_free_irq();
+ 	fd_free_dma();
+-	while (--fdc >= 0) {
+-		release_region(FDCS->address + 2, 4);
+-		release_region(FDCS->address + 7, 1);
+-	}
++	while (--fdc >= 0)
++		floppy_release_regions(fdc);
+ 	spin_lock_irqsave(&floppy_usage_lock, flags);
+ 	usage_count--;
+ 	spin_unlock_irqrestore(&floppy_usage_lock, flags);
+@@ -4501,10 +4528,8 @@ static void floppy_release_irq_and_dma(v
+ #endif
+ 	old_fdc = fdc;
+ 	for (fdc = 0; fdc < N_FDC; fdc++)
+-		if (FDCS->address != -1) {
+-			release_region(FDCS->address + 2, 4);
+-			release_region(FDCS->address + 7, 1);
+-		}
++		if (FDCS->address != -1)
++			floppy_release_regions(fdc);
+ 	fdc = old_fdc;
+ }
+ 
 
 
