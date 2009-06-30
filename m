@@ -1,39 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbZF3P6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbZF3QAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753046AbZF3P6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 11:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbZF3P6V
+	id S1756188AbZF3QAd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 12:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZF3QAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 11:58:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46194 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751938AbZF3P6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 11:58:20 -0400
-Date: Tue, 30 Jun 2009 18:58:20 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>, ebiederm@xmission.com
-Subject: Re: [PATCH v4] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090630155820.GC8122@redhat.com>
-References: <20090630064515.GG20289@redhat.com> <86802c440906300018p8c5156dy3e8d84b8c263797e@mail.gmail.com>
+	Tue, 30 Jun 2009 12:00:25 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:33477 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZF3QAY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 12:00:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=EEIlVV2TfqjDB6OeD34rW+KRtuElcgDGHwKr7CRdsANZq3L2Mu2jnxJ9scSBRqCUTY
+         H3WtlDmHUzA9PLaBUAsRBFTFnkAvHbHCKEiXSjIOmWle4fQpX3tKKs6qyOfeCIZHVG21
+         NZb1snkkOav42krCvCta0c87tFhDd6W6egAFg=
+Message-ID: <4A4A3697.7020804@tuffmail.co.uk>
+Date: Tue, 30 Jun 2009 17:00:23 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440906300018p8c5156dy3e8d84b8c263797e@mail.gmail.com>
+To: kristen.c.accardi@intel.com
+CC: linux-pci@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: pciehp resume handler - racy?
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 12:18:19AM -0700, Yinghai Lu wrote:
-> how about kexec second kernel in KVM ?
-> 
-> x2apic_preenabled will be set in second kernel.
-> 
-By the way anybody knows why kexec does not use BIOS reset code
-(cmos 0xf offset) to jump into new kernel after hard reset?
+Hi,
 
---
-			Gleb.
+I've been hacking on the PCI hotplug driver otherwise known as
+eeepc-laptop.  At one point I reliably triggered a race on resume.  In
+the hot-unplug case, it seemed that the resume handler would try to
+remove the PCI device at the same time as an acpi notification (run in a
+workqueue) tried to do the same thing.  The result was an OOPS.  My
+conclusion is that the PCI hotplug core does not protect against
+multiple simultaneous removals of the same device.
+
+pciehp appears to have an analogous problem.  Assuming pciehp_force is
+set, the resume handler can hot-unplug the device.  The interrupt
+handler could try to hot-unplug the device at the same time.  Should the
+resume handler take the slot mutex to avoid this problem?
+
+diff --faked-up a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+--- a/drivers/pci/hotplug/pciehp_core.c
++++ b/drivers/pci/hotplug/pciehp_core.c
+@@ -382,15 +382,18 @@ static int pciehp_resume (struct pcie_device *dev)
+ 		/* reinitialize the chipset's event detection logic */
+ 		pcie_enable_notification(ctrl);
+ 
+ 		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
++		mutex_lock(&t_slot->lock);
+ 
+ 		/* Check if slot is occupied */
+ 		t_slot->hpc_ops->get_adapter_status(t_slot, &status);
+ 		if (status)
+ 			pciehp_enable_slot(t_slot);
+ 		else
+ 			pciehp_disable_slot(t_slot);
++
++		mutex_unlock(&t_slot->lock);
+ 	}
+ 	return 0;
+ }
+ #endif /* PM */
+
+
+Regards
+Alan
+
