@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZF3KyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZF3Kyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751838AbZF3KyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZF3KyD
+	id S1756065AbZF3Kyc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZF3KyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:54:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39037 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752687AbZF3KyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:54:01 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19IoYYnsVRIEf3gIh1U8Ixlo8mjLKh5TW8h5NxLYI
-	TEAHr4dGqn4mpQ
-Subject: [patch] x86: fix arch/x86/lib/clear_page_64.S::clear_page_c
- annotation
-From: Mike Galbraith <efault@gmx.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Content-Type: text/plain
-Date: Tue, 30 Jun 2009 12:54:00 +0200
-Message-Id: <1246359240.6103.34.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+	Tue, 30 Jun 2009 06:54:23 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:45973 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753222AbZF3KyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 06:54:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nOnq1farhk07Fbica8W/Abp+6oe9kcSJxDAbZglZAt13p1LR0GreKxh7vL3hRVZiRZ
+         1Q66n7IOi0BxZQMWwxQbpGhJu6C+TmLoaN+3ISs5imgBV+0DXd01IDCjr4qaeKL5PZhi
+         YAR8wl2pBSjmZyvPc53cL546QYlbWDCtoks6g=
+Date: Tue, 30 Jun 2009 12:54:18 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [QUESTION] trace_function_graph: consumed event may be invalid
+Message-ID: <20090630105416.GA5249@nowhere>
+References: <4A49C96C.6070305@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A49C96C.6070305@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: fix arch/x86/lib/clear_page_64.S::clear_page_c annotation.
+On Tue, Jun 30, 2009 at 04:14:36PM +0800, Lai Jiangshan wrote:
+> 
+> In get_return_for_leaf() {
+> 	......
+> 	ring_buffer_consume()
+> 	......
+> 	access to @curr->ent.pid
+> }
+> 
+> @curr is saved at consumed event, if this event is the last event
+> in the page, the ring_buffer may reuse the page. It will become invalid.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-LKML-Reference: <new-submission>
 
----
- arch/x86/lib/clear_page_64.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Indeed!
 
-Index: linux-2.6/arch/x86/lib/clear_page_64.S
-===================================================================
---- linux-2.6.orig/arch/x86/lib/clear_page_64.S
-+++ linux-2.6/arch/x86/lib/clear_page_64.S
-@@ -6,14 +6,14 @@
-  * rdi	page
-  */			
- 	ALIGN
--clear_page_c:
-+ENTRY(clear_page_c)
- 	CFI_STARTPROC
- 	movl $4096/8,%ecx
- 	xorl %eax,%eax
- 	rep stosq
- 	ret
- 	CFI_ENDPROC
--ENDPROC(clear_page)
-+ENDPROC(clear_page_c)
  
- ENTRY(clear_page)
- 	CFI_STARTPROC
+> Is there any other code to ensure it valid when we `cat trace_pipe`?
+> 
+> Lai.
 
+
+The only solution I see is to do a copy of the entry before consuming it.
+I'll try that, thanks for your report!
+
+Frederic.
 
