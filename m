@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZF3Wlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753566AbZF3WmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZF3Wlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZF3Wln
+	id S1753566AbZF3WmC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:42:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZF3Wlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:41:43 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51101 "EHLO mx1.suse.de"
+	Tue, 30 Jun 2009 18:41:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55780 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZF3Wlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:41:42 -0400
-Date: Tue, 30 Jun 2009 15:30:40 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Kurt Garloff <garloff@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
-Message-ID: <20090630223040.GA3802@suse.de>
-References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org>
+	id S1755358AbZF3Wlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 18:41:49 -0400
+Date: Wed, 1 Jul 2009 00:41:46 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: Joe Perches <joe@perches.com>
+Cc: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove unnecessary semicolons
+In-Reply-To: <1246382153.6259.2.camel@Joe-Laptop.home>
+Message-ID: <alpine.LNX.2.00.0907010040360.4994@wotan.suse.de>
+References: <cover.1246173664.git.joe@perches.com>  <1ee6dd55768ebbbeb505c47e2944b683633be630.1246173680.git.joe@perches.com>  <20090628185102.47663e61@lxorguk.ukuu.org.uk>  <20090628.113325.244931913.davem@davemloft.net>  <1246214678.13673.31.camel@Joe-Laptop.home>
+  <alpine.LNX.2.00.0906282314250.18021@wotan.suse.de> <1246382153.6259.2.camel@Joe-Laptop.home>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 11:27:57PM +0100, Maciej W. Rozycki wrote:
-> On Wed, 24 Jun 2009, Greg KH wrote:
-> 
-> > This patch introduces a sysctl /proc/sys/kernel/panic_on_io_nmi, which
-> > defaults to 0 (off).
-> > 
-> > When enabled, the kernel panics when the kernel receives an NMI caused
-> > by an IO error.
-> > 
-> > The IO error triggered NMI indicates a serious system condition, which
-> > could result in IO data corruption. Rather than contiuing, panicing and
-> > dumping might be a better choice, so one can figure out what's causing
-> > the IO error.
-> > 
-> > This could be especially important to companies running IO intensive
-> > applications where corruption must be avoided, e.g. a banks databases.
-> 
->  These days an IOCK NMI typically happens in response to a PCI SERR -- it 
-> may be useful to traverse PCI buses to find the offender and dump this 
-> information on this occasion too.  The south bridge may have additional 
-> status too.
+On Tue, 30 Jun 2009, Joe Perches wrote:
 
-Sure, that would be great to have.  Care to make a patch?  :)
+> > Apparently subsystem maintainers started to pick the relevant bits 
+> > into their trees. After checking which ones were merged and which ones 
+> > were not, if you could create a single patch with the remaining bits, 
+> > I'll happily take them through the trivial queue.
+> I've no idea who picks up what. 
 
-thanks,
+That's the downside of having sent this as indepdendent pieces, yes.
 
-greg k-h
+> Should this be rerolled against linux-next in a couple of weeks?
+
+Yup, I think that is a good option.
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
+
