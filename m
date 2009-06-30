@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZF3SFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZF3SeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbZF3SFS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 14:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZF3SFE
+	id S1752828AbZF3SeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 14:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbZF3Sd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 14:05:04 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:44336 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbZF3SFC (ORCPT
+	Tue, 30 Jun 2009 14:33:58 -0400
+Received: from poseidon.ceid.upatras.gr ([150.140.141.169]:47256 "EHLO
+	poseidon.ceid.upatras.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752583AbZF3Sd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 14:05:02 -0400
-Date: Tue, 30 Jun 2009 11:04:49 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Gary Hade <garyhade@us.ibm.com>, Matthew Wilcox <matthew@wil.cx>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-pci@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86/pci: fix boundary checking when using root CRS
-Message-ID: <20090630180449.GA7183@us.ibm.com>
-References: <20090624122433.GA24781@elte.hu> <20090624145119.GA12664@elte.hu> <4A429EBB.5010209@kernel.org> <4A42DA6F.2030305@kernel.org> <20090629181603.261ccd03@jbarnes-g45>
+	Tue, 30 Jun 2009 14:33:57 -0400
+X-Greylist: delayed 1553 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 14:33:56 EDT
+Message-ID: <4A4A5482.3050108@ceid.upatras.gr>
+Date: Tue, 30 Jun 2009 21:08:02 +0300
+From: Korkakakis Nikos <korkakak@ceid.upatras.gr>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090504)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090629181603.261ccd03@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: linux-kernel@vger.kernel.org, linux-newbie@vger.kernel.org
+Subject: kmalloc returns twice  the same memory address?
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-7
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 06:16:03PM -0700, Jesse Barnes wrote:
-> On Wed, 24 Jun 2009 19:01:19 -0700
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > 
-> > don't touch info->res_num if we are out of space
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> Gary, any comments on these?
+Hi there all,
 
-Jesse,
-"[PATCH 1/3] x86/pci: fix boundary checking when using root CRS"
-which convinced that my code was incorrect and
-"[PATCH 2/3] x86/pci: get root CRS before scan childs -v3"
-look good to me from both code review and functional [1] standpoints.
-  Acked-by: <garyhade@us.ibm.com>
-  Tested-by: <garyhade@us.ibm.com>
+first of all I am writing a kernel module to handle some device using;
+uname -a: Linux localhost 2.6.30-gentoo-r1 #1 SMP Sun Jun 28 02:52:23
+EEST 2009 i686 AMD Phenom(tm) II X4 940 Processor AuthenticAMD GNU/Linux.
+During  the init phase of the module I allocate some memory via
+kmalloc() in the following manner;
 
-[1] Successful boot of patched 2.6.31-rc1 with pci=use_crs
-    followed by successful hot-add and hot-remove of PCI-X
-    and PCIe cards on an IBM x3850.
+    omm_dev_buffer = kmalloc(PAGE_SIZE, GFP_KERNEL | GFP_DMA | GFP_ATOMIC);
+    if (!omm_dev_buffer) {
+        return -ENOMEM;
+    }
+    clear_buffer (omm_dev_buffer, PAGE_SIZE);
+    printk("omm_dev_init: kmalloc'ed omm_dev_buffer OK\n");
+    omm_messages = kmalloc(PAGE_SIZE, GFP_KERNEL | GFP_DMA);
+    printk ("dev_buff @ 0x%x messages @
+0x%x\n",omm_dev_buffer,omm_messages);
+    if (!omm_messages) {
+        kfree(omm_dev_buffer); /* failing at this point means that the
+other allocation succeeded */
+        return -ENOMEM;
+    }
+    clear_buffer (omm_messages, PAGE_SIZE);
 
-Thanks Yinghai.
 
-Gary
+where clear_buffer is just a wrapper for memset. My problem is that the
+two consecutive memory allocation operations return the same memory
+space (both pointers point the same address). If I change the malloc'ed
+size ie PAGE_SIZE*2 then the process works as expected. kzalloc behaves
+the same way, while alloc_page with the same flags(i.e.
+alloc_page(GFP_KERNEL | GFP_DMA | GFP_ATOMIC) ) return a different
+memory space and works as expected.
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+What am I missing here?
 
+Thank's in advance :D
+
+Nikos
