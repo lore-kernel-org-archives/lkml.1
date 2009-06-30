@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZF3TPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZF3TP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbZF3TPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZF3TPh
+	id S1756241AbZF3TP7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZF3TPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:15:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59214 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Jun 2009 15:15:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34779 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZF3TPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:15:36 -0400
-Date: Tue, 30 Jun 2009 21:15:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>, tj@kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and
-	improve lpage NUMA support
-Message-ID: <20090630191517.GB20567@elte.hu>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org>
+	id S1755975AbZF3TPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:15:45 -0400
+Date: Tue, 30 Jun 2009 22:15:45 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: Re: [PATCH v4] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090630191545.GF8122@redhat.com>
+References: <20090630064515.GG20289@redhat.com> <86802c440906300018p8c5156dy3e8d84b8c263797e@mail.gmail.com> <20090630155820.GC8122@redhat.com> <m11vp18xmp.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090629163937.94c8cedd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <m11vp18xmp.fsf@fess.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 29 Jun 2009 19:20:53 -0400 (EDT)
-> Christoph Lameter <cl@linux-foundation.org> wrote:
+On Tue, Jun 30, 2009 at 10:00:46AM -0700, Eric W. Biederman wrote:
+> Gleb Natapov <gleb@redhat.com> writes:
 > 
-> > On Wed, 24 Jun 2009, Andrew Morton wrote:
-> > 
-> > > I assume from the tremendous number of 
-> > > for_each_possible_cpu()s that CPU hotplug awareness won't be 
-> > > happening.
-> > 
-> > Per cpu areas are allocated for all possible processors. No need 
-> > to handle offlining and onlining them.
+> > On Tue, Jun 30, 2009 at 12:18:19AM -0700, Yinghai Lu wrote:
+> >> how about kexec second kernel in KVM ?
+> >> 
+> >> x2apic_preenabled will be set in second kernel.
+> >> 
+> > By the way anybody knows why kexec does not use BIOS reset code
+> > (cmos 0xf offset) to jump into new kernel after hard reset?
 > 
-> Well yes.  My point is that this is a bug-not-a-feature ;)
+> After a hard reset.  That simply isn't possible. A hard
+> reset clears everything even memory.
+> 
+I mean "soft reset". At least on 286 in order to move from protected
+mode to real mode "soft reset" was issued via kbd controller or via
+triple fault. BIOS reset code was used to avoid POST. Obviously back
+than this kind of reset haven't cleared memory. I'll try to check what
+happens on a modern HW.
 
-Yeah, it's a bug for something like a virtual environment which 
-boots generic kernels that might have 64 possible CPUs (on a true 
-64-way system), but which will have fewer in practice.
+BTW Linux sets BIOS reset code to "return by long jump" in
+smpboot_setup_warm_reset() for some reason.
 
-It's pretty basic stuff: the on-demand allocation of percpu 
-resources.
+> You might be able to get a full cpu reset but not a reset of the I/O
+> devices.
+> 
+> The premise of kexec is that we are doing things on our own, and don't
+> get a 3rd piece of software involved that has not been heavily tested
+> on the path we want to use.  Occassionally it is a pain to do everything
+> ourselves but at least when we do and we test it we know it is going
+> to work.
+> 
+> Cpu designers lately seem fond of adding features that require all
+> kind of coordination to turn on and off.  We handle the hardware
+> virtualization mode features now, and if x2apic has similar problems
+> being turned on and off I am certain we can handle that case in a
+> similar fashion.
+> 
+> When we can my preference is to keep code like that out of the
+> kexec on panic path if we can figure out how to write the software
+> to do something reasonable.
+> 
+> Once we figure out how to work without putting the interrupt controllers
+> in legacy mode to handle the timer interrupts I expect all kinds of
+> things will become simpler.
+> 
+If the "soft reset" method can work it worth to implemented. I am not
+suggesting we should make it default (just line --real-mode is not default).
 
-	Ingo
+--
+			Gleb.
