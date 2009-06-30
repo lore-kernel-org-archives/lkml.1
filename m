@@ -1,99 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZF3TgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756737AbZF3Tga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbZF3TgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:36:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZF3TgD
+	id S1756737AbZF3Tga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbZF3TgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:36:03 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:49803 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752939AbZF3TgC (ORCPT
+	Tue, 30 Jun 2009 15:36:15 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:51510 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756283AbZF3TgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:36:02 -0400
-To: Avi Kivity <avi@redhat.com>
-Cc: Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>
-References: <20090629132926.GB20289@redhat.com>
-	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>
-	<m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com>
-	<m1ljn94k16.fsf@fess.ebiederm.org> <4A4A6499.9000406@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 30 Jun 2009 12:36:01 -0700
-In-Reply-To: <4A4A6499.9000406@redhat.com> (Avi Kivity's message of "Tue\, 30 Jun 2009 22\:16\:41 +0300")
-Message-ID: <m1k52t1plq.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 30 Jun 2009 15:36:13 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=cCGIhjvHqPhbeBmTRFmThFrgo1laSlNWDCPW2QPVJxbAnKexl/KR73sIyUlqKMFo2
+	vp8t1rx9Nw8OrjJon7GqA==
+Date: Tue, 30 Jun 2009 12:35:59 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <20090630110011.GB17561@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com>
+References: <alpine.LFD.2.01.0906241134510.3240@localhost.localdomain> <20090624120617.1e6799b5.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org>
+ <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie>
+ <20090629122029.93cdcc39.akpm@linux-foundation.org> <20090630110011.GB17561@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org, gleb@redhat.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Avi Kivity <avi@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0003]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@redhat.com> writes:
+On Tue, 30 Jun 2009, Mel Gorman wrote:
 
-> On 06/30/2009 10:08 PM, Eric W. Biederman wrote:
->>> Can you elaborate?  For kvm guests, the hardware is reasonably will implemented
->>> and if not we will fix it.  We need not cripple a feature just because some
->>> hardware is broken.
->>>      
->>
->> The short version is I don't know what work arounds we will ultimately
->> decide to deploy to work with real hardware.
->>
->> I have been seriously contemplating causing a cpu hot-unplug request
->> to fail if we are in ioapic mode and we have irqs routed to the cpu
->> that is being unplugged.
->>    
->
-> Well, obviously we need to disassociate any irqs from such a cpu.  Could be done
-> from the kernel or only enforced by the kernel.
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 175a67a..5f4656e 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -230,14 +230,21 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+>  		/*
+>  		 * This task already has access to memory reserves and is
+>  		 * being killed. Don't allow any other task access to the
+> -		 * memory reserve.
+> +		 * memory reserve unless the current process is the one
+> +		 * selected for OOM-killing. If the current process has
+> +		 * been OOM-killed and we are OOM again, another process
+> +		 * needs to be considered for OOM-kill
+>  		 *
+>  		 * Note: this may have a chance of deadlock if it gets
+>  		 * blocked waiting for another task which itself is waiting
+>  		 * for memory. Is there a better alternative?
+>  		 */
+> -		if (test_tsk_thread_flag(p, TIF_MEMDIE))
+> -			return ERR_PTR(-1UL);
+> +		if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
+> +			if (p == current)
+> +				continue;
+> +			else
+> +				return ERR_PTR(-1UL);
+> +		}
+>  
+>  		/*
+>  		 * This is in the process of releasing memory so wait for it
 
-Using the normal irq migration path we can move irqs off of a cpu reliably
-there just aren't any progress guarantees.
+This will panic the machine if current is the only user thread running or 
+eligible for oom kill (all others could have mm's with OOM_DISABLE set).  
+Currently, such tasks can exit or kthreads can free memory so that the oom 
+is recoverable.
 
->> Even with perfectly working hardware it is not possible in the general
->> case to migrate an ioapic irq from one cpu to another outside of an
->> interrupt handler without without risking dropping an interrupt.
->>    
->
-> Can't you generate a spurious interrupt immediately after the migration?  An
-> extra interrupt shouldn't hurt.
+The problem with this approach is that it increases the liklihood that 
+memory reserves will be totally depleted when several threads are 
+competing for them.
 
-Nope.  The ioapics can't be told to send an interrupt.
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 5d714f8..5896469 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1539,6 +1539,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+>  	if (gfp_mask & __GFP_NORETRY)
+>  		return 0;
+>  
+> +	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
+> +	if (test_thread_flag(TIF_MEMDIE)) {
+> +		if (gfp_mask & __GFP_NOFAIL)
+> +			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
+> +		else
+> +			return 0;
+> +	}
+> +
 
->> There is no general way to know you have seen the last interrupt
->> floating around your system.  PCI ordering rules don't help because
->> the ioapics can potentially take an out of band channel.
->>    
->
-> Can you describe the problem scenario? an ioapic->lapic message delivered to a
-> dead cpu?
+There's a second bug in the refactored page allocator: when the oom killer 
+is invoked and it happens to kill current, alloc_flags is never updated 
+because it loops back to `restart', which is past gfp_to_alloc_flags().
 
-Dropped irqs..  Driver hangs because it is waiting for an irq.  Hardware
-hangs because it is waiting for the cpu to process the irq.
+When that is fixed with the patch below, gfp_mask & __GFP_NOFAIL will 
+never be true here in your scenario, where the oom killer kills current, 
+because __alloc_pages_high_priority() will infinitely loop.
 
-Potentially we get a level triggered irq that is never acked by
-the cpu that won't arm until the cpu send an ack, and we can't
-send an ack from another cpu.
+>  	/*
+>  	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
+>  	 * means __GFP_NOFAIL, but that may not be true in other
+> 
 
-Eric
+This is needed for 2.6.31-rc2.
+
+
+mm: update alloc_flags after oom killer has been called
+
+It is possible for the oom killer to select current as the task to kill.  
+When this happens, alloc_flags needs to be updated accordingly to set 
+ALLOC_NO_WATERMARKS so the subsequent allocation attempt may use memory 
+reserves as the result of its thread having TIF_MEMDIE set if the 
+allocation is not __GFP_NOMEMALLOC.
+
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1756,6 +1756,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 
+ 	wake_all_kswapd(order, zonelist, high_zoneidx);
+ 
++restart:
+ 	/*
+ 	 * OK, we're below the kswapd watermark and have kicked background
+ 	 * reclaim. Now things get more complex, so set up alloc_flags according
+@@ -1763,7 +1764,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
+ 	 */
+ 	alloc_flags = gfp_to_alloc_flags(gfp_mask);
+ 
+-restart:
+ 	/* This is the last chance, in general, before the goto nopage. */
+ 	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
+ 			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
