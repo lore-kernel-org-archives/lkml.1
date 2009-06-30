@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbZGAAcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZGAAc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbZGAAcm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759665AbZGAAaH
+	id S1760913AbZGAAc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbZGAAaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:07 -0400
-Received: from kroah.org ([198.145.64.141]:34329 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:08 -0400
+Received: from kroah.org ([198.145.64.141]:34332 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754623AbZGAAaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:57 2009
-Message-Id: <20090701000357.771968716@mini.kroah.org>
+	id S1756693AbZGAAaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:04 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:58 2009
+Message-Id: <20090701000357.950820556@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:54 -0700
+Date: Tue, 30 Jun 2009 16:59:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Karsten Keil <keil@b1-systems.de>
-Subject: [patch 10/30] ISDN: Fix DMA alloc for hfcpci
+       Jean Delvare <jdelvare@suse.de>,
+       Steve Conklin <steve.conklin@canonical.com>,
+       Leann Ogasawara <leann.ogasawara@canonical.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 11/30] x86: Add quirk for reboot stalls on a Dell Optiplex 360
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=isdn-fix-dma-alloc-for-hfcpci.patch
+Content-Disposition: inline; filename=x86-add-quirk-for-reboot-stalls-on-a-dell-optiplex-360.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,103 +33,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karsten Keil <keil@b1-systems.de>
+From: Jean Delvare <jdelvare@suse.de>
 
-commit 8a745b9d91962991ce87a649a4dc3af3206c2c8b upstream.
+commit 4a4aca641bc4598e77b866804f47c651ec4a764d upstream.
 
-Replace wrong code with correct DMA API functions.
+The Dell Optiplex 360 hangs on reboot, just like the Optiplex 330, so
+the same quirk is needed.
 
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Steve Conklin <steve.conklin@canonical.com>
+Cc: Leann Ogasawara <leann.ogasawara@canonical.com>
+LKML-Reference: <200906051202.38311.jdelvare@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/isdn/hisax/hfc_pci.c |   41 ++++++++++++++++++++++++++++++-----------
- drivers/isdn/hisax/hisax.h   |    2 +-
- 2 files changed, 31 insertions(+), 12 deletions(-)
+ arch/x86/kernel/reboot.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/drivers/isdn/hisax/hfc_pci.c
-+++ b/drivers/isdn/hisax/hfc_pci.c
-@@ -82,8 +82,9 @@ release_io_hfcpci(struct IsdnCardState *
- 	Write_hfc(cs, HFCPCI_INT_M2, cs->hw.hfcpci.int_m2);
- 	pci_write_config_word(cs->hw.hfcpci.dev, PCI_COMMAND, 0);	/* disable memory mapped ports + busmaster */
- 	del_timer(&cs->hw.hfcpci.timer);
--	kfree(cs->hw.hfcpci.share_start);
--	cs->hw.hfcpci.share_start = NULL;
-+	pci_free_consistent(cs->hw.hfcpci.dev, 0x8000,
-+		cs->hw.hfcpci.fifos, cs->hw.hfcpci.dma);
-+	cs->hw.hfcpci.fifos = NULL;
- 	iounmap((void *)cs->hw.hfcpci.pci_io);
- }
- 
-@@ -1663,8 +1664,19 @@ setup_hfcpci(struct IsdnCard *card)
- 					     dev_hfcpci);
- 		i++;
- 		if (tmp_hfcpci) {
-+			dma_addr_t	dma_mask = DMA_BIT_MASK(32) & ~0x7fffUL;
- 			if (pci_enable_device(tmp_hfcpci))
- 				continue;
-+			if (pci_set_dma_mask(tmp_hfcpci, dma_mask)) {
-+				printk(KERN_WARNING
-+					"HiSax hfc_pci: No suitable DMA available.\n");
-+				continue;
-+			}
-+			if (pci_set_consistent_dma_mask(tmp_hfcpci, dma_mask)) {
-+				printk(KERN_WARNING
-+					"HiSax hfc_pci: No suitable consistent DMA available.\n");
-+				continue;
-+			}
- 			pci_set_master(tmp_hfcpci);
- 			if ((card->para[0]) && (card->para[0] != (tmp_hfcpci->resource[ 0].start & PCI_BASE_ADDRESS_IO_MASK)))
- 				continue;
-@@ -1693,22 +1705,29 @@ setup_hfcpci(struct IsdnCard *card)
- 		printk(KERN_WARNING "HFC-PCI: No IO-Mem for PCI card found\n");
- 		return (0);
- 	}
-+
- 	/* Allocate memory for FIFOS */
--	/* Because the HFC-PCI needs a 32K physical alignment, we */
--	/* need to allocate the double mem and align the address */
--	if (!(cs->hw.hfcpci.share_start = kmalloc(65536, GFP_KERNEL))) {
--		printk(KERN_WARNING "HFC-PCI: Error allocating memory for FIFO!\n");
-+	cs->hw.hfcpci.fifos = pci_alloc_consistent(cs->hw.hfcpci.dev,
-+					0x8000, &cs->hw.hfcpci.dma);
-+	if (!cs->hw.hfcpci.fifos) {
-+		printk(KERN_WARNING "HFC-PCI: Error allocating FIFO memory!\n");
-+		return 0;
-+	}
-+	if (cs->hw.hfcpci.dma & 0x7fff) {
-+		printk(KERN_WARNING
-+		    "HFC-PCI: Error DMA memory not on 32K boundary (%lx)\n",
-+		    (u_long)cs->hw.hfcpci.dma);
-+		pci_free_consistent(cs->hw.hfcpci.dev, 0x8000,
-+			cs->hw.hfcpci.fifos, cs->hw.hfcpci.dma);
- 		return 0;
- 	}
--	cs->hw.hfcpci.fifos = (void *)
--	    (((ulong) cs->hw.hfcpci.share_start) & ~0x7FFF) + 0x8000;
--	pci_write_config_dword(cs->hw.hfcpci.dev, 0x80, (u_int) virt_to_bus(cs->hw.hfcpci.fifos));
-+	pci_write_config_dword(cs->hw.hfcpci.dev, 0x80, (u32)cs->hw.hfcpci.dma);
- 	cs->hw.hfcpci.pci_io = ioremap((ulong) cs->hw.hfcpci.pci_io, 256);
- 	printk(KERN_INFO
--	       "HFC-PCI: defined at mem %p fifo %p(%#x) IRQ %d HZ %d\n",
-+	       "HFC-PCI: defined at mem %p fifo %p(%lx) IRQ %d HZ %d\n",
- 	       cs->hw.hfcpci.pci_io,
- 	       cs->hw.hfcpci.fifos,
--	       (u_int) virt_to_bus(cs->hw.hfcpci.fifos),
-+	       (u_long)cs->hw.hfcpci.dma,
- 	       cs->irq, HZ);
- 
- 	spin_lock_irqsave(&cs->lock, flags);
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -694,7 +694,7 @@ struct hfcPCI_hw {
-         int nt_timer;
-         struct pci_dev *dev;
-         unsigned char *pci_io; /* start of PCI IO memory */
--        void *share_start; /* shared memory for Fifos start */
-+	dma_addr_t dma; /* dma handle for Fifos */
-         void *fifos; /* FIFO memory */ 
-         int last_bfifo_cnt[2]; /* marker saving last b-fifo frame count */
- 	struct timer_list timer;
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -169,6 +169,15 @@ static struct dmi_system_id __initdata r
+ 			DMI_MATCH(DMI_BOARD_NAME, "0KW626"),
+ 		},
+ 	},
++	{   /* Handle problems with rebooting on Dell Optiplex 360 with 0T656F */
++		.callback = set_bios_reboot,
++		.ident = "Dell OptiPlex 360",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 360"),
++			DMI_MATCH(DMI_BOARD_NAME, "0T656F"),
++		},
++	},
+ 	{	/* Handle problems with rebooting on Dell 2400's */
+ 		.callback = set_bios_reboot,
+ 		.ident = "Dell PowerEdge 2400",
 
 
