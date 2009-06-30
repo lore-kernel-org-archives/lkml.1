@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbZF3Vtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZF3Vux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbZF3Vtz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZF3Vts
+	id S1758906AbZF3Vux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZF3Vuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:49:48 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:58456 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZF3Vtr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:49:47 -0400
-Date: Tue, 30 Jun 2009 14:49:37 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH mmotm] hwmon: fix lis3-spi for CONFIG_PM=n
-Message-Id: <20090630144937.055280ca.randy.dunlap@oracle.com>
-In-Reply-To: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>
-References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A4A8873.00BA:SCFSTAT5015188,ss=1,fgs=0
+	Tue, 30 Jun 2009 17:50:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45997 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbZF3Vup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:50:45 -0400
+Date: Tue, 30 Jun 2009 23:50:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip 3/3] kprobes: cleanup: use list instead of hlist
+	for insn_pages
+Message-ID: <20090630215023.GA22851@elte.hu>
+References: <20090630210757.17851.409.stgit@localhost.localdomain> <20090630210814.17851.64651.stgit@localhost.localdomain> <20090630212512.GA10831@elte.hu> <4A4A8804.1040004@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4A8804.1040004@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix build error when CONFIG_PM=n:
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-The suspend & resume function names are incorrect for the
-PM=n case.
+> Ingo Molnar wrote:
+> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> > 
+> >> Use struct list instead of struct hlist for managing insn_pages, 
+> >> because insn_pages doesn't use hash table.
+> > 
+> >>  struct kprobe_insn_page {
+> >> -	struct hlist_node hlist;
+> >> +	struct list_head list;
+> > 
+> > Hm, you know that this increases the size of kprobe_insn_page by 4/8 
+> > bytes, right?
+> 
+> Sure, that will increase size.
+> 
+> > hlists are not just used for hashes - but also when we want a more 
+> > compact / smaller list head.
+> 
+> Oh, I thought hlists are used for hash tables...
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/hwmon/lis3lv02d_spi.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+... because they are smaller, hence the hash table of list 
+heads becomes twice as dense as with list_head.
 
---- mmotm-2009-0630-1250.orig/drivers/hwmon/lis3lv02d_spi.c
-+++ mmotm-2009-0630-1250/drivers/hwmon/lis3lv02d_spi.c
-@@ -108,8 +108,8 @@ static int lis3lv02d_spi_resume(struct s
- }
- 
- #else
--#define lis3_spi_suspend	NULL
--#define lis3_spi_resume		NULL
-+#define lis3lv02d_spi_suspend	NULL
-+#define lis3lv02d_spi_resume	NULL
- #endif
- 
- static struct spi_driver lis302dl_spi_driver = {
+But otherwise it's an (almost) equivalent primitive to list_head, 
+with a slightly higher runtime cost versus better RAM footprint.
 
+> > How many kprobe_insn_page's can be allocated in the system, 
+> > maximally?
+> 
+> It's depends on how many probes you will use, but logically, 1 
+> kprobe_insn_pages is allocated per 4096/16 = 256 probes. So, if 
+> you use 25,600 probes on your system, memory consumption will 
+> increase 400/800 bytes.
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+it's your call really - just wanted to react on the 'because it 
+should be used for hash tables' comment in the changelog.
+
+	Ingo
