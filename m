@@ -1,73 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZF3HTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZF3HWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbZF3HTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 03:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZF3HTm
+	id S1757343AbZF3HWA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 03:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZF3HVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 03:19:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58658 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750802AbZF3HTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 03:19:42 -0400
-Date: Tue, 30 Jun 2009 17:19:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: <sfi-devel@simplefirmware.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: sfi tree build failure
-Message-Id: <20090630171937.75f64662.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__30_Jun_2009_17_19_37_+1000_R_vQQaDg=kY4xDj."
+	Tue, 30 Jun 2009 03:21:51 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:47229 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbZF3HVv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 03:21:51 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Arseniy Lartsev <ars3n@yandex.ru>
+Subject: Re: PROBLEM: USB ACM device does not work
+Date: Tue, 30 Jun 2009 09:22:04 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <200906282229.35713.ars3n@yandex.ru> <200906291507.45281.oliver@neukum.org> <200906291735.23024.ars3n@yandex.ru>
+In-Reply-To: <200906291735.23024.ars3n@yandex.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906300922.04257.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__30_Jun_2009_17_19_37_+1000_R_vQQaDg=kY4xDj.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Am Montag, 29. Juni 2009 15:35:15 schrieb Arseniy Lartsev:
+> On Monday 29 June 2009 17:07:44 Oliver Neukum wrote:
+> > Please printk xfertype in the error case of usb_submit_urb()
+>
+> It equals USB_ENDPOINT_XFER_INT.
 
-Hi all,
+Yet, your device shows bulk endpoints. Please enable DEBUG in cdc-acm.c
+and recompile with CONFIG_USB_DEBUG.
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+	Regards
+		Oliver
 
-In file included from include/acpi/platform/acenv.h:141,
-                 from include/acpi/acpi.h:56,
-                 from include/linux/acpi.h:38,
-                 from init/main.c:27:
-include/acpi/platform/aclinux.h:64:22: error: asm/acpi.h: No such file or d=
-irectory
-In file included from include/acpi/platform/aclinux.h:130,
-                 from include/acpi/platform/acenv.h:141,
-                 from include/acpi/acpi.h:56,
-                 from include/linux/acpi.h:38,
-                 from init/main.c:27:
-include/acpi/actypes.h:130: error: expected '=3D', ',', ';', 'asm' or '__at=
-tribute__' before 'UINT64'
-include/acpi/actypes.h:131: error: expected '=3D', ',', ';', 'asm' or '__at=
-tribute__' before 'INT64'
-include/acpi/actypes.h:910: error: expected ')' before '*' token
-include/acpi/actypes.h:913: error: expected ')' before '*' token
-
-and it went downhill from there :-(
-
-I have dropped the sfi tree for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__30_Jun_2009_17_19_37_+1000_R_vQQaDg=kY4xDj.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpJvIkACgkQjjKRsyhoI8wfyQCdETijduQEysCTGRBalS5tRu2V
-hC8An2QlF3+kk4HQOs1KE4BWfb2RmYJ3
-=5f9g
------END PGP SIGNATURE-----
-
---Signature=_Tue__30_Jun_2009_17_19_37_+1000_R_vQQaDg=kY4xDj.--
