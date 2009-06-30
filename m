@@ -1,110 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbZF3X3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZF3XaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbZF3X3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760820AbZF3X3I
+	id S1757606AbZF3XaE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760884AbZF3X3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:29:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60532 "EHLO hera.kernel.org"
+	Tue, 30 Jun 2009 19:29:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60531 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760762AbZF3X3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760771AbZF3X3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 19:29:05 -0400
-Date: Tue, 30 Jun 2009 23:28:49 GMT
+Date: Tue, 30 Jun 2009 23:28:36 GMT
 From: tip-bot for Anton Blanchard <anton@samba.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, anton@samba.org, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, anton@samba.org,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090630230141.182536873@samba.org>
-References: <20090630230141.182536873@samba.org>
-Subject: [tip:perfcounters/urgent] perf report: Add hypervisor dso
-Message-ID: <tip-fb9c818873a788c5c01c9868cc6050df96e2c7df@git.kernel.org>
-Git-Commit-ID: fb9c818873a788c5c01c9868cc6050df96e2c7df
+In-Reply-To: <20090630230141.088394681@samba.org>
+References: <20090630230141.088394681@samba.org>
+Subject: [tip:perfcounters/urgent] perf report: Fix reporting of hypervisor
+Message-ID: <tip-d8db1b57d31a6b30ea2f0df318eab50fc92b38d6@git.kernel.org>
+Git-Commit-ID: d8db1b57d31a6b30ea2f0df318eab50fc92b38d6
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Jun 2009 23:28:50 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Jun 2009 23:28:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb9c818873a788c5c01c9868cc6050df96e2c7df
-Gitweb:     http://git.kernel.org/tip/fb9c818873a788c5c01c9868cc6050df96e2c7df
+Commit-ID:  d8db1b57d31a6b30ea2f0df318eab50fc92b38d6
+Gitweb:     http://git.kernel.org/tip/d8db1b57d31a6b30ea2f0df318eab50fc92b38d6
 Author:     Anton Blanchard <anton@samba.org>
-AuthorDate: Wed, 1 Jul 2009 09:00:49 +1000
+AuthorDate: Wed, 1 Jul 2009 09:00:48 +1000
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 1 Jul 2009 01:25:20 +0200
 
-perf report: Add hypervisor dso
+perf report: Fix reporting of hypervisor
 
-Add a dso for hypervisor samples. We don't get any symbol
-information on the ppc64 hypervisor but this at least gives
-us a high level summary of the time spent in there.
+PERF_EVENT_MISC_* is not a bitmask, so we have to mask and compare.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 Cc: a.p.zijlstra@chello.nl
 Cc: paulus@samba.org
-LKML-Reference: <20090630230141.182536873@samba.org>
+LKML-Reference: <20090630230141.088394681@samba.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-report.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+ tools/perf/builtin-report.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 88e88c5..3f5d8ea 100644
+index 135b783..88e88c5 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -121,6 +121,7 @@ typedef union event_union {
- static LIST_HEAD(dsos);
- static struct dso *kernel_dso;
- static struct dso *vdso;
-+static struct dso *hypervisor_dso;
+@@ -1213,6 +1213,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	struct map *map = NULL;
+ 	void *more_data = event->ip.__more_data;
+ 	struct ip_callchain *chain = NULL;
++	int cpumode;
  
- static void dsos__add(struct dso *dso)
- {
-@@ -202,6 +203,11 @@ static int load_kernel(void)
+ 	if (sample_type & PERF_SAMPLE_PERIOD) {
+ 		period = *(u64 *)more_data;
+@@ -1256,7 +1257,9 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	if (comm_list && !strlist__has_entry(comm_list, thread->comm))
+ 		return 0;
  
- 	dsos__add(vdso);
- 
-+	hypervisor_dso = dso__new("[hypervisor]", 0);
-+	if (!hypervisor_dso)
-+		return -1;
-+	dsos__add(hypervisor_dso);
+-	if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
++	cpumode = event->header.misc & PERF_EVENT_MISC_CPUMODE_MASK;
 +
- 	return err;
- }
++	if (cpumode == PERF_EVENT_MISC_KERNEL) {
+ 		show = SHOW_KERNEL;
+ 		level = 'k';
  
-@@ -640,7 +646,8 @@ sort__sym_print(FILE *fp, struct hist_entry *self)
+@@ -1264,7 +1267,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
  
- 	if (self->sym) {
- 		ret += fprintf(fp, "[%c] %s",
--			self->dso == kernel_dso ? 'k' : '.', self->sym->name);
-+			self->dso == kernel_dso ? 'k' :
-+			self->dso == hypervisor_dso ? 'h' : '.', self->sym->name);
- 	} else {
- 		ret += fprintf(fp, "%#016llx", (u64)self->ip);
- 	}
-@@ -963,6 +970,9 @@ hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
- 			}
+ 		dprintf(" ...... dso: %s\n", dso->name);
  
- 			switch (context) {
-+			case PERF_CONTEXT_HV:
-+				dso = hypervisor_dso;
-+				break;
- 			case PERF_CONTEXT_KERNEL:
- 				dso = kernel_dso;
- 				break;
-@@ -1275,6 +1285,9 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 	} else {
- 		show = SHOW_HV;
- 		level = 'H';
-+
-+		dso = hypervisor_dso;
-+
- 		dprintf(" ...... dso: [hypervisor]\n");
- 	}
+-	} else if (event->header.misc & PERF_EVENT_MISC_USER) {
++	} else if (cpumode == PERF_EVENT_MISC_USER) {
  
+ 		show = SHOW_USER;
+ 		level = '.';
