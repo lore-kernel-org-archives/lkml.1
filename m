@@ -1,98 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbZF3XUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbZF3XUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbZF3XUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbZF3XSx
+	id S1760931AbZF3XUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbZF3XTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:18:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54192 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760385AbZF3XSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:18:52 -0400
-Date: Wed, 1 Jul 2009 01:18:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip 3/3] kprobes: cleanup: use list instead of hlist
-	for insn_pages
-Message-ID: <20090630231822.GC17968@elte.hu>
-References: <20090630210757.17851.409.stgit@localhost.localdomain> <20090630210814.17851.64651.stgit@localhost.localdomain> <20090630212512.GA10831@elte.hu> <4A4A8804.1040004@redhat.com> <20090630215023.GA22851@elte.hu> <4A4A9BF1.4090703@redhat.com>
+	Tue, 30 Jun 2009 19:19:18 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:59225 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760631AbZF3XTQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:19:16 -0400
+Date: Tue, 30 Jun 2009 19:18:43 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Ingo Molnar <mingo@elte.hu>
+cc: Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
+ lpage NUMA support
+In-Reply-To: <20090630230743.GA17968@elte.hu>
+Message-ID: <alpine.DEB.1.10.0906301917170.15482@gentwo.org>
+References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu>
+ <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <alpine.DEB.1.10.0906301847260.19482@gentwo.org> <20090630230743.GA17968@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4A9BF1.4090703@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 1 Jul 2009, Ingo Molnar wrote:
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> Say it says "256 CPUs".
 
-> Ingo Molnar wrote:
-> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> >>>
-> >>>> Use struct list instead of struct hlist for managing insn_pages, 
-> >>>> because insn_pages doesn't use hash table.
-> >>>>  struct kprobe_insn_page {
-> >>>> -	struct hlist_node hlist;
-> >>>> +	struct list_head list;
-> >>> Hm, you know that this increases the size of kprobe_insn_page by 4/8 
-> >>> bytes, right?
-> >> Sure, that will increase size.
-> >>
-> >>> hlists are not just used for hashes - but also when we want a more 
-> >>> compact / smaller list head.
-> >> Oh, I thought hlists are used for hash tables...
-> > 
-> > ... because they are smaller, hence the hash table of list 
-> > heads becomes twice as dense as with list_head.
-> > 
-> > But otherwise it's an (almost) equivalent primitive to list_head, 
-> > with a slightly higher runtime cost versus better RAM footprint.
-> > 
-> >>> How many kprobe_insn_page's can be allocated in the system, 
-> >>> maximally?
-> >> It's depends on how many probes you will use, but logically, 1 
-> >> kprobe_insn_pages is allocated per 4096/16 = 256 probes. So, if 
-> >> you use 25,600 probes on your system, memory consumption will 
-> >> increase 400/800 bytes.
-> > 
-> > it's your call really - just wanted to react on the 'because it 
-> > should be used for hash tables' comment in the changelog.
-> 
-> Hi Ingo,
-> 
-> Would I might be misunderstood?
-> 
-> struct list_head {
->         struct list_head *next, *prev;
-> };
-> 
-> struct hlist_node {
->         struct hlist_node *next, **pprev;
-> };
-> 
-> Both of list_head and hlist_node are the same size...
-
-ahhh ... a light goes up: i read it as hlist_head, while it's 
-hlist_node.
-
-You are right, hlist_node is a needless complication so your cleanup 
-is correct.
-
-	Ingo
+Ok then you found a bug in the virtualization software ;-).
