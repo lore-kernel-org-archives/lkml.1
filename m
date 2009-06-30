@@ -1,156 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZF3GHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbZF3GNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756899AbZF3GHf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 02:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZF3GH2
+	id S1754108AbZF3GNQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 02:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZF3GNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 02:07:28 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:50077 "EHLO bilbo.ozlabs.org"
+	Tue, 30 Jun 2009 02:13:00 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47014 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751613AbZF3GH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 02:07:27 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19017.43927.838745.689203@cargo.ozlabs.ibm.com>
-Date: Tue, 30 Jun 2009 16:07:19 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] perf_counter: Provide a way to enable counters on exec
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+	id S1751613AbZF3GNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 02:13:00 -0400
+Subject: Re: [PATCH] Introduce a boolean "single_bit_set" function.
+From: Petr Tesarik <ptesarik@suse.cz>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0906291448510.3864@localhost>
+References: <alpine.LFD.2.00.0904231339080.13089@localhost.localdomain>
+	 <49F0C817.8050407@caviumnetworks.com>
+	 <20090423165723.16c9f566.akpm@linux-foundation.org>
+	 <alpine.LFD.2.00.0904240632240.16107@localhost.localdomain>
+	 <20090424104651.7c751735.akpm@linux-foundation.org>
+	 <1246299311.7698.19.camel@nathan.suse.cz>
+	 <alpine.LFD.2.00.0906291448510.3864@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Organization: SUSE LINUX
+Date: Tue, 30 Jun 2009 08:12:59 +0200
+Message-Id: <1246342379.31661.5.camel@nathan.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides a way to mark a counter to be enabled on the next exec.
-This is useful for measuring the total activity of a program without
-including overhead from the process that launches it.
+Robert P. J. Day píše v Po 29. 06. 2009 v 14:50 -0400:
+> On Mon, 29 Jun 2009, Petr Tesarik wrote:
+> 
+> > Andrew Morton píše v Pá 24. 04. 2009 v 10:46 -0700:
+> > > On Fri, 24 Apr 2009 06:40:39 -0400 (EDT) "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+> > >
+> > > >   so it would be a simple matter to define the bit set boolean in
+> > > > terms of hweight_long(), yes?  so what about, in bitops.h:
+> > > >
+> > > >   static inline bool
+> > > >   exactly_one_bit_set(unsigned long w)
+> > > >   {
+> > > > 	return hweight_long(w) == 1;
+> > > >   }
+> > > >
+> > > >   static inline bool
+> > > >   more_than_one_bit_set(unsigned long w)
+> > > >   {
+> > > > 	return hweight_long(w) > 1;
+> > > >   }
+> > > >
+> >
+> > Andrew, you must be kidding! Are you seriously suggesting to replace
+> > a simple and instruction with a call to an extern library function
+> > with 17 instructions (not including the call and ret)?
+> >
+> > I'd better check the use of hweight in the kernel to eradicate as
+> > many calls to it as possible...
+> 
+>   since i originally muttered about this, the rationale behind it was
+> not for performance (obviously), but for semantic clarification, so
+> that when you saw the expression "n & (n-1)", it was more obvious
+> which test you were doing semantically:
+> 
+> 1) is n a power of 2?
+> 2) does n represent a single set bit?
+> 
+> nothing ever came of that, but that was the thinking behind it.
 
-This also changes the perf stat command to use this new facility.
+Yes, I can remember and I would still appreciate it. It's always better
+to show _what_ the code does rather than _how_ it does it.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-v2: only unclone if we enabled one or more counters.
+IIRC Andrew rejected your patch on the grounds that it is possible to
+replace the expression "n & (n-1)" with "hweight(n) == 1" if one wants
+to show that it really tests for a single bit set. But I don't like his
+proposal quite as much as yours, because of the big overhead.
 
-This differs from Ingo's approach a little in that I don't keep the
-counter force-disabled until exec, and I reuse the comm hook instead
-of having a new perf_counter_exec hook (not that a new hook would
-necessarily be a bad idea).  Also, my locking is a bit heavier, it's
-more or less like the old perf_counter_task_enable().
+In short, if you re-post your patch, I'll gladly join you in the battle
+of getting it in. ;-)
 
- include/linux/perf_counter.h |    3 +-
- kernel/perf_counter.c        |   50 ++++++++++++++++++++++++++++++++++++++++++
- tools/perf/builtin-stat.c    |    6 ++--
- 3 files changed, 55 insertions(+), 4 deletions(-)
+Petr Tesarik
 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 3078e23..5e970c7 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -179,8 +179,9 @@ struct perf_counter_attr {
- 				comm	       :  1, /* include comm data     */
- 				freq           :  1, /* use freq, not period  */
- 				inherit_stat   :  1, /* per task counts       */
-+				enable_on_exec :  1, /* next exec enables     */
- 
--				__reserved_1   : 52;
-+				__reserved_1   : 51;
- 
- 	__u32			wakeup_events;	/* wakeup every n events */
- 	__u32			__reserved_2;
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 66ab1e9..d55a50d 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -1429,6 +1429,53 @@ void perf_counter_task_tick(struct task_struct *curr, int cpu)
- }
- 
- /*
-+ * Enable all of a task's counters that have been marked enable-on-exec.
-+ * This expects task == current.
-+ */
-+static void perf_counter_enable_on_exec(struct task_struct *task)
-+{
-+	struct perf_counter_context *ctx;
-+	struct perf_counter *counter;
-+	unsigned long flags;
-+	int enabled = 0;
-+
-+	local_irq_save(flags);
-+	ctx = task->perf_counter_ctxp;
-+	if (!ctx || !ctx->nr_counters)
-+		goto out;
-+
-+	__perf_counter_task_sched_out(ctx);
-+
-+	spin_lock(&ctx->lock);
-+
-+	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
-+		if (!counter->attr.enable_on_exec)
-+			continue;
-+		counter->attr.enable_on_exec = 0;
-+		if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
-+			continue;
-+		counter->state = PERF_COUNTER_STATE_INACTIVE;
-+		counter->tstamp_enabled =
-+			ctx->time - counter->total_time_enabled;
-+		enabled = 1;
-+	}
-+
-+	/*
-+	 * Unclone this context if we enabled any counter.
-+	 */
-+	if (enabled && ctx->parent_ctx) {
-+		put_ctx(ctx->parent_ctx);
-+		ctx->parent_ctx = NULL;
-+	}
-+
-+	spin_unlock(&ctx->lock);
-+
-+	perf_counter_task_sched_in(task, smp_processor_id());
-+ out:
-+	local_irq_restore(flags);
-+}
-+
-+/*
-  * Cross CPU call to read the hardware counter
-  */
- static void __perf_counter_read(void *info)
-@@ -2949,6 +2996,9 @@ void perf_counter_comm(struct task_struct *task)
- {
- 	struct perf_comm_event comm_event;
- 
-+	if (task->perf_counter_ctxp)
-+		perf_counter_enable_on_exec(task);
-+
- 	if (!atomic_read(&nr_comm_counters))
- 		return;
- 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 201ef23..2e03524 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -116,8 +116,9 @@ static void create_perf_stat_counter(int counter, int pid)
- 					fd[cpu][counter], strerror(errno));
- 		}
- 	} else {
--		attr->inherit	= inherit;
--		attr->disabled	= 1;
-+		attr->inherit	     = inherit;
-+		attr->disabled	     = 1;
-+		attr->enable_on_exec = 1;
- 
- 		fd[0][counter] = sys_perf_counter_open(attr, pid, -1, -1, 0);
- 		if (fd[0][counter] < 0 && verbose)
-@@ -262,7 +263,6 @@ static int run_perf_stat(int argc, const char **argv)
- 	 * Enable counters and exec the command:
- 	 */
- 	t0 = rdclock();
--	prctl(PR_TASK_PERF_COUNTERS_ENABLE);
- 
- 	close(go_pipe[1]);
- 	wait(&status);
--- 
-1.6.0.4
 
