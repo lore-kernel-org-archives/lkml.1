@@ -1,176 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZF3GD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZF3GHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZF3GD6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 02:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZF3GDu
+	id S1756899AbZF3GHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 02:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZF3GH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 02:03:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51180 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbZF3GDu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 02:03:50 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20090630150035.A738.A69D9226@jp.fujitsu.com>
+	Tue, 30 Jun 2009 02:07:28 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:50077 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751613AbZF3GH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 02:07:27 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 30 Jun 2009 15:03:40 +0900 (JST)
+Message-ID: <19017.43927.838745.689203@cargo.ozlabs.ibm.com>
+Date: Tue, 30 Jun 2009 16:07:19 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH v2] perf_counter: Provide a way to enable counters on exec
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Recent "Found the commit that causes the OOMs" discussion notice us that kernel
-stack usage should be showed in OOM log.
+This provides a way to mark a counter to be enabled on the next exec.
+This is useful for measuring the total activity of a program without
+including overhead from the process that launches it.
 
-At least, I think ;)
+This also changes the perf stat command to use this new facility.
 
-this patch provide it.
-
-
-========
-Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
-
-if the system have a lot of thread, kernel stack consume unignorable large size
-memory.
-IOW, it make a lot of unaccountable memory.
-
-Tons unaccountable memory bring to harder analyse memory related trouble.
-
-Then, kernel stack account is useful.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- fs/proc/meminfo.c      |    2 ++
- include/linux/mmzone.h |    3 ++-
- kernel/fork.c          |   13 +++++++++++++
- mm/page_alloc.c        |    6 ++++--
- mm/vmstat.c            |    1 +
- 5 files changed, 22 insertions(+), 3 deletions(-)
+v2: only unclone if we enabled one or more counters.
 
-diff --git a/fs/proc/meminfo.c b/fs/proc/meminfo.c
-index d5c410d..1fbf8c0 100644
---- a/fs/proc/meminfo.c
-+++ b/fs/proc/meminfo.c
-@@ -85,6 +85,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
- 		"SReclaimable:   %8lu kB\n"
- 		"SUnreclaim:     %8lu kB\n"
- 		"PageTables:     %8lu kB\n"
-+		"KernelStack     %8lu kB\n"
- #ifdef CONFIG_QUICKLIST
- 		"Quicklists:     %8lu kB\n"
- #endif
-@@ -129,6 +130,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
- 		K(global_page_state(NR_SLAB_RECLAIMABLE)),
- 		K(global_page_state(NR_SLAB_UNRECLAIMABLE)),
- 		K(global_page_state(NR_PAGETABLE)),
-+		K(global_page_state(NR_KERNEL_STACK)),
- #ifdef CONFIG_QUICKLIST
- 		K(quicklist_total_size()),
- #endif
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 8895985..d9335b8 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -94,10 +94,11 @@ enum zone_stat_item {
- 	NR_SLAB_RECLAIMABLE,
- 	NR_SLAB_UNRECLAIMABLE,
- 	NR_PAGETABLE,		/* used for pagetables */
-+	NR_KERNEL_STACK,
-+	/* Second 128 byte cacheline */
- 	NR_UNSTABLE_NFS,	/* NFS unstable pages */
- 	NR_BOUNCE,
- 	NR_VMSCAN_WRITE,
--	/* Second 128 byte cacheline */
- 	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
- #ifdef CONFIG_NUMA
- 	NUMA_HIT,		/* allocated in intended node */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 467746b..21cd4aa 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -137,9 +137,19 @@ struct kmem_cache *vm_area_cachep;
- /* SLAB cache for mm_struct structures (tsk->mm) */
- static struct kmem_cache *mm_cachep;
+This differs from Ingo's approach a little in that I don't keep the
+counter force-disabled until exec, and I reuse the comm hook instead
+of having a new perf_counter_exec hook (not that a new hook would
+necessarily be a bad idea).  Also, my locking is a bit heavier, it's
+more or less like the old perf_counter_task_enable().
+
+ include/linux/perf_counter.h |    3 +-
+ kernel/perf_counter.c        |   50 ++++++++++++++++++++++++++++++++++++++++++
+ tools/perf/builtin-stat.c    |    6 ++--
+ 3 files changed, 55 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 3078e23..5e970c7 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -179,8 +179,9 @@ struct perf_counter_attr {
+ 				comm	       :  1, /* include comm data     */
+ 				freq           :  1, /* use freq, not period  */
+ 				inherit_stat   :  1, /* per task counts       */
++				enable_on_exec :  1, /* next exec enables     */
  
-+static void account_kernel_stack(struct thread_info *ti, int on)
+-				__reserved_1   : 52;
++				__reserved_1   : 51;
+ 
+ 	__u32			wakeup_events;	/* wakeup every n events */
+ 	__u32			__reserved_2;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 66ab1e9..d55a50d 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1429,6 +1429,53 @@ void perf_counter_task_tick(struct task_struct *curr, int cpu)
+ }
+ 
+ /*
++ * Enable all of a task's counters that have been marked enable-on-exec.
++ * This expects task == current.
++ */
++static void perf_counter_enable_on_exec(struct task_struct *task)
 +{
-+	struct zone* zone = page_zone(virt_to_page(ti));
-+	int sign = on ? 1 : -1;
-+	long acct = sign * (THREAD_SIZE / PAGE_SIZE);
++	struct perf_counter_context *ctx;
++	struct perf_counter *counter;
++	unsigned long flags;
++	int enabled = 0;
 +
-+	mod_zone_page_state(zone, NR_KERNEL_STACK, acct);
++	local_irq_save(flags);
++	ctx = task->perf_counter_ctxp;
++	if (!ctx || !ctx->nr_counters)
++		goto out;
++
++	__perf_counter_task_sched_out(ctx);
++
++	spin_lock(&ctx->lock);
++
++	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
++		if (!counter->attr.enable_on_exec)
++			continue;
++		counter->attr.enable_on_exec = 0;
++		if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
++			continue;
++		counter->state = PERF_COUNTER_STATE_INACTIVE;
++		counter->tstamp_enabled =
++			ctx->time - counter->total_time_enabled;
++		enabled = 1;
++	}
++
++	/*
++	 * Unclone this context if we enabled any counter.
++	 */
++	if (enabled && ctx->parent_ctx) {
++		put_ctx(ctx->parent_ctx);
++		ctx->parent_ctx = NULL;
++	}
++
++	spin_unlock(&ctx->lock);
++
++	perf_counter_task_sched_in(task, smp_processor_id());
++ out:
++	local_irq_restore(flags);
 +}
 +
- void free_task(struct task_struct *tsk)
++/*
+  * Cross CPU call to read the hardware counter
+  */
+ static void __perf_counter_read(void *info)
+@@ -2949,6 +2996,9 @@ void perf_counter_comm(struct task_struct *task)
  {
- 	prop_local_destroy_single(&tsk->dirties);
-+	account_kernel_stack(tsk->stack, 0);
- 	free_thread_info(tsk->stack);
- 	rt_mutex_debug_task_free(tsk);
- 	ftrace_graph_exit_task(tsk);
-@@ -255,6 +265,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
- 	tsk->btrace_seq = 0;
- #endif
- 	tsk->splice_pipe = NULL;
-+
-+	account_kernel_stack(ti, 1);
-+
- 	return tsk;
+ 	struct perf_comm_event comm_event;
  
- out:
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 30d5093..0edec1c 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2119,7 +2119,8 @@ void show_free_areas(void)
- 		" inactive_file:%lu"
- 		" unevictable:%lu"
- 		" dirty:%lu writeback:%lu unstable:%lu\n"
--		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
-+		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n"
-+		" kernel_stack:%lu\n",
- 		global_page_state(NR_ACTIVE_ANON),
- 		global_page_state(NR_ACTIVE_FILE),
- 		global_page_state(NR_INACTIVE_ANON),
-@@ -2133,7 +2134,8 @@ void show_free_areas(void)
- 			global_page_state(NR_SLAB_UNRECLAIMABLE),
- 		global_page_state(NR_FILE_MAPPED),
- 		global_page_state(NR_PAGETABLE),
--		global_page_state(NR_BOUNCE));
-+		global_page_state(NR_BOUNCE),
-+		global_page_state(NR_KERNEL_STACK));
++	if (task->perf_counter_ctxp)
++		perf_counter_enable_on_exec(task);
++
+ 	if (!atomic_read(&nr_comm_counters))
+ 		return;
  
- 	for_each_populated_zone(zone) {
- 		int i;
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 138bed5..ceda39b 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -639,6 +639,7 @@ static const char * const vmstat_text[] = {
- 	"nr_slab_reclaimable",
- 	"nr_slab_unreclaimable",
- 	"nr_page_table_pages",
-+	"nr_kernel_stack",
- 	"nr_unstable",
- 	"nr_bounce",
- 	"nr_vmscan_write",
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 201ef23..2e03524 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -116,8 +116,9 @@ static void create_perf_stat_counter(int counter, int pid)
+ 					fd[cpu][counter], strerror(errno));
+ 		}
+ 	} else {
+-		attr->inherit	= inherit;
+-		attr->disabled	= 1;
++		attr->inherit	     = inherit;
++		attr->disabled	     = 1;
++		attr->enable_on_exec = 1;
+ 
+ 		fd[0][counter] = sys_perf_counter_open(attr, pid, -1, -1, 0);
+ 		if (fd[0][counter] < 0 && verbose)
+@@ -262,7 +263,6 @@ static int run_perf_stat(int argc, const char **argv)
+ 	 * Enable counters and exec the command:
+ 	 */
+ 	t0 = rdclock();
+-	prctl(PR_TASK_PERF_COUNTERS_ENABLE);
+ 
+ 	close(go_pipe[1]);
+ 	wait(&status);
 -- 
-1.6.0.GIT
-
-
-
+1.6.0.4
 
