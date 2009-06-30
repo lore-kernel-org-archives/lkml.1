@@ -1,132 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbZF3Cxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbZF3Cyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759411AbZF3Cxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 22:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbZF3CxW
+	id S1759650AbZF3Cyd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 22:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZF3CyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 22:53:22 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:45692 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755170AbZF3CxV (ORCPT
+	Mon, 29 Jun 2009 22:54:25 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47510
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756327AbZF3CyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 22:53:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=UzJGZ2vMD51q5QodkwVV82njMmpaNqrxSwau4rqgJbLPoBXvcQwHYD5KXFywG8t0ly
-         3DUXm6hF0gr5eCsW904iSsAylIoxysNBcMt1SRwsGbAWg3aX/s+MLsbWH0HbBU1rSp9P
-         S49pwiUU1zDlEJAy2Ath+m1zSI/yy+NrmYXsQ=
-MIME-Version: 1.0
-Date: Tue, 30 Jun 2009 10:53:23 +0800
-Message-ID: <3877989d0906291953n599b7047x5fdf6033114e0eed@mail.gmail.com>
-Subject: [RFC patch] disable the assumption of apic_is_clustered_box for cores 
-	>= 6
-From: Luming Yu <luming.yu@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: suresh.b.siddha@intel.com, venkatesh.pallipadi@intel.com
-Content-Type: multipart/mixed; boundary=001636e0a774f63c70046d87e8a1
+	Mon, 29 Jun 2009 22:54:25 -0400
+Date: Mon, 29 Jun 2009 19:54:30 -0700 (PDT)
+Message-Id: <20090629.195430.05775132.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: IDE fixes
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636e0a774f63c70046d87e8a1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Hello,
+1) Sizing of temp ID buffer allocated is insufficient for
+   HDIO_OBSOLETE_IDENTITY ioctl.  Fix from Christian Engelmayer.
 
-We have to disable the assumption of apic_is_clustered_box that assumes high
-4bits of 8 bit APIC ID was cluster id, which is just the function's guess.
-On a normal 4-socket system with >6cores Processor and HT enabled, we hit the
-limitation of the guess and failed. Have to disable the guess on any
-cores > 6 system.
+2) ide-floppy and ide-tape uses esoteric IDE custom command completion
+   routine which does horrible things such as partial command
+   completions on errors, and even forgets to signal error codes at all
+   in some cases.  Stop using this turd and use the generic block
+   layer requst completion interfaces to fix these bugs.  Fix from
+   Bart.
 
-Without this patch, we can't use good TSC on any SMP system with 48+ logical CPU
+3) With IDEACPI sometimes resume breaks, fix by adding helper function
+   to check all the necessary cases.  Fix from Bart.
 
-**The patch is enclosed in text attachment*
-**Using web client to send the patch* *
-**below is for review, please apply attached  patch*/
+4) Handle properly devices which clear DRQ during the last word of
+   a packet (these actually exist).  This also pointed out an error
+   in ATA_ERR bit handling, also fixed here.  Fix from Borislav Petkov.
 
-Thanks,
-Luming
+Please pull, thanks a lot!
 
- apic/apic.c |   15 ++++++++++++++-
- cpu/intel.c |    2 +-
- 2 files changed, 15 insertions(+), 2 deletions(-)
+The following changes since commit 52989765629e7d182b4f146050ebba0abf2cb0b7:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
---- linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c.0	2009-06-29
-19:54:15.000000000 -0600
-+++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c	2009-06-29
-20:14:15.000000000 -0600
-@@ -2119,6 +2119,16 @@
- #endif	/* CONFIG_PM */
+are available in the git repository at:
 
- #ifdef CONFIG_X86_64
-+extern int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c);
-+
-+__cpuinit int __detect_cores(void)
-+{
-+	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
-+		boot_cpu_data.x86_max_cores =
-+			intel_num_cpu_cores(&boot_cpu_data);
-+	return boot_cpu_data.x86_max_cores;
-+}
-+
- /*
-  * apic_is_clustered_box() -- Check if we can expect good TSC
-  *
-@@ -2190,7 +2200,10 @@
- 	 * May have to revisit this when multi-core + hyperthreaded CPUs come
- 	 * out, but AFAIK this will work even for them.
- 	 */
--	return (clusters > 2);
-+	if (clusters > 2)
-+		return (__detect_cores() >= 6) ? 0 : 1;
-+	else
-+		return 0;
- }
- #endif
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
 
---- linux-2.6.30-rc6/arch/x86/kernel/cpu/intel.c.0	2009-06-29
-19:53:29.000000000 -0600
-+++ linux-2.6.30-rc6/arch/x86/kernel/cpu/intel.c	2009-06-29
-08:46:12.000000000 -0600
-@@ -250,7 +250,7 @@
- /*
-  * find out the number of processor cores on the die
-  */
--static int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
-+int __cpuinit intel_num_cpu_cores(struct cpuinfo_x86 *c)
- {
- 	unsigned int eax, ebx, ecx, edx;
+Bartlomiej Zolnierkiewicz (3):
+      ide: fix ide_kill_rq() for special ide-{floppy,tape} driver requests
+      ide: always kill the whole request on error
+      ide: fix resume for CONFIG_BLK_DEV_IDEACPI=y
 
---001636e0a774f63c70046d87e8a1
-Content-Type: application/octet-stream; name="1.patch"
-Content-Disposition: attachment; filename="1.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fwk0z3b70
+Borislav Petkov (1):
+      ide-cd: handle fragmented packet commands gracefully
 
-LS0tIGxpbnV4LTIuNi4zMC1yYzYvYXJjaC94ODYva2VybmVsL2FwaWMvYXBpYy5jLjAJMjAwOS0w
-Ni0yOSAxOTo1NDoxNS4wMDAwMDAwMDAgLTA2MDAKKysrIGxpbnV4LTIuNi4zMC1yYzYvYXJjaC94
-ODYva2VybmVsL2FwaWMvYXBpYy5jCTIwMDktMDYtMjkgMjA6MTQ6MTUuMDAwMDAwMDAwIC0wNjAw
-CkBAIC0yMTE5LDYgKzIxMTksMTYgQEAKICNlbmRpZgkvKiBDT05GSUdfUE0gKi8KIAogI2lmZGVm
-IENPTkZJR19YODZfNjQKK2V4dGVybiBpbnQgX19jcHVpbml0IGludGVsX251bV9jcHVfY29yZXMo
-c3RydWN0IGNwdWluZm9feDg2ICpjKTsKKworX19jcHVpbml0IGludCBfX2RldGVjdF9jb3Jlcyh2
-b2lkKQoreworCWlmIChib290X2NwdV9kYXRhLng4Nl92ZW5kb3IgPT0gWDg2X1ZFTkRPUl9JTlRF
-TCkKKwkJYm9vdF9jcHVfZGF0YS54ODZfbWF4X2NvcmVzID0gCisJCQlpbnRlbF9udW1fY3B1X2Nv
-cmVzKCZib290X2NwdV9kYXRhKTsKKwlyZXR1cm4gYm9vdF9jcHVfZGF0YS54ODZfbWF4X2NvcmVz
-OworfQorCiAvKgogICogYXBpY19pc19jbHVzdGVyZWRfYm94KCkgLS0gQ2hlY2sgaWYgd2UgY2Fu
-IGV4cGVjdCBnb29kIFRTQwogICoKQEAgLTIxOTAsNyArMjIwMCwxMCBAQAogCSAqIE1heSBoYXZl
-IHRvIHJldmlzaXQgdGhpcyB3aGVuIG11bHRpLWNvcmUgKyBoeXBlcnRocmVhZGVkIENQVXMgY29t
-ZQogCSAqIG91dCwgYnV0IEFGQUlLIHRoaXMgd2lsbCB3b3JrIGV2ZW4gZm9yIHRoZW0uCiAJICov
-Ci0JcmV0dXJuIChjbHVzdGVycyA+IDIpOworCWlmIChjbHVzdGVycyA+IDIpCisJCXJldHVybiAo
-X19kZXRlY3RfY29yZXMoKSA+PSA2KSA/IDAgOiAxOworCWVsc2UKKwkJcmV0dXJuIDA7CiB9CiAj
-ZW5kaWYKIAotLS0gbGludXgtMi42LjMwLXJjNi9hcmNoL3g4Ni9rZXJuZWwvY3B1L2ludGVsLmMu
-MAkyMDA5LTA2LTI5IDE5OjUzOjI5LjAwMDAwMDAwMCAtMDYwMAorKysgbGludXgtMi42LjMwLXJj
-Ni9hcmNoL3g4Ni9rZXJuZWwvY3B1L2ludGVsLmMJMjAwOS0wNi0yOSAwODo0NjoxMi4wMDAwMDAw
-MDAgLTA2MDAKQEAgLTI1MCw3ICsyNTAsNyBAQAogLyoKICAqIGZpbmQgb3V0IHRoZSBudW1iZXIg
-b2YgcHJvY2Vzc29yIGNvcmVzIG9uIHRoZSBkaWUKICAqLwotc3RhdGljIGludCBfX2NwdWluaXQg
-aW50ZWxfbnVtX2NwdV9jb3JlcyhzdHJ1Y3QgY3B1aW5mb194ODYgKmMpCitpbnQgX19jcHVpbml0
-IGludGVsX251bV9jcHVfY29yZXMoc3RydWN0IGNwdWluZm9feDg2ICpjKQogewogCXVuc2lnbmVk
-IGludCBlYXgsIGVieCwgZWN4LCBlZHg7CiAK
---001636e0a774f63c70046d87e8a1--
+Christian Engelmayer (1):
+      ide: memory overrun in ide_get_identity_ioctl() on big endian machines using ioctl HDIO_OBSOLETE_IDENTITY
+
+ drivers/ide/ide-acpi.c    |   37 +++++++------------------------------
+ drivers/ide/ide-cd.c      |   14 ++++++++++++--
+ drivers/ide/ide-devsets.c |    2 +-
+ drivers/ide/ide-eh.c      |    2 +-
+ drivers/ide/ide-floppy.c  |    2 +-
+ drivers/ide/ide-io.c      |   14 ++------------
+ drivers/ide/ide-ioctls.c  |    3 ++-
+ drivers/ide/ide-pm.c      |   30 ++++++++++++++++++------------
+ include/linux/ide.h       |    3 ++-
+ 9 files changed, 46 insertions(+), 61 deletions(-)
