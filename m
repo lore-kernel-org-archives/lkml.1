@@ -1,187 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbZF3G3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZF3Ger@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288AbZF3G3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 02:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZF3G3o
+	id S1755911AbZF3Ger (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 02:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZF3Gej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 02:29:44 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39703 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZF3G3n (ORCPT
+	Tue, 30 Jun 2009 02:34:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36760 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751305AbZF3Gej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 02:29:43 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       David Howells <dhowells@redhat.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-In-Reply-To: <20090630150035.A738.A69D9226@jp.fujitsu.com>
-References: <20090630150035.A738.A69D9226@jp.fujitsu.com>
-Message-Id: <20090630152911.A73D.A69D9226@jp.fujitsu.com>
+	Tue, 30 Jun 2009 02:34:39 -0400
+Message-ID: <4A49B1C6.9040900@kernel.org>
+Date: Mon, 29 Jun 2009 23:33:42 -0700
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Greg KH <greg@kroah.com>
+CC: Marc Aurele La France <root@ualberta.ca>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, x86@kernel.org,
+       stable@kernel.org, Research.Support@ualberta.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH] x86, setup (2.6.30-stable) fix 80x34 and	80x60
+ console modes
+References: <alpine.BSO.1.10.0906291746410.14658@fanir.ucs.ualberta.ca> <4A496A0C.809@kernel.org> <20090630034822.GC12373@kroah.com>
+In-Reply-To: <20090630034822.GC12373@kroah.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 30 Jun 2009 15:29:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Recent "Found the commit that causes the OOMs" discussion notice us that kernel
-> stack usage should be showed in OOM log.
+Greg KH wrote:
+> On Mon, Jun 29, 2009 at 06:27:40PM -0700, H. Peter Anvin wrote:
+>> Marc Aurele La France wrote:
+>>> As coded, most INT10 calls in video-vga.c allow the compiler to assume EAX 
+>>> remains unchanged across them, which is not always the case.  This 
+>>> triggers an optimisation issue that causes vga_set_vertical_end() to be 
+>>> called with an incorrect number of scanlines.  Fix this by beefing up the 
+>>> asm constraints on these calls.
+>>>
+>>> Reported-by: Marc Aurele La France <tsi@xfree86.org>
+>>> Signed-off-by: Marc Aurele La France <tsi@xfree86.org>
+>>> Acked-by: H. Peter Anvin <hpa@zytor.com>
+>> Note: this is not in upstream since upstream is not affected due to the
+>> new "BIOS glovebox" subsystem.
 > 
-> At least, I think ;)
-> 
-> this patch provide it.
-> 
-> 
-> ========
-> Subject: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
-> 
-> if the system have a lot of thread, kernel stack consume unignorable large size
-> memory.
-> IOW, it make a lot of unaccountable memory.
-> 
-> Tons unaccountable memory bring to harder analyse memory related trouble.
-> 
-> Then, kernel stack account is useful.
-
-I forgot to insert most important one line ;-)
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-
-> ---
->  fs/proc/meminfo.c      |    2 ++
->  include/linux/mmzone.h |    3 ++-
->  kernel/fork.c          |   13 +++++++++++++
->  mm/page_alloc.c        |    6 ++++--
->  mm/vmstat.c            |    1 +
->  5 files changed, 22 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/proc/meminfo.c b/fs/proc/meminfo.c
-> index d5c410d..1fbf8c0 100644
-> --- a/fs/proc/meminfo.c
-> +++ b/fs/proc/meminfo.c
-> @@ -85,6 +85,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
->  		"SReclaimable:   %8lu kB\n"
->  		"SUnreclaim:     %8lu kB\n"
->  		"PageTables:     %8lu kB\n"
-> +		"KernelStack     %8lu kB\n"
->  #ifdef CONFIG_QUICKLIST
->  		"Quicklists:     %8lu kB\n"
->  #endif
-> @@ -129,6 +130,7 @@ static int meminfo_proc_show(struct seq_file *m, void *v)
->  		K(global_page_state(NR_SLAB_RECLAIMABLE)),
->  		K(global_page_state(NR_SLAB_UNRECLAIMABLE)),
->  		K(global_page_state(NR_PAGETABLE)),
-> +		K(global_page_state(NR_KERNEL_STACK)),
->  #ifdef CONFIG_QUICKLIST
->  		K(quicklist_total_size()),
->  #endif
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index 8895985..d9335b8 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -94,10 +94,11 @@ enum zone_stat_item {
->  	NR_SLAB_RECLAIMABLE,
->  	NR_SLAB_UNRECLAIMABLE,
->  	NR_PAGETABLE,		/* used for pagetables */
-> +	NR_KERNEL_STACK,
-> +	/* Second 128 byte cacheline */
->  	NR_UNSTABLE_NFS,	/* NFS unstable pages */
->  	NR_BOUNCE,
->  	NR_VMSCAN_WRITE,
-> -	/* Second 128 byte cacheline */
->  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
->  #ifdef CONFIG_NUMA
->  	NUMA_HIT,		/* allocated in intended node */
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 467746b..21cd4aa 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -137,9 +137,19 @@ struct kmem_cache *vm_area_cachep;
->  /* SLAB cache for mm_struct structures (tsk->mm) */
->  static struct kmem_cache *mm_cachep;
->  
-> +static void account_kernel_stack(struct thread_info *ti, int on)
-> +{
-> +	struct zone* zone = page_zone(virt_to_page(ti));
-> +	int sign = on ? 1 : -1;
-> +	long acct = sign * (THREAD_SIZE / PAGE_SIZE);
-> +
-> +	mod_zone_page_state(zone, NR_KERNEL_STACK, acct);
-> +}
-> +
->  void free_task(struct task_struct *tsk)
->  {
->  	prop_local_destroy_single(&tsk->dirties);
-> +	account_kernel_stack(tsk->stack, 0);
->  	free_thread_info(tsk->stack);
->  	rt_mutex_debug_task_free(tsk);
->  	ftrace_graph_exit_task(tsk);
-> @@ -255,6 +265,9 @@ static struct task_struct *dup_task_struct(struct task_struct *orig)
->  	tsk->btrace_seq = 0;
->  #endif
->  	tsk->splice_pipe = NULL;
-> +
-> +	account_kernel_stack(ti, 1);
-> +
->  	return tsk;
->  
->  out:
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 30d5093..0edec1c 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2119,7 +2119,8 @@ void show_free_areas(void)
->  		" inactive_file:%lu"
->  		" unevictable:%lu"
->  		" dirty:%lu writeback:%lu unstable:%lu\n"
-> -		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
-> +		" free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n"
-> +		" kernel_stack:%lu\n",
->  		global_page_state(NR_ACTIVE_ANON),
->  		global_page_state(NR_ACTIVE_FILE),
->  		global_page_state(NR_INACTIVE_ANON),
-> @@ -2133,7 +2134,8 @@ void show_free_areas(void)
->  			global_page_state(NR_SLAB_UNRECLAIMABLE),
->  		global_page_state(NR_FILE_MAPPED),
->  		global_page_state(NR_PAGETABLE),
-> -		global_page_state(NR_BOUNCE));
-> +		global_page_state(NR_BOUNCE),
-> +		global_page_state(NR_KERNEL_STACK));
->  
->  	for_each_populated_zone(zone) {
->  		int i;
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 138bed5..ceda39b 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -639,6 +639,7 @@ static const char * const vmstat_text[] = {
->  	"nr_slab_reclaimable",
->  	"nr_slab_unreclaimable",
->  	"nr_page_table_pages",
-> +	"nr_kernel_stack",
->  	"nr_unstable",
->  	"nr_bounce",
->  	"nr_vmscan_write",
-> -- 
-> 1.6.0.GIT
-> 
-> 
-> 
+> So it is a ".30 only" type patch?  Any older kernel versions affected?
 > 
 
+Yes, all the way back to .23 or something like that.
 
-
+	-hpa
