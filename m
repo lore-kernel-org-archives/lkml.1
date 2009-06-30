@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbZF3VwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757682AbZF3Vwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758988AbZF3VwZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZF3VwS
+	id S1757682AbZF3Vwl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757560AbZF3Vwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:52:18 -0400
-Received: from enyo.dsw2k3.info ([195.71.86.239]:51775 "EHLO enyo.dsw2k3.info"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbZF3VwS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:52:18 -0400
-X-Greylist: delayed 1358 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 17:52:18 EDT
-Date: Tue, 30 Jun 2009 23:29:30 +0200
-From: Matthias Schniedermeyer <ms@citd.de>
-To: Joe moo <starquestnerd@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux kernel mailing list and offer for forum hosting
-Message-ID: <20090630212930.GA4212@citd.de>
-References: <296622aa0906301405x19884192o9a604a9693d869d1@mail.gmail.com>
+	Tue, 30 Jun 2009 17:52:32 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:6996 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756960AbZF3Vwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:52:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Jh+gqmlOcukYo+yYnc4Kpc8aC28CDeY3CpY75CPwAbZU08EA81kFnvUP30WDcUrVj
+	ysPzPSjpRnQuLelLIKRGA==
+Date: Tue, 30 Jun 2009 14:52:22 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+In-Reply-To: <alpine.DEB.1.10.0906301722280.17682@gentwo.org>
+Message-ID: <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>  <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>  <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>  <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
+ <alpine.DEB.1.10.0906301030260.6124@gentwo.org> <1246374095.8014.28.camel@penberg-laptop> <alpine.DEB.1.10.0906301114450.3879@gentwo.org> <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
+ <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301722280.17682@gentwo.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <296622aa0906301405x19884192o9a604a9693d869d1@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30.06.2009 14:05, Joe moo wrote:
-> Hello, I have used Linux for over a year and I thought up a way to
-> contribute. I have noticed the Linux site kernel.org does not have a
-> forum... so  I would like to offer free forum hosting on my site email
-> me for details. please don't consider this spam I only want to help.
+On Tue, 30 Jun 2009, Christoph Lameter wrote:
 
-To make this short, this is more or less a FAQ that comes up every now 
-and then.
+> We could add an option that disables debugging for troublesome page
+> size slabs
+> 
+> 
+> slab_debug=p
+> 
+> or so
+> 
 
-The former threads can be summarized along this line:
-- It's intentional
-- The mailling-list model works just fine
-- It would only serve to fragment the people.
-- Some people just don't like forums
+I definitely like that more than slab_debug=A, where we're requiring an 
+added parameter for full debugging to be activated.
 
-And there are enough forums in existence already, no need for YAF.
+I'm curious whether there would ever be any use for disabling debugging on 
+specific caches for reasons other than higher minimum orders for metadata, 
+though, given that we already support things like slub_debug=FZ,cache, 
+which should only enable free debugging and redzoning even with 
+CONFIG_SLUB_DEBUG_ON enabled for cache.
 
-
-
-
-Bis denn
-
--- 
-Real Programmers consider "what you see is what you get" to be just as 
-bad a concept in Text Editors as it is in women. No, the Real Programmer
-wants a "you asked for it, you got it" text editor -- complicated, 
-cryptic, powerful, unforgiving, dangerous.
-
+I think the solution to this is really based on good software engineering 
+and test practices, though, so hopefully there'll be a consensus on which 
+direction to take before any time is spent in implementing and pushing it.
