@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZF3Msx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbZF3Mt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbZF3Msx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 08:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZF3Msr
+	id S1753580AbZF3Mt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 08:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZF3MtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 08:48:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50739 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750946AbZF3Msq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 08:48:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Stezenbach <js@sig21.net>
-Subject: Re: [Bug #13644] hibernation/swsusp lockup due to acpi-cpufreq
+	Tue, 30 Jun 2009 08:49:18 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:55305 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbZF3MtS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 08:49:18 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers() in dma_sync_*_for_cpu
 Date: Tue, 30 Jun 2009 14:48:54 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.RZF.MjASKB@chimera> <20090630004041.GA11641@sig21.net>
-In-Reply-To: <20090630004041.GA11641@sig21.net>
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: Joerg Roedel <joerg.roedel@amd.com>, tom.leiming@gmail.com,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com> <200906301434.26815.arnd@arndb.de> <20090630134000.23674147@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090630134000.23674147@lxorguk.ukuu.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906301448.55209.rjw@sisk.pl>
+Message-Id: <200906301448.55064.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19U8ngWxdWSrc1oPjcMaHk9Vm827Fp3l2QfqPN
+ t6LMlZQoqi6J+u3WaAv1MaKLZgdwxTTYeHq0nljAOC7GEx+U9u
+ d+vpCzrk8G++ipeT8vyiw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 June 2009, Johannes Stezenbach wrote:
-> On Mon, Jun 29, 2009 at 02:31:01AM +0200, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13644
-> > Subject		: hibernation/swsusp lockup due to acpi-cpufreq
-> > Submitter	: Johannes Stezenbach <js@sig21.net>
-> > Date		: 2009-06-16 01:27 (13 days old)
-> > References	: http://lkml.org/lkml/2009/6/15/630
-> > Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+On Tuesday 30 June 2009, Alan Cox wrote:
+> > Ok. The Winchip also does not have an IOMMU or the need for SWIOTLB, so
+> > I guess it would be ok to move the flush_write_buffers() out of the common
+> > code into the x86 pci-nommu implementation. That one is also the only
+> > place that calls flush_write_buffers() in dma_map_().
 > 
-> I tested v2.6.31-rc1-228-g2bfdd79 and the bug is still there.
-> It actually got worse, the local_irq_save/restore workaround
-> in kernel/up-c (http://lkml.org/lkml/2009/6/16/333) doesn't fix it
-> anymore, it hangs at suspend before writing out the image.
-> 
-> With the up.c workaround (including a
-> WARN_ON_ONCE(irqs_disabled() && !oops_in_progress);)
-> applied and no_console_suspend I captured the attached
-> output using a crappy webcam.  (Without the workaround
-> there is a huge spew of warnings about irqs enabled
-> unexpectedly.)  I guess the interesting part is
-> 
->   pm_op(): pci_pm_thaw returns -16
->   PM: Device 0000:00:00.0 failed to thaw: error -16
+> What about non x86 - this is asm-generic you are playing with and its the
+> kind of change that causes evil really hard to track down and subtle
+> corruptions and user data loss if you get it wrong.
 
-Hmm, it looks like we fail to thaw the host bridge.
+Non-x86 is the real motivation for the patch, because the flush_write_buffers
+call in this file is currently not implemented and causes build errors
+on everything but x86, frv, ia64 and m32r, where the latter two implement
+it as an empty macro.
 
-> (PCI info is in http://lkml.org/lkml/2009/6/15/630)
+The only users of the file right now are x86 and ia64, and ia64 only added
+the empty flush_write_buffers() definition in order to use it.
 
-Well, thanks for the update.  I'll do my best to fix the cpufreq suspend
-before 2.6.31 final.
-
-Best,
-Rafael
+	Arnd <><
