@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZF3WSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZF3WTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbZF3WSk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZF3WSc
+	id S1756195AbZF3WTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:19:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbZF3WTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:18:32 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:55106 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752710AbZF3WSb (ORCPT
+	Tue, 30 Jun 2009 18:19:39 -0400
+Received: from mail.digidescorp.com ([66.244.163.200]:11837 "EHLO
+	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754406AbZF3WTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:18:31 -0400
-Date: Tue, 30 Jun 2009 18:18:24 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0906301816520.11362@gentwo.org>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>  <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>  <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>  <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
- <alpine.DEB.1.10.0906301030260.6124@gentwo.org> <1246374095.8014.28.camel@penberg-laptop> <alpine.DEB.1.10.0906301114450.3879@gentwo.org> <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
- <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301722280.17682@gentwo.org> <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Jun 2009 18:19:38 -0400
+X-Spam-Processed: digidescorp.com, Tue, 30 Jun 2009 17:19:41 -0500
+X-Authenticated-Sender: steve@digidescorp.com
+X-MDRemoteIP: 99.151.134.50
+X-Return-Path: prvs=1432024fb5=steve@digidescorp.com
+X-Envelope-From: steve@digidescorp.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FAT: optimize FSINFO writeback
+From: "Steven J. Magnani" <steve@digidescorp.com>
+Reply-To: steve@digidescorp.com
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <87ocs5h238.fsf@devron.myhome.or.jp>
+References: <1246392130-4261-1-git-send-email-steve@digidescorp.com>
+	 <87ocs5h238.fsf@devron.myhome.or.jp>
+Content-Type: text/plain
+Organization: Digital Design Corporation
+Date: Tue, 30 Jun 2009 17:19:05 -0500
+Message-Id: <1246400345.2247.4.camel@iscandar.digidescorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, David Rientjes wrote:
+On Wed, 2009-07-01 at 05:57 +0900, OGAWA Hirofumi wrote:
+> steve@digidescorp.com writes:
+> 
+> > Only write the FSINFO block back to disk when its contents change.
+> > This optimization can be important when the underlying physical media
+> > can wear out, i.e. Flash.
+> 
+> I have no objection to this though.  Was this tested on recent version?
 
-> I'm curious whether there would ever be any use for disabling debugging on
-> specific caches for reasons other than higher minimum orders for metadata,
-> though, given that we already support things like slub_debug=FZ,cache,
-> which should only enable free debugging and redzoning even with
-> CONFIG_SLUB_DEBUG_ON enabled for cache.
+I tested it on 2.6.30.
 
-One of the reasons for disabling debugging is to speed up the kernel. Race
-conditions may vanish due to the additional latency added by the debugging
-code. Ideally you know which slab cache has the race and you only would
-enable it on that one.
+> Well, now, we are using sb->s_dirty for fsinfo, so I'm wondering why
+> this happen frequently.
+
+My scenario was modifying a sector of an existing file and using
+fdatasync() to flush it. The FSINFO sector was being updated even though
+nothing about the FAT layout had changed.
+
+> 
+> Thanks.
+
+Regards,
+------------------------------------------------------------------------
+ Steven J. Magnani               "I claim this network for MARS!
+ www.digidescorp.com              Earthling, return my space modulator!"
+
+ #include <standard.disclaimer>
+
 
