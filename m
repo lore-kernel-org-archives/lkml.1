@@ -1,100 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZF3UtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZF3UvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZF3UtQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZF3UtA
+	id S1757079AbZF3UvW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZF3UvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:49:00 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:38674 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752670AbZF3Us7 (ORCPT
+	Tue, 30 Jun 2009 16:51:15 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:61440 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbZF3UvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:48:59 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [RFC] vfat: change the default from shortname=lower to shortname=mixed
-References: <20090630032257.GA32096@shareable.org>
-Date: Wed, 01 Jul 2009 05:48:58 +0900
-In-Reply-To: <20090630032257.GA32096@shareable.org> (Jamie Lokier's message of
-	"Tue, 30 Jun 2009 04:22:57 +0100")
-Message-ID: <87skhhh2h1.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Tue, 30 Jun 2009 16:51:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=oP6LSNYJo1HKnYIGaYSlLuwFL4FKuLr0P7KkV0K4Iecw1g/49n514STZGHKiyCQYX
+	R+qzZ2lUl/MZeSBRRMm8A==
+Date: Tue, 30 Jun 2009 13:51:07 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
+In-Reply-To: <20090630203249.GC6689@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0906301339290.22084@chino.kir.corp.google.com>
+References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org>
+ <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <20090629122029.93cdcc39.akpm@linux-foundation.org> <20090630110011.GB17561@csn.ul.ie>
+ <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com> <20090630203249.GC6689@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier <jamie@shareable.org> writes:
+On Tue, 30 Jun 2009, Mel Gorman wrote:
 
-> I agree with the change to "shortname=mixed" being the default.
->
-> Not only does it solve problems with Linux seeing files it created
-> _itself_ change, "shortname=mixed" is the only option where files
-> created on all versions of Windows appear the same in Linux, and vice
-> versa.  It is better than Windows itself in that respect...
->
-> "shortname=winnt" is not as good.  It solves the problem of
-> Linux<->itself compatibility and Linux<->Windows-NT/2000/XP/Vista
-> compatibility, but not Linux<->Windows-95/98/ME compatibility.
->
-> I don't see any problems with changing the option from it's default,
-> for filesystems which were written as VFAT by any OS.  For filesystems
-> written as plain FAT, it may change them to appear as upper case in
-> Linux, when they previously showed as lower case.  If there is a
-> reliable way to detect filenames written by a plain FAT system, it
-> might be desirable to show the names as lower case from them.
->
-> Below are my notes, when I had to add "shortname=mixed" to a program
-> because of user bug reports when they created files on various
-> versions of Windows and they didn't work on an embedded Linux media
-> player.  Feel free to use the notes in the Changelog or documentation.
->
->     Why use shortname=mixed.
->
->     This affects 8.3 filename reading and creation for maximum
->     compatibility with the behaviour of all versions of Windows.
->
->     There is a classic conflict between Windows 95 derivatives and
->     Windows NT derivatives, which causes spurious case changes when
->     moving some file names between them on removable media.  This
->     Linux setting manages to be compatible with both of them reliably,
->     and is therefore superior to all versions of Windows.
->
->     1. Filename reading uses the algorithm of Windows NT: if there
->        is only an 8.3 short name, its case is calculated from flags in
->        byte 12 of the short name entry.
->
->        This is needed for compatibility with files written by Windows
->        NT derivatives (including 2000, XP and Vista).  When Windows NT
->        creates two files called "PLAYLIST" and "file.ogg", the default
->        Linux algorithm ("shortname=lower") would see them as
->        "playlist" and "file.ogg" together, and the Windows 95
->        algorithm would see them as "PLAYLIST" and "FILE.OGG" together.
->        Both cause problems.
->
->     2. Filename creation uses the algorithm of Windows 95: Linux
->        creates a long name entry unless the original name fits into
->        8.3 and is entirely upper case.  This is more compatible than
->        shortname=winnt, because it creates a long name in more cases
->        to remove uncertainty.
->
->        This is needed for compatability with files created by Linux
->        and read by Windows 95 derivatives (and MS-DOS).  Windows 95
->        derivatives and MS-DOS interpret short name entries as upper
->        case, even when case flags are set in byte 12.  By storing a
->        long name entry, files stored by Linux will be read in the
->        desired case by all versions of Windows.
->
-> The patch has my
->
-> Signed-Off-By: Jamie Lokier <jamie@shareable.org>
+> > This will panic the machine if current is the only user thread running or 
+> > eligible for oom kill (all others could have mm's with OOM_DISABLE set).  
+> > Currently, such tasks can exit or kthreads can free memory so that the oom 
+> > is recoverable.
+> > 
+> 
+> Good point, would the following be ok instead?
+> 
+> +           if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
+> +                   if (p == current) {
+> +			    chosen = ERR_PTR(-1UL);
+> +                           continue;
+> +                   } else
+> +                           return ERR_PTR(-1UL);
+> 
 
-Thanks for comment. I don't know whether signed-off-by is desirable for
-this, so I'll add one Acked-by: simply if I apply this. Is it ok?
+Yes, if you wanted to allow multiple threads to have TIF_MEMDIE set.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> > The problem with this approach is that it increases the liklihood that 
+> > memory reserves will be totally depleted when several threads are 
+> > competing for them.
+> > 
+> 
+> How so? 
+> 
+
+We automatically oom kill current if it's PF_EXITING to give it TIF_MEMDIE 
+because we know it's on the exit path, this avoids allowing them to 
+allocate below the min watermark for the allocation that triggered the 
+oom, which could be significant.
+
+If several threads are ooming at the same time, which happens quite often 
+for non-cpuset and non-memcg constrained ooms (and those not restricted to 
+lowmem), we could now potentially have nr_cpus threads with TIF_MEMDIE set 
+simultaneously, which increases the liklihood that memory reserves will be 
+fully depleted after each allocation that triggered the oom killer now 
+succeeds because of ALLOC_NO_WATERMARKS.  This is somewhat mitigated by 
+the oom killer serialization done on the zonelist, but nothing guarantees 
+that reserves aren't empty before one of the threads has detached its 
+->mm.
+
+oom_kill_task() SIGKILLs threads sharing ->mm with different tgid's 
+instead of giving them access to memory reserves specifically to avoid 
+this.
