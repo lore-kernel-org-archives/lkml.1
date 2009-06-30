@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZF3OqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZF3Ouz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759385AbZF3OqA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbZF3Opx
+	id S1755201AbZF3Ouz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbZF3Our
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:45:53 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:49661 "EHLO h5.dl5rb.org.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755079AbZF3Opx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:45:53 -0400
-Date: Tue, 30 Jun 2009 15:45:40 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
-	not work
-Message-ID: <20090630144540.GA18212@linux-mips.org>
-References: <1246372868.19049.17.camel@falcon>
+	Tue, 30 Jun 2009 10:50:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48176 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbZF3Ouq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 10:50:46 -0400
+Message-ID: <4A4A25B1.5010102@zytor.com>
+Date: Tue, 30 Jun 2009 07:48:17 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246372868.19049.17.camel@falcon>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se>
+In-Reply-To: <19017.53428.834539.389495@pilspetsen.it.uu.se>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
+Mikael Pettersson wrote:
+> 
+> Thanks, 2.6.31-rc1 vanilla (which didn't boot) plus this one does boot.
+> /proc/iomem now looks as follows:
+> 
 
-> I just updated my git repository to the master branch of the latest
-> linux-mips git repository, and tested the STD/Hibernation support on
-> fuloong2e and yeeloong2f, it failed:
-> 
-> when using the no_console_suspend kernel command line to debug, it
-> stopped on:
-> 
-> PM: Shringking memory... done (1000 pages freed)
-> PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
-> PM: Creating hibernation image:
-> PM: Need to copy 5053 pages
-> PM: Hibernation image created (4195 pages copied)
-> 
-> and then, the number indicator light of keyboard works well, but can not
-> type anything. 
-> 
-> anybody have tested it on another platform? does it work?
+... as it should.  So far so good, and this is a real problem.
 
-At the time of the merge I tested it on Malta and found it to be working.
+However, there is something that really bothers me: *why does this help
+on Mikael's system, which is PAE and therefore has a 64-bit
+resource_size_t*?  This whole patch should be a no-op!  There is still
+something that doesn't make sense.
 
-  Ralf
+The use of "unsigned long" in ram_alignment() will overflow after 2^52
+bytes, but again, that's not the issue here, since the highest "start"
+value we have is (0x2 << 32).
+
+By process of elimination, the culprit must be round_up(), which reveals
+that the macro definition of round_up() has a *very* sublte behavior
+with mixed types:
+
+#define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+
+ram_alignment() returns unsigned long, which becomes (y).  This means
+that the mask word on the right hand of the & gets truncated to 32 bits
+*before* the masking happens -- since ((y) - 1) is still unsigned long,
+inverting it will not set bits [63..32] to on.
+
+I think this macro is actively dangerous.  Better would be:
+
+({ __typeof__(x) __mask = (y)-1;  ((x)+__mask) & ~__mask; })
+
+... which is also multiple-inclusion-free at the cost of using gcc
+({...}) constructs.
+
+The deep irony in this is that in our particular case is perhaps that
+align_up(x,y)-1 is the same thing as x | (y-1) which would have avoided
+the problem...
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
