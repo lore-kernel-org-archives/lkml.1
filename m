@@ -1,140 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZF3BmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZF3Azu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757606AbZF3BmB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 21:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZF3Bly
+	id S1754985AbZF3Azu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 20:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZF3Azl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 21:41:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39152 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZF3Blx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 21:41:53 -0400
-Message-ID: <4A496D4B.3040608@kernel.org>
-Date: Mon, 29 Jun 2009 18:41:31 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 29 Jun 2009 20:55:41 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:40365 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752220AbZF3Azk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 20:55:40 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org>
+	<m1d48p5dil.fsf@fess.ebiederm.org>
+	<19014.54044.484370.187018@samba.org>
+	<m1vdmh2e26.fsf@fess.ebiederm.org> <19015.482.794111.612472@samba.org>
+	<87ab3sx4ch.fsf@devron.myhome.or.jp>
+	<19016.6463.997760.757811@samba.org>
+	<20090629221826.GA12781@kroah.com>
+	<19017.17250.371594.268824@samba.org>
+	<87tz1ymx3m.fsf@devron.myhome.or.jp>
+	<19017.21349.354386.847874@samba.org>
+Date: Tue, 30 Jun 2009 09:55:39 +0900
+In-Reply-To: <19017.21349.354386.847874@samba.org> (tridge@samba.org's message
+	of "Tue, 30 Jun 2009 09:51:01 +1000")
+Message-ID: <87fxdimtf8.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mikael Pettersson <mikpe@it.uu.se>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
- x86
-References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <19013.29264.623540.275538@pilspetsen.it.uu.se> <4A45A5C1.5080701@zytor.com> <19013.59956.144640.331854@pilspetsen.it.uu.se> <20090629022911.GC20297@lackof.org> <4A484A8A.9020704@zytor.com> <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com> <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 29 Jun 2009, Yinghai Lu wrote:
->> +		end = round_up(start, ram_alignment(start)) - 1;
->> +		if (start > (resource_size_t)end)
->>  			continue;
->> -		reserve_region_with_split(&iomem_resource, start,
->> -						  end - 1, "RAM buffer");
->> +		reserve_region_with_split(&iomem_resource, (resource_size_t)start,
->> +					  (resource_size_t)end, "RAM buffer");
-> 
-> Hmm. You shouldn't need the casts with reserve_region_with_split(), and 
-> they just make things uglier.
-> 
-> Also, I wonder if we should do something like this instead
-> 
-> 	#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
-> 
-> 	...
-> 	end = round_up(start, ram_alignment(start)) - 1;
-> 	if (end > MAX_RESOURCE_SIZE)
-> 		end = MAX_RESOURCE_SIZE;
-> 	if (start > end)
-> 		continue;
-> 
-> Because otherwise we'll just be ignoring resources that cross the resource 
-> size boundary, which sounds wrong.
-> 
-> We _could_ have a RAM resource that crosses the 4GB boundary, after all.
-> 
-> Yeah, it doesn't happen much in practice, because usually the 3G-4G range 
-> is left for PCI mappings etc, so we might never hit this in practice, but 
-> still, this sounds like a more correct thing to do.
-> 
-> It also avoids the cast. We simply cap the end to the max that 
-> 'resource_size_t' can hold.
+tridge@samba.org writes:
 
-Mikael, please try this on your system, and send out /proc/iomem
+>  > The default may be arguable though, like I said at first.
+>
+> I suggest we leave the default as "no dual names" for now to let it
+> get some more testing, then if any problems come up then we can look
+> at the choice of default again. If no problems come up we can keep the
+> default as it is in the patch now.
 
-Thanks
-
-Yinghai
-
-[PATCH] x86: add boundary check for 32bit res before expand e820 resource to alignment
-
-fix hang with HIGHMEM_64G and 32bit resource.
-
-according to hpa and Linus, use (resource_size_t)-1 to fend off big ranges.
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/e820.c |   20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/e820.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/e820.c
-+++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1367,9 +1367,9 @@ void __init e820_reserve_resources(void)
- }
- 
- /* How much should we pad RAM ending depending on where it is? */
--static unsigned long ram_alignment(resource_size_t pos)
-+static u64 ram_alignment(u64 pos)
- {
--	unsigned long mb = pos >> 20;
-+	u64 mb = pos >> 20;
- 
- 	/* To 64kB in the first megabyte */
- 	if (!mb)
-@@ -1383,6 +1383,8 @@ static unsigned long ram_alignment(resou
- 	return 32*1024*1024;
- }
- 
-+#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
-+
- void __init e820_reserve_resources_late(void)
- {
- 	int i;
-@@ -1400,17 +1402,19 @@ void __init e820_reserve_resources_late(
- 	 * avoid stolen RAM:
- 	 */
- 	for (i = 0; i < e820.nr_map; i++) {
--		struct e820entry *entry = &e820_saved.map[i];
--		resource_size_t start, end;
-+		struct e820entry *entry = &e820.map[i];
-+		u64 start, end;
- 
- 		if (entry->type != E820_RAM)
- 			continue;
- 		start = entry->addr + entry->size;
--		end = round_up(start, ram_alignment(start));
--		if (start == end)
-+		end = round_up(start, ram_alignment(start)) - 1;
-+		if (end > MAX_RESOURCE_SIZE)
-+			end = MAX_RESOURCE_SIZE;
-+		if (start > end)
- 			continue;
--		reserve_region_with_split(&iomem_resource, start,
--						  end - 1, "RAM buffer");
-+		reserve_region_with_split(&iomem_resource, start, end,
-+					  "RAM buffer");
- 	}
- }
- 
-
+Ok, I've applied the patch + Cc: to fatfs-2.6.git.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
