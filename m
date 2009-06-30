@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbZGAAdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZGAAdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761224AbZGAAdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbZGAAaM
+	id S1759500AbZGAAdt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759660AbZGAAaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:12 -0400
-Received: from kroah.org ([198.145.64.141]:34343 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:13 -0400
+Received: from kroah.org ([198.145.64.141]:34344 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759341AbZGAAaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:06 -0400
+	id S1759493AbZGAAaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:07 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:58 2009
-Message-Id: <20090701000358.308541097@mini.kroah.org>
+Message-Id: <20090701000358.476669583@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:57 -0700
+Date: Tue, 30 Jun 2009 16:59:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 13/30] ALSA: ca0106 - Add missing registrations of vmaster controls
+       Scott James Remnant <scott@canonical.com>,
+       Tim Gardner <tim.gardner@canonical.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Philippe De Muyter <phdm@macqel.be>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [patch 14/30] floppy: provide a PNP device table in the module.
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-ca0106-add-missing-registrations-of-vmaster-controls.patch
+Content-Disposition: inline; filename=floppy-provide-a-pnp-device-table-in-the-module.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,42 +33,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Scott James Remnant <scott@canonical.com>
 
-commit 601e1cc5df940b59e71c947726640811897d30df upstream.
+commit 83f9ef463bcb4ba7b4fee1d6212fac7d277010d3 upstream.
 
-Although the vmaster controls are created, they aren't registered thus
-they don't appear in the real world.  Added the missing snd_ctl_add()
-calls.
+The missing device table means that the floppy module is not auto-loaded,
+even when the appropriate PNP device (0700) is found.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+We don't actually use the table in the module, since the device doesn't
+have a struct pnp_driver, but it's sufficient to cause an alias in the
+module that udev/modprobe will use.
+
+Signed-off-by: Scott James Remnant <scott@canonical.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Philippe De Muyter <phdm@macqel.be>
+Acked-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/ca0106/ca0106_mixer.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/block/floppy.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/sound/pci/ca0106/ca0106_mixer.c
-+++ b/sound/pci/ca0106/ca0106_mixer.c
-@@ -761,6 +761,9 @@ int __devinit snd_ca0106_mixer(struct sn
- 					      snd_ca0106_master_db_scale);
- 	if (!vmaster)
- 		return -ENOMEM;
-+	err = snd_ctl_add(card, vmaster);
-+	if (err < 0)
-+		return err;
- 	add_slaves(card, vmaster, slave_vols);
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -177,6 +177,7 @@ static int print_unex = 1;
+ #include <linux/interrupt.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
++#include <linux/mod_devicetable.h>
+ #include <linux/buffer_head.h>	/* for invalidate_buffers() */
+ #include <linux/mutex.h>
  
- 	if (emu->details->spi_dac == 1) {
-@@ -768,6 +771,9 @@ int __devinit snd_ca0106_mixer(struct sn
- 						      NULL);
- 		if (!vmaster)
- 			return -ENOMEM;
-+		err = snd_ctl_add(card, vmaster);
-+		if (err < 0)
-+			return err;
- 		add_slaves(card, vmaster, slave_sws);
- 	}
-         return 0;
+@@ -4572,6 +4573,13 @@ MODULE_AUTHOR("Alain L. Knaff");
+ MODULE_SUPPORTED_DEVICE("fd");
+ MODULE_LICENSE("GPL");
+ 
++/* This doesn't actually get used other than for module information */
++static const struct pnp_device_id floppy_pnpids[] = {
++	{ "PNP0700", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(pnp, floppy_pnpids);
++
+ #else
+ 
+ __setup("floppy=", floppy_setup);
 
 
