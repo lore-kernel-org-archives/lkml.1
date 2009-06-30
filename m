@@ -1,159 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757021AbZF3Ucz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZF3Ug3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757021AbZF3Ucz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZF3Ucs
+	id S1755358AbZF3Ug3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZF3UgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:32:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35787 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZF3Ucr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:32:47 -0400
-Date: Tue, 30 Jun 2009 21:32:49 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: upcoming kerneloops.org item: get_page_from_freelist
-Message-ID: <20090630203249.GC6689@csn.ul.ie>
-References: <alpine.LFD.2.01.0906241211550.3154@localhost.localdomain> <20090624123624.26c93459.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241240360.3154@localhost.localdomain> <20090624130121.99321cca.akpm@linux-foundation.org> <alpine.LFD.2.01.0906241312090.3154@localhost.localdomain> <20090624145615.2ff9e56e.akpm@linux-foundation.org> <20090629153007.GD5065@csn.ul.ie> <20090629122029.93cdcc39.akpm@linux-foundation.org> <20090630110011.GB17561@csn.ul.ie> <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0906301216180.16312@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 30 Jun 2009 16:36:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51200 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752165AbZF3UgV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:36:21 -0400
+Date: Tue, 30 Jun 2009 13:35:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-06-30-12-50 uploaded
+Message-Id: <20090630133550.bf34a0ba.akpm@linux-foundation.org>
+In-Reply-To: <4A4A7364.1090108@oracle.com>
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org>
+	<54770.1246392952@turing-police.cc.vt.edu>
+	<4A4A7364.1090108@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 12:35:59PM -0700, David Rientjes wrote:
-> On Tue, 30 Jun 2009, Mel Gorman wrote:
-> 
-> > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > index 175a67a..5f4656e 100644
-> > --- a/mm/oom_kill.c
-> > +++ b/mm/oom_kill.c
-> > @@ -230,14 +230,21 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
-> >  		/*
-> >  		 * This task already has access to memory reserves and is
-> >  		 * being killed. Don't allow any other task access to the
-> > -		 * memory reserve.
-> > +		 * memory reserve unless the current process is the one
-> > +		 * selected for OOM-killing. If the current process has
-> > +		 * been OOM-killed and we are OOM again, another process
-> > +		 * needs to be considered for OOM-kill
-> >  		 *
-> >  		 * Note: this may have a chance of deadlock if it gets
-> >  		 * blocked waiting for another task which itself is waiting
-> >  		 * for memory. Is there a better alternative?
-> >  		 */
-> > -		if (test_tsk_thread_flag(p, TIF_MEMDIE))
-> > -			return ERR_PTR(-1UL);
-> > +		if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
-> > +			if (p == current)
-> > +				continue;
-> > +			else
-> > +				return ERR_PTR(-1UL);
-> > +		}
-> >  
-> >  		/*
-> >  		 * This is in the process of releasing memory so wait for it
-> 
-> This will panic the machine if current is the only user thread running or 
-> eligible for oom kill (all others could have mm's with OOM_DISABLE set).  
-> Currently, such tasks can exit or kthreads can free memory so that the oom 
-> is recoverable.
-> 
+On Tue, 30 Jun 2009 13:19:48 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Good point, would the following be ok instead?
+> Valdis.Kletnieks@vt.edu wrote:
 
-+           if (test_tsk_thread_flag(p, TIF_MEMDIE)) {
-+                   if (p == current) {
-+			    chosen = ERR_PTR(-1UL);
-+                           continue;
-+                   } else
-+                           return ERR_PTR(-1UL);
+(I wasn't cc'ed?)
 
-
-> The problem with this approach is that it increases the liklihood that 
-> memory reserves will be totally depleted when several threads are 
-> competing for them.
-> 
-
-How so? 
-
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 5d714f8..5896469 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1539,6 +1539,14 @@ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
-> >  	if (gfp_mask & __GFP_NORETRY)
-> >  		return 0;
-> >  
-> > +	/* Do not loop if OOM-killed unless __GFP_NOFAIL is specified */
-> > +	if (test_thread_flag(TIF_MEMDIE)) {
-> > +		if (gfp_mask & __GFP_NOFAIL)
-> > +			WARN(1, "Potential infinite loop with __GFP_NOFAIL");
-> > +		else
-> > +			return 0;
-> > +	}
-> > +
-> 
-> There's a second bug in the refactored page allocator: when the oom killer 
-> is invoked and it happens to kill current, alloc_flags is never updated 
-> because it loops back to `restart', which is past gfp_to_alloc_flags().
-> 
-> When that is fixed with the patch below, gfp_mask & __GFP_NOFAIL will 
-> never be true here in your scenario, where the oom killer kills current, 
-> because __alloc_pages_high_priority() will infinitely loop.
-> 
-> >  	/*
-> >  	 * In this implementation, order <= PAGE_ALLOC_COSTLY_ORDER
-> >  	 * means __GFP_NOFAIL, but that may not be true in other
+> > On Tue, 30 Jun 2009 12:51:30 PDT, akpm@linux-foundation.org said:
+> >> The mm-of-the-moment snapshot 2009-06-30-12-50 has been uploaded to
 > > 
-> 
-> This is needed for 2.6.31-rc2.
-> 
-> 
-> mm: update alloc_flags after oom killer has been called
-> 
-> It is possible for the oom killer to select current as the task to kill.  
-> When this happens, alloc_flags needs to be updated accordingly to set 
-> ALLOC_NO_WATERMARKS so the subsequent allocation attempt may use memory 
-> reserves as the result of its thread having TIF_MEMDIE set if the 
-> allocation is not __GFP_NOMEMALLOC.
-> 
-> Signed-off-by: David Rientjes <rientjes@google.com>
+> > This dies with quilt 0.44, thusly:
+> > 
+> > Applying patch procfs-provide-stack-information-for-threads-v08.patch
+> > can't find file to patch at input line 20
+> > Perhaps you used the wrong -p or --strip option?
+> > The text leading up to this was:
+> > --------------------------
+> > |From: Stefani Seibold <stefani@seibold.net>
+> > |
+> > |A patch to give a better overview of the userland application stack usage,
+> > |especially for embedded linux.
+> > |
+> > |Currently you are only able to dump the main process/thread stack usage
+> > |which is showed in /proc/pid/status by the "VmStk" Value.  But you get no
+> > |information about the consumed stack memory of the the threads.
+> > |
+> > |There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which marks
+> > |the vm mapping where the thread stack pointer reside with "[thread stack
+> > |xxxxxxxx]".  xxxxxxxx is the maximum size of stack.  This is a value
+> > |information, because libpthread doesn't set the start of the stack to the
+> > |top of the mapped area, depending of the pthread usage.
+> > |
+> > |A sample output of /proc/<pid>/task/<tid>/maps looks like:
+> > |
+> > |08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
+> > |08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+The next line is:
 
-> ---
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1756,6 +1756,7 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
->  
->  	wake_all_kswapd(order, zonelist, high_zoneidx);
->  
-> +restart:
->  	/*
->  	 * OK, we're below the kswapd watermark and have kicked background
->  	 * reclaim. Now things get more complex, so set up alloc_flags according
-> @@ -1763,7 +1764,6 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
->  	 */
->  	alloc_flags = gfp_to_alloc_flags(gfp_mask);
->  
-> -restart:
->  	/* This is the last chance, in general, before the goto nopage. */
->  	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
->  			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
-> 
+a7d12000-a7d13000 ---p 00000000 00:00 0
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+And I bet stupid patch(1) saw that "---" and decided that it was the
+start of a diff.
+
+Try adding `-u' to the patch(1) command?
+
+I use something like
+
+	patch -u -f -p1 --fuzz=1 -s
