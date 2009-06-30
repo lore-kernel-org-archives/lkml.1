@@ -1,80 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZF3Vux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZF3VvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZF3Vux (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZF3Vuq
+	id S1759385AbZF3VvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZF3VvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:50:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45997 "EHLO mx2.mail.elte.hu"
+	Tue, 30 Jun 2009 17:51:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47921 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752710AbZF3Vup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:50:45 -0400
-Date: Tue, 30 Jun 2009 23:50:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip 3/3] kprobes: cleanup: use list instead of hlist
-	for insn_pages
-Message-ID: <20090630215023.GA22851@elte.hu>
-References: <20090630210757.17851.409.stgit@localhost.localdomain> <20090630210814.17851.64651.stgit@localhost.localdomain> <20090630212512.GA10831@elte.hu> <4A4A8804.1040004@redhat.com>
+	id S1753839AbZF3VvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:51:02 -0400
+Message-ID: <4A4A88A2.7010509@kernel.org>
+Date: Tue, 30 Jun 2009 14:50:26 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4A8804.1040004@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Mikael Pettersson <mikpe@it.uu.se>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [BUG 2.6.31-rc1] HIGHMEM64G causes hang in PCI init on 32-bit
+ x86
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se>	<19013.29264.623540.275538@pilspetsen.it.uu.se>	<4A45A5C1.5080701@zytor.com>	<19013.59956.144640.331854@pilspetsen.it.uu.se>	<20090629022911.GC20297@lackof.org>	<4A484A8A.9020704@zytor.com>	<19016.41349.636663.515540@pilspetsen.it.uu.se>	<20090629112155.GJ5480@parisc-linux.org>	<19016.44061.600652.676183@pilspetsen.it.uu.se>	<4A490804.3040609@zytor.com>	<4A494478.7020304@kernel.org>	<4A494E3C.70304@kernel.org>	<4A495C0D.2020807@zytor.com>	<4A4966EF.6010809@kernel.org>	<alpine.LFD.2.01.0906291820060.3605@localhost.localdomain>	<4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com>
+In-Reply-To: <4A4A81C9.9070008@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Ingo Molnar wrote:
-> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> > 
-> >> Use struct list instead of struct hlist for managing insn_pages, 
-> >> because insn_pages doesn't use hash table.
-> > 
-> >>  struct kprobe_insn_page {
-> >> -	struct hlist_node hlist;
-> >> +	struct list_head list;
-> > 
-> > Hm, you know that this increases the size of kprobe_insn_page by 4/8 
-> > bytes, right?
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> H. Peter Anvin wrote:
+>>> Yinghai Lu wrote:
+>>>> agreed, that is why we change round_up to take u64.
+>>>>
+>>> round_up() is a macro, it doesn't "take" anything per se...
+>>>
+>> i mean
+>>  end = roundup(start, ram_alignment(start)) - 1;
+>>
+>> static u64 ram_alignment(u64 pos)
+>>
+>> and other calling to round_up
+>>
 > 
-> Sure, that will increase size.
+> This is fixing the wrong problem.  Fixing round_up is the right thing,
+> not working around its brain damage.
 > 
-> > hlists are not just used for hashes - but also when we want a more 
-> > compact / smaller list head.
-> 
-> Oh, I thought hlists are used for hash tables...
 
-... because they are smaller, hence the hash table of list 
-heads becomes twice as dense as with list_head.
+this one ? 
 
-But otherwise it's an (almost) equivalent primitive to list_head, 
-with a slightly higher runtime cost versus better RAM footprint.
+or you want to move round_up/down to include/linux/kernel.h?
 
-> > How many kprobe_insn_page's can be allocated in the system, 
-> > maximally?
-> 
-> It's depends on how many probes you will use, but logically, 1 
-> kprobe_insn_pages is allocated per 4096/16 = 256 probes. So, if 
-> you use 25,600 probes on your system, memory consumption will 
-> increase 400/800 bytes.
+[PATCH] x86: add boundary check for 32bit res before expand e820 resource to alignment -v3
 
-it's your call really - just wanted to react on the 'because it 
-should be used for hash tables' comment in the changelog.
+fix hang with HIGHMEM_64G and 32bit resource.
+according to hpa and Linus, use (resource_size_t)-1 to fend off big ranges.
 
-	Ingo
+analyized by hpa
+
+v2: use roundup instead
+v3: from HPA update round_up with __type_of__
+
+Reported-and-tested-by: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/proto.h |    5 +++--
+ arch/x86/kernel/e820.c       |   20 ++++++++++++--------
+ 2 files changed, 15 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1367,9 +1367,9 @@ void __init e820_reserve_resources(void)
+ }
+ 
+ /* How much should we pad RAM ending depending on where it is? */
+-static unsigned long ram_alignment(resource_size_t pos)
++static u64 ram_alignment(u64 pos)
+ {
+-	unsigned long mb = pos >> 20;
++	u64 mb = pos >> 20;
+ 
+ 	/* To 64kB in the first megabyte */
+ 	if (!mb)
+@@ -1383,6 +1383,8 @@ static unsigned long ram_alignment(resou
+ 	return 32*1024*1024;
+ }
+ 
++#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
++
+ void __init e820_reserve_resources_late(void)
+ {
+ 	int i;
+@@ -1400,17 +1402,19 @@ void __init e820_reserve_resources_late(
+ 	 * avoid stolen RAM:
+ 	 */
+ 	for (i = 0; i < e820.nr_map; i++) {
+-		struct e820entry *entry = &e820_saved.map[i];
+-		resource_size_t start, end;
++		struct e820entry *entry = &e820.map[i];
++		u64 start, end;
+ 
+ 		if (entry->type != E820_RAM)
+ 			continue;
+ 		start = entry->addr + entry->size;
+-		end = round_up(start, ram_alignment(start));
+-		if (start == end)
++		end = round_up(start, ram_alignment(start)) - 1;
++		if (end > MAX_RESOURCE_SIZE)
++			end = MAX_RESOURCE_SIZE;
++		if (start > end)
+ 			continue;
+-		reserve_region_with_split(&iomem_resource, start,
+-						  end - 1, "RAM buffer");
++		reserve_region_with_split(&iomem_resource, start, end,
++					  "RAM buffer");
+ 	}
+ }
+ 
+Index: linux-2.6/arch/x86/include/asm/proto.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/proto.h
++++ linux-2.6/arch/x86/include/asm/proto.h
+@@ -22,7 +22,8 @@ extern int reboot_force;
+ 
+ long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
+ 
+-#define round_up(x, y) (((x) + (y) - 1) & ~((y) - 1))
+-#define round_down(x, y) ((x) & ~((y) - 1))
++#define round_up(x, y) ({ __typeof__(x) __mask = (y)-1; \
++			 ((x)+__mask) & ~__mask; })
++#define round_down(x, y) ({ __typeof__(x) __mask = (y)-1; (x) & ~__mask; })
+ 
+ #endif /* _ASM_X86_PROTO_H */
