@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZF3Rmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZF3RoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753548AbZF3Rmi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 13:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZF3Rmb
+	id S1753828AbZF3RoI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 13:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZF3Rn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 13:42:31 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:33568 "EHLO
+	Tue, 30 Jun 2009 13:43:57 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:33581 "EHLO
 	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbZF3Rma (ORCPT
+	with ESMTP id S1750731AbZF3Rn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 13:42:30 -0400
-Date: Tue, 30 Jun 2009 13:42:26 -0400
+	Tue, 30 Jun 2009 13:43:56 -0400
+Date: Tue, 30 Jun 2009 13:43:51 -0400
 From: Neil Horman <nhorman@tuxdriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, earl_chew@agilent.com,
        Oleg Nesterov <oleg@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/3] exec: Make do_coredump more resilient to recursive
-	crashes (v4)
-Message-ID: <20090630174226.GB15612@hmsreliant.think-freely.org>
+Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
+	concurrent dumps to pipes (v4)
+Message-ID: <20090630174351.GC15612@hmsreliant.think-freely.org>
 References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090630173836.GA15612@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,83 +30,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Change how we detect recursive dumps with core_pattern pipes
+core_pattern: Introduce core pipe limiting sysctl
 
-Change how we detect recursive dumps.  Currently we have a mechanism by which
-we try to compare pathnames of the crashing process to the core_pattern path.
-This is broken for a dozen reasons, and just doesn't work in any sort of robust
-way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
-apps set RLIMIT_CORE to zero, we don't write out core files for any process with
-that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
-translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
-prevents infinite recursion in the event that the core_pattern process itself
-crashes.
+Since we can dump cores to pipe, rather than directly to the filesystem, we
+create a condition in which a user can create a very high load on the system
+simply by running bad applications.  If the pipe reader specified in
+core_pattern is poorly written, we can have lots of ourstandig resources and
+processes in the system.  This sysctl introduces an ability to limit that
+resource consumption.  core_pipe_limit defines how many in-flight dumps may be
+run in parallel, dumps beyond this value are skipped and a note is made in the
+kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
+dumps may be handled (this is the default value).
 
 Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 Reported-by: Earl Chew <earl_chew@agilent.com>
 
 
-exec.c |   43 +++++++++++++++++++++----------------------
-1 file changed, 21 insertions(+), 22 deletions(-)
+Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
+fs/exec.c                       |   21 +++++++++++++++++----
+kernel/sysctl.c                 |    9 +++++++++
+3 files changed, 48 insertions(+), 4 deletions(-)
 
+diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+index 322a00b..bb226ba 100644
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
+ - acct
+ - auto_msgmni
+ - core_pattern
++- core_pipe_limit
+ - core_uses_pid
+ - ctrl-alt-del
+ - dentry-state
+@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+ 
+ ==============================================================
+ 
++core_pipe_limit:
++
++This sysctl is only applicable when core_pattern is configured to pipe core
++files to user space helper a (when the first character of core_pattern is a '|',
++see above).  When collecting cores via a pipe to an application, it is
++occasionally usefull for the collecting application to gather data about the
++crashing process from its /proc/pid directory.  In order to do this safely, the
++kernel must wait for the collecting process to exit, so as not to remove the
++crashing processes proc files prematurely.  This in turn creates the possibility
++that a misbehaving userspace collecting process can block the reaping of a
++crashed process simply by never exiting.  This sysctl defends against that.  It
++defines how many concurrent crashing processes may be piped to user space
++applications in parallel.  If this value is exceeded, then those crashing
++processes above that value are noted via the kernel log and their cores are
++skipped.  0 is a special value, indicating that unlimited processes may be
++captured in parallel, but that no waiting will take place (i.e. the collecting
++process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
++to 0.
++
++==============================================================
++
+ core_uses_pid:
+ 
+ The default coredump filename is "core".  By setting
 diff --git a/fs/exec.c b/fs/exec.c
-index 9e05bd8..9defd20 100644
+index 9defd20..93ab6eb 100644
 --- a/fs/exec.c
 +++ b/fs/exec.c
-@@ -1776,35 +1776,34 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
-  	lock_kernel();
- 	ispipe = format_corename(corename, signr);
- 	unlock_kernel();
--	/*
--	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
--	 * to a pipe.  Since we're not writing directly to the filesystem
--	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
--	 * created unless the pipe reader choses to write out the core file
--	 * at which point file size limits and permissions will be imposed
--	 * as it does with any other process
--	 */
-+
-  	if (ispipe) {
-+		if (core_limit == 0) {
-+			 /*
-+			  * Normally core limits are irrelevant to pipes, since
-+			  * we're not writing to the file system, but we use
-+			  * core_limit of 0 here as a speacial value. Any
-+			  * non-zero limit gets set to RLIM_INFINITY below, but
-+			  * a limit of 0 skips the dump.  This is a consistent
-+			  * way to catch recursive crashes.  We can still crash
-+			  * if the core_pattern binary sets RLIM_CORE =  !0
-+			  * but it runs as root, and can do lots of stupid things
-+			  * Note that we use task_tgid_vnr here to grab the pid of the
-+			  * process group leader.  That way we get the right pid if a thread
-+			  * in a multi-threaded core_pattern process dies.
-+			  */
-+			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
+@@ -63,6 +63,7 @@
+ 
+ int core_uses_pid;
+ char core_pattern[CORENAME_MAX_SIZE] = "core";
++unsigned int core_pipe_limit;
+ int suid_dumpable = 0;
+ 
+ /* The maximal length of core_pattern is also specified in sysctl.c */
+@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+ 	char **helper_argv = NULL;
+ 	int helper_argc = 0;
+-	char *delimit;
++	int dump_count = 0;
++	static atomic_t core_dump_count = ATOMIC_INIT(0);
+ 
+ 	audit_core_dumps(signr);
+ 
+@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 			goto fail_unlock;
+ 		}
+ 
++		dump_count = atomic_inc_return(&core_dump_count);
++		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
++			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
 +			       task_tgid_vnr(current), current->comm);
-+			printk(KERN_WARNING "Aborting core\n");
-+			goto fail_unlock;
++			printk(KERN_WARNING "Skipping core dump\n");
++			goto fail_dropcount;
 +		}
 +
  		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
  		if (!helper_argv) {
  			printk(KERN_WARNING "%s failed to allocate memory\n",
  			       __func__);
- 			goto fail_unlock;
- 		}
--		/* Terminate the string before the first option */
--		delimit = strchr(corename, ' ');
--		if (delimit)
--			*delimit = '\0';
--		delimit = strrchr(helper_argv[0], '/');
--		if (delimit)
--			delimit++;
--		else
--			delimit = helper_argv[0];
--		if (!strcmp(delimit, current->comm)) {
--			printk(KERN_NOTICE "Recursive core dump detected, "
--					"aborting\n");
 -			goto fail_unlock;
--		}
++			goto fail_dropcount;
+ 		}
  
  		core_limit = RLIM_INFINITY;
  
+ 		/* SIGPIPE can happen, but it's just never processed */
+- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
++ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+ 				&file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+ 			       corename);
+- 			goto fail_unlock;
++ 			goto fail_dropcount;
+  		}
+ 	} else {
+ 		if (core_limit < binfmt->min_coredump)
+@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 
+ close_fail:
+ 	filp_close(file, NULL);
++fail_dropcount:
++	if (dump_count)
++		atomic_dec(&core_dump_count);
+ fail_unlock:
+ 	if (helper_argv)
+ 		argv_free(helper_argv);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 62e4ff9..681052f 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -77,6 +77,7 @@ extern int max_threads;
+ extern int core_uses_pid;
+ extern int suid_dumpable;
+ extern char core_pattern[];
++extern unsigned int core_pipe_limit;
+ extern int pid_max;
+ extern int min_free_kbytes;
+ extern int pid_max_min, pid_max_max;
+@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dostring,
+ 		.strategy	= &sysctl_string,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "core_pipe_limit",
++		.data		= &core_pipe_limit,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #ifdef CONFIG_PROC_SYSCTL
+ 	{
+ 		.procname	= "tainted",
