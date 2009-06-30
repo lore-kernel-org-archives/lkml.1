@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZF3Vp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZF3VrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbZF3Vp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZF3VpT
+	id S1757531AbZF3VrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZF3VrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:45:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51889 "EHLO mx2.redhat.com"
+	Tue, 30 Jun 2009 17:47:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47855 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754156AbZF3VpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:45:18 -0400
-Message-ID: <4A4A8804.1040004@redhat.com>
-Date: Tue, 30 Jun 2009 17:47:48 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752337AbZF3VrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:47:02 -0400
+Date: Tue, 30 Jun 2009 21:45:38 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       efault@gmx.de, heukelum@fastmail.fm, tglx@linutronix.de,
+       gorcunov@gmail.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, heukelum@fastmail.fm, tglx@linutronix.de,
+       gorcunov@gmail.com, mingo@elte.hu
+In-Reply-To: <1246366820.6538.1.camel@marge.simson.net>
+References: <1246366820.6538.1.camel@marge.simson.net>
+Subject: [tip:x86/urgent] x86: Fix symbol annotation for arch/x86/lib/clear_page_64.S::clear_page_c
+Message-ID: <tip-9e314996e3dc5189b9b36dce67088e882e989897@git.kernel.org>
+Git-Commit-ID: 9e314996e3dc5189b9b36dce67088e882e989897
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip 3/3] kprobes: cleanup: use list instead of hlist
- for insn_pages
-References: <20090630210757.17851.409.stgit@localhost.localdomain> <20090630210814.17851.64651.stgit@localhost.localdomain> <20090630212512.GA10831@elte.hu>
-In-Reply-To: <20090630212512.GA10831@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Jun 2009 21:45:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Use struct list instead of struct hlist for managing insn_pages, 
->> because insn_pages doesn't use hash table.
-> 
->>  struct kprobe_insn_page {
->> -	struct hlist_node hlist;
->> +	struct list_head list;
-> 
-> Hm, you know that this increases the size of kprobe_insn_page by 4/8 
-> bytes, right?
+Commit-ID:  9e314996e3dc5189b9b36dce67088e882e989897
+Gitweb:     http://git.kernel.org/tip/9e314996e3dc5189b9b36dce67088e882e989897
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Tue, 30 Jun 2009 15:00:20 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 30 Jun 2009 23:43:15 +0200
 
-Sure, that will increase size.
+x86: Fix symbol annotation for arch/x86/lib/clear_page_64.S::clear_page_c
 
-> hlists are not just used for hashes - but also when we want a more 
-> compact / smaller list head.
+Noticed the zero-sized function symbol while looking at 'perf' profiles,
+it causes the profiler to display those addresses in hexa.
 
-Oh, I thought hlists are used for hash tables...
+Turns out that this was wrong/bogus for an eternity.
 
-> 
-> How many kprobe_insn_page's can be allocated in the system, 
-> maximally?
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
+LKML-Reference: <1246366820.6538.1.camel@marge.simson.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-It's depends on how many probes you will use, but logically,
-1 kprobe_insn_pages is allocated per 4096/16 = 256 probes.
-So, if you use 25,600 probes on your system, memory
-consumption will increase 400/800 bytes.
 
-Thank you,
+---
+ arch/x86/lib/clear_page_64.S |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+diff --git a/arch/x86/lib/clear_page_64.S b/arch/x86/lib/clear_page_64.S
+index 9a10a78..ebeafcc 100644
+--- a/arch/x86/lib/clear_page_64.S
++++ b/arch/x86/lib/clear_page_64.S
+@@ -5,15 +5,14 @@
+  * Zero a page. 	
+  * rdi	page
+  */			
+-	ALIGN
+-clear_page_c:
++ENTRY(clear_page_c)
+ 	CFI_STARTPROC
+ 	movl $4096/8,%ecx
+ 	xorl %eax,%eax
+ 	rep stosq
+ 	ret
+ 	CFI_ENDPROC
+-ENDPROC(clear_page)
++ENDPROC(clear_page_c)
+ 
+ ENTRY(clear_page)
+ 	CFI_STARTPROC
