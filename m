@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZF3TQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZF3TXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbZF3TQo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 15:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbZF3TQ3
+	id S1755519AbZF3TXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 15:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZF3TXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 15:16:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45879 "EHLO mx2.redhat.com"
+	Tue, 30 Jun 2009 15:23:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43371 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756927AbZF3TQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 15:16:27 -0400
-Message-ID: <4A4A6499.9000406@redhat.com>
-Date: Tue, 30 Jun 2009 22:16:41 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S1751818AbZF3TXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 15:23:21 -0400
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-References: <20090629132926.GB20289@redhat.com>	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>	<m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com> <m1ljn94k16.fsf@fess.ebiederm.org>
-In-Reply-To: <m1ljn94k16.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ratan Nalumasu <rnalumasu@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH 2/2] change __wake_up_parent() to use filtered
+	wakeup
+In-Reply-To: Oleg Nesterov's message of  Monday, 29 June 2009 05:38:52 +0200 <20090629033852.GA14404@redhat.com>
+References: <20090622170437.GA4906@redhat.com>
+	<20090624091316.73D0F4059B@magilla.sf.frob.com>
+	<20090624152143.GB23848@redhat.com>
+	<20090624185701.AA74C4059B@magilla.sf.frob.com>
+	<20090624161111.GA27890@redhat.com>
+	<20090624194239.A29174059B@magilla.sf.frob.com>
+	<20090624171357.GA30435@redhat.com>
+	<20090624205112.3EA944059B@magilla.sf.frob.com>
+	<93ad5f3f0906252111n48742b9ax8dc2ad35b30f4292@mail.gmail.com>
+	<20090629033852.GA14404@redhat.com>
+X-Zippy-Says: Look into my eyes and try to forget that you have a Macy's charge card!
+Message-Id: <20090630192235.90AFB1C4@magilla.sf.frob.com>
+Date: Tue, 30 Jun 2009 12:22:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/30/2009 10:08 PM, Eric W. Biederman wrote:
->> Can you elaborate?  For kvm guests, the hardware is reasonably will implemented
->> and if not we will fix it.  We need not cripple a feature just because some
->> hardware is broken.
->>      
->
-> The short version is I don't know what work arounds we will ultimately
-> decide to deploy to work with real hardware.
->
-> I have been seriously contemplating causing a cpu hot-unplug request
-> to fail if we are in ioapic mode and we have irqs routed to the cpu
-> that is being unplugged.
->    
+> >        if ((wo->wo_flags & __WNOTHREAD) && wo->child_wait.private !=
+> > p->parent)
+> >                return 0;
+> > ===
+> >
+> > I will run it on my test machines and see if everything looks good.
+> 
+> OK, thanks.
+> 
+> The only problem it uses ->parent, this conflicts with other out-of-tree
+> ptrace changes...
+> 
+> Roland, do you think we should do this change now or later?
 
-Well, obviously we need to disassociate any irqs from such a cpu.  Could 
-be done from the kernel or only enforced by the kernel.
-
-> Even with perfectly working hardware it is not possible in the general
-> case to migrate an ioapic irq from one cpu to another outside of an
-> interrupt handler without without risking dropping an interrupt.
->    
-
-Can't you generate a spurious interrupt immediately after the 
-migration?  An extra interrupt shouldn't hurt.
-
-> There is no general way to know you have seen the last interrupt
-> floating around your system.  PCI ordering rules don't help because
-> the ioapics can potentially take an out of band channel.
->    
-
-Can you describe the problem scenario? an ioapic->lapic message 
-delivered to a dead cpu?
+I think it makes most sense to put that in right after the initial
+wait_child_callback patch (if not rolled into it).  In fact, the original
+approach was to do just this "simplest" __WNOTHREAD-checking callback
+first, and add the eligible_child() hacking second (not that I think that
+order matters).
 
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Thanks,
+Roland
