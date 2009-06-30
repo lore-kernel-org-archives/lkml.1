@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZF3NA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZF3NIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZF3NA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 09:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZF3NAV
+	id S1753352AbZF3NIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 09:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZF3NIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 09:00:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:39413 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751886AbZF3NAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 09:00:21 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/KZ8ZGSBfKG0qV+ns1OMrDwJzCuJ1LNZNlrDSS4B
-	sJ5kPUfztXTSLl
-Subject: Re: [patch] x86: fix arch/x86/lib/clear_page_64.S::clear_page_c
- annotation
-From: Mike Galbraith <efault@gmx.de>
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-In-Reply-To: <1246362139.20020.1322822615@webmail.messagingengine.com>
-References: <1246359240.6103.34.camel@marge.simson.net>
-	 <1246362139.20020.1322822615@webmail.messagingengine.com>
-Content-Type: text/plain
-Date: Tue, 30 Jun 2009 15:00:20 +0200
-Message-Id: <1246366820.6538.1.camel@marge.simson.net>
+	Tue, 30 Jun 2009 09:08:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58506 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751379AbZF3NIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 09:08:23 -0400
+Date: Tue, 30 Jun 2009 14:09:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, tom.leiming@gmail.com,
+       fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH][RFC] asm-generic:remove calling flush_write_buffers()
+ in dma_sync_*_for_cpu
+Message-ID: <20090630140945.0784e174@lxorguk.ukuu.org.uk>
+In-Reply-To: <200906301448.55064.arnd@arndb.de>
+References: <1246199959-6548-1-git-send-email-tom.leiming@gmail.com>
+	<200906301434.26815.arnd@arndb.de>
+	<20090630134000.23674147@lxorguk.ukuu.org.uk>
+	<200906301448.55064.arnd@arndb.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 13:42 +0200, Alexander van Heukelum wrote:
-> Hi Mike,
+> > What about non x86 - this is asm-generic you are playing with and its the
+> > kind of change that causes evil really hard to track down and subtle
+> > corruptions and user data loss if you get it wrong.
 > 
-> I agree with the code, but I do have a remark...
-> 
-> The ENTRY() macro already includes the ALIGN, so you could get
-> rid of the preceding ALIGN. But it's just a neatness thing, because
-> two consecutive ALIGNS don't change the resulting binary.
-> 
-> At any rate:
-> 
-> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> 
-> (maybe the x86-committer feels comfortable enough to remove the ALIGN ;)
-> )
+> Non-x86 is the real motivation for the patch, because the flush_write_buffers
+> call in this file is currently not implemented and causes build errors
+> on everything but x86, frv, ia64 and m32r, where the latter two implement
+> it as an empty macro.
 
-No doubt, but I can save him the trouble ;-)
+Ok so the FRV would grow a similar no iommu patch to the x86.
 
-x86: fix incorrect arch/x86/lib/clear_page_64.S::clear_page_c annotation.
+> The only users of the file right now are x86 and ia64, and ia64 only added
+> the empty flush_write_buffers() definition in order to use it.
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>
-LKML-Reference: <new-submission>
-
----
- arch/x86/lib/clear_page_64.S |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/arch/x86/lib/clear_page_64.S
-===================================================================
---- linux-2.6.orig/arch/x86/lib/clear_page_64.S
-+++ linux-2.6/arch/x86/lib/clear_page_64.S
-@@ -5,15 +5,14 @@
-  * Zero a page. 	
-  * rdi	page
-  */			
--	ALIGN
--clear_page_c:
-+ENTRY(clear_page_c)
- 	CFI_STARTPROC
- 	movl $4096/8,%ecx
- 	xorl %eax,%eax
- 	rep stosq
- 	ret
- 	CFI_ENDPROC
--ENDPROC(clear_page)
-+ENDPROC(clear_page_c)
- 
- ENTRY(clear_page)
- 	CFI_STARTPROC
-
-
+That now all makes sense.
