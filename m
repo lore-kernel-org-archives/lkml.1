@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZF3Wqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbZF3WrC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbZF3Wqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 18:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZF3Wqh
+	id S1757168AbZF3WrC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 18:47:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZF3Wqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 18:46:37 -0400
-Received: from mail2.gnudd.com ([213.203.150.91]:64047 "EHLO mail.gnudd.com"
+	Tue, 30 Jun 2009 18:46:48 -0400
+Received: from claw.goop.org ([74.207.240.146]:51622 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754585AbZF3Wqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 18:46:36 -0400
-X-Greylist: delayed 1044 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 18:46:35 EDT
-Date: Wed, 1 Jul 2009 00:29:47 +0200
-From: Alessandro Rubini <rubini-list@gnudd.com>
-To: linux@arm.linux.org.uk
-Cc: soni.trilok@gmail.com, leochen@broadcom.com, plagnioj@jcrosoft.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 3/6][ARM] new ARM SoC support: BCMRing
-Message-ID: <20090630222947.GA16628@mail.gnudd.com>
+	id S1754562AbZF3Wqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 18:46:48 -0400
+Message-ID: <4A4A95D8.6020708@goop.org>
+Date: Tue, 30 Jun 2009 15:46:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-X-Face: #Q;A)@_4.#>0+_%y]7aBr:c"ndLp&#+2?]J;lkse\^)FP^Lr5@O0{)J;'nny4%74.fM'
-	n)M
-	>ISCj.KmsL/HTxz!:Ju'pnj'Gz&.
-Organization: GnuDD, Device Drivers, Embedded Systems, Courses
-In-Reply-To: <20090630211249.GA10001@n2100.arm.linux.org.uk>
-References: <20090630211249.GA10001@n2100.arm.linux.org.uk>
-	<8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C3@SJEXCHCCR02.corp.ad.broa
-	dcom.com>
-	<8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C5@SJEXCHCCR02.corp.ad.broa
-	dcom.com>  <20090627053317.GG8587@game.jcrosoft.org>
-	<8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE1A06@SJEXCHCCR02.corp.ad.broa
-	dcom.com>
-	<5d5443650906292230k27e70863l49566462328f0a43@mail.gmail.com>
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, npiggin@suse.de, chris.mason@oracle.com,
+       kurt.hackel@oracle.com, dave.mccracken@oracle.com,
+       Avi Kivity <avi@redhat.com>, Rik van Riel <riel@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [RFC] transcendent memory for Linux
+References: <c31ca108-9b68-40ba-936f-3ed2a56fd90b@default>
+In-Reply-To: <c31ca108-9b68-40ba-936f-3ed2a56fd90b@default>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. wrap the string.  This is considered bad practice since it means
->    that you can't grep the kernel source for the exact message.
+On 06/30/09 14:21, Dan Magenheimer wrote:
+> No, the uuid can't be verified.  Tmem gives no indication
+> as to whether a newly-created pool is already in use (shared)
+> by another guest.  So without both the 128-bit uuid and an
+> already-in-use 64-bit object id and 32-bit page index, no data
+> is readable or writable by the attacker.
+>   
 
-FWIW, I always grep in kernel objects, so I'm immune to both string
-splitting and message duplication in drivers I'm not using.
+You have to consider things like timing attacks as well (for example, a
+tmem hypercall might return faster if the uuid already exists).
 
-  #!/bin/sh
-  find . -name "*.o" -o -name "*.ko" | xargs strings -f | grep ":.*$1"
+Besides, you can tell whether a uuid exists, by at least a couple of
+mechanisms (from a quick read of the source, so I might have overlooked
+something):
 
-/alessandro
+   1. You can create new shared pools until it starts failing as a
+      result of hitting the MAX_GLOBAL_SHARED_POOLS limit with junk
+      uuids.  If you then successfully "create" a shared pool while
+      searching, you know it already existed.
+   2. The returned pool id will increase unless the pool already exists,
+      in which case you'll get a smaller id back (ignoring wraparound).
+
+
+> Hmmm... that is definitely a thornier problem.  I guess the
+> security angle definitely deserves more design.  But, again,
+> this affects only shared precache which is not intended
+> to part of the proposed initial tmem patchset, so this is a futures
+> issue.)
+
+Yeah, a shared namespace of accessible objects is an entirely new thing
+in the Xen universe.  I would also drop Xen support until there's a good
+security story about how they can be used.
+
+    J
+
