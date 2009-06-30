@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZGAAcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbZGAAbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbZGAAcB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758308AbZGAAaF
+	id S1759339AbZGAAbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759650AbZGAAaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:05 -0400
-Received: from kroah.org ([198.145.64.141]:34321 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:03 -0400
+Received: from kroah.org ([198.145.64.141]:34316 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759613AbZGAAaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:01 -0400
+	id S1759341AbZGAAaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:00 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:57 2009
-Message-Id: <20090701000357.437400136@mini.kroah.org>
+Message-Id: <20090701000357.276381426@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:52 -0700
+Date: Tue, 30 Jun 2009 16:59:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Shaohua Li <shaohua.li@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 08/30] PCI: disable ASPM on VIA root-port-under-bridge configurations
+       Jan Kara <jack@suse.cz>, <linux-ext4@vger.kernel.org>
+Subject: [patch 07/30] jbd: fix race in buffer processing in commit code
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=pci-disable-aspm-on-via-root-port-under-bridge-configurations.patch
+Content-Disposition: inline; filename=jbd-fix-race-in-buffer-processing-in-commit-code.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,34 +30,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Jan Kara <jack@suse.cz>
 
-commit 8e822df700694ca6850d1e0c122fd7004b2778d8 upstream.
+commit a61d90d75d0f9e86432c45b496b4b0fbf0fd03dc upstream.
 
-VIA has a strange chipset, it has root port under a bridge. Disable ASPM
-for such strange chipset.
+In commit code, we scan buffers attached to a transaction.  During this
+scan, we sometimes have to drop j_list_lock and then we recheck whether
+the journal buffer head didn't get freed by journal_try_to_free_buffers().
+ But checking for buffer_jbd(bh) isn't enough because a new journal head
+could get attached to our buffer head.  So add a check whether the journal
+head remained the same and whether it's still at the same transaction and
+list.
 
-Tested-by: Wolfgang Denk <wd@denx.de>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+This is a nasty bug and can cause problems like memory corruption (use after
+free) or trigger various assertions in JBD code (observed).
+
+Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: <linux-ext4@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aspm.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ fs/jbd/commit.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -633,6 +633,10 @@ void pcie_aspm_init_link_state(struct pc
- 	if (pdev->pcie_type != PCI_EXP_TYPE_ROOT_PORT &&
- 		pdev->pcie_type != PCI_EXP_TYPE_DOWNSTREAM)
- 		return;
-+	/* VIA has a strange chipset, root port is under a bridge */
-+	if (pdev->pcie_type == PCI_EXP_TYPE_ROOT_PORT &&
-+		pdev->bus->self)
-+		return;
- 	down_read(&pci_bus_sem);
- 	if (list_empty(&pdev->subordinate->devices))
- 		goto out;
+--- a/fs/jbd/commit.c
++++ b/fs/jbd/commit.c
+@@ -238,7 +238,7 @@ write_out_data:
+ 			spin_lock(&journal->j_list_lock);
+ 		}
+ 		/* Someone already cleaned up the buffer? */
+-		if (!buffer_jbd(bh)
++		if (!buffer_jbd(bh) || bh2jh(bh) != jh
+ 			|| jh->b_transaction != commit_transaction
+ 			|| jh->b_jlist != BJ_SyncData) {
+ 			jbd_unlock_bh_state(bh);
+@@ -463,7 +463,9 @@ void journal_commit_transaction(journal_
+ 			spin_lock(&journal->j_list_lock);
+ 			continue;
+ 		}
+-		if (buffer_jbd(bh) && jh->b_jlist == BJ_Locked) {
++		if (buffer_jbd(bh) && bh2jh(bh) == jh &&
++		    jh->b_transaction == commit_transaction &&
++		    jh->b_jlist == BJ_Locked) {
+ 			__journal_unfile_buffer(jh);
+ 			jbd_unlock_bh_state(bh);
+ 			journal_remove_journal_head(bh);
 
 
