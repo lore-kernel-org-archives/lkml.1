@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760931AbZF3XUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760933AbZF3XUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760931AbZF3XUg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760633AbZF3XTS
+	id S1760933AbZF3XUu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760741AbZF3XTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:19:18 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:59225 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760631AbZF3XTQ (ORCPT
+	Tue, 30 Jun 2009 19:19:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48231 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760751AbZF3XTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:19:16 -0400
-Date: Tue, 30 Jun 2009 19:18:43 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-In-Reply-To: <20090630230743.GA17968@elte.hu>
-Message-ID: <alpine.DEB.1.10.0906301917170.15482@gentwo.org>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu>
- <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <alpine.DEB.1.10.0906301847260.19482@gentwo.org> <20090630230743.GA17968@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 30 Jun 2009 19:19:38 -0400
+Date: Wed, 1 Jul 2009 00:20:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: "Leo (Hao) Chen" <leochen@broadcom.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v1 6/6][ARM]  new ARM SoC support: BCMRing
+Message-ID: <20090701002054.44e6f688@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090630184101.GI23292@game.jcrosoft.org>
+References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C7@SJEXCHCCR02.corp.ad.broadcom.com>
+	<8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C8@SJEXCHCCR02.corp.ad.broadcom.com>
+	<20090630184101.GI23292@game.jcrosoft.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Ingo Molnar wrote:
+On Tue, 30 Jun 2009 20:41:01 +0200
+Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> wrote:
 
-> Say it says "256 CPUs".
+> On 16:30 Fri 26 Jun     , Leo (Hao) Chen wrote:
+> > Hi,
+> > 
+> > The last patch. This big patch includes the minimal set of our CSP (chip support package), which is our OS independent chip supporting code and headers.  All the codes are under arch/arm/mach-bcmring directory.
+> This patch is unreadable
+> you need
+> 1) Respect the Linux coding Style
 
-Ok then you found a bug in the virtualization software ;-).
+For an OS independant set of chip support defines that usually makes no
+sense
+
+> 2) to split in small changeset
+
+For a new submission that generally doesn't make much sense either - not
+for all the new files stuff.
+
