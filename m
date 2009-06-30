@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZF3OdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbZF3Oe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZF3OdL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZF3Oc6
+	id S1755963AbZF3Oe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZF3OeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:32:58 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45830 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752583AbZF3Oc6 (ORCPT
+	Tue, 30 Jun 2009 10:34:18 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:51208 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753196AbZF3OeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:32:58 -0400
-Message-ID: <4A4A21EB.9070708@zytor.com>
-Date: Tue, 30 Jun 2009 07:32:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 30 Jun 2009 10:34:17 -0400
+Date: Tue, 30 Jun 2009 10:32:46 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: David Rientjes <rientjes@google.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+In-Reply-To: <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0906301030260.6124@gentwo.org>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>  <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>  <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com> <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ix86: minor highmem related Kconfig cleanup
-References: <4A4A0B2E02000078000082FE@vpn.id2.novell.com>
-In-Reply-To: <4A4A0B2E02000078000082FE@vpn.id2.novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Remove a redundant conditional and consolidate a dependency.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
->  config HIGHPTE
->  	bool "Allocate 3rd-level pagetables from highmem"
-> -	depends on X86_32 && (HIGHMEM4G || HIGHMEM64G)
-> +	depends on HIGHMEM
->  	---help---
->  	  The VM uses one page table entry for each page of physical memory.
->  	  For systems with a lot of RAM, this can be wasteful of precious
-> 
+On Tue, 30 Jun 2009, Pekka Enberg wrote:
 
-This is probably correct, but the "3rd-level" should have been removed
-from the description long ago when this was made available to non-PAE
-mode (if it ever wasn't.)
+> Well, I obviously don't agree here because kmalloc-4096 debugging causes
+> problems in the real world. Furthermore, SLUB never supported debugging
+> for objects that big historically because of page allocator passthrough.
+> And with Mel Gorman's page allocator optimizations, we might be going
+> back to that.
 
-	-hpa
+SLUB for some period of time had passthrough. It did not start out like
+that though.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+kmalloc-4096 causes problems in the long run and so do other caches that
+are of similar size. But it allows debugging to occur. Silently switching
+it off is something I am not comfortable with.
 
