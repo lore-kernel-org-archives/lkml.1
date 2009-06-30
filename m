@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbZF3VBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZF3VFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757549AbZF3VBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbZF3VA7
+	id S1756850AbZF3VFG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZF3VE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:00:59 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57799 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753849AbZF3VA6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:00:58 -0400
-Date: Tue, 30 Jun 2009 17:01:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Arseniy Lartsev <ars3n@yandex.ru>
-cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: USB ACM device does not work
-In-Reply-To: <200907010009.51237.ars3n@yandex.ru>
-Message-ID: <Pine.LNX.4.44L0.0906301656440.5222-100000@iolanthe.rowland.org>
+	Tue, 30 Jun 2009 17:04:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38769 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752612AbZF3VE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:04:56 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip 0/3] kprobes: trivial bugfixes and cleanup
+To: Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: Jim Keniston <jkenisto@us.ibm.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 30 Jun 2009 17:07:58 -0400
+Message-ID: <20090630210757.17851.409.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Arseniy Lartsev wrote:
+Hi,
 
-> On Tuesday 30 June 2009 11:22:04 Oliver Neukum wrote:
-> > Yet, your device shows bulk endpoints. Please enable DEBUG in cdc-acm.c
-> > and recompile with CONFIG_USB_DEBUG.
-> 
-> I've recompiled four modules usbcore, ehci_hcd, ohci_hcd and cdc-acm with -DDEBUG.
-> Here is kernel log:
-> 
-> ======================== Device plugged in ========================
-...
-> Jun 30 23:58:35 noteb00k kernel: usb 2-3: new low speed USB device using ohci_hcd and address 5                        
-...
-> Jun 30 23:58:35 noteb00k kernel: usb 2-3: config 1 interface 1 altsetting 0 endpoint 0x1 is Bulk; changing to 
-> Interrupt
-> Jun 30 23:58:35 noteb00k kernel: usb 2-3: config 1 interface 1 altsetting 0 endpoint 0x81 is Bulk; changing to 
-> Interrupt                                                                                                                      
+These are trivial bugfix and cleanup patches for kprobes which
+I've found in kprobes-tracer and kprobes-jump optimization
+developement.
+Please apply it.
 
-This looks like your problem.  Low-speed devices are not allowed to 
-have bulk endpoints.  Linux internally changes them to interrupt 
-endpoints with interval = 1 and maxpacket size no larger than 8.
+Thank you,
+ 
+---
+ 
+Masami Hiramatsu (3):
+      kprobes: cleanup: use list instead of hlist for insn_pages
+      kprobes: no need to unlock kprobe_insn_mutex
+      kprobes: fix kprobe selftest configuration dependency
 
-Alan Stern
+
+ kernel/kprobes.c  |   36 ++++++++++++------------------------
+ lib/Kconfig.debug |    1 +
+ 2 files changed, 13 insertions(+), 24 deletions(-)
+
+-- 
+Masami Hiramatsu
+ 
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+ 
+e-mail: mhiramat@redhat.com
 
