@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbZF3XqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbZF3Xqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758879AbZF3XqT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 19:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbZF3XqF
+	id S1759651AbZF3Xqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 19:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbZF3Xq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 19:46:05 -0400
-Received: from 42.mail-out.ovh.net ([213.251.189.42]:49457 "HELO
-	42.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756171AbZF3XqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 19:46:04 -0400
-Date: Wed, 1 Jul 2009 01:37:37 +0200
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Leo (Hao) Chen" <leochen@broadcom.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v1 6/6][ARM]  new ARM SoC support: BCMRing
-Message-ID: <20090630233737.GS23292@game.jcrosoft.org>
-References: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C7@SJEXCHCCR02.corp.ad.broadcom.com>
- <8628FE4E7912BF47A96AE7DD7BAC0AADCB25AE17C8@SJEXCHCCR02.corp.ad.broadcom.com>
- <20090630184101.GI23292@game.jcrosoft.org>
- <20090701002054.44e6f688@lxorguk.ukuu.org.uk>
+	Tue, 30 Jun 2009 19:46:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48262 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754107AbZF3Xq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 19:46:28 -0400
+Message-ID: <4A4AA467.1010308@redhat.com>
+Date: Tue, 30 Jun 2009 19:48:55 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701002054.44e6f688@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Ovh-Tracer-Id: 11797179224107559781
-X-Ovh-Remote: 213.251.161.87 (ns32433.ovh.net)
-X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
-X-Spam-Check: DONE|H 0.5/N
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][ PATCH] kprobes: fix kprobe selftest configuration	dependency
+References: <20090622210302.4984.82798.stgit@localhost.localdomain> <20090630143806.9ab4519d.akpm@linux-foundation.org> <alpine.LFD.2.01.0906301440280.3605@localhost.localdomain> <4A4A8D91.8040009@redhat.com> <4A4A9D89.3090600@redhat.com> <20090630232359.GH17968@elte.hu>
+In-Reply-To: <20090630232359.GH17968@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 00:20 Wed 01 Jul     , Alan Cox wrote:
-> On Tue, 30 Jun 2009 20:41:01 +0200
-> Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com> wrote:
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> > On 16:30 Fri 26 Jun     , Leo (Hao) Chen wrote:
-> > > Hi,
-> > > 
-> > > The last patch. This big patch includes the minimal set of our CSP (chip support package), which is our OS independent chip supporting code and headers.  All the codes are under arch/arm/mach-bcmring directory.
-> > This patch is unreadable
-> > you need
-> > 1) Respect the Linux coding Style
+>> Oops, I couldn't reproduce this bug on the latest -tip tree.
 > 
-> For an OS independant set of chip support defines that usually makes no
-> sense
-here it's really unreadable
-IMHO as you will have to rewrite it to use the kernel API so it make sense
-> 
-> > 2) to split in small changeset
-> 
-> For a new submission that generally doesn't make much sense either - not
-> for all the new files stuff.
-here you have mixed timer, dma, irq, clock, and other new files in the same
-patch, it's really hard to follow the patch. Split it a few will be easier
-to review IMHO
+> maybe because i applied your fix already? ;-)
 
-Best Regards,
-J.
+If so, I'll be happy. But I reverted that change and checked :-(
+Maybe, that came from a combination of configs (but I've lost it...)
+
+Thanks,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
