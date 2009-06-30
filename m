@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZF3OGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbZF3OOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZF3OGe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZF3OG1
+	id S1753148AbZF3OOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZF3OOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:06:27 -0400
-Received: from amanaus.varma-el.com ([84.52.85.74]:36249 "EHLO
-	amanaus.varma-el.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbZF3OG0 (ORCPT
+	Tue, 30 Jun 2009 10:14:00 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:46589 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751754AbZF3ON7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:06:26 -0400
-X-Greylist: delayed 558 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 10:06:26 EDT
-Message-ID: <4A4A19B6.6060705@varma-el.com>
-Date: Tue, 30 Jun 2009 17:57:10 +0400
-From: Andrey Volkov <avolkov@varma-el.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 30 Jun 2009 10:13:59 -0400
+Date: Tue, 30 Jun 2009 10:13:34 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Minchan Kim <minchan.kim@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       David Howells <dhowells@redhat.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: [PATCH] Show kernel stack usage to /proc/meminfo and OOM log
+In-Reply-To: <20090630150035.A738.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0906301011210.6124@gentwo.org>
+References: <20090630150035.A738.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: legal@lists.gpl-violations.org
-CC: mattpratt@users.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       kaber@netfilter.org, gpl@busybox.net, license-violation@gnu.org,
-       Corporate Yota <corporate@yota.ru>
-Subject: FYI: GPL violation by Scartel/ASUS
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Tue, 30 Jun 2009, KOSAKI Motohiro wrote:
 
-This mail was sent to you, since you are one of copyright holders of software
-which used in ASUSTeK Computer WMVN25E2+ WiMAX Subscriber Station.
+> +static void account_kernel_stack(struct thread_info *ti, int on)
 
-At current (2009-06-30) time ASUSTeK sells the above device through their
-Russian exclusive partner "Scartel" Ltd. (trade name "Yota") with next GPL
-violations:
+static inline?
 
-1) They didn't give any access for customers to source codes of GPLed software,
-   see (possibly not full) list below, on the ground of their
-   "intellectual property" defense.
+> +{
+> +	struct zone* zone = page_zone(virt_to_page(ti));
+> +	int sign = on ? 1 : -1;
+> +	long acct = sign * (THREAD_SIZE / PAGE_SIZE);
 
-2) They sold their product without mentioning Gnu Public License (and
-   without copy of GPL certainly), nor in printed version of
-   "Quick Start Guide", nor in electronic version of "User Manual",
-   nor in any other form.
+int pages = THREAD_SIZE / PAGE_SIZE;
 
-GPLed software used in WMVN25E2+.
-1) Linux kernel - 2.6.8.1
-2) busybox	- 1.00
-3) netfilter	- 1.2.11
-4) uClibc	- unknown version (ld-uClibc is 1.7.0)
-7) libstdc++-v3	- 3.4.2
-8) dproxy	- unknown version
+?
 
-Link to device description:
+> +
+> +	mod_zone_page_state(zone, NR_KERNEL_STACK, acct);
 
-http://www.asus.com/product.aspx?P_ID=cyzWWfwPlaYQZX5f&templete=2
-
-Link to latest firmware image:
-
-http://www.yota.ru/downloads/Asus_WMVN25E2_firmware_3.106a.zip
-
---
-Kindly yours
-Andrey Volkov
-
-
+mod_zone_page_state(zone, NR_KERNEL_STACK, on ? pages : -pages);
 
 
