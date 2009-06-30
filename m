@@ -1,120 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757449AbZF3JFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbZF3JF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757449AbZF3JFm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 05:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbZF3JF1
+	id S1758020AbZF3JF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 05:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZF3JFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 05:05:27 -0400
-Received: from mail6.open.ch ([213.156.224.131]:9624 "EHLO mail6.open.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756230AbZF3JFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 05:05:23 -0400
-Message-ID: <4A49D55A.4050600@open.ch>
-Date: Tue, 30 Jun 2009 11:05:30 +0200
-From: Andreas Jaggi <aj@open.ch>
-Organization: Open Systems AG - http://www.open.ch
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, shemminger@osdl.org
-Subject: Re: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
-References: <4A48BC82.6040801@open.ch> <4A48C643.5030709@trash.net>
-In-Reply-To: <4A48C643.5030709@trash.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 30 Jun 2009 05:05:47 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:38816 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755966AbZF3JFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 05:05:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=QiRateLPl/OVmC3rROrXShN2ms36IMsKByXwFsL5aRTaztxAkC9vdcm35zj0C6f1Dd
+         7eYVBXG7c9JddCPjCOCjz/Ii687FsY8CGxKSW0uryMUGNcjDHwo95rL9/theEfRUZU1j
+         4aTRl/fmM1E0gezqJBeQ+ouyYnA8ekrXkKaXI=
+From: Albin Tonnerre <albin.tonnerre@gmail.com>
+To: hskinnemoen@atmel.com
+Cc: linux-kernel@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: [PATCH] Add poll_get_char and poll_put_char uart_ops to atmel_serial.
+Date: Tue, 30 Jun 2009 11:05:45 +0200
+Message-Id: <1246352745-31323-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now using the rtnl_link interface.
+[Please CC: me on replies, I'm not subscribed]
 
->> When tunneling IP traffic with GRE this patch makes it possible to 
->> export the ToS/DiffServ information to the outer IP header.
->> This is particularly useful in a scenario with ESP/AH where the inner 
->> IP header is encrypted but the packet priority/DiffServ information
->> should still be respected by the transporting routers (for example in 
->> an MPLS backbone network).
->>
->> The feature is disabled by default and can be enabled on a 
->> per-interface basis.
->>
->> Also does this bring Linux back in the game, as JunOS/IOS provide this 
->> for quite some time:
->> http://www.cisco.com/en/US/docs/ios/11_3/feature/guide/greqos.html
->> http://www.juniper.net/techpubs/software/junos/junos94/swconfig-services/configuring-a-gre-tunnel-to-copy-tos-bits-to-the-outer-ip-header.html 
+This patch allows using KGDB over the console with the atmel_serial
+driver.
 
-diff -urN vanilla-linux-2.6.29.4/include/linux/if_tunnel.h dev-gre/include/linux/if_tunnel.h
---- vanilla-linux-2.6.29.4/include/linux/if_tunnel.h	2009-05-19 01:52:34.000000000 +0200
-+++ dev-gre/include/linux/if_tunnel.h	2009-06-30 08:22:52.000000000 +0200
-@@ -34,6 +34,7 @@
- 	__be32			i_key;
- 	__be32			o_key;
- 	struct iphdr		iph;
-+	__u8			copy_tos;
- };
- 
- /* SIT-mode i_flags */
-@@ -63,6 +64,7 @@
- 	IFLA_GRE_REMOTE,
- 	IFLA_GRE_TTL,
- 	IFLA_GRE_TOS,
-+	IFLA_GRE_COPY_TOS,
- 	IFLA_GRE_PMTUDISC,
- 	__IFLA_GRE_MAX,
- };
-diff -urN vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c dev-gre/net/ipv4/ip_gre.c
---- vanilla-linux-2.6.29.4/net/ipv4/ip_gre.c	2009-05-19 01:52:34.000000000 +0200
-+++ dev-gre/net/ipv4/ip_gre.c	2009-06-30 10:48:57.000000000 +0200
-@@ -677,7 +677,7 @@
- 	}
- 
- 	tos = tiph->tos;
--	if (tos&1) {
-+	if (tunnel->parms.copy_tos || tos&1) {
- 		if (skb->protocol == htons(ETH_P_IP))
- 			tos = old_iph->tos;
- 		tos &= ~1;
-@@ -991,6 +991,7 @@
- 				t->parms.iph.ttl = p.iph.ttl;
- 				t->parms.iph.tos = p.iph.tos;
- 				t->parms.iph.frag_off = p.iph.frag_off;
-+				t->parms.copy_tos = p.copy_tos;
- 				if (t->parms.link != p.link) {
- 					t->parms.link = p.link;
- 					dev->mtu = ipgre_tunnel_bind_dev(dev);
-@@ -1383,6 +1384,9 @@
- 	if (data[IFLA_GRE_TOS])
- 		parms->iph.tos = nla_get_u8(data[IFLA_GRE_TOS]);
- 
-+	if (data[IFLA_GRE_COPY_TOS])
-+		parms->copy_tos = nla_get_u8(data[IFLA_GRE_COPY_TOS]);
-+
- 	if (!data[IFLA_GRE_PMTUDISC] || nla_get_u8(data[IFLA_GRE_PMTUDISC]))
- 		parms->iph.frag_off = htons(IP_DF);
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+---
+ drivers/serial/atmel_serial.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index b3497d7..aaab321 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -1211,6 +1211,29 @@ static int atmel_verify_port(struct uart_port *port, struct serial_struct *ser)
+ 	return ret;
  }
-@@ -1536,6 +1540,8 @@
- 		nla_total_size(1) +
- 		/* IFLA_GRE_TOS */
- 		nla_total_size(1) +
-+		/* IFLA_GRE_COPY_TOS */
-+		nla_total_size(1) +
- 		/* IFLA_GRE_PMTUDISC */
- 		nla_total_size(1) +
- 		0;
-@@ -1555,6 +1561,7 @@
- 	NLA_PUT_BE32(skb, IFLA_GRE_REMOTE, p->iph.daddr);
- 	NLA_PUT_U8(skb, IFLA_GRE_TTL, p->iph.ttl);
- 	NLA_PUT_U8(skb, IFLA_GRE_TOS, p->iph.tos);
-+	NLA_PUT_U8(skb, IFLA_GRE_COPY_TOS, p->copy_tos);
- 	NLA_PUT_U8(skb, IFLA_GRE_PMTUDISC, !!(p->iph.frag_off & htons(IP_DF)));
  
- 	return 0;
-@@ -1573,6 +1580,7 @@
- 	[IFLA_GRE_REMOTE]	= { .len = FIELD_SIZEOF(struct iphdr, daddr) },
- 	[IFLA_GRE_TTL]		= { .type = NLA_U8 },
- 	[IFLA_GRE_TOS]		= { .type = NLA_U8 },
-+	[IFLA_GRE_COPY_TOS]	= { .type = NLA_U8 },
- 	[IFLA_GRE_PMTUDISC]	= { .type = NLA_U8 },
++#ifdef CONFIG_CONSOLE_POLL
++static int atmel_poll_get_char(struct uart_port *port)
++{
++	struct atmel_uart_port *aup = to_atmel_uart_port(port);
++
++	while (!(readb(aup->uart.membase + ATMEL_US_CSR) & ATMEL_US_RXRDY))
++		barrier();
++
++	return readb(aup->uart.membase + ATMEL_US_RHR);
++}
++
++static void atmel_poll_put_char(struct uart_port *port, unsigned char ch)
++{
++	struct atmel_uart_port *aup = to_atmel_uart_port(port);
++	unsigned int status;
++
++	while (!(readb(aup->uart.membase + ATMEL_US_CSR) & ATMEL_US_TXRDY))
++		barrier();
++
++	writeb(ch, aup->uart.membase + ATMEL_US_THR);
++}
++#endif
++
+ static struct uart_ops atmel_pops = {
+ 	.tx_empty	= atmel_tx_empty,
+ 	.set_mctrl	= atmel_set_mctrl,
+@@ -1230,6 +1253,10 @@ static struct uart_ops atmel_pops = {
+ 	.config_port	= atmel_config_port,
+ 	.verify_port	= atmel_verify_port,
+ 	.pm		= atmel_serial_pm,
++#ifdef CONFIG_CONSOLE_POLL
++	.poll_get_char	= atmel_poll_get_char,
++	.poll_put_char	= atmel_poll_put_char,
++#endif
  };
  
+ /*
+-- 
+1.6.0.4
+
