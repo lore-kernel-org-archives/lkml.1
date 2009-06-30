@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZF3U0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbZF3U0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbZF3U0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 16:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZF3U0E
+	id S1757252AbZF3U0a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 16:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZF3U0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 16:26:04 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:43509 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752939AbZF3U0C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 16:26:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Do44QdNvkp2uAf9TNC/Q6YqHdpykNw1J2XIvWpXkkKpUNnfE3efkrcJioxnsvK2dV
-	R2pl4/CGY2SVDDOUdTvZQ==
-Date: Tue, 30 Jun 2009 13:25:57 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0906301318270.20326@chino.kir.corp.google.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net> <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com> <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
- <alpine.DEB.2.00.0906300032310.11018@chino.kir.corp.google.com> <84144f020906300124n24e206b5tc85dd5cc4661bde7@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Tue, 30 Jun 2009 16:26:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60468 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbZF3U0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 16:26:05 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <E1MLa4R-00054S-94@pomaz-ex.szeredi.hu>
+References: <E1MLa4R-00054S-94@pomaz-ex.szeredi.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: dhowells@redhat.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org, drepper@gmail.com,
+       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
+       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com
+Subject: Re: [RFC PATCH] vfs: new open(2) flag to open filesystem node
+Date: Tue, 30 Jun 2009 21:25:35 +0100
+Message-ID: <2547.1246393535@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, Pekka Enberg wrote:
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-> On Tue, Jun 30, 2009 at 10:47 AM, David Rientjes<rientjes@google.com> wrote:
-> > I don't think CONFIG_SLUB_DEBUG_ON is generally the configuration used in
-> > the real world.
-> 
-> It is, hence the epic bug report that's eaten too many man hours
-> already! Look, we encourage _testers_ to turn all as much as debugging
-> options as possible so we catch bugs early. That why the only sane
-> defaults are the ones that don't cause other problems!
-> 
+> @@ -1790,7 +1801,8 @@ do_last:
+>  		if (!(flag & O_NOFOLLOW))
+>  			goto do_link;
+>  		error = -ELOOP;
+> -		goto exit_dput;
+> +		if (!(flag & O_NODE))
+> +			goto exit_dput;
+>  	}
+>  
+>  	path_to_nameidata(&path, &nd);
 
-I feel that asking a user to add a command line parameter such as 
-`slub_debug=A' in addition to CONFIG_SLUB_DEBUG_ON will likely lead to 
-less testing coverage and bugs going unreported.  CONFIG_SLUB_DEBUG_ON is 
-not something that a distro is going to enable or would be used in a 
-production environment, it's something that's used to debug slub and/or 
-slab allocations either during the development of new kernel code or when 
-an underlying problem is realized.
+This hunk doesn't apply.
 
-> I don't know why you want to argue this. It's simply not an option to
-> say "stupid user, fix your config" in core code like the slab
-> allocator. Enabling CONFIG_SLUB_DEBUG_ON is a very reasonable thing to
-> do when you are a tester looking for bugs.
-> 
-
-Quite the contrary, I agree completely with the above, and that's why I'm 
-arguing for full debugging to be enabled when a well-defined configuration 
-option is enabled.  I simply don't believe that such debugging should be 
-coupled with a command line option to be fully activated for all caches.
+David
