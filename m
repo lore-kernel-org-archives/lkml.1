@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZF3VYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758807AbZF3VZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbZF3VYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 17:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758404AbZF3VX5
+	id S1758807AbZF3VZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 17:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZF3VZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 17:23:57 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:56051 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757774AbZF3VXz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 17:23:55 -0400
-Date: Tue, 30 Jun 2009 17:23:52 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0906301722280.17682@gentwo.org>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>  <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net>  <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>  <84144f020906292355o7cf63f7ch47bd19961cf92da3@mail.gmail.com>
- <alpine.DEB.1.10.0906301030260.6124@gentwo.org> <1246374095.8014.28.camel@penberg-laptop> <alpine.DEB.1.10.0906301114450.3879@gentwo.org> <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com> <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
- <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 30 Jun 2009 17:25:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47088 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752362AbZF3VZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 17:25:18 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] FRV: Fix a warning due to an unnecessary #include of an MTD
+	header
+To: torvalds@osdl.org, akpm@linux-foundation.org, dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Date: Tue, 30 Jun 2009 22:24:25 +0100
+Message-ID: <20090630212425.19244.37019.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, David Rientjes wrote:
+Fix a warning due to an unnecessary #inclusion of linux/mtd/partitions:
 
-> This patch is supposing that `slab_debug=-,<cache>' actually disables all
-> debugging for <cache> which would need to be implemented first, but I
-> think this is a better alternative than requiring slab_debug=A for full
-> debugging after enabling CONFIG_SLUB_DEBUG_ON.
+  CC      arch/frv/mb93090-mb00/flash.o
+In file included from arch/frv/mb93090-mb00/flash.c:15:
+include/linux/mtd/partitions.h:50: warning: 'struct mtd_info' declared inside parameter list
+include/linux/mtd/partitions.h:50: warning: its scope is only this definition or declaration, which is probably not what you want
+include/linux/mtd/partitions.h:51: warning: 'struct mtd_info' declared inside parameter list
+include/linux/mtd/partitions.h:61: warning: 'struct mtd_info' declared inside parameter list
+include/linux/mtd/partitions.h:67: warning: 'struct mtd_info' declared inside parameter list
 
-We could add an option that disables debugging for troublesome page
-size slabs
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ arch/frv/mb93090-mb00/flash.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
 
-slab_debug=p
-
-or so
+diff --git a/arch/frv/mb93090-mb00/flash.c b/arch/frv/mb93090-mb00/flash.c
+index c0e3707..6aad117 100644
+--- a/arch/frv/mb93090-mb00/flash.c
++++ b/arch/frv/mb93090-mb00/flash.c
+@@ -11,7 +11,6 @@
+ 
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+-#include <linux/mtd/partitions.h>
+ #include <linux/mtd/physmap.h>
+ 
+ #define MB93090_BOOTROM_ADDR	0xFF000000	/* Boot ROM */
 
