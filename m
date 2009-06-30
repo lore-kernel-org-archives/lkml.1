@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbZF3OhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbZF3Ohg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbZF3OhS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 10:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZF3OhE
+	id S1758266AbZF3Ohg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 10:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbZF3OhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 10:37:04 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55370 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbZF3OhD (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 10:37:03 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Lennart Poettering <lennart@poettering.net>
-Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       William Jon McCann <jmccann@redhat.com>
-Subject: Re: [PATCH] vt: extend VT_WAITACTIVE ioctl to allow waiting until a specific VT becomes inactive
-In-Reply-To: Your message of "Tue, 30 Jun 2009 02:00:04 +0200."
-             <20090630000003.GA21004@omega>
-From: Valdis.Kletnieks@vt.edu
-References: <20090630000003.GA21004@omega>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1246366725_20486P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 30 Jun 2009 08:58:45 -0400
-Message-ID: <21694.1246366725@turing-police.cc.vt.edu>
+	Tue, 30 Jun 2009 10:37:11 -0400
+Received: from khc.piap.pl ([195.187.100.11]:56473 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752063AbZF3OhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 10:37:07 -0400
+To: linux-input@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       linux-media@vger.kernel.org
+Subject: RFC: Remote control sensors and Linux input layer
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 30 Jun 2009 16:37:08 +0200
+Message-ID: <m3ab3prdnv.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1246366725_20486P
-Content-Type: text/plain; charset=us-ascii
+Hi,
 
-On Tue, 30 Jun 2009 02:00:04 +0200, Lennart Poettering said:
+Any feedback, pointers etc. will be appreciated:
 
-> ConsoleKit would probably just call it in a loop like this:
-> 
->   for (;;) {
->   	struct vt_stat st;
-> 	ioctl(0, VT_GETSTATE, &st);
-> 	printf("console %s is active.\n", st.v_active);
-> 	ioctl(0, VT_WAITACTIVE, (signed long) - st.v_active);
->   }
+I'm currently implementing RC support for AverMedia Super 007 TV
+adapter. The hardware is apparently simple: a TSOP18xx-style sensor jack
+is connected almost directly to GPIO18 ball (active-low) of SAA7131E.
 
-We will include a documented way for ConsoleKit and similar to be able
-to determine if the kernel has this feature, right? (If older kernels
-return a -EBOGUS for ioctl(0,VT_WAITACTIVE,-1) that's probably good enough)
+I added mask_keyup = 0x40000 and rc5_gpio = 1 in saa7134-input.c but the
+existing code doesn't seem to work correctly for me. It looks like the
+timings of my RC (using TV set RC) are a bit different than those of the
+PC and it goes out of sync after. Currently the code depends on the
+timestamp of the first transmission (rising edge) and doesn't check the
+validity of all received bits. It doesn't process falling edges at all.
+I thought my RC uses a different "gap" value but it doesn't seem to be
+the case.
 
---==_Exmh_1246366725_20486P
-Content-Type: application/pgp-signature
+1. I propose a bit different algorithm, the most important thing is the
+code would not depend on the absolute time from the first edge but it
+would use the "last bit" (or two bits) time instead. It would make it
+much more reliable and at the same time would allow detecting of many
+spurious / faulty transmissions (which currently can't be detected).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+I also considered acting on both (rising and falling) edges but it would
+means twice as many IRQs. Another idea is acting on falling edge
+(instead of rising), that would mean the last bit (in case it's 0) could
+be detected by the IRQ handler instead of "timeout" routine. Will think
+about it.
+SAA713x is able to act on either (or both edges), but the code is also
+used by the bttv driver, does it have the same capability?
 
-iD8DBQFKSgwFcC3lWbTT17ARAtv4AKDidtD/MhFEDQq9fjYJWCD+PA1qvACdE6vC
-K2VR7Jia+GP9MEuvvjWqJSQ=
-=DJ5J
------END PGP SIGNATURE-----
+Now this changed algorithm recognizes my RC5 remote's codes perfectly.
 
---==_Exmh_1246366725_20486P--
+
+2. Currently a single board type seems to be limited to a particular RC
+type. This is a problem with HTPC approach, where using the display's RC
+would be natural (most TV set RCs have additional "modes" to work with
+VCRs, SATs etc). I'm thinking about something similar to the keyboards
+map (which can be modified on the fly).
+Or perhaps there is something like that already available?
+
+
+3. The existing RC5 decoder(s) assume 2-bit start, 1 toggle bit, 5-bit
+"group code" and 6-bit command. This assumption doesn't seem valid
+anymore - now the second start bit became MSB of command (it's inverted
+for compatibility). Modifications to the decoder are trivial, though.
+
+
+4. The raw "key" value (i.e., raw RC5). Is it available via the input
+layer? That would make sense for multiple RCs, with LIRC daemon or
+something similar. The current code only supports one RC5 "group" code
+for each input (i.e., one RC or RC "mode").
+
+I'm attaching a test patch for "1" and "3". It's incomplete, breaks
+bttv, but it currently works with my Philips RC and Super 007 DVB-T
+board.
+-- 
+Krzysztof Halasa
