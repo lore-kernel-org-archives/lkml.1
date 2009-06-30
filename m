@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760152AbZF3DIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbZF3DRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760152AbZF3DIS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 23:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZF3DIH
+	id S1760577AbZF3DRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 23:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZF3DQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 23:08:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57499 "EHLO hera.kernel.org"
+	Mon, 29 Jun 2009 23:16:51 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40701 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751820AbZF3DIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 23:08:06 -0400
-Message-ID: <4A49815C.1080603@kernel.org>
-Date: Tue, 30 Jun 2009 12:07:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: David Miller <davem@davemloft.net>, hancockr@shaw.ca,
-       alan@lxorguk.ukuu.org.uk, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, daniel.ritz@gmx.ch,
-       linux@dominikbrodowski.net, kaneshige.kenji@jp.fujitsu.com,
-       towerlexa@gmx.de, benh@kernel.crashing.org, mingo@elte.hu,
-       tglx@linutronix.de, tony.luck@intel.com
-Subject: Re: [RFC PATCH 1/2] pci: determine CLS more intelligently
-References: <4A43234D.9050608@kernel.org> <20090625.020507.203808859.davem@davemloft.net> <20090625173355.GA4847@kroah.com>
-In-Reply-To: <20090625173355.GA4847@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 30 Jun 2009 03:07:12 +0000 (UTC)
+	id S1751820AbZF3DQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 29 Jun 2009 23:16:50 -0400
+Date: Tue, 30 Jun 2009 13:16:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: linux-next: acpi tree build failure
+Message-Id: <20090630131645.68c81f0b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__30_Jun_2009_13_16_45_+1000_skK0OkCuvHYB+unJ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Jun 25, 2009 at 02:05:07AM -0700, David Miller wrote:
->> From: Tejun Heo <tj@kernel.org>
->> Date: Thu, 25 Jun 2009 16:12:13 +0900
->>
->>> sparc64 is currently the only one using PCI_CACHE_LINE_BYTES.
->> Feel free to add the patch below and:
->>
->> Acked-by: David S. Miller <davem@davemloft.net>
->>
->> Although I think it's better to declare pci_dfl_cache_line_size in
->> linux/pci.h instead of making every arch do the extern decl.
-> 
-> I agree, that would make more sense.
-> 
-> Otherwise it looks good to me:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+--Signature=_Tue__30_Jun_2009_13_16_45_+1000_skK0OkCuvHYB+unJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Great, I'll incorporate both comments and repost the patchset after
-Benjamin's testing or before the end of this week.
+Hi Len,
 
-Thanks.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
--- 
-tejun
+  GEN     /scratch/sfr/powerpc_ppc64_defconfig/Makefile
+drivers/platform/x86/Kconfig:353:error: found recursive dependency: EEEPC_L=
+APTOP -> HOTPLUG_PCI -> EEEPC_LAPTOP
+
+Caused by commit 6af05c22969dce2776375953131b56e9f4282848 ("eeepc-laptop:
+Register as a pci-hotplug device") interacting with commit
+44b3615b8cb3b016a49eb7ef4236e77a77793cec ("eeepc-laptop: Fix build
+failure with HOTPLUG_PCI && !SYSFS") from Linus' tree.  Commit 6af05c2
+from the acpi tree is the same as commit
+2b121bc262fa03c94e653b2d44356c2f86c1bcdc in Linus' tree that 44b3615b is
+fixing, so I have reverted the drivers/platform/x86/Kconfig part of
+6af05c2 for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__30_Jun_2009_13_16_45_+1000_skK0OkCuvHYB+unJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpJg50ACgkQjjKRsyhoI8zIogCfY0cACjhewkEEAJT2/HM7rF6i
+8oUAoLpAjOvUgNfJXWm8+qM/BiVjWLoT
+=i+FQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__30_Jun_2009_13_16_45_+1000_skK0OkCuvHYB+unJ--
