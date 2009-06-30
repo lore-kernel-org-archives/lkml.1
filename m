@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbZF3CGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZF3CHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbZF3CGv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 29 Jun 2009 22:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZF3CGm
+	id S1757137AbZF3CHI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 29 Jun 2009 22:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbZF3CGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 29 Jun 2009 22:06:42 -0400
-Received: from tamriel.snowman.net ([72.66.115.51]:45977 "EHLO
-	tamriel.snowman.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZF3CGm (ORCPT
+	Mon, 29 Jun 2009 22:06:48 -0400
+Received: from fmailhost04.isp.att.net ([204.127.217.104]:57803 "EHLO
+	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755676AbZF3CGr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 29 Jun 2009 22:06:42 -0400
-Date: Mon, 29 Jun 2009 22:06:44 -0400
-From: Stephen Frost <sfrost@snowman.net>
-To: dann frazier <dannf@dannf.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Alex Chiang <achiang@hp.com>,
-       linux-kernel@vger.kernel.org, David Altobelli <david.altobelli@hp.com>,
-       nagananda.chumbalkar@hp.com
-Subject: Re: ACPI issues on HP DL585 G2
-Message-ID: <20090630020644.GW20436@tamriel.snowman.net>
-References: <20090628034038.GK20436@tamriel.snowman.net> <20090628172052.GA13957@ldl.fc.hp.com> <20090628223258.GP20436@tamriel.snowman.net> <20090630011541.GL22480@ldl.fc.hp.com> <20090630011709.GT20436@tamriel.snowman.net> <86802c440906291847p302d47eau1d1cbd07be59c61@mail.gmail.com> <20090630015140.GV20436@tamriel.snowman.net> <20090630015302.GN22480@ldl.fc.hp.com>
+	Mon, 29 Jun 2009 22:06:47 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A49733D.9030602@lwfinger.net>
+Date: Mon, 29 Jun 2009 21:06:53 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4kYG1Ol6LYbfFhUk"
-Content-Disposition: inline
-In-Reply-To: <20090630015302.GN22480@ldl.fc.hp.com>
-X-Editor: Vim http://www.vim.org/
-X-Info: http://www.snowman.net
-X-Operating-System: Linux/2.6.26-1-amd64 (x86_64)
-X-Uptime: 21:54:19 up 18 days, 23:21, 22 users,  load average: 0.00, 0.05,
-	0.06
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David Rientjes <rientjes@google.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <5Hhc7UkUKEO.A.fNH.4kASKB@chimera> <4A48F114.1010702@lwfinger.net> <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0906291642520.17663@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Rientjes wrote:
+> On Mon, 29 Jun 2009, Larry Finger wrote:
+> 
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
+>>> Subject		: Page allocation failures with b43 and p54usb
+>>> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+>>> Date		: 2009-04-29 21:01 (61 days old)
+>>> References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
+>>> 		  http://lkml.org/lkml/2009/6/7/136
+>>> Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+>> The cause of these failures has been determined. The wireless
+>> subsystem frequently requests buffers of size 4096, but when SLUB
+>> debugging is enabled and the debug info is added, the request becomes
+>> of order 1 and memory becomes fragmented.
+>>
+>> A controversial "fix" in which SLUB debugging was disabled for
+>> allocations where adding such debugging info would increase the order
+>> was discussed and tried. With a quick look at the commit list for
+>> Linus's tree, I don't see that such a patch is available, but I will
+>> be corrected if I missed it.
+>>
+> 
+> I'd disagree with disabling slub debugging by default for caches where 
+> oo_order(s->min) increases as the result of using it.  This particular 
+> page allocation failure is happening for, presumably, kmalloc-4096, and 
+> the system has 4K pages.  Disabling debugging for that cache (and any of 
+> its aliases) implicitly will lead to errors going undiagnosed as a result.
 
---4kYG1Ol6LYbfFhUk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+If the current behavior is not changed, I will be forced to disable
+SLUB debugging, which will explicitly lead to errors that are
+undiagnosed. It seems better to me to debug when you can, but turn off
+debugging in cases like this.
 
-* dann frazier (dannf@dannf.org) wrote:
-> What about your other working DL585 boxes? Are they G2's, and are they
-> also using P600s?
+Larry
 
-The other DL585 G2 that I've got with the latest BIOS/etc, running under
-2.6.29, has a P800 installed, and it's working fine.  Actually, the
-other DL585 G2's that we had problems running something newer than
-2.6.22 on also had P600's..  It was quite a while ago that we tried to
-upgrade those (around 2.6.26), but I'm guessing if we tried now we'd hit
-the same issue.
-
-Don't suppose you can grab a P600 from somewhere and try?
-
-	Thanks,
-
-		Stephen
-
---4kYG1Ol6LYbfFhUk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpJczQACgkQrzgMPqB3kii82QCeNsUKIlZM0jZMwCBBWhkmHAGK
-ywQAnjjyflTDwi9bzqauBO2Hwpar57ho
-=O/cH
------END PGP SIGNATURE-----
-
---4kYG1Ol6LYbfFhUk--
