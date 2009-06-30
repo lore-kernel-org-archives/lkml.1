@@ -1,135 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755021AbZF3KJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZF3KJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755021AbZF3KJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 06:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZF3KI6
+	id S1755888AbZF3KJo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 06:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZF3KJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 06:08:58 -0400
-Received: from smtp.fireflyuk.net ([78.156.72.235]:1648 "EHLO
-	fireflyinternet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752953AbZF3KI5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 06:08:57 -0400
-X-Greylist: delayed 1119 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 06:08:56 EDT
-Subject: Re: [git pull] drm: previous pull req + 1.
-From: Chris Wilson <chris@chris-wilson.co.uk>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Dave Airlie <airlied@linux.ie>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net,
-       Eric Anholt <eric@anholt.net>
-In-Reply-To: <1246262271.25462.32.camel@tiger>
-References: <alpine.DEB.2.00.0906200619520.27130@skynet.skynet.ie>
-	 <1245542690.6104.6.camel@localhost>
-	 <alpine.LFD.2.01.0906201741290.3119@localhost.localdomain>
-	 <1245595658.4805.17.camel@localhost> <1245619456.4937.35.camel@tiger>
-	 <1245694171.6673.5.camel@localhost>  <1246262271.25462.32.camel@tiger>
-Content-Type: text/plain
-Date: Tue, 30 Jun 2009 10:49:43 +0100
-Message-Id: <1246355383.25462.40.camel@tiger>
+	Tue, 30 Jun 2009 06:09:10 -0400
+Received: from mail.opencsw.org ([147.87.98.73]:50900 "EHLO mail.opencsw.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbZF3KJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 06:09:08 -0400
+X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Tue, 30 Jun 2009 06:09:07 EDT
+Date: Tue, 30 Jun 2009 11:58:19 +0200
+From: Attila Kinali <attila@kinali.ch>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Long lasting MM bug when swap is smaller than RAM
+Message-Id: <20090630115819.38b40ba4.attila@kinali.ch>
+Organization: GEHIRN
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: 78.156.66.37
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Revised patch, unmap_mapping_range() on unbind and clear register.
+Moin,
 
->From 8f13b6389ee0c8a39a2073279928a3a228bd27dc Mon Sep 17 00:00:00 2001
-From: Chris Wilson <chris@chris-wilson.co.uk>
-Date: Mon, 29 Jun 2009 08:45:31 +0100
-Subject: [PATCH] drm/i915: Remove mappings on clearing fence register
+There has been a bug back in the 2.4.17 days that is somehow
+triggered by swap being smaller than RAM, which i thought had
+been fixed long ago, reappeared on one of the machines i manage.
 
-As the fence register is not locked whilst the user has mmaped the buffer
-through the GTT, in order for the buffer to reacquire a fence register we
-need to cause a fresh page-fault on the next user access. In order to
-cause the page fault, we zap the current mapping on clearing the register.
-We also ensure that all potential outstanding access via the fence
-register is flushed before release as well.
+<history>
+Back in 2002, i had a few machines, running 2.4.x kernels, which
+i upgraded heavily from some 16-64MB RAM to a couple 100MB
+(changing mainboards at times, but keeping the harddisks).
+Due to the upgrade of RAM, the swap size became a lot smaller
+than RAM size, sometimes not even half as much.
+Under most conditions these machines worked fine, but sometimes,
+they showed a strange behavior: At times, the swap use would grow
+(depending on the machine and its use faster or slower, sometimes
+at 1MB/minute) until it was full. I couldnt figure out what filled
+swap back then, couldnt find any programm that used a lot of memory.
+And even more, the RAM portion that was used as cache and buffers
+was most times still very large, ie it didnt seem like something using
+a lot of memory.
+After swap was full, nothing happend. No programms crashing, no errors
+in the logs, nothing.... Until later (between hours and a few weeks),
+the OOM would suddenly start to kick in and kill applications. This
+time, something would use a lot of memory, but i couldn't figure out
+what. None of the applications running would use more than usual.
+And even killing the usual culprits (Mozilla, X11,...) wouldnt help.
+The only cure was to reboot.
 
-Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+All the machines back then were running Debian, a vanilla kernel,
+and had more RAM than swap and were x86 boxes. Other than that,
+they didnt had much in common. One was a machine with an Adaptec
+2940UW, others had IDE, one had a K6-III CPU, others were Intel.
+Some had a lot of disk, others very little. Machine usage was
+fileserver, firewall/router, desktop, laptop.
+
+I reported this bug back then but never got an answer, so i used
+the only fix i had available back then: disable swap completely.
+</history>
+
+Now, 7 years later, i have a machine that shows the same behavior.
+
+Some data:
+
+We have a HP DL380 G4 currently running a 2.6.29.4 vanilla kernel,
+compiled for x86 32 bit.
+It was originaly purchased in 2005 with 2GB RAM and a few weeks
+ago upgraded to 6GB (no other changes beside this and a kernel upgrade).
+The machine, being the MPlayer main server, runs a lighttpd, svnserve,
+mailman, postfix, bind. Ie nothing unusual and the applications didn't
+change in the last months (since the update from debian/etch to lenny).
+
 ---
- drivers/gpu/drm/i915/i915_gem.c |   35 +++++++++++++++++++----------------
- 1 files changed, 19 insertions(+), 16 deletions(-)
+root@natsuki:/home/attila# uname -a
+Linux natsuki 2.6.29.4 #1 SMP Sun May 31 22:13:21 CEST 2009 i686 GNU/Linux
+root@natsuki:/home/attila# uptime
+ 11:41:07 up 29 days, 13:17,  5 users,  load average: 0.15, 0.36, 0.54
+root@natsuki:/home/attila# free -m
+             total       used       free     shared    buffers     cached
+Mem:          6023       5919        103          0        415       3873
+-/+ buffers/cache:       1630       4393
+Swap:         3812        879       2932
+---
 
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 685a876..7fb636b 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1946,8 +1946,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
- 		obj_priv->agp_mem = NULL;
- 	}
- 
--
--	/* blow away mappings if mapped through GTT */
-+	/* Force the next mmap access to trigger a fault and rebind */
- 	if (obj_priv->mmap_offset && dev->dev_mapping)
- 		unmap_mapping_range(dev->dev_mapping,
- 				    obj_priv->mmap_offset, obj->size, 1);
-@@ -2350,8 +2349,7 @@ try_again:
- 			if (old_obj_priv->pin_count)
- 				continue;
- 
--			/* i915 uses fences for GPU access to tiled buffers */
--			if (IS_I965G(dev) || !old_obj_priv->active)
-+			if (!old_obj_priv->active)
- 				break;
- 
- 			/* find the seqno of the first available fence */
-@@ -2440,6 +2438,8 @@ i915_gem_clear_fence_reg(struct drm_gem_object *obj)
- 		 obj_priv->gtt_offset, obj->size);
- #endif
- 
-+	BUG_ON(obj_priv->active);
-+
- 	if (IS_I965G(dev))
- 		I915_WRITE64(FENCE_REG_965_0 + (obj_priv->fence_reg * 8), 0);
- 	else {
-@@ -2471,25 +2471,28 @@ i915_gem_object_put_fence_reg(struct drm_gem_object *obj)
- {
- 	struct drm_device *dev = obj->dev;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-+	int ret;
- 
- 	if (obj_priv->fence_reg == I915_FENCE_REG_NONE)
- 		return 0;
- 
--	/* On the i915, GPU access to tiled buffers is via a fence,
--	 * therefore we must wait for any outstanding access to complete
--	 * before clearing the fence.
-+	/* If there is outstanding activity on the buffer whilst it holds
-+	 * a fence register we must assume that it requires that fence for
-+	 * correct operation. Therefore we must wait for any outstanding
-+	 * access to complete before clearing the fence.
- 	 */
--	if (!IS_I965G(dev)) {
--		int ret;
-+	i915_gem_object_flush_gpu_write_domain(obj);
-+	i915_gem_object_flush_gtt_write_domain(obj);
-+	ret = i915_gem_object_wait_rendering(obj);
-+	if (ret != 0)
-+		return ret;
- 
--		i915_gem_object_flush_gpu_write_domain(obj);
--		i915_gem_object_flush_gtt_write_domain(obj);
--		ret = i915_gem_object_wait_rendering(obj);
--		if (ret != 0)
--			return ret;
--	}
-+	i915_gem_clear_fence_reg(obj);
- 
--	i915_gem_clear_fence_reg (obj);
-+	/* Reacquire fence register on next mmap access (via page fault) */
-+	if (obj_priv->mmap_offset)
-+		unmap_mapping_range(dev->dev_mapping,
-+				    obj_priv->mmap_offset, obj->size, 1);
- 
- 	return 0;
- }
--- 
-1.6.3.3
+I want to point your attention at the fact that the machine has now
+more RAM installed than it previously had RAM+Swap (ie before the upgrade).
+Ie there is no reason it would need to swap out, at least not so much.
 
+What is even more interesting is the amount of swap used over time.
+Sampled every day at 10:00 CEST:
 
+---
+Date: Wed, 17 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5893        130          0        405       3834
+Swap:         3812        190       3622
 
+Date: Thu, 18 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5793        229          0        340       3939
+Swap:         3812        225       3586
+
+Date: Fri, 19 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5820        203          0        341       3899
+Swap:         3812        275       3536
+
+Date: Sun, 21 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5264        758          0        459       3181
+Swap:         3812        325       3486
+
+Date: Sat, 20 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5761        262          0        348       3865
+Swap:         3812        297       3514
+
+Date: Mon, 22 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5875        147          0        397       3681
+Swap:         3812        353       3458
+
+Date: Tue, 23 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5748        275          0        193       3949
+Swap:         3812        415       3396
+
+Date: Wed, 24 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5779        244          0        176       3924
+Swap:         3812        519       3292
+
+Date: Thu, 25 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5812        210          0        345       3856
+Swap:         3812        611       3200
+
+Date: Fri, 26 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5830        192          0        431       3688
+Swap:         3812        682       3129
+
+Date: Sat, 27 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5697        326          0        442       3621
+Swap:         3812        719       3093
+
+Date: Sun, 28 Jun 2009 10:00:02 +0200 (CEST)
+Mem:          6023       5890        132          0        402       3886
+Swap:         3812        784       3028
+
+Date: Mon, 29 Jun 2009 10:00:01 +0200 (CEST)
+Mem:          6023       5388        635          0        425       3321
+Swap:         3812        826       2985
+---
+
+As you can see, although memory usage didnt change much over time,
+swap usage increased from 190MB to 826MB in about two weeks.
+
+As i'm pretty much clueless when it commes to how the linux VM works,
+i would appreciate it if someone could give me some pointers on how
+to figure out what causes this bug so that it could be fixed finally.
+
+Thanks a lot in advance
+
+			Attila Kinali
