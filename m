@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbZGANl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZGANmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbZGANl2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZGANlL
+	id S1754623AbZGANmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZGANmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:41:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34774 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753920AbZGANlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:41:09 -0400
-Message-ID: <4A4B67A2.9090300@redhat.com>
-Date: Wed, 01 Jul 2009 16:41:54 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 1 Jul 2009 09:42:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:53877 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbZGANmD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:42:03 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [microblaze-uclinux] [PATCH 03/11] microblaze: fall back on generic header files for the ABI
+Date: Wed, 1 Jul 2009 15:41:55 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: microblaze-uclinux@itee.uq.edu.au, LKML <linux-kernel@vger.kernel.org>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+References: <cover.1245345894.git.arnd@arndb.de> <200907011342.26669.arnd@arndb.de> <4A4B5213.9060003@monstr.eu>
+In-Reply-To: <4A4B5213.9060003@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andi Kleen <ak@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com, stable@kernel.org
-Subject: Re: patch kvm-add-vt-x-machine-check-support.patch added to	2.6.30-stable
- tree
-References: <20090629184144.76C9948FD3@coco.kroah.org>	<200907010053.40900.s.L-H@gmx.de> <20090630234206.GA22546@suse.de>	<4A4B0BB1.2010102@linux.intel.com> <4A4B11A6.6080402@redhat.com> <87d48kiliq.fsf@basil.nowhere.org>
-In-Reply-To: <87d48kiliq.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907011541.56225.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/tbLRFSAl520VUapL4T5tvOb/RADXjXeYR5rY
+ zJkjh3xLNHfSZUC4FfEcO4Pw+jNBaModKq1Jw2F3L5wRnjK5H1
+ LXMsof8QSJRa3LmXRtPyTbopo4lP7bK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01/2009 04:24 PM, Andi Kleen wrote:
->
-> KVM: Add VT-x machine check support v3
->
-> VT-x needs an explicit MC vector intercept to handle machine checks in the
-> hypervisor.
->
-> It also has a special option to catch machine checks that happen
-> during VT entry.
->
-> Do these interceptions and forward them to the Linux machine check
-> handler. Make it always look like user space is interrupted because
-> the machine check handler treats kernel/user space differently.
->
-> Thanks to Huang Ying and Jiang Yunhong for help and testing.
->
-> Cc: ying.huang@intel.com
->
-> v2: Handle machine checks still in interrupt off context
-> to avoid problems on preemptible kernels.
-> v3: Handle old style 32bit and make fully standalone
->
->
-> ===================================================================
-> --- linux-2.6.30-ak.orig/arch/x86/include/asm/kvm_host.h
-> +++ linux-2.6.30-ak/arch/x86/include/asm/kvm_host.h
-> @@ -371,6 +371,8 @@ struct kvm_vcpu_arch {
->   	unsigned long dr6;
->   	unsigned long dr7;
->   	unsigned long eff_db[KVM_NR_DB_REGS];
-> +
-> +	u32 exit_reason;
+On Wednesday 01 July 2009, Michal Simek wrote:
+> I did this change because of problem with inconsistency between kernel/glibc.
+> 
+> Current our glibc ipc_perm struct - mode is short - that's why I have setup kernel_mode_t to short too.
+> 
+> /* Data structure used to pass permission information to IPC operations.  */
+> struct ipc_perm
+>   {
+>     __key_t __key;                      /* Key.  */
+>     __uid_t uid;                        /* Owner's user ID.  */
+>     __gid_t gid;                        /* Owner's group ID.  */
+>     __uid_t cuid;                       /* Creator's user ID.  */
+>     __gid_t cgid;                       /* Creator's group ID.  */
+>     unsigned short int mode;            /* Read/write permission.  */
+>     unsigned short int __seq;           /* Sequence number.  */
+>     unsigned short int __pad1;
+>     unsigned long int __unused1;
+>     unsigned long int __unused2;
 >   };
->
->    
+> 
+> Does it make more sense to define it as int?
 
-Should be in struct vmx_vcpu; otherwise ack.
+It's more complex than this.
 
--- 
-error compiling committee.c: too many arguments to function
+AFAICT, it does not matter at all whether you define it as 16 or 32 bits,
+as long as it all fits together. For the generic ABI, I used 32 bits where
+they were commonly used by some architectures, because there are processors
+that can more efficiently access 32 bit words than 16 bit words.
 
+One major reason for starting the asm-generic ABI definitions was to make
+sure that all architectures that don't have their ABI set in stone can
+use the exact same ABI, and if you change just a small thing, you would still
+diverge from the common ABI.
+
+Now the definition you give above matches neither the one from your current
+kernel header nor the one from the asm-generic file, because of the location
+of the padding. Worse, the __pad1 field actually causes implicit padding instead
+of preventing it.
+
+I think you should just update your glibc files to match the generic kernel
+headers, because changing the ABI means that you have to change other parts
+of glibc anyway and to recompile every single user space program anyway.
+Doing one more change won't hurt that much either.
+
+	Arnd <><
