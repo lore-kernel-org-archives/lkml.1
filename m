@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765365AbZGABDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765398AbZGABDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765365AbZGABDJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760640AbZGAAfF
+	id S1765398AbZGABDZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760873AbZGAAfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:05 -0400
-Received: from kroah.org ([198.145.64.141]:60451 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:06 -0400
+Received: from kroah.org ([198.145.64.141]:60460 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760246AbZGAAfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759390AbZGAAfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:35:02 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:31 2009
-Message-Id: <20090701002431.551098249@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:32 2009
+Message-Id: <20090701002431.928514647@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:48 -0700
+Date: Tue, 30 Jun 2009 17:23:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 059/108] lockdep: Select frame pointers on x86
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [patch 060/108] ASoC: Remove odd bit clock ratios for WM8903
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=lockdep-select-frame-pointers-on-x86.patch
+Content-Disposition: inline; filename=asoc-remove-odd-bit-clock-ratios-for-wm8903.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,34 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-commit 00540e5d54be972a94a3b2ce6da8621bebe731a2 upstream.
+commit ba2533a47865ec0dbc72834287a8a048e9337a95 upstream.
 
-x86 stack traces are a piece of crap without frame pointers, and its not
-like the 'performance gain' of not having stack pointers matters when you
-selected lockdep.
+These are not supported since performance can not be guaranteed
+when they are in use.
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/Kconfig.debug |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/codecs/wm8903.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -440,7 +440,7 @@ config LOCKDEP
- 	bool
- 	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
- 	select STACKTRACE
--	select FRAME_POINTER if !X86 && !MIPS && !PPC && !ARM_UNWIND && !S390
-+	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND && !S390
- 	select KALLSYMS
- 	select KALLSYMS_ALL
- 
+--- a/sound/soc/codecs/wm8903.c
++++ b/sound/soc/codecs/wm8903.c
+@@ -1215,22 +1215,18 @@ static struct {
+ 	int div;
+ } bclk_divs[] = {
+ 	{  10,  0 },
+-	{  15,  1 },
+ 	{  20,  2 },
+ 	{  30,  3 },
+ 	{  40,  4 },
+ 	{  50,  5 },
+-	{  55,  6 },
+ 	{  60,  7 },
+ 	{  80,  8 },
+ 	{ 100,  9 },
+-	{ 110, 10 },
+ 	{ 120, 11 },
+ 	{ 160, 12 },
+ 	{ 200, 13 },
+ 	{ 220, 14 },
+ 	{ 240, 15 },
+-	{ 250, 16 },
+ 	{ 300, 17 },
+ 	{ 320, 18 },
+ 	{ 440, 19 },
 
 
