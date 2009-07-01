@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbZGAHeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZGAHeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbZGAHeH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZGAHd4
+	id S1753680AbZGAHeY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZGAHeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:33:56 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48894 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbZGAHdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:33:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=UMr6zF+Uy5/NIijneHJd0nxXvdjMPhUGswhmrbNTpf/1qzJbulCvcsUAGbZv+Wv7Uc
-         BTUxdzPSCdWqQoeBAcJEcMECf8gYWSEFns/9JwxcF+0oYvhC5Tke+T8wAD7xdwhUwFEG
-         4rMWn9iCEtfxK6bujOpY5m4bmc2dW8SKjO+iE=
-Message-ID: <4A4B115A.5080903@gmail.com>
-Date: Wed, 01 Jul 2009 09:33:46 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.7 Thunderbird/3.0b3pre
+	Wed, 1 Jul 2009 03:34:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49376 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752791AbZGAHeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 03:34:13 -0400
+Message-ID: <4A4B11A6.6080402@redhat.com>
+Date: Wed, 01 Jul 2009 10:35:02 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Daniel Ribeiro <drwyrm@gmail.com>
-CC: sameo@linux.intel.com, laforge@openezx.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MFD: ezx-pcap, fix lock imbalance
-References: <1246431187-23684-1-git-send-email-jirislaby@gmail.com> <1246431871.19661.8.camel@brutus>
-In-Reply-To: <1246431871.19661.8.camel@brutus>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: Andi Kleen <ak@linux.intel.com>
+CC: Greg KH <gregkh@suse.de>, Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, stable@kernel.org
+Subject: Re: patch kvm-add-vt-x-machine-check-support.patch added to	2.6.30-stable
+ tree
+References: <20090629184144.76C9948FD3@coco.kroah.org> <200907010053.40900.s.L-H@gmx.de> <20090630234206.GA22546@suse.de> <4A4B0BB1.2010102@linux.intel.com>
+In-Reply-To: <4A4B0BB1.2010102@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01/2009 09:04 AM, Daniel Ribeiro wrote:
-> Em Qua, 2009-07-01 às 08:53 +0200, Jiri Slaby escreveu:
->> There is an omitted unlock in pcap_adc_irq ISR on one fail path. Fix that.
+On 07/01/2009 10:09 AM, Andi Kleen wrote:
+>
+>> Thanks, I was building without kvm enabled in my configs and missed this
+>> one.
 >>
->> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> 
-> I would be happy to ack this, however, you are late. ;)
+>> I've added these two other patches and everything looks better.
+>
+> If you prefer I also have an original patch which didn't depend on any
+> other KVM patches. But the other ones look harmless enough and it's 
+> probably
+> better to stay nearer mainline.
 
-Heh :), nevermind.
+I'd prefer your standalone patch Andi.  Patches often look harmless but 
+aren't, and I'd hate to introduce regressions into 2.6.30.*.
+
+-- 
+error compiling committee.c: too many arguments to function
+
