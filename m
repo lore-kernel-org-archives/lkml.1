@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765712AbZGABMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763614AbZGABLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765712AbZGABMe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761588AbZGAAfn
+	id S1763614AbZGABLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761567AbZGAAfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:43 -0400
-Received: from kroah.org ([198.145.64.141]:60630 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:41 -0400
+Received: from kroah.org ([198.145.64.141]:60620 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761437AbZGAAfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:31 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:40 2009
-Message-Id: <20090701002440.077312404@mini.kroah.org>
+	id S1761517AbZGAAf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:39 2009
+Message-Id: <20090701002439.690770689@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:16 -0700
+Date: Tue, 30 Jun 2009 17:24:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Prabhanjan Sarnaik <sarnaik@marvell.com>,
-       Lennert Buytenhek <buytenh@marvell.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 087/108] mv643xx_eth: fix unicast filter programming in promiscuous mode
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Alan Cox <alan@linux.intel.com>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 085/108] parport_pc: set properly the dma_mask for parport_pc device
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=mv643xx_eth-fix-unicast-filter-programming-in-promiscuous-mode.patch
+Content-Disposition: inline; filename=parport_pc-set-properly-the-dma_mask-for-parport_pc-device.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,60 +31,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Prabhanjan Sarnaik <sarnaik@marvell.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit 6877f54e6a3326c99aaf84b7bff6a3019da0b847 upstream.
+commit dfa7c4d869b7d3d37b70f1de856f2901b6ebfcf0 upstream.
 
-The Unicast Promiscious Mode (UPM) bit in the mv643xx_eth port
-configuration register doesn't do exactly what its name would suggest:
-setting this bit merely enables reception of all unicast frames with a
-destination address that differs from our local MAC address in bits
-[47:4].  In particular, it doesn't have any effect on unicast frames
-with a destination address that matches our MAC address in bits [47:4]
--- these will still be tested against the 16-entry unicast address
-filter table.
+parport_pc_probe_port() creates the own 'parport_pc' device if the
+device argument is NULL. Then parport_pc_probe_port() doesn't
+initialize the dma_mask and coherent_dma_mask of the device and calls
+dma_alloc_coherent with it. dma_alloc_coherent fails because
+dma_alloc_coherent() doesn't accept the uninitialized dma_mask:
 
-Therefore, if the interface is set to promiscuous mode, just setting
-the unicast promiscuous bit isn't enough -- we need to set all filter
-bits in the unicast filter table to 1 as well.
+http://lkml.org/lkml/2009/6/16/150
 
-Reported-by: Sachin Sanap <ssanap@marvell.com>
-Signed-off-by: Prabhanjan Sarnaik <sarnaik@marvell.com>
-Tested-by: Siddarth Gore <gores@marvell.com>
-Tested-by: Mahavir Jain <mjain@marvell.com>
-Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Long ago, X86_32 and X86_64 had the own dma_alloc_coherent
+implementations; X86_32 accepted a device having dma_mask that is not
+initialized however X86_64 didn't. When we merged them, we chose to
+prohibit a device having dma_mask that is not initialized. I think
+that it's good to require drivers to set up dma_mask (and
+coherent_dma_mask) properly if the drivers want DMA.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Reported-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
+Tested-by: Malcom Blaney <malcolm.blaney@maptek.com.au>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/mv643xx_eth.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/parport/parport_pc.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/drivers/net/mv643xx_eth.c
-+++ b/drivers/net/mv643xx_eth.c
-@@ -1751,12 +1751,12 @@ static void mv643xx_eth_program_unicast_
- 
- 	uc_addr_set(mp, dev->dev_addr);
- 
--	port_config = rdlp(mp, PORT_CONFIG);
-+	port_config = rdlp(mp, PORT_CONFIG) & ~UNICAST_PROMISCUOUS_MODE;
+--- a/drivers/parport/parport_pc.c
++++ b/drivers/parport/parport_pc.c
+@@ -2193,6 +2193,9 @@ struct parport *parport_pc_probe_port(un
+ 		if (IS_ERR(pdev))
+ 			return NULL;
+ 		dev = &pdev->dev;
 +
- 	nibbles = uc_addr_filter_mask(dev);
- 	if (!nibbles) {
- 		port_config |= UNICAST_PROMISCUOUS_MODE;
--		wrlp(mp, PORT_CONFIG, port_config);
--		return;
-+		nibbles = 0xffff;
++		dev->coherent_dma_mask = DMA_BIT_MASK(24);
++		dev->dma_mask = &dev->coherent_dma_mask;
  	}
  
- 	for (i = 0; i < 16; i += 4) {
-@@ -1777,7 +1777,6 @@ static void mv643xx_eth_program_unicast_
- 		wrl(mp, off, v);
- 	}
- 
--	port_config &= ~UNICAST_PROMISCUOUS_MODE;
- 	wrlp(mp, PORT_CONFIG, port_config);
- }
- 
+ 	ops = kmalloc(sizeof(struct parport_operations), GFP_KERNEL);
 
 
