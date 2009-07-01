@@ -1,35 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbZGAGxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZGAGxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752582AbZGAGxG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGAGwz
+	id S1752858AbZGAGxd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZGAGx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:52:55 -0400
-Received: from tomts45-srv.bellnexxia.net ([209.226.175.112]:36271 "EHLO
-	tomts45-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751678AbZGAGwy (ORCPT
+	Wed, 1 Jul 2009 02:53:26 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:42522 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751928AbZGAGxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:52:54 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AohOAOugSkrR4q/5/2dsb2JhbAACgS+KLo4BqxVKimuDewWCXQ
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [139.142.211.83]
-From: =?ISO-8859-1?B?qUZSRUU=?= LOTTO <warsantaxcentre@bellnet.ca>
-Reply-To: b_judith@btinternet.com
-To: <info@winners.net>
-Subject: TICKET NO:1110008342
-Date: Wed, 1 Jul 2009 2:52:45 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090701065257.NNBD22696.tomts45-srv.bellnexxia.net@toip38-bus.srvr.bell.ca>
+	Wed, 1 Jul 2009 02:53:25 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: sameo@linux.intel.com
+Cc: drwyrm@gmail.com, laforge@openezx.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] MFD: ezx-pcap, fix lock imbalance
+Date: Wed,  1 Jul 2009 08:53:07 +0200
+Message-Id: <1246431187-23684-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-$1.000,000 USD has been Awarded to you in our AWARDPROMO Please acknowledge the receipt in this mail with the details below to Mrs
-Judith Brown for more details
-Name:
-Age:
-Country:
+There is an omitted unlock in pcap_adc_irq ISR on one fail path. Fix that.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/mfd/ezx-pcap.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mfd/ezx-pcap.c b/drivers/mfd/ezx-pcap.c
+index 671a7ef..c1de4af 100644
+--- a/drivers/mfd/ezx-pcap.c
++++ b/drivers/mfd/ezx-pcap.c
+@@ -238,8 +238,10 @@ static irqreturn_t pcap_adc_irq(int irq, void *_pcap)
+ 	mutex_lock(&pcap->adc_mutex);
+ 	req = pcap->adc_queue[pcap->adc_head];
+ 
+-	if (WARN(!req, KERN_WARNING "adc irq without pending request\n"))
++	if (WARN(!req, KERN_WARNING "adc irq without pending request\n")) {
++		mutex_unlock(&pcap->adc_mutex);
+ 		return IRQ_HANDLED;
++	}
+ 
+ 	/* read requested channels results */
+ 	ezx_pcap_read(pcap, PCAP_REG_ADC, &tmp);
+-- 
+1.6.3.2
 
