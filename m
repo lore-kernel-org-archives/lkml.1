@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZGAUVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZGAU1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZGAUVl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 16:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZGAUVb
+	id S1752575AbZGAU1m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 16:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZGAU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 16:21:31 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33076 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbZGAUVb (ORCPT
+	Wed, 1 Jul 2009 16:27:33 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:64752 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbZGAU1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 16:21:31 -0400
-Message-ID: <4A4BC532.3020503@novell.com>
-Date: Wed, 01 Jul 2009 16:21:06 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Wed, 1 Jul 2009 16:27:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NObKlnE+b+T1wW6F3iP8hBHcny0qtLIVLeDiYgMd6SwC572O2EY38AWl9WVgRg0kAj
+         iC+bbiUH35j0raqMyMelMB54AvnUN5yTSznNolrfFSE1upw/nh6i9NgsASMTbYTU+VBE
+         qvkDRetKhjSE/IWzwDaZ4fY//G8DtYTB542og=
 MIME-Version: 1.0
-To: kvm@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v8 1/3] KVM: Fix races in irqfd using new eventfd_kref_get
- interface
-References: <20090701160208.3615.99153.stgit@dev.haskins.net> <20090701160902.3615.39426.stgit@dev.haskins.net>
-In-Reply-To: <20090701160902.3615.39426.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6793E3A6F21A5F77709B618F"
+In-Reply-To: <4A474EFF.5030607@cs.helsinki.fi>
+References: <20090628111019.GA15900@Chamillionaire.breakpoint.cc>
+	 <4A474EFF.5030607@cs.helsinki.fi>
+Date: Wed, 1 Jul 2009 22:27:32 +0200
+Message-ID: <19f34abd0907011327h7e90ec68r7ad0ed8666abafac@mail.gmail.com>
+Subject: Re: [PATCH] kmemcheck: depend on HAVE_ARCH_KMEMCHECK
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6793E3A6F21A5F77709B618F
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+2009/6/28 Pekka Enberg <penberg@cs.helsinki.fi>:
+> Sebastian Andrzej Siewior wrote:
+>>
+>> to make it selectable if it is available
+>>
+>> Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+>
+> Looks good to me! Thanks.
+>
+> Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Gregory Haskins wrote:
-> =20
-> +	eventfd =3D eventfd_ctx_fileget(file);
-> +	if (IS_ERR(file)) {
-> +		ret =3D PTR_ERR(file);
-> +		goto fail;
-> +	}
-> +
-> +	irqfd->eventfd =3D eventfd;
-> +
->  =20
-
-<sigh>
-
-Just noticed the typo (return "eventfd" but error-check "file").  Looks
-like I will need at least a v9.  Is there any other feedback before I
-push out the fix for v8?
-
--Greg
+Applied, thanks.
 
 
---------------enig6793E3A6F21A5F77709B618F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpLxTcACgkQlOSOBdgZUxnjNACfdzvshURJeHfpdbTZWycskgKd
-i0sAnAxbo29oQaQNVibFHRbzHQfUihQU
-=Ypvj
------END PGP SIGNATURE-----
-
---------------enig6793E3A6F21A5F77709B618F--
+Vegard
