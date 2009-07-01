@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZGAUwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZGAU4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZGAUwj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 16:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZGAUwc
+	id S1754829AbZGAU4x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 16:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZGAU4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 16:52:32 -0400
-Received: from p01c12o143.mxlogic.net ([208.65.145.66]:44997 "EHLO
-	p01c12o143.mxlogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbZGAUwb convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 16:56:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47611 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751345AbZGAU4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 16:52:31 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] adxl345 accelerometer hwmon driver
-Date: Wed, 1 Jul 2009 13:52:28 -0700
-Message-ID: <68FBE0F3CE97264395875AC1C468F22C152C1D@mail03.cyberswitching.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] adxl345 accelerometer hwmon driver
-Thread-Index: Acn6iFz4soyNKSULSSC6jz4Z1hpyogAAcMSw
-References: <68FBE0F3CE97264395875AC1C468F22C152BE8@mail03.cyberswitching.local><4A4BB4AB.7010003@cam.ac.uk><68FBE0F3CE97264395875AC1C468F22C152BFA@mail03.cyberswitching.local> <20090701221310.1d6aa587@hyperion.delvare>
-From: "Chris Verges" <chrisv@cyberswitching.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Cc: "Jonathan Cameron" <jic23@cam.ac.uk>, <linux-kernel@vger.kernel.org>,
-       <lm-sensors@lm-sensors.org>
-X-Spam: [F=0.2000000000; CM=0.500; S=0.200(2009062201)]
-X-MAIL-FROM: <chrisv@cyberswitching.com>
-X-SOURCE-IP: [64.81.28.110]
-X-AnalysisOut: [v=1.0 c=1 a=RN8TcIVZXm8A:10 a=4zsJQXJisSY22NXBO5KRuA==:17 ]
-X-AnalysisOut: [a=3OZ1w2rYJNQCtacGfwsA:9 a=CvFK8nZh_F5bNFwaZKPYX9PHgbIA:4]
+	Wed, 1 Jul 2009 16:56:44 -0400
+Date: Wed, 1 Jul 2009 13:56:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, nhorman@tuxdriver.com,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] kmod: Fix race in usermodehelper code
+Message-Id: <20090701135631.41e590f9.akpm@linux-foundation.org>
+In-Reply-To: <20090701024803.GA19659@localhost.localdomain>
+References: <20090701024803.GA19659@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Probably it's about time to put an end to this and kick all
-> accelerometer drivers out of drivers/hwmon.
+On Tue, 30 Jun 2009 22:48:03 -0400
+Neil Horman <nhorman@tuxdriver.com> wrote:
 
-Hi Jean,
+> User Mode Helper: Fix race in UMH_WAIT_EXEC case
+> 
+> The user mode helper code has a race in it.  call_usermodehelper_exec takes an
+> allocated subprocess_info structure, which it passes to a workqueue, and then
+> passes it to a kernel thread which it creates, after which it calls complete to
+> signal to the caller of call_usremodehelper_exec that it can free the
+> subprocess_info struct.  But since we use that structure in the created thread,
+> we can't call complete from __call_usermodehelper, which is where we create the
+> kernel_thread.  We need to call complete from within the kernel thread and then
+> not use subprocess_info afterward in the case of UMH_WAIT_EXEC.  Tested
+> successfully by me.
+> 
 
-This actually makes a lot of sense.  The remaining question is,
-"To where do we kick them?"
+<stares at the code for ten minutes>
 
-After reading Jonathan's iio.pdf, I'm all on-board with the
-adxl345 driver being placed in this new subsystem.  However,
-IIO subsystem isn't released into the "vanilla" kernel yet.
+Geeze that's getting complex, isn't it?  The patch looks OK.  I think.
 
-Until the IIO subsystem is finished and I can port the driver
-into it, what's the appropriate place for the adxl345 to
-reside?  misc?  A new directory?
+I wonder why people aren't reporting this.  Perhaps CLONE_VFORK plus
+child-runs-first?  (_does_ the chld run first?  We seem to have changed
+it a couple of times)
 
-Chris
 
-P.S. All references to hwmon will be removed, and the
-programmer who added them in will be flogged.  :-) Thanks for
-pointing that out!
