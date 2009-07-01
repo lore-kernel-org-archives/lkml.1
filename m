@@ -1,90 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZGAPzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZGAP5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033AbZGAPzT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZGAPzJ
+	id S1753335AbZGAP5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZGAP5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:55:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60365 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751894AbZGAPzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:55:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
-Date: Wed, 1 Jul 2009 17:55:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
-Cc: "Jeremy Maitin-Shepard" <jeremy@jeremyms.com>,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-References: <87hbxx0wcp.fsf@jeremyms.com> <87d48k2992.fsf@jeremyms.com> <4A4B27D0.8020906@crca.org.au>
-In-Reply-To: <4A4B27D0.8020906@crca.org.au>
+	Wed, 1 Jul 2009 11:57:10 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:5293 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbZGAP5J convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:57:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=iXaRjGDZFxfK1SCa1sS3aB0x0mB5ShJTaYUlU9xMfrx6aDfwmKdh5pbjOeOrTNNiG
+	R8ympcUKAPIlLQ2hKOkbg==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907011755.10386.rjw@sisk.pl>
+In-Reply-To: <20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Wed, 1 Jul 2009 08:57:03 -0700
+Message-ID: <6599ad830907010857r7fae2215r2e8aadb3003dcc4d@mail.gmail.com>
+Subject: Re: [PATCH] memcg: fix cgroup rmdir hang v4
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009, Nigel Cunningham wrote:
-> Hi again.
-> 
-> Jeremy Maitin-Shepard wrote:
-> > Nigel Cunningham <ncunningham@crca.org.au> writes:
-> > 
-> >> Hi Jeremy.
-> >> I'd suggest emailing the Linux-PM list rather than tuxonice-devel.
-> >> TuxOnIce devel focuses on the out-of-vanilla suspend to disk
-> >> enhancements rather than on suspend to ram.
-> > 
-> > The Linux-PM list is a good suggestion, but I specifically included
-> > tuxonice because of the note at the bottom --- namely that I believe
-> > that tuxonice in particular already includes support for much of what is
-> > needed to implement the idea.
-> 
-> Ah, sorry. I read too quickly.
-> 
-> > Specifically, suppose right at the stage in tuxonice hibernation when
-> > the kernel as about to write the page cache pages to disk, it instead
-> > just encrypts in place those pages, clears the encryption key, then
-> > waits for the userspace helper to pass it back the key again to use to
-> > decrypt the pages.
-> > 
-> > In fact it would seems that actually entering S3 is mostly irrelevant in
-> > terms of the implementation.
-> > 
-> > Tuoxnice already has code to deal with interfacing with a userspace
-> > helper that is kept unfrozen (and its pages handled specially) while
-> > everything else is frozen and the page cache is overwritten, which is
-> > precisely what is needed for this idea.  In particular, it seems that an
-> > implementation of the idea I proposed would look a lot like tuxonice
-> > with a powerdown mode of entering S3, just that instead of writing the
-> > page cache to disk, it is encrypted in place.  I suppose it could well be that
-> > all of the facilities used by tuxonice to do this are actually already
-> > in the kernel, in which case it is indeed not relevant to tuxonice, but
-> > it is not clear that the uswsusp infrastructure has everything that is
-> > needed.
-> 
-> You're absolutely right - TuxOnIce could be modified to do that, quite
-> easily.
-> 
-> As far as the possibility of using uswsusp goes, I'd like to get
-> Rafael's input there - he knows it much better than I do (explicitly
-> adding him to the ccs).
+On Tue, Jun 30, 2009 at 6:47 PM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> ok, here.
+>
+> ==
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> After commit: cgroup: fix frequent -EBUSY at rmdir
+>              ec64f51545fffbc4cb968f0cea56341a4b07e85a
+> cgroup's rmdir (especially against memcg) doesn't return -EBUSY
+> by temporal ref counts. That commit expects all refs after pre_destroy()
+> is temporary but...it wasn't. Then, rmdir can wait permanently.
+> This patch tries to fix that and change followings.
+>
+>  - set CGRP_WAIT_ON_RMDIR flag before pre_destroy().
+>  - clear CGRP_WAIT_ON_RMDIR flag when the subsys finds racy case.
+>   if there are sleeping ones, wakes them up.
+>  - rmdir() sleeps only when CGRP_WAIT_ON_RMDIR flag is set.
+>
+> Changelog v4->v5:
+>  - added cgroup_exclude_rmdir(), cgroup_release_rmdir().
+>
+> Changelog v3->v4:
+>  - rewrite/add comments.
+>  - remane cgroup_wakeup_rmdir_waiters() to cgroup_wakeup_rmdir_waiter().
+> Changelog v2->v3:
+>  - removed retry_rmdir() callback.
+>  - make use of CGRP_WAIT_ON_RMDIR flag more.
+>
+> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-No, the current mainline hibernation code can't be modified easily
-to encrypt the page cache before suspending.
+Reviewed-by: Paul Menage <menage@google.com>
 
-Also, I don't see much value in doing that before suspend to RAM, because
-(1) passwords and encryption keys should be stored in mlocked memory and (2)
-the encryption overhead (including measures to protect the encrypted page cache
-from being corrupted) would hurt the speed of suspend to RAM and resume, which
-is a very important thing.
+Looks great, thanks.
 
-Moreover, I don't really see how we can feed the decryption key to the
-kernel during resume before the page cache can be accessed.
+Paul
 
-Best,
-Rafael
+> ---
+>  include/linux/cgroup.h |   14 ++++++++++++
+>  kernel/cgroup.c        |   55 +++++++++++++++++++++++++++++++++----------------
+>  mm/memcontrol.c        |   23 +++++++++++++++++---
+>  3 files changed, 72 insertions(+), 20 deletions(-)
+>
+> Index: mmotm-2.6.31-Jun25/include/linux/cgroup.h
+> ===================================================================
+> --- mmotm-2.6.31-Jun25.orig/include/linux/cgroup.h
+> +++ mmotm-2.6.31-Jun25/include/linux/cgroup.h
+> @@ -366,6 +366,20 @@ int cgroup_task_count(const struct cgrou
+>  int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task);
+>
+>  /*
+> + * When the subsys has to access css and may add permanent refcnt to css,
+> + * it should take care of racy conditions with rmdir(). Following set of
+> + * functions, is for stop/restart rmdir if necessary.
+> + * Because these will call css_get/put, "css" should be alive css.
+> + *
+> + *  cgroup_exclude_rmdir();
+> + *  ...do some jobs which may access arbitrary empty cgroup
+> + *  cgroup_release_rmdir();
+> + */
+> +
+> +void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
+> +void cgroup_release_rmdir(struct cgroup_subsys_state *css);
+> +
+> +/*
+>  * Control Group subsystem type.
+>  * See Documentation/cgroups/cgroups.txt for details
+>  */
+> Index: mmotm-2.6.31-Jun25/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.31-Jun25.orig/kernel/cgroup.c
+> +++ mmotm-2.6.31-Jun25/kernel/cgroup.c
+> @@ -734,16 +734,28 @@ static void cgroup_d_remove_dir(struct d
+>  * reference to css->refcnt. In general, this refcnt is expected to goes down
+>  * to zero, soon.
+>  *
+> - * CGRP_WAIT_ON_RMDIR flag is modified under cgroup's inode->i_mutex;
+> + * CGRP_WAIT_ON_RMDIR flag is set under cgroup's inode->i_mutex;
+>  */
+>  DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
+>
+> -static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
+> +static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
+>  {
+> -       if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+> +       if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+>                wake_up_all(&cgroup_rmdir_waitq);
+>  }
+>
+> +void cgroup_exclude_rmdir(struct cgroup_subsys_state *css)
+> +{
+> +       css_get(css);
+> +}
+> +
+> +void cgroup_release_rmdir(struct cgroup_subsys_state *css)
+> +{
+> +       cgroup_wakeup_rmdir_waiter(css->cgroup);
+> +       css_put(css);
+> +}
+> +
+> +
+>  static int rebind_subsystems(struct cgroupfs_root *root,
+>                              unsigned long final_bits)
+>  {
+> @@ -1357,7 +1369,7 @@ int cgroup_attach_task(struct cgroup *cg
+>         * wake up rmdir() waiter. the rmdir should fail since the cgroup
+>         * is no longer empty.
+>         */
+> -       cgroup_wakeup_rmdir_waiters(cgrp);
+> +       cgroup_wakeup_rmdir_waiter(cgrp);
+>        return 0;
+>  }
+>
+> @@ -2696,33 +2708,42 @@ again:
+>        mutex_unlock(&cgroup_mutex);
+>
+>        /*
+> +        * In general, subsystem has no css->refcnt after pre_destroy(). But
+> +        * in racy cases, subsystem may have to get css->refcnt after
+> +        * pre_destroy() and it makes rmdir return with -EBUSY. This sometimes
+> +        * make rmdir return -EBUSY too often. To avoid that, we use waitqueue
+> +        * for cgroup's rmdir. CGRP_WAIT_ON_RMDIR is for synchronizing rmdir
+> +        * and subsystem's reference count handling. Please see css_get/put
+> +        * and css_tryget() and cgroup_wakeup_rmdir_waiter() implementation.
+> +        */
+> +       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+> +
+> +       /*
+>         * Call pre_destroy handlers of subsys. Notify subsystems
+>         * that rmdir() request comes.
+>         */
+>        ret = cgroup_call_pre_destroy(cgrp);
+> -       if (ret)
+> +       if (ret) {
+> +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>                return ret;
+> +       }
+>
+>        mutex_lock(&cgroup_mutex);
+>        parent = cgrp->parent;
+>        if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
+> +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>                mutex_unlock(&cgroup_mutex);
+>                return -EBUSY;
+>        }
+> -       /*
+> -        * css_put/get is provided for subsys to grab refcnt to css. In typical
+> -        * case, subsystem has no reference after pre_destroy(). But, under
+> -        * hierarchy management, some *temporal* refcnt can be hold.
+> -        * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
+> -        * is really busy, it should return -EBUSY at pre_destroy(). wake_up
+> -        * is called when css_put() is called and refcnt goes down to 0.
+> -        */
+> -       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>        prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
+> -
+>        if (!cgroup_clear_css_refs(cgrp)) {
+>                mutex_unlock(&cgroup_mutex);
+> -               schedule();
+> +               /*
+> +                * Because someone may call cgroup_wakeup_rmdir_waiter() before
+> +                * prepare_to_wait(), we need to check this flag.
+> +                */
+> +               if (test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags))
+> +                       schedule();
+>                finish_wait(&cgroup_rmdir_waitq, &wait);
+>                clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+>                if (signal_pending(current))
+> @@ -3294,7 +3315,7 @@ void __css_put(struct cgroup_subsys_stat
+>                        set_bit(CGRP_RELEASABLE, &cgrp->flags);
+>                        check_for_release(cgrp);
+>                }
+> -               cgroup_wakeup_rmdir_waiters(cgrp);
+> +               cgroup_wakeup_rmdir_waiter(cgrp);
+>        }
+>        rcu_read_unlock();
+>  }
+> Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Jun25/mm/memcontrol.c
+> @@ -1234,6 +1234,12 @@ static int mem_cgroup_move_account(struc
+>        ret = 0;
+>  out:
+>        unlock_page_cgroup(pc);
+> +       /*
+> +        * We charges against "to" which may not have any tasks. Then, "to"
+> +        * can be under rmdir(). But in current implementation, caller of
+> +        * this function is just force_empty() and it's garanteed that
+> +        * "to" is never removed. So, we don't check rmdir status here.
+> +        */
+>        return ret;
+>  }
+>
+> @@ -1455,6 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
+>                return;
+>        if (!ptr)
+>                return;
+> +       cgroup_exclude_rmdir(&ptr->css);
+>        pc = lookup_page_cgroup(page);
+>        mem_cgroup_lru_del_before_commit_swapcache(page);
+>        __mem_cgroup_commit_charge(ptr, pc, ctype);
+> @@ -1484,8 +1491,12 @@ __mem_cgroup_commit_charge_swapin(struct
+>                }
+>                rcu_read_unlock();
+>        }
+> -       /* add this page(page_cgroup) to the LRU we want. */
+> -
+> +       /*
+> +        * At swapin, we may charge account against cgroup which has no tasks.
+> +        * So, rmdir()->pre_destroy() can be called while we do this charge.
+> +        * In that case, we need to call pre_destroy() again. check it here.
+> +        */
+> +       cgroup_release_rmdir(&ptr->css);
+>  }
+>
+>  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+> @@ -1691,7 +1702,7 @@ void mem_cgroup_end_migration(struct mem
+>
+>        if (!mem)
+>                return;
+> -
+> +       cgroup_exclude_rmdir(&mem->css);
+>        /* at migration success, oldpage->mapping is NULL. */
+>        if (oldpage->mapping) {
+>                target = oldpage;
+> @@ -1731,6 +1742,12 @@ void mem_cgroup_end_migration(struct mem
+>         */
+>        if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+>                mem_cgroup_uncharge_page(target);
+> +       /*
+> +        * At migration, we may charge account against cgroup which has no tasks
+> +        * So, rmdir()->pre_destroy() can be called while we do this charge.
+> +        * In that case, we need to call pre_destroy() again. check it here.
+> +        */
+> +       cgroup_release_rmdir(&mem->css);
+>  }
+>
+>  /*
+>
+>
