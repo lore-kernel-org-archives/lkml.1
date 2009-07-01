@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZGAHAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993AbZGAHDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbZGAHAe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbZGAHA0
+	id S1752993AbZGAHDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZGAHDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:00:26 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:27082 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZGAHA0 convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 03:03:34 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:41351 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751046AbZGAHDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:00:26 -0400
-Message-Id: <4A4B25AA020000780000861D@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Wed, 01 Jul 2009 08:00:26 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <tony.luck@intel.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, <linux-arch@vger.kernel.org>,
-       <linux-kbuild@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <hpa@zytor.com>
-Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit
-	 archs
-References: <4A4A18780200007800008345@vpn.id2.novell.com>
- <200907011430.29524.rusty@rustcorp.com.au>
-In-Reply-To: <200907011430.29524.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Jul 2009 03:03:33 -0400
+Date: Wed, 1 Jul 2009 15:03:32 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: jolsa@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, oleg@redhat.com,
+       eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090701070332.GA31103@gondor.apana.org.au>
+References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au> <20090701062732.GK6760@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090701062732.GK6760@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Rusty Russell <rusty@rustcorp.com.au> 01.07.09 07:00 >>>
->On Tue, 30 Jun 2009 09:21:52 pm Jan Beulich wrote:
->> Since these CRCs are really only 32-bit quantities, there's no need to
->> store them in 64-bit slots. Since, however, gcc doesn't allow
->> respective initializations, asm() constructs get used to create the CRC
->> tables (and its for that reason that the patch only makes x86-64 and
->> ia64 utilize that functionality, as I can't verify this doesn't break
->> in some subtle way elsewhere).
+On Wed, Jul 01, 2009 at 08:27:32AM +0200, Andi Kleen wrote:
 >
->Hmm, can we change the build system to just link this in as a normal table, 
->rather than use linker tricks?
->
->Then genksyms would just spit out a C file we could compile and link into final 
->vmlinux.
+> mfence is not needed for normal C code (not using non temporal
+> stores) in the Linux memory model on x86 and is a no-op. Only the compile
+> time barrier matters.
 
-That's going to be non-trivial, because of the ordering that's required to be
-identical between the symbol and the CRC tables. Basically that would mean
-that genksyms would need to look at either the assembly output or the
-object file, which would further slow down the build process. Compared to
-that the asm() solution in the patch sent seems more strait forward (despite
-it possibly looking convoluted at the first glance).
+In that case this bug needs to be digged deeper regardless of
+this patch.
 
-Jan
-
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
