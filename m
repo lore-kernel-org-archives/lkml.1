@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZGAOt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZGAOuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598AbZGAOt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZGAOtW
+	id S1754098AbZGAOuP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZGAOuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:49:22 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51858 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443AbZGAOtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:49:21 -0400
-Date: Wed, 1 Jul 2009 16:49:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Howells <dhowells@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Wire up new syscalls
-Message-ID: <20090701144913.GA28172@elte.hu>
-References: <19019.22629.720187.794661@cargo.ozlabs.ibm.com> <20090701115425.GJ15958@elte.hu> <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de> <22582.1246447691@redhat.com> <32551.1246450797@redhat.com> <32707.1246452087@redhat.com> <30887.1246457403@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <30887.1246457403@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 1 Jul 2009 10:50:05 -0400
+Received: from demumfd001.nsn-inter.net ([217.115.75.233]:14076 "EHLO
+	demumfd001.nsn-inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbZGAOuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:50:04 -0400
+Subject: Re: RapidIO - general questions
+From: Jan Neskudla <jan.neskudla.ext@nsn.com>
+To: "ext david.hagood@gmail.com" <david.hagood@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, ext Li Yang <leoli@freescale.com>,
+       linux-kernel@vger.kernel.org, "IDT - Kim,Chul" <Chul.Kim@idt.com>
+In-Reply-To: <bd421daddbfcd48f86096879ce621310.squirrel@localhost>
+References: <1242119872.16400.113.camel@demuxf9c>
+	 <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+	 <1242372791.26759.34.camel@demuxf9c>
+	 <2a27d3730905150056m7298b66ckb9db92f9432953d6@mail.gmail.com>
+	 <1242802800.9160.143.camel@demuxf9c> <1246285193.10035.245.camel@demux9hc>
+	 <bd421daddbfcd48f86096879ce621310.squirrel@localhost>
+Content-Type: text/plain
+Date: Wed, 01 Jul 2009 16:46:18 +0200
+Message-Id: <1246459578.10035.292.camel@demux9hc>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-41.el4_7.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Howells <dhowells@redhat.com> wrote:
-
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 2009-06-29 at 10:44 -0500, ext david.hagood@gmail.com wrote:
+> Do you know (and if you know, can you comment) if IDT is planning on
+> offering RIO (and more importantly to me sRIO) chipsets that can be used
+> on other architectures besides the various PPC chips with embedded sRIO
+> controllers?
+I am using only switches, and they are not fixed to any architecture.
+You can use them independently to any MCU. 
+I do not know if they are planning to provides something more. 
+                     Jan 
 > 
-> > Yeah - still i'd suggest to just go with the generic code initially, 
 > 
-> Nah, that's no fun!  Besides, the code is very similar to the 32-bit code, and
-> I'm fairly certain it'll work.  I can also check it very easily by dumping
-> some temp test code in setup.c.
 > 
-> Anyway, I see the following errors:
-> 
-> kernel/perf_counter.c: In function 'perf_counter_index':
-> kernel/perf_counter.c:1889: error: 'PERF_COUNTER_INDEX_OFFSET' undeclared (first use in this function)
-> kernel/perf_counter.c:1889: error: (Each undeclared identifier is reported only once
-> kernel/perf_counter.c:1889: error: for each function it appears in.)
->   CC      block/as-iosched.o
-> kernel/perf_counter.c:1890: warning: control reaches end of non-void function
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-Ok, indeed - you can define it to 0 for now - FRV wont set hw 
-counters so it doesnt matter. It is used for the hw index in the 
-mmap head for 'direct' access to the PMU, using special instructions 
-like RDPMC (on x86). Probably not relevant to FRV.
-
-> But this symbol appears to be undocumented:
-> 
-> 	warthog>grep -r PERF_COUNTER_INDEX_OFFSET Documentation/
-> 	warthog1>grep -r INDEX_OFFSET Documentation/
-> 	warthog1>
-
-You can use the power of the Git space:
-
-   git log -SPERF_COUNTER_INDEX_OFFSET
-
-:-)
-
-	Ingo
