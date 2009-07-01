@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754380AbZGAPOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGAPPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754380AbZGAPOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZGAPN7
+	id S1754843AbZGAPPd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZGAPP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:13:59 -0400
-Received: from tundra.namei.org ([65.99.196.166]:55133 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753357AbZGAPN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:13:58 -0400
-Date: Thu, 2 Jul 2009 01:13:38 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Amerigo Wang <amwang@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       Roland McGrath <roland@redhat.com>, Serge Hallyn <serue@us.ibm.com>,
-       David Howells <dhowells@redhat.com>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch 1/3] elf: fix one check-after-use
-In-Reply-To: <20090701050840.6188.84560.sendpatchset@localhost.localdomain>
-Message-ID: <alpine.LRH.2.00.0907020112520.29793@tundra.namei.org>
-References: <20090701050840.6188.84560.sendpatchset@localhost.localdomain>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 1 Jul 2009 11:15:26 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:43587 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbZGAPPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:15:24 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 1 Jul 2009 08:14:47 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Jiri Olsa <jolsa@redhat.com>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and receive
+ callbacks
+In-Reply-To: <20090701080946.GB4769@jolsa.lab.eng.brq.redhat.com>
+Message-ID: <alpine.DEB.1.10.0907010812110.10303@makko.or.mcafeemobile.com>
+References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com> <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com>
+ <alpine.DEB.1.10.0907010002010.8492@makko.or.mcafeemobile.com> <20090701073001.GA4769@jolsa.lab.eng.brq.redhat.com> <20090701080946.GB4769@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Amerigo Wang wrote:
+On Wed, 1 Jul 2009, Jiri Olsa wrote:
 
-> 
-> Check before use it.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-> Cc: David Howells <dhowells@redhat.com>
+> ok, how about this
 
-Probably needs to go into Linus' tree and stable.
+Looks good. maybe you can remove things like "The fix is generic for other 
+protocols as well", that are more fot for the email body patch 
+description.
 
 
-Acked-by: Roland McGrath <roland@redhat.com>
-Acked-by: James Morris <jmorris@namei.org>
+- Davide
 
-> 
-> ---
-> Index: linux-2.6/fs/binfmt_elf.c
-> ===================================================================
-> --- linux-2.6.orig/fs/binfmt_elf.c
-> +++ linux-2.6/fs/binfmt_elf.c
-> @@ -1522,11 +1522,11 @@ static int fill_note_info(struct elfhdr 
->  	info->thread = NULL;
->  
->  	psinfo = kmalloc(sizeof(*psinfo), GFP_KERNEL);
-> -	fill_note(&info->psinfo, "CORE", NT_PRPSINFO, sizeof(*psinfo), psinfo);
-> -
->  	if (psinfo == NULL)
->  		return 0;
->  
-> +	fill_note(&info->psinfo, "CORE", NT_PRPSINFO, sizeof(*psinfo), psinfo);
-> +
->  	/*
->  	 * Figure out how many notes we're going to need for each thread.
->  	 */
-> 
 
--- 
-James Morris
-<jmorris@namei.org>
