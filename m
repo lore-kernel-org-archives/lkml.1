@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbZGABSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbZGABTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765638AbZGABSK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbZGAAf7
+	id S932209AbZGABTQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761575AbZGAAgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:59 -0400
-Received: from kroah.org ([198.145.64.141]:60743 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:36:04 -0400
+Received: from kroah.org ([198.145.64.141]:60775 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761590AbZGAAfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:51 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:44 2009
-Message-Id: <20090701002444.090084909@mini.kroah.org>
+	id S1761570AbZGAAgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:36:02 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:46 2009
+Message-Id: <20090701002446.414993796@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:32 -0700
+Date: Tue, 30 Jun 2009 17:24:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 103/108] CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Marcelo Tosatti <mtosatti@redhat.com>, Avi Kivity <avi@redhat.com>
+Subject: [patch 108/108] KVM: x86: silence preempt warning on kvm_write_guest_time
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=config_file_locking-should-not-depend-on-config_block.patch
+Content-Disposition: inline; filename=kvm-x86-silence-preempt-warning-on-kvm_write_guest_time.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,52 +30,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tomas Szepe <szepe@pinerecords.com>
+From: Matt T. Yourst <yourst@users.sourceforge.net>
 
-commit 69050eee8e08a6234f29fe71a56f8c7c7d4d7186 upstream.
+commit 2dea4c84bc936731668b5a7a9fba5b436a422668 upstream.
 
-CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK.
+This issue just appeared in kvm-84 when running on 2.6.28.7 (x86-64)
+with PREEMPT enabled.
 
-This makes it possible to run complete systems out of a CONFIG_BLOCK=n
-initramfs on current kernels again (this last worked on 2.6.27.*).
+We're getting syslog warnings like this many (but not all) times qemu
+tells KVM to run the VCPU:
 
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+BUG: using smp_processor_id() in preemptible [00000000] code:
+qemu-system-x86/28938
+caller is kvm_arch_vcpu_ioctl_run+0x5d1/0xc70 [kvm]
+Pid: 28938, comm: qemu-system-x86 2.6.28.7-mtyrel-64bit
+Call Trace:
+debug_smp_processor_id+0xf7/0x100
+kvm_arch_vcpu_ioctl_run+0x5d1/0xc70 [kvm]
+? __wake_up+0x4e/0x70
+? wake_futex+0x27/0x40
+kvm_vcpu_ioctl+0x2e9/0x5a0 [kvm]
+enqueue_hrtimer+0x8a/0x110
+_spin_unlock_irqrestore+0x27/0x50
+vfs_ioctl+0x31/0xa0
+do_vfs_ioctl+0x74/0x480
+sys_futex+0xb4/0x140
+sys_ioctl+0x99/0xa0
+system_call_fastpath+0x16/0x1b
+
+As it turns out, the call trace is messed up due to gcc's inlining, but
+I isolated the problem anyway: kvm_write_guest_time() is being used in a
+non-thread-safe manner on preemptable kernels.
+
+Basically kvm_write_guest_time()'s body needs to be surrounded by
+preempt_disable() and preempt_enable(), since the kernel won't let us
+query any per-CPU data (indirectly using smp_processor_id()) without
+preemption disabled. The attached patch fixes this issue by disabling
+preemption inside kvm_write_guest_time().
+
+[marcelo: surround only __get_cpu_var calls since the warning
+is harmless]
+
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/Kconfig |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/x86/kvm/x86.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -39,6 +39,13 @@ config FS_POSIX_ACL
- 	bool
- 	default n
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -634,10 +634,12 @@ static void kvm_write_guest_time(struct 
+ 	if ((!vcpu->time_page))
+ 		return;
  
-+source "fs/xfs/Kconfig"
-+source "fs/gfs2/Kconfig"
-+source "fs/ocfs2/Kconfig"
-+source "fs/btrfs/Kconfig"
-+
-+endif # BLOCK
-+
- config FILE_LOCKING
- 	bool "Enable POSIX file locking API" if EMBEDDED
- 	default y
-@@ -47,13 +54,6 @@ config FILE_LOCKING
-           for filesystems like NFS and for the flock() system
-           call. Disabling this option saves about 11k.
++	preempt_disable();
+ 	if (unlikely(vcpu->hv_clock_tsc_khz != __get_cpu_var(cpu_tsc_khz))) {
+ 		kvm_set_time_scale(__get_cpu_var(cpu_tsc_khz), &vcpu->hv_clock);
+ 		vcpu->hv_clock_tsc_khz = __get_cpu_var(cpu_tsc_khz);
+ 	}
++	preempt_enable();
  
--source "fs/xfs/Kconfig"
--source "fs/gfs2/Kconfig"
--source "fs/ocfs2/Kconfig"
--source "fs/btrfs/Kconfig"
--
--endif # BLOCK
--
- source "fs/notify/Kconfig"
- 
- source "fs/quota/Kconfig"
+ 	/* Keep irq disabled to prevent changes to the clock */
+ 	local_irq_save(flags);
 
 
