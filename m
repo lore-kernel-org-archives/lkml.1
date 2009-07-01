@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756788AbZGAFnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZGAFqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756788AbZGAFnr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 01:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZGAFnk
+	id S1758602AbZGAFqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 01:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbZGAFqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 01:43:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52035 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753346AbZGAFnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 01:43:39 -0400
-Date: Wed, 1 Jul 2009 07:40:16 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ratan Nalumasu <rnalumasu@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [rfc] do not place sub-threads on task_struct->children list
-Message-ID: <20090701054016.GA26877@redhat.com>
-References: <20090624152143.GB23848@redhat.com> <20090624185701.AA74C4059B@magilla.sf.frob.com> <20090624161111.GA27890@redhat.com> <20090624194239.A29174059B@magilla.sf.frob.com> <20090624171357.GA30435@redhat.com> <20090624205112.3EA944059B@magilla.sf.frob.com> <93ad5f3f0906252111n48742b9ax8dc2ad35b30f4292@mail.gmail.com> <20090629033852.GA14404@redhat.com> <20090629230841.GA13024@redhat.com> <20090630193037.6CCE01C4@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630193037.6CCE01C4@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 1 Jul 2009 01:46:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36317 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750866AbZGAFqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 01:46:44 -0400
+Date: Tue, 30 Jun 2009 22:46:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>
+Subject: Re: ffsb create_4k 16% regression
+Message-Id: <20090630224639.95722c8e.akpm@linux-foundation.org>
+In-Reply-To: <1246426380.2560.473.camel@ymzhang>
+References: <1246262818.2560.443.camel@ymzhang>
+	<1246426380.2560.473.camel@ymzhang>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/30, Roland McGrath wrote:
->
-> > Currently we add sub-threads to ->real_parent->children list. This
-> > buys nothing but slows down do_wait().
-> >
-> > With this patch ->children contains only main threads (group leaders).
-> > The only complication is that forget_original_parent() should iterate
-> > over sub-threads by hand.
->
-> This seems right to me, though I'll admit I haven't really walked through
-> all the exit/reparent paths afresh with this in mind.
->
-> Note that this naturally suggests moving ->sibling to signal_struct.  (Of
-> course that can come later.)  The abuse of sibling in reparent_leader adds
-> a wrinkle to that, but off hand it looks like it could do the same with it
-> living in signal_struct with a bit of contortion.
+On Wed, 01 Jul 2009 13:33:00 +0800 "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
 
-Yes, this change was suggested a long ago.
+> On Mon, 2009-06-29 at 16:06 +0800, Zhang, Yanmin wrote:
+> > I run many ffsb test cases on JBODs (typically 13/12 disks). Comparing
+> > with kernel 2.6.30, 2.6.31-rc1 has about 16% regression with
+> > ffsb_create_4k. The sub test case creates files continuously for 10
+> > minitues and every file is 1MB.
+> > 
+> > Bisect located below patch. 
+> > 
+> > 
+> > 5cee5815d1564bbbd505fea86f4550f1efdb5cd0 is first bad commit
+> > commit 5cee5815d1564bbbd505fea86f4550f1efdb5cd0
+> > Author: Jan Kara <jack@suse.cz>
+> > Date:   Mon Apr 27 16:43:51 2009 +0200
+> > 
+> >     vfs: Make sys_sync() use fsync_super() (version 4)
+> >     
+> >     It is unnecessarily fragile to have two places (fsync_super() and do_sync())
+> >     doing data integrity sync of the filesystem. Alter __fsync_super() to
+> >     accommodate needs of both callers and use it. So after this patch
+> >     __fsync_super() is the only place where we gather all the calls needed to
+> >     properly send all data on a filesystem to disk.
+> > 
+> > 
+> > As a matter of fact, ffsb calls sys_sync in the end to make sure all data is
+> > flushed to disks and the flushing is counted into the result. vmstat shows
+> > ffsb is blocked when syncing for a long time. With 2.6.30, ffsb is blocked for
+> > a short time.
+> > 
+> > I checked the patch and did experiments to recover the original methods. Eventually,
+> > the root cause is the patch deletes the calling to wakeup_pdflush when syncing, so
+> > only ffsb is blocked on disk I/O. ___wakeup_pdflush could ask pdflush to write back pages
+> > with ffsb at the same time.
+> > 
+> > Below patch against 2.6.31-rc1 fixes it.
+> > 
+> > ___Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
+> > 
+> > ---
+> > 
+> > --- linux-2.6.31-rc1/fs/sync.c	2009-06-29 12:18:03.000000000 +0800
+> > +++ linux-2.6.31-rc1_sync/fs/sync.c	2009-06-29 14:56:49.000000000 +0800
+> > @@ -114,6 +114,7 @@ restart:
+> >  
+> >  SYSCALL_DEFINE0(sync)
+> >  {
+> > +	wakeup_pdflush(0);
+> >  	sync_filesystems(0);
+> >  	sync_filesystems(1);
+> >  	if (unlikely(laptop_mode))
+> Andrew,
+> 
+> Would you like to consider the patch for mm tree?
 
-But in that case forget_original_parent() still has to iterate over all childs
-to send ->pdeath_signal and change ->real_parent when we reparent to sub-thread.
+OK.
 
-> Oh, and what about the de_thread() leader-replacement case?
+But if we're to restore that operation, we should also restore the nice
+comment explaining why we are doing it:
 
-Ah, good point!
+-/*
+- * sync everything.  Start out by waking pdflush, because that writes back
+- * all queues in parallel.
+- */
+-static void do_sync(unsigned long wait)
 
-de_thread() should do list_replace_init().
-
-Oleg.
-
+I'll take care of that.
