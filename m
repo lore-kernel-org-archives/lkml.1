@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZGAAj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbZGAAji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZGAAj0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760850AbZGAAcj
+	id S1762273AbZGAAji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760847AbZGAAck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:32:39 -0400
-Received: from kroah.org ([198.145.64.141]:59733 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:32:40 -0400
+Received: from kroah.org ([198.145.64.141]:59741 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760821AbZGAAci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760841AbZGAAci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:32:38 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:48 2009
-Message-Id: <20090701001548.636200762@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:49 2009
+Message-Id: <20090701001548.822249123@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:00 -0700
+Date: Tue, 30 Jun 2009 17:14:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jan Kara <jack@suse.cz>, <linux-ext4@vger.kernel.org>
-Subject: [patch 04/35] jbd: fix race in buffer processing in commit code
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 05/35] r8169: fix crash when large packets are received
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=jbd-fix-race-in-buffer-processing-in-commit-code.patch
+Content-Disposition: inline; filename=r8169-fix-crash-when-large-packets-are-received.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,52 +31,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Kara <jack@suse.cz>
+From: Eric Dumazet <eric.dumazet@gmail.com>
 
-commit a61d90d75d0f9e86432c45b496b4b0fbf0fd03dc upstream.
+commit fdd7b4c3302c93f6833e338903ea77245eb510b4 upstream.
 
-In commit code, we scan buffers attached to a transaction.  During this
-scan, we sometimes have to drop j_list_lock and then we recheck whether
-the journal buffer head didn't get freed by journal_try_to_free_buffers().
- But checking for buffer_jbd(bh) isn't enough because a new journal head
-could get attached to our buffer head.  So add a check whether the journal
-head remained the same and whether it's still at the same transaction and
-list.
+Michael Tokarev reported receiving a large packet could crash
+a machine with RTL8169 NIC.
+( original thread at http://lkml.org/lkml/2009/6/8/192 )
 
-This is a nasty bug and can cause problems like memory corruption (use after
-free) or trigger various assertions in JBD code (observed).
+Problem is this driver tells that NIC frames up to 16383 bytes
+can be received but provides skb to rx ring allocated with
+smaller sizes (1536 bytes in case standard 1500 bytes MTU is used)
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+When a frame larger than what was allocated by driver is received,
+dma transfert can occurs past the end of buffer and corrupt
+kernel memory.
+
+Fix is to tell to NIC what is the maximum size a frame can be.
+
+This bug is very old, (before git introduction, linux-2.6.10), and
+should be backported to stable versions.
+
+Reported-by: Michael Tokarev <mjt@tls.msk.ru>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Tested-by: Michael Tokarev <mjt@tls.msk.ru>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jbd/commit.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/net/r8169.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -238,7 +238,7 @@ write_out_data:
- 			spin_lock(&journal->j_list_lock);
- 		}
- 		/* Someone already cleaned up the buffer? */
--		if (!buffer_jbd(bh)
-+		if (!buffer_jbd(bh) || bh2jh(bh) != jh
- 			|| jh->b_transaction != commit_transaction
- 			|| jh->b_jlist != BJ_SyncData) {
- 			jbd_unlock_bh_state(bh);
-@@ -466,7 +466,9 @@ void journal_commit_transaction(journal_
- 			spin_lock(&journal->j_list_lock);
- 			continue;
- 		}
--		if (buffer_jbd(bh) && jh->b_jlist == BJ_Locked) {
-+		if (buffer_jbd(bh) && bh2jh(bh) == jh &&
-+		    jh->b_transaction == commit_transaction &&
-+		    jh->b_jlist == BJ_Locked) {
- 			__journal_unfile_buffer(jh);
- 			jbd_unlock_bh_state(bh);
- 			journal_remove_journal_head(bh);
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -66,7 +66,6 @@ static const int multicast_filter_limit 
+ #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+ #define TX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+ #define EarlyTxThld	0x3F	/* 0x3F means NO early transmit */
+-#define RxPacketMaxSize	0x3FE8	/* 16K - 1 - ETH_HLEN - VLAN - CRC... */
+ #define SafeMtu		0x1c20	/* ... actually life sucks beyond ~7k */
+ #define InterFrameGap	0x03	/* 3 means InterFrameGap = the shortest one */
+ 
+@@ -2357,10 +2356,10 @@ static u16 rtl_rw_cpluscmd(void __iomem 
+ 	return cmd;
+ }
+ 
+-static void rtl_set_rx_max_size(void __iomem *ioaddr)
++static void rtl_set_rx_max_size(void __iomem *ioaddr, unsigned int rx_buf_sz)
+ {
+ 	/* Low hurts. Let's disable the filtering. */
+-	RTL_W16(RxMaxSize, 16383);
++	RTL_W16(RxMaxSize, rx_buf_sz);
+ }
+ 
+ static void rtl8169_set_magic_reg(void __iomem *ioaddr, unsigned mac_version)
+@@ -2407,7 +2406,7 @@ static void rtl_hw_start_8169(struct net
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
+ 	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
+@@ -2668,7 +2667,7 @@ static void rtl_hw_start_8168(struct net
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	tp->cp_cmd |= RTL_R16(CPlusCmd) | PktCntrDisable | INTT_1;
+ 
+@@ -2846,7 +2845,7 @@ static void rtl_hw_start_8101(struct net
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	tp->cp_cmd |= rtl_rw_cpluscmd(ioaddr) | PCIMulRW;
+ 
 
 
