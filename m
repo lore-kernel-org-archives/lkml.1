@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763294AbZGAAp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763336AbZGAAqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763294AbZGAAp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761096AbZGAAdQ
+	id S1763336AbZGAAqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761122AbZGAAdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:33:16 -0400
-Received: from kroah.org ([198.145.64.141]:59909 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:33:25 -0400
+Received: from kroah.org ([198.145.64.141]:59926 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761102AbZGAAdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:33:15 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:53 2009
-Message-Id: <20090701001553.621173501@mini.kroah.org>
+	id S1761072AbZGAAdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:33:23 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:54 2009
+Message-Id: <20090701001553.976012658@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:26 -0700
+Date: Tue, 30 Jun 2009 17:14:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 30/35] qla2xxx: Correct (again) overflow during dump-processing on large-memory ISP23xx parts.
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mel Gorman <mel@csn.ul.ie>
+Subject: [patch 32/35] mm: fix handling of pagesets for downed cpus
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=qla2xxx-correct-overflow-during-dump-processing-on-large-memory-isp23xx-parts.patch
+Content-Disposition: inline; filename=mm-fix-handling-of-pagesets-for-downed-cpus.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +32,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+From: Dimitri Sivanich <sivanich@sgi.com>
 
-commit e18e963b7e533149676b5d387d0a56160df9f111 upstream.
+commit 364df0ebfbbb1330bfc6ca159f4d6020efc15a12 upstream.
 
-Commit 7b867cf76fbcc8d77867cbec6f509f71dce8a98f ([SCSI] qla2xxx:
-Refactor qla data structures) inadvertently reverted
-e792121ec85672c1fa48f79d13986a3f4f56c590 ([SCSI] qla2xxx: Correct
-overflow during dump-processing on large-memory ISP23xx parts.).
+After downing/upping a cpu, an attempt to set
+/proc/sys/vm/percpu_pagelist_fraction results in an oops in
+percpu_pagelist_fraction_sysctl_handler().
 
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+If a processor is downed then we need to set the pageset pointer back to
+the boot pageset.
+
+Updates of the high water marks should not access pagesets of unpopulated
+zones (those pointer go to the boot pagesets which would be no longer
+functional if their size would be increased beyond zero).
+
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/qla2xxx/qla_dbg.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/page_alloc.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/scsi/qla2xxx/qla_dbg.c
-+++ b/drivers/scsi/qla2xxx/qla_dbg.c
-@@ -218,7 +218,7 @@ qla24xx_soft_reset(struct qla_hw_data *h
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2804,7 +2804,7 @@ bad:
+ 		if (dzone == zone)
+ 			break;
+ 		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = NULL;
++		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
+ 	}
+ 	return -ENOMEM;
+ }
+@@ -2819,7 +2819,7 @@ static inline void free_zone_pagesets(in
+ 		/* Free per_cpu_pageset if it is slab allocated */
+ 		if (pset != &boot_pageset[cpu])
+ 			kfree(pset);
+-		zone_pcp(zone, cpu) = NULL;
++		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+ 	}
+ }
  
- static int
- qla2xxx_dump_ram(struct qla_hw_data *ha, uint32_t addr, uint16_t *ram,
--    uint16_t ram_words, void **nxt)
-+    uint32_t ram_words, void **nxt)
- {
- 	int rval;
- 	uint32_t cnt, stat, timer, words, idx;
+@@ -4494,6 +4494,8 @@ int percpu_pagelist_fraction_sysctl_hand
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+ 	for_each_zone(zone) {
++		if (!populated_zone(zone))
++			continue;
+ 		for_each_online_cpu(cpu) {
+ 			unsigned long  high;
+ 			high = zone->present_pages / percpu_pagelist_fraction;
 
 
