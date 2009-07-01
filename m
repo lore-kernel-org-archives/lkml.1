@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZGAQNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZGAQOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZGAQNE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:13:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZGAQMz
+	id S1754515AbZGAQOt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZGAQOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:12:55 -0400
-Received: from outbound-mail-118.bluehost.com ([69.89.22.18]:56737 "HELO
-	outbound-mail-118.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752188AbZGAQMz (ORCPT
+	Wed, 1 Jul 2009 12:14:40 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:39616 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbZGAQOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:12:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=ahnkr0+l2PgU3OUdkUyOfO2s8y5RgwOfjmNAlp8PXfyIfwT9hhpfyd0IfIYgslhQke5LwvIM+rDwSEc3lublL1g5kZePqXZ0oqUTtL3TMq35hhgo+Is8v5XsTHJfstaE;
-Date: Wed, 1 Jul 2009 09:12:55 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Dave Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] i915: fix up a raw 64bit divide
-Message-ID: <20090701091255.363f9d4d@jbarnes-g45>
-In-Reply-To: <1246458059-15965-1-git-send-email-apw@canonical.com>
-References: <1246458059-15965-1-git-send-email-apw@canonical.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.2; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Jul 2009 12:14:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KVEIqpf6Y92z+T5m/RB0Tq6+9PTHQOEXWDdkqoFjVFDTTteEde2Vj+BUs/NE6mfbrP
+         XqNzDf93HhelEbIBbffAQMjj5fPtL37T1gF3yUonFxWODMIshXG2jQ9khbunOcjlXucV
+         T9u1S2CXvDPuL+vOHQUhnwJYuG1yW1J2GDLUI=
+MIME-Version: 1.0
+In-Reply-To: <20090701151344.GA4372@gondor.apana.org.au>
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera>
+	 <6JJ2m5kyucK.A.AtD.NJASKB@chimera>
+	 <b6a2187b0907010734w7e7a5bbfm271f44e57e12d1b4@mail.gmail.com>
+	 <20090701151344.GA4372@gondor.apana.org.au>
+Date: Thu, 2 Jul 2009 00:14:37 +0800
+Message-ID: <b6a2187b0907010914x1c68e09k24bc9378e9c0519c@mail.gmail.com>
+Subject: Re: [Bug #13627] Tunnel device ignores TCP/UDP traffic
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, Paul Martin <pm@debian.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  1 Jul 2009 15:20:59 +0100
-Andy Whitcroft <apw@canonical.com> wrote:
+On Wed, Jul 1, 2009 at 11:13 PM, Herbert Xu<herbert@gondor.apana.org.au> wrote:
 
-> We are seeing compilation failures on i386 in some environments due
-> to an undefined reference as below:
-> 
->     ERROR: "__udivdi3" [drivers/gpu/drm/i915/i915.ko] undefined!
-> 
-> This is generated due to a raw 64 bit divide in the i915 driver.  Fix
-> up this raw divide.
-> 
-> Signed-off-by: Andy Whitcroft <apw@canonical.com>
+> So you mean that 71f9dacd2e4d233029e9e956ca3f79531f411827 doesn't
+> work? Does reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f help?
 
-I think building with newer GCCs will prevent this error, but the fix
-looks fine.
+My Linux git already has these two commits, and I tested it with vpnc
+(0.5.3) and it connected, but can't ping or ssh to remote. It was
+working prior to 2.6.30.
 
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Tested reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f, but still
+no good. Also reverted 71f9dacd2e4d233029e9e956ca3f79531f411827, still
+no good.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+> If not can you elaborate on what you mean by not working?
+
+It seems the tunnel is not setup correctly, but I'll have to revert
+back to 2.6.29+ to verify.
+
+On kvm (again, it could be KVM which I'm not 100% sure. kvm-87),  it
+won't ping to/from the guest system with host ... Used to work before
+2.6.31-rc1 with guest net model=e1000 and model=virtio, but with
+2.6.31-rc1, only works with model=virtio. .. This could be an
+_unrelated_ issue though.
+
+/usr/local/kvm/bin/qemu-system-x86_64 \
+        -localtime \
+        -net nic,vlan=0,model=e1000 \
+        -net tap,script=/root/scripts2/tunx \
+
+
+Thanks,
+Jeff.
