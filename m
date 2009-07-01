@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbZGAHSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZGAHTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753085AbZGAHSZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZGAHSS
+	id S1753411AbZGAHTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZGAHT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:18:18 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:39173 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZGAHSS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:18:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=j425XS8OFDme5fcxog9jYCE0PXfG/l1xM7TPWKyaiHQHSb56+wBjvskL8qZwaevzp8
-         qRh7ipHSDdjSkQts09qzHR/FxqmCXjI+nOg52RZiGqeSGWCLJqPUcNpfeUC1SZCnTtcs
-         VBThJDZ6NpjIgHFzbLAWUDxG85vqMPdaJUjz4=
-Date: Wed, 1 Jul 2009 15:20:27 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Hui Zhu <teawater@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, dhowells@redhat.com
-Subject: Re: [PATCH] Fix the multithread program core thread message error
-Message-ID: <20090701072027.GE6076@cr0.nay.redhat.com>
-References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com> <20090701005437.GA5856@cr0.nay.redhat.com> <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com> <20090701045102.GA6076@cr0.nay.redhat.com> <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 1 Jul 2009 03:19:26 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44656 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751428AbZGAHT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 03:19:26 -0400
+Date: Wed, 1 Jul 2009 17:19:25 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: manual merge of the percpu tree with Linus' tree
+Message-Id: <20090701171925.6db8121d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__1_Jul_2009_17_19_25_+1000_2_9GPeCE26UwT.E6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 02:21:37PM +0800, Hui Zhu wrote:
->Thanks for your help, Amerigo.
+--Signature=_Wed__1_Jul_2009_17_19_25_+1000_2_9GPeCE26UwT.E6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You're welcome.
+Hi all,
 
->
->Hui
->
->---
-> elfcore.h |    2 ++
-> 1 file changed, 2 insertions(+)
->
->diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
->index 7605c5e..03ec167 100644
->--- a/include/linux/elfcore.h
->+++ b/include/linux/elfcore.h
->@@ -125,6 +125,8 @@ static inline int elf_core_copy_task_regs(struct
->task_struct *t, elf_gregset_t*
-> #ifdef ELF_CORE_COPY_TASK_REGS
->
->       return ELF_CORE_COPY_TASK_REGS(t, elfregs);
->+#else
->+       elf_core_copy_regs(elfregs, task_pt_regs(t));
-> #endif
->       return 0;
-> }
+Today's linux-next merge of the percpu tree got a conflict in
+arch/alpha/include/asm/percpu.h between commit
+b01e8dc34379f4ba2f454390e340a025edbaaa7e ("alpha: fix percpu build
+breakage") from Linus' tree and commit
+6088464cf1ae9fb3d2ccc0ec5feb3f5b971098d8 ("alpha: kill unnecessary __used
+attribute in PER_CPU_ATTRIBUTES") from the percpu tree.
 
-Your email client eats tabs. :) Can you fix your email client
-or resend it with a tool like git send-email?
+The latter just removes what the former changed, so I used the percpu
+tree version of this file.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks.
+--Signature=_Wed__1_Jul_2009_17_19_25_+1000_2_9GPeCE26UwT.E6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpLDf0ACgkQjjKRsyhoI8xp2gCdEt3M+RBdpw/YIcenRPK7SQr4
+s04AnRbYuctKxFghO/efSvBhy6I54DIc
+=WNtQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__1_Jul_2009_17_19_25_+1000_2_9GPeCE26UwT.E6--
