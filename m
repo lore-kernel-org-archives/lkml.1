@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761935AbZGAAxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764301AbZGAAxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761935AbZGAAxn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761417AbZGAAed
+	id S1764301AbZGAAxz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761425AbZGAAee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:33 -0400
-Received: from kroah.org ([198.145.64.141]:60196 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:34 -0400
+Received: from kroah.org ([198.145.64.141]:60208 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761356AbZGAAe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:29 -0400
+	id S1761396AbZGAAea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:20 2009
-Message-Id: <20090701002420.141480274@mini.kroah.org>
+Message-Id: <20090701002420.426675306@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:14 -0700
+Date: Tue, 30 Jun 2009 17:23:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Joerg Roedel <joerg.roedel@amd.com>, lethal@linux-sh.org,
-       just.for.lkml@googlemail.com, hancockrwd@gmail.com,
-       jens.axboe@oracle.com, bharrosh@panasas.com,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 025/108] dma-debug: change hash_bucket_find from first-fit to best-fit
+       Dirk Eibach <eibach@gdsys.de>, Jiri Slaby <jirislaby@gmail.com>
+Subject: [patch 026/108] char: moxa, prevent opening unavailable ports
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=dma-debug-change-hash_bucket_find-from-first-fit-to-best-fit.patch
+Content-Disposition: inline; filename=char-moxa-prevent-opening-unavailable-ports.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -34,93 +30,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Dirk Eibach <eibach@gdsys.de>
 
-commit 7caf6a49bb17d0377210693af5737563b31aa5ee upstream.
+commit a90b037583d5f1ae3e54e9c687c79df82d1d34a4 upstream.
 
-Some device drivers map the same physical address multiple times to a
-dma address. Without an IOMMU this results in the same dma address being
-put into the dma-debug hash multiple times. With a first-fit match in
-hash_bucket_find() this function may return the wrong dma_debug_entry.
+In moxa.c there are 32 minor numbers reserved for each device.  The number
+of ports actually available per device is stored in
+moxa_board_conf->numPorts.  This number is not considered in moxa_open().
+Opening a port that is not available results in a kernel oops.  This patch
+adds a test to moxa_open() that prevents opening unavailable ports.
 
-This can result in false positive warnings. This patch fixes it by
-changing the first-fit behavior of hash_bucket_find() into a best-fit
-algorithm.
-
-Reported-by: Torsten Kaiser <just.for.lkml@googlemail.com>
-Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Cc: lethal@linux-sh.org
-Cc: just.for.lkml@googlemail.com
-Cc: hancockrwd@gmail.com
-Cc: jens.axboe@oracle.com
-Cc: bharrosh@panasas.com
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <20090605104132.GE24836@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+[akpm@linux-foundation.org: avoid multiple returns]
+Signed-off-by: Dirk Eibach <eibach@gdsys.de>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- lib/dma-debug.c |   43 +++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 39 insertions(+), 4 deletions(-)
+ drivers/char/moxa.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -185,15 +185,50 @@ static void put_hash_bucket(struct hash_
- static struct dma_debug_entry *hash_bucket_find(struct hash_bucket *bucket,
- 						struct dma_debug_entry *ref)
- {
--	struct dma_debug_entry *entry;
-+	struct dma_debug_entry *entry, *ret = NULL;
-+	int matches = 0, match_lvl, last_lvl = 0;
- 
- 	list_for_each_entry(entry, &bucket->list, list) {
--		if ((entry->dev_addr == ref->dev_addr) &&
--		    (entry->dev == ref->dev))
-+		if ((entry->dev_addr != ref->dev_addr) ||
-+		    (entry->dev != ref->dev))
-+			continue;
-+
-+		/*
-+		 * Some drivers map the same physical address multiple
-+		 * times. Without a hardware IOMMU this results in the
-+		 * same device addresses being put into the dma-debug
-+		 * hash multiple times too. This can result in false
-+		 * positives being reported. Therfore we implement a
-+		 * best-fit algorithm here which returns the entry from
-+		 * the hash which fits best to the reference value
-+		 * instead of the first-fit.
-+		 */
-+		matches += 1;
-+		match_lvl = 0;
-+		entry->size      == ref->size      ? ++match_lvl : match_lvl;
-+		entry->type      == ref->type      ? ++match_lvl : match_lvl;
-+		entry->direction == ref->direction ? ++match_lvl : match_lvl;
-+
-+		if (match_lvl == 3) {
-+			/* perfect-fit - return the result */
- 			return entry;
-+		} else if (match_lvl > last_lvl) {
-+			/*
-+			 * We found an entry that fits better then the
-+			 * previous one
-+			 */
-+			last_lvl = match_lvl;
-+			ret      = entry;
-+		}
+--- a/drivers/char/moxa.c
++++ b/drivers/char/moxa.c
+@@ -1184,6 +1184,11 @@ static int moxa_open(struct tty_struct *
+ 		return -ENODEV;
  	}
  
--	return NULL;
-+	/*
-+	 * If we have multiple matches but no perfect-fit, just return
-+	 * NULL.
-+	 */
-+	ret = (matches == 1) ? ret : NULL;
++	if (port % MAX_PORTS_PER_BOARD >= brd->numPorts) {
++		retval = -ENODEV;
++		goto out_unlock;
++	}
 +
-+	return ret;
+ 	ch = &brd->ports[port % MAX_PORTS_PER_BOARD];
+ 	ch->port.count++;
+ 	tty->driver_data = ch;
+@@ -1208,8 +1213,8 @@ static int moxa_open(struct tty_struct *
+ 				moxa_close_port(tty);
+ 	} else
+ 		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
++out_unlock:
+ 	mutex_unlock(&moxa_openlock);
+-
+ 	return retval;
  }
  
- /*
 
 
