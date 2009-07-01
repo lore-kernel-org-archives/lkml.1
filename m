@@ -1,265 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZGAIjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZGAIlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZGAIjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZGAIjI
+	id S1754356AbZGAIlA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZGAIkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:39:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38239 "EHLO smtps.tip.net.au"
+	Wed, 1 Jul 2009 04:40:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52572 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbZGAIjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:39:05 -0400
-Date: Wed, 1 Jul 2009 18:39:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for July 1
-Message-Id: <20090701183903.bd203c62.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__1_Jul_2009_18_39_03_+1000_Zd+F_O8dZNALwRtw"
+	id S1751158AbZGAIkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:40:51 -0400
+Date: Wed, 1 Jul 2009 10:40:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       xen-devel@lists.xensource.com
+Subject: Re: WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem
+Message-ID: <20090701084044.GB8171@elte.hu>
+References: <alpine.DEB.2.01.0906291950280.6439@bogon> <1246351243.8014.14.camel@penberg-laptop> <4A4A7C9B.9060409@goop.org> <1246427909.22417.7.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246427909.22417.7.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__1_Jul_2009_18_39_03_+1000_Zd+F_O8dZNALwRtw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-Changes since 20090630:
+> Hi Jeremy,
+> 
+> On Tue, 2009-06-30 at 13:59 -0700, Jeremy Fitzhardinge wrote:
+> > > >From dc231c59194a973b80e6932bb4c162f2076635cb Mon Sep 17 00:00:00 2001
+> > > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> > > Date: Tue, 30 Jun 2009 11:35:19 +0300
+> > > Subject: [PATCH] xen: Use kcalloc() in xen_init_IRQ()
+> > >
+> > > The init_IRQ() function is now called with slab allocator initialized.
+> > > Therefore, we must not use the bootmem allocator in xen_init_IRQ().
+> > > Fixes the following boot-time warning:
+> > >
+> > >   [    0.000000] Linux version 2.6.30 (dummy@sid) (gcc version 4.4.0 (Debian 4.4.0-8) ) #1 Tue Jun 23 02:13:42 CEST 2009
+> > >   [    0.000000] Command line: root=/dev/xvda1 console=hvc0 init=/sbin/init
+> > >   [    0.000000] KERNEL supported cpus:
+> > >   [    0.000000]   Intel GenuineIntel
+> > >   [    0.000000]   AMD AuthenticAMD
+> > >   [    0.000000]   Centaur CentaurHauls
+> > >   [    0.000000] BIOS-provided physical RAM map:
+> > >   [    0.000000]  Xen: 0000000000000000 - 00000000000a0000 (usable)
+> > >   [    0.000000]  Xen: 00000000000a0000 - 0000000000100000 (reserved)
+> > >   [    0.000000]  Xen: 0000000000100000 - 0000000008000000 (usable)
+> > >   [    0.000000] DMI not present or invalid.
+> > >   [    0.000000] last_pfn = 0x8000 max_arch_pfn = 0x400000000
+> > >   [    0.000000] initial memory mapped : 0 - 20000000
+> > >
+> > > Reported-by: Christian Kujau <lists@nerdbynature.de>
+> > > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > 
+> > Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> 
+> Thanks! Who should pick this patch up, btw? I think it ought to go 
+> to the xen subsystem tree (wherever that is).
 
-Dropped tree: sfi (build problems)
+Generally those fixes go via tip:x86/urgent - please send the patch 
+with a full changelog, the signoff and acked-by lines, etc.
 
-This tree fails to build for powerpc allyesconfig.
+Thanks,
 
-The kvm tree gained a conflict against Linus' tree.
-
-The rr tree lost a conflict and a build failure.
-
-The block tree gained a conflict against Linus' tree.
-
-The percpu tree gained 2 conflicts against Linus' tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in arch/ia64/include/asm/pci.h
-CONFLICT (content): Merge conflict in arch/mn10300/include/asm/pci.h
-CONFLICT (content): Merge conflict in include/asm-generic/pci.h
-$ git reset --hard HEAD^
-Merging refs/next/20090629/pci
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-$ git checkout HEAD drivers/platform/x86/eeepc-laptop.c
-[master 7050032] Revert "eeepc-laptop: Register as a pci-hotplug device"
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in fs/eventfd.c
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/powermac/setup=
-.c
-Applying: rr/pmac: fix for cpumask accessor changes
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in mm/page-writeback.c
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in drivers/char/tty_ldisc.c
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/alpha/include/asm/percpu.h
-CONFLICT (content): Merge conflict in arch/mn10300/kernel/vmlinux.lds.S
-CONFLICT (content): Merge conflict in include/linux/percpu-defs.h
-Merging sfi/sfi-test
-$ git reset --hard HEAD^
-Merging asm-generic/next
-Merging quilt/driver-core
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Wed__1_Jul_2009_18_39_03_+1000_Zd+F_O8dZNALwRtw
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpLIKcACgkQjjKRsyhoI8ytzACghO30f0eEUAVzYIM4297wLnTT
-xxcAoL/trIwcr2BA/SCD3RbJVcPUcNpZ
-=AJ6P
------END PGP SIGNATURE-----
-
---Signature=_Wed__1_Jul_2009_18_39_03_+1000_Zd+F_O8dZNALwRtw--
+	Ingo
