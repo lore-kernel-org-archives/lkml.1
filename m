@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbZGAAmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbZGAAnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759651AbZGAAmu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760956AbZGAAcw
+	id S1762845AbZGAAnD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbZGAAcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:32:52 -0400
-Received: from kroah.org ([198.145.64.141]:59815 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:32:53 -0400
+Received: from kroah.org ([198.145.64.141]:59820 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760951AbZGAAcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:32:51 -0400
+	id S1760951AbZGAAcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:32:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:51 2009
-Message-Id: <20090701001551.313300221@mini.kroah.org>
+Message-Id: <20090701001551.517170262@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:14 -0700
+Date: Tue, 30 Jun 2009 17:14:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jack Morgenstein <jackm@dev.mellanox.co.il>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 18/35] IB/mlx4: Add strong ordering to local inval and fast reg work requests
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 19/35] x86: handle initrd that extends into unusable memory
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=ib-mlx4-add-strong-ordering-to-local-inval-and-fast-reg-work-requests.patch
+Content-Disposition: inline; filename=x86-handle-initrd-that-extends-into-unusable-memory.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,58 +30,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit 2ac6bf4ddc87c3b6b609f8fa82f6ebbffeac12f4 upstream.
+commit 8c5dd8f43367f4f266dd616f11658005bc2d20ef upstream.
 
-The ConnectX Programmer's Reference Manual states that the "SO" bit
-must be set when posting Fast Register and Local Invalidate send work
-requests.  When this bit is set, the work request will be executed
-only after all previous work requests on the send queue have been
-executed.  (If the bit is not set, Fast Register and Local Invalidate
-WQEs may begin execution too early, which violates the defined
-semantics for these operations)
+On a system where system memory (according e820) is not covered by
+mtrr, mtrr_trim_memory converts a portion of memory to reserved, but
+bootloader has already put the initrd in that range.
 
-This fixes the issue with NFS/RDMA reported in
-<http://lists.openfabrics.org/pipermail/general/2009-April/059253.html>
+Thus, we need to have 64bit to use relocate_initrd too.
 
-Signed-off-by: Jack Morgenstein <jackm@dev.mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+[ Impact: fix using initrd when mtrr_trim_memory happen ]
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/infiniband/hw/mlx4/qp.c |    4 ++++
- include/linux/mlx4/qp.h         |    1 +
- 2 files changed, 5 insertions(+)
+ arch/x86/kernel/setup.c |   15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
---- a/drivers/infiniband/hw/mlx4/qp.c
-+++ b/drivers/infiniband/hw/mlx4/qp.c
-@@ -1585,12 +1585,16 @@ int mlx4_ib_post_send(struct ib_qp *ibqp
- 				break;
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -255,15 +255,13 @@ static inline void copy_edd(void)
  
- 			case IB_WR_LOCAL_INV:
-+				ctrl->srcrb_flags |=
-+					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
- 				set_local_inv_seg(wqe, wr->ex.invalidate_rkey);
- 				wqe  += sizeof (struct mlx4_wqe_local_inval_seg);
- 				size += sizeof (struct mlx4_wqe_local_inval_seg) / 16;
- 				break;
+ #ifdef CONFIG_BLK_DEV_INITRD
  
- 			case IB_WR_FAST_REG_MR:
-+				ctrl->srcrb_flags |=
-+					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
- 				set_fmr_seg(wqe, wr);
- 				wqe  += sizeof (struct mlx4_wqe_fmr_seg);
- 				size += sizeof (struct mlx4_wqe_fmr_seg) / 16;
---- a/include/linux/mlx4/qp.h
-+++ b/include/linux/mlx4/qp.h
-@@ -165,6 +165,7 @@ enum {
- 	MLX4_WQE_CTRL_IP_CSUM		= 1 << 4,
- 	MLX4_WQE_CTRL_TCP_UDP_CSUM	= 1 << 5,
- 	MLX4_WQE_CTRL_INS_VLAN		= 1 << 6,
-+	MLX4_WQE_CTRL_STRONG_ORDER	= 1 << 7,
- };
+-#ifdef CONFIG_X86_32
+-
+ #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
+ static void __init relocate_initrd(void)
+ {
  
- struct mlx4_wqe_ctrl_seg {
+ 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+ 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
+ 	u64 ramdisk_here;
+ 	unsigned long slop, clen, mapaddr;
+ 	char *p, *q;
+@@ -319,14 +317,13 @@ static void __init relocate_initrd(void)
+ 		ramdisk_image, ramdisk_image + ramdisk_size - 1,
+ 		ramdisk_here, ramdisk_here + ramdisk_size - 1);
+ }
+-#endif
+ 
+ static void __init reserve_initrd(void)
+ {
+ 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+ 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+ 	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+-	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
+ 
+ 	if (!boot_params.hdr.type_of_loader ||
+ 	    !ramdisk_image || !ramdisk_size)
+@@ -356,14 +353,8 @@ static void __init reserve_initrd(void)
+ 		return;
+ 	}
+ 
+-#ifdef CONFIG_X86_32
+ 	relocate_initrd();
+-#else
+-	printk(KERN_ERR "initrd extends beyond end of memory "
+-	       "(0x%08llx > 0x%08llx)\ndisabling initrd\n",
+-	       ramdisk_end, end_of_lowmem);
+-	initrd_start = 0;
+-#endif
++
+ 	free_early(ramdisk_image, ramdisk_end);
+ }
+ #else
 
 
