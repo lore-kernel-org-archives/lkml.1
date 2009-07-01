@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbZGAIZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZGAI2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754454AbZGAIZr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZGAIZS
+	id S1754249AbZGAI2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZGAI2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:25:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41769 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Jul 2009 04:28:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57973 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753956AbZGAIZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:25:15 -0400
-Date: Wed, 1 Jul 2009 10:24:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] perf_counter: tools: Rework event parsing
-Message-ID: <20090701082457.GB25593@elte.hu>
-References: <19018.53826.843815.189847@cargo.ozlabs.ibm.com>
+	id S1752291AbZGAI2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:28:13 -0400
+Date: Wed, 1 Jul 2009 10:24:52 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Disable CLONE_PARENT for init
+Message-ID: <20090701082452.GA3297@redhat.com>
+References: <20090701073140.GA14284@us.ibm.com> <20090701074654.A6C6321D57@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19018.53826.843815.189847@cargo.ozlabs.ibm.com>
+In-Reply-To: <20090701074654.A6C6321D57@magilla.sf.frob.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/01, Roland McGrath wrote:
+>
+> > When global or container-init processes use CLONE_PARENT, they create a
+> > multi-rooted process tree. 
+>
+> I take this to be the real motivation for your change.
+> But you don't mention it in the code comment.
+>
+> > +	 * Swapper process sets the handler for SIGCHLD to SIG_DFL. If init
+> > +	 * creates a sibling and the sibling exits, the SIGCHLD is sent to
+> > +	 * the swapper (since the swapper's handler for SIGCHLD is SIG_DFL).
+> > +	 * But since the swapper does not reap its children, the zombie will
+> > +	 * remain forever. So prevent init from using CLONE_PARENT.
+>
+> This would be fixed by having swapper set its SIGCHLD to SIG_IGN instead,
+> so such children self-reap.  That seems like the better fix for that.
 
-* Paul Mackerras <paulus@samba.org> wrote:
+This won't fix the problem. The child won't autoreap itself if ->exit_signal
+!= SIGCHLD.
 
-> This reworks the parser for event descriptors to make it more
-> consistent in what it accepts.  It is now structured as a recursive
-> descent parser for the following grammar:
-> 
-> events		::= event ( ("," | space) space* event )*
-> event		::= ( raw_event | numeric_event | symbolic_event |
-> 		      generic_hw_event ) [ event_modifier ]
-> raw_event	::= "r" hex_number
-> numeric_event	::= number ":" number
-> number		::= decimal_number | "0x" hex_number | "0" octal_number
-> symbolic_event	::= string_from_event_symbols_array
-> generic_hw_event::= cache_type ( "-" ( cache_op | cache_result ) )*
-> event_modifier	::= ":" ( "u" | "k" | "h" )+
+> If you want to make this change because of container-init issues, I think
+> you should just say so independent of this global-init case.
 
-Very nice changes, thanks Paul!
+Yes, agreed, the comment looks confusing.
 
-	Ingo
+Oleg
+
