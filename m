@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZGALEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbZGALGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbZGALEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753817AbZGALEp
+	id S1755556AbZGALGh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZGALGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:04:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58640 "EHLO mx2.mail.elte.hu"
+	Wed, 1 Jul 2009 07:06:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34594 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbZGALEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:04:44 -0400
-Date: Wed, 1 Jul 2009 13:04:38 +0200
+	id S1753835AbZGALGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:06:33 -0400
+Date: Wed, 1 Jul 2009 13:06:20 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       git-commits-head@vger.kernel.org
-Subject: Re: [PATCH] kmemleak: Fix scheduling-while-atomic bug
-Message-ID: <20090701110438.GA15958@elte.hu>
-References: <200907010300.n6130rRf026194@hera.kernel.org> <20090701075332.GA17252@elte.hu> <1246439937.8492.18.camel@pc1117.cambridge.arm.com> <20090701093015.GA6862@elte.hu> <1246441592.8492.38.camel@pc1117.cambridge.arm.com>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+	how many spinlocks to schedstat
+Message-ID: <20090701110620.GB15958@elte.hu>
+References: <87hbxwj1k3.fsf@basil.nowhere.org> <20090701.174226.419764642024067218.mitake@dcl.info.waseda.ac.jp> <20090701090749.GA13535@elte.hu> <20090701.184232.131509470674490734.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1246441592.8492.38.camel@pc1117.cambridge.arm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090701.184232.131509470674490734.mitake@dcl.info.waseda.ac.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,52 +37,82 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-> On Wed, 2009-07-01 at 11:30 +0200, Ingo Molnar wrote:
-> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> Date: Wed, 1 Jul 2009 11:07:49 +0200
+> 
 > > 
-> > > > The minimal fix below removes scan_yield() and adds a 
-> > > > cond_resched() to the outmost (safe) place of the scanning 
-> > > > thread. This solves the regression.
+> > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+> > 
+> > > From: Andi Kleen <andi@firstfloor.org>
+> > > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+> > > Date: Wed, 01 Jul 2009 09:38:04 +0200
 > > > 
-> > > With CONFIG_PREEMPT disabled it won't reschedule during the bss 
-> > > scanning but I don't see this as a real issue (task stacks 
-> > > scanning probably takes longer anyway).
+> > > > Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
+> > > > 
+> > > > > Hi,
+> > > > >
+> > > > > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
+> > > > > After applied this patch, /proc/<PID>/sched will change like this,
+> > > > 
+> > > > The problem is that spinlocks are very common and schedstats is 
+> > > > enabled commonly in production kernels. You would need to 
+> > > > demonstrate that such a change doesn't have significant 
+> > > > performance impact. For me it looks like it has.
+> > > 
+> > > I agree with your opinion about performance impact.
+> > > I thought this will make no problem,
+> > > because schedstat is categorized as "Kernel hacking" section.
+> > > But according to you, many production kernels enable it
+> > > so my patch will make widespread performance degradation.
+> > > I didn't know that, sorry.
 > > 
-> > Yeah. I suspect one more cond_resched() could be added - i just 
-> > didnt see an obvious place for it, given that scan_block() is being 
-> > called with asymetric held-locks contexts.
+> > His arguments are bogus: both lockstat and perfcounters are optional 
+> > (and default off), and the sw counter can be made near zero cost 
+> > even if both perfcounters and lockstat is enabled. Also, sw counters 
+> > are generally per CPU, etc. so not a performance issue.
+> > 
+> > The only (small) overhead will be when the lock-acquire sw counter 
+> > is actively enabled because you run 'perf stat -e lock-acquire' - 
+> > but that is expected and inherent in pretty much any kind of 
+> > instrumentation.
+> > 
+> > The feature you are working on has the chance to be a very useful 
+> > and popular piece of instrumentation. Being able to tell the lock 
+> > acquire stats on a per task, per workload, per CPU or system-wide 
+> > basis is a unique capability no other tool can offer right now.
+> > 
+> > Andi is often trolling perfcounters related (and other) threads, 
+> > please dont let yourself be deterred by that and feel free to ignore 
+> > him.
+> OK, at least it is truth that
+> counter in perfcounters makes only valid overhead.
 > 
-> Yes, scan_block shouldn't call cond_resched(). The code is cleaner if
-> functions don't have too many side-effects. I can see about 1 sec of bss
-> scanning on an ARM board but with processor at < 500MHz and slow memory
-> system. On a standard x86 systems BSS scanning may not be noticeable
-> (and I think PREEMPT enabling is quite common these days).
+> And I have a question,
+> I tried to build perf, but I got a build error,
 > 
-> Since we are at locking, I just noticed this on my x86 laptop when
-> running cat /sys/kernel/debug/kmemleak (I haven't got it on an ARM
-> board):
+> util/symbol.c: In function ‘dso__load_sym’:
+> util/symbol.c:466: error: ‘ELF_C_READ_MMAP’ undeclared (first use in this function)
+> util/symbol.c:466: error: (Each undeclared identifier is reported only once
+> util/symbol.c:466: error: for each function it appears in.)
 > 
-> ================================================
-> [ BUG: lock held when returning to user space! ]
-> ------------------------------------------------
-> cat/3687 is leaving the kernel with locks still held!
-> 1 lock held by cat/3687:
-> #0:  (scan_mutex){+.+.+.}, at: [<c01e0c5c>] kmemleak_open+0x3c/0x70
+> I used this libelf,
+> http://www.mr511.de/software/english.html
+> but constant ELF_C_READ_MMAP is not provided...
 > 
-> kmemleak_open() acquires scan_mutex and unconditionally releases 
-> it in kmemleak_release(). The mutex seems to be released as a 
-> subsequent acquiring works fine.
-> 
-> Is this caused just because cat may have exited without closing 
-> the file descriptor (which should be done automatically anyway)?
+> which "libelf" should I use?
+> It seems that there are some libelf implementations.
 
-This lockdep warning has a 0% false positives track record so far: 
-all previous cases it triggered showed some real (and fatal) bug in 
-the underlying code.
+I use the elfutils-libelf* packages:
 
-The above one probably means scan_mutex is leaked out of a /proc 
-syscall - that would be a bug in kmemleak.
+ elfutils-libelf-devel-static-0.141-1.fc10.i386
+ elfutils-0.141-1.fc10.i386
+ elfutils-libelf-0.141-1.fc10.i386
+ elfutils-libs-0.141-1.fc10.i386
+ elfutils-libelf-devel-0.141-1.fc10.i386
+
+do they work fine or you?
 
 	Ingo
