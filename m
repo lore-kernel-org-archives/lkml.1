@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbZGABN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZGABJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763329AbZGABN5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761536AbZGAAfr
+	id S1763947AbZGABJt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761133AbZGAAf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:47 -0400
-Received: from kroah.org ([198.145.64.141]:60671 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:29 -0400
+Received: from kroah.org ([198.145.64.141]:60582 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761574AbZGAAfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:37 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:41 2009
-Message-Id: <20090701002441.091270814@mini.kroah.org>
+	id S1761522AbZGAAfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:21 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
+Message-Id: <20090701002438.308543471@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:21 -0700
+Date: Tue, 30 Jun 2009 17:24:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 092/108] qla2xxx: Correct (again) overflow during dump-processing on large-memory ISP23xx parts.
+       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
+Subject: [patch 079/108] vt_ioctl: fix lock imbalance
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=qla2xxx-correct-overflow-during-dump-processing-on-large-memory-isp23xx-parts.patch
+Content-Disposition: inline; filename=vt_ioctl-fix-lock-imbalance.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +30,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit e18e963b7e533149676b5d387d0a56160df9f111 upstream.
+commit a115902f67ef51fbbe83e214fb761aaa9734c1ce upstream.
 
-Commit 7b867cf76fbcc8d77867cbec6f509f71dce8a98f ([SCSI] qla2xxx:
-Refactor qla data structures) inadvertently reverted
-e792121ec85672c1fa48f79d13986a3f4f56c590 ([SCSI] qla2xxx: Correct
-overflow during dump-processing on large-memory ISP23xx parts.).
+Don't return from switch/case directly in vt_ioctl. Set ret and break
+instead so that we unlock BKL.
 
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/qla2xxx/qla_dbg.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/char/vt_ioctl.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/scsi/qla2xxx/qla_dbg.c
-+++ b/drivers/scsi/qla2xxx/qla_dbg.c
-@@ -218,7 +218,7 @@ qla24xx_soft_reset(struct qla_hw_data *h
- 
- static int
- qla2xxx_dump_ram(struct qla_hw_data *ha, uint32_t addr, uint16_t *ram,
--    uint16_t ram_words, void **nxt)
-+    uint32_t ram_words, void **nxt)
- {
- 	int rval;
- 	uint32_t cnt, stat, timer, words, idx;
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -396,7 +396,8 @@ int vt_ioctl(struct tty_struct *tty, str
+ 	kbd = kbd_table + console;
+ 	switch (cmd) {
+ 	case TIOCLINUX:
+-		return tioclinux(tty, arg);
++		ret = tioclinux(tty, arg);
++		break;
+ 	case KIOCSOUND:
+ 		if (!perm)
+ 			goto eperm;
 
 
