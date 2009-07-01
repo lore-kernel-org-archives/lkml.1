@@ -1,33 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZGALV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZGALYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZGALV7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbZGALVw
+	id S1754229AbZGALYx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZGALYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:21:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36154 "EHLO mx2.mail.elte.hu"
+	Wed, 1 Jul 2009 07:24:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44821 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZGALVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:21:52 -0400
-Date: Wed, 1 Jul 2009 13:20:07 +0200
+	id S1750812AbZGALYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:24:46 -0400
+Date: Wed, 1 Jul 2009 13:24:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Arjan van de Ven <arjan@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 3/6 -tip] perf_counter: Add Generalized Hardware
-	vectored co-processor support for AMD
-Message-ID: <20090701112007.GD15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam>
+Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
+	interrupt support for AMD
+Message-ID: <20090701112406.GE15958@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <1246441094.3403.10.camel@hpdv5.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246441043.3403.9.camel@hpdv5.satnam>
+In-Reply-To: <1246441094.3403.10.camel@hpdv5.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -43,44 +44,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> $ ./perf stat -e add -e multiply -e divide -e vec-idle-cycles -e vec-stall-cycles -e vec-ops -- /usr/bin/vlc ~jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv
 > 
->  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
+> $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
 > 
->     20177177044  vec-adds                  (scaled from 66.63%)
->     34101687027  vec-muls                  (scaled from 66.64%)
->      3984060862  vec-divs                  (scaled from 66.71%)
->     26349684710  vec-idle-cycles           (scaled from 66.65%)
->      9052001905  vec-stall-cycles          (scaled from 66.66%)
->     76440734242  vec-ops                   (scaled from 66.71%)
+>  Performance counter stats for 'ls -lR /usr/include/':
 > 
->   272.523058097  seconds time elapsed
+>             377  interrupts
+>        53429936  int-mask-cycles
+>            1119  int-pending-mask-cycles
+> 
+>     0.371457539  seconds time elapsed
 
-Ok, this looks very nice now - a highly generic and still very 
-useful looking categorization of FPU/MMX/SSE related co-processor hw 
-events.
+Agreed, this is another useful generalization - and the 'cycles 
+pending' metrics are not retrievable via any software means.
 
-I'm still waiting for feedback from Paulus, BenH and Anton, whether 
-this kind of generic enumeration fits PowerPC well enough.
+We could and should probably add a software counter for hardirqs as 
+wel. That would allow the vector/irqnr information to be passed in, 
+and it would allow architectures without irq metrics in the PMU to 
+have this counter too.
 
-I think from a pure logic/math/physics POV this categorization is 
-pretty complete: a modern co-processor has three fundamental states 
-we are interested in: idle, busy and busy-stalled. It has an 'ops' 
-metric that counts instructions, plus the main operations are add, 
-mul and div.
-
-Cell is i guess a complication to be solved, as there the various 
-vector units have separate decoders and separate thread state. This 
-above abstraction only covers the portion of CPU designs where there 
-are vector operations in the main ALU decoder stream of instructions
-
-One thing that might be worth exposing is vectored loads/stores in 
-general. But we dont have those in the generic ALU enumeration yet 
-and if then it should be done together.
-
-Also, the Nehalem bits need to be tested, i'll try to find time for 
-that.
-
-Good stuff.
+This way we could profile based on a specific interrupt source only 
+- say based on the networking card.
 
 	Ingo
