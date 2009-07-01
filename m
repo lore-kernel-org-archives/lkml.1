@@ -1,117 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZGAQPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753722AbZGAQTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753848AbZGAQPw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZGAQPn
+	id S1753722AbZGAQTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZGAQTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:15:43 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:58003 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZGAQPm (ORCPT
+	Wed, 1 Jul 2009 12:19:05 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48492 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbZGAQTE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:15:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=WfU+9CAOiqfE1XChqJbYYcJfa1irnofHwO4ZyN5bvy69YQzIS7KnJGqVr6SsPX8kIS
-         TPRgUdYvgywLWQso+ceh4bUh8dp7U+NcSe30Btc5S3hpyhJYapGgkOhADTRItA0hcrK1
-         Z/IINGx7sQLIS3DAEorpGY0skZYEa9Gn+IxAg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: wuzhangjin@gmail.com
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-Date: Wed, 1 Jul 2009 18:21:25 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090701-03251-gbe98b01-dirty; KDE/4.2.4; i686; ; )
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <b6a2187b0907010731k510150b5u1c7fce8cbed7c33b@mail.gmail.com> <1246459661.9660.40.camel@falcon>
-In-Reply-To: <1246459661.9660.40.camel@falcon>
+	Wed, 1 Jul 2009 12:19:04 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A4B8C3F.60002@s5r6.in-berlin.de>
+Date: Wed, 01 Jul 2009 18:18:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200907011821.26091.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu>
+In-Reply-To: <20090701140503.GA21185@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009 16:47:41 Wu Zhangjin wrote:
-> On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
-> > On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
-> > 
-> > > I just tried, and it "seems" to work. Will try a few more cycles.
-> > 
-> > STD/STR survived quite a few cycles now. Patch seems to be doing the
-> > right thing.
-> > 
-> > On Mon, Jun 29, 2009 at 11:51 PM, Etienne
-> > Basset<etienne.basset@numericable.fr> wrote:
-> > 
-> > > To have STR/resume work with current git, I have to :
-> > 
-> > > 1) apply Bart's patch
-> > 
-> > This is not yet in Linus's tree. And much needed to really fix the problem.
-> > 
-> > > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-> > 
-> 
-> Yes, This commit must be reverted, otherwise, STD/Hibernation will not
-> work either. I have tested it on two different loongson-based machines:
-> fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
+Theodore Tso wrote:
+> I'll note that many of the modern-day
+> products actually use Linux (i.e., the Sony eReader, the Kindle,
+> etc.
 
-Since it seems like Dave is taking his sweet time with doing the revert
-I stared at the code a bit more and I think that I finally found the bug
-(thanks to your debugging work for giving me the right hint!).
+Many MP3/Video players surely do not run an embedded Linux.
 
-The patch needs to take into the account a new code introduced by the recent
-block layer changes (commit 8f6205cd572fece673da0255d74843680f67f879):
+Besides, it doesn't matter what "many" devices run if the talk is about 
+defaults, or even about ripping the working, proven code out of the 
+mainline.  (Well, that suggestion was absurd.)
 
-@@ -555,8 +560,11 @@ repeat:
-                startstop = start_request(drive, rq);
-                spin_lock_irq(&hwif->lock);
- 
--               if (startstop == ide_stopped)
-+               if (startstop == ide_stopped) {
-+                       rq = hwif->rq;
-+                       hwif->rq = NULL;
-                        goto repeat;
-+               }
-        } else
-                goto plug_device;
- out:
+> The other big user I can think of are digital cameras, but (a)
+> normally most users read from them and then delete the pictures,
 
-and not zero hwif->rq if the device is blocked. 
+I use my SD cards not only in the camera but also as generic mobile 
+storage with laptops and media player.
 
-Could you try the attached patch and see if it fixes the issue?
-
-[ Dave: while I appreciate fast handling of my patches I had strongly
-  suggested giving this particular one some extra testing (because there
-  were a lot of changes in between the time that it has been tested
-  against other kernel subsystems).  Yet, it seems that its linux-next
-  exposure was minimal at best..  :( ]
-
----
- drivers/ide/ide-io.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -532,7 +532,8 @@ repeat:
- 
- 		if (startstop == ide_stopped) {
- 			rq = hwif->rq;
--			hwif->rq = NULL;
-+			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
-+				hwif->rq = NULL;
- 			goto repeat;
- 		}
- 	} else
+There is no way for software to detect that a medium is going to be used 
+with a 8.3-only device exclusively.
+-- 
+Stefan Richter
+-=====-==--= -=== ----=
+http://arcgraph.de/sr/
