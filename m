@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZGANIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZGANL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbZGANIT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZGANIA
+	id S1753125AbZGANL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZGANLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:08:00 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:47785 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752257AbZGANIA (ORCPT
+	Wed, 1 Jul 2009 09:11:48 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45062 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZGANLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:08:00 -0400
-Date: Wed, 1 Jul 2009 21:07:58 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCH] net: fix race in the receive/select
-Message-ID: <20090701130758.GA2428@gondor.apana.org.au>
-References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au> <20090701062732.GK6760@one.firstfloor.org> <20090701070332.GA31103@gondor.apana.org.au> <20090701072226.GN6760@one.firstfloor.org> <20090701083144.GA31863@gondor.apana.org.au> <20090701084430.GC4769@jolsa.lab.eng.brq.redhat.com> <20090701105852.GA925@gondor.apana.org.au>
-MIME-Version: 1.0
+	Wed, 1 Jul 2009 09:11:47 -0400
+Date: Wed, 1 Jul 2009 15:11:46 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
+Message-ID: <20090701131146.GR6760@one.firstfloor.org>
+References: <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org> <20090701064250.GM6760@one.firstfloor.org> <4A4B38C5.1070504@kernel.org> <20090701122312.GP6760@one.firstfloor.org> <4A4B5C32.1010009@kernel.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090701105852.GA925@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A4B5C32.1010009@kernel.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 06:58:52PM +0800, Herbert Xu wrote:
+On Wed, Jul 01, 2009 at 09:53:06PM +0900, Tejun Heo wrote:
+> It would be nice to have something to test cpu on/offlining
+> automatically.  Something which keeps bringing cpus up and down as the
+> system goes through stress testing.
+
+That's an trivial shell script using echo into sysfs files. It doesn't
+seem to be widely done (the last time I tried it I promptly ran
+into some RCU bug). You need a large enough machine for it.
+
+But most stress testing does not actually have good code coverage 
+in my experience. It just runs the same small set of core code all over 
+(you can check now, kernel gcov is finally in)
+
+The tricky part is to actually test the code you want to test.
+
+> > ending up with lots of badly tested code is to:
 > 
-> It would be good to know whether this bug occurs on the upstream
-> kernel because as it stands, the patch is a no-op for the upstream
-> kernel on x86-64.
+> But I don't think it would be that drastic.  Most users are quite
+> simple.
 
-I take that back.  Andi, please look at section 8.2.3.4 of the
-IA-32 Architectures Software Developer's Manual Volume 3A, "Loads
-May Be Reordered with Earlier Stores to Different Locations.
-This seems to be exactly the scenario that we have here, and shows
-why mfence is required.
+But how do you test them properly?  And educate
+the driver writers?  Also it would likely increase code sizes drastically.
 
-In our case, we're doing
+Philosophically I think code like that should be a simple
+operation and turning all the per cpu init code into
+callbacks is not simple. That makes everything more error prone.
 
-CPU1					CPU2
-Write data ready			Add ourselves to wait queue
-Read wait queue to notify		Check data ready
+And it's imho unclear if that is all worth it just to avoid 
+wasting some memory in the "256 possible CPUs" case (which 
+I doubt is particularly realistic anyways, at least I don't
+know of any Hypervisor today that scales to 256 CPUs)
 
-Cheers,
+-Andi
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+ak@linux.intel.com -- Speaking for myself only.
