@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932803AbZGABYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761825AbZGABU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932803AbZGABYL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762743AbZGABFq
+	id S1761825AbZGABU7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbZGAAtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:05:46 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48914 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762454AbZGABFo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:05:44 -0400
-Date: Wed, 1 Jul 2009 10:04:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Menage <menage@google.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cgroup: exlclude release rmdir
-Message-Id: <20090701100412.d59122d9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <6599ad830906301727wcb6b292uc3c46451f8844392@mail.gmail.com>
-References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090630180344.d7274644.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830906300215q56bda5ccnc99862211dc65289@mail.gmail.com>
-	<20090630182304.8049039c.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830906300918i3e3f8611r6d6fb7873c720c70@mail.gmail.com>
-	<20090701084037.2c3f53f7.nishimura@mxp.nes.nec.co.jp>
-	<20090701090959.4cbdb03e.kamezawa.hiroyu@jp.fujitsu.com>
-	<6599ad830906301727wcb6b292uc3c46451f8844392@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 30 Jun 2009 20:49:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43818 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932192AbZGAAtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:49:03 -0400
+Message-ID: <4A4AB24F.6050707@kernel.org>
+Date: Wed, 01 Jul 2009 09:48:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, linux-arch@vger.kernel.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
+ lpage NUMA support
+References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <20090630224018.GJ6760@one.firstfloor.org>
+In-Reply-To: <20090630224018.GJ6760@one.firstfloor.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 00:48:18 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009 17:27:02 -0700
-Paul Menage <menage@google.com> wrote:
+Hello, Andi.
 
-> It only looks "cosmeticized" because of the evolution of your fix. The
-> first patch added a new function that exposed internal details of
-> cgroups, and the second patch removes the addition in favour of a
-> different new function that doesn't expose internal details as much; a
-> single patch that just adds the simpler new function is easier to
-> judge as intuitively correct (separately from Daisuke's testing) than
-> one that exposes more internal details.
+Andi Kleen wrote:
+>> How would you allow that guest to stay on 2 virtual CPUs but still 
+>> be able to hot-plug many other CPUs if the guest context rises above 
+>> its original CPU utilization?
 > 
-ok, I'll post again.
-
-BTW, do you have patches for NOOP/signal cgroup we discussed a half year ago ?
-
-Thanks,
--Kame
-
-> Paul
+> (unless you're planning to rewrite lots of possible cpu users all over
+> the tree) -- the only way is to keep the percpu area small and preallocate. 
 > 
+> As long as the per cpu data size stays reasonable (not more than a 100-200k)
+> that's very doable. It probably won't work with 4096 guest CPUs without
+> wasting too much memory, but then I don't think we have any Hypervisor
+> that scales to that many CPUs anyways, so it's not the biggest
+> concern. For the 128CPU case it works (although i might need
+> to enlarge vmalloc area a bit on 32bit) 
 
+I don't see much reason why we should put artificial limit on how much
+percpu memory could be used.  For lockdep, that much of percpu memory
+is actually necessary.  Another layer of indirection surely can lessen
+the pressure on the generic percpu implementation but the problem can
+be solved by the generic code without too much difficulty.
+
+Thanks.
+
+-- 
+tejun
