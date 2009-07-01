@@ -1,288 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbZGADgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbZGADiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760136AbZGADgH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 23:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758287AbZGADfW
+	id S1760236AbZGADiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 23:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbZGADiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 23:35:22 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:56142 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788AbZGADfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 23:35:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=UZQYg/xLpTBOcrFEPrZmHF0+69tJGzrDNBRJ/diWGqgFYyHkEz9SJ2+NnqiTcQwzfe
-         LfNyeW8ONUDXsuwMR/rFZRjm5s4BIZz2Rp76UC+kek6T+SlvH8kFjLbYGY7DQLc6kGLm
-         qYw4Tt4sng83lIAa6ztSPbgHiGOtdpbU+Nfwk=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 3/3] perfcounter: Various fixes for callchains
-Date: Wed,  1 Jul 2009 05:35:15 +0200
-Message-Id: <1246419315-9968-4-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1246419315-9968-1-git-send-email-fweisbec@gmail.com>
-References: <1246419315-9968-1-git-send-email-fweisbec@gmail.com>
+	Tue, 30 Jun 2009 23:38:08 -0400
+Received: from mga09.intel.com ([134.134.136.24]:33911 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751915AbZGADiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 23:38:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,320,1243839600"; 
+   d="scan'208";a="426723333"
+Subject: Re: +
+	memory-hotplug-alloc-page-from-other-node-in-memory-online.patch	added to
+	-mm tree
+From: yakui <yakui.zhao@intel.com>
+To: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>
+In-Reply-To: <20090701025558.GA28524@sli10-desk.sh.intel.com>
+References: <200906291949.n5TJnuov028806@imap1.linux-foundation.org>
+	 <alpine.DEB.1.10.0906291804340.21956@gentwo.org>
+	 <20090630004735.GA21254@sli10-desk.sh.intel.com>
+	 <20090701025558.GA28524@sli10-desk.sh.intel.com>
+Content-Type: text/plain
+Date: Wed, 01 Jul 2009 11:39:03 +0800
+Message-Id: <1246419543.18688.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The symbol resolving has of course revealed some bugs
-in the callchain tree handling.
-This patch fixes some of them, including:
+On Wed, 2009-07-01 at 10:55 +0800, Li, Shaohua wrote:
+> On Tue, Jun 30, 2009 at 08:47:35AM +0800, Shaohua Li wrote:
+> > On Tue, Jun 30, 2009 at 06:07:16AM +0800, Christoph Lameter wrote:
+> > > On Mon, 29 Jun 2009, akpm@linux-foundation.org wrote:
+> > > 
+> > > > To initialize hotadded node, some pages are allocated.  At that time, the
+> > > > node hasn't memory, this makes the allocation always fail.  In such case,
+> > > > let's allocate pages from other nodes.
+> > > 
+> > > Thats bad. Could you populate the buddy list with some large pages from
+> > > the  beginning of the node instead of doing this special casing? The
+> > > vmemmap and other stuff really should come from the node that is added.
+> > > Otherwise off node memory accesses will occur constantly for processors on
+> > > that node.
+> > Ok, this is preferred. But the node hasn't any memory present at that time,
+> > let me check how could we do it.
+> Hi Christoph,
+> Looks this is quite hard. Memory of the node isn't added into buddy. At that
+> time (sparse-vmmem init) buddy for the node isn't initialized and even page struct
+> for the hotadded memory isn't prepared too. We need something like bootmem
+> allocator to get memory ...
+Agree with what Shaohua said.
+If we can't allocate memory from other node when there is no memory on
+this node, we will have to do something like the bootmem allocator.
+After the memory page is added to the system memory, we will have to
+free the memory space used by the memory allocator. At the same time we
+will have to assure that the hot-plugged memory exists physically. 
 
-- inherit the children from the parents while splitting a node
-- fix list range moving
-- fix indexes setting in callchains
-- create a child on the current node if the path doesn't match in
-  the existent children (was only done on the root)
-- compare using symbols when possible so that we can match a function
-  using any ip inside by referring to its start address.
-
-The practical effects are
-
-- remove double callchains
-- fix upside down or any random order of callchains
-- fix wrong paths
-- fix bad hits and percentage accounts
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- tools/perf/util/callchain.c |  122 +++++++++++++++++++++++++++++++-----------
- 1 files changed, 90 insertions(+), 32 deletions(-)
-
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 6568cb1..440db12 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -4,6 +4,9 @@
-  * Handle the callchains from the stream in an ad-hoc radix tree and then
-  * sort them in an rbtree.
-  *
-+ * Using a radix for code path provides a fast retrieval and factorizes
-+ * memory use. Also that lets us use the paths in a hierarchical graph view.
-+ *
-  */
- 
- #include <stdlib.h>
-@@ -14,7 +17,8 @@
- #include "callchain.h"
- 
- 
--static void rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
-+static void
-+rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
- {
- 	struct rb_node **p = &root->rb_node;
- 	struct rb_node *parent = NULL;
-@@ -49,7 +53,12 @@ void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
- 		rb_insert_callchain(rb_root, node);
- }
- 
--static struct callchain_node *create_child(struct callchain_node *parent)
-+/*
-+ * Create a child for a parent. If inherit_children, then the new child
-+ * will become the new parent of it's parent children
-+ */
-+static struct callchain_node *
-+create_child(struct callchain_node *parent, bool inherit_children)
- {
- 	struct callchain_node *new;
- 
-@@ -61,14 +70,27 @@ static struct callchain_node *create_child(struct callchain_node *parent)
- 	new->parent = parent;
- 	INIT_LIST_HEAD(&new->children);
- 	INIT_LIST_HEAD(&new->val);
-+
-+	if (inherit_children) {
-+		struct callchain_node *next;
-+
-+		list_splice(&parent->children, &new->children);
-+		INIT_LIST_HEAD(&parent->children);
-+
-+		list_for_each_entry(next, &new->children, brothers)
-+			next->parent = new;
-+	}
- 	list_add_tail(&new->brothers, &parent->children);
- 
- 	return new;
- }
- 
-+/*
-+ * Fill the node with callchain values
-+ */
- static void
--fill_node(struct callchain_node *node, struct ip_callchain *chain, int start,
--	  struct symbol **syms)
-+fill_node(struct callchain_node *node, struct ip_callchain *chain,
-+	  int start, struct symbol **syms)
- {
- 	int i;
- 
-@@ -84,54 +106,80 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain, int start,
- 		call->sym = syms[i];
- 		list_add_tail(&call->list, &node->val);
- 	}
--	node->val_nr = i - start;
-+	node->val_nr = chain->nr - start;
-+	if (!node->val_nr)
-+		printf("Warning: empty node in callchain tree\n");
- }
- 
--static void add_child(struct callchain_node *parent, struct ip_callchain *chain,
--		      struct symbol **syms)
-+static void
-+add_child(struct callchain_node *parent, struct ip_callchain *chain,
-+	  int start, struct symbol **syms)
- {
- 	struct callchain_node *new;
- 
--	new = create_child(parent);
--	fill_node(new, chain, parent->val_nr, syms);
-+	new = create_child(parent, false);
-+	fill_node(new, chain, start, syms);
- 
- 	new->hit = 1;
- }
- 
-+/*
-+ * Split the parent in two parts (a new child is created) and
-+ * give a part of its callchain to the created child.
-+ * Then create another child to host the given callchain of new branch
-+ */
- static void
- split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
--		struct callchain_list *to_split, int idx, struct symbol **syms)
-+		struct callchain_list *to_split, int idx_parents, int idx_local,
-+		struct symbol **syms)
- {
- 	struct callchain_node *new;
-+	struct list_head *old_tail;
-+	int idx_total = idx_parents + idx_local;
- 
- 	/* split */
--	new = create_child(parent);
--	list_move_tail(&to_split->list, &new->val);
--	new->hit = parent->hit;
--	parent->hit = 0;
--	parent->val_nr = idx;
-+	new = create_child(parent, true);
-+
-+	/* split the callchain and move a part to the new child */
-+	old_tail = parent->val.prev;
-+	list_del_range(&to_split->list, old_tail);
-+	new->val.next = &to_split->list;
-+	new->val.prev = old_tail;
-+	to_split->list.prev = &new->val;
-+	old_tail->next = &new->val;
- 
--	/* create the new one */
--	add_child(parent, chain, syms);
-+	/* split the hits */
-+	new->hit = parent->hit;
-+	new->val_nr = parent->val_nr - idx_local;
-+	parent->val_nr = idx_local;
-+
-+	/* create a new child for the new branch if any */
-+	if (idx_total < chain->nr) {
-+		parent->hit = 0;
-+		add_child(parent, chain, idx_total, syms);
-+	} else {
-+		parent->hit = 1;
-+	}
- }
- 
- static int
- __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	       int start, struct symbol **syms);
- 
--static int
-+static void
- __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
--			struct symbol **syms)
-+			struct symbol **syms, int start)
- {
- 	struct callchain_node *rnode;
- 
- 	/* lookup in childrens */
- 	list_for_each_entry(rnode, &root->children, brothers) {
--		int ret = __append_chain(rnode, chain, root->val_nr, syms);
-+		int ret = __append_chain(rnode, chain, start, syms);
- 		if (!ret)
--			return 0;
-+			return;
- 	}
--	return -1;
-+	/* nothing in children, add to the current node */
-+	add_child(root, chain, start, syms);
- }
- 
- static int
-@@ -142,14 +190,22 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	int i = start;
- 	bool found = false;
- 
--	/* lookup in the current node */
-+	/*
-+	 * Lookup in the current node
-+	 * If we have a symbol, then compare the start to match
-+	 * anywhere inside a function.
-+	 */
- 	list_for_each_entry(cnode, &root->val, list) {
--		if (cnode->ip != chain->ips[i++])
-+		if (i == chain->nr)
-+			break;
-+		if (cnode->sym && syms[i]) {
-+			if (cnode->sym->start != syms[i]->start)
-+				break;
-+		} else if (cnode->ip != chain->ips[i])
- 			break;
- 		if (!found)
- 			found = true;
--		if (i == chain->nr)
--			break;
-+		i++;
- 	}
- 
- 	/* matches not, relay on the parent */
-@@ -157,23 +213,25 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		return -1;
- 
- 	/* we match only a part of the node. Split it and add the new chain */
--	if (i < root->val_nr) {
--		split_add_child(root, chain, cnode, i, syms);
-+	if (i - start < root->val_nr) {
-+		split_add_child(root, chain, cnode, start, i - start, syms);
- 		return 0;
- 	}
- 
- 	/* we match 100% of the path, increment the hit */
--	if (i == root->val_nr) {
-+	if (i - start == root->val_nr && i == chain->nr) {
- 		root->hit++;
- 		return 0;
- 	}
- 
--	return __append_chain_children(root, chain, syms);
-+	/* We match the node and still have a part remaining */
-+	__append_chain_children(root, chain, syms, i);
-+
-+	return 0;
- }
- 
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms)
- {
--	if (__append_chain_children(root, chain, syms) == -1)
--		add_child(root, chain, syms);
-+	__append_chain_children(root, chain, syms, 0);
- }
--- 
-1.6.2.3
+thanks.
+   Yakui
 
