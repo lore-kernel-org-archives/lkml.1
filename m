@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763177AbZGAAqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763450AbZGAAqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763177AbZGAAqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761156AbZGAAd1
+	id S1763450AbZGAAqw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761177AbZGAAd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Jun 2009 20:33:27 -0400
-Received: from kroah.org ([198.145.64.141]:59926 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:59929 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761126AbZGAAdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:33:25 -0400
+	id S1761145AbZGAAd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:33:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:54 2009
-Message-Id: <20090701001554.157008086@mini.kroah.org>
+Message-Id: <20090701001554.377000070@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:29 -0700
+Date: Tue, 30 Jun 2009 17:14:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Mikulas Patocka <mpatocka@redhat.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 33/35] dm mpath: validate table argument count
+Subject: [patch 34/35] dm mpath: validate hw_handler argument count
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=dm-mpath-validate-table-argument-count.patch
+Content-Disposition: inline; filename=dm-mpath-validate-hw_handler-argument-count.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,38 +33,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 0e0497c0c017664994819f4602dc07fd95896c52 upstream.
+commit e094f4f15f5169526c7200b9bde44b900548a81e upstream.
 
-The parser reads the argument count as a number but doesn't check that
-sufficient arguments are supplied. This command triggers the bug:
-
-dmsetup create mpath --table "0 `blockdev --getsize /dev/mapper/cr0`
-    multipath 0 0 2 1 round-robin 1000 0 1 1 /dev/mapper/cr0
-    round-robin 0 1 1 /dev/mapper/cr1 1000"
-kernel BUG at drivers/md/dm-mpath.c:530!
+Fix arg count parsing error in hw handlers.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-mpath.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/md/dm-mpath.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
 --- a/drivers/md/dm-mpath.c
 +++ b/drivers/md/dm-mpath.c
-@@ -554,6 +554,12 @@ static int parse_path_selector(struct ar
- 		return -EINVAL;
- 	}
+@@ -706,6 +706,11 @@ static int parse_hw_handler(struct arg_s
+ 	if (!hw_argc)
+ 		return 0;
  
-+	if (ps_argc > as->argc) {
-+		dm_put_path_selector(pst);
-+		ti->error = "not enough arguments for path selector";
++	if (hw_argc > as->argc) {
++		ti->error = "not enough arguments for hardware handler";
 +		return -EINVAL;
 +	}
 +
- 	r = pst->create(&pg->ps, ps_argc, as->argv);
- 	if (r) {
- 		dm_put_path_selector(pst);
+ 	m->hw_handler_name = kstrdup(shift(as), GFP_KERNEL);
+ 	request_module("scsi_dh_%s", m->hw_handler_name);
+ 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
 
 
