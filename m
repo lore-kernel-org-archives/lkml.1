@@ -1,101 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZGAN1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZGANaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755237AbZGAN1F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZGAN0y
+	id S1753997AbZGANaV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZGANaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:26:54 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:43625 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752239AbZGAN0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:26:53 -0400
-Subject: Re: [patch] buildfix ppc randconfig
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       sachinp <sachinp@linux.vnet.ibm.com>,
-       balbir <balbir@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200906190535.35138.david-b@pacbell.net>
-References: <200906190535.35138.david-b@pacbell.net>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 01 Jul 2009 18:56:04 +0530
-Message-Id: <1246454764.6978.60.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 09:30:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38883 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751983AbZGANaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:30:06 -0400
+Date: Wed, 1 Jul 2009 16:30:07 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: [PATCH v5] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090701133007.GC27539@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg/David,
+KVM would like to provide x2APIC interface to a guest without emulating
+interrupt remapping device. The reason KVM prefers guest to use x2APIC
+is that x2APIC interface is better virtualizable and provides better
+performance than mmio xAPIC interface:
+    
+- msr exits are faster than mmio (no page table walk, emulation)
+- no need to read back ICR to look at the busy bit
+- one 64 bit ICR write instead of two 32 bit writes
+- shared code with the Hyper-V paravirt interface
+    
+Included patch changes x2APIC enabling logic to enable it even if IR
+initialization failed, but kernel runs under KVM and no apic id is
+greater than 255 (if there is one spec requires BIOS to move to x2apic
+mode before starting an OS).
 
-Has this been checked in? I am not sure if i know this.
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
-Regards--
-Subrata
+This version does not rely on x2apic_preenabled to determine max APIC id
+since this logic will break after kexec. Use max_physical_apicid instead.
+Also allow to override apic ops after call to enable_IR_x2apic() since
+we may decide to use physical mode instead of cluster.
 
-On Fri, 2009-06-19 at 05:35 -0700, David Brownell wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> We could just make the USB_OHCI_HCD_PPC_OF option implicit
-> and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
-> and USB_OHCI_HCD_PPC_OF_LE are set.
-> 
-> [ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Tested-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> ---
->  drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
->  1 file changed, 15 insertions(+), 14 deletions(-)
-> 
-> --- a/drivers/usb/host/Kconfig
-> +++ b/drivers/usb/host/Kconfig
-> @@ -181,26 +181,27 @@ config USB_OHCI_HCD_PPC_SOC
->  	  Enables support for the USB controller on the MPC52xx or
->  	  STB03xxx processor chip.  If unsure, say Y.
-> 
-> -config USB_OHCI_HCD_PPC_OF
-> -	bool "OHCI support for PPC USB controller on OF platform bus"
-> -	depends on USB_OHCI_HCD && PPC_OF
-> -	default y
-> -	---help---
-> -	  Enables support for the USB controller PowerPC present on the
-> -	  OpenFirmware platform bus.
-> -
->  config USB_OHCI_HCD_PPC_OF_BE
-> -	bool "Support big endian HC"
-> -	depends on USB_OHCI_HCD_PPC_OF
-> -	default y
-> +	bool "OHCI support for OF platform bus (big endian)"
-> +	depends on USB_OHCI_HCD && PPC_OF
->  	select USB_OHCI_BIG_ENDIAN_DESC
->  	select USB_OHCI_BIG_ENDIAN_MMIO
-> +	---help---
-> +	  Enables support for big-endian USB controllers present on the
-> +	  OpenFirmware platform bus.
-> 
->  config USB_OHCI_HCD_PPC_OF_LE
-> -	bool "Support little endian HC"
-> -	depends on USB_OHCI_HCD_PPC_OF
-> -	default n
-> +	bool "OHCI support for OF platform bus (little endian)"
-> +	depends on USB_OHCI_HCD && PPC_OF
->  	select USB_OHCI_LITTLE_ENDIAN
-> +	---help---
-> +	  Enables support for little-endian USB controllers present on the
-> +	  OpenFirmware platform bus.
-> +
-> +config USB_OHCI_HCD_PPC_OF
-> +	bool
-> +	depends on USB_OHCI_HCD && PPC_OF
-> +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
-> 
->  config USB_OHCI_HCD_PCI
->  	bool "OHCI support for PCI-bus USB controllers"
-
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 8c7c042..db0c07f 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -49,6 +49,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/smp.h>
+ #include <asm/mce.h>
++#include <asm/kvm_para.h>
+ 
+ unsigned int num_processors;
+ 
+@@ -1363,52 +1364,74 @@ void enable_x2apic(void)
+ }
+ #endif /* CONFIG_X86_X2APIC */
+ 
+-void __init enable_IR_x2apic(void)
++int __init enable_IR(void)
+ {
+ #ifdef CONFIG_INTR_REMAP
+ 	int ret;
+-	unsigned long flags;
+-	struct IO_APIC_route_entry **ioapic_entries = NULL;
+ 
+ 	ret = dmar_table_init();
+ 	if (ret) {
+ 		pr_debug("dmar_table_init() failed with %d:\n", ret);
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+ 	if (!intr_remapping_supported()) {
+ 		pr_debug("intr-remapping not supported\n");
+-		goto ir_failed;
++		return 0;
+ 	}
+ 
+-
+ 	if (!x2apic_preenabled && skip_ioapic_setup) {
+ 		pr_info("Skipped enabling intr-remap because of skipping "
+ 			"io-apic setup\n");
+-		return;
++		return 0;
+ 	}
+ 
++	if (enable_intr_remapping(x2apic_supported()))
++		return 0;
++
++	pr_info("Enabled Interrupt-remapping\n");
++
++	return 1;
++
++#endif
++	return 0;
++}
++
++void __init enable_IR_x2apic(void)
++{
++	unsigned long flags;
++	struct IO_APIC_route_entry **ioapic_entries = NULL;
++	int ret, x2apic_enabled = 0;
++
+ 	ioapic_entries = alloc_ioapic_entries();
+ 	if (!ioapic_entries) {
+-		pr_info("Allocate ioapic_entries failed: %d\n", ret);
+-		goto end;
++		 pr_info("Allocate ioapic_entries failed\n");
++		 goto out;
+ 	}
+ 
+ 	ret = save_IO_APIC_setup(ioapic_entries);
+ 	if (ret) {
+ 		pr_info("Saving IO-APIC state failed: %d\n", ret);
+-		goto end;
++		goto out;
+ 	}
+ 
+ 	local_irq_save(flags);
+-	mask_IO_APIC_setup(ioapic_entries);
+ 	mask_8259A();
++	mask_IO_APIC_setup(ioapic_entries);
+ 
+-	ret = enable_intr_remapping(x2apic_supported());
+-	if (ret)
+-		goto end_restore;
++	ret = enable_IR();
++	if (!ret) {
++		/* IR is required if x2apic is enabled by BIOS even
++		 * when running in kvm since this indicates present
++		 * of APIC ID > 255 */
++	       	if (max_physical_apicid > 255 || !kvm_para_available())
++			goto nox2apic;
++		/* without IR all CPUs can be addressed by IOAPIC/MSI
++		 * only in physical mode */
++		x2apic_phys = 1;
++	}
+ 
+-	pr_info("Enabled Interrupt-remapping\n");
++	x2apic_enabled = 1;
+ 
+ 	if (x2apic_supported() && !x2apic_mode) {
+ 		x2apic_mode = 1;
+@@ -1416,41 +1439,30 @@ void __init enable_IR_x2apic(void)
+ 		pr_info("Enabled x2apic\n");
+ 	}
+ 
+-end_restore:
+-	if (ret)
+-		/*
+-		 * IR enabling failed
+-		 */
++nox2apic:
++	if (!ret) /* IR enabling failed */
+ 		restore_IO_APIC_setup(ioapic_entries);
+-
+ 	unmask_8259A();
+ 	local_irq_restore(flags);
+ 
+-end:
++out:
+ 	if (ioapic_entries)
+ 		free_ioapic_entries(ioapic_entries);
+ 
+-	if (!ret)
++	if (x2apic_enabled)
+ 		return;
+ 
+-ir_failed:
+-	if (x2apic_preenabled)
++	if (x2apic_preenabled) {
++#ifdef CONFIG_INTR_REMAP
+ 		panic("x2apic enabled by bios. But IR enabling failed");
+-	else if (cpu_has_x2apic)
+-		pr_info("Not enabling x2apic,Intr-remapping\n");
+ #else
+-	if (!cpu_has_x2apic)
+-		return;
+-
+-	if (x2apic_preenabled)
+ 		panic("x2apic enabled prior OS handover,"
+-		      " enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
++				" enable CONFIG_X86_X2APIC, CONFIG_INTR_REMAP");
+ #endif
+-
+-	return;
++	} else if (cpu_has_x2apic)
++		pr_info("Not enabling x2apic,Intr-remapping\n");
+ }
+ 
+-
+ #ifdef CONFIG_X86_64
+ /*
+  * Detect and enable local APICs on non-SMP boards.
+diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+index bc3e880..f3b1037 100644
+--- a/arch/x86/kernel/apic/probe_64.c
++++ b/arch/x86/kernel/apic/probe_64.c
+@@ -50,11 +50,11 @@ static struct apic *apic_probe[] __initdata = {
+ void __init default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_X2APIC
+-	if (x2apic_mode && (apic != &apic_x2apic_phys &&
++	if (x2apic_mode
+ #ifdef CONFIG_X86_UV
+-		       apic != &apic_x2apic_uv_x &&
++		       && apic != &apic_x2apic_uv_x
+ #endif
+-		       apic != &apic_x2apic_cluster)) {
++		       ) {
+ 		if (x2apic_phys)
+ 			apic = &apic_x2apic_phys;
+ 		else
+--
+			Gleb.
