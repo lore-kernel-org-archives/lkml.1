@@ -1,45 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbZGAN6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755551AbZGAN7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbZGAN6d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZGAN60
+	id S1755551AbZGAN7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZGAN7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:58:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51332 "EHLO mx2.redhat.com"
+	Wed, 1 Jul 2009 09:59:03 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:52140 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbZGAN60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:58:26 -0400
-Date: Wed, 1 Jul 2009 15:55:44 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: wait_task_zombie plus WNOWAIT question
-Message-ID: <20090701135544.GA24374@redhat.com>
-References: <87eit0h66p.wl%vmayatsk@redhat.com>
+	id S1753542AbZGAN7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:59:03 -0400
+Message-ID: <4A4B6B90.90006@atmel.com>
+Date: Wed, 01 Jul 2009 15:58:40 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87eit0h66p.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: dan.j.williams@intel.com, maciej.sosnowski@intel.com
+CC: Nicolas Ferre <nicolas.ferre@atmel.com>, avictor.za@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel
+ AHB DMA Controller
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
+In-Reply-To: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01, Vitaly Mayatskikh wrote:
->
-> I'm working on (sigh) next version of wait_task_* cleanups and stuck
-> in wait_task_zombie. I'm trying to move put_user(stat, wo->wo_stat)
-> code from all wait_task_* functions to common place, but
-> wait_task_zombie does not fill wo_stat if WNOWAIT flag is set
+Hi,
 
-Only waitid() can use WNOWAIT, and in this case ->wo_stat == NULL.
+Just one question Dan (see below).
 
-> and does
-> it w/o that flag. Is it done so by design, or I can make
-> user-visible change and add put_user in WNOWAIT path?
+Nicolas Ferre :
+> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+> at91sam9rl chip. It will be used on other products in the future.
 
-Just check do not do put_user(->wo_stat) if it is NULL in do_wait
-pathes.
+[..]
 
-Oleg.
+> +/**
+> + * atc_chain_complete - finish work for one transaction chain
+> + * @atchan: channel we work on
+> + * @desc: descriptor at the head of the chain we want do complete
+> + *
+> + * Called with atchan->lock held and bh disabled */
+> +static void
+> +atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
+> +{
+> +	dma_async_tx_callback		callback;
+> +	void				*param;
+> +	struct dma_async_tx_descriptor	*txd = &desc->txd;
+> +
+> +	dev_vdbg(chan2dev(&atchan->chan_common),
+> +		"descriptor %u complete\n", txd->cookie);
+> +
+> +	atchan->completed_cookie = txd->cookie;
+> +	callback = txd->callback;
+> +	param = txd->callback_param;
+> +
+> +	/* move children to free_list */
+> +	list_splice_init(&txd->tx_list, &atchan->free_list);
+> +	/* move myself to free_list */
+> +	list_move(&desc->desc_node, &atchan->free_list);
+> +
+> +	/*
+> +	 * We use dma_unmap_page() regardless of how the buffers were
+> +	 * mapped before they were submitted...
+> +	 */
+> +	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP))
+> +		dma_unmap_page(chan2parent(&atchan->chan_common), desc->lli.daddr,
+> +				desc->len, DMA_FROM_DEVICE);
+> +	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP))
+> +		dma_unmap_page(chan2parent(&atchan->chan_common), desc->lli.saddr,
+> +				desc->len, DMA_TO_DEVICE);
+> +
+> +	/*
+> +	 * The API requires that no submissions are done from a
+> +	 * callback, so we don't need to drop the lock here
+> +	 */
+> +	if (callback)
+> +		callback(param);
+
+Even if our dma controller does not seems to take advantage of
+dependency requests...
+
+...should I add the
+dma_run_dependencies(txd);
+call here to improve conformance to dmaengine standards ?
+
+As you advice Atsushi Nemoto to do so, I was wondering if I have to do
+the same.
+
+Thanks for your help.
+-- 
+Nicolas Ferre
 
