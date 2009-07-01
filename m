@@ -1,79 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZGAJIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZGAJI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbZGAJIn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbZGAJIf
+	id S1755273AbZGAJI4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZGAJIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:08:35 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:54766 "EHLO crca.org.au"
+	Wed, 1 Jul 2009 05:08:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57663 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754048AbZGAJIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:08:34 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4A4B27D0.8020906@crca.org.au>
-Date: Wed, 01 Jul 2009 19:09:36 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	id S1755472AbZGAJIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:08:44 -0400
+Date: Wed, 1 Jul 2009 08:47:33 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, ananth@in.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, jkenisto@us.ibm.com, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org, jkenisto@us.ibm.com, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+In-Reply-To: <20090630210814.17851.64651.stgit@localhost.localdomain>
+References: <20090630210814.17851.64651.stgit@localhost.localdomain>
+Subject: [tip:tracing/core] kprobes: Clean up insn_pages by using list instead of hlist
+Message-ID: <tip-c5cb5a2d8d7dc872cf1504091ad0e59fe5ff7cb5@git.kernel.org>
+Git-Commit-ID: c5cb5a2d8d7dc872cf1504091ad0e59fe5ff7cb5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
-CC: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
-       Rafael Wysocki <rjw@sisk.pl>
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by
- encrypting page cache
-References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au> <87d48k2992.fsf@jeremyms.com>
-In-Reply-To: <87d48k2992.fsf@jeremyms.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:47:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again.
+Commit-ID:  c5cb5a2d8d7dc872cf1504091ad0e59fe5ff7cb5
+Gitweb:     http://git.kernel.org/tip/c5cb5a2d8d7dc872cf1504091ad0e59fe5ff7cb5
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Tue, 30 Jun 2009 17:08:14 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Jul 2009 10:43:41 +0200
 
-Jeremy Maitin-Shepard wrote:
-> Nigel Cunningham <ncunningham@crca.org.au> writes:
-> 
->> Hi Jeremy.
->> I'd suggest emailing the Linux-PM list rather than tuxonice-devel.
->> TuxOnIce devel focuses on the out-of-vanilla suspend to disk
->> enhancements rather than on suspend to ram.
-> 
-> The Linux-PM list is a good suggestion, but I specifically included
-> tuxonice because of the note at the bottom --- namely that I believe
-> that tuxonice in particular already includes support for much of what is
-> needed to implement the idea.
+kprobes: Clean up insn_pages by using list instead of hlist
 
-Ah, sorry. I read too quickly.
+Use struct list instead of struct hlist for managing
+insn_pages, because insn_pages doesn't use hash table.
 
-> Specifically, suppose right at the stage in tuxonice hibernation when
-> the kernel as about to write the page cache pages to disk, it instead
-> just encrypts in place those pages, clears the encryption key, then
-> waits for the userspace helper to pass it back the key again to use to
-> decrypt the pages.
-> 
-> In fact it would seems that actually entering S3 is mostly irrelevant in
-> terms of the implementation.
-> 
-> Tuoxnice already has code to deal with interfacing with a userspace
-> helper that is kept unfrozen (and its pages handled specially) while
-> everything else is frozen and the page cache is overwritten, which is
-> precisely what is needed for this idea.  In particular, it seems that an
-> implementation of the idea I proposed would look a lot like tuxonice
-> with a powerdown mode of entering S3, just that instead of writing the
-> page cache to disk, it is encrypted in place.  I suppose it could well be that
-> all of the facilities used by tuxonice to do this are actually already
-> in the kernel, in which case it is indeed not relevant to tuxonice, but
-> it is not clear that the uswsusp infrastructure has everything that is
-> needed.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+LKML-Reference: <20090630210814.17851.64651.stgit@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-You're absolutely right - TuxOnIce could be modified to do that, quite
-easily.
 
-As far as the possibility of using uswsusp goes, I'd like to get
-Rafael's input there - he knows it much better than I do (explicitly
-adding him to the ccs).
+---
+ kernel/kprobes.c |   30 +++++++++++-------------------
+ 1 files changed, 11 insertions(+), 19 deletions(-)
 
-Regards,
-
-Nigel
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 16b5739..6fe9dc6 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -103,7 +103,7 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+ #define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+ 
+ struct kprobe_insn_page {
+-	struct hlist_node hlist;
++	struct list_head list;
+ 	kprobe_opcode_t *insns;		/* Page of instruction slots */
+ 	char slot_used[INSNS_PER_PAGE];
+ 	int nused;
+@@ -117,7 +117,7 @@ enum kprobe_slot_state {
+ };
+ 
+ static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
+-static struct hlist_head kprobe_insn_pages;
++static LIST_HEAD(kprobe_insn_pages);
+ static int kprobe_garbage_slots;
+ static int collect_garbage_slots(void);
+ 
+@@ -152,10 +152,9 @@ loop_end:
+ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+ {
+ 	struct kprobe_insn_page *kip;
+-	struct hlist_node *pos;
+ 
+  retry:
+-	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
++	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+ 		if (kip->nused < INSNS_PER_PAGE) {
+ 			int i;
+ 			for (i = 0; i < INSNS_PER_PAGE; i++) {
+@@ -189,8 +188,8 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+ 		kfree(kip);
+ 		return NULL;
+ 	}
+-	INIT_HLIST_NODE(&kip->hlist);
+-	hlist_add_head(&kip->hlist, &kprobe_insn_pages);
++	INIT_LIST_HEAD(&kip->list);
++	list_add(&kip->list, &kprobe_insn_pages);
+ 	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+@@ -219,12 +218,8 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 		 * so as not to have to set it up again the
+ 		 * next time somebody inserts a probe.
+ 		 */
+-		hlist_del(&kip->hlist);
+-		if (hlist_empty(&kprobe_insn_pages)) {
+-			INIT_HLIST_NODE(&kip->hlist);
+-			hlist_add_head(&kip->hlist,
+-				       &kprobe_insn_pages);
+-		} else {
++		if (!list_is_singular(&kprobe_insn_pages)) {
++			list_del(&kip->list);
+ 			module_free(NULL, kip->insns);
+ 			kfree(kip);
+ 		}
+@@ -235,14 +230,13 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 
+ static int __kprobes collect_garbage_slots(void)
+ {
+-	struct kprobe_insn_page *kip;
+-	struct hlist_node *pos, *next;
++	struct kprobe_insn_page *kip, *next;
+ 
+ 	/* Ensure no-one is preepmted on the garbages */
+ 	if (check_safety())
+ 		return -EAGAIN;
+ 
+-	hlist_for_each_entry_safe(kip, pos, next, &kprobe_insn_pages, hlist) {
++	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
+ 		int i;
+ 		if (kip->ngarbage == 0)
+ 			continue;
+@@ -260,19 +254,17 @@ static int __kprobes collect_garbage_slots(void)
+ void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
+ {
+ 	struct kprobe_insn_page *kip;
+-	struct hlist_node *pos;
+ 
+ 	mutex_lock(&kprobe_insn_mutex);
+-	hlist_for_each_entry(kip, pos, &kprobe_insn_pages, hlist) {
++	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+ 		if (kip->insns <= slot &&
+ 		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+ 			int i = (slot - kip->insns) / MAX_INSN_SIZE;
+ 			if (dirty) {
+ 				kip->slot_used[i] = SLOT_DIRTY;
+ 				kip->ngarbage++;
+-			} else {
++			} else
+ 				collect_one_slot(kip, i);
+-			}
+ 			break;
+ 		}
+ 	}
