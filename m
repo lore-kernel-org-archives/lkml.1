@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZGAVHo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZGAVIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZGAVHo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZGAVHh
+	id S1754181AbZGAVIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZGAVIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:07:37 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:54097 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751046AbZGAVHh (ORCPT
+	Wed, 1 Jul 2009 17:08:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40116 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751046AbZGAVIL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 17:07:37 -0400
-X-IronPort-AV: E=Sophos;i="4.42,328,1243814400"; 
-   d="scan'208";a="208417507"
-From: Roland Dreier <rdreier@cisco.com>
-To: joseph.cihula@intel.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com
-Subject: Re: [RFC v6][PATCH 0a/4] intel_txt: Intel(R) Trusted Execution Technology support for Linux - Overview
-References: <4A4ACA5C.3080609@intel.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 01 Jul 2009 14:07:40 -0700
-In-Reply-To: <4A4ACA5C.3080609@intel.com> (Joseph Cihula's message of "Tue, 30
-	Jun 2009 19:30:52 -0700")
-Message-ID: <adaiqicdsdf.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 01 Jul 2009 21:07:40.0244 (UTC) FILETIME=[F7DC3140:01C9FA8F]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Wed, 1 Jul 2009 17:08:11 -0400
+Date: Wed, 1 Jul 2009 14:07:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org, dhowells@redhat.com
+Subject: Re: [PATCH] FRV: Fix a warning due to an unnecessary #include of an
+ MTD header
+Message-Id: <20090701140705.46481737.akpm@linux-foundation.org>
+In-Reply-To: <20090630212425.19244.37019.stgit@warthog.procyon.org.uk>
+References: <20090630212425.19244.37019.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Jun 2009 22:24:25 +0100
+David Howells <dhowells@redhat.com> wrote:
 
- > Intel TXT has been presented at various events over the past few years,
- > some of which are:
- >      LinuxTAG 2008: 
- > http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?talkid=110
- > 
- >      TRUST2008: 
- > http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-Front-Door-of-Trusted-Computing.pdf
- > 
- >      IDF 2008, Shanghai: 
- > http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/index.html
+> Fix a warning due to an unnecessary #inclusion of linux/mtd/partitions:
+> 
+>   CC      arch/frv/mb93090-mb00/flash.o
+> In file included from arch/frv/mb93090-mb00/flash.c:15:
+> include/linux/mtd/partitions.h:50: warning: 'struct mtd_info' declared inside parameter list
+> include/linux/mtd/partitions.h:50: warning: its scope is only this definition or declaration, which is probably not what you want
+> include/linux/mtd/partitions.h:51: warning: 'struct mtd_info' declared inside parameter list
+> include/linux/mtd/partitions.h:61: warning: 'struct mtd_info' declared inside parameter list
+> include/linux/mtd/partitions.h:67: warning: 'struct mtd_info' declared inside parameter list
 
-I may be doing something stupid, but AFAIK none of these links actually
-work; the trust2008.eu domain seems to be parked now, and the other two
-links are broken.
+hm.  Maybe fix include/linux/mtd/partitions.h?
 
- - R.
+>  arch/frv/mb93090-mb00/flash.c |    1 -
+
+That file isn't in mainline or linux-next afacit.
