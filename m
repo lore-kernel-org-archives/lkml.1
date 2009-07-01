@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZGAJFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZGAJHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbZGAJFe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZGAJFZ
+	id S1755259AbZGAJHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZGAJHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:05:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46568 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754320AbZGAJFZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:05:25 -0400
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX18p3YV1LcUpVUHlsooDkhQB9U7k1obT/wDyf/D0CT
-	AFRLikfpZVOSuV
-From: Peter =?utf-8?q?H=C3=BCwe?= <PeterHuewe@gmx.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] block: adding __init/__exit macros to DAC960.c
-Date: Wed, 1 Jul 2009 11:05:24 +0200
-User-Agent: KMail/1.9.9
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200906121307.29865.PeterHuewe@gmx.de> <200907011054.59988.PeterHuewe@gmx.de> <alpine.LNX.2.00.0907011057570.4994@wotan.suse.de>
-In-Reply-To: <alpine.LNX.2.00.0907011057570.4994@wotan.suse.de>
+	Wed, 1 Jul 2009 05:07:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57629 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752797AbZGAJHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:07:37 -0400
+Date: Wed, 1 Jul 2009 08:46:17 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, anton@samba.org,
+       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, anton@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
+References: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Fix storage size allocation of callchain list
+Message-ID: <tip-9198aa77b69647d1d91207f8075763abe7dc0bf4@git.kernel.org>
+Git-Commit-ID: 9198aa77b69647d1d91207f8075763abe7dc0bf4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200907011105.24761.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:46:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 01 Juli 2009 10:58:46 schrieb Jiri Kosina:
-> On Wed, 1 Jul 2009, Peter Hüwe wrote:
-> Hi Peter,
->
-> I guess you looked into the wrong branch -- it is in 'for-next' branch,
-> see
-> http://git.kernel.org/?p=linux/kernel/git/jikos/trivial.git;a=commit;h=ef59
->a28cbb29dd6ec4fcd59eaacb15ea85adbd2e
+Commit-ID:  9198aa77b69647d1d91207f8075763abe7dc0bf4
+Gitweb:     http://git.kernel.org/tip/9198aa77b69647d1d91207f8075763abe7dc0bf4
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Wed, 1 Jul 2009 05:35:13 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Jul 2009 09:58:23 +0200
+
+perf_counter tools: Fix storage size allocation of callchain list
+
+Fix a confusion while giving the size of a callchain list
+during its allocation. We are using the wrong structure size.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Oh - my fault :) Seems I'm still not familiar enough with git :/
-Thank you for the hint and merging my patch.
+---
+ tools/perf/util/callchain.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Peter
-
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index ad3c285..bbf7813 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -74,7 +74,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain, int start)
+ 	for (i = start; i < chain->nr; i++) {
+ 		struct callchain_list *call;
+ 
+-		call = malloc(sizeof(*chain));
++		call = malloc(sizeof(*call));
+ 		if (!call) {
+ 			perror("not enough memory for the code path tree");
+ 			return;
