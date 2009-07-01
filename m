@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGAIvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZGAIvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZGAIvZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZGAIvR
+	id S1754891AbZGAIvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZGAIvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:51:17 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51478 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZGAIvQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:51:16 -0400
-Subject: [PATCH] xen: Use kcalloc() in xen_init_IRQ()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, lists@nerdbynature.de,
-       jeremy.fitzhardinge@citrix.com
-Date: Wed, 01 Jul 2009 11:51:18 +0300
-Message-Id: <1246438278.22417.28.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 1 Jul 2009 04:51:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55621 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753986AbZGAIvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:51:39 -0400
+Message-ID: <4A4B2406.2020901@redhat.com>
+Date: Wed, 01 Jul 2009 11:53:26 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v7 0/5] irqfd fixes and enhancements
+References: <20090629181954.1886.20225.stgit@dev.haskins.net>
+In-Reply-To: <20090629181954.1886.20225.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On 06/29/2009 09:28 PM, Gregory Haskins wrote:
+> (Applies to kvm.git/master:4631e094)
+>
+> The following is the latest attempt to fix the races in irqfd/eventfd, as
+> well as restore DEASSIGN support.  For more details, please read the patch
+> headers.  I've restored the slow-work variant of the logic as a separate
+> patch (5/5) so we can get a better idea of the true difference between
+> the workqueue approach and the slow-work style.  I am personally in favor
+> of the slow-work approach since it doesnt require a mostly-idle+dedicated
+> thread to hang around.  But that is just me.  5/5 can be ignored, folded
+> in to 3/5+4/5 as appropriate, or merged as is per the whim of Avi et. al.
+>    
 
-The init_IRQ() function is now called with slab allocator initialized.
-Therefore, we must not use the bootmem allocator in xen_init_IRQ().
+I think a good compromise would be to create the workqueue when the 
+first VM is launched.
 
-Fixes the following boot-time warning:
+> As always, this series has been tested against the kvm-eventfd unit test
+> with both 5/5 applied and unapplied, and everything appears to be
+> functioning properly. You can download this test here:
+>
+> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
+>
+> I've included version 4 of Davide's eventfd patch (ported to kvm.git) so
+> that its a complete reviewable series.  Note, however, that there may be
+> later versions of his patch to consider for merging, so we should
+> coordinate with him.
+>    
 
-  ------------[ cut here ]------------
-  WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem+0x27/0x45()
-  Modules linked in:
-  Pid: 0, comm: swapper Not tainted 2.6.30 #1
-  Call Trace:
-   [<ffffffff8102d6e3>] ? warn_slowpath_common+0x73/0xb0
-   [<ffffffff810210d9>] ? pvclock_clocksource_read+0x49/0x90
-   [<ffffffff812e522f>] ? alloc_arch_preferred_bootmem+0x27/0x45
-   [<ffffffff812e5761>] ? ___alloc_bootmem_nopanic+0x39/0xc9
-   [<ffffffff812e57fa>] ? ___alloc_bootmem+0x9/0x2f
-   [<ffffffff812e9e21>] ? xen_init_IRQ+0x25/0x61
-   [<ffffffff812d69ee>] ? start_kernel+0x1b5/0x29e
-  ---[ end trace 4eaa2a86a8e2da22 ]---
+Davide's patch was merged upstream.  Please take a look to make sure 
+this patchset is compatible with what was merged.
 
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Tested-by: Christian Kujau <lists@nerdbynature.de>
-Reported-by: Christian Kujau <lists@nerdbynature.de>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/xen/events.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Patchset looks good to me, but I'd appreciate an ack from Michael (or 
+anyone else who's interested).
 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 891d2e9..abad71b 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -927,9 +927,9 @@ static struct irq_chip xen_dynamic_chip __read_mostly = {
- void __init xen_init_IRQ(void)
- {
- 	int i;
--	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
- 
--	cpu_evtchn_mask_p = alloc_bootmem(size);
-+	cpu_evtchn_mask_p = kcalloc(nr_cpu_ids, sizeof(struct cpu_evtchn_s),
-+				    GFP_KERNEL);
- 	BUG_ON(cpu_evtchn_mask_p == NULL);
- 
- 	init_evtchn_cpu_bindings();
 -- 
-1.5.6.3
+error compiling committee.c: too many arguments to function
 
