@@ -1,143 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbZGAVED@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZGAVHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbZGAVED (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:04:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZGAVDx
+	id S1754338AbZGAVHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZGAVHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:03:53 -0400
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:35034 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753292AbZGAVDw (ORCPT
+	Wed, 1 Jul 2009 17:07:37 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:54097 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZGAVHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 17:03:52 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2S1gXx5r0bzMiypNyHGfaiR09RsDxlm2Sn4dn1mPWSPbU7yr7a2eCH8zpDCFMf12aOM7ErVofbXa82qX+iSe8Y+SxzLKha5BQwO3ssbbD3vPhp0qqsCwCgqDpOQ+5h9bihSNTbEAmasnhWP/1l5IrjBy434xlVvmQVahaNedt5U=  ;
-X-YMail-OSG: NU2YzdgVM1m7S1UsMWTIPlanTVFQnYRVvtNR7PscMWHOwJV4rOQJTIesX0.9V2wdvBu_Vf3nWf.49V0kzuo1VgPSKgtEAGTADuL13pNv8Z2dLhk5tJNtnAJpzh4rjEXRIfHED8eqcuHwt00Z3he7bHg6iMcWLzKxgdIGrcpnz7Y2Hcv4gOICMAfJU6ZV5vfXZqTntgNODy8hviOtEgdWXeiMyJ9mNsbmQ61tEmf6HNNAr6asIKfhisH0ncT.Mlz.TTVU9JysEl53YDXJVKTM.tWS.GIAmVz93SvjfKue6.G7iaLchw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: [RFC PATCH 0/3] GPIO switch framework
-Date: Wed, 1 Jul 2009 14:03:53 -0700
-User-Agent: KMail/1.9.10
-Cc: ext Ben Nizette <bn@niasdigital.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "juha.yrjola@solidboot.com" <juha.yrjola@solidboot.com>
-References: <1237557050-13742-1-git-send-email-ext-jani.1.nikula@nokia.com> <1237703121.2720.39.camel@linux-51e8.site> <1238491138.5936.86.camel@jani-desktop>
-In-Reply-To: <1238491138.5936.86.camel@jani-desktop>
+	Wed, 1 Jul 2009 17:07:37 -0400
+X-IronPort-AV: E=Sophos;i="4.42,328,1243814400"; 
+   d="scan'208";a="208417507"
+From: Roland Dreier <rdreier@cisco.com>
+To: joseph.cihula@intel.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v6][PATCH 0a/4] intel_txt: Intel(R) Trusted Execution Technology support for Linux - Overview
+References: <4A4ACA5C.3080609@intel.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 01 Jul 2009 14:07:40 -0700
+In-Reply-To: <4A4ACA5C.3080609@intel.com> (Joseph Cihula's message of "Tue, 30
+	Jun 2009 19:30:52 -0700")
+Message-ID: <adaiqicdsdf.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907011403.53811.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 01 Jul 2009 21:07:40.0244 (UTC) FILETIME=[F7DC3140:01C9FA8F]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 March 2009, Jani Nikula wrote:
-> Hi Ben, and thanks for your feedback.
-> 
-> On Sun, 2009-03-22 at 07:25 +0100, ext Ben Nizette wrote:
-> > On Fri, 2009-03-20 at 15:50 +0200, Jani Nikula wrote:
-> > > Hi -
-> > > 
-> > > This RFC patchset is a pretty straightforward adaptation of OMAP GPIO
-> > > switch framework for mainline integration.
-> > > 
-> > > The GPIO switch framework allows reporting and changing GPIO switches
-> > > via sysfs, with debouncing and sysfs/in-kernel notifications for input
-> > > switches.
-> > 
-> > OK, so what does this do that /sys/class/gpio/gpioN doesn't currently do
-> > apart from debouncing?  And the output being a string rather than a
-> > simple value (which IMO might be better suited to userspace
-> > interpretation anyway).
-> 
-> In addition to debouncing, there's sysfs and in-kernel notifications.
 
-And you had said off-list you were looking at adding
-some debouncing support to the sysfs hooks.
+ > Intel TXT has been presented at various events over the past few years,
+ > some of which are:
+ >      LinuxTAG 2008: 
+ > http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?talkid=110
+ > 
+ >      TRUST2008: 
+ > http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-Front-Door-of-Trusted-Computing.pdf
+ > 
+ >      IDF 2008, Shanghai: 
+ > http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/index.html
 
+I may be doing something stupid, but AFAIK none of these links actually
+work; the trust2008.eu domain seems to be parked now, and the other two
+links are broken.
 
-> To hide potential changes in hardware from userspace, there's naming of
-> the sysfs entries (e.g. /sys/class/gpio/switch-foo) and a flag for
-> inverting the value.
-
-You've recently sent a patch to do that using the existing
-gpio sysfs support ... it's in the MM tree, although an update
-will remove the BUG_ON calls.
-
-  http://marc.info/?l=linux-kernel&m=124471204121635&w=2
-
-I agree with Ben that string names are better left for userspace
-tools to handle.  (Why limit things to English?)  Same for all
-interpretation -- "0" might mean "open" or "connected" or "on",
-or maybe sometimes it's "1" which means that.
-
-
-> > I've got a patch, little abandoned at the bottom of my queue, which adds
-> > poll(2) compatibility to the gpiolib sysfs entries [1] and extending
-> > this patch to do debouncing as well would be almost trivial.
-> 
-> Your patch certainly looks promising, and indeed overlaps with my work.
-> Debouncing could be easily added, and perhaps symbolic links to provide
-> names for the switches.
-
-And as you know, Daniel Glöckner has an updated version:
-
-  http://marc.info/?l=linux-kernel&m=124463747423885
-
-Looks promising.
-
- 
-> However, if I didn't miss anything, your patch allows setting up the
-> notification through sysfs only, and there's no way of doing it from
-> kernel side. Also, I'd need debounced callback notifications.
-
-That is, in-kernel notifications?  Normally that's what GPIO interrupts
-handle.
-
-Debouncing gets messy, what with hardware support varying so much,
-but presumably some low-bitrate software debounce may serve.  Folk
-have asked for such things in the not-so-distant past.
-
-
-> > I guess what I'm getting at is that this seems like it solves a problem
-> > which has been pretty much solved elsewhere since the OMAP boys wrote
-> > this.
-> 
-> It's been only partially solved by your patch, and as you say yourself,
-> it's still at the bottom of your queue. There's also the gpio-keys
-> (pointed out by Philipp Zabel elsewhere in this thread), but that's
-> input only and lacks in-kernel notifications.
-
-Note that gpio-keys has some minimal debouncing already.
-Maybe not the most effective solution for software debounce
-of GPIOs, but if there's a generalized version of debounce
-then maybe that driver could use it too.
-
-As for the input framework ... stuff like MMC/SD and PCMCIA
-card insert/remove events have not yet been handled through
-that framework, and I think it's very appropriate that an
-MMC host adapter be independent of the input subsystem.  :)
-
-But maybe some of those cases should be handled through small
-shims that can issue the event callbacks to MMC or PCMCIA
-host adapter code based on input events.  The systems you
-work with can assume the input subsystem, I think.
-
-
-> AFAIK the input layer is 
-> also pretty fixed in what can be reported. So I am not convinced this
-> has been solved elsewhere.
-
-Parts of it have been, and in more general ways.  I'm a lot more
-comfortable with the notion of having a solution that's built of
-reusable chunks than having something quite so focussed on what,
-say, only a Nokia tablet needs.  Which seems to be what you're
-thinking lately too, so all is fine.  ;)
-
-- Dave
-
+ - R.
