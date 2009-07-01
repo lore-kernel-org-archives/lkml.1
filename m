@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZGAKaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZGAK2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZGAKaF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 06:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZGAK3z
+	id S1751432AbZGAK2p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 06:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZGAK2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 06:29:55 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:36733 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbZGAK3y (ORCPT
+	Wed, 1 Jul 2009 06:28:35 -0400
+Received: from stinky.trash.net ([213.144.137.162]:54592 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZGAK2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 06:29:54 -0400
-Date: Wed, 1 Jul 2009 15:59:51 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [PATCH 0/10] Fix page_mkwrite() for blocksize < pagesize
-	(version 3)
-Message-ID: <20090701102951.GA23029@skywalker>
-References: <1245088797-29533-1-git-send-email-jack@suse.cz> <20090616143424.GA22002@infradead.org> <20090616144217.GA18063@duck.suse.cz> <20090630174419.GA15102@infradead.org>
+	Wed, 1 Jul 2009 06:28:34 -0400
+Message-ID: <4A4B3A4B.9000502@trash.net>
+Date: Wed, 01 Jul 2009 12:28:27 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630174419.GA15102@infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Andreas Jaggi <aj@open.ch>
+CC: netdev@vger.kernel.org, kuznet@ms2.inr.ac.ru, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, shemminger@osdl.org
+Subject: Re: [PATCH] gre: copy ToS/DiffServ bits to outer IP header
+References: <4A48BC82.6040801@open.ch> <4A48C643.5030709@trash.net> <4A49D55A.4050600@open.ch>
+In-Reply-To: <4A49D55A.4050600@open.ch>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 01:44:19PM -0400, Christoph Hellwig wrote:
-> On Tue, Jun 16, 2009 at 04:42:17PM +0200, Jan Kara wrote:
-> >   Good point, I should have mentioned in the changelog: fsx-linux is able
-> > to trigger the problem quite quickly.
-> >   I have also written a simple program for initial testing of the fix
-> > (works only for 1K blocksize and 4K pagesize) - it's attached.
-> 
-> I haven't been able to trigger anything with it on either xfs or ext4.
-> 
+Andreas Jaggi wrote:
+> Now using the rtnl_link interface.
 
-fsx-linux with ext4 mount option -o nodelalloc.
+Your patches are seriously whitespace-damaged. Please make sure
+to send them properly (test by sending to yourself first).
 
--aneesh
+> diff -urN vanilla-linux-2.6.29.4/include/linux/if_tunnel.h 
+> dev-gre/include/linux/if_tunnel.h
+> --- vanilla-linux-2.6.29.4/include/linux/if_tunnel.h    2009-05-19 
+> 01:52:34.000000000 +0200
+> +++ dev-gre/include/linux/if_tunnel.h    2009-06-30 08:22:52.000000000 
+> +0200
+> @@ -34,6 +34,7 @@
+>     __be32            i_key;
+>     __be32            o_key;
+>     struct iphdr        iph;
+> +    __u8            copy_tos;
+
+You can't change this structure, this will break compatibility.
+
+> };
+> 
+> /* SIT-mode i_flags */
+> @@ -63,6 +64,7 @@
+>     IFLA_GRE_REMOTE,
+>     IFLA_GRE_TTL,
+>     IFLA_GRE_TOS,
+> +    IFLA_GRE_COPY_TOS,
+>     IFLA_GRE_PMTUDISC,
+>     __IFLA_GRE_MAX,
+
+You can't add new attributes in the middle, they need to be added at
+the end.
