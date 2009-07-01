@@ -1,132 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZGALjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZGALkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbZGALjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbZGALjf
+	id S1754580AbZGALkQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZGALkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:39:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48940 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700AbZGALje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:39:34 -0400
-Date: Wed, 1 Jul 2009 13:39:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/6 -tip] perf stat: treat same behaviour for all
-	CYCLES and CLOCKS
-Message-ID: <20090701113915.GG15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam>
+	Wed, 1 Jul 2009 07:40:04 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:56333 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbZGALkD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:40:03 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [microblaze-uclinux] [PATCH 10/11] microblaze: use generic system.h
+Date: Wed, 1 Jul 2009 13:39:55 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: microblaze-uclinux@itee.uq.edu.au, LKML <linux-kernel@vger.kernel.org>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+References: <cover.1245345894.git.arnd@arndb.de> <4372408b2a754e861984bf803d8b1ade651eb827.1245347640.git.arnd@arndb.de> <4A4B4659.5030008@monstr.eu>
+In-Reply-To: <4A4B4659.5030008@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246440977.3403.7.camel@hpdv5.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907011339.56171.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/FMWlxA5FbH/aC78fRGbqzPWf1fKWDrk95X6/
+ 3/CP7qEmZaV6P1AkYg68RZzqiD3ABfZBuQKN/UlxKh3jbVJpI5
+ vJjxZEY1xiFxDd12EBSVQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 01 July 2009, Michal Simek wrote:
+> this patch can't be applied because generic implementation expect pointer to task struct
+> but microblaze low level code expect thread_info. I have one patch for MMU kernel which fixed it
+> but I don't have it for noMMU kernel.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Ok, just leave it out for now then, it's not important because it does not impact the ABI.
 
-> For normalization also added SW_CPU_CLOCK and HW_BUS_CYCLES
-> 
-> For nsec_printout also added SW_CPU_CLOCK
-> 
-> Added helper functions to check counter unit as cycles and instructions
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  tools/perf/builtin-stat.c |   49 +++++++++++++++++++++++++++++++-------------
->  1 files changed, 34 insertions(+), 15 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-> index 6bf2b80..af61c29 100644
-> --- a/tools/perf/builtin-stat.c
-> +++ b/tools/perf/builtin-stat.c
-> @@ -144,6 +144,29 @@ static inline int nsec_counter(int counter)
->  }
->  
->  /*
-> + * Does the counter have cycles as a unit?
-> + */
-> +static inline int cycle_counter(int counter)
-> +{
-> +	if (MATCH_EVENT(HARDWARE, HW_CPU_CYCLES, counter) ||
-> +	    MATCH_EVENT(HARDWARE, HW_BUS_CYCLES, counter))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Does the counter have instructions as a unit?
-> + */
-> +static inline int instruction_counter(int counter)
-> +{
-> +	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter))
-> +		return 1;
-> +
-> +	return 0;
-> +}
+Maybe I should allow overriding switch_to() in the generic file?
 
-This should be done a bit differently. Each event should have a 
-'unit type' index in its descriptor table, which links back to 
-_another_ event, specifying its unit.
+	Arnd <><
+---
+asm-generic: make parts of system.h optional
 
-For example:
+The asm-generic/system.h file was originally meant as an example, but by
+letting the architecture override some of its contents, it immediately
+becomes much more useful.
 
-   (PERF_COUNT_HW_INSTRUCTIONS,     -1                        , "instructions")
-   (PERF_COUNT_HW_CACHE_REFERENCES, PERF_COUNT_HW_INSTRUCTIONS)
-   (PERF_COUNT_HW_CACHE_MISSES,     PERF_COUNT_HW_INSTRUCTIONS)
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-'-1' signals an event that has itself as a unit, and a string field 
-gives us the pretty-print form of the unit.
-
-The same could be done for other types of events as well, such as 
-software events:
-
-   (PERF_COUNT_SW_CPU_CLOCK,        -1                        , "nsecs")
-   (PERF_COUNT_SW_TASK_CLOCK,       PERF_COUNT_SW_CPU_CLOCK   )
-
-This way normalization can be fully automated: say if we print out 
-PERF_COUNT_HW_CACHE_MISSES, we see that it is in units of 
-PERF_COUNT_HW_INSTRUCTIONS so we can print out that unit and can 
-normalize it to that metric.
-
-the 'IPC' (Instructions Per Cycle) field is special, and if you are 
-interested in this then i think it should be implemented as a 
-special 'compound' event: it is represented by the division of two 
-events.
-
-( If it's implemented like that then IPC will be printed in a
-  separate line, not as part of the instructions line - but that's 
-  OK. )
-
-Other 'compound' events might be possible too: for example a new 
-cache-hits field could be is cache-refs minus cache-misses.
-
-I.e. the simplest model for 'compound' events would be:
-
-  X = A / B
-  X = A - B
-  X = A + B
-
-We could list them in the event table, with a flag that specifies 
-which arithmetic operation connects two 'atomic' counters.
-
-Then the adding of a new compound event would only be the matter of 
-adding one more line to the event table.
-
-Can you see any problems with this approach?
-
-	Ingo
+--- a/include/asm-generic/system.h
++++ b/include/asm-generic/system.h
+@@ -24,6 +24,7 @@
+ 
+ struct task_struct;
+ 
++#ifndef switch_to
+ /* context switching is now performed out-of-line in switch_to.S */
+ extern struct task_struct *__switch_to(struct task_struct *,
+ 		struct task_struct *);
+@@ -31,10 +32,15 @@ extern struct task_struct *__switch_to(struct task_struct *,
+ 	do {								\
+ 		((last) = __switch_to((prev), (next)));			\
+ 	} while (0)
++#endif
+ 
++#ifndef arch_align_stack
+ #define arch_align_stack(x) (x)
++#endif
+ 
++#ifndef nop
+ #define nop() asm volatile ("nop")
++#define nop
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+@@ -46,9 +52,11 @@ extern struct task_struct *__switch_to(struct task_struct *,
+  * This implementation only contains a compiler barrier.
+  */
+ 
++#ifndef mb()
+ #define mb()	asm volatile ("": : :"memory")
+ #define rmb()	mb()
+ #define wmb()	asm volatile ("": : :"memory")
++#endif
+ 
+ #ifdef CONFIG_SMP
+ #define smp_mb()	mb()
