@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764297AbZGABVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbZGABW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764297AbZGABVm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764262AbZGAAyN
+	id S932703AbZGABW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757845AbZGABEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:54:13 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:61523 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764324AbZGAAyK (ORCPT
+	Tue, 30 Jun 2009 21:04:24 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:59243 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765519AbZGABES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:54:10 -0400
-Date: Wed, 1 Jul 2009 08:54:04 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: aacraid@adaptec.com, mark_salyzyn@adaptec.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       joe.jin@oracle.com
-Subject: kexec kernel failed to restart aacraid device
-Message-ID: <20090701005404.GA29923@joejin-pc.cn.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A4AB3B1.009B:SCFSTAT5015188,ss=1,fgs=0
+	Tue, 30 Jun 2009 21:04:18 -0400
+From: Andy Isaacson <adi@vmware.com>
+To: linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net
+Cc: adi@hexapodia.org, Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       dds@google.com, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com,
+       Andy Isaacson <adi@vmware.com>
+Subject: [PATCH 4/6] tpm_tis: print complete vendor information
+Date: Tue, 30 Jun 2009 18:04:13 -0700
+Message-Id: <1246410255-6839-5-git-send-email-adi@vmware.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1246410255-6839-1-git-send-email-adi@vmware.com>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The TPM_VID field contains a vendor-id as well as a device-id,
+but the code only prints the device-id.  Fix it.
 
-When try to kdump via sysrq-trigger, found kernel hung when 
-try to restart aacraid device, kernel print below messages:
+Signed-off-by: Andy Isaacson <adi@vmware.com>
+---
+ drivers/char/tpm/tpm_tis.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-  Loading aacraid.ko
-  AAC0:  adapter kernel faile to start, init status = 0.
-
-Normally startup, got following message what related the devices:
-
-  Adaptec aacraid driver 1.1-5[2461]
-  AAC0: kernel 4.2-0[8208] Jul  6 2006
-  AAC0: monitor 4.2-0[8208]
-  AAC0: bios 4.2-0[8208]
-  AAC0: serial C36FA5
-  AAC0: Non-DASD support enabled.
-
-
-Device info from lspci:
-     
-02:03.0 0104: 9005:0285 (rev 01)                                                            
-        Subsystem: 9005:0286
-        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- 
-        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- 
-        Latency: 64 (250ns min, 250ns max), Cache Line Size: 64 bytes                       
-        Interrupt: pin A routed to IRQ 177                                                  
-        Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
-        Expansion ROM at fc9f0000 [disabled] [size=32K]                                     
-        Capabilities: [80] Power Management version 2
-                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)  
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-
-Readed driver's codes found if ignore restart device at _aac_rx_init():
-
-Changed
-	if ((((status & 0x0c) != 0x0c) || aac_reset_devices || reset_devices) && 
-		!aac_rx_restart_adapter(dev, 0))
-
-to 
-	if ((aac_reset_devices || reset_devices) && 
-		!aac_rx_restart_adapter(dev, 0))
-
-and get rid of reset_devices from kdump command line, kexec kernel could
-bootup kernel normally, kdump would dump vmcore, looked like it caused by 
-aac_rx_restart_adapter() could not restart devices, it made kdump kernel 
-could not go on.
-
-Any idea will appreciate~
-
-Thanks,
-Joe
-
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index e0bda02..50c2a8a 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -464,7 +464,7 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+ 	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
+ 
+ 	dev_info(dev,
+-		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
++		 "1.2 TPM (%04X:%04X rev %d)\n", vendor & 0xffff,
+ 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
+ 
+ 	/* Figure out the capabilities */
+-- 
+1.6.3.1
 
