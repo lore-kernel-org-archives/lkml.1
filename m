@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZGAGy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZGAG42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbZGAGy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZGAGyS
+	id S1752929AbZGAG42 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGAG4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:54:18 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:26747 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbZGAGyS convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 02:56:21 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:57395 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbZGAG4U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:54:18 -0400
-Message-Id: <4A4B24280200007800008618@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Wed, 01 Jul 2009 07:54:00 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] replace various uses of num_physpages by
-	 totalram_pages
-References: <4A4A0E50020000780000830B@vpn.id2.novell.com>
- <200907011427.52943.rusty@rustcorp.com.au>
-In-Reply-To: <200907011427.52943.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 1 Jul 2009 02:56:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rCBm/ZXgQ0stkZtwUKv7ByolWn6YnR2111ITehF8CgyIHqLNceC8bXh/mjKJ5BZBhW
+         q99PmayRDXf0XYPp+/cheE5AKLAwIGW2bLhlWvbOhuPt8NdPbbye77WFHezF5x4F+SLm
+         0giThgDHmcA5wGLQK28Bu5DmEVjx7v0es8YaU=
+Message-ID: <4A4B088A.9030905@gmail.com>
+Date: Wed, 01 Jul 2009 08:56:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.7 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Daniel Ribeiro <drwyrm@gmail.com>
+CC: sameo@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
+       laforge@openezx.org
+Subject: Re: MFD: mutex from ISR in ezx-pcap?
+References: <4A49175E.3020409@gmail.com> <1246306840.18231.29.camel@brutus>	 <4A493BF9.7010304@gmail.com> <1246352256.18231.408.camel@brutus>
+In-Reply-To: <1246352256.18231.408.camel@brutus>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Rusty Russell <rusty@rustcorp.com.au> 01.07.09 06:57 >>>
->On Tue, 30 Jun 2009 08:38:32 pm Jan Beulich wrote:
->> Sizing of memory allocations shouldn't depend on the number of physical
->> pages found in a system, as that generally include (perhaps a huge
->> amount of) non-RAM pages. The amount of what actually is usable as
->> storage should instead be used as a basis here.
->
->I like this patch.  Where's num_physpages used after this: should it be an 
->arch-specific or even a static?
+On 06/30/2009 10:57 AM, Daniel Ribeiro wrote:
+> Em Ter, 2009-06-30 às 00:11 +0200, Jiri Slaby escreveu: 
+>> so that
+>> pcap_adc_irq shouldn't sleep, right? Or maybe I missed something again...
+> 
+> No. Interrupts are enabled again before pcap_adc_irq() runs.
+> 
+> pcap_isr_work() doesn't call pcap_adc_irq directly, it calls the
+> irq_flow_handler, handle_simple_irq(), which needs to run with
+> interrupts disabled. Interrupts are enabled again on handle_IRQ_event(),
+> as pcap_adc_irq is requested _without_ IRQF_DISABLED.
 
-It's still being used for some hash value initialization in under net/, and in
-the generic power management code (kernel/power/). While the earlier
-part certainly looks replaceable, I'm not certain about the latter.
-
-In any case it would seem like a first step might now be to no longer export
-the symbol (or, for a transitional period, make it an unused export).
-
-Once all uses are gone, making it arch specific (reducing its scope as much
-as possible, up to complete elimination) would certainly seem desirable
-(not the least to perhaps finally address comments like "How many end-
-of-memory variables you have, grandma!").
-
-Jan
-
+Correct. Thanks for clarification. I posted at least a lock fix which
+made me poke in this all.
