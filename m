@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZGAQ3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbZGAQ3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbZGAQ3U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZGAQ3I
+	id S1755029AbZGAQ3z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZGAQ3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:29:08 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:58746 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbZGAQ3H (ORCPT
+	Wed, 1 Jul 2009 12:29:46 -0400
+Received: from smurf.noris.de ([192.109.102.42]:32378 "EHLO
+	smurf.intern.smurf.noris.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752781AbZGAQ3q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:29:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=GngHJvvRLuXKUHXeXazk89p4f+kzjCjNV6r6mQhoYJJYJTI9L4H6MWytFGsAcZ9xnb
-         1V2w/qETr2iIwqzPnj6zXzmpk+KqSxD+TSo73DkFdtO0G1swfQesZIo5yVQeEmDlJIJU
-         mc/gYJ4LlSEXi7sJJ3xPuLEx97KjOgGWhsauI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [patch 4/6] ide: allow ide_dev_read_id() to be called from the IRQ context
-Date: Wed, 1 Jul 2009 18:35:27 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090701-03251-gbe98b01-dirty; KDE/4.2.4; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200906240336.25263.bzolnier@gmail.com> <20090624.025518.75726622.davem@davemloft.net> <200906241248.21173.bzolnier@gmail.com>
-In-Reply-To: <200906241248.21173.bzolnier@gmail.com>
+	Wed, 1 Jul 2009 12:29:46 -0400
+Date: Wed, 1 Jul 2009 18:28:37 +0200
+From: Matthias Urlichs <smurf@smurf.noris.de>
+To: Andy Whitcroft <apw@canonical.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Adaptec OEM Raid Solutions <aacraid@adaptec.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Reduce AACRAID hardware queue size
+Message-ID: <20090701162837.GE7964@kiste.smurf.noris.de>
+References: <1245756306-29023-1-git-send-email-apw@canonical.com> <1245756306-29023-2-git-send-email-apw@canonical.com> <1245771089.4149.88.camel@mulgrave.site> <20090623160408.GA22716@smurf.noris.de> <20090701155843.GE13837@shadowen.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907011835.27586.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090701155843.GE13837@shadowen.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Smurf-Spam-Score: -2.6 (--)
+X-Smurf-Whitelist: +relay_from_hosts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009 12:48:20 Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 24 June 2009 11:55:18 David Miller wrote:
+Hi,
 
-[...]
-
-> > I know you're busy, so I'll try to draft something up myself.
+Andy Whitcroft:
+> > > echo 63 > /sys/block/<disk>/queue/max_sectors_kb
+> > > 
+> > Thank you, I'll do that tonight.
 > 
-> Ok, thanks.
+> How did this one work out for you?  I don't think I saw a reply either
+> way?
+> 
+Bah. Thanks for the reminder; I totally forgot to send that email.
+(Too much other stuff in my life right now. (Mostly good, fortunately.))
 
-Any news about these fixes?
+Short version: It didn't. The controller now seems dead.
+It times out all the time, and is unable to find any disks.
+
+Unfortunately the thing is built-in and can't easily be replaced;
+I don't have any warranty info for this machine either, so ...
+
+-- 
+Matthias Urlichs   |   {M:U} IT Design @ m-u-it.de   |  smurf@smurf.noris.de
+Disclaimer: The quote was selected randomly. Really. | http://smurf.noris.de
+v4sw7$Yhw6+8ln7ma7u7L!wl7DUi2e6t3TMWb8HAGen6g3a4s6Mr1p-3/-6 hackerkey.com
+ - -
+Sex is a misdemeanor -- the more I miss, de meaner I get.
