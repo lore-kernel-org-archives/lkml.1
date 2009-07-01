@@ -1,87 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZGAU5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZGAVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbZGAU5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 16:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZGAU5M
+	id S1754558AbZGAVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZGAVAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 16:57:12 -0400
-Received: from deleuze.hcoop.net ([69.90.123.67]:34576 "EHLO deleuze.hcoop.net"
+	Wed, 1 Jul 2009 17:00:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51464 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbZGAU5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 16:57:12 -0400
-From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
-References: <87hbxx0wcp.fsf@jeremyms.com> <87d48k2992.fsf@jeremyms.com>
-	<4A4B27D0.8020906@crca.org.au> <200907011755.10386.rjw@sisk.pl>
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Wed, 01 Jul 2009 13:57:01 -0700
-In-Reply-To: <200907011755.10386.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 01 Jul 2009 17:55:09 +0200")
-Message-ID: <874otw15r6.fsf@jeremyms.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1753116AbZGAVAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 17:00:04 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [BUGFIX PATCH -tip] x86: Fix fixmap page order in text_poke()
+To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ingo Molnar <mingo@elte.hu>
+Date: Wed, 01 Jul 2009 17:02:46 -0400
+Message-ID: <20090701210246.22089.65697.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Since the fixmap pages are assigned higher address to lower, text_poke()
+has to use it with inverted order (FIX_TEXT_POKE1 to FIX_TEXT_POKE0).
 
-> [snip]
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
->> As far as the possibility of using uswsusp goes, I'd like to get
->> Rafael's input there - he knows it much better than I do (explicitly
->> adding him to the ccs).
+ arch/x86/kernel/alternative.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
-> No, the current mainline hibernation code can't be modified easily
-> to encrypt the page cache before suspending.
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index f576587..4d8b40b 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -527,14 +527,18 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
+ 	}
+ 	BUG_ON(!pages[0]);
+ 	local_irq_save(flags);
+-	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
++	/*
++	 * Since the fixmaps are assinged from higher address to lower,
++	 * we use FIX_TEXT_POKE1 first, and FIX_TEXT_POKE0 second.
++	 */
++	set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[0]));
+ 	if (pages[1])
+-		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
+-	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
++		set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[1]));
++	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE1);
+ 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
+-	clear_fixmap(FIX_TEXT_POKE0);
++	clear_fixmap(FIX_TEXT_POKE1);
+ 	if (pages[1])
+-		clear_fixmap(FIX_TEXT_POKE1);
++		clear_fixmap(FIX_TEXT_POKE0);
+ 	local_flush_tlb();
+ 	sync_core();
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
 
-> Also, I don't see much value in doing that before suspend to RAM, because
-> (1) passwords and encryption keys should be stored in mlocked memory
-
-I do not have a complete understanding of linux memory management, but
-couldn't such memory also be included in the encryption?  The page cache
-is presumably the bulk of memory, but I realize there are likely several
-other places in memory that may contain sensitive data.  However, it
-would seem that encrypting these in place should, for the most part,
-also be quite feasible.
-
-> and (2)
-> the encryption overhead (including measures to protect the encrypted page cache
-> from being corrupted) would hurt the speed of suspend to RAM and resume, which
-> is a very important thing.
-
-I am not suggesting that it be done unconditionally.  I am simply
-suggesting that it be made available as an option, just as hibernating
-to encrypted swap is an option, and using dm-crypt in general is an
-option.  Surely encrypting and decrypting would take additional time,
-but it would also surely take far less time than hibernating and
-resuming.  On machines with hardware encryption support (such as the
-future Intel Westmere processor), encrypting several gigabytes of memory
-may not take very much time at all.
-
-> Moreover, I don't really see how we can feed the decryption key to the
-> kernel during resume before the page cache can be accessed.
-
-My understanding is that this is something that is already done in
-tuxonice.  After the contents of the page cache are written to disk,
-some of the page cache is overwritten with a copy of the rest of memory,
-and the kernel continues to interact with the userspace UI program.  I
-would assume that this state is effectively equivalent to the state the
-system would be in after encrypting the page cache.  (Obviously the
-memory needed by the userspace helper would have to be treated
-specially.)
 
 -- 
-Jeremy Maitin-Shepard
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
