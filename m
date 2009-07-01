@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZGAMAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753006AbZGAMH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbZGAMAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZGAL76
+	id S1753006AbZGAMH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 08:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZGAMHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:59:58 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:54596 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbZGAL75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:59:57 -0400
-Message-ID: <4A4B4FAD.7010004@novell.com>
-Date: Wed, 01 Jul 2009 07:59:41 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Wed, 1 Jul 2009 08:07:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37106 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754AbZGAMHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 08:07:15 -0400
+Message-ID: <4A4B5059.2000805@redhat.com>
+Date: Wed, 01 Jul 2009 08:02:33 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mtosatti@redhat.com,
-       paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Subject: Re: [PATCHv5 0/6] kvm: locking and API rework for iosignalfd
-References: <20090629192358.GA27464@redhat.com> <4A4B1A13.3060809@redhat.com>
-In-Reply-To: <4A4B1A13.3060809@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig629D3DB6F0693D39EBC46797"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][ PATCH] kprobes: fix kprobe selftest configuration	dependency
+References: <20090622210302.4984.82798.stgit@localhost.localdomain> <20090630143806.9ab4519d.akpm@linux-foundation.org> <alpine.LFD.2.01.0906301440280.3605@localhost.localdomain> <4A4A8D91.8040009@redhat.com> <4A4A9D89.3090600@redhat.com> <20090630232359.GH17968@elte.hu> <4A4AA467.1010308@redhat.com> <4A4AA930.1060603@redhat.com> <20090701084304.GC8171@elte.hu>
+In-Reply-To: <20090701084304.GC8171@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig629D3DB6F0693D39EBC46797
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 2009年07月01日 04:43, Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Masami Hiramatsu wrote:
+>>> Ingo Molnar wrote:
+>>>> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+>>>>
+>>>>> Oops, I couldn't reproduce this bug on the latest -tip tree.
+>>>> maybe because i applied your fix already? ;-)
+>>> If so, I'll be happy. But I reverted that change and checked :-(
+>>> Maybe, that came from a combination of configs (but I've lost it...)
+>> Ok, I found.
+>> Sorry, the problem has been fixed with below commit...
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ac6ca5c86c63dd95acc6a34dff8d33c23b703a37
+> 
+> thx - i thus dropped this:
+> 
+>   130c5b2 kprobes: Fix kprobe selftest configuration dependency
+> 
+> Kept the other two patches - one for tracing/urgent (for .31), the 
+> other for tracing/core (.32). Agreed?
 
-Avi Kivity wrote:
-> On 06/29/2009 10:23 PM, Michael S. Tsirkin wrote:
->> This series switches kvm_io_device to slots_lock from kvm->lock mutex,=
+Yes, I agreed. :-)
 
->> and uses that to rework io bus API. This takes less locks on data path=
-,
->> and uses less lines of code. These changes will also be useful to serv=
-e
->> as basis for Greg's iosignalfd work.
->>   =20
->
-> Applied all, thanks.
->
-I'll get to work rebasing iosignalfd now.  Thanks guys!
+Thanks!
 
--Greg
+-- 
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
---------------enig629D3DB6F0693D39EBC46797
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+e-mail: mhiramat@redhat.com
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpLT7EACgkQlOSOBdgZUxnuUgCeMkFDvIrqqJrQlrqQMs7k4BXH
-jPQAnRRjkkZO7prS7ilM6sSaveULMm9W
-=quRc
------END PGP SIGNATURE-----
-
---------------enig629D3DB6F0693D39EBC46797--
