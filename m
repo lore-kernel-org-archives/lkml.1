@@ -1,350 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZGATx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbZGAUDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZGATx5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 15:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZGATxt
+	id S1751678AbZGAUDv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 16:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750914AbZGAUDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 15:53:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60038 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZGATxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 15:53:48 -0400
-Message-ID: <4A4BBECD.8000908@redhat.com>
-Date: Wed, 01 Jul 2009 15:53:49 -0400
-From: William Cohen <wcohen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
+	Wed, 1 Jul 2009 16:03:43 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:44125 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbZGAUDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 16:03:41 -0400
+Date: Wed, 1 Jul 2009 13:03:14 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] add block IO documentation to tracepoint docbook
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/mixed;
- boundary="------------000207060603040402050900"
+Cc: torvalds <torvalds@linux-foundation.org>, WANG Cong <amwang@redhat.com>
+Subject: [PATCH 1/2] Doc: update Documentation/exception.txt
+Message-Id: <20090701130314.129547b1.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4A4BC104.0221:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000207060603040402050900
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Amerigo Wang <amwang@redhat.com>
+Subject: [RESEND Patch 1/2] Doc: update Documentation/exception.txt
 
-The following patch adds block IO tracepoint documentation to the tracepoint
-docbook.
+Update Documentation/exception.txt.
+Remove trailing whitespaces in it.
 
-Signed-off-by: William Cohen <wcohen@xxxxxxxxxx>
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/exception.txt |  202 +++++++++++++++++-----------------
+ 1 file changed, 101 insertions(+), 101 deletions(-)
 
---------------000207060603040402050900
-Content-Type: text/plain;
- name="blk_trace_doc3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="blk_trace_doc3.patch"
-
-diff --git a/Documentation/DocBook/tracepoint.tmpl b/Documentation/DocBook/tracepoint.tmpl
-index b0756d0..41824b2 100644
---- a/Documentation/DocBook/tracepoint.tmpl
-+++ b/Documentation/DocBook/tracepoint.tmpl
-@@ -16,6 +16,15 @@
-      </address>
-     </affiliation>
-    </author>
-+   <author>
-+    <firstname>William</firstname>
-+    <surname>Cohen</surname>
-+    <affiliation>
-+     <address>
-+      <email>wcohen@redhat.com</email>
-+     </address>
-+    </affiliation>
-+   </author>
-   </authorgroup>
+--- linux-2.6.31-rc1-git8.orig/Documentation/exception.txt
++++ linux-2.6.31-rc1-git8/Documentation/exception.txt
+@@ -1,123 +1,123 @@
+-     Kernel level exception handling in Linux 2.1.8
++     Kernel level exception handling in Linux
+   Commentary by Joerg Pommnitz <joerg@raleigh.ibm.com>
  
-   <legalnotice>
-@@ -86,4 +95,8 @@
- !Iinclude/trace/events/irq.h
-   </chapter>
+-When a process runs in kernel mode, it often has to access user 
+-mode memory whose address has been passed by an untrusted program. 
++When a process runs in kernel mode, it often has to access user
++mode memory whose address has been passed by an untrusted program.
+ To protect itself the kernel has to verify this address.
  
-+  <chapter id="block">
-+   <title>Block IO</title>
-+!Iinclude/trace/events/block.h
-+  </chapter>
- </book>
-diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-index d6b05f4..3e89091 100644
---- a/include/trace/events/block.h
-+++ b/include/trace/events/block.h
-@@ -8,6 +8,16 @@
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM block
+-In older versions of Linux this was done with the 
+-int verify_area(int type, const void * addr, unsigned long size) 
++In older versions of Linux this was done with the
++int verify_area(int type, const void * addr, unsigned long size)
+ function (which has since been replaced by access_ok()).
  
-+/**
-+ * block_rq_abort - Abort Block Operation Request
-+ * @q: queue containing the block operation request
-+ * @rq: block IO operation request
-+ *
-+ * Called immediately after pending block IO operation request @rq in
-+ * queue @q is aborted. The fields in the operation request @rq
-+ * can be examined to determine which device and sectors the pending
-+ * operation would access.
-+ */
- TRACE_EVENT(block_rq_abort,
+-This function verified that the memory area starting at address 
++This function verified that the memory area starting at address
+ 'addr' and of size 'size' was accessible for the operation specified
+-in type (read or write). To do this, verify_read had to look up the 
+-virtual memory area (vma) that contained the address addr. In the 
+-normal case (correctly working program), this test was successful. 
++in type (read or write). To do this, verify_read had to look up the
++virtual memory area (vma) that contained the address addr. In the
++normal case (correctly working program), this test was successful.
+ It only failed for a few buggy programs. In some kernel profiling
+ tests, this normally unneeded verification used up a considerable
+ amount of time.
  
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-@@ -40,6 +50,16 @@ TRACE_EVENT(block_rq_abort,
- 		  __entry->nr_sector, __entry->errors)
- );
+-To overcome this situation, Linus decided to let the virtual memory 
++To overcome this situation, Linus decided to let the virtual memory
+ hardware present in every Linux-capable CPU handle this test.
  
-+/**
-+ * block_rq_insert - Insert Block Operation Request into Queue
-+ * @q: target queue
-+ * @rq: block IO operation request
-+ *
-+ * Called immediately before block operation request @rq is inserted
-+ * into queue @q.  The fields in the operation request @rq struct can
-+ * be examined to determine which device and sectors the pending
-+ * operation would access.
-+ */
- TRACE_EVENT(block_rq_insert,
+ How does this work?
  
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-@@ -74,6 +94,14 @@ TRACE_EVENT(block_rq_insert,
- 		  __entry->nr_sector, __entry->comm)
- );
+-Whenever the kernel tries to access an address that is currently not 
+-accessible, the CPU generates a page fault exception and calls the 
+-page fault handler 
++Whenever the kernel tries to access an address that is currently not
++accessible, the CPU generates a page fault exception and calls the
++page fault handler
  
-+/**
-+ * block_rq_issue - Issue Pending Block IO Request Operation to Device Driver
-+ * @q: queue holding operation
-+ * @rq: block IO operation operation request
-+ *
-+ * Called when block operation request @rq from queue @q is sent to a
-+ * device driver for processing.
-+ */
- TRACE_EVENT(block_rq_issue,
+ void do_page_fault(struct pt_regs *regs, unsigned long error_code)
  
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-@@ -108,6 +136,15 @@ TRACE_EVENT(block_rq_issue,
- 		  __entry->nr_sector, __entry->comm)
- );
+-in arch/i386/mm/fault.c. The parameters on the stack are set up by 
+-the low level assembly glue in arch/i386/kernel/entry.S. The parameter
+-regs is a pointer to the saved registers on the stack, error_code 
++in arch/x86/mm/fault.c. The parameters on the stack are set up by
++the low level assembly glue in arch/x86/kernel/entry_32.S. The parameter
++regs is a pointer to the saved registers on the stack, error_code
+ contains a reason code for the exception.
  
-+/**
-+ * block_rq_requeue - Place Block IO Request Back on a Queue
-+ * @q: queue holding operation
-+ * @rq: block IO operation request
-+ *
-+ * The block operation request @rq is being placed back into queue
-+ * @q.  For some reason the request was not completed and needs to be
-+ * put back in the queue.
-+ */
- TRACE_EVENT(block_rq_requeue,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-@@ -140,6 +177,17 @@ TRACE_EVENT(block_rq_requeue,
- 		  __entry->nr_sector, __entry->errors)
- );
- 
-+/**
-+ * block_rq_complete - Block IO Operation Completed by Device Driver
-+ * @q: queue containing the block operation request
-+ * @rq: block operations request
-+ *
-+ * The block_rq_complete tracepoint event indicates that some portion
-+ * of operation request has been completed by the device driver.  If
-+ * the @rq->bio is NULL, then there is absolutely no additonal work to
-+ * do for the request. If @rq->bio is non-NULL then there is
-+ * additional work is required to complete the request.
-+ */
- TRACE_EVENT(block_rq_complete,
- 
- 	TP_PROTO(struct request_queue *q, struct request *rq),
-@@ -171,6 +219,18 @@ TRACE_EVENT(block_rq_complete,
- 		  (unsigned long long)__entry->sector,
- 		  __entry->nr_sector, __entry->errors)
- );
+-do_page_fault first obtains the unaccessible address from the CPU 
+-control register CR2. If the address is within the virtual address 
+-space of the process, the fault probably occurred, because the page 
+-was not swapped in, write protected or something similar. However, 
+-we are interested in the other case: the address is not valid, there 
+-is no vma that contains this address. In this case, the kernel jumps 
+-to the bad_area label. 
+-
+-There it uses the address of the instruction that caused the exception 
+-(i.e. regs->eip) to find an address where the execution can continue 
+-(fixup). If this search is successful, the fault handler modifies the 
+-return address (again regs->eip) and returns. The execution will 
++do_page_fault first obtains the unaccessible address from the CPU
++control register CR2. If the address is within the virtual address
++space of the process, the fault probably occurred, because the page
++was not swapped in, write protected or something similar. However,
++we are interested in the other case: the address is not valid, there
++is no vma that contains this address. In this case, the kernel jumps
++to the bad_area label.
 +
-+/**
-+ * block_bio_bounce - Used Bounce Buffer When Processing Block Operation
-+ * @q: queue holding the block operation
-+ * @bio: block operation
-+ *
-+ * A bounce buffer was used to handle the block operation @bio in @q.
-+ * This occurs when hardware limitations prevent a direct transfer of
-+ * data between the @bio data memory area and the IO device.  Use of a
-+ * bounce buffer requires extra copying of data and decreases
-+ * performance.
-+ */
- TRACE_EVENT(block_bio_bounce,
++There it uses the address of the instruction that caused the exception
++(i.e. regs->eip) to find an address where the execution can continue
++(fixup). If this search is successful, the fault handler modifies the
++return address (again regs->eip) and returns. The execution will
+ continue at the address in fixup.
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -199,6 +259,14 @@ TRACE_EVENT(block_bio_bounce,
- 		  __entry->nr_sector, __entry->comm)
+ Where does fixup point to?
+ 
+-Since we jump to the contents of fixup, fixup obviously points 
+-to executable code. This code is hidden inside the user access macros. 
+-I have picked the get_user macro defined in include/asm/uaccess.h as an
+-example. The definition is somewhat hard to follow, so let's peek at 
++Since we jump to the contents of fixup, fixup obviously points
++to executable code. This code is hidden inside the user access macros.
++I have picked the get_user macro defined in arch/x86/include/asm/uaccess.h
++as an example. The definition is somewhat hard to follow, so let's peek at
+ the code generated by the preprocessor and the compiler. I selected
+-the get_user call in drivers/char/console.c for a detailed examination.
++the get_user call in drivers/char/sysrq.c for a detailed examination.
+ 
+-The original code in console.c line 1405:
++The original code in sysrq.c line 587:
+         get_user(c, buf);
+ 
+ The preprocessor output (edited to become somewhat readable):
+ 
+ (
+-  {        
+-    long __gu_err = - 14 , __gu_val = 0;        
+-    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));        
+-    if (((((0 + current_set[0])->tss.segment) == 0x18 )  || 
+-       (((sizeof(*(buf))) <= 0xC0000000UL) && 
+-       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))        
++  {
++    long __gu_err = - 14 , __gu_val = 0;
++    const __typeof__(*( (  buf ) )) *__gu_addr = ((buf));
++    if (((((0 + current_set[0])->tss.segment) == 0x18 )  ||
++       (((sizeof(*(buf))) <= 0xC0000000UL) &&
++       ((unsigned long)(__gu_addr ) <= 0xC0000000UL - (sizeof(*(buf)))))))
+       do {
+-        __gu_err  = 0;        
+-        switch ((sizeof(*(buf)))) {        
+-          case 1: 
+-            __asm__ __volatile__(        
+-              "1:      mov" "b" " %2,%" "b" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "b" " %" "b" "1,%" "b" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        
+-              "        .long 1b,3b\n"        
++        __gu_err  = 0;
++        switch ((sizeof(*(buf)))) {
++          case 1:
++            __asm__ __volatile__(
++              "1:      mov" "b" " %2,%" "b" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "b" " %" "b" "1,%" "b" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"
++              "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=q" (__gu_val): "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ; 
+-              break;        
+-          case 2: 
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )) ;
++              break;
++          case 2:
+             __asm__ __volatile__(
+-              "1:      mov" "w" " %2,%" "w" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "w" " %" "w" "1,%" "w" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        
+-              "        .long 1b,3b\n"        
++              "1:      mov" "w" " %2,%" "w" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "w" " %" "w" "1,%" "w" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"
++              "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  )); 
+-              break;        
+-          case 4: 
+-            __asm__ __volatile__(        
+-              "1:      mov" "l" " %2,%" "" "1\n"        
+-              "2:\n"        
+-              ".section .fixup,\"ax\"\n"        
+-              "3:      movl %3,%0\n"        
+-              "        xor" "l" " %" "" "1,%" "" "1\n"        
+-              "        jmp 2b\n"        
+-              ".section __ex_table,\"a\"\n"        
+-              "        .align 4\n"        "        .long 1b,3b\n"        
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(  __gu_err  ));
++              break;
++          case 4:
++            __asm__ __volatile__(
++              "1:      mov" "l" " %2,%" "" "1\n"
++              "2:\n"
++              ".section .fixup,\"ax\"\n"
++              "3:      movl %3,%0\n"
++              "        xor" "l" " %" "" "1,%" "" "1\n"
++              "        jmp 2b\n"
++              ".section __ex_table,\"a\"\n"
++              "        .align 4\n"        "        .long 1b,3b\n"
+               ".text"        : "=r"(__gu_err), "=r" (__gu_val) : "m"((*(struct __large_struct *)
+-                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err)); 
+-              break;        
+-          default: 
+-            (__gu_val) = __get_user_bad();        
+-        }        
+-      } while (0) ;        
+-    ((c)) = (__typeof__(*((buf))))__gu_val;        
++                            (   __gu_addr   )) ), "i"(- 14 ), "0"(__gu_err));
++              break;
++          default:
++            (__gu_val) = __get_user_bad();
++        }
++      } while (0) ;
++    ((c)) = (__typeof__(*((buf))))__gu_val;
+     __gu_err;
+   }
  );
+@@ -127,12 +127,12 @@ see what code gcc generates:
  
-+/**
-+ * block_bio_complete - Completed All Work on the Block Operation
-+ * @q: queue holding the block operation
-+ * @bio: block operation completed
-+ *
-+ * This tracepoint indicates there is no further work to do on this
-+ * block IO operation @bio.
-+ */
- TRACE_EVENT(block_bio_complete,
+  >         xorl %edx,%edx
+  >         movl current_set,%eax
+- >         cmpl $24,788(%eax)        
+- >         je .L1424        
++ >         cmpl $24,788(%eax)
++ >         je .L1424
+  >         cmpl $-1073741825,64(%esp)
+- >         ja .L1423                
++ >         ja .L1423
+  > .L1424:
+- >         movl %edx,%eax                        
++ >         movl %edx,%eax
+  >         movl 64(%esp),%ebx
+  > #APP
+  > 1:      movb (%ebx),%dl                /* this is the actual user access */
+@@ -149,17 +149,17 @@ see what code gcc generates:
+  > .L1423:
+  >         movzbl %dl,%esi
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -226,6 +294,14 @@ TRACE_EVENT(block_bio_complete,
- 		  __entry->nr_sector, __entry->error)
- );
+-The optimizer does a good job and gives us something we can actually 
+-understand. Can we? The actual user access is quite obvious. Thanks 
+-to the unified address space we can just access the address in user 
++The optimizer does a good job and gives us something we can actually
++understand. Can we? The actual user access is quite obvious. Thanks
++to the unified address space we can just access the address in user
+ memory. But what does the .section stuff do?????
  
-+/**
-+ * block_bio_backmerge - Merging Block Operation to the End of an Existing Operation
-+ * @q: queue holding operation
-+ * @bio: new block operation to merge
-+ *
-+ * Merging block request @bio to the end of an existing block request
-+ * in queue @q.
-+ */
- TRACE_EVENT(block_bio_backmerge,
+ To understand this we have to look at the final kernel:
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -254,6 +330,14 @@ TRACE_EVENT(block_bio_backmerge,
- 		  __entry->nr_sector, __entry->comm)
- );
+  > objdump --section-headers vmlinux
+- > 
++ >
+  > vmlinux:     file format elf32-i386
+- > 
++ >
+  > Sections:
+  > Idx Name          Size      VMA       LMA       File off  Algn
+  >   0 .text         00098f40  c0100000  c0100000  00001000  2**4
+@@ -198,18 +198,18 @@ final kernel executable:
  
-+/**
-+ * block_bio_frontmerge - Merging Block Operation to the beginning of an Existing Operation
-+ * @q: queue holding operation
-+ * @bio: new block operation to merge
-+ *
-+ * Merging block IO operation @bio to the beginning of an existing block
-+ * operation in queue @q.
-+ */
- TRACE_EVENT(block_bio_frontmerge,
+ The whole user memory access is reduced to 10 x86 machine instructions.
+ The instructions bracketed in the .section directives are no longer
+-in the normal execution path. They are located in a different section 
++in the normal execution path. They are located in a different section
+ of the executable file:
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -282,6 +366,13 @@ TRACE_EVENT(block_bio_frontmerge,
- 		  __entry->nr_sector, __entry->comm)
- );
+  > objdump --disassemble --section=.fixup vmlinux
+- > 
++ >
+  > c0199ff5 <.fixup+10b5> movl   $0xfffffff2,%eax
+  > c0199ffa <.fixup+10ba> xorb   %dl,%dl
+  > c0199ffc <.fixup+10bc> jmp    c017e7a7 <do_con_write+e3>
  
-+/**
-+ * block_bio_queue - Putting New Block IO Operation in Queue
-+ * @q: queue holding operation
-+ * @bio: new block operation
-+ *
-+ * About to  place the block IO operation @bio into queue @q.
-+ */
- TRACE_EVENT(block_bio_queue,
+ And finally:
+  > objdump --full-contents --section=__ex_table vmlinux
+- > 
++ >
+  >  c01aa7c4 93c017c0 e09f19c0 97c017c0 99c017c0  ................
+  >  c01aa7d4 f6c217c0 e99f19c0 a5e717c0 f59f19c0  ................
+  >  c01aa7e4 080a18c0 01a019c0 0a0a18c0 04a019c0  ................
+@@ -235,8 +235,8 @@ sections in the ELF object file. So the 
+ ended up in the .fixup section of the object file and the addresses
+         .long 1b,3b
+ ended up in the __ex_table section of the object file. 1b and 3b
+-are local labels. The local label 1b (1b stands for next label 1 
+-backward) is the address of the instruction that might fault, i.e. 
++are local labels. The local label 1b (1b stands for next label 1
++backward) is the address of the instruction that might fault, i.e.
+ in our case the address of the label 1 is c017e7a5:
+ the original assembly code: > 1:      movb (%ebx),%dl
+ and linked in vmlinux     : > c017e7a5 <do_con_write+e1> movb   (%ebx),%dl
+@@ -254,7 +254,7 @@ The assembly code
+ becomes the value pair
+  >  c01aa7d4 c017c2f6 c0199fe9 c017e7a5 c0199ff5  ................
+                                ^this is ^this is
+-                               1b       3b 
++                               1b       3b
+ c017e7a5,c0199ff5 in the exception table of the kernel.
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -310,6 +401,15 @@ TRACE_EVENT(block_bio_queue,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
-+/**
-+ * block_getrq - Get a Free Request Entry in Queue for Block IO Operations
-+ * @q: queue for operations
-+ * @bio: pending block IO operation
-+ * @rw: low bit indicates a read (%0) or a write (%1)
-+ *
-+ * A request struct for queue @q has been allocated to handle the
-+ * block IO operation @bio.
-+ */
- TRACE_EVENT(block_getrq,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
-@@ -339,6 +439,17 @@ TRACE_EVENT(block_getrq,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
-+/**
-+ * block_sleeprq - Waiting to Get a Free Request Entry in Queue for Block IO Operation
-+ * @q: queue for operation
-+ * @bio: pending block IO operation
-+ * @rw: low bit indicates a read (%0) or a write (%1)
-+ *
-+ * In the case where a request struct cannot be provided for queue @q,
-+ * the process needs to wait for an request struct to become
-+ * available.  This tracepoint event is generated each time the
-+ * process goes to sleep waiting for request struct become available.
-+ */
- TRACE_EVENT(block_sleeprq,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
-@@ -368,6 +479,14 @@ TRACE_EVENT(block_sleeprq,
- 		  __entry->nr_sector, __entry->comm)
- );
- 
-+/**
-+ * block_plug - Keep Operations Requests in Request Queue
-+ * @q: request queue to plug
-+ *
-+ * Plug the request queue @q.  Do not allow block operation requests
-+ * to be sent to the device driver. Instead, accumulate requests in
-+ * the queue to improve throughput performance of the block device.
-+ */
- TRACE_EVENT(block_plug,
- 
- 	TP_PROTO(struct request_queue *q),
-@@ -385,6 +504,13 @@ TRACE_EVENT(block_plug,
- 	TP_printk("[%s]", __entry->comm)
- );
- 
-+/**
-+ * block_unplug_timer - Timed Release of Operations Requests in Queue to Device Driver
-+ * @q: request queue to unplug
-+ *
-+ * Unplug the request queue @q because a timer expired and allow block
-+ * operation requests to be sent to the device driver.
-+ */
- TRACE_EVENT(block_unplug_timer,
- 
- 	TP_PROTO(struct request_queue *q),
-@@ -404,6 +530,13 @@ TRACE_EVENT(block_unplug_timer,
- 	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
- );
- 
-+/**
-+ * block_unplug_io - Release of Operations Requests in Request Queue
-+ * @q: request queue to unplug
-+ *
-+ * Unplug request queue @q because device driver is scheduled to work
-+ * on elements in the request queue.
-+ */
- TRACE_EVENT(block_unplug_io,
- 
- 	TP_PROTO(struct request_queue *q),
-@@ -423,6 +556,17 @@ TRACE_EVENT(block_unplug_io,
- 	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
- );
- 
-+/**
-+ * block_split - Split a Single bio struct into Two bio structs
-+ * @q: queue containing the bio
-+ * @bio: block operation being split
-+ * @new_sector: The starting sector for the new bio
-+ *
-+ * The bio request @bio in request queue @q needs to be split into two
-+ * bio requests. The newly created @bio request starts at
-+ * @new_sector. This split may be required due to hardware limitation
-+ * such as operation crossing device boundaries in a RAID system.
-+ */
- TRACE_EVENT(block_split,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio,
-@@ -453,6 +597,16 @@ TRACE_EVENT(block_split,
- 		  __entry->comm)
- );
- 
-+/**
-+ * block_remap - Map Request for a Partition to the Raw Device
-+ * @q: queue holding the operation
-+ * @bio: revised operation
-+ * @dev: device for the operation
-+ * @from: original sector for the operation
-+ *
-+ * An operation for a partion on a block device has been mapped to the
-+ * raw block device.
-+ */
- TRACE_EVENT(block_remap,
- 
- 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
-
---------------000207060603040402050900--
+ So, what actually happens if a fault from kernel mode with no suitable
+@@ -266,9 +266,9 @@ vma occurs?
+ 3.) CPU calls do_page_fault
+ 4.) do page fault calls search_exception_table (regs->eip == c017e7a5);
+ 5.) search_exception_table looks up the address c017e7a5 in the
+-    exception table (i.e. the contents of the ELF section __ex_table) 
++    exception table (i.e. the contents of the ELF section __ex_table)
+     and returns the address of the associated fault handle code c0199ff5.
+-6.) do_page_fault modifies its own return address to point to the fault 
++6.) do_page_fault modifies its own return address to point to the fault
+     handle code and returns.
+ 7.) execution continues in the fault handling code.
+ 8.) 8a) EAX becomes -EFAULT (== -14)
