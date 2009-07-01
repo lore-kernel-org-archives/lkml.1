@@ -1,92 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZGAI2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbZGAIcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbZGAI2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZGAI2a
+	id S1753958AbZGAIcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbZGAIbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:28:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57977 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754267AbZGAI21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:28:27 -0400
-Message-ID: <4A4B1E95.1030702@redhat.com>
-Date: Wed, 01 Jul 2009 11:30:13 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 1 Jul 2009 04:31:46 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:56257 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750782AbZGAIbp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:31:45 -0400
+Date: Wed, 1 Jul 2009 16:31:44 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: jolsa@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, oleg@redhat.com,
+       eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090701083144.GA31863@gondor.apana.org.au>
+References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au> <20090701062732.GK6760@one.firstfloor.org> <20090701070332.GA31103@gondor.apana.org.au> <20090701072226.GN6760@one.firstfloor.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-References: <20090629132926.GB20289@redhat.com>	<m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>	<m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com>	<m1ljn94k16.fsf@fess.ebiederm.org> <4A4A6499.9000406@redhat.com> <m1k52t1plq.fsf@fess.ebiederm.org>
-In-Reply-To: <m1k52t1plq.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701072226.GN6760@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/30/2009 10:36 PM, Eric W. Biederman wrote:
->>> The short version is I don't know what work arounds we will ultimately
->>> decide to deploy to work with real hardware.
->>>
->>> I have been seriously contemplating causing a cpu hot-unplug request
->>> to fail if we are in ioapic mode and we have irqs routed to the cpu
->>> that is being unplugged.
->>>
->>>        
->> Well, obviously we need to disassociate any irqs from such a cpu.  Could be done
->> from the kernel or only enforced by the kernel.
->>      
+On Wed, Jul 01, 2009 at 09:22:26AM +0200, Andi Kleen wrote:
 >
-> Using the normal irq migration path we can move irqs off of a cpu reliably
-> there just aren't any progress guarantees.
->    
+> Agreed.
+> 
+> I suspect the reordering of the wake queue tests might makes a difference, but
+> in this case to ensure they are always tested in the proper order by
+> the compiler would need more smp_rmb()s
 
-Program the ioapic to the new cpu.  Wait a few milliseconds.  If it 
-takes more than that to get an interrupt from the ioapic to the local 
-apic, the machine has much bigger problems.
+I just looked up the original bug report and it's against RHEL4
+which is a 2.6.9 kernel.  Jiri, have we reproduced this on a more
+recent kernel?
 
->>> Even with perfectly working hardware it is not possible in the general
->>> case to migrate an ioapic irq from one cpu to another outside of an
->>> interrupt handler without without risking dropping an interrupt.
->>>
->>>        
->> Can't you generate a spurious interrupt immediately after the migration?  An
->> extra interrupt shouldn't hurt.
->>      
->
-> Nope.  The ioapics can't be told to send an interrupt.
->    
-
-You can program the local apic ICR to generate an interrupt with the 
-same vector.
-
->>> There is no general way to know you have seen the last interrupt
->>> floating around your system.  PCI ordering rules don't help because
->>> the ioapics can potentially take an out of band channel.
->>>
->>>        
->> Can you describe the problem scenario? an ioapic->lapic message delivered to a
->> dead cpu?
->>      
->
-> Dropped irqs..  Driver hangs because it is waiting for an irq.  Hardware
-> hangs because it is waiting for the cpu to process the irq.
->
-> Potentially we get a level triggered irq that is never acked by
-> the cpu that won't arm until the cpu send an ack, and we can't
-> send an ack from another cpu.
->
->    
-
-I think a spurious interrupt generated through the local apic solves 
-that problem.  For level-triggered interrupts, mask them before 
-offlining the cpu.
-
+Thanks,
 -- 
-error compiling committee.c: too many arguments to function
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
