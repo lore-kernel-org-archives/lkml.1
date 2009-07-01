@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZGALJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZGALLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbZGALJa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbZGALJX
+	id S1755531AbZGALLU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZGALLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:09:23 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:38467 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753055AbZGALJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:09:23 -0400
-Date: Wed, 1 Jul 2009 13:09:19 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Stefan Bader <stefan.bader@canonical.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
-Subject: Re: [PATCH] mmc: prevent dangling block device from accessing stale
-  queues
-Message-ID: <20090701130919.1cb7ec04@mjolnir.ossman.eu>
-In-Reply-To: <5201e28f0906230801s11723e1bj61ac7560bfbbe55c@mail.gmail.com>
-References: <4A280BD4.9080908@canonical.com>
-	<20090610210247.GC1381@ucw.cz>
-	<5201e28f0906230801s11723e1bj61ac7560bfbbe55c@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-8633-1246446565-0001-2"
+	Wed, 1 Jul 2009 07:11:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50038 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754219AbZGALKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:10:18 -0400
+Date: Wed, 1 Jul 2009 13:10:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Greg KH <gregkh@suse.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
+Message-ID: <20090701111003.GC15958@elte.hu>
+References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.ossman.eu-8633-1246446565-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-On Tue, 23 Jun 2009 17:01:14 +0200
-Stefan Bader <stefan.bader@canonical.com> wrote:
+> On Tue, 30 Jun 2009, Greg KH wrote:
+> 
+> > >  These days an IOCK NMI typically happens in response to a PCI 
+> > > SERR -- it may be useful to traverse PCI buses to find the 
+> > > offender and dump this information on this occasion too.  The 
+> > > south bridge may have additional status too.
+> > 
+> > Sure, that would be great to have.  Care to make a patch?  :)
+> 
+>  ENOTIME, sorry.  Next year perhaps.  Or a homework project for 
+> one of the newbies. ;)
 
-> I did not see any news related to this issue. Pierre, are you waiting
-> on more info from my side? Or did I miss a change somewhere else?
->=20
+You know that this project would kill a newbie, right? :)
 
-I plan to have a closer look at this first. I believe your solution is
-a workaround and doesn't solve the real issue. As such, I want to have
-one more go at finding and fixing the real problem before committing
-this. Your analysis should help a lot in that effort.
+We have no real southbridge drivers on x86 - but we should certainly 
+add some. Also, walking the PCI device tree from NMI context is 
+tricky as the lists there are not NMI safe - we could crash if we 
+happen to get a #IOCK while loading/unloading drivers (which is rare 
+but could happen).
 
-Rgds
---=20
-     -- Pierre Ossman
+IMHO it's all very much desired functionality, but highly 
+non-trivial.
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-8633-1246446565-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpLQ+IACgkQ7b8eESbyJLg/vgCff3eeuxzhA7RpBfW9f9kKQb1D
-kR0AnjM7SXkRijcTvEfWWl6gBd9mv8h0
-=Q5Tj
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-8633-1246446565-0001-2--
+	Ingo
