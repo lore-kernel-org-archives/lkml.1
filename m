@@ -1,84 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbZGAG3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZGAGb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494AbZGAG3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZGAG3q
+	id S1752240AbZGAGb5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZGAGbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:29:46 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:57224 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbZGAG3p convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:29:45 -0400
-From: "Gadiyar, Anand" <gadiyar@ti.com>
-To: "Gadiyar, Anand" <gadiyar@ti.com>,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>
-CC: "pierre@ossman.eu" <pierre@ossman.eu>, Tony Lindgren <tony@atomide.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Date: Wed, 1 Jul 2009 11:59:28 +0530
-Subject: RE: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
- using DMA
-Thread-Topic: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
- using DMA
-Thread-Index: AcnNZ/m5/8MKE+GxRGWQOER2Yy6DygAuIxugAzEkNYAHy/GREA==
-Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB0305B783F3@dbde02.ent.ti.com>
-In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB03057422B4@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Jul 2009 02:31:50 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:42930 "EHLO deleuze.hcoop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751312AbZGAGbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:31:49 -0400
+X-Greylist: delayed 1431 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 02:31:49 EDT
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: tuxonice-devel@lists.tuxonice.net
+Cc: linux-kernel@vger.kernel.org
+Subject: RFC: Suspend-to-ram cold boot protection by encrypting page cache
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Tue, 30 Jun 2009 23:07:50 -0700
+Message-ID: <87hbxx0wcp.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 22, 2009, Gadiyar, Anand wrote:
-> On Wed, May 06, 2009, Gadiyar, Anand wrote:
-> > On Tue, May 5, 2009, Jarkko Lavinen wrote: 
-> > > On Tue, Apr 21, 2009 at 09:39:22AM +0200, ext Gadiyar, Anand wrote:
-> > > > From: Anand Gadiyar <gadiyar@ti.com>
-> > > > 
-> > > > OMAP: HSMMC: Do not enable buffer ready interrupt if using DMA
-> > > > 
-> > > > This considerably reduces the number of interrupts during a transfer
-> > > > and ought to result in some power saving.
-> > > 
-> > > I tried the patch with reading from the raw mmc block device to
-> > > /dev/null with dd (with bs 32k and 1M).  I cannot see any
-> > > difference in interrupt count from /proc/interrupts or in read
-> > > speed. At least the patch works. Cpu was 34340es3.
-> > > 
-> > > I also trid without the patch just disabling the Buffer
-> > > Read/write Ready bits from INT_EN_MASK which is then written to
-> > > both MMCHS_IE and MMCHS_ISE.  Still no change in read speed nor
-> > > mmc irq count.
-> > > 
-> > > Cheers
-> > > Jarkko Lavinen
-> > 
-> > I discovered this while doing MMC writes. I did not check if there
-> > was any difference during a read. I notice you have only tested with
-> > MMC reads.
-> > 
-> > Here's what I get with and without the patch.
-> > 
-> > - Anand
-> 
-> 
-> Any comments on this? Is it safe to merge?
-> 
-> Thanks,
-> Anand
+Hello,
 
-<snip>
+My current understanding is that there is basically no protection in
+Linux against the cold boot attack.  This means that any encryption keys
+either in kernel memory or in the page cache, as well as any other data
+in the page cache, could be compromised by such an attack.
 
+Of course, hibernating to encrypted swap protects against this risk, but
+having to resort to this effectively limits the usefulness of
+suspend-to-ram.
 
-Ping?
+I propose the following solution:
 
-Patchwork link is:
-http://patchwork.kernel.org/patch/19133/
+Encrypt, in place, the page cache (except for the pages used by a
+special userspace helper program) prior to entering S3.  Upon resuming,
+the userspace helper program somehow obtains the encryption key used to
+encrypt the page cache (possibly by prompting the user for a password,
+or reading the key off of some piece of removable hardware) and passes
+it to the kernel to use to decrypt the page cache.  Anything in the
+kernel that stores encryption keys, such as dm-crypt, would copy its
+keys to a special memory area that encrypted using the same key as the
+page cache, prior to clearing the keys from their normal memory
+locations.
 
+This would presumably be much faster than hibernating, since hibernation
+is typically severely limited by disk write speeds.
+
+Specifically, I imagine the following sequence of steps would be taken:
+
+1. Userspace helper is started.
+
+2. Userspace helper specifies to kernel the encryption key to use for
+   the page cache.
+
+3. Userspace helper tells kernel to enter S3.
+
+4. Kernel uses freezer to freeze tasks (except userspace helper) exactly
+   as is done when hibernating and otherwise does what is needed to
+   ensure that nothing will try to access the page cache.
+
+5. Kernel encrypts in place everything in the page cache except the
+   pages that are needed by the userspace helper program.
+
+6. Dm-crypt keys and any other encryption keys in the kernel are copied
+   to a special memory area and encrypted using the same key as the page
+   cache, prior to being cleared from their original memory locations.
+
+7. Kernel suspends devices and enters S3.
+
+<Wakeup from S3>
+
+8. Kernel resumes devices as is normally done when exiting S3.  Tasks
+   except the userspace helper should still be frozen at this point.
+
+9. Userspace helper obtains the encryption key (e.g. from the user or a
+   removable piece of hardware), and passes it to the kernel.
+
+10. Kernel decrypts page cache and special key storage memory area.
+
+11. Kernel tells dm-crypt and anything else that uses encryption keys in
+    the kernel to reinitialize themselves using the keys they stored in
+    the special key storage area.
+
+12. Kernel unfreezes tasks.
+
+13. Userspace helper exits.
+
+Note: There is the additional issue of free pages.  The kernel could
+zero out these pages at the same time as it is encrypting the page
+cache.  The kernel could also just ensure all free pages are zeroed as
+they become free.
+
+This proposal doesn't address the issue of kernel memory that might
+contain sensitive data (other than specifically the storage of
+encryption keys in the kernel).  Perhaps others can comment on where in
+kernel memory additional sensitive data might be stored, and how it
+might be encrypted (without crashing the system).
+
+Perhaps anyone interested can comment on the viability of this proposal.
+
+Ostensibly, the idea doesn't have anything to do with hibernation.  It
+does occur to me, though, that tuxonice may already support much of what
+is needed to implement this proposal, and that it might be possible to
+implement this with very little additional code added to tuxonice.
+Handling dm-crypt keys and other sensitive data in kernel memory might
+take more work (and in particular require some discussion about the
+proper interface to use), but at least an initial proof-of-concept
+implementation that only encrypts the page cache could probably be done
+fairly easily.
+
+If this were implemented (and it doesn't seem that it would take all
+that much work), it would make Linux the only OS, as far as I know, that
+is secure against cold boot attacks while in S3.
+
+-- 
+Jeremy Maitin-Shepard
