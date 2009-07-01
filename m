@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763906AbZGABin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbZGABjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763906AbZGABin (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbZGABie
+	id S1763108AbZGABjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbZGABjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:38:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35412 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757146AbZGABie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:38:34 -0400
-Date: Tue, 30 Jun 2009 21:34:25 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH] io-controller: optimization for iog deletion when
-	elevator exiting
-Message-ID: <20090701013425.GC13958@redhat.com>
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-6-git-send-email-vgoyal@redhat.com> <4A4850D3.3000700@cn.fujitsu.com> <20090629140631.GA4622@redhat.com> <e98e18940906301014n146e7146vb5a73c2f33c9e819@mail.gmail.com>
+	Tue, 30 Jun 2009 21:39:35 -0400
+Received: from smtp107.sbc.mail.gq1.yahoo.com ([67.195.14.110]:40858 "HELO
+	smtp107.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757146AbZGABje (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:39:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NewaKD4dMIGemBF+yWAWxTRSu5RJmbBeg8QCuJNDEUqEIm56t2G/XcVr9klt+g+eRRBJfUrnzHWbFhSm3tM8FrsyX1dKxQPPu5GA3w9E6xgG5eQHgZ4Z/3WTpicLbq0dTEH6U3LUXBqiSVOWS0WhUIWVqPua7lTYFCv2YiAL7Xo=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: lRl_G8MVM1lr_lb0AhEI64ERDxSpSAbfNwFr0CH5z9cNvU6U_rYeHt3tLYjJiG1frmo9fsWBKepm7tzEWmny56NdaNXTQAjsgbtdX35oaT30j5VDiJ46of5IXSAWPE9zmOJ5wuu9SG0dA1F1tCJyZu95V3Aa3n6nj.0R4rj4Kj4i.gVouPAbC1Ec0V7QTOBPiYxNfM.2AL1MStorqDu0Bpfemwj6PWsMy8U8zkfD8cz4v6Mk2ZNGVI53VVqEaz43vP8B41R.5CrRrhH.6MKhs8nFb3j86knIcV9X3MadnRSuJbc-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers without MISO or MOSI pin
+Date: Tue, 30 Jun 2009 18:39:13 -0700
+User-Agent: KMail/1.9.10
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net, kyungmin.park@samsung.com
+References: <000a01c9f61f$fd7ff3d0$f87fdb70$%szyprowski@samsung.com>
+In-Reply-To: <000a01c9f61f$fd7ff3d0$f87fdb70$%szyprowski@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <e98e18940906301014n146e7146vb5a73c2f33c9e819@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906301839.13764.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 10:14:48AM -0700, Nauman Rafique wrote:
-> On Mon, Jun 29, 2009 at 7:06 AM, Vivek Goyal<vgoyal@redhat.com> wrote:
-> > On Mon, Jun 29, 2009 at 01:27:47PM +0800, Gui Jianfeng wrote:
-> >> Hi Vivek,
-> >>
-> >> There's no need to travel the iocg->group_data for each iog
-> >> when exiting a elevator, that costs too much. An alternative
-> >> solution is reseting iocg_id as soon as an io group unlinking
-> >> from a iocg. Make a decision that whether it's need to carry
-> >> out deleting action by checking iocg_id.
-> >>
-> >
-> > Thanks Gui. This makes sense to me. We can check iog->iocg_id to determine
-> > wheter group is still on iocg list or not instead of traversing the list.
-> >
-> > Nauman, do you see any issues with the patch?
-> 
-> Looks like this should work. The only iog with zero id is associated
-> with root group, which gets deleted outside of this function anyways.
-> 
+On Thursday 25 June 2009, Marek Szyprowski wrote:
+> --- a/drivers/spi/spi_bitbang.c
+> +++ b/drivers/spi/spi_bitbang.c
+> @@ -392,6 +392,22 @@ int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)
+>         unsigned long           flags;
+>         int                     status = 0;
+>  
+> +       if (spi->master->flags & SPI_MASTER_NO_RX) {
+> +               struct spi_transfer *xfer;
+> +               list_for_each_entry(xfer, &m->transfers, transfer_list) {
+> +                       if (xfer->rx_buf)
+> +                               return -EINVAL;
+> +               }
+> +       }
 
-Minor correction. Even root group has id "1" and not zero. 0 is associated
-with error when cgroup is not present.
+Actually these two loops should merge, and likely move with
+spi_async() into the spi.c core code ... I'll split this
+support into a separate patch.
 
-Thanks
-Vivek
+> +
+> +       if (spi->master->flags & SPI_MASTER_NO_TX) {
+> +               struct spi_transfer *xfer;
+> +               list_for_each_entry(xfer, &m->transfers, transfer_list) {
+> +                       if (xfer->tx_buf)
+> +                               return -EINVAL;
+> +               }
+> +       }
+> +
+>         m->actual_length = 0;
+>         m->status = -EINPROGRESS;
+>  
+
+
