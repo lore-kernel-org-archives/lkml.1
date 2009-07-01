@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZGANWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZGANXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZGANWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZGANWX
+	id S1753530AbZGANXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZGANWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:22:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56541 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbZGANWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:22:23 -0400
-Date: Wed, 1 Jul 2009 15:22:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip RESEND] x86: amd_iommu.c device_nb should be static
-Message-ID: <20090701132219.GC13524@elte.hu>
-References: <1246450627.6940.6.camel@hpdv5.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246450627.6940.6.camel@hpdv5.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0008]
+	Wed, 1 Jul 2009 09:22:52 -0400
+Received: from e24smtp03.br.ibm.com ([32.104.18.24]:47705 "EHLO
+	e24smtp03.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751628AbZGANWv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:22:51 -0400
+Subject: Re: [tpmdd-devel] TPM drivers support and Linux Integrity Module
+ for 2.6.30
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: "Jonathan M. McCune" <jonmccune@cmu.edu>
+Cc: Eric Paris <eparis@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       tpmdd-devel@lists.sourceforge.net, seiji.munetoh@gmail.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+In-Reply-To: <4A3C0FF6.3080300@cmu.edu>
+References: <20cbb9450906112259m176153c9ucfa7a4d14642949f@mail.gmail.com>
+	 <1244817141.3401.7.camel@dyn9002018117.watson.ibm.com>
+	 <4A3474BD.4000804@linux.vnet.ibm.com>
+	 <b8394ab90906140015h793aaf51rb9b105910e61fa1@mail.gmail.com>
+	 <1245007238.10712.5.camel@blackbox>
+	 <1245068894.3247.22.camel@dhcp231-142.rdu.redhat.com>
+	 <4A367093.6010206@linux.vnet.ibm.com>	<4A36C04B.6070204@linux.vnet.ibm.com>
+	 <1245185391.2848.30.camel@localhost.localdomain>
+	 <23397_1245442186_n5JK9jDX021038_1245442176.31915.49.camel@blackbox>
+	 <4A3C0FF6.3080300@cmu.edu>
+Content-Type: text/plain
+Date: Wed, 01 Jul 2009 10:21:59 -0300
+Message-Id: <1246454519.9140.3.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
+On Fri, 2009-06-19 at 18:23 -0400, Jonathan M. McCune wrote:
+> I've seen this in Thinkpad T400 and X301 as well.
 > 
-> device_nb is used only by same file, it should be static.
+> -Jon
 > 
-> Also fixed NULL pointer issue.
 > 
-> Fixed following sparse warnings :
->   arch/x86/kernel/amd_iommu.c:1195:23: warning: symbol 'device_nb' was not declared. Should it be static?
->   arch/x86/kernel/amd_iommu.c:1766:10: warning: Using plain integer as NULL pointer
+> Rajiv Andrade wrote:
+> > The only Lenovo thinkpad model I know that has it is the X200. If Intel
+> > is indeed still shipping it buggy (therefore more and more unaware users
+> > are buying it), that's another story. Can you confirm that?
 
-Mind resending this with a proper changelog, along the template of:
-
-|  This Sparse warning:
-|
-|      arch/x86/kernel/amd_iommu.c...
-|
-|  triggers because <reason>. <do action> to fix that - this also
-|  addresses the Sparse warning.
-
-Where, in this current case:
-
- <reason>    := device_nb is global but is only used in a single .c file
- <do action> := change device_nb to static
-
-Please fill in the reason and action for the NULL fix as well.
-
-Please write all similar warning fix commit log messages in a 
-similar way in the future if you want me to apply them.
+Confirmed. Let's go to our patches so..
 
 Thanks,
+Rajiv
 
-	Ingo
+
+
