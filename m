@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZGAOeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZGAOe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZGAOeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZGAOeB
+	id S1752704AbZGAOe3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZGAOeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:34:01 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:37640 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750894AbZGAOeB (ORCPT
+	Wed, 1 Jul 2009 10:34:10 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:45605 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbZGAOeI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:34:01 -0400
-Date: Wed, 1 Jul 2009 10:34:03 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Arseniy Lartsev <ars3n@yandex.ru>
-cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <greg@kroah.com>
-Subject: Re: [PATCH] cdc-acm: work around some broken devices
-In-Reply-To: <200907011627.31170.ars3n@yandex.ru>
-Message-ID: <Pine.LNX.4.44L0.0907011030130.3066-100000@iolanthe.rowland.org>
+	Wed, 1 Jul 2009 10:34:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vYujE1c3WTVPYOFpdHcJXe8rVRC/rlLQ+n2/mfbVFA3p5WE0/8nsFJT5LjOn1m4ZN+
+         r/5kclEBnar9/KyJ9Nv++Jf+eC25roYOk5AuIUvWoL7eC7i4E8wrsV54ZVTRG0YAWigr
+         x337QfIVwHNgj1XpdkdULDpa3253j6jDTfKHM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <6JJ2m5kyucK.A.AtD.NJASKB@chimera>
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera>
+	 <6JJ2m5kyucK.A.AtD.NJASKB@chimera>
+Date: Wed, 1 Jul 2009 22:34:10 +0800
+Message-ID: <b6a2187b0907010734w7e7a5bbfm271f44e57e12d1b4@mail.gmail.com>
+Subject: Re: [Bug #13627] Tunnel device ignores TCP/UDP traffic
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>, Paul Martin <pm@debian.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Arseniy Lartsev wrote:
+On Mon, Jun 29, 2009 at 8:11 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
 
-> On Wednesday 01 July 2009 15:37:48 Oliver Neukum wrote:
-> > Yes, exactly. Please add greg@kroah.com into CC, add a Signed-off-by line
-> > and resend.
-> ok
-> 
-> Signed-off-by: Arseniy Lartsev <ars3n at yandex dot ru>
-> --- a/drivers/usb/class/cdc-acm.c
-> +++ b/drivers/usb/class/cdc-acm.c
-> @@ -387,6 +387,7 @@ static void acm_rx_tasklet(unsigned long
->  	struct acm_ru *rcv;
->  	unsigned long flags;
->  	unsigned char throttled;
-> +	struct usb_host_endpoint *ep;
->  
->  	dbg("Entering acm_rx_tasklet");
->  
-> @@ -462,11 +463,20 @@ urbs:
->  
->  		rcv->buffer = buf;
->  
-> -		usb_fill_bulk_urb(rcv->urb, acm->dev,
-> -				  acm->rx_endpoint,
-> -				  buf->base,
-> -				  acm->readsize,
-> -				  acm_read_bulk, rcv);
-> +		ep = (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in : acm->dev->ep_out)
-> +				[usb_pipeendpoint(acm->rx_endpoint)];
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13627
+> Subject         : Tunnel device ignores TCP/UDP traffic
+> Submitter       : Paul Martin <pm@debian.org>
+> Date            : 2009-06-26 14:45 (3 days old)
 
-Isn't acm->rx_endpoint always going to be IN?
+I think I'm having the same issue here. Both vpnc and KVM (using tap0)
+not working on 2.6.31-rc1. I think it worked before <2.6.30.
 
-Alan Stern
+i've tried the patches as mentioned in
+http://bugzilla.kernel.org/show_bug.cgi?id=13627, but still not
+working.
 
+Thanks,
+Jeff.
