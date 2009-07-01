@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbZGAA6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764906AbZGAA7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762651AbZGAA6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761464AbZGAAet
+	id S1764906AbZGAA7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761467AbZGAAet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Jun 2009 20:34:49 -0400
-Received: from kroah.org ([198.145.64.141]:60347 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:60357 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761452AbZGAAer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:47 -0400
+	id S1761458AbZGAAes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:48 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:27 2009
-Message-Id: <20090701002426.887203672@mini.kroah.org>
+Message-Id: <20090701002427.223080661@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:33 -0700
+Date: Tue, 30 Jun 2009 17:23:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 044/108] x86, UV: Fix macros for multiple coherency domains
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, jbarnes@virtuousgeek.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 045/108] x86: enable GART-IOMMU only after setting up protection methods
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=x86-uv-fix-macros-for-multiple-coherency-domains.patch
+Content-Disposition: inline; filename=x86-enable-gart-iommu-only-after-setting-up-protection-methods.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,106 +32,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jack Steiner <steiner@sgi.com>
+From: Mark Langsdorf <mark.langsdorf@amd.com>
 
-commit c4ed3f04ba9defe22aa729d1646f970f791c03d7 upstream.
+commit fe2245c905631a3a353504fc04388ce3dfaf9d9e upstream.
 
-Fix bug in the SGI UV macros that support systems with multiple
-coherency domains.  The macros used for referencing global MMR
-(chipset registers) are failing to correctly "or" the NASID
-(node identifier) bits that reside above M+N. These high bits
-are supplied automatically by the chipset for memory accesses
-coming from the processor socket.
+The current code to set up the GART as an IOMMU enables GART
+translations before it removes the aperture from the kernel memory
+map, sets the GART PTEs to UC, sets up the guard and scratch
+pages, or does a wbinvd().  This leaves the possibility of cache
+aliasing open and can cause system crashes.
 
-However, the bits must be present for references to the special
-global MMR space used to map chipset registers. (See uv_hub.h
-for more details ...)
+Re-order the code so as to enable the GART translations only
+after all safeguards are in place and the tlb has been flushed.
 
-The bug results in references to invalid/incorrect nodes.
+AMD has tested this patch on both Istanbul systems and 1st
+generation Opteron systems with APG enabled and seen no adverse
+effects.  Istanbul systems with HT Assist enabled sometimes
+see MCE errors due to cache artifacts with the unmodified
+code.
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <20090608154405.GA16395@sgi.com>
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Cc: akpm@linux-foundation.org
+Cc: jbarnes@virtuousgeek.org
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/uv/uv_hub.h   |    6 ++++--
- arch/x86/kernel/apic/x2apic_uv_x.c |   15 +++++++++------
- 2 files changed, 13 insertions(+), 8 deletions(-)
+ arch/x86/kernel/pci-gart_64.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/arch/x86/include/asm/uv/uv_hub.h
-+++ b/arch/x86/include/asm/uv/uv_hub.h
-@@ -133,6 +133,7 @@ struct uv_scir_s {
- struct uv_hub_info_s {
- 	unsigned long		global_mmr_base;
- 	unsigned long		gpa_mask;
-+	unsigned int		gnode_extra;
- 	unsigned long		gnode_upper;
- 	unsigned long		lowmem_remap_top;
- 	unsigned long		lowmem_remap_base;
-@@ -159,7 +160,8 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
-  * 		p -  PNODE (local part of nsids, right shifted 1)
-  */
- #define UV_NASID_TO_PNODE(n)		(((n) >> 1) & uv_hub_info->pnode_mask)
--#define UV_PNODE_TO_NASID(p)		(((p) << 1) | uv_hub_info->gnode_upper)
-+#define UV_PNODE_TO_GNODE(p)		((p) |uv_hub_info->gnode_extra)
-+#define UV_PNODE_TO_NASID(p)		(UV_PNODE_TO_GNODE(p) << 1)
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -688,8 +688,6 @@ static __init int init_k8_gatt(struct ag
  
- #define UV_LOCAL_MMR_BASE		0xf4000000UL
- #define UV_GLOBAL_MMR32_BASE		0xf8000000UL
-@@ -173,7 +175,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
- #define UV_GLOBAL_MMR32_PNODE_BITS(p)	((p) << (UV_GLOBAL_MMR32_PNODE_SHIFT))
+ 	agp_gatt_table = gatt;
  
- #define UV_GLOBAL_MMR64_PNODE_BITS(p)					\
--	((unsigned long)(p) << UV_GLOBAL_MMR64_PNODE_SHIFT)
-+	((unsigned long)(UV_PNODE_TO_GNODE(p)) << UV_GLOBAL_MMR64_PNODE_SHIFT)
- 
- #define UV_APIC_PNODE_SHIFT	6
- 
---- a/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -562,7 +562,7 @@ void __init uv_system_init(void)
- 	union uvh_node_id_u node_id;
- 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
- 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
--	int max_pnode = 0;
-+	int gnode_extra, max_pnode = 0;
- 	unsigned long mmr_base, present, paddr;
- 	unsigned short pnode_mask;
- 
-@@ -574,6 +574,13 @@ void __init uv_system_init(void)
- 	mmr_base =
- 	    uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR) &
- 	    ~UV_MMR_ENABLE;
-+	pnode_mask = (1 << n_val) - 1;
-+	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
-+	gnode_extra = (node_id.s.node_id & ~((1 << n_val) - 1)) >> 1;
-+	gnode_upper = ((unsigned long)gnode_extra  << m_val);
-+	printk(KERN_DEBUG "UV: N %d, M %d, gnode_upper 0x%lx, gnode_extra 0x%x\n",
-+			n_val, m_val, gnode_upper, gnode_extra);
-+
- 	printk(KERN_DEBUG "UV: global MMR base 0x%lx\n", mmr_base);
- 
- 	for(i = 0; i < UVH_NODE_PRESENT_TABLE_DEPTH; i++)
-@@ -607,11 +614,6 @@ void __init uv_system_init(void)
- 		}
- 	}
- 
--	pnode_mask = (1 << n_val) - 1;
--	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
--	gnode_upper = (((unsigned long)node_id.s.node_id) &
--		       ~((1 << n_val) - 1)) << m_val;
+-	enable_gart_translations();
 -
- 	uv_bios_init();
- 	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
- 			    &sn_coherency_id, &sn_region_size);
-@@ -634,6 +636,7 @@ void __init uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->pnode_mask = pnode_mask;
- 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
- 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
-+		uv_cpu_hub_info(cpu)->gnode_extra = gnode_extra;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
- 		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
- 		uv_cpu_hub_info(cpu)->scir.offset = SCIR_LOCAL_MMR_BASE + lcpu;
+ 	error = sysdev_class_register(&gart_sysdev_class);
+ 	if (!error)
+ 		error = sysdev_register(&device_gart);
+@@ -845,6 +843,14 @@ void __init gart_iommu_init(void)
+ 	 * the pages as Not-Present:
+ 	 */
+ 	wbinvd();
++
++	/*
++	 * Now all caches are flushed and we can safely enable
++	 * GART hardware.  Doing it early leaves the possibility
++	 * of stale cache entries that can lead to GART PTE
++	 * errors.
++	 */
++	enable_gart_translations();
+ 
+ 	/*
+ 	 * Try to workaround a bug (thanks to BenH):
 
 
