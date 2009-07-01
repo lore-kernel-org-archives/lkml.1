@@ -1,100 +1,481 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbZGAJto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbZGAJ7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbZGAJto (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZGAJtV
+	id S1754797AbZGAJ7v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZGAJ7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:49:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52643 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755644AbZGAJtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:49:20 -0400
-Subject: [PATCH 6/6 -tip] perf_counter: Add hardware interrupt events for
- nehalem, core2 and atom
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1246441137.3403.11.camel@hpdv5.satnam>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam>
-	 <1246441094.3403.10.camel@hpdv5.satnam>
-	 <1246441137.3403.11.camel@hpdv5.satnam>
-Content-Type: text/plain
-Date: Wed, 01 Jul 2009 15:10:11 +0530
-Message-Id: <1246441211.3403.12.camel@hpdv5.satnam>
+	Wed, 1 Jul 2009 05:59:43 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49323 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZGAJ7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:59:41 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 1 Jul 2009 18:57:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: [RFC][PATCH] ZERO PAGE again
+Message-Id: <20090701185759.18634360.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ZERO PAGE was removed in 2.6.24 (=> http://lkml.org/lkml/2007/10/9/112)
+and I had no objections.
 
-Add hardware interrupt events for nehalem, core2 and atom
+In these days, at user support jobs, I noticed a few of customers
+are making use of ZERO_PAGE intentionally...brutal mmap and scan, etc. They are
+using RHEL4-5(before 2.6.18) then they don't notice that ZERO_PAGE
+is gone, yet.
+yes, I can say  "ZERO PAGE is gone" to them in next generation distro.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Recently, a question comes to lkml (http://lkml.org/lkml/2009/6/4/383
+
+Maybe there are some users of ZERO_PAGE other than my customers.
+So, can't we use ZERO_PAGE again ?
+
+IIUC, the problem of ZERO_PAGE was
+  - reference count cache ping-pong
+  - complicated handling.
+  - the behavior page-fault-twice can make applications slow.
+
+This patch is a trial to de-refcounted ZERO_PAGE.
+Any comments are welcome. I'm sorry for digging grave...
+
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+IIUC, ZERO_PAGE was removed in 2.6.24 because
+ * refcounting against ZERO_PAGE makes performance bad
+ * de-refcouning patch for ZERO_PAGE tend to be complicated and ugly.
+
+Very long time since 2.6.24 but there are still questions to ZERO PAGE
+and I find a few of my cousotmer expects ZERO_PAGE recently.
+
+This one is a trial for re-introduce ZERO PAGE. This patch modifies
+vm_normal_page(vma, address, pte) as
+ * vm_normal_page(vma, address, pte, zeropage)
+zeropage is a bool pointer. If ZERO_PAGE is found, vm_normal_page returns
+NULL but *zeropage is set to true.
+
+This patch doesn't modify get_user_page()/get_user_page_fast()'s page_count 
+handling.  Then, ZERO_PAGE()'s refcnt can be modified when it's accessed
+via gup. And, this patch doesn't have zeromap_page_range() used in /dev/zero.
+
+mlock() uses get_user_pages() for scanning address space and finding pages.
+It should handle zero page (after this.)
+I think all other cases are covered as far as they use vm_normal_page().
+
+I wonder....get_user_page() should return NULL if the page is zero page ?
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- arch/x86/kernel/cpu/perf_counter.c |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+ fs/proc/task_mmu.c |   16 +++++++-
+ include/linux/mm.h |    2 -
+ mm/fremap.c        |    6 ++-
+ mm/memory.c        |  103 +++++++++++++++++++++++++++++++++++++++++++++--------
+ mm/mempolicy.c     |    7 ++-
+ mm/mlock.c         |    7 +++
+ mm/rmap.c          |    6 ++-
+ 7 files changed, 125 insertions(+), 22 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 8f05226..4ef1838 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -394,6 +394,20 @@ static const u64 nehalem_hw_vector_event_ids[] =
- 
- static u64 __read_mostly hw_interrupt_event_ids[PERF_COUNT_HW_INTERRUPT_MAX];
- 
-+static const u64 nehalem_hw_interrupt_event_ids[] =
-+{
-+  [PERF_COUNT_HW_INTERRUPT]		= 0x011D, /* HW_INT.RCV              */
-+  [PERF_COUNT_HW_INTERRUPT_MASK]	= 0x021D, /* HW_INT.CYCLES_MASKED    */
-+  [PERF_COUNT_HW_INTERRUPT_PENDING_MASK]= 0x041D, /* HW_INT.CYCLES_PENDING_AND_MASKED*/
-+};
-+
-+static const u64 core2_atom_hw_interrupt_event_ids[] =
-+{
-+  [PERF_COUNT_HW_INTERRUPT]		= 0x00C8, /* HW_INT_RCV              */
-+  [PERF_COUNT_HW_INTERRUPT_MASK]	= 0x01C6, /* CYCLES_INT_MASKED.CYCLES_INT_MASKED*/
-+  [PERF_COUNT_HW_INTERRUPT_PENDING_MASK]= 0x02C6, /* CYCLES_INT_MASKED.CYCLES_INT_PENDING_AND_MASKED*/
-+};
-+
- static u64 intel_pmu_raw_event(u64 event)
+Index: mmotm-2.6.31-Jun25/mm/memory.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/memory.c
++++ mmotm-2.6.31-Jun25/mm/memory.c
+@@ -482,14 +482,16 @@ static inline int is_cow_mapping(unsigne
+  * advantage is that we don't have to follow the strict linearity rule of
+  * PFNMAP mappings in order to support COWable mappings.
+  *
++ * If we found ZERO_PAGE, NULL is retuned and an argument "zeropage" is set
++ * to true.
+  */
+ #ifdef __HAVE_ARCH_PTE_SPECIAL
+ # define HAVE_PTE_SPECIAL 1
+ #else
+ # define HAVE_PTE_SPECIAL 0
+ #endif
+-struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+-				pte_t pte)
++static struct page *
++__vm_normal_page(struct vm_area_struct *vma, unsigned long addr, pte_t pte)
  {
- #define CORE_EVNTSEL_EVENT_MASK		0x000000FFULL
-@@ -1506,6 +1520,8 @@ static int intel_pmu_init(void)
- 	case 29: /* six-core 45 nm xeon "Dunnington" */
- 		memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
- 		       sizeof(hw_cache_event_ids));
-+		memcpy(hw_interrupt_event_ids, core2_atom_hw_interrupt_event_ids,
-+		       sizeof(hw_interrupt_event_ids));
+ 	unsigned long pfn = pte_pfn(pte);
  
- 		pr_cont("Core2 events, ");
- 		break;
-@@ -1515,12 +1531,16 @@ static int intel_pmu_init(void)
- 		       sizeof(hw_cache_event_ids));
- 		memcpy(hw_vector_event_ids, nehalem_hw_vector_event_ids,
- 		       sizeof(hw_vector_event_ids));
-+		memcpy(hw_interrupt_event_ids, nehalem_hw_interrupt_event_ids,
-+		       sizeof(hw_interrupt_event_ids));
+@@ -532,6 +534,21 @@ out:
+ 	return pfn_to_page(pfn);
+ }
  
- 		pr_cont("Nehalem/Corei7 events, ");
- 		break;
- 	case 28:
- 		memcpy(hw_cache_event_ids, atom_hw_cache_event_ids,
- 		       sizeof(hw_cache_event_ids));
-+		memcpy(hw_interrupt_event_ids, core2_atom_hw_interrupt_event_ids,
-+		       sizeof(hw_interrupt_event_ids));
++struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
++			    pte_t pte, bool *zeropage)
++{
++	struct page *page;
++
++	*zeropage = false;
++	page = __vm_normal_page(vma, addr, pte);
++	if (page == ZERO_PAGE(0)) {
++		*zeropage = true;
++		return NULL;
++	}
++	return page;
++}
++
++
+ /*
+  * copy one vm_area from one task to the other. Assumes the page tables
+  * already present in the new task to be cleared in the whole range
+@@ -546,6 +563,7 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 	unsigned long vm_flags = vma->vm_flags;
+ 	pte_t pte = *src_pte;
+ 	struct page *page;
++	bool zerocheck;
  
- 		pr_cont("Atom events, ");
- 		break;
--- 
-1.6.0.6
-
-
+ 	/* pte contains position in swap or file, so copy. */
+ 	if (unlikely(!pte_present(pte))) {
+@@ -592,12 +610,13 @@ copy_one_pte(struct mm_struct *dst_mm, s
+ 		pte = pte_mkclean(pte);
+ 	pte = pte_mkold(pte);
+ 
+-	page = vm_normal_page(vma, addr, pte);
++	page = vm_normal_page(vma, addr, pte, &zerocheck);
+ 	if (page) {
+ 		get_page(page);
+ 		page_dup_rmap(page, vma, addr);
+ 		rss[!!PageAnon(page)]++;
+-	}
++	} else if (zerocheck)/* no refcnt, no rmap, but increase file rss */
++		rss[0]++;
+ 
+ out_set_pte:
+ 	set_pte_at(dst_mm, addr, dst_pte, pte);
+@@ -768,6 +787,7 @@ static unsigned long zap_pte_range(struc
+ 	spinlock_t *ptl;
+ 	int file_rss = 0;
+ 	int anon_rss = 0;
++	bool zc;
+ 
+ 	pte = pte_offset_map_lock(mm, pmd, addr, &ptl);
+ 	arch_enter_lazy_mmu_mode();
+@@ -783,7 +803,7 @@ static unsigned long zap_pte_range(struc
+ 		if (pte_present(ptent)) {
+ 			struct page *page;
+ 
+-			page = vm_normal_page(vma, addr, ptent);
++			page = vm_normal_page(vma, addr, ptent, &zc);
+ 			if (unlikely(details) && page) {
+ 				/*
+ 				 * unmap_shared_mapping_pages() wants to
+@@ -805,6 +825,11 @@ static unsigned long zap_pte_range(struc
+ 			ptent = ptep_get_and_clear_full(mm, addr, pte,
+ 							tlb->fullmm);
+ 			tlb_remove_tlb_entry(tlb, pte, addr);
++
++			if (unlikely(zc)) {
++				file_rss--;
++				continue;
++			}
+ 			if (unlikely(!page))
+ 				continue;
+ 			if (unlikely(details) && details->nonlinear_vma
+@@ -1100,6 +1125,7 @@ struct page *follow_page(struct vm_area_
+ 	spinlock_t *ptl;
+ 	struct page *page;
+ 	struct mm_struct *mm = vma->vm_mm;
++	bool zc;
+ 
+ 	page = follow_huge_addr(mm, address, flags & FOLL_WRITE);
+ 	if (!IS_ERR(page)) {
+@@ -1141,9 +1167,11 @@ struct page *follow_page(struct vm_area_
+ 		goto no_page;
+ 	if ((flags & FOLL_WRITE) && !pte_write(pte))
+ 		goto unlock;
+-	page = vm_normal_page(vma, address, pte);
+-	if (unlikely(!page))
++	page = vm_normal_page(vma, address, pte, &zc);
++	if (unlikely(!page && !zc))
+ 		goto bad_page;
++	if (zc)
++		page = ZERO_PAGE(0);
+ 
+ 	if (flags & FOLL_GET)
+ 		get_page(page);
+@@ -1156,7 +1184,8 @@ struct page *follow_page(struct vm_area_
+ 		 * is needed to avoid losing the dirty bit: it is easier to use
+ 		 * mark_page_accessed().
+ 		 */
+-		mark_page_accessed(page);
++		if (!zc)
++			mark_page_accessed(page);
+ 	}
+ unlock:
+ 	pte_unmap_unlock(ptep, ptl);
+@@ -1259,7 +1288,12 @@ int __get_user_pages(struct task_struct 
+ 				return i ? : -EFAULT;
+ 			}
+ 			if (pages) {
+-				struct page *page = vm_normal_page(gate_vma, start, *pte);
++				bool zc;
++				struct page *page;
++				page = vm_normal_page(gate_vma, start,
++						      *pte, &zc);
++				if (zc)
++					page = ZERO_PAGE(0);
+ 				pages[i] = page;
+ 				if (page)
+ 					get_page(page);
+@@ -1954,8 +1988,16 @@ static int do_wp_page(struct mm_struct *
+ 	int reuse = 0, ret = 0;
+ 	int page_mkwrite = 0;
+ 	struct page *dirty_page = NULL;
++	bool zc;
++	gfp_t gfpflags = GFP_HIGHUSER_MOVABLE;
+ 
+-	old_page = vm_normal_page(vma, address, orig_pte);
++	old_page = vm_normal_page(vma, address, orig_pte, &zc);
++	/* If zero page, we don't have to copy...*/
++	if (unlikely(zc)) {
++		/* zc == true but oldpage is null under here */
++		gfpflags |= __GFP_ZERO;
++		goto gotten;
++	}
+ 	if (!old_page) {
+ 		/*
+ 		 * VM_MIXEDMAP !pfn_valid() case
+@@ -2075,8 +2117,8 @@ gotten:
+ 
+ 	if (unlikely(anon_vma_prepare(vma)))
+ 		goto oom;
+-	VM_BUG_ON(old_page == ZERO_PAGE(0));
+-	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
++
++	new_page = alloc_page_vma(gfpflags, vma, address);
+ 	if (!new_page)
+ 		goto oom;
+ 	/*
+@@ -2088,7 +2130,8 @@ gotten:
+ 		clear_page_mlock(old_page);
+ 		unlock_page(old_page);
+ 	}
+-	cow_user_page(new_page, old_page, address, vma);
++	if (!zc)
++		cow_user_page(new_page, old_page, address, vma);
+ 	__SetPageUptodate(new_page);
+ 
+ 	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
+@@ -2104,8 +2147,11 @@ gotten:
+ 				dec_mm_counter(mm, file_rss);
+ 				inc_mm_counter(mm, anon_rss);
+ 			}
+-		} else
++		} else {
++			if (zc)
++				dec_mm_counter(mm, file_rss);
+ 			inc_mm_counter(mm, anon_rss);
++		}
+ 		flush_cache_page(vma, address, pte_pfn(orig_pte));
+ 		entry = mk_pte(new_page, vma->vm_page_prot);
+ 		entry = maybe_mkwrite(pte_mkdirty(entry), vma);
+@@ -2612,6 +2658,31 @@ out_page:
+ 	return ret;
+ }
+ 
++static int anon_map_zeropage(struct mm_struct *mm, struct vm_area_struct *vma,
++			     pmd_t *pmd, unsigned long address)
++{
++	struct page *page;
++	spinlock_t *ptl;
++	pte_t entry;
++	pte_t *page_table;
++	int ret = 1;
++
++	page = ZERO_PAGE(0);
++	entry = mk_pte(page, vma->vm_page_prot);
++	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
++	if (!pte_none(*page_table))
++		goto out_unlock;
++	inc_mm_counter(mm, file_rss);
++	set_pte_at(mm, address, page_table, entry);
++	/* No need to invalidate entry...it was not present here. */
++	update_mmu_cache(vma, address, entry);
++	ret = 0;
++out_unlock:
++	pte_unmap_unlock(page_table, ptl);
++	return ret;
++}
++
++
+ /*
+  * We enter with non-exclusive mmap_sem (to exclude vma changes,
+  * but allow concurrent faults), and pte mapped but not yet locked.
+@@ -2630,6 +2701,10 @@ static int do_anonymous_page(struct mm_s
+ 
+ 	if (unlikely(anon_vma_prepare(vma)))
+ 		goto oom;
++	if (unlikely(!(flags & FAULT_FLAG_WRITE))) {
++		if (!anon_map_zeropage(mm, vma, pmd, address))
++			return 0;
++	}
+ 	page = alloc_zeroed_user_highpage_movable(vma, address);
+ 	if (!page)
+ 		goto oom;
+Index: mmotm-2.6.31-Jun25/mm/fremap.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/fremap.c
++++ mmotm-2.6.31-Jun25/mm/fremap.c
+@@ -27,13 +27,14 @@ static void zap_pte(struct mm_struct *mm
+ 			unsigned long addr, pte_t *ptep)
+ {
+ 	pte_t pte = *ptep;
++	bool zc;
+ 
+ 	if (pte_present(pte)) {
+ 		struct page *page;
+ 
+ 		flush_cache_page(vma, addr, pte_pfn(pte));
+ 		pte = ptep_clear_flush(vma, addr, ptep);
+-		page = vm_normal_page(vma, addr, pte);
++		page = vm_normal_page(vma, addr, pte, &zc);
+ 		if (page) {
+ 			if (pte_dirty(pte))
+ 				set_page_dirty(page);
+@@ -41,6 +42,9 @@ static void zap_pte(struct mm_struct *mm
+ 			page_cache_release(page);
+ 			update_hiwater_rss(mm);
+ 			dec_mm_counter(mm, file_rss);
++		} else if (zc) {
++			update_hiwater_rss(mm);
++			dec_mm_counter(mm, file_rss);
+ 		}
+ 	} else {
+ 		if (!pte_file(pte))
+Index: mmotm-2.6.31-Jun25/mm/rmap.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/rmap.c
++++ mmotm-2.6.31-Jun25/mm/rmap.c
+@@ -941,9 +941,13 @@ static int try_to_unmap_cluster(unsigned
+ 	update_hiwater_rss(mm);
+ 
+ 	for (; address < end; pte++, address += PAGE_SIZE) {
++		bool zc;
++
+ 		if (!pte_present(*pte))
+ 			continue;
+-		page = vm_normal_page(vma, address, *pte);
++		page = vm_normal_page(vma, address, *pte, &zc);
++		if (zc)
++			continue;
+ 		BUG_ON(!page || PageAnon(page));
+ 
+ 		if (locked_vma) {
+Index: mmotm-2.6.31-Jun25/fs/proc/task_mmu.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/fs/proc/task_mmu.c
++++ mmotm-2.6.31-Jun25/fs/proc/task_mmu.c
+@@ -347,6 +347,7 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 	spinlock_t *ptl;
+ 	struct page *page;
+ 	int mapcount;
++	bool zc;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+@@ -362,7 +363,13 @@ static int smaps_pte_range(pmd_t *pmd, u
+ 
+ 		mss->resident += PAGE_SIZE;
+ 
+-		page = vm_normal_page(vma, addr, ptent);
++		page = vm_normal_page(vma, addr, ptent, &zc);
++		if (zc) {
++			if (pte_young(ptent))
++				mss->referenced += PAGE_SIZE;
++			mss->shared_clean += PAGE_SIZE;
++			/* don't increase mss->pss */
++		}
+ 		if (!page)
+ 			continue;
+ 
+@@ -463,6 +470,7 @@ static int clear_refs_pte_range(pmd_t *p
+ 	pte_t *pte, ptent;
+ 	spinlock_t *ptl;
+ 	struct page *page;
++	bool zc;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+ 	for (; addr != end; pte++, addr += PAGE_SIZE) {
+@@ -470,7 +478,11 @@ static int clear_refs_pte_range(pmd_t *p
+ 		if (!pte_present(ptent))
+ 			continue;
+ 
+-		page = vm_normal_page(vma, addr, ptent);
++		page = vm_normal_page(vma, addr, ptent, &zc);
++		if (zc) {
++			ptep_test_and_clear_young(vma, addr, pte);
++			continue;
++		}
+ 		if (!page)
+ 			continue;
+ 
+Index: mmotm-2.6.31-Jun25/mm/mempolicy.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/mempolicy.c
++++ mmotm-2.6.31-Jun25/mm/mempolicy.c
+@@ -401,16 +401,17 @@ static int check_pte_range(struct vm_are
+ 	do {
+ 		struct page *page;
+ 		int nid;
++		bool zc;
+ 
+ 		if (!pte_present(*pte))
+ 			continue;
+-		page = vm_normal_page(vma, addr, *pte);
++		page = vm_normal_page(vma, addr, *pte, &zc);
+ 		if (!page)
+ 			continue;
+ 		/*
+ 		 * The check for PageReserved here is important to avoid
+-		 * handling zero pages and other pages that may have been
+-		 * marked special by the system.
++		 * handling pages that may have been marked special by the
++		 * system.
+ 		 *
+ 		 * If the PageReserved would not be checked here then f.e.
+ 		 * the location of the zero page could have an influence
+Index: mmotm-2.6.31-Jun25/include/linux/mm.h
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/include/linux/mm.h
++++ mmotm-2.6.31-Jun25/include/linux/mm.h
+@@ -753,7 +753,7 @@ struct zap_details {
+ };
+ 
+ struct page *vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+-		pte_t pte);
++			    pte_t pte, bool *zeropage);
+ 
+ int zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned long size);
+Index: mmotm-2.6.31-Jun25/mm/mlock.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/mlock.c
++++ mmotm-2.6.31-Jun25/mm/mlock.c
+@@ -220,6 +220,13 @@ static long __mlock_vma_pages_range(stru
+ 		for (i = 0; i < ret; i++) {
+ 			struct page *page = pages[i];
+ 
++			/* we don't lock zero page...*/
++			if (page == ZERO_PAGE(0)) {
++				put_page(page);
++				addr += PAGE_SIZE;
++				nr_pages--;
++				continue;
++			}
+ 			lock_page(page);
+ 			/*
+ 			 * Because we lock page here and migration is blocked
 
