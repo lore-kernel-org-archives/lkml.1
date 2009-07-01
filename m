@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZGAHLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZGAHQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbZGAHLv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZGAHLn
+	id S1752575AbZGAHQq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZGAHQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:11:43 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:49134 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbZGAHLn (ORCPT
+	Wed, 1 Jul 2009 03:16:38 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:38578 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbZGAHQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:11:43 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 1 Jul 2009 00:10:50 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Avi Kivity <avi@qumranet.com>, linux-next@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: linux-next: manual merge of the kvm tree with Linus' tree
-In-Reply-To: <20090701145711.1c9c8935.sfr@canb.auug.org.au>
-Message-ID: <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com>
-References: <20090701145711.1c9c8935.sfr@canb.auug.org.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 1 Jul 2009 03:16:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=q07QBAgJISnamOT8oyqk8lzBKNC6TnHfybjHEsWcfAWTgTRl3CqKN18rcVyiEJi9iY
+         tToM/N1Jam0EpPLD7/TpLtk03sF2lVk9IUAgs4ohBq2tnD6uUhX51jplDDF8/wxGSVK6
+         a+WOLr8K2rbcFdw60O7gCQuFjrEOfo0+mcbfU=
+Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
+ not work
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>, linux-ide@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20090630144540.GA18212@linux-mips.org>
+References: <1246372868.19049.17.camel@falcon>
+	 <20090630144540.GA18212@linux-mips.org>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 01 Jul 2009 15:16:10 +0800
+Message-Id: <1246432570.9660.22.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Stephen Rothwell wrote:
-
-> Hi Avi,
+On Tue, 2009-06-30 at 15:45 +0100, Ralf Baechle wrote:
+> On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
 > 
-> Today's linux-next merge of the kvm tree got a conflict in fs/eventfd.c
-> between commit 133890103b9de08904f909995973e4b5c08a780e ("eventfd:
-> revised interface and cleanups") from Linus' tree and commit
-> 28ddf0aebbf546e56efd1951725d5457ce1ebf98 ("eventfd: Allow waiters to be
-> notified about the eventfd file* going away") from the kvm tree.
+> > I just updated my git repository to the master branch of the latest
+> > linux-mips git repository, and tested the STD/Hibernation support on
+> > fuloong2e and yeeloong2f, it failed:
+> > 
+> > when using the no_console_suspend kernel command line to debug, it
+> > stopped on:
+> > 
+> > PM: Shringking memory... done (1000 pages freed)
+> > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
+> > PM: Creating hibernation image:
+> > PM: Need to copy 5053 pages
+> > PM: Hibernation image created (4195 pages copied)
+> > 
+> > and then, the number indicator light of keyboard works well, but can not
+> > type anything. 
+> > 
+> > anybody have tested it on another platform? does it work?
 > 
-> Overlapping changes.  I fixed it up (see below), but don't know if this
-> is the correct fix.
+> At the time of the merge I tested it on Malta and found it to be working.
 > 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --cc fs/eventfd.c
-> index 31d12de,72f5f8d..0000000
-> --- a/fs/eventfd.c
-> +++ b/fs/eventfd.c
-> @@@ -105,8 -63,13 +105,13 @@@ static int eventfd_release(struct inod
->   {
->   	struct eventfd_ctx *ctx = file->private_data;
->   
-> - 	wake_up_poll(&ctx->wqh, POLLHUP);
-> + 	/*
-> + 	 * No need to hold the lock here, since we are on the file cleanup
-> + 	 * path and the ones still attached to the wait queue will be
-> + 	 * serialized by wake_up_locked_poll().
-> + 	 */
-> + 	wake_up_locked_poll(&ctx->wqh, POLLHUP);
->  -	kfree(ctx);
->  +	eventfd_ctx_put(ctx);
->   	return 0;
->   }
 
-That's fine.
-There are a couple of extra spaces before the last two -+ in that patch 
-though ;)
+Just traced it, the executing path is something like this:
 
+	hibernate(kernel/power/hibernate.c)
+	--> hibernation_snapshot
+	--> dpm_resume_end
+	--> dpm_resume
+        --> device_resume
+	--> dev->bus->resume(generic_ide_resume), dev_name(dev) = 0.0
+	--> blk_execute_rq
+        {
+		DECLARE_COMPLETION_ONSTACK(wait);
+		...
+		wait_for_completion(&wait);	// stop here
+		...
+	}
 
-- Davide
+I guess there is a possible bug in the latest ide patches, I'm trying to
+find which one is 'bad'.
 
+the ide driver i used is VIA82CXXX chipset support.
+
+Regards,
+Wu Zhangjin
 
