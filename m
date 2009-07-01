@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbZGABAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763839AbZGABAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761431AbZGABAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761485AbZGAAez
+	id S1763839AbZGABAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbZGAAe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:55 -0400
-Received: from kroah.org ([198.145.64.141]:60383 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:56 -0400
+Received: from kroah.org ([198.145.64.141]:60396 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761487AbZGAAew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:52 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:28 2009
-Message-Id: <20090701002428.620627552@mini.kroah.org>
+	id S1761502AbZGAAey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:29 2009
+Message-Id: <20090701002429.246830955@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:38 -0700
+Date: Tue, 30 Jun 2009 17:23:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 049/108] x86: handle initrd that extends into unusable memory
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 051/108] ALSA: intel8x0 - Fix PCM position craziness
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=x86-handle-initrd-that-extends-into-unusable-memory.patch
+Content-Disposition: inline; filename=alsa-intel8x0-fix-pcm-position-craziness.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,76 +30,89 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 8c5dd8f43367f4f266dd616f11658005bc2d20ef upstream.
+commit f708eb1d71dc8ffb184da9f0bc53461c6dc10653 upstream.
 
-On a system where system memory (according e820) is not covered by
-mtrr, mtrr_trim_memory converts a portion of memory to reserved, but
-bootloader has already put the initrd in that range.
+The PCM pointer callback sometimes returns invalid positions and this
+screws up the hw_ptr updater in PCM core.  Especially since now the
+jiffies check is optional with xrun_debug, the invalid position is
+handled as is, and causes serious sound skips, etc.
 
-Thus, we need to have 64bit to use relocate_initrd too.
+This patch simplifies the position-fix strategy in intel8x0 to be more
+robust:
+- just falls back to the last position if bogus position is detected
+- another sanity check for the backward move of the position due to
+  a race of register update and the base-index update
 
-[ Impact: fix using initrd when mtrr_trim_memory happen ]
+This patch is applicable also for 2.6.30.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Tested-by: David Miller <davem@davemloft.net>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup.c |   15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+ sound/pci/intel8x0.c |   24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -293,15 +293,13 @@ static void __init reserve_brk(void)
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- 
--#ifdef CONFIG_X86_32
--
- #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
- static void __init relocate_initrd(void)
- {
- 
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
- 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
--	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
-+	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
- 	u64 ramdisk_here;
- 	unsigned long slop, clen, mapaddr;
- 	char *p, *q;
-@@ -357,14 +355,13 @@ static void __init relocate_initrd(void)
- 		ramdisk_image, ramdisk_image + ramdisk_size - 1,
- 		ramdisk_here, ramdisk_here + ramdisk_size - 1);
- }
--#endif
- 
- static void __init reserve_initrd(void)
- {
- 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
- 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
- 	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
--	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
-+	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
- 
- 	if (!boot_params.hdr.type_of_loader ||
- 	    !ramdisk_image || !ramdisk_size)
-@@ -394,14 +391,8 @@ static void __init reserve_initrd(void)
- 		return;
+--- a/sound/pci/intel8x0.c
++++ b/sound/pci/intel8x0.c
+@@ -356,8 +356,6 @@ struct ichdev {
+         unsigned int position;
+ 	unsigned int pos_shift;
+ 	unsigned int last_pos;
+-	unsigned long last_pos_jiffies;
+-	unsigned int jiffy_to_bytes;
+         int frags;
+         int lvi;
+         int lvi_frag;
+@@ -844,7 +842,6 @@ static int snd_intel8x0_pcm_trigger(stru
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		val = ICH_IOCE | ICH_STARTBM;
+ 		ichdev->last_pos = ichdev->position;
+-		ichdev->last_pos_jiffies = jiffies;
+ 		break;
+ 	case SNDRV_PCM_TRIGGER_SUSPEND:
+ 		ichdev->suspended = 1;
+@@ -1048,7 +1045,6 @@ static int snd_intel8x0_pcm_prepare(stru
+ 			ichdev->pos_shift = (runtime->sample_bits > 16) ? 2 : 1;
  	}
- 
--#ifdef CONFIG_X86_32
- 	relocate_initrd();
--#else
--	printk(KERN_ERR "initrd extends beyond end of memory "
--	       "(0x%08llx > 0x%08llx)\ndisabling initrd\n",
--	       ramdisk_end, end_of_lowmem);
--	initrd_start = 0;
--#endif
-+
- 	free_early(ramdisk_image, ramdisk_end);
+ 	snd_intel8x0_setup_periods(chip, ichdev);
+-	ichdev->jiffy_to_bytes = (runtime->rate * 4 * ichdev->pos_shift) / HZ;
+ 	return 0;
  }
- #else
+ 
+@@ -1073,19 +1069,23 @@ static snd_pcm_uframes_t snd_intel8x0_pc
+ 		    ptr1 == igetword(chip, ichdev->reg_offset + ichdev->roff_picb))
+ 			break;
+ 	} while (timeout--);
++	ptr = ichdev->last_pos;
+ 	if (ptr1 != 0) {
+ 		ptr1 <<= ichdev->pos_shift;
+ 		ptr = ichdev->fragsize1 - ptr1;
+ 		ptr += position;
+-		ichdev->last_pos = ptr;
+-		ichdev->last_pos_jiffies = jiffies;
+-	} else {
+-		ptr1 = jiffies - ichdev->last_pos_jiffies;
+-		if (ptr1)
+-			ptr1 -= 1;
+-		ptr = ichdev->last_pos + ptr1 * ichdev->jiffy_to_bytes;
+-		ptr %= ichdev->size;
++		if (ptr < ichdev->last_pos) {
++			unsigned int pos_base, last_base;
++			pos_base = position / ichdev->fragsize1;
++			last_base = ichdev->last_pos / ichdev->fragsize1;
++			/* another sanity check; ptr1 can go back to full
++			 * before the base position is updated
++			 */
++			if (pos_base == last_base)
++				ptr = ichdev->last_pos;
++		}
+ 	}
++	ichdev->last_pos = ptr;
+ 	spin_unlock(&chip->reg_lock);
+ 	if (ptr >= ichdev->size)
+ 		return 0;
 
 
