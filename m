@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762363AbZGAA6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762651AbZGAA6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762363AbZGAA6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761454AbZGAAer
+	id S1762651AbZGAA6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761464AbZGAAet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:47 -0400
-Received: from kroah.org ([198.145.64.141]:60342 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:49 -0400
+Received: from kroah.org ([198.145.64.141]:60347 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761448AbZGAAeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:26 2009
-Message-Id: <20090701002426.544692405@mini.kroah.org>
+	id S1761452AbZGAAer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:27 2009
+Message-Id: <20090701002426.887203672@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:32 -0700
+Date: Tue, 30 Jun 2009 17:23:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Cliff Wickman <cpw@sgi.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 043/108] x86: Fix UV BAU activation descriptor init
+       Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 044/108] x86, UV: Fix macros for multiple coherency domains
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=x86-fix-uv-bau-activation-descriptor-init.patch
+Content-Disposition: inline; filename=x86-uv-fix-macros-for-multiple-coherency-domains.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,77 +30,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Cliff Wickman <cpw@sgi.com>
+From: Jack Steiner <steiner@sgi.com>
 
-commit 0e2595cdfd7df9f1128f7185152601ae5417483b upstream.
+commit c4ed3f04ba9defe22aa729d1646f970f791c03d7 upstream.
 
-The UV tlb shootdown code has a serious initialization error.
+Fix bug in the SGI UV macros that support systems with multiple
+coherency domains.  The macros used for referencing global MMR
+(chipset registers) are failing to correctly "or" the NASID
+(node identifier) bits that reside above M+N. These high bits
+are supplied automatically by the chipset for memory accesses
+coming from the processor socket.
 
-An array of structures [32*8] is initialized as if it were [32].
-The array is indexed by (cpu number on the blade)*8, so the short
-initialization works for up to 4 cpus on a blade.
-But above that, we provide an invalid opcode to the hub's
-broadcast assist unit.
+However, the bits must be present for references to the special
+global MMR space used to map chipset registers. (See uv_hub.h
+for more details ...)
 
-This patch changes the allocation of the array to use its symbolic
-dimensions for better clarity. And initializes all 32*8 entries.
+The bug results in references to invalid/incorrect nodes.
 
-Shortened 'UV_ACTIVATION_DESCRIPTOR_SIZE' to 'UV_ADP_SIZE' per Ingo's
-recommendation.
-
-Tested on the UV simulator.
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-LKML-Reference: <E1M6lZR-0007kV-Aq@eag09.americas.sgi.com>
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+LKML-Reference: <20090608154405.GA16395@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/uv/uv_bau.h |    2 +-
- arch/x86/kernel/tlb_uv.c         |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/uv/uv_hub.h   |    6 ++++--
+ arch/x86/kernel/apic/x2apic_uv_x.c |   15 +++++++++------
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
---- a/arch/x86/include/asm/uv/uv_bau.h
-+++ b/arch/x86/include/asm/uv/uv_bau.h
-@@ -37,7 +37,7 @@
- #define UV_CPUS_PER_ACT_STATUS		32
- #define UV_ACT_STATUS_MASK		0x3
- #define UV_ACT_STATUS_SIZE		2
--#define UV_ACTIVATION_DESCRIPTOR_SIZE	32
-+#define UV_ADP_SIZE			32
- #define UV_DISTRIBUTION_SIZE		256
- #define UV_SW_ACK_NPENDING		8
- #define UV_NET_ENDPOINT_INTD		0x38
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -715,7 +715,12 @@ uv_activation_descriptor_init(int node, 
- 	struct bau_desc *adp;
- 	struct bau_desc *ad2;
+--- a/arch/x86/include/asm/uv/uv_hub.h
++++ b/arch/x86/include/asm/uv/uv_hub.h
+@@ -133,6 +133,7 @@ struct uv_scir_s {
+ struct uv_hub_info_s {
+ 	unsigned long		global_mmr_base;
+ 	unsigned long		gpa_mask;
++	unsigned int		gnode_extra;
+ 	unsigned long		gnode_upper;
+ 	unsigned long		lowmem_remap_top;
+ 	unsigned long		lowmem_remap_base;
+@@ -159,7 +160,8 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+  * 		p -  PNODE (local part of nsids, right shifted 1)
+  */
+ #define UV_NASID_TO_PNODE(n)		(((n) >> 1) & uv_hub_info->pnode_mask)
+-#define UV_PNODE_TO_NASID(p)		(((p) << 1) | uv_hub_info->gnode_upper)
++#define UV_PNODE_TO_GNODE(p)		((p) |uv_hub_info->gnode_extra)
++#define UV_PNODE_TO_NASID(p)		(UV_PNODE_TO_GNODE(p) << 1)
  
--	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
-+	/*
-+	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
-+	 * per cpu; and up to 32 (UV_ADP_SIZE) cpu's per blade
-+	 */
-+	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
-+		UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR, GFP_KERNEL, node);
- 	BUG_ON(!adp);
+ #define UV_LOCAL_MMR_BASE		0xf4000000UL
+ #define UV_GLOBAL_MMR32_BASE		0xf8000000UL
+@@ -173,7 +175,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+ #define UV_GLOBAL_MMR32_PNODE_BITS(p)	((p) << (UV_GLOBAL_MMR32_PNODE_SHIFT))
  
- 	pa = uv_gpa(adp); /* need the real nasid*/
-@@ -729,7 +734,13 @@ uv_activation_descriptor_init(int node, 
- 				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
+ #define UV_GLOBAL_MMR64_PNODE_BITS(p)					\
+-	((unsigned long)(p) << UV_GLOBAL_MMR64_PNODE_SHIFT)
++	((unsigned long)(UV_PNODE_TO_GNODE(p)) << UV_GLOBAL_MMR64_PNODE_SHIFT)
+ 
+ #define UV_APIC_PNODE_SHIFT	6
+ 
+--- a/arch/x86/kernel/apic/x2apic_uv_x.c
++++ b/arch/x86/kernel/apic/x2apic_uv_x.c
+@@ -562,7 +562,7 @@ void __init uv_system_init(void)
+ 	union uvh_node_id_u node_id;
+ 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
+ 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
+-	int max_pnode = 0;
++	int gnode_extra, max_pnode = 0;
+ 	unsigned long mmr_base, present, paddr;
+ 	unsigned short pnode_mask;
+ 
+@@ -574,6 +574,13 @@ void __init uv_system_init(void)
+ 	mmr_base =
+ 	    uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR) &
+ 	    ~UV_MMR_ENABLE;
++	pnode_mask = (1 << n_val) - 1;
++	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
++	gnode_extra = (node_id.s.node_id & ~((1 << n_val) - 1)) >> 1;
++	gnode_upper = ((unsigned long)gnode_extra  << m_val);
++	printk(KERN_DEBUG "UV: N %d, M %d, gnode_upper 0x%lx, gnode_extra 0x%x\n",
++			n_val, m_val, gnode_upper, gnode_extra);
++
+ 	printk(KERN_DEBUG "UV: global MMR base 0x%lx\n", mmr_base);
+ 
+ 	for(i = 0; i < UVH_NODE_PRESENT_TABLE_DEPTH; i++)
+@@ -607,11 +614,6 @@ void __init uv_system_init(void)
+ 		}
  	}
  
--	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
-+	/*
-+	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
-+	 * cpu even though we only use the first one; one descriptor can
-+	 * describe a broadcast to 256 nodes.
-+	 */
-+	for (i = 0, ad2 = adp; i < (UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR);
-+		i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
- 		/*
+-	pnode_mask = (1 << n_val) - 1;
+-	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
+-	gnode_upper = (((unsigned long)node_id.s.node_id) &
+-		       ~((1 << n_val) - 1)) << m_val;
+-
+ 	uv_bios_init();
+ 	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
+ 			    &sn_coherency_id, &sn_region_size);
+@@ -634,6 +636,7 @@ void __init uv_system_init(void)
+ 		uv_cpu_hub_info(cpu)->pnode_mask = pnode_mask;
+ 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
+ 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
++		uv_cpu_hub_info(cpu)->gnode_extra = gnode_extra;
+ 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
+ 		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
+ 		uv_cpu_hub_info(cpu)->scir.offset = SCIR_LOCAL_MMR_BASE + lcpu;
 
 
