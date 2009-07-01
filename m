@@ -1,103 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZGASYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZGASZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZGASYs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZGASYk
+	id S1755032AbZGASZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZGASYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:24:40 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:39087 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbZGASYj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:24:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FFjc8zbF/DJWKqw1CAYRJ/3ga7WT7Uvlbg+Q2bY8w+sifYu6ad9qZO1G2fy0j8BWxn
-         XarvmkvfDT7vsjeiDwGOQlFCjTwwaYtEMEdGuGFFVEBLTxtJ0BVQGaM9QCJi3RLYW5XN
-         zlsa+lDCrsDm4X+pPh5Qu0P7cRsHCE6UvlTsI=
+	Wed, 1 Jul 2009 14:24:53 -0400
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:37643 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754074AbZGASYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 14:24:52 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20090701002838.GA7100@kroah.com>
-References: <20090701002838.GA7100@kroah.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 1 Jul 2009 11:24:21 -0700
-Message-ID: <43e72e890907011124o50fc6932k98bc2605a07947a0@mail.gmail.com>
-Subject: Re: [Stable-review] [patch 000/108] 2.6.30-stable review
-To: Greg KH <gregkh@suse.de>, linux-wireless <linux-wireless@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk, ath9k-devel@venema.h4ckr.net,
-       ath5k-devel@venema.h4ckr.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: Problem with /proc/iomem on ARM
+Date: Wed, 1 Jul 2009 14:24:52 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901A13854@mi8nycmail19.Mi8.com>
+In-Reply-To: <ac3eb2510907011112k690e5c38y2a8871dde5db1f13@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Problem with /proc/iomem on ARM
+Thread-Index: Acn6d4/oZ/lcX67ZQlqsNwaxvOyU2AAAOb2A
+References: <BD79186B4FD85F4B8E60E381CAEE190901A13822@mi8nycmail19.Mi8.com> <ac3eb2510907011055r5d5f06c1k754e52ebae88efab@mail.gmail.com> <BD79186B4FD85F4B8E60E381CAEE190901A1383F@mi8nycmail19.Mi8.com> <ac3eb2510907011112k690e5c38y2a8871dde5db1f13@mail.gmail.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 01 Jul 2009 18:24:54.0203 (UTC) FILETIME=[3AD898B0:01C9FA79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n61IPdoU032361
 
-On Tue, Jun 30, 2009 at 5:28 PM, Greg KH<gregkh@suse.de> wrote:
-> This is the start of the stable review cycle for the 2.6.30.1 release.
+On Wednesday, July 01, 2009 11:13 AM, Kay Sievers wrote:
+>> The serial ports on my system are amba bus devices.
+>>
+>>> After all, it seems like this should be fixed in arm somewhere, not to
+>>> copy and store internal driver core pointers, but use the device
+>>> itself to retrieve the values.
+>>
+>> Maybe the problem is in drivers/amba/bus.c? amba_device_register() does:
+>>
+>> Â  Â  Â  Â dev->res.name = dev_name(&dev->dev);
+>
+> Looks like. If you get the name directly from dev->init_name. Does that work?
+>
 
-> There are 108 patches in this series, all will be posted as a response
-> to this one. Â If anyone has any issues with these being applied, please
-> let us know. Â If anyone is a maintainer of the proper subsystem, and
-> wants to add a Signed-off-by: line to the patch, please respond with it.
+The following patch does fix /proc/iomem for the amba uarts on my system.
+Is this the correct approach to fixing the issue?
 
-> Â drivers/net/wireless/ath5k/base.c Â  Â  Â  Â  | Â  Â 7 ++
-> Â drivers/net/wireless/ath9k/calib.c Â  Â  Â  Â | Â  67 ++++++----------
-> Â drivers/net/wireless/ath9k/main.c Â  Â  Â  Â  | Â  28 +++++---
-> Â drivers/net/wireless/ath9k/pci.c Â  Â  Â  Â  Â | Â  18 +++++
-> Â drivers/net/wireless/ath9k/regd.c Â  Â  Â  Â  | Â  Â 2 +-
-> Â drivers/net/wireless/ath9k/xmit.c Â  Â  Â  Â  | Â  Â 5 +-
+Regards,
+Hartley
 
-> Â net/mac80211/rc80211_minstrel.c Â  Â  Â  Â  Â  | Â  Â 2 +-
-> Â net/wireless/nl80211.c Â  Â  Â  Â  Â  Â  Â  Â  Â  Â | Â  26 +++++--
-> Â net/wireless/reg.c Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â | Â  10 ++-
+---
 
-Cc'ing linux-wireless.
+amba: set resource init_name
 
-14 of the 108 patches for 2.6.30.1 are for wireless. Here they are [1]:
+Noticed on ep93xx ARM system, /proc/iomem is missing the names for amba bus
+devices.
 
-[patch 062/108] mac80211: fix minstrel single-rate memory corruption
+I appears that drivers/amba/bus.c does not set the kobject to allow dev_name()
+to return the device name.  Just use the init_name directly.
 
-[patch 063/108] cfg80211: fix for duplicate userspace replies
-[patch 064/108] cfg80211: cleanup return calls on nl80211_set_reg()
-[patch 065/108] cfg80211: return immediately if num reg rules >
-NL80211_MAX_SUPP_REG_RULES
-[patch 066/108] cfg80211: fix in nl80211_set_reg()
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-[patch 067/108] ath9k: Fix bug when using a card with a busted EEPROM
-[patch 068/108] ath9k: Fix bug in calibration initialization
-[patch 069/108] ath9k: Fix bug in determining calibration support
-[patch 070/108] ath9k: Fix bug in checking HT flag
-[patch 071/108] ath9k: Fix bug in scan termination
-[patch 072/108] ath9k: Fix memleak on TX DMA failure
-[patch 073/108] ath9k: Initialize ANI timers
-[patch 074/108] ath9k: Fix PCI FATAL interrupts by restoring
-RETRY_TIMEOUT disabling
+---
 
-[patch 088/108] ath5k: avoid PCI FATAL interrupts by restoring
-RETRY_TIMEOUT disabling
-
-All these look good. I can think of one fix which didn't make it, the
-wext netlink fix for event sending which leaks 4 bytes of
-uninitialized data. It didn't make it to stable as Johannes noted its
-been broken for ages. I actually don't agree that's a good argument to
-not fix it in stable as it can be fixed with a one-liner but whatever,
-for details see the tread [2].
-
-Only funny thing I did notice was that the revert for the PCI fatal
-stuff for ath5k was for PCI resume, whereas ath9k had it for both
-probe and resume. I did check and reason for this was that the
-original ath5k patch only removed the 0x41 0 write on resume.
-
-If there are any other patches missed for 2.6.31.1 please send to
-stable@kernel.org by following the guidelines on
-Documentation/stable_kernel_rules.txt for them to be queued up for
-review for 2.6.31.2.
-
-[1] http://linux.kernel.org/mailman/private/stable-review/2009-July/thread.html
-[2] http://thread.gmane.org/gmane.linux.kernel.wireless.general/34960
-
-  Luis
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index 3d763fd..9bfb9f7 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -210,7 +210,7 @@ int amba_device_register(struct amba_device *dev, struct resource *parent)
+ 	dev->dev.release = amba_device_release;
+ 	dev->dev.bus = &amba_bustype;
+ 	dev->dev.dma_mask = &dev->dma_mask;
+-	dev->res.name = dev_name(&dev->dev);
++	dev->res.name = dev->dev.init_name;
+ 
+ 	if (!dev->dev.coherent_dma_mask && dev->dma_mask)
+ 		dev_warn(&dev->dev, "coherent dma mask is unset\n"); 
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
