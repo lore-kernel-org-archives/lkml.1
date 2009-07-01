@@ -1,111 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZGAPaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZGAPbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbZGAPaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZGAPaY
+	id S1753382AbZGAPbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZGAPb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:30:24 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:34249 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752633AbZGAPaW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:30:22 -0400
-Date: Wed, 1 Jul 2009 11:30:18 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: oleg@redhat.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       akpm@linux-foundation.org, earl_chew@agilent.com
-Subject: Re: [PATCH 1/3] exec: Make do_coredump more resilient to recursive
-	crashes (v5)
-Message-ID: <20090701153018.GE29601@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701152640.GD29601@hmsreliant.think-freely.org>
+	Wed, 1 Jul 2009 11:31:28 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:54982 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092AbZGAPb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:31:27 -0400
+Message-ID: <4A4B812E.2080308@atmel.com>
+Date: Wed, 01 Jul 2009 17:30:54 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701152640.GD29601@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, dan.j.williams@intel.com
+CC: maciej.sosnowski@intel.com, avictor.za@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel
+ AHB DMA Controller
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com> <20090628.000624.208780184.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090628.000624.208780184.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Change how we detect recursive dumps with core_pattern pipes
+Hi,
 
-Change how we detect recursive dumps.  Currently we have a mechanism by which
-we try to compare pathnames of the crashing process to the core_pattern path.
-This is broken for a dozen reasons, and just doesn't work in any sort of robust
-way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
-apps set RLIMIT_CORE to zero, we don't write out core files for any process with
-that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
-translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
-prevents infinite recursion in the event that the core_pattern process itself
-crashes.
+Atsushi Nemoto :
+> On Fri, 26 Jun 2009 12:42:15 +0200, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+>> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+>> at91sam9rl chip. It will be used on other products in the future.
+> 
+> It seems this driver was written based on dw_dmac driver.  A while ago
+> I had some investigation of that driver.
+> (http://lkml.org/lkml/2008/12/29/172)
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+Thank you for recall me this thread.
+
+> Some of issues reported at that time could be applied on your driver
+> too.  With a quick look, the queue list management issue is a
+> candidate.  Here is an excerpt from the thread:
+> 
+> --- --- ---
+> 3.  dwc->queue list management
+> 
+> The function dwc_tx_submit() add the descriptor to dwc->queue list if
+> active list was not empty.  But it does not manage lli.llp list.  And
+> all descriptors in the queue list will be moved to active list at a
+> time.  So it seems non-first descriptors in queue list will never
+> processed by the hardware.
+> 
+> The dwc_tx_submit() should rewrite lli.llp of the last descriptor in
+> queue list (it it had children, the last children of it) by txd.phys
+> of newly queued descriptor.  Or, only first elements of queue list
+> should be moved to active list at a time.
+> 
+> Is my analysis correct?
+
+I try to replay the life of a descriptor chain in "queue" list:
+- it is queued by atc_tx_submit()
+- tasklet or atc_issue_pendig() will "advance_work" and so run
+atc_complete_all() at some point.
+- atc_complete_all() will issue an atc_dostart() on the first chain in
+queue list and move all to active_list
+- then all chains will be managed as active_list members:
+  - tasklet or atc_issue_pendig() will "advance_work"
+  - first member will be managed by chain_complete()
+  - next member will be started by dostart()
+  - and so on...
+- last chain in active_list will run complete_all() and may move again
+queued descriptors to active_list.
+
+=> non-first descriptor moved from queue to active_list will be
+proceeded by act_dostart() in atc_advance_work() function.
+
+In this way of addressing descriptors, I try to keep descriptor chains
+as they are built by the prep_dma_memcpy function. I am not trying to
+rewrite the internal arrangement of a descriptor chain (not touching
+lli.dscr).
+It may be not optimal for the descriptor management speed but it tries
+to split problems in a kind of layered way (we build chains and then
+manage their flow in dma engine and associated lists).
+
+I hope that there is no hole in this management as I am sure it is
+difficult to debug...
+I hope that my response is solid enough. Please do not hesitate to break
+my demonstration ;-).
+
+> --- --- ---
+> 
+> And one more comment.
+> 
+>> +	/*
+>> +	 * We use dma_unmap_page() regardless of how the buffers were
+>> +	 * mapped before they were submitted...
+>> +	 */
+> 
+> You can use DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE since 2.6.30.
+
+Ok, even if it is exactly the same for ARM implementation, I do the
+modification for my driver (taking iop_dma.c as an example).
 
 
- exec.c |   43 +++++++++++++++++++++----------------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
+Thanks a lot for your help and your deep review.
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 9e05bd8..9defd20 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1776,35 +1776,34 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
-  	lock_kernel();
- 	ispipe = format_corename(corename, signr);
- 	unlock_kernel();
--	/*
--	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
--	 * to a pipe.  Since we're not writing directly to the filesystem
--	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
--	 * created unless the pipe reader choses to write out the core file
--	 * at which point file size limits and permissions will be imposed
--	 * as it does with any other process
--	 */
-+
-  	if (ispipe) {
-+		if (core_limit == 0) {
-+			 /*
-+			  * Normally core limits are irrelevant to pipes, since
-+			  * we're not writing to the file system, but we use
-+			  * core_limit of 0 here as a speacial value. Any
-+			  * non-zero limit gets set to RLIM_INFINITY below, but
-+			  * a limit of 0 skips the dump.  This is a consistent
-+			  * way to catch recursive crashes.  We can still crash
-+			  * if the core_pattern binary sets RLIM_CORE =  !0
-+			  * but it runs as root, and can do lots of stupid things
-+			  * Note that we use task_tgid_vnr here to grab the pid of the
-+			  * process group leader.  That way we get the right pid if a thread
-+			  * in a multi-threaded core_pattern process dies.
-+			  */
-+			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
-+			       task_tgid_vnr(current), current->comm);
-+			printk(KERN_WARNING "Aborting core\n");
-+			goto fail_unlock;
-+		}
-+
- 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
- 		if (!helper_argv) {
- 			printk(KERN_WARNING "%s failed to allocate memory\n",
- 			       __func__);
- 			goto fail_unlock;
- 		}
--		/* Terminate the string before the first option */
--		delimit = strchr(corename, ' ');
--		if (delimit)
--			*delimit = '\0';
--		delimit = strrchr(helper_argv[0], '/');
--		if (delimit)
--			delimit++;
--		else
--			delimit = helper_argv[0];
--		if (!strcmp(delimit, current->comm)) {
--			printk(KERN_NOTICE "Recursive core dump detected, "
--					"aborting\n");
--			goto fail_unlock;
--		}
- 
- 		core_limit = RLIM_INFINITY;
- 
+Best regards,
+-- 
+Nicolas Ferre
+
