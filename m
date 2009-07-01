@@ -1,42 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZGAJWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZGAJYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbZGAJWH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZGAJV4
+	id S1754090AbZGAJYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZGAJYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:21:56 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48528 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753673AbZGAJVz (ORCPT
+	Wed, 1 Jul 2009 05:24:33 -0400
+Received: from mailfilter2.ihug.co.nz ([203.109.136.2]:45827 "EHLO
+	mailfilter2.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZGAJYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:21:55 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-06-30-12-50 uploaded
-Cc: kosaki.motohiro@jp.fujitsu.com, Valdis.Kletnieks@vt.edu,
-       linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <20090630133816.f62b0cb4.akpm@linux-foundation.org>
-References: <56465.1246393621@turing-police.cc.vt.edu> <20090630133816.f62b0cb4.akpm@linux-foundation.org>
-Message-Id: <20090701182024.85E3.A69D9226@jp.fujitsu.com>
+	Wed, 1 Jul 2009 05:24:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuFGANPHSkpBeDlE/2dsb2JhbACBUY0oAoh1gXAmhgaucII0B4FVBYYH
+X-IronPort-AV: E=Sophos;i="4.42,322,1243771200"; 
+   d="scan'208";a="191735164"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  1 Jul 2009 18:21:55 +0900 (JST)
+Date: Wed, 01 Jul 2009 21:24:33 +1200
+From: Camelot <info@cgl.com>
+To: undisclosed-recipients:;
+Subject: REF NO.REF:UKL/74-A0802742009
+Reply-To: <claimsdomain@9.cn>
+Message-ID: <4e76b96d98dbb579903160fc01bb8507@vodafone.co.nz>
+SenderIP: 65.120.57.68
+User-Agent: Vodafone Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-just dumb question.
-
-> So the "0804a" means "at line 804, start appending stuff", or something
-> like that.
-> 
-> Use -u.
-
-afaik, 99% quilt user use -u. so, Why quilt don't turn on -u by default?
-
-
-
+REF NO.REF:UKL/74-A0802742009
+Congrats in our Uk monthly online award bonanza by sending your
+Name,Add,Age,Tel to(claimsdomain@9.cn) for 891,934GBP.send your data for
+more details.Choose your claims option.
+(1)Courier Delivery
+(2)Bank Transfer
