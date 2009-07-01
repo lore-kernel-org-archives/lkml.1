@@ -1,117 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZGAXqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZGAXre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753631AbZGAXqt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 19:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752787AbZGAXqd
+	id S1754090AbZGAXre (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 19:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZGAXr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 19:46:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46208 "EHLO mx2.redhat.com"
+	Wed, 1 Jul 2009 19:47:26 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:49642 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752907AbZGAXqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 19:46:32 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 2/2] FRV: Add basic performance counter support [ver #2]
-To: mingo@elte.hu
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, paulus@samba.org,
-       arnd@arndb.de, dhowells@redhat.com, linux-kernel@vger.kernel.org
-Date: Thu, 02 Jul 2009 00:46:21 +0100
-Message-ID: <20090701234621.9199.14792.stgit@warthog.procyon.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
-References: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	id S1751748AbZGAXr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 19:47:26 -0400
+Date: Thu, 2 Jul 2009 00:47:18 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Yong Zhang <yong.zhang@windriver.com>
+Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+Subject: Re: [PATCH] MIPS: o32 application running on 64bit kernel core dump
+Message-ID: <20090701234718.GA3933@linux-mips.org>
+References: <16bd35f2910f585740f4764fa1e80bf31c80d576.1242178813.git.yong.zhang@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16bd35f2910f585740f4764fa1e80bf31c80d576.1242178813.git.yong.zhang@windriver.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add basic performance counter support to the FRV arch.
+On Wed, Jul 01, 2009 at 09:35:39AM +0800, Yong Zhang wrote:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Patch applied with the one issue in the macro I pointed out earlier fixed.
 
- arch/frv/Kconfig                    |    1 +
- arch/frv/include/asm/perf_counter.h |   17 +++++++++++++++++
- arch/frv/lib/Makefile               |    2 +-
- arch/frv/lib/perf_counter.c         |   19 +++++++++++++++++++
- 4 files changed, 38 insertions(+), 1 deletions(-)
- create mode 100644 arch/frv/include/asm/perf_counter.h
- create mode 100644 arch/frv/lib/perf_counter.c
+Thanks,
 
-
-diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
-index 8a5bd7a..b86e19c 100644
---- a/arch/frv/Kconfig
-+++ b/arch/frv/Kconfig
-@@ -7,6 +7,7 @@ config FRV
- 	default y
- 	select HAVE_IDE
- 	select HAVE_ARCH_TRACEHOOK
-+	select HAVE_PERF_COUNTERS
- 
- config ZONE_DMA
- 	bool
-diff --git a/arch/frv/include/asm/perf_counter.h b/arch/frv/include/asm/perf_counter.h
-new file mode 100644
-index 0000000..ccf726e
---- /dev/null
-+++ b/arch/frv/include/asm/perf_counter.h
-@@ -0,0 +1,17 @@
-+/* FRV performance counter support
-+ *
-+ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#ifndef _ASM_PERF_COUNTER_H
-+#define _ASM_PERF_COUNTER_H
-+
-+#define PERF_COUNTER_INDEX_OFFSET	0
-+
-+#endif /* _ASM_PERF_COUNTER_H */
-diff --git a/arch/frv/lib/Makefile b/arch/frv/lib/Makefile
-index 4ff2fb1..0a37721 100644
---- a/arch/frv/lib/Makefile
-+++ b/arch/frv/lib/Makefile
-@@ -5,4 +5,4 @@
- lib-y := \
- 	__ashldi3.o __lshrdi3.o __muldi3.o __ashrdi3.o __negdi2.o __ucmpdi2.o \
- 	checksum.o memcpy.o memset.o atomic-ops.o atomic64-ops.o \
--	outsl_ns.o outsl_sw.o insl_ns.o insl_sw.o cache.o
-+	outsl_ns.o outsl_sw.o insl_ns.o insl_sw.o cache.o perf_counter.o
-diff --git a/arch/frv/lib/perf_counter.c b/arch/frv/lib/perf_counter.c
-new file mode 100644
-index 0000000..2000fee
---- /dev/null
-+++ b/arch/frv/lib/perf_counter.c
-@@ -0,0 +1,19 @@
-+/* Performance counter handling
-+ *
-+ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+
-+#include <linux/perf_counter.h>
-+
-+/*
-+ * mark the performance counter as pending
-+ */
-+void set_perf_counter_pending(void)
-+{
-+}
-
+  Ralf
