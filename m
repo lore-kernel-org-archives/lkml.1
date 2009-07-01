@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZGAPFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZGAPM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbZGAPFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZGAPFP
+	id S1753570AbZGAPM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZGAPMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:05:15 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48013 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbZGAPFO (ORCPT
+	Wed, 1 Jul 2009 11:12:18 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:43321 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbZGAPMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:05:14 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A4B7A77.8010208@s5r6.in-berlin.de>
-Date: Wed, 01 Jul 2009 17:02:15 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
+	Wed, 1 Jul 2009 11:12:17 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 1 Jul 2009 08:11:43 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: Avi Kivity <avi@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: manual merge of the kvm tree with Linus' tree
+In-Reply-To: <4A4B56FE.8060407@novell.com>
+Message-ID: <alpine.DEB.1.10.0907010811020.10303@makko.or.mcafeemobile.com>
+References: <20090701145711.1c9c8935.sfr@canb.auug.org.au> <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com> <4A4B1106.8000506@redhat.com> <4A4B56FE.8060407@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Julien BLACHE <jb@jblache.org>
-CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, felixb@sgi.com
-Subject: Re: [patch 000/108] 2.6.30-stable review
-References: <20090701002838.GA7100@kroah.com> <87tz1wd4vi.fsf@sonic.technologeek.org>
-In-Reply-To: <87tz1wd4vi.fsf@sonic.technologeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julien BLACHE wrote:
-> Felix wrote it was a candidate for stable (obviously!) but it's not on
-> the list you posted. Care to include it?
+On Wed, 1 Jul 2009, Gregory Haskins wrote:
 
-I am routinely astonished by the "please include patch XY" postings. :-)
-Have a look at 
-http://lxr.linux.no/linux/Documentation/stable_kernel_rules.txt -- this 
-explains how you get a patch included with minimum effort by everyone 
-involved.  IOW, send the patch¹, not the question.  :-)
+> Just to be clear: the final form will need to be wake_up_poll(), not
+> wake_up_locked_poll.
 
-¹) if the patch is actually applicable to the kernel and fulfills the 
-stable criteria.  If in doubt about the latter, the respective subsystem 
-developers might help you figure it out.)
--- 
-Stefan Richter
--=====-==--= -=== ----=
-http://arcgraph.de/sr/
+Yep, sorry I missed that one.
+
+
+- Davide
+
+
