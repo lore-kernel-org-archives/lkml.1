@@ -1,130 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZGAGb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZGAGfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbZGAGb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZGAGbu
+	id S1752704AbZGAGfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZGAGex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:31:50 -0400
-Received: from deleuze.hcoop.net ([69.90.123.67]:42930 "EHLO deleuze.hcoop.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbZGAGbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:31:49 -0400
-X-Greylist: delayed 1431 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 02:31:49 EDT
-From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
-To: tuxonice-devel@lists.tuxonice.net
-Cc: linux-kernel@vger.kernel.org
-Subject: RFC: Suspend-to-ram cold boot protection by encrypting page cache
-X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
-X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
-X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
-X-Habeas-SWE-6: email in exchange for a license for this Habeas
-X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
-X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
-X-Habeas-SWE-3: like Habeas SWE (tm)
-X-Habeas-SWE-2: brightly anticipated
-X-Habeas-SWE-1: winter into spring
-Date: Tue, 30 Jun 2009 23:07:50 -0700
-Message-ID: <87hbxx0wcp.fsf@jeremyms.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain
+	Wed, 1 Jul 2009 02:34:53 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51276 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751410AbZGAGew (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:34:52 -0400
+Date: Wed, 1 Jul 2009 08:34:55 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
+       linux-kernel@vger.kernel.org, x86@kernel.org,
+       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
+Message-ID: <20090701063455.GL6760@one.firstfloor.org>
+References: <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <alpine.DEB.1.10.0906301847260.19482@gentwo.org> <20090630230743.GA17968@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090630230743.GA17968@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> Say it says "256 CPUs".
+> 
+> But i only run a 2 CPU guest system. But i want to run it with the 
+> _on demand capability_ to scale up to 256 virtual CPUs if needed, 
+> without having to reboot the guest and without having to allocate 
+> all the percpu space for 256 CPUs beforehand. Ok?
 
-My current understanding is that there is basically no protection in
-Linux against the cold boot attack.  This means that any encryption keys
-either in kernel memory or in the page cache, as well as any other data
-in the page cache, could be compromised by such an attack.
+Then you would need to fix lots of subsystems. Everyone doing
+for_each_possible_cpu() today and not having a cpu notifier callback.
 
-Of course, hibernating to encrypted swap protects against this risk, but
-having to resort to this effectively limits the usefulness of
-suspend-to-ram.
+git/linux-2.6% gid for_each_possible_cpu | wc -l
+247
+git/linux-2.6% gid CPU_UP_PREPARE | wc -l
+48
 
-I propose the following solution:
+Essentially you would discard the concept of possible CPUs
+and replace it only with online CPUs, but possible CPUs
+are widely used.
 
-Encrypt, in place, the page cache (except for the pages used by a
-special userspace helper program) prior to entering S3.  Upon resuming,
-the userspace helper program somehow obtains the encryption key used to
-encrypt the page cache (possibly by prompting the user for a password,
-or reading the key off of some piece of removable hardware) and passes
-it to the kernel to use to decrypt the page cache.  Anything in the
-kernel that stores encryption keys, such as dm-crypt, would copy its
-keys to a special memory area that encrypted using the same key as the
-page cache, prior to clearing the keys from their normal memory
-locations.
+It's unclear to me it's worth all that work (and how to test
+it properly), assuming we fix the few per cpu pigs today that make it 
+very expensive to preallocate percpu in the big debug configurations.
 
-This would presumably be much faster than hibernating, since hibernation
-is typically severely limited by disk write speeds.
+> It is a simple, basic OS feature and concept.
 
-Specifically, I imagine the following sequence of steps would be taken:
+.. that Linux doesn't support without some heavy lifting.
 
-1. Userspace helper is started.
+Not answering emails will not change that fact.
 
-2. Userspace helper specifies to kernel the encryption key to use for
-   the page cache.
-
-3. Userspace helper tells kernel to enter S3.
-
-4. Kernel uses freezer to freeze tasks (except userspace helper) exactly
-   as is done when hibernating and otherwise does what is needed to
-   ensure that nothing will try to access the page cache.
-
-5. Kernel encrypts in place everything in the page cache except the
-   pages that are needed by the userspace helper program.
-
-6. Dm-crypt keys and any other encryption keys in the kernel are copied
-   to a special memory area and encrypted using the same key as the page
-   cache, prior to being cleared from their original memory locations.
-
-7. Kernel suspends devices and enters S3.
-
-<Wakeup from S3>
-
-8. Kernel resumes devices as is normally done when exiting S3.  Tasks
-   except the userspace helper should still be frozen at this point.
-
-9. Userspace helper obtains the encryption key (e.g. from the user or a
-   removable piece of hardware), and passes it to the kernel.
-
-10. Kernel decrypts page cache and special key storage memory area.
-
-11. Kernel tells dm-crypt and anything else that uses encryption keys in
-    the kernel to reinitialize themselves using the keys they stored in
-    the special key storage area.
-
-12. Kernel unfreezes tasks.
-
-13. Userspace helper exits.
-
-Note: There is the additional issue of free pages.  The kernel could
-zero out these pages at the same time as it is encrypting the page
-cache.  The kernel could also just ensure all free pages are zeroed as
-they become free.
-
-This proposal doesn't address the issue of kernel memory that might
-contain sensitive data (other than specifically the storage of
-encryption keys in the kernel).  Perhaps others can comment on where in
-kernel memory additional sensitive data might be stored, and how it
-might be encrypted (without crashing the system).
-
-Perhaps anyone interested can comment on the viability of this proposal.
-
-Ostensibly, the idea doesn't have anything to do with hibernation.  It
-does occur to me, though, that tuxonice may already support much of what
-is needed to implement this proposal, and that it might be possible to
-implement this with very little additional code added to tuxonice.
-Handling dm-crypt keys and other sensitive data in kernel memory might
-take more work (and in particular require some discussion about the
-proper interface to use), but at least an initial proof-of-concept
-implementation that only encrypts the page cache could probably be done
-fairly easily.
-
-If this were implemented (and it doesn't seem that it would take all
-that much work), it would make Linux the only OS, as far as I know, that
-is secure against cold boot attacks while in S3.
-
+-Andi
 -- 
-Jeremy Maitin-Shepard
+ak@linux.intel.com -- Speaking for myself only.
