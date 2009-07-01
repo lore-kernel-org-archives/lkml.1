@@ -1,74 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZGAOzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZGAOzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZGAOzk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZGAOz2
+	id S1753001AbZGAOzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZGAOzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:55:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35530 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751839AbZGAOz1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:55:27 -0400
-Date: Wed, 1 Jul 2009 14:54:48 GMT
-From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1246458263.6940.22.camel@hpdv5.satnam>
-References: <1246458263.6940.22.camel@hpdv5.satnam>
-Subject: [tip:x86/urgent] x86: Declare check_efer() before it gets used
-Message-ID: <tip-76c06927f2a78143763dcff9b4c362d15eb29cc2@git.kernel.org>
-Git-Commit-ID: 76c06927f2a78143763dcff9b4c362d15eb29cc2
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 14:54:49 +0000 (UTC)
+	Wed, 1 Jul 2009 10:55:32 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:42561 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbZGAOz3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:55:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=DpxXpZ89DLsZHfV7cayd2wCmbH3OQBEliRM3sNbOLP5yiP9oFaj5h8uwN9Y/VqF8ye
+         w11aEfU75RD5JhpW4W41z6nXHHy4ghSdWMCyHUF4lKT4wJh4l229Aeu2KHT4+pMg5kfC
+         SYyhbvapSOaW7QH3JPp13UpNp3WNU0koIJEfs=
+Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
+ not work
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mips@linux-mips.org, Pavel Machek <pavel@ucw.cz>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1246432570.9660.22.camel@falcon>
+References: <1246372868.19049.17.camel@falcon>
+	 <20090630144540.GA18212@linux-mips.org>  <1246432570.9660.22.camel@falcon>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 01 Jul 2009 22:55:12 +0800
+Message-Id: <1246460112.9660.45.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  76c06927f2a78143763dcff9b4c362d15eb29cc2
-Gitweb:     http://git.kernel.org/tip/76c06927f2a78143763dcff9b4c362d15eb29cc2
-Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-AuthorDate: Wed, 1 Jul 2009 19:54:23 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Jul 2009 16:52:54 +0200
+On Wed, 2009-07-01 at 15:16 +0800, Wu Zhangjin wrote:
+> On Tue, 2009-06-30 at 15:45 +0100, Ralf Baechle wrote:
+> > On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
+> > 
+> > > I just updated my git repository to the master branch of the latest
+> > > linux-mips git repository, and tested the STD/Hibernation support on
+> > > fuloong2e and yeeloong2f, it failed:
+> > > 
+> > > when using the no_console_suspend kernel command line to debug, it
+> > > stopped on:
+> > > 
+> > > PM: Shringking memory... done (1000 pages freed)
+> > > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
+> > > PM: Creating hibernation image:
+> > > PM: Need to copy 5053 pages
+> > > PM: Hibernation image created (4195 pages copied)
+> > > 
+> > > and then, the number indicator light of keyboard works well, but can not
+> > > type anything. 
+> > > 
+> > > anybody have tested it on another platform? does it work?
+> > 
+> > At the time of the merge I tested it on Malta and found it to be working.
+> > 
+> 
+> Just traced it, the executing path is something like this:
+> 
+> 	hibernate(kernel/power/hibernate.c)
+> 	--> hibernation_snapshot
+> 	--> dpm_resume_end
+> 	--> dpm_resume
+>         --> device_resume
+> 	--> dev->bus->resume(generic_ide_resume), dev_name(dev) = 0.0
+> 	--> blk_execute_rq
+>         {
+> 		DECLARE_COMPLETION_ONSTACK(wait);
+> 		...
+> 		wait_for_completion(&wait);	// stop here
+> 		...
+> 	}
+> 
+> I guess there is a possible bug in the latest ide patches, I'm trying to
+> find which one is 'bad'.
+> 
 
-x86: Declare check_efer() before it gets used
+There is really a bug in one of ide patches, here it is:
 
-This sparse warning:
+commit a1317f714af7aed60ddc182d0122477cbe36ee9b
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Tue Jun 23 23:52:17 2009 -0700
 
-  arch/x86/mm/init.c:83:16: warning: symbol 'check_efer' was not declared. Should it be static?
+    ide: improve handling of Power Management requests
+    
+    Make hwif->rq point to PM request during PM sequence and do not
+allow
+    any other types of requests to slip in (the old comment was never
+correct
+    as there should be no such requests generated during PM sequence).
+    
+    Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-triggers because check_efer() is not decalared before using it.
-asm/proto.h includes the declaration of check_efer(), so
-including asm/proto.h to fix that - this also addresses the
-sparse warning.
+I have reverted this part of the above patch, seems works, need more
+tests:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <1246458263.6940.22.camel@hpdv5.satnam>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-
+-               WARN_ON_ONCE(hwif->rq);
+ repeat:
+                prev_port = hwif->host->cur_port;
++
++               if (drive->dev_flags & IDE_DFLAG_BLOCKED)
++                       rq = hwif->rq;
++               else
++                       WARN_ON_ONCE(hwif->rq);
++
 
+please get more information from this bug report:
 
----
- arch/x86/mm/init.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+[Bug #13663] suspend to ram regression (IDE related)
+http://lkml.org/lkml/2009/6/29/341
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 47ce9a2..0607119 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -12,6 +12,7 @@
- #include <asm/system.h>
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
-+#include <asm/proto.h>
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
+Regards!
+Wu Zhangjin
+
