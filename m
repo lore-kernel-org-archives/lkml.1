@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZGAMVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZGAMWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbZGAMVB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZGAMUw
+	id S1753509AbZGAMWe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 08:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbZGAMW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 08:20:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47559 "EHLO smtps.tip.net.au"
+	Wed, 1 Jul 2009 08:22:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53838 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbZGAMUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 08:20:51 -0400
-Date: Wed, 1 Jul 2009 22:20:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Sachin Sant <sachinp@in.ibm.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: boot failure
-Message-Id: <20090701222042.57b0f4d3.sfr@canb.auug.org.au>
-In-Reply-To: <4A4B4E1B.6090900@in.ibm.com>
-References: <20090701160014.595e1338.sfr@canb.auug.org.au>
-	<4A4B4E1B.6090900@in.ibm.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+	id S1751242AbZGAMW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 08:22:27 -0400
+Subject: [PATCH -tip RESEND] x86: mm/init.c declare check_efer() before it
+ get used
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 01 Jul 2009 17:51:29 +0530
+Message-Id: <1246450889.6940.10.camel@hpdv5.satnam>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__1_Jul_2009_22_20_42_+1000_McLYd1rDOwqoVS1+"
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__1_Jul_2009_22_20_42_+1000_McLYd1rDOwqoVS1+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Sachin,
+check_efer() is already declared in asm/proto.h, so include it before using it.
 
-On Wed, 01 Jul 2009 17:22:59 +0530 Sachin Sant <sachinp@in.ibm.com> wrote:
->
-> I too am facing similar issue on both Power and x86.
-> Culprit seems to be 2nd patch in the above list.
->=20
-> commit e1b79967e2b29839d16c12b534597a15d8630fc4
-> audit: convert audit watches to use fsnotify instead of inotify
->=20
-> I wasn't able to remove only patch 2 because of dependencies
-> on other patches. After i reverted patches 2 to 7 in the above
-> list, i was able to boot the machine. Then i applied patch 2
-> and the machine failed to boot.
+Also fix sparse warning :
 
-Thanks for tracking this down.  Now we just need a solution :-)
+  CHECK   arch/x86/mm/init.c
+  arch/x86/mm/init.c:83:16: warning: symbol 'check_efer' was not declared. Should it be static?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/mm/init.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---Signature=_Wed__1_Jul_2009_22_20_42_+1000_McLYd1rDOwqoVS1+
-Content-Type: application/pgp-signature
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 1043590..d31f9e7 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -12,6 +12,7 @@
+ #include <asm/system.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
++#include <asm/proto.h>
+ 
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+-- 
+1.6.0.6
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkpLVJoACgkQjjKRsyhoI8z0LgCgsy4A3rEBIb80MnDAGDeOM+W4
-D2AAoJ0lQbgscWnhUWdpkMIwu5Sh1vLl
-=rphe
------END PGP SIGNATURE-----
 
---Signature=_Wed__1_Jul_2009_22_20_42_+1000_McLYd1rDOwqoVS1+--
