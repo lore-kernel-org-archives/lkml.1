@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760852AbZGAApD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763151AbZGAAp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760852AbZGAApD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:45:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761115AbZGAAdH
+	id S1763151AbZGAAp0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761106AbZGAAdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:33:07 -0400
-Received: from kroah.org ([198.145.64.141]:59881 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:33:11 -0400
+Received: from kroah.org ([198.145.64.141]:59887 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761048AbZGAAdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:33:06 -0400
+	id S1761003AbZGAAdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:33:09 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:53 2009
-Message-Id: <20090701001553.003289449@mini.kroah.org>
+Message-Id: <20090701001553.429647333@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:23 -0700
+Date: Tue, 30 Jun 2009 17:14:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 27/35] PCI PM: Fix handling of devices without PM support by pci_target_state()
+       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
+Subject: [patch 29/35] pcmcia/cm4000: fix lock imbalance
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=pci-pm-fix-handling-of-devices-without-pm-support-by-pci_target_state.patch
+Content-Disposition: inline; filename=pcmcia-cm4000-fix-lock-imbalance.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,48 +30,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit d2abdf62882d982c58e7a6b09ecdcfcc28075e2e upstream.
+commit 69ae59d7d8df14413cf0a97b3e372d7dc8352563 upstream.
 
-If a PCI device is not power-manageable either by the platform, or
-with the help of the native PCI PM interface, pci_target_state() will
-return either PCI_D3hot, or PCI_POWER_ERROR for it, depending on
-whether or not the device is configured to wake up the system.  Alas,
-none of these return values is correct, because each of them causes
-pci_prepare_to_sleep() to return error code, although it should
-complete successfully in such a case.
+Don't return from switch/case, break instead, so that we unlock BKL.
 
-Fix this problem by making pci_target_state() always return PCI_D0
-for devices that cannot be power managed.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pci.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/char/pcmcia/cm4000_cs.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1196,15 +1196,14 @@ pci_power_t pci_target_state(struct pci_
- 		default:
- 			target_state = state;
- 		}
-+	} else if (!dev->pm_cap) {
-+		target_state = PCI_D0;
- 	} else if (device_may_wakeup(&dev->dev)) {
- 		/*
- 		 * Find the deepest state from which the device can generate
- 		 * wake-up events, make it the target state and enable device
- 		 * to generate PME#.
- 		 */
--		if (!dev->pm_cap)
--			return PCI_POWER_ERROR;
--
- 		if (dev->pme_support) {
- 			while (target_state
- 			      && !(dev->pme_support & (1 << target_state)))
+--- a/drivers/char/pcmcia/cm4000_cs.c
++++ b/drivers/char/pcmcia/cm4000_cs.c
+@@ -1575,7 +1575,8 @@ static long cmm_ioctl(struct file *filp,
+ 		clear_bit(LOCK_IO, &dev->flags);
+ 		wake_up_interruptible(&dev->ioq);
+ 
+-		return 0;
++		rc = 0;
++		break;
+ 	case CM_IOCSPTS:
+ 		{
+ 			struct ptsreq krnptsreq;
 
 
