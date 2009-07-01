@@ -1,301 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757488AbZGAE7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZGAFAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757488AbZGAE7c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 00:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZGAE7X
+	id S1756914AbZGAFAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 01:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZGAFAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 00:59:23 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:40002 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754265AbZGAE7V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 00:59:21 -0400
-To: dhowells@redhat.com
-CC: miklos@szeredi.hu, dhowells@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org, drepper@gmail.com,
-       torvalds@linux-foundation.org, viro@zeniv.linux.org.uk, adilger@sun.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       mtk.manpages@gmail.com
-In-reply-to: <2547.1246393535@redhat.com> (message from David Howells on Tue,
-	30 Jun 2009 21:25:35 +0100)
-Subject: Re: [RFC PATCH] vfs: new open(2) flag to open filesystem node
-References: <E1MLa4R-00054S-94@pomaz-ex.szeredi.hu> <2547.1246393535@redhat.com>
-Message-Id: <E1MLruc-0007O1-Sp@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 01 Jul 2009 06:59:14 +0200
+	Wed, 1 Jul 2009 01:00:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:58160 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbZGAFAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 01:00:31 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Jan Beulich" <JBeulich@novell.com>
+Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit archs
+Date: Wed, 1 Jul 2009 14:30:28 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: "Ingo Molnar" <mingo@elte.hu>, tony.luck@intel.com,
+       "Thomas Gleixner" <tglx@linutronix.de>, hpa@zytor.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+References: <4A4A18780200007800008345@vpn.id2.novell.com>
+In-Reply-To: <4A4A18780200007800008345@vpn.id2.novell.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907011430.29524.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009, David Howells wrote:
-> This hunk doesn't apply.
+On Tue, 30 Jun 2009 09:21:52 pm Jan Beulich wrote:
+> Since these CRCs are really only 32-bit quantities, there's no need to
+> store them in 64-bit slots. Since, however, gcc doesn't allow
+> respective initializations, asm() constructs get used to create the CRC
+> tables (and its for that reason that the patch only makes x86-64 and
+> ia64 utilize that functionality, as I can't verify this doesn't break
+> in some subtle way elsewhere).
 
-Sorry... here's the correct patch.
+Hmm, can we change the build system to just link this in as a normal table, 
+rather than use linker tricks?
+
+Then genksyms would just spit out a C file we could compile and link into final 
+vmlinux.
 
 Thanks,
-Miklos
-
-----
-This patch adds a new open flag, O_NODE.  This flag means: open just
-the filesystem node instead of the object referenced by the node.
-
-Opening a file will not call the driver's ->open() method and will not
-have any side effect other than referencing the dentry/vfsmount from
-the struct file pointer.
-
-Currently O_NODE can only be used together with O_NOACCESS (value 3),
-meaning that read(2) and write(2) will return EBADF and no permission
-is necessary to open the file.  This is logical for device nodes and
-fifos.  For directories we could allow O_RDONLY, and for regular files
-any access mode, but this is not done yet.
-
-O_NODE used together with O_NOFOLLOW will open a symlink node itself
-instead of returning ELOOP.  O_NOFOLLOW will not prevent following
-mountpoints if used together with O_NODE.  In theory we could allow
-O_RDONLY for symlinks too and return the contents of the link on
-read(2).
-
-Filesystems which want to install special file operations for O_NODE
-opens (e.g. ioctl) may set S_OPEN_NODE flag in the inode.  This will
-cause dentry_open() to call inode->i_fop->open, and the filesystem is
-responsible for handling the O_NODE flag and installing the right
-filesystem operations in file->f_op.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/file_table.c             |    6 ++--
- fs/locks.c                  |    3 ++
- fs/namei.c                  |   65 ++++++++++++++++++++++++++------------------
- fs/open.c                   |   12 +++++++-
- include/asm-generic/fcntl.h |    4 ++
- include/linux/fs.h          |    1 
- 6 files changed, 62 insertions(+), 29 deletions(-)
-
-Index: linux-2.6/fs/file_table.c
-===================================================================
---- linux-2.6.orig/fs/file_table.c	2009-07-01 06:46:51.000000000 +0200
-+++ linux-2.6/fs/file_table.c	2009-07-01 06:47:18.000000000 +0200
-@@ -281,8 +281,10 @@ void __fput(struct file *file)
- 		file->f_op->release(inode, file);
- 	security_file_free(file);
- 	ima_file_free(file);
--	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL))
--		cdev_put(inode->i_cdev);
-+	if (unlikely(S_ISCHR(inode->i_mode) && inode->i_cdev != NULL)) {
-+		if (!(file->f_flags & O_NODE))
-+			cdev_put(inode->i_cdev);
-+	}
- 	fops_put(file->f_op);
- 	put_pid(file->f_owner.pid);
- 	file_kill(file);
-Index: linux-2.6/fs/locks.c
-===================================================================
---- linux-2.6.orig/fs/locks.c	2009-07-01 06:46:51.000000000 +0200
-+++ linux-2.6/fs/locks.c	2009-07-01 06:47:18.000000000 +0200
-@@ -1183,6 +1183,9 @@ int __break_lease(struct inode *inode, u
- 	unsigned long break_time;
- 	int i_have_this_lease = 0;
- 
-+	if (!(mode & (FMODE_READ | FMODE_WRITE)))
-+		return 0;
-+
- 	new_fl = lease_alloc(NULL, mode & FMODE_WRITE ? F_WRLCK : F_RDLCK);
- 
- 	lock_kernel();
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2009-07-01 06:46:52.000000000 +0200
-+++ linux-2.6/fs/namei.c	2009-07-01 06:47:18.000000000 +0200
-@@ -1160,7 +1160,9 @@ static int path_lookup_open(int dfd, con
- 	nd->intent.open.file = filp;
- 	nd->intent.open.flags = open_flags;
- 	nd->intent.open.create_mode = 0;
--	err = do_path_lookup(dfd, name, lookup_flags|LOOKUP_OPEN, nd);
-+	if (!(open_flags & O_NODE))
-+		lookup_flags |= LOOKUP_OPEN;
-+	err = do_path_lookup(dfd, name, lookup_flags, nd);
- 	if (IS_ERR(nd->intent.open.file)) {
- 		if (err == 0) {
- 			err = PTR_ERR(nd->intent.open.file);
-@@ -1511,22 +1513,27 @@ int may_open(struct path *path, int acc_
- 	if (!inode)
- 		return -ENOENT;
- 
--	switch (inode->i_mode & S_IFMT) {
--	case S_IFLNK:
--		return -ELOOP;
--	case S_IFDIR:
--		if (acc_mode & MAY_WRITE)
--			return -EISDIR;
--		break;
--	case S_IFBLK:
--	case S_IFCHR:
--		if (path->mnt->mnt_flags & MNT_NODEV)
-+	if ((flag & O_NODE)) {
-+		if (acc_mode & (MAY_READ | MAY_WRITE))
- 			return -EACCES;
--		/*FALLTHRU*/
--	case S_IFIFO:
--	case S_IFSOCK:
--		flag &= ~O_TRUNC;
--		break;
-+	} else {
-+		switch (inode->i_mode & S_IFMT) {
-+		case S_IFLNK:
-+			return -ELOOP;
-+		case S_IFDIR:
-+			if (acc_mode & MAY_WRITE)
-+				return -EISDIR;
-+			break;
-+		case S_IFBLK:
-+		case S_IFCHR:
-+			if (path->mnt->mnt_flags & MNT_NODEV)
-+				return -EACCES;
-+			/*FALLTHRU*/
-+		case S_IFIFO:
-+		case S_IFSOCK:
-+			flag &= ~O_TRUNC;
-+			break;
-+		}
- 	}
- 
- 	error = inode_permission(inode, acc_mode);
-@@ -1629,14 +1636,16 @@ out_unlock:
-  *	11 - read-write
-  * for the internal routines (ie open_namei()/follow_link() etc)
-  * This is more logical, and also allows the 00 "no perm needed"
-- * to be used for symlinks (where the permissions are checked
-- * later).
-+ * to be used for opening a symlink, pipe, socket or device with
-+ * O_NODE.
-  *
- */
- static inline int open_to_namei_flags(int flag)
- {
- 	if ((flag+1) & O_ACCMODE)
- 		flag++;
-+	else if (flag & O_NODE)
-+		flag &= ~O_ACCMODE;
- 	return flag;
- }
- 
-@@ -1724,7 +1733,9 @@ struct file *do_filp_open(int dfd, const
- 	nd.intent.open.create_mode = mode;
- 	dir = nd.path.dentry;
- 	nd.flags &= ~LOOKUP_PARENT;
--	nd.flags |= LOOKUP_CREATE | LOOKUP_OPEN;
-+	nd.flags |= LOOKUP_CREATE;
-+	if (!(open_flag & O_NODE))
-+		nd.flags |= LOOKUP_OPEN;
- 	if (flag & O_EXCL)
- 		nd.flags |= LOOKUP_EXCL;
- 	mutex_lock(&dir->d_inode->i_mutex);
-@@ -1783,19 +1794,24 @@ do_last:
- 
- 	if (__follow_mount(&path)) {
- 		error = -ELOOP;
--		if (flag & O_NOFOLLOW)
-+		if ((flag & O_NOFOLLOW) & !(flag & O_NODE))
- 			goto exit_dput;
- 	}
- 
- 	error = -ENOENT;
- 	if (!path.dentry->d_inode)
- 		goto exit_dput;
--	if (path.dentry->d_inode->i_op->follow_link)
--		goto do_link;
-+	if (path.dentry->d_inode->i_op->follow_link) {
-+		if (!(flag & O_NOFOLLOW))
-+			goto do_link;
-+		error = -ELOOP;
-+		if (!(flag & O_NODE))
-+			goto exit_dput;
-+	}
- 
- 	path_to_nameidata(&path, &nd);
- 	error = -EISDIR;
--	if (path.dentry->d_inode && S_ISDIR(path.dentry->d_inode->i_mode))
-+	if (S_ISDIR(path.dentry->d_inode->i_mode))
- 		goto exit;
- ok:
- 	/*
-@@ -1849,9 +1865,6 @@ exit_parent:
- 	return ERR_PTR(error);
- 
- do_link:
--	error = -ELOOP;
--	if (flag & O_NOFOLLOW)
--		goto exit_dput;
- 	/*
- 	 * This is subtle. Instead of calling do_follow_link() we do the
- 	 * thing by hands. The reason is that this way we have zero link_count
-Index: linux-2.6/fs/open.c
-===================================================================
---- linux-2.6.orig/fs/open.c	2009-07-01 06:46:51.000000000 +0200
-+++ linux-2.6/fs/open.c	2009-07-01 06:47:18.000000000 +0200
-@@ -803,12 +803,17 @@ static inline int __get_file_write_acces
- 	return error;
- }
- 
-+static const struct file_operations default_node_fops = {
-+	.llseek = no_llseek,
-+};
-+
- static struct file *__dentry_open(struct dentry *dentry, struct vfsmount *mnt,
- 					int flags, struct file *f,
- 					int (*open)(struct inode *, struct file *),
- 					const struct cred *cred)
- {
- 	struct inode *inode;
-+	const struct file_operations *fops;
- 	int error;
- 
- 	f->f_flags = flags;
-@@ -827,7 +832,12 @@ static struct file *__dentry_open(struct
- 	f->f_path.dentry = dentry;
- 	f->f_path.mnt = mnt;
- 	f->f_pos = 0;
--	f->f_op = fops_get(inode->i_fop);
-+
-+	fops = inode->i_fop;
-+	if ((flags & O_NODE) && !(inode->i_flags & S_OPEN_NODE))
-+		fops = &default_node_fops;
-+	f->f_op = fops_get(fops);
-+
- 	file_move(f, &inode->i_sb->s_files);
- 
- 	error = security_dentry_open(f, cred);
-Index: linux-2.6/include/asm-generic/fcntl.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/fcntl.h	2009-07-01 06:46:51.000000000 +0200
-+++ linux-2.6/include/asm-generic/fcntl.h	2009-07-01 06:47:18.000000000 +0200
-@@ -9,6 +9,7 @@
- #define O_RDONLY	00000000
- #define O_WRONLY	00000001
- #define O_RDWR		00000002
-+#define O_NOACCESS	00000003
- #ifndef O_CREAT
- #define O_CREAT		00000100	/* not fcntl */
- #endif
-@@ -51,6 +52,9 @@
- #ifndef O_CLOEXEC
- #define O_CLOEXEC	02000000	/* set close_on_exec */
- #endif
-+#ifndef O_NODE
-+#define O_NODE		04000000	/* open filesystem node, not device */
-+#endif
- #ifndef O_NDELAY
- #define O_NDELAY	O_NONBLOCK
- #endif
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2009-07-01 06:46:51.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2009-07-01 06:47:18.000000000 +0200
-@@ -231,6 +231,7 @@ struct inodes_stat_t {
- #define S_NOCMTIME	128	/* Do not update file c/mtime */
- #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
- #define S_PRIVATE	512	/* Inode is fs-internal */
-+#define S_OPEN_NODE	1024	/* Fs is prepared for O_NODE opens */
- 
- /*
-  * Note that nosuid etc flags are inode-specific: setting some file-system
+Rusty.
