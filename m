@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbZGABGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbZGABKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbZGABGZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761527AbZGAAfR
+	id S1762039AbZGABKG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbZGAAfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:17 -0400
-Received: from kroah.org ([198.145.64.141]:60524 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:30 -0400
+Received: from kroah.org ([198.145.64.141]:60585 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761496AbZGAAfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:11 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:35 2009
-Message-Id: <20090701002434.723163004@mini.kroah.org>
+	id S1760446AbZGAAfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:22 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
+Message-Id: <20090701002438.502935424@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:58 -0700
+Date: Tue, 30 Jun 2009 17:24:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sujith <Sujith.Manoharan@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 069/108] ath9k: Fix bug in determining calibration support
+       Lubomir Rintel <lkundrak@v3.sk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Noonan <steven@uplinklabs.net>
+Subject: [patch 080/108] x86: Fix non-lazy GS handling in sys_vm86()
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ath9k-fix-bug-in-determining-calibration-support.patch
+Content-Disposition: inline; filename=x86-fix-non-lazy-gs-handling-in-sys_vm86.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +31,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sujith <Sujith.Manoharan@atheros.com>
+From: Lubomir Rintel <lkundrak@v3.sk>
 
-commit a451aa66dcb14efcb7addf1d8edcac8df76a97b6 upstream.
+commit 3aa6b186f86c5d06d6d92d14311ffed51f091f40 upstream.
 
-ADC gain calibration has to be done for all non 2GHZ-HT20 channels.
-Regression from "ath9k: use ieee80211_conf on ath9k_hw_iscal_supported()"
+This fixes a stack corruption panic or null dereference oops
+due to a bad GS in resume_userspace() when returning from
+sys_vm86() and calling lockdep_sys_exit().
 
-Signed-off-by: Sujith <Sujith.Manoharan@atheros.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Only a problem when CONFIG_LOCKDEP and CONFIG_CC_STACKPROTECTOR
+enabled.
+
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Cc: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <1244384628.2323.4.camel@bimbo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Noonan <steven@uplinklabs.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath9k/calib.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/vm86_32.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/ath9k/calib.c
-+++ b/drivers/net/wireless/ath9k/calib.c
-@@ -284,8 +284,8 @@ static bool ath9k_hw_iscal_supported(str
- 		return true;
- 	case ADC_GAIN_CAL:
- 	case ADC_DC_CAL:
--		if (conf->channel->band == IEEE80211_BAND_5GHZ &&
--		  conf_is_ht20(conf))
-+		if (!(conf->channel->band == IEEE80211_BAND_2GHZ &&
-+		      conf_is_ht20(conf)))
- 			return true;
- 		break;
- 	}
+--- a/arch/x86/kernel/vm86_32.c
++++ b/arch/x86/kernel/vm86_32.c
+@@ -287,10 +287,9 @@ static void do_sys_vm86(struct kernel_vm
+ 	info->regs.pt.ds = 0;
+ 	info->regs.pt.es = 0;
+ 	info->regs.pt.fs = 0;
+-
+-/* we are clearing gs later just before "jmp resume_userspace",
+- * because it is not saved/restored.
+- */
++#ifndef CONFIG_X86_32_LAZY_GS
++	info->regs.pt.gs = 0;
++#endif
+ 
+ /*
+  * The flags register is also special: we cannot trust that the user
+@@ -343,7 +342,9 @@ static void do_sys_vm86(struct kernel_vm
+ 	__asm__ __volatile__(
+ 		"movl %0,%%esp\n\t"
+ 		"movl %1,%%ebp\n\t"
++#ifdef CONFIG_X86_32_LAZY_GS
+ 		"mov  %2, %%gs\n\t"
++#endif
+ 		"jmp resume_userspace"
+ 		: /* no outputs */
+ 		:"r" (&info->regs), "r" (task_thread_info(tsk)), "r" (0));
 
 
