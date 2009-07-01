@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZGAW4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751370AbZGAW5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbZGAW4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 18:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZGAW4c
+	id S1751370AbZGAW5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 18:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZGAW5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 18:56:32 -0400
-Received: from mga11.intel.com ([192.55.52.93]:7959 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbZGAW4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 18:56:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,328,1243839600"; 
-   d="scan'208";a="471321798"
-Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Avi Kivity <avi@redhat.com>, Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>, garyhade@us.ibm.com
-In-Reply-To: <m1k52t1plq.fsf@fess.ebiederm.org>
-References: <20090629132926.GB20289@redhat.com>
-	 <m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>
-	 <m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com>
-	 <m1ljn94k16.fsf@fess.ebiederm.org> <4A4A6499.9000406@redhat.com>
-	 <m1k52t1plq.fsf@fess.ebiederm.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 01 Jul 2009 15:53:28 -0700
-Message-Id: <1246488808.27006.10691.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 18:57:06 -0400
+Received: from toccata.ens-lyon.fr ([140.77.166.68]:40666 "EHLO
+	toccata.ens-lyon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZGAW5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 18:57:05 -0400
+X-Greylist: delayed 1852 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 18:57:05 EDT
+Date: Thu, 2 Jul 2009 00:19:04 +0200
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] accessibility, speakup, speech synthesis & /sys
+Message-ID: <20090701221904.GA4431@const>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
+References: <20090625220452.GF5540@const.famille.thibault.fr> <20090630063454.GI1351@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090630063454.GI1351@ucw.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 12:36 -0700, Eric W. Biederman wrote:
-> Dropped irqs..  Driver hangs because it is waiting for an irq.  Hardware
-> hangs because it is waiting for the cpu to process the irq.
+Hello,
+
+Pavel Machek, le Tue 30 Jun 2009 08:34:54 +0200, a écrit :
+> > Then there are the screen reading parameters. I'd tend to think that
+> > like there are /sys/{block,firmware,fs,power}, there could be a
+> > /sys/accessibility, or even shorter, /sys/a11y?  Speakup parameters
+> > could then be in /sys/a11y/speakup?
 > 
-> Potentially we get a level triggered irq that is never acked by
-> the cpu that won't arm until the cpu send an ack, and we can't
-> send an ack from another cpu.
+> Please keep a11y and similar madness far from kernel.
 
-Eric,
+What do you qualify as "madness" precisely?  Could you explain why you
+are using such extreme word?
 
-Among number of experiments you have tried in the past to fix this, have
-you tried the experiment of explicitly clearing the remoteIRR by
-changing the trigger mode to edge and then back to level.
+> /sys/speech ? Or even better /sys/class/speech? What is global about
+> it?
 
-Is there a problem with this?
+As I said, there is a difference between speech synthesizers, which can
+easily be considered as devices, and screen readers (here, speakup),
+which could for instance use different synthesizers, so please don't mix
+them. Accessibility features, however, is not really a device, but as it
+was suggested it could go into the vtcon directory.
 
-We can send a spurious IPI (after the RTE migration) with the new vector
-to another cpu and handler which services the level interrupt will check
-if we saw the edge mode for a level interrupt and then the handler can
-explicitly restore the level trigger and reset the remote IRR by mask
-+edge and unmask+level.
+> BTW... from 486+, cpus are fast enough for speech synthesis. Why not
+> doing it in software, viewing hw synthetisers as 'flite coprocessors'?
 
-We might have to work with some rough edges but do you recollect any
-major issue with this approach..
+At least because flite is very far from proprietary hardware
+synthesizers in terms of quality.
 
-thanks,
-suresh
+> What modifications would be needed to make useful a11y w/o additional
+> hw?
 
+It depends on what you call "useful".  The desktop can already use
+software speech synthesis.  When / can't be mounted, you're hosed,
+however, unless you have shipped a full software speech synthesizer in
+initrd, but even in such case the initrd script could also fail.
+
+Samuel
