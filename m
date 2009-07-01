@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZGALLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZGALMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531AbZGALLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZGALLM
+	id S1753834AbZGALMQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbZGALMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:11:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50038 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Jul 2009 07:12:00 -0400
+Received: from mail.samba.org ([66.70.73.150]:45874 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754219AbZGALKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:10:18 -0400
-Date: Wed, 1 Jul 2009 13:10:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Greg KH <gregkh@suse.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
-Message-ID: <20090701111003.GC15958@elte.hu>
-References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org>
+	id S1753834AbZGALL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:11:59 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <19019.17531.349844.201397@samba.org>
+Date: Wed, 1 Jul 2009 21:11:55 +1000
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <20090701110934.2f43591c@lxorguk.ukuu.org.uk>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<20090701110934.2f43591c@lxorguk.ukuu.org.uk>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+ > > What happens on collision? With 60000 entries in directory, there will
+ > > be 50% chance of collision. BAD.
+ > 
+ > Far more surely - its a birthday paradox.
 
-> On Tue, 30 Jun 2009, Greg KH wrote:
-> 
-> > >  These days an IOCK NMI typically happens in response to a PCI 
-> > > SERR -- it may be useful to traverse PCI buses to find the 
-> > > offender and dump this information on this occasion too.  The 
-> > > south bridge may have additional status too.
-> > 
-> > Sure, that would be great to have.  Care to make a patch?  :)
-> 
->  ENOTIME, sorry.  Next year perhaps.  Or a homework project for 
-> one of the newbies. ;)
+If you want to do it accurately, the maximum number of long filenames
+in a VFAT directory is actually 32767. (it isn't 65536, as each long
+filename consumes at least two 8.3 entries, plus you lose the . and
+.. entries).
 
-You know that this project would kill a newbie, right? :)
+With the patch I've posted there are 30 bits of randomness in each
+entry. You could do an accurate binomial expansion to get the exact
+probability, but a very good approximation using exponentiation comes
+out as a 39.3% chance of a single duplicate appearing in a directory
+that is fully populated.
 
-We have no real southbridge drivers on x86 - but we should certainly 
-add some. Also, walking the PCI device tree from NMI context is 
-tricky as the lists there are not NMI safe - we could crash if we 
-happen to get a #IOCK while loading/unloading drivers (which is rare 
-but could happen).
+As I mentioned to Pavel, this isn't the whole story though. To cause
+the bluescreen the duplicate entries need to be accessed by WindowsXP
+in quick succession in a particular pattern. This lowers the
+probability a lot. Exactly how much is hard to estimate, but
+experiments I've done with deliberately higher probabilities (ie. less
+bits of randomness) show that the probability of the bluescreen is
+_very_ low.
 
-IMHO it's all very much desired functionality, but highly 
-non-trivial.
+ > Agreed 100%. I'm also not sure it should be called "vfat" when operating
+ > in this mode as it's not vfat any more - it needs a new name.
 
-	Ingo
+If the code differed significantly between the two implementations I'd
+probably agree, but as the two are extremely close I think maintaining
+a separate filesystem isn't worth it.
+
+Cheers, Tridge
