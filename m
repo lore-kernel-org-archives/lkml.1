@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZGARdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZGARfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbZGARdx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 13:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbZGARde
+	id S1755918AbZGARfG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 13:35:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZGARe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 13:33:34 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:59336 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754032AbZGARdd (ORCPT
+	Wed, 1 Jul 2009 13:34:57 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53862 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZGARe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 13:33:33 -0400
-Date: Wed, 1 Jul 2009 13:33:03 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Andi Kleen <andi@firstfloor.org>
-cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, linux-arch@vger.kernel.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-In-Reply-To: <20090701131146.GR6760@one.firstfloor.org>
-Message-ID: <alpine.DEB.1.10.0907011330450.9522@gentwo.org>
-References: <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org>
- <20090701064250.GM6760@one.firstfloor.org> <4A4B38C5.1070504@kernel.org> <20090701122312.GP6760@one.firstfloor.org> <4A4B5C32.1010009@kernel.org> <20090701131146.GR6760@one.firstfloor.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 1 Jul 2009 13:34:57 -0400
+Subject: [PATCH] Fix pci_unmap_addr() et al on i386.
+From: David Woodhouse <dwmw2@infradead.org>
+To: torvalds@linux-foundation.org, x86 maintainers <x86@kernel.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 01 Jul 2009 18:34:52 +0100
+Message-Id: <1246469692.3681.1949.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Andi Kleen wrote:
+We can run a 32-bit kernel on boxes with an IOMMU, so we need
+pci_unmap_addr() etc. to work -- without it, drivers will leak mappings.
 
-> And it's imho unclear if that is all worth it just to avoid
-> wasting some memory in the "256 possible CPUs" case (which
-> I doubt is particularly realistic anyways, at least I don't
-> know of any Hypervisor today that scales to 256 CPUs)
+To be honest, this whole thing looks like it's more pain than it's
+worth; I'm half inclined to remove the no-op #else case altogether.
 
-I basically agree. Its not worth it given the rare cases where this
-matters. It will be a lot of code with callbacks in each subsystem.
+But this is the minimal fix, which just does the right thing if
+CONFIG_DMAR is set.
 
-One of the motivations of working on revising the percpu handling for
-me was that we could get rid of these screwy callbacks that are rarely
-tested and cause all sorts of other issues with locking and serialization.
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+Needed in 2.6.30, but not earlier because you can't enable CONFIG_DMAR
+before that. Jörg, if you ever enable the AMD IOMMU in 32-bit mode you
+may have to fix this again (unless we just make it unconditionally do
+the right thing, which probably gets my vote).
+
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index 927958d..1ff685c 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -91,7 +91,7 @@ extern void pci_iommu_alloc(void);
+ 
+ #define PCI_DMA_BUS_IS_PHYS (dma_ops->is_phys)
+ 
+-#if defined(CONFIG_X86_64) || defined(CONFIG_DMA_API_DEBUG)
++#if defined(CONFIG_X86_64) || defined(CONFIG_DMAR) || defined(CONFIG_DMA_API_DEBUG)
+ 
+ #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)       \
+ 	        dma_addr_t ADDR_NAME;
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
