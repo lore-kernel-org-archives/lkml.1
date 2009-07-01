@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZGAHQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbZGAHSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZGAHQq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZGAHQi
+	id S1753085AbZGAHSZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZGAHSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:16:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:38578 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZGAHQh (ORCPT
+	Wed, 1 Jul 2009 03:18:18 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:39173 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbZGAHSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:16:37 -0400
+	Wed, 1 Jul 2009 03:18:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=q07QBAgJISnamOT8oyqk8lzBKNC6TnHfybjHEsWcfAWTgTRl3CqKN18rcVyiEJi9iY
-         tToM/N1Jam0EpPLD7/TpLtk03sF2lVk9IUAgs4ohBq2tnD6uUhX51jplDDF8/wxGSVK6
-         a+WOLr8K2rbcFdw60O7gCQuFjrEOfo0+mcbfU=
-Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
- not work
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Ralf Baechle <ralf@linux-mips.org>, linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20090630144540.GA18212@linux-mips.org>
-References: <1246372868.19049.17.camel@falcon>
-	 <20090630144540.GA18212@linux-mips.org>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 01 Jul 2009 15:16:10 +0800
-Message-Id: <1246432570.9660.22.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=j425XS8OFDme5fcxog9jYCE0PXfG/l1xM7TPWKyaiHQHSb56+wBjvskL8qZwaevzp8
+         qRh7ipHSDdjSkQts09qzHR/FxqmCXjI+nOg52RZiGqeSGWCLJqPUcNpfeUC1SZCnTtcs
+         VBThJDZ6NpjIgHFzbLAWUDxG85vqMPdaJUjz4=
+Date: Wed, 1 Jul 2009 15:20:27 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Hui Zhu <teawater@gmail.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, dhowells@redhat.com
+Subject: Re: [PATCH] Fix the multithread program core thread message error
+Message-ID: <20090701072027.GE6076@cr0.nay.redhat.com>
+References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com> <20090701005437.GA5856@cr0.nay.redhat.com> <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com> <20090701045102.GA6076@cr0.nay.redhat.com> <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 15:45 +0100, Ralf Baechle wrote:
-> On Tue, Jun 30, 2009 at 10:41:08PM +0800, Wu Zhangjin wrote:
-> 
-> > I just updated my git repository to the master branch of the latest
-> > linux-mips git repository, and tested the STD/Hibernation support on
-> > fuloong2e and yeeloong2f, it failed:
-> > 
-> > when using the no_console_suspend kernel command line to debug, it
-> > stopped on:
-> > 
-> > PM: Shringking memory... done (1000 pages freed)
-> > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
-> > PM: Creating hibernation image:
-> > PM: Need to copy 5053 pages
-> > PM: Hibernation image created (4195 pages copied)
-> > 
-> > and then, the number indicator light of keyboard works well, but can not
-> > type anything. 
-> > 
-> > anybody have tested it on another platform? does it work?
-> 
-> At the time of the merge I tested it on Malta and found it to be working.
-> 
+On Wed, Jul 01, 2009 at 02:21:37PM +0800, Hui Zhu wrote:
+>Thanks for your help, Amerigo.
 
-Just traced it, the executing path is something like this:
+You're welcome.
 
-	hibernate(kernel/power/hibernate.c)
-	--> hibernation_snapshot
-	--> dpm_resume_end
-	--> dpm_resume
-        --> device_resume
-	--> dev->bus->resume(generic_ide_resume), dev_name(dev) = 0.0
-	--> blk_execute_rq
-        {
-		DECLARE_COMPLETION_ONSTACK(wait);
-		...
-		wait_for_completion(&wait);	// stop here
-		...
-	}
+>
+>Hui
+>
+>---
+> elfcore.h |    2 ++
+> 1 file changed, 2 insertions(+)
+>
+>diff --git a/include/linux/elfcore.h b/include/linux/elfcore.h
+>index 7605c5e..03ec167 100644
+>--- a/include/linux/elfcore.h
+>+++ b/include/linux/elfcore.h
+>@@ -125,6 +125,8 @@ static inline int elf_core_copy_task_regs(struct
+>task_struct *t, elf_gregset_t*
+> #ifdef ELF_CORE_COPY_TASK_REGS
+>
+>       return ELF_CORE_COPY_TASK_REGS(t, elfregs);
+>+#else
+>+       elf_core_copy_regs(elfregs, task_pt_regs(t));
+> #endif
+>       return 0;
+> }
 
-I guess there is a possible bug in the latest ide patches, I'm trying to
-find which one is 'bad'.
+Your email client eats tabs. :) Can you fix your email client
+or resend it with a tool like git send-email?
 
-the ide driver i used is VIA82CXXX chipset support.
-
-Regards,
-Wu Zhangjin
-
+Thanks.
