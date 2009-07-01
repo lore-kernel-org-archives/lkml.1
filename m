@@ -1,132 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZGAJrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbZGAJrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbZGAJrF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZGAJqz
+	id S1755065AbZGAJrX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZGAJrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:46:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52552 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZGAJqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:46:54 -0400
-Subject: [PATCH 2/6 -tip] perf stat: treat same behaviour for all CYCLES
- and CLOCKS
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+	Wed, 1 Jul 2009 05:47:03 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:48405 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755183AbZGAJrB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:47:01 -0400
+Subject: Re: [PATCH] kmemleak: Fix scheduling-while-atomic bug
+From: Catalin Marinas <catalin.marinas@arm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246440909.3403.5.camel@hpdv5.satnam>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       git-commits-head@vger.kernel.org
+In-Reply-To: <20090701093015.GA6862@elte.hu>
+References: <200907010300.n6130rRf026194@hera.kernel.org>
+	 <20090701075332.GA17252@elte.hu>
+	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
+	 <20090701093015.GA6862@elte.hu>
 Content-Type: text/plain
-Date: Wed, 01 Jul 2009 15:06:17 +0530
-Message-Id: <1246440977.3403.7.camel@hpdv5.satnam>
+Organization: ARM Ltd
+Date: Wed, 01 Jul 2009 10:46:31 +0100
+Message-Id: <1246441592.8492.38.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jul 2009 09:46:32.0941 (UTC) FILETIME=[D10CA1D0:01C9FA30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-07-01 at 11:30 +0200, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> 
+> > > The minimal fix below removes scan_yield() and adds a 
+> > > cond_resched() to the outmost (safe) place of the scanning 
+> > > thread. This solves the regression.
+> > 
+> > With CONFIG_PREEMPT disabled it won't reschedule during the bss 
+> > scanning but I don't see this as a real issue (task stacks 
+> > scanning probably takes longer anyway).
+> 
+> Yeah. I suspect one more cond_resched() could be added - i just 
+> didnt see an obvious place for it, given that scan_block() is being 
+> called with asymetric held-locks contexts.
 
-For normalization also added SW_CPU_CLOCK and HW_BUS_CYCLES
+Yes, scan_block shouldn't call cond_resched(). The code is cleaner if
+functions don't have too many side-effects. I can see about 1 sec of bss
+scanning on an ARM board but with processor at < 500MHz and slow memory
+system. On a standard x86 systems BSS scanning may not be noticeable
+(and I think PREEMPT enabling is quite common these days).
 
-For nsec_printout also added SW_CPU_CLOCK
+Since we are at locking, I just noticed this on my x86 laptop when
+running cat /sys/kernel/debug/kmemleak (I haven't got it on an ARM
+board):
 
-Added helper functions to check counter unit as cycles and instructions
+================================================
+[ BUG: lock held when returning to user space! ]
+------------------------------------------------
+cat/3687 is leaving the kernel with locks still held!
+1 lock held by cat/3687:
+#0:  (scan_mutex){+.+.+.}, at: [<c01e0c5c>] kmemleak_open+0x3c/0x70
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- tools/perf/builtin-stat.c |   49 +++++++++++++++++++++++++++++++-------------
- 1 files changed, 34 insertions(+), 15 deletions(-)
+kmemleak_open() acquires scan_mutex and unconditionally releases it in
+kmemleak_release(). The mutex seems to be released as a subsequent
+acquiring works fine.
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 6bf2b80..af61c29 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -144,6 +144,29 @@ static inline int nsec_counter(int counter)
- }
- 
- /*
-+ * Does the counter have cycles as a unit?
-+ */
-+static inline int cycle_counter(int counter)
-+{
-+	if (MATCH_EVENT(HARDWARE, HW_CPU_CYCLES, counter) ||
-+	    MATCH_EVENT(HARDWARE, HW_BUS_CYCLES, counter))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Does the counter have instructions as a unit?
-+ */
-+static inline int instruction_counter(int counter)
-+{
-+	if (MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-  * Read out the results of a single counter:
-  */
- static void read_counter(int counter)
-@@ -191,9 +214,9 @@ static void read_counter(int counter)
- 	/*
- 	 * Save the full runtime - to allow normalization during printout:
- 	 */
--	if (MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter))
-+	if (nsec_counter(counter))
- 		runtime_nsecs[run_idx] = count[0];
--	if (MATCH_EVENT(HARDWARE, HW_CPU_CYCLES, counter))
-+	else if (cycle_counter(counter))
- 		runtime_cycles[run_idx] = count[0];
- }
- 
-@@ -287,11 +310,10 @@ static void nsec_printout(int counter, u64 *count, u64 *noise)
- 
- 	fprintf(stderr, " %14.6f  %-24s", msecs, event_name(counter));
- 
--	if (MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter)) {
--		if (walltime_nsecs_avg)
--			fprintf(stderr, " # %10.3f CPUs ",
--				(double)count[0] / (double)walltime_nsecs_avg);
--	}
-+	if (nsec_counter(counter) && walltime_nsecs_avg)
-+		fprintf(stderr, " # %10.3f CPUs ",
-+			(double)count[0] / (double)walltime_nsecs_avg);
-+
- 	print_noise(count, noise);
- }
- 
-@@ -299,16 +321,13 @@ static void abs_printout(int counter, u64 *count, u64 *noise)
- {
- 	fprintf(stderr, " %14Ld  %-24s", count[0], event_name(counter));
- 
--	if (runtime_cycles_avg &&
--	    MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
-+	if (instruction_counter(counter) && runtime_cycles_avg)
- 		fprintf(stderr, " # %10.3f IPC  ",
- 			(double)count[0] / (double)runtime_cycles_avg);
--	} else {
--		if (runtime_nsecs_avg) {
--			fprintf(stderr, " # %10.3f M/sec",
--				(double)count[0]/runtime_nsecs_avg*1000.0);
--		}
--	}
-+	else if (runtime_nsecs_avg)
-+		fprintf(stderr, " # %10.3f M/sec",
-+			(double)count[0]/runtime_nsecs_avg*1000.0);
-+
- 	print_noise(count, noise);
- }
- 
+Is this caused just because cat may have exited without closing the file
+descriptor (which should be done automatically anyway)?
+
+Thanks.
+
 -- 
-1.6.0.6
-
-
+Catalin
 
