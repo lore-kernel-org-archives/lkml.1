@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765133AbZGABDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765394AbZGABD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765133AbZGABDk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761078AbZGAAfI
+	id S1765394AbZGABD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761415AbZGAAfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:08 -0400
-Received: from kroah.org ([198.145.64.141]:60468 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:09 -0400
+Received: from kroah.org ([198.145.64.141]:60475 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759627AbZGAAfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:03 -0400
+	id S1760126AbZGAAfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:04 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:32 2009
-Message-Id: <20090701002432.106047414@mini.kroah.org>
+Message-Id: <20090701002432.385500243@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:50 -0700
+Date: Tue, 30 Jun 2009 17:23:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mike Frysinger <vapier@gentoo.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Matt Mackall <mpm@selenic.com>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: [patch 061/108] ramfs: ignore unknown mount options
+       Bob Copeland <me@bobcopeland.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 062/108] mac80211: fix minstrel single-rate memory corruption
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ramfs-ignore-unknown-mount-options.patch
+Content-Disposition: inline; filename=mac80211-fix-minstrel-single-rate-memory-corruption.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,54 +31,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mike Frysinger <vapier@gentoo.org>
+From: Bob Copeland <me@bobcopeland.com>
 
-commit 0a8eba9b7f7aa3ad0305627c99ad4d6deedd871d upstream.
+commit 5ee58d7e6ad019675b4090582aec4fa1180d8703 upstream.
 
-On systems where CONFIG_SHMEM is disabled, mounting tmpfs filesystems can
-fail when tmpfs options are used.  This is because tmpfs creates a small
-wrapper around ramfs which rejects unknown options, and ramfs itself only
-supports a tiny subset of what tmpfs supports.  This makes it pretty hard
-to use the same userspace systems across different configuration systems.
-As such, ramfs should ignore the tmpfs options when tmpfs is merely a
-wrapper around ramfs.
+The minstrel rate controller periodically looks up rate indexes in
+a sampling table.  When accessing a specific row and column, minstrel
+correctly does a bounds check which, on the surface, appears to handle
+the case where mi->n_rates < 2.  However, mi->sample_idx is actually
+defined as an unsigned, so the right hand side is taken to be a huge
+positive number when negative, and the check will always fail.
 
-This used to work before commit c3b1b1cbf0 as previously, ramfs would
-ignore all options.  But now, we get:
-ramfs: bad mount option: size=10M
-mount: mounting mdev on /dev failed: Invalid argument
+Consequently, the RC will overrun the array and cause random memory
+corruption when communicating with a peer that has only a single rate.
+The max value of mi->sample_idx is around 25 so casting to int should
+have no ill effects.
 
-Another option might be to restore the previous behavior, where ramfs
-simply ignored all unknown mount options ... which is what Hugh prefers.
+Without the change, uptime is a few minutes under load with an AP
+that has a single hard-coded rate, and both the AP and STA could
+potentially crash.  With the change, both lasted 12 hours with a
+steady load.
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Acked-by: Matt Mackall <mpm@selenic.com>
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Thanks to Ognjen Maric for providing the single-rate clue so I could
+reproduce this.
+
+This fixes http://bugzilla.kernel.org/show_bug.cgi?id=12490 on the
+regression list (also http://bugzilla.kernel.org/show_bug.cgi?id=13000).
+
+Reported-by: Sergey S. Kostyliov <rathamahata@gmail.com>
+Reported-by: Ognjen Maric <ognjen.maric@gmail.com>
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ramfs/inode.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ net/mac80211/rc80211_minstrel.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -202,9 +202,12 @@ static int ramfs_parse_options(char *dat
- 				return -EINVAL;
- 			opts->mode = option & S_IALLUGO;
- 			break;
--		default:
--			printk(KERN_ERR "ramfs: bad mount option: %s\n", p);
--			return -EINVAL;
-+		/*
-+		 * We might like to report bad mount options here;
-+		 * but traditionally ramfs has ignored all mount options,
-+		 * and as it is used as a !CONFIG_SHMEM simple substitute
-+		 * for tmpfs, better continue to ignore other mount options.
-+		 */
- 		}
- 	}
- 
+--- a/net/mac80211/rc80211_minstrel.c
++++ b/net/mac80211/rc80211_minstrel.c
+@@ -216,7 +216,7 @@ minstrel_get_next_sample(struct minstrel
+ 	unsigned int sample_ndx;
+ 	sample_ndx = SAMPLE_TBL(mi, mi->sample_idx, mi->sample_column);
+ 	mi->sample_idx++;
+-	if (mi->sample_idx > (mi->n_rates - 2)) {
++	if ((int) mi->sample_idx > (mi->n_rates - 2)) {
+ 		mi->sample_idx = 0;
+ 		mi->sample_column++;
+ 		if (mi->sample_column >= SAMPLE_COLUMNS)
 
 
