@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZGAJHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZGAJIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbZGAJHu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZGAJHi
+	id S1755399AbZGAJIE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZGAJHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:07:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57629 "EHLO hera.kernel.org"
+	Wed, 1 Jul 2009 05:07:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40463 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752797AbZGAJHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:07:37 -0400
-Date: Wed, 1 Jul 2009 08:46:17 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, anton@samba.org,
-       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, anton@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
-References: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Fix storage size allocation of callchain list
-Message-ID: <tip-9198aa77b69647d1d91207f8075763abe7dc0bf4@git.kernel.org>
-Git-Commit-ID: 9198aa77b69647d1d91207f8075763abe7dc0bf4
-X-Mailer: tip-git-log-daemon
+	id S1754445AbZGAJHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:07:40 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Greg KH <greg@kroah.com>
+Subject: Re: [stable] [PATCH 1/2] CPUFREQ: Remove unneeded dbs_mutexes from ondemand and conservative governors
+Date: Wed, 1 Jul 2009 11:07:38 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.23-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, stable@kernel.org,
+       hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org, rjw@sisk.pl, penberg@cs.helsinki.fi,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>, davej@redhat.com,
+       mingo@elte.hu, kernel-testers@vger.kernel.org
+References: <20090623193215.GA31374@elte.hu> <20090630231452.GA23217@Krystal> <20090630233912.GA3709@kroah.com>
+In-Reply-To: <20090630233912.GA3709@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:46:19 +0000 (UTC)
+Message-Id: <200907011107.40045.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9198aa77b69647d1d91207f8075763abe7dc0bf4
-Gitweb:     http://git.kernel.org/tip/9198aa77b69647d1d91207f8075763abe7dc0bf4
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Wed, 1 Jul 2009 05:35:13 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Jul 2009 09:58:23 +0200
+On Wednesday 01 July 2009 01:39:12 Greg KH wrote:
+> On Tue, Jun 30, 2009 at 07:14:52PM -0400, Mathieu Desnoyers wrote:
+> > * Greg KH (greg@kroah.com) wrote:
+> > > I don't see the patch below in Linus's tree.  If it's there, what is the
+> > > git commit id?
+> > > 
+> > 
+> > As I pointed out in an earlier reply, this patch is bogus and adds racy
+> > data structure updates. It should not be merged.
+> 
+> Ok, dropped.
 
-perf_counter tools: Fix storage size allocation of callchain list
+Yes, sorry for not mentioning.
 
-Fix a confusion while giving the size of a callchain list
-during its allocation. We are using the wrong structure size.
+I looked at it again, but gave up after a while, I am not able
+to provide a safe .30 fix for that, risk of making things worse
+is too high...
+My last thought was that the main culprit is that .governor() should
+always be called with the rwsem held. I look at it further and try
+to ease up things for future kernels, but can't spent that much
+time on it currently.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1246419315-9968-2-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- tools/perf/util/callchain.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index ad3c285..bbf7813 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -74,7 +74,7 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain, int start)
- 	for (i = start; i < chain->nr; i++) {
- 		struct callchain_list *call;
- 
--		call = malloc(sizeof(*chain));
-+		call = malloc(sizeof(*call));
- 		if (!call) {
- 			perror("not enough memory for the code path tree");
- 			return;
+   Thomas
