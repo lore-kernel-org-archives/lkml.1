@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbZGAGhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZGAGm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752632AbZGAGhp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZGAGhh
+	id S1752793AbZGAGm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZGAGmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:37:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:25891 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbZGAGhg (ORCPT
+	Wed, 1 Jul 2009 02:42:47 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53370 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbZGAGmr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:37:36 -0400
-Date: Wed, 1 Jul 2009 08:37:37 +0200
-From: Erik Ekman <erik@kryo.se>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH -tip][RFC] serial8250: update to dev_pm_ops
-Message-Id: <20090701083737.41f28c7d.erik@kryo.se>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Wed, 1 Jul 2009 02:42:47 -0400
+Date: Wed, 1 Jul 2009 08:42:50 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, linux-arch@vger.kernel.org, andi@firstfloor.org,
+       hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
+Message-ID: <20090701064250.GM6760@one.firstfloor.org>
+References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4A9DC6.6020003@kernel.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-serial8250: update to dev_pm_ops
+> I don't think it will be too complex.  The necessary bits are already
+> there and they are necessary for other stuff too, so...
 
->From dmesg:
-Platform driver 'serial8250' needs updating - please use dev_pm_ops
+Are we looking at a different source base? Here's a random example
+using possible per cpu data I picked in current git: icmp.c
 
-Is this how it should be done? I have not tested it, but it compiles fine.
-Should I send in similar patches for other drivers that also give this
-message?
+static int __net_init icmp_sk_init(struct net *net)
+{
+        int i, err;
 
-Signed-off-by: Erik Ekman <erik@kryo.se>
----
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index fb867a9..dcbc6da 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2982,42 +2982,46 @@ static int __devexit serial8250_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
-+static int serial8250_suspend(struct device *dev)
- {
- 	int i;
- 
- 	for (i = 0; i < UART_NR; i++) {
- 		struct uart_8250_port *up = &serial8250_ports[i];
- 
--		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
-+		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
- 			uart_suspend_port(&serial8250_reg, &up->port);
- 	}
- 
- 	return 0;
- }
- 
--static int serial8250_resume(struct platform_device *dev)
-+static int serial8250_resume(struct device *dev)
- {
- 	int i;
- 
- 	for (i = 0; i < UART_NR; i++) {
- 		struct uart_8250_port *up = &serial8250_ports[i];
- 
--		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
-+		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
- 			serial8250_resume_port(i);
- 	}
- 
- 	return 0;
- }
- 
-+static struct dev_pm_ops serial8250_pm_ops = {
-+	.suspend = serial8250_suspend,
-+	.resume  = serial8250_resume,
-+};
-+
- static struct platform_driver serial8250_isa_driver = {
- 	.probe		= serial8250_probe,
- 	.remove		= __devexit_p(serial8250_remove),
--	.suspend	= serial8250_suspend,
--	.resume		= serial8250_resume,
- 	.driver		= {
- 		.name	= "serial8250",
- 		.owner	= THIS_MODULE,
-+		.pm     = &serial8250_pm_ops, 
- 	},
- };
- 
+        net->ipv4.icmp_sk =
+                kzalloc(nr_cpu_ids * sizeof(struct sock *), GFP_KERNEL);
+        if (net->ipv4.icmp_sk == NULL)
+                return -ENOMEM;
+
+        for_each_possible_cpu(i) {
+		... allocate per cpu socket and some other setup ...
+	}
+} 
+
+static void __net_exit icmp_sk_exit(struct net *net)
+{
+        int i;
+
+        for_each_possible_cpu(i)
+                inet_ctl_sock_destroy(net->ipv4.icmp_sk[i]);
+        kfree(net->ipv4.icmp_sk);
+        net->ipv4.icmp_sk = NULL;
+}
+
+You would need to convert that to use a CPU notifier and callbacks
+setting up the sockets. Then make sure there are no races in all of
+this. And get it somehow tested (where is the user base who
+tests cpu hotplug?) 
+
+And there is lots of similar code all over the tree
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
