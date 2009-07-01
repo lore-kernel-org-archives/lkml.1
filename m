@@ -1,117 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZGAVVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGAVVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbZGAVVU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZGAVVJ
+	id S1754843AbZGAVVg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZGAVVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:21:09 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:49492 "EHLO mail.pxnet.com"
+	Wed, 1 Jul 2009 17:21:11 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:49491 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684AbZGAVVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752809AbZGAVVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 1 Jul 2009 17:21:07 -0400
 From: Tilman Schmidt <tilman@imap.cc>
 To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090701-patch-01.tilman@imap.cc>
+Message-ID: <20090701-patch-02.tilman@imap.cc>
 In-Reply-To: <20090701-patch-00.tilman@imap.cc>
 References: <20090701-patch-00.tilman@imap.cc>
-Subject: [PATCH 1/2] gigaset: accept connection establishment messages in any order
+Subject: [PATCH 2/2] gigaset: drop pointless check
 Date: Wed,  1 Jul 2009 23:20:57 +0200 (CEST)
-X-Spam-Score: 0.1 () RDNS_NONE
+X-Spam-Score: 0.1 () AWL,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ISDN connection setup failed if the "connection active" and
-"B channel up" messages from the device arrived in a different
-order than expected. Modify the state machine to accept them in
-any order.
+Drop a sanity check which doesn't serve any useful purpose anymore.
 
-Impact: bugfix
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-CC: stable <stable@kernel.org>
 ---
- drivers/isdn/gigaset/ev-layer.c |   44 +++++++++++++++++---------------------
- 1 files changed, 20 insertions(+), 24 deletions(-)
+ drivers/isdn/gigaset/isocdata.c |    6 ------
+ 1 files changed, 0 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
-index ec51696..2d91049 100644
---- a/drivers/isdn/gigaset/ev-layer.c
-+++ b/drivers/isdn/gigaset/ev-layer.c
-@@ -294,32 +294,33 @@ struct reply_t gigaset_tab_cid[] =
- 	{RSP_OK,      604,604, -1,                605, 5, {ACT_CMD+AT_MSN}},
- 	{RSP_OK,      605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
- 	{RSP_NULL,    605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
--	{RSP_OK,      606,606, -1,                607, 5, {0},             "+VLS=17\r"}, /* set "Endgeraetemodus" */
-+	{RSP_OK,      606,606, -1,                607, 5, {0}, "+VLS=17\r"},
- 	{RSP_OK,      607,607, -1,                608,-1},
--	//{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    608, 0, {ACT_ERROR}},//DELETE
- 	{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    609, 5, {ACT_CMD+AT_DIAL}},
- 	{RSP_OK,      609,609, -1,                650, 0, {ACT_DIALING}},
- 
--	{RSP_ZVLS,    608,608, 17,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCTP,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCPN,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
- 	{RSP_ERROR,   601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
- 	{EV_TIMEOUT,  601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
- 
--	/* dialing */
--	{RSP_ZCTP,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCPN,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZSAU,    650,650,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}}, /* some devices don't send this */
--
--	/* connection established  */
--	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
--	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
--
--	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}}, //FIXME new constate + timeout
-+	/* optional dialing responses */
-+	{EV_BC_OPEN,  650,650, -1,                651,-1},
-+	{RSP_ZVLS,    608,651, 17,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZCTP,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZCPN,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZSAU,    650,651,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}},
-+
-+	/* connect */
-+	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
-+	{RSP_ZSAU,    651,651,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
-+							   ACT_NOTIFY_BC_UP}},
-+	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
-+	{RSP_ZSAU,    751,751,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
-+							   ACT_NOTIFY_BC_UP}},
-+	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}},
- 
- 	/* remote hangup */
--	{RSP_ZSAU,    650,650,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
--	{RSP_ZSAU,    750,750,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
-+	{RSP_ZSAU,    650,651,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
-+	{RSP_ZSAU,    750,751,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
- 	{RSP_ZSAU,    800,800,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
- 
- 	/* hangup */
-@@ -358,7 +359,8 @@ struct reply_t gigaset_tab_cid[] =
- 	{RSP_ZSAU,    700,729,ZSAU_ACTIVE,          0, 0, {ACT_ABORTACCEPT}},
- 	{RSP_ZSAU,    700,729,ZSAU_DISCONNECT_IND,  0, 0, {ACT_ABORTACCEPT}},
- 
--	{EV_TIMEOUT,  750,750, -1,                  0, 0, {ACT_CONNTIMEOUT}},
-+	{EV_BC_OPEN,  750,750, -1,                751,-1},
-+	{EV_TIMEOUT,  750,751, -1,                  0, 0, {ACT_CONNTIMEOUT}},
- 
- 	/* B channel closed (general case) */
- 	{EV_BC_CLOSED, -1, -1, -1,                 -1,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME
-@@ -876,12 +878,6 @@ static void bchannel_down(struct bc_state *bcs)
- 
- static void bchannel_up(struct bc_state *bcs)
- {
--	if (!(bcs->chstate & CHS_D_UP)) {
--		dev_notice(bcs->cs->dev, "%s: D channel not up\n", __func__);
--		bcs->chstate |= CHS_D_UP;
--		gigaset_i4l_channel_cmd(bcs, ISDN_STAT_DCONN);
+diff --git a/drivers/isdn/gigaset/isocdata.c b/drivers/isdn/gigaset/isocdata.c
+index db3a1e4..bed38fc 100644
+--- a/drivers/isdn/gigaset/isocdata.c
++++ b/drivers/isdn/gigaset/isocdata.c
+@@ -174,12 +174,6 @@ int gigaset_isowbuf_getbytes(struct isowbuf_t *iwb, int size)
+ 		pr_err("invalid size %d\n", size);
+ 		return -EINVAL;
+ 	}
+-	src = iwb->read;
+-	if (unlikely(limit >= BAS_OUTBUFSIZE + BAS_OUTBUFPAD ||
+-		     (read < src && limit >= src))) {
+-		pr_err("isoc write buffer frame reservation violated\n");
+-		return -EFAULT;
 -	}
--
- 	if (bcs->chstate & CHS_B_UP) {
- 		dev_notice(bcs->cs->dev, "%s: B channel already up\n",
- 			   __func__);
+ #endif
+ 
+ 	if (read < write) {
 -- 
 1.6.2.1.214.ge986c
 
