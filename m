@@ -1,91 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZGANRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZGANTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbZGANRX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZGANRO
+	id S1754744AbZGANTy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZGANTp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:17:14 -0400
-Received: from mail.samba.org ([66.70.73.150]:59581 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbZGANRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:17:13 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Jul 2009 09:19:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59473 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbZGANTo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:19:44 -0400
+Subject: [PATCH] Support DMA-API debugging facility on PowerPC
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joerg.roedel@amd.com>, benh@kernel.crashing.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1233873842.8135.6.camel@macbook.infradead.org>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+	 <1227286492.4901.208.camel@macbook.infradead.org>
+	 <20081121165722.GD1386@amd.com>
+	 <1227287215.4901.213.camel@macbook.infradead.org>
+	 <20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com>
+	 <1227288269.4901.222.camel@macbook.infradead.org>
+	 <20081121172722.GG1386@amd.com>
+	 <1233873842.8135.6.camel@macbook.infradead.org>
+Content-Type: text/plain
+Date: Wed, 01 Jul 2009 14:19:40 +0100
+Message-Id: <1246454380.3681.1634.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19019.25035.244941.352337@samba.org>
-Date: Wed, 1 Jul 2009 23:16:59 +1000
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090701123141.402c17d2@lxorguk.ukuu.org.uk>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-	<20090701123141.402c17d2@lxorguk.ukuu.org.uk>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
 
- > They don't have to ship the code. They can rip it out. They deal with
- > video players the same way for the USSA market and have done for years.
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Tested-by: Johannes Berg <johannes@sipsolutions.net>
+---
+Some fixing from Johannes to make it apply to a current kernel...
 
-yes, vendors can make the patch unconditional of course. I thought
-that we were not trying to encourage divergance between the kernel.org
-tree and the vendor trees though? I know some divergance is always
-going to happen, but it seems counter productive to be encouraging it.
+ arch/powerpc/Kconfig                   |    1 
+ arch/powerpc/include/asm/dma-mapping.h |   47 ++++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/dma.c              |   11 +++++++
+ 3 files changed, 55 insertions(+), 4 deletions(-)
 
- > Its a standard usage pattern for some people. Think about Linux based
- > commodity devices such as the N770 and plugging it into the users general
- > purpose PC box. Whenever it got pulled out wrongly it *will* get a chkdsk
- > in Windows.
+--- wireless-testing.orig/arch/powerpc/include/asm/dma-mapping.h	2009-07-01 12:58:01.691534801 +0200
++++ wireless-testing/arch/powerpc/include/asm/dma-mapping.h	2009-07-01 13:17:47.965537743 +0200
+@@ -13,6 +13,7 @@
+ /* need struct page definitions */
+ #include <linux/mm.h>
+ #include <linux/scatterlist.h>
++#include <linux/dma-debug.h>
+ #include <linux/dma-attrs.h>
+ #include <asm/io.h>
+ #include <asm/swiotlb.h>
+@@ -173,12 +174,17 @@ static inline dma_addr_t dma_map_single_
+ 					      struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	dma_addr_t addr;
+ 
+ 	BUG_ON(!dma_ops);
+ 
+-	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
++	addr = dma_ops->map_page(dev, virt_to_page(cpu_addr),
+ 				 (unsigned long)cpu_addr % PAGE_SIZE, size,
+ 				 direction, attrs);
++	debug_dma_map_page(dev, virt_to_page(cpu_addr),
++			   (unsigned long)cpu_addr & PAGE_SIZE, size,
++			   direction, addr, true);
++	return addr;
+ }
+ 
+ static inline void dma_unmap_single_attrs(struct device *dev,
+@@ -192,6 +198,7 @@ static inline void dma_unmap_single_attr
+ 	BUG_ON(!dma_ops);
+ 
+ 	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
++	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
+ }
+ 
+ static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+@@ -201,10 +208,13 @@ static inline dma_addr_t dma_map_page_at
+ 					    struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	dma_addr_t addr;
+ 
+ 	BUG_ON(!dma_ops);
+ 
+-	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
++	addr = dma_ops->map_page(dev, page, offset, size, direction, attrs);
++	debug_dma_map_page(dev, page, offset, size, direction, addr, false);
++	return addr;
+ }
+ 
+ static inline void dma_unmap_page_attrs(struct device *dev,
+@@ -218,6 +228,7 @@ static inline void dma_unmap_page_attrs(
+ 	BUG_ON(!dma_ops);
+ 
+ 	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
++	debug_dma_unmap_page(dev, dma_address, size, direction, false);
+ }
+ 
+ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+@@ -225,9 +236,12 @@ static inline int dma_map_sg_attrs(struc
+ 				   struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	int ents;
+ 
+ 	BUG_ON(!dma_ops);
+-	return dma_ops->map_sg(dev, sg, nents, direction, attrs);
++	ents = dma_ops->map_sg(dev, sg, nents, direction, attrs);
++	debug_dma_map_sg(dev, sg, nents, ents, direction);
++	return ents;
+ }
+ 
+ static inline void dma_unmap_sg_attrs(struct device *dev,
+@@ -240,15 +254,19 @@ static inline void dma_unmap_sg_attrs(st
+ 
+ 	BUG_ON(!dma_ops);
+ 	dma_ops->unmap_sg(dev, sg, nhwentries, direction, attrs);
++	debug_dma_unmap_sg(dev, sg, nhwentries, direction);
+ }
+ 
+ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	void *mem;
+ 
+ 	BUG_ON(!dma_ops);
+-	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
++	mem = dma_ops->alloc_coherent(dev, size, dma_handle, flag);
++	debug_dma_alloc_coherent(dev, size, *dma_handle, mem);
++	return mem;
+ }
+ 
+ static inline void dma_free_coherent(struct device *dev, size_t size,
+@@ -257,6 +275,7 @@ static inline void dma_free_coherent(str
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
+ 	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+ }
+ 
+@@ -309,6 +328,8 @@ static inline void dma_sync_single_for_c
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
++					    size, direction);
+ 	dma_ops->sync_single_range_for_cpu(dev, dma_handle, 0,
+ 					   size, direction);
+ }
+@@ -320,6 +341,8 @@ static inline void dma_sync_single_for_d
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_device(dev, dma_handle,
++					       0, size, direction);
+ 	dma_ops->sync_single_range_for_device(dev, dma_handle,
+ 					      0, size, direction);
+ }
+@@ -331,6 +354,7 @@ static inline void dma_sync_sg_for_cpu(s
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+ 	dma_ops->sync_sg_for_cpu(dev, sgl, nents, direction);
+ }
+ 
+@@ -341,6 +365,7 @@ static inline void dma_sync_sg_for_devic
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+ 	dma_ops->sync_sg_for_device(dev, sgl, nents, direction);
+ }
+ 
+@@ -351,6 +376,8 @@ static inline void dma_sync_single_range
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
++					    offset, size, direction);
+ 	dma_ops->sync_single_range_for_cpu(dev, dma_handle,
+ 					   offset, size, direction);
+ }
+@@ -362,6 +389,8 @@ static inline void dma_sync_single_range
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
++					       size, direction);
+ 	dma_ops->sync_single_range_for_device(dev, dma_handle, offset,
+ 					      size, direction);
+ }
+@@ -370,36 +399,46 @@ static inline void dma_sync_single_for_c
+ 		dma_addr_t dma_handle, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
++					    size, direction);
+ }
+ 
+ static inline void dma_sync_single_for_device(struct device *dev,
+ 		dma_addr_t dma_handle, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_device(dev, dma_handle,
++					       0, size, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 		struct scatterlist *sgl, int nents,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+ 		struct scatterlist *sgl, int nents,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+ }
+ 
+ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+ 		dma_addr_t dma_handle, unsigned long offset, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
++					    offset, size, direction);
+ }
+ 
+ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 		dma_addr_t dma_handle, unsigned long offset, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
++					       size, direction);
+ }
+ #endif
+ 
+--- wireless-testing.orig/arch/powerpc/kernel/dma.c	2009-07-01 12:58:01.853767180 +0200
++++ wireless-testing/arch/powerpc/kernel/dma.c	2009-07-01 13:15:49.153787540 +0200
+@@ -6,7 +6,9 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/dma-debug.h>
+ #include <linux/dma-mapping.h>
++#include <linux/init.h>
+ #include <asm/bug.h>
+ #include <asm/abs_addr.h>
+ 
+@@ -156,3 +158,12 @@ struct dma_mapping_ops dma_direct_ops = 
+ #endif
+ };
+ EXPORT_SYMBOL(dma_direct_ops);
++
++#define PREALLOC_DMA_DEBUG_ENTRIES		8192
++
++static int __init dma_debug_init_ppc(void)
++{
++	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
++	return 0;
++}
++fs_initcall(dma_debug_init_ppc);
+--- wireless-testing.orig/arch/powerpc/Kconfig	2009-07-01 13:15:51.739536241 +0200
++++ wireless-testing/arch/powerpc/Kconfig	2009-07-01 13:16:11.429788207 +0200
+@@ -127,6 +127,7 @@ config PPC
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
+ 	select GENERIC_ATOMIC64 if PPC32
+ 	select HAVE_PERF_COUNTERS
++	select HAVE_DMA_API_DEBUG
+ 
+ config EARLY_PRINTK
+ 	bool
 
-really? I haven't noticed that behaviour for removable devices in
-windows. You can manually set a drive to be checked on reboot, but I
-wasn't aware of any automatic chkdsk mechanism for VFAT removable
-media in windows. Have you seen this yourself?
 
-In testing this patch I've pulled USB keys in and out of WinXP, Vista
-and Windows7 hundreds of time, and done it programatically millions of
-times via scripting on virtual machines, but I never noticed this
-feature. Perhaps it happens only under some specific circumstances I
-haven't seen?
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
- > >     Linux and Windows, I thought that this is not a terribly large
- > >     concern.
- > 
- > Disagree. Its a rapidly growing market segment.
-
-you chopped off a word or two in the quote :-)
-
-Of course I care about Linux/Windows interop, as I'm sure you know!
-What I'm saying is that running chkdsk on a shared removable media
-which contains 30k files in a single directory is not a common event,
-and even when it does happen the consequences are that approximately
-one in 3 times you do this, one of those 30k files gets renamed.
-
-As evidence for this I'd like to point out that windows chkdsk has
-complained about the Linux VFAT implementation for a long time, even
-without my patch. If you create a filesystem with mformat and then
-chkdsk it on windows you get:
-
-  Bad links in lost chains at cluster 2 corrected
-  Convert lost chains to files (Y/N)
-
-yet I can't find a single instance of anyone complaining about this
-with a google search. If a chkdsk was automated for removable media
-then a lot of peoples machines would be asking them this question a
-lot of the time. If people manually ran windows chkdsk on removable
-VFAT media created on Linux then they also would have hit this and I
-would have expected at least someone to have mentioned it.
-
-Cheers, Tridge
