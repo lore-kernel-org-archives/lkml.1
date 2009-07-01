@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZGAQAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZGAQDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZGAQAP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZGAQAD
+	id S1753943AbZGAQDK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZGAQC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:00:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60389 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752164AbZGAQAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:00:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: Problems with snd-hda-intel on hp 6930p (2.6.30)
-Date: Wed, 1 Jul 2009 18:00:28 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org
-References: <200906292037.09597.rjw@sisk.pl> <200906301615.38244.rjw@sisk.pl> <s5h8wj994do.wl%tiwai@suse.de>
-In-Reply-To: <s5h8wj994do.wl%tiwai@suse.de>
+	Wed, 1 Jul 2009 12:02:58 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:41235 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbZGAQC5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 12:02:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=R2cHi959cylXXSM8h/7P4bnlBau1maepA7dbOfz0x7ryah5RJqNzcoUJrNYbBN5y1s
+         zOw759yQEt25ckXfsI5EqrrDsGK/MzB2eoicQiAeR9MPeF4Xs/eGUMMgsYpMC54Kfmp1
+         Db5OLMuuel9xiDQqRbadsp1jKGSO8kdzQSvYQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907011800.28687.rjw@sisk.pl>
+In-Reply-To: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
+References: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 1 Jul 2009 12:02:28 -0400
+Message-ID: <8bd0f97a0907010902y4c6b4d86m36a1116d5af67f0@mail.gmail.com>
+Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when calculating 
+	the stack size
+To: David Howells <dhowells@redhat.com>
+Cc: rgetz@blackfin.uclinux.org, lethal@linux-sh.org, gerg@uclinux.org,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 30 June 2009, Takashi Iwai wrote:
-> At Tue, 30 Jun 2009 16:15:37 +0200,
-> Rafael J. Wysocki wrote:
-> > 
-> > On Tuesday 30 June 2009, Rafael J. Wysocki wrote:
-> > > On Tuesday 30 June 2009, Takashi Iwai wrote:
-> > > > At Mon, 29 Jun 2009 20:37:09 +0200,
-> > > > Rafael J. Wysocki wrote:
-> > > > > 
-> > > > > Hi Takashi,
-> > > > > 
-> > > > > I have a problem with snd-hda-intel from 2.6.30 on an hp EliteBook 6930p, which
-> > > > > is that the sound is not audible, although everything appears to work just
-> > > > > fine.  Except maybe that when the box is rebooted and KDE (3.5) is started,
-> > > > > the master control is "muted" and the led indicator next to the keyboard shows
-> > > > > "no sound".  Then, changing the "muted" status of the master control doesn't
-> > > > > change the state of the led indicator and vice versa (the two things appear to
-> > > > > be totally independent of each other).
-> > > > > 
-> > > > > Can you please tell me what I can do to debug this issue?
-> > > > 
-> > > > Could you run alsa-info.sh with --no-upload option on both "muted"
-> > > > and "not muted" states, and attach the generated files?
-> > > 
-> > > Sure.  In the meantime it turned out that after a power off and cold boot the
-> > > status of the master control is 'on', but the led indicator shows 'no sound', so
-> > > there are 5 outputs:
-> > > * alsa-info-postboot.txt - after power off and cold boot
-> > > * alsa-info-led.txt - led indicator switched to 'on' when it was in the
-> > >   alsa-info-postboot.txt state
-> > > Now I switched to AC power and rebooted the box without powering off:
-> > > * alsa-info-muted.txt - initial state with the 'muted' master control
-> > > * alsa-info-on.txt - master control switched to 'on' when it was in the
-> > >   alsa-info-muted.txt state
-> > > * alsa-info.txt - led indicator switched to 'on' when it was in the
-> > >   alsa-info-on.txt state
-> > > 
-> > > > If it's a regression (heh :), please give alsa-info.sh output on
-> > > > older kernels.
-> > > 
-> > > No, it's not a regression.  At least not from 2.6.27.
-> > > 
-> > > Please let me know if you need more information.
-> > 
-> > One more thing.  The headphones output actually works regardless of the
-> > led indicator status, so only the built-in speakers output seems to be
-> > affected.
-> 
-> How can you turn on/off LED?  From your explanation, it seems not
-> directly bound with the audio mute.
-> 
-> Anyway, try model=mobile or model=laptop for snd-hda-intel module
-> option.  Does the speaker work?
+On Wed, Jul 1, 2009 at 08:08, David Howells wrote:
+> WARNING: This patch is slightly dangerous - it may render a system inoperable
+> if the loader's stack size is larger than that of important executables, and
+> the system relies unknowingly on this increasing the size of the stack.
 
-Yes, it works with both model=laptop and model=mobile.
+every toolchain ive seen sets the stack size in the linker to the
+default value, and the only way to change that is to manually set the
+size yourself with the relevant command line option.  so it's only
+going to break people who have been doing it wrong themselves --
+setting the stack size to a smaller option than is acceptable.
 
-Thanks,
-Rafael
+> -       else
+> +       else
+
+this change just adds trailing whitespace ...
+
+otherwise, just tested it and it works for me, thanks
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+-mike
