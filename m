@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763952AbZGAAv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763984AbZGAAvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763952AbZGAAv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761369AbZGAAeY
+	id S1763984AbZGAAvk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZGAAeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:24 -0400
-Received: from kroah.org ([198.145.64.141]:60124 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:25 -0400
+Received: from kroah.org ([198.145.64.141]:60135 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761084AbZGAAeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:21 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:17 2009
-Message-Id: <20090701002417.581497504@mini.kroah.org>
+	id S1761265AbZGAAeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:22 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:18 2009
+Message-Id: <20090701002417.910884894@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:05 -0700
+Date: Tue, 30 Jun 2009 17:23:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andy Gospodarek <andy@greyhouse.net>,
-       Alexander Duyck <alexander.h.duyck@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 016/108] e1000e: stop unnecessary polling when using msi-x
+       Michael Buesch <mb@bu3sch.de>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 017/108] pegasus usb-net: Fix endianness bugs
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=e1000e-stop-unnecessary-polling-when-using-msi-x.patch
+Content-Disposition: inline; filename=pegasus-usb-net-fix-endianness-bugs.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,48 +30,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andy Gospodarek <andy@greyhouse.net>
+From: Michael Buesch <mb@bu3sch.de>
 
-[ Upstream commit 679e8a0f0ae3333e94b1d374d07775fce9066025 ]
+[ Upstream commit e3453f6342110d60edb37be92c4a4f668ca8b0c4 ]
 
-The last hunk of this commit:
+This fixes various endianness bugs. Some harmless and some real ones.
+This is tested on a PowerPC-64 machine.
 
-    commit 12d04a3c12b420f23398b4d650127642469a60a6
-    Author: Alexander Duyck <alexander.h.duyck@intel.com>
-    Date:   Wed Mar 25 22:05:03 2009 +0000
-
-        e1000e: commonize tx cleanup routine to match e1000 & igb
-
-changed the logic for determining if we should call napi_complete or
-not at then end of a napi poll.
-
-If the NIC is using MSI-X with no work to do in ->poll, net_rx_action
-can just spin indefinitely on older kernels and for 2 jiffies on newer
-kernels since napi_complete is never called and budget isn't
-decremented.
-
-Discovered and verified while testing driver backport to an older
-kernel.
-
-Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
-Acked-by: Alexander Duyck <alexander.h.duyck@intel.com>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000e/netdev.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/usb/pegasus.c |   29 +++++++++++++++++------------
+ 1 file changed, 17 insertions(+), 12 deletions(-)
 
---- a/drivers/net/e1000e/netdev.c
-+++ b/drivers/net/e1000e/netdev.c
-@@ -1996,7 +1996,7 @@ static int e1000_clean(struct napi_struc
- 	struct e1000_adapter *adapter = container_of(napi, struct e1000_adapter, napi);
- 	struct e1000_hw *hw = &adapter->hw;
- 	struct net_device *poll_dev = adapter->netdev;
--	int tx_cleaned = 0, work_done = 0;
-+	int tx_cleaned = 1, work_done = 0;
+--- a/drivers/net/usb/pegasus.c
++++ b/drivers/net/usb/pegasus.c
+@@ -297,7 +297,7 @@ static int update_eth_regs_async(pegasus
  
- 	adapter = netdev_priv(poll_dev);
+ 	pegasus->dr.bRequestType = PEGASUS_REQT_WRITE;
+ 	pegasus->dr.bRequest = PEGASUS_REQ_SET_REGS;
+-	pegasus->dr.wValue = 0;
++	pegasus->dr.wValue = cpu_to_le16(0);
+ 	pegasus->dr.wIndex = cpu_to_le16(EthCtrl0);
+ 	pegasus->dr.wLength = cpu_to_le16(3);
+ 	pegasus->ctrl_urb->transfer_buffer_length = 3;
+@@ -446,11 +446,12 @@ static int write_eprom_word(pegasus_t * 
+ 	int i;
+ 	__u8 tmp, d[4] = { 0x3f, 0, 0, EPROM_WRITE };
+ 	int ret;
++	__le16 le_data = cpu_to_le16(data);
  
+ 	set_registers(pegasus, EpromOffset, 4, d);
+ 	enable_eprom_write(pegasus);
+ 	set_register(pegasus, EpromOffset, index);
+-	set_registers(pegasus, EpromData, 2, &data);
++	set_registers(pegasus, EpromData, 2, &le_data);
+ 	set_register(pegasus, EpromCtrl, EPROM_WRITE);
+ 
+ 	for (i = 0; i < REG_TIMEOUT; i++) {
+@@ -923,29 +924,32 @@ static struct net_device_stats *pegasus_
+ 
+ static inline void disable_net_traffic(pegasus_t * pegasus)
+ {
+-	int tmp = 0;
++	__le16 tmp = cpu_to_le16(0);
+ 
+-	set_registers(pegasus, EthCtrl0, 2, &tmp);
++	set_registers(pegasus, EthCtrl0, sizeof(tmp), &tmp);
+ }
+ 
+ static inline void get_interrupt_interval(pegasus_t * pegasus)
+ {
+-	__u8 data[2];
++	u16 data;
++	u8 interval;
+ 
+-	read_eprom_word(pegasus, 4, (__u16 *) data);
++	read_eprom_word(pegasus, 4, &data);
++	interval = data >> 8;
+ 	if (pegasus->usb->speed != USB_SPEED_HIGH) {
+-		if (data[1] < 0x80) {
++		if (interval < 0x80) {
+ 			if (netif_msg_timer(pegasus))
+ 				dev_info(&pegasus->intf->dev, "intr interval "
+ 					"changed from %ums to %ums\n",
+-					data[1], 0x80);
+-			data[1] = 0x80;
++					interval, 0x80);
++			interval = 0x80;
++			data = (data & 0x00FF) | ((u16)interval << 8);
+ #ifdef PEGASUS_WRITE_EEPROM
+-			write_eprom_word(pegasus, 4, *(__u16 *) data);
++			write_eprom_word(pegasus, 4, data);
+ #endif
+ 		}
+ 	}
+-	pegasus->intr_interval = data[1];
++	pegasus->intr_interval = interval;
+ }
+ 
+ static void set_carrier(struct net_device *net)
+@@ -1299,7 +1303,8 @@ static int pegasus_blacklisted(struct us
+ 	/* Special quirk to keep the driver from handling the Belkin Bluetooth
+ 	 * dongle which happens to have the same ID.
+ 	 */
+-	if ((udd->idVendor == VENDOR_BELKIN && udd->idProduct == 0x0121) &&
++	if ((udd->idVendor == cpu_to_le16(VENDOR_BELKIN)) &&
++	    (udd->idProduct == cpu_to_le16(0x0121)) &&
+ 	    (udd->bDeviceClass == USB_CLASS_WIRELESS_CONTROLLER) &&
+ 	    (udd->bDeviceProtocol == 1))
+ 		return 1;
 
 
