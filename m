@@ -1,81 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbZGASkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbZGASmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbZGASkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZGASju
+	id S1755936AbZGASmH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbZGASl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:39:50 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:45084 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbZGASjt (ORCPT
+	Wed, 1 Jul 2009 14:41:56 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:45860 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbZGASlz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:39:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ksaYqAOgrFSbZC5sn9tNqQfAzk1DYxT3QsuQdavIA4GkMl2m0o/vsfd7lZTPbXhvaV
-         HA9jS45+o9COfzp4sHbFgwIctPj1uNvmvMF4pPB/BxvFsI8LKlmaD56hoC02thbx3TT4
-         tyDSIUmx8KeGVxesHE8tu3byx3+ro8g/4QlS8=
-Message-ID: <4A4BAD5F.7050908@gmail.com>
-Date: Wed, 01 Jul 2009 20:39:27 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 1 Jul 2009 14:41:55 -0400
+Date: Thu, 2 Jul 2009 03:41:52 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.31-rc2
+Message-ID: <20090701184151.GB29429@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andres Freund <andres@anarazel.de>
-CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Patrick McHardy <kaber@trash.net>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (possibly caused
-    by netem)
-References: <4A4A9DD6.8060800@anarazel.de>
-In-Reply-To: <4A4A9DD6.8060800@anarazel.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andres Freund wrote, On 07/01/2009 01:20 AM:
+Please pull from:
 
-> Hi,
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-Hi,
+Which contains:
 
-> 
-> While playing around with netem (time, not packet count based loss-
-> bursts) I experienced soft lockups several times - to exclude it was my
-> modifications causing this I recompiled with the original and it is
-> still locking up.
-> I captured several of those traces via the thankfully
-> still working netconsole.
-> The simplest policy I could reproduce the error with was:
-> tc qdisc add dev eth0 root handle 1: netem delay 10ms loss 0
-> 
-> I could not reproduce the error without delay - but that may only be a
-> timing issue, as the host I was mainly transferring data to was on a
-> local network.
-> I could not reproduce the issue on lo.
-> 
-> The time to reproduce the error varied from seconds after executing tc 
-> to several minutes.
-> 
-> Traces 5+6 are made with vanilla 52989765629e7d182b4f146050ebba0abf2cb0b7
-> 
-> The earlier traces are made with parts of my patches applied, and only 
-> included for completeness as I don't believe my modifications were 
-> causing this and all traces are different, so it may give some clues.
-> 
-> Lockdep was enabled but did not diagnose anything relevant (one dvb 
-> warning during bootup).
-> 
-> Any ideas for debugging?
+Joe Perches (1):
+      arch/sh/boards/mach-se/7206/io.c: Remove unnecessary semicolons
 
-Maybe these traces will be enough, but lockdep report could save time.
-If dvb warning triggers every time then lockdep probably turns off
-just after (it works this way, unless something was changed). So,
-could you try to repeat this without dvb? Btw., did you try this on
-some earlier kernel?
+Kuninori Morimoto (2):
+      sh: ms7724se: Add sh_eth support
+      sh: ms7724se: Enable sh_eth in defconfig.
 
-Thanks,
-Jarek P.
+Magnus Damm (2):
+      sh: fix se7724 ceu names
+      sh: re-add LCDC fbdev support to the Migo-R defconfig
+
+Matt Fleming (1):
+      sh: Fix compiler error and include the definition of IS_ERR_VALUE
+
+Paul Mundt (7):
+      sh: make set_perf_counter_pending() static inline.
+      sh: Hook up page fault events for software perf counters.
+      sh64: Hook up page fault events for software perf counters.
+      perf_counter tools: add cpu_relax()/rmb() definitions for sh.
+      sh: Kill off unused DEBUG_BOOTMEM symbol.
+      nommu: provide follow_pfn().
+      sh: LCDC dcache flush for deferred io
+
+Shin-ichiro KAWASAKI (1):
+      clocksource: sh_tmu: Make undefined TCOR behaviour less undefined.
+
+ arch/sh/Kconfig.debug                 |    4 -
+ arch/sh/boards/mach-se/7206/io.c      |    2 +-
+ arch/sh/boards/mach-se/7724/setup.c   |  110 +++++++++++++++++++++++++++++++-
+ arch/sh/configs/migor_defconfig       |   53 +++++++++++++++-
+ arch/sh/configs/se7724_defconfig      |   25 ++++++-
+ arch/sh/include/asm/perf_counter.h    |    2 +-
+ arch/sh/include/asm/syscall_32.h      |    1 +
+ arch/sh/include/mach-se/mach/se7724.h |    5 ++
+ arch/sh/mm/fault_32.c                 |   61 ++++++++++---------
+ arch/sh/mm/tlbflush_64.c              |   15 ++++-
+ drivers/clocksource/sh_tmu.c          |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c      |   53 +++++++++++++---
+ mm/nommu.c                            |   21 ++++++
+ tools/perf/perf.h                     |   10 +++
+ 14 files changed, 307 insertions(+), 57 deletions(-)
