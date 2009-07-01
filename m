@@ -1,117 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZGAGQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZGAGVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbZGAGQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZGAGQU
+	id S1751966AbZGAGVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZGAGV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:16:20 -0400
-Received: from ozlabs.org ([203.10.76.45]:40011 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbZGAGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:16:20 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Jan Beulich" <JBeulich@novell.com>
-Subject: Re: [PATCH 1/2] reduce symbol table for loaded modules
-Date: Wed, 1 Jul 2009 15:46:21 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+	Wed, 1 Jul 2009 02:21:29 -0400
+Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:59698 "EHLO
+	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbZGAGV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:21:29 -0400
+Date: Wed, 01 Jul 2009 15:21:15 +0900 (JST)
+Message-Id: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org
-References: <4A4A1C6C0200007800008369@vpn.id2.novell.com>
-In-Reply-To: <4A4A1C6C0200007800008369@vpn.id2.novell.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Subject: [PATCH][RFC] Adding information of counts processes acquired how
+ many spinlocks to schedstat
+From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907011546.21597.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 30 Jun 2009 09:38:43 pm Jan Beulich wrote:
-> Discard all symbols not interesting for kallsyms use: absolute,
-> section, and in the common case (!KALLSYMS_ALL) data ones.
 
-I like the idea, but implementation could probably be polished a little bit.
+Hi,
 
-> +static unsigned int filter_symbols(Elf_Sym *dst,
-> +				   const Elf_Sym *src, unsigned int nsrc,
-> +				   const Elf_Shdr *sechdrs, unsigned int shnum)
+I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
+After applied this patch, /proc/<PID>/sched will change like this,
 
-How about splitting the test out to an:
+init (1, #threads: 1)
+---------------------------------------------------------
+se.exec_start                      :        482130.851458
+se.vruntime                        :         26883.107980
+se.sum_exec_runtime                :          2316.651816
+se.avg_overlap                     :             0.480053
+se.avg_wakeup                      :            14.999993
+....
+se.nr_wakeups_passive              :                    1
+se.nr_wakeups_idle                 :                    0
+se.nr_acquired_spinlock            :                74483
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+avg_atom                           :             2.181404
+avg_per_cpu                        :           772.217272
+nr_switches                        :                 1062
+...
 
-	bool is_core_symbol(const Elf_Sym *src, const Elf_Shdr *sechdrs, unsigned int shnum)
+The line underlined with ^^^ is new one.
+This means init process acquired spinlock 74483 times.
+Today, spinlock is an importatnt factor for scalability.
+This information must be useful for people working on multicore.
 
-Then split filter_symbols into num_core_symbols() and copy_core_symbols().
+If you think this is useful, I would like to add more information related to spinlocks,
+like average waiting time(or cycle count), max waiting time, etc...
 
-> +static unsigned long layout_symtab(struct module *mod,
+But this patch has a point to consider, the line
+        current->se.nr_acquired_spinlock++;
+This breaks convention that incrementing member of sched_entity related to SCHEDSTAT
+with schedstat_inc.
+I couldn't write the point with schedstat_inc because of the structure of sched_stats.h.
 
-How about append_symbols() instead?
+How do you think about this?
 
-> +				   Elf_Shdr *sechdrs,
-> +				   unsigned int symindex,
-> +				   const Elf_Ehdr *hdr,
-> +				   const char *secstrings)
-> +{
-> +	unsigned long symoffs;
-> +	Elf_Shdr *symsect = sechdrs + symindex;
-> +
+Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
 
-Comment would help me here:
-
-/* Put symbol section at end of init part of module. */
-> +	symsect->sh_flags |= SHF_ALLOC;
-> +	symsect->sh_entsize = get_offset(mod, &mod->init_size, symsect,
-> +					 symindex) | INIT_OFFSET_MASK;
-> +	DEBUGP("\t%s\n", secstrings + symsect->sh_name);
-> +
-
-Here too:
-/* Append room for core symbols at end of core part. */
-> +	symoffs = ALIGN(mod->core_size, symsect->sh_addralign ?: 1);
-> +	mod->core_size = symoffs
-> +			 + filter_symbols(NULL,
-> +			 		  (void *)hdr + symsect->sh_offset,
-> +					  symsect->sh_size / sizeof(Elf_Sym),
-> +					  sechdrs, hdr->e_shnum)
-> +			 * sizeof(Elf_Sym);
-> +
-> +	return symoffs;
-> +}
-> +
->  static void add_kallsyms(struct module *mod,
->  			 Elf_Shdr *sechdrs,
-> +			 unsigned int shnum,
->  			 unsigned int symindex,
->  			 unsigned int strindex,
-> +			 unsigned long symoffs,
->  			 const char *secstrings)
->  {
->  	unsigned int i;
-> @@ -1857,12 +1914,26 @@ static void add_kallsyms(struct module *
->  	for (i = 0; i < mod->num_symtab; i++)
->  		mod->symtab[i].st_info
->  			= elf_type(&mod->symtab[i], sechdrs, secstrings, mod);
-> +
-> +	mod->core_symtab = mod->module_core + symoffs;
-> +	mod->core_num_syms = filter_symbols(mod->core_symtab,
-> +					    mod->symtab, mod->num_symtab,
-> +					    sechdrs, shnum);
-
-Hmm, could avoid symoffs if copy_core_symbols worked backwards.  Probably
-not worthwhile tho.
-
->  	trim_init_extable(mod);
-> +#ifdef CONFIG_KALLSYMS
-> +	mod->num_symtab = mod->core_num_syms;
-> +	mod->symtab = mod->core_symtab;
-> +#endif
->  	module_free(mod, mod->module_init);
->  	mod->module_init = NULL;
->  	mod->init_size = 0;
-
-core_num_syms/core_symtab is really a temporary; we should note that in
-the module.h header next to those fields.
-
-Thanks!
-Rusty.
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 0085d75..f63b11f 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1127,6 +1127,8 @@ struct sched_entity {
+ 	u64			nr_wakeups_affine_attempts;
+ 	u64			nr_wakeups_passive;
+ 	u64			nr_wakeups_idle;
++
++	u64			nr_acquired_spinlock;
+ #endif
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+diff --git a/kernel/sched_debug.c b/kernel/sched_debug.c
+index 70c7e0b..792b0f7 100644
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -426,6 +426,7 @@ void proc_sched_show_task(struct task_struct *p, struct seq_file *m)
+ 	P(se.nr_wakeups_affine_attempts);
+ 	P(se.nr_wakeups_passive);
+ 	P(se.nr_wakeups_idle);
++	P(se.nr_acquired_spinlock);
+ 
+ 	{
+ 		u64 avg_atom, avg_per_cpu;
+@@ -500,6 +501,7 @@ void proc_sched_set_task(struct task_struct *p)
+ 	p->se.nr_wakeups_affine_attempts	= 0;
+ 	p->se.nr_wakeups_passive		= 0;
+ 	p->se.nr_wakeups_idle			= 0;
++	p->se.nr_acquired_spinlock		= 0;
+ 	p->sched_info.bkl_count			= 0;
+ #endif
+ 	p->se.sum_exec_runtime			= 0;
+diff --git a/kernel/spinlock.c b/kernel/spinlock.c
+index 7932653..92c1ed6 100644
+--- a/kernel/spinlock.c
++++ b/kernel/spinlock.c
+@@ -181,6 +181,10 @@ void __lockfunc _spin_lock(spinlock_t *lock)
+ 	preempt_disable();
+ 	spin_acquire(&lock->dep_map, 0, 0, _RET_IP_);
+ 	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
++
++#ifdef CONFIG_SCHEDSTATS
++	current->se.nr_acquired_spinlock++;
++#endif
+ }
+ 
+ EXPORT_SYMBOL(_spin_lock);
