@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZGAL1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZGAL1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZGAL1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZGAL1I
+	id S1755842AbZGAL1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGAL1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:27:08 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:23446 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbZGAL1H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:27:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=rWEkmDFWdjI3TV1iKxfDFACGi/+Pz2gAvtNVw4mMHYZepL17tYSevwzVp85P/wwGhQ
-         oXPAzihhy4oH4YEVf7S5pscKsBQJt47Fbed54VSZUCJ+OxPOu0Lh1Y1KGG2s6rDHi8I7
-         ICh9RBz54Sd56P5LDxKPGFAqT97Q74tNUtI3o=
-Date: Wed, 1 Jul 2009 19:27:05 +0800
-From: Wu Fengguang <fengguang.wu@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>, David Woodhouse <dwmw2@infradead.org>,
-       David Howells <dhowells@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 1 Jul 2009 07:27:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47960 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752852AbZGAL1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:27:37 -0400
+Date: Wed, 1 Jul 2009 13:27:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-ID: <20090701112705.GA3102@localhost>
-References: <20090701131734.85D9.A69D9226@jp.fujitsu.com> <20090701042554.GA14344@localhost> <20090701132757.85DC.A69D9226@jp.fujitsu.com>
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 3/6 -tip] perf_counter: Add Generalized Hardware
+	vectored co-processor support for AMD
+Message-ID: <20090701112704.GF15958@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090701132757.85DC.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090701112007.GD15958@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 01:30:51PM +0900, KOSAKI Motohiro wrote:
-> > > > The question is: Why kswapd reclaims are absent here?
 
-Ah, maybe kswapd simply didn't have the opportunity to be scheduled
-for running, because msgctl11 is busy forking thousands of processes?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > > if direct reclaim isolate all pages, kswapd can't reclaim any pages.
+> >  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
 > > 
-> > OOM will occur in that condition. What happened before that time?
-> 
-> maybe yes, maybe no.
-> At first test, the system still have droppable file cache. if direct
-> reclaim luckly take it, the benchmark become successful end, I
-> think.
+> >     20177177044  vec-adds                  (scaled from 66.63%)
+> >     34101687027  vec-muls                  (scaled from 66.64%)
+> >      3984060862  vec-divs                  (scaled from 66.71%)
+> >     26349684710  vec-idle-cycles           (scaled from 66.65%)
+> >      9052001905  vec-stall-cycles          (scaled from 66.66%)
+> >     76440734242  vec-ops                   (scaled from 66.71%)
+> > 
+> >   272.523058097  seconds time elapsed
 
-Yes that's the main difference between first and second run. Note that
-file cache can be dropped quickly, while the pageout of tmpfs pages
-populated by msgctl11 itself takes time.
+btw., the 'perf list' bits are missing - any new counter added 
+should be listed by 'perf list' as well - otherwise people wont know 
+what we have and what to use.
 
-Thanks,
-Fengguang
+	Ingo
