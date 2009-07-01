@@ -1,86 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZGAHaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZGAHb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZGAHaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZGAHan
+	id S1753551AbZGAHb6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZGAHbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:30:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40806 "EHLO mx2.redhat.com"
+	Wed, 1 Jul 2009 03:31:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44538 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752279AbZGAHam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:30:42 -0400
-Message-ID: <4A4B1106.8000506@redhat.com>
-Date: Wed, 01 Jul 2009 10:32:22 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1751212AbZGAHbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 03:31:50 -0400
+Date: Wed, 1 Jul 2009 09:31:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
+	how many spinlocks to schedstat
+Message-ID: <20090701073139.GA12073@elte.hu>
+References: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>
-Subject: Re: linux-next: manual merge of the kvm tree with Linus' tree
-References: <20090701145711.1c9c8935.sfr@canb.auug.org.au> <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01/2009 10:10 AM, Davide Libenzi wrote:
-> On Wed, 1 Jul 2009, Stephen Rothwell wrote:
->
->    
->> Hi Avi,
->>
->> Today's linux-next merge of the kvm tree got a conflict in fs/eventfd.c
->> between commit 133890103b9de08904f909995973e4b5c08a780e ("eventfd:
->> revised interface and cleanups") from Linus' tree and commit
->> 28ddf0aebbf546e56efd1951725d5457ce1ebf98 ("eventfd: Allow waiters to be
->> notified about the eventfd file* going away") from the kvm tree.
->>
->> Overlapping changes.  I fixed it up (see below), but don't know if this
->> is the correct fix.
->>
->> -- 
->> Cheers,
->> Stephen Rothwell                    sfr@canb.auug.org.au
->>
->> diff --cc fs/eventfd.c
->> index 31d12de,72f5f8d..0000000
->> --- a/fs/eventfd.c
->> +++ b/fs/eventfd.c
->> @@@ -105,8 -63,13 +105,13 @@@ static int eventfd_release(struct inod
->>    {
->>    	struct eventfd_ctx *ctx = file->private_data;
->>
->> - 	wake_up_poll(&ctx->wqh, POLLHUP);
->> + 	/*
->> + 	 * No need to hold the lock here, since we are on the file cleanup
->> + 	 * path and the ones still attached to the wait queue will be
->> + 	 * serialized by wake_up_locked_poll().
->> + 	 */
->> + 	wake_up_locked_poll(&ctx->wqh, POLLHUP);
->>   -	kfree(ctx);
->>   +	eventfd_ctx_put(ctx);
->>    	return 0;
->>    }
->>      
->
-> That's fine.
-> There are a couple of extra spaces before the last two -+ in that patch
-> though ;)
->    
 
-No, that's a git N-way diff format.  The first column shows the changes 
-relative to mainline by kvm.git, and the second the changes to kvm.git 
-made by mainline.
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
 
-I've merged and will push soon, which will resolve the conflict, but I 
-think the patch wake_up_locked_poll() is better off in mainline rather 
-than kvm.git.
+> Hi,
+> 
+> I wrote a test patch which add information of counts processes 
+> acquired how many spinlocks to schedstat. After applied this 
+> patch, /proc/<PID>/sched will change like this,
+> 
+> init (1, #threads: 1)
+> ---------------------------------------------------------
+> se.exec_start                      :        482130.851458
+> se.vruntime                        :         26883.107980
+> se.sum_exec_runtime                :          2316.651816
+> se.avg_overlap                     :             0.480053
+> se.avg_wakeup                      :            14.999993
+> ....
+> se.nr_wakeups_passive              :                    1
+> se.nr_wakeups_idle                 :                    0
+> se.nr_acquired_spinlock            :                74483
+> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--- 
-error compiling committee.c: too many arguments to function
+Looks potentially useful - but it would be nice and go one step 
+further and add lock acquire stats as a software-counter.
 
+Perfcounters is a feature of the latest upstream kernel, there's a 
+(still very small) Wiki page about it at:
+
+   http://perf.wiki.kernel.org
+
+With perfcounters we can instrument various software properties of 
+the kernel as well, for example the number of page-faults in the 
+system per second:
+
+  $ perf stat -a -e page-faults sleep 1
+
+  Performance counter stats for 'sleep 1':
+
+          294387  page-faults             
+
+     1.022318527  seconds time elapsed
+
+Now, it would be nice to have a lock-acquire software-counter as 
+well, which would output things like:
+
+  $ perf stat -a -e lock-acquires sleep 1
+
+  Performance counter stats for 'sleep 1':
+
+          294387  lock-acquires
+
+     1.022318527  seconds time elapsed
+
+Furthermore, beyond plain counts, doing this would also allow the 
+profiling of lock acquire places: perf record -e lock-acquires and 
+perf report would work fine.
+
+It is really easy to add a new sw counter, check how it is done for 
+the pagefault counter(s), see the uses of PERF_COUNT_SW_PAGE_FAULTS 
+in the following files:
+
+  $ git grep -l PERF_COUNT_SW_PAGE_FAULTS
+
+  arch/powerpc/mm/fault.c
+  arch/x86/mm/fault.c
+  include/linux/perf_counter.h
+  kernel/perf_counter.c
+  tools/perf/builtin-stat.c
+  tools/perf/design.txt
+
+Would you be interested in having a look at this?
+
+	Ingo
