@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZGAImp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZGAInW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZGAImp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZGAImh
+	id S1754515AbZGAInW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZGAInP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:42:37 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:61556 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753138AbZGAImg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:42:36 -0400
-Date: Wed, 01 Jul 2009 17:42:26 +0900 (JST)
-Message-Id: <20090701.174226.419764642024067218.mitake@dcl.info.waseda.ac.jp>
-To: andi@firstfloor.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
- how many spinlocks to schedstat
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <87hbxwj1k3.fsf@basil.nowhere.org>
-References: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp>
-	<87hbxwj1k3.fsf@basil.nowhere.org>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 04:43:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51882 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753844AbZGAInO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:43:14 -0400
+Date: Wed, 1 Jul 2009 10:43:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][ PATCH] kprobes: fix kprobe selftest configuration
+	dependency
+Message-ID: <20090701084304.GC8171@elte.hu>
+References: <20090622210302.4984.82798.stgit@localhost.localdomain> <20090630143806.9ab4519d.akpm@linux-foundation.org> <alpine.LFD.2.01.0906301440280.3605@localhost.localdomain> <4A4A8D91.8040009@redhat.com> <4A4A9D89.3090600@redhat.com> <20090630232359.GH17968@elte.hu> <4A4AA467.1010308@redhat.com> <4A4AA930.1060603@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4AA930.1060603@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-Date: Wed, 01 Jul 2009 09:38:04 +0200
 
-> Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+
+> Masami Hiramatsu wrote:
+> > Ingo Molnar wrote:
+> >> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> >>
+> >>> Oops, I couldn't reproduce this bug on the latest -tip tree.
+> >> maybe because i applied your fix already? ;-)
+> > 
+> > If so, I'll be happy. But I reverted that change and checked :-(
+> > Maybe, that came from a combination of configs (but I've lost it...)
 > 
-> > Hi,
-> >
-> > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
-> > After applied this patch, /proc/<PID>/sched will change like this,
+> Ok, I found.
+> Sorry, the problem has been fixed with below commit...
 > 
-> The problem is that spinlocks are very common and schedstats is enabled commonly
-> in production kernels. You would need to demonstrate that such a change doesn't
-> have significant performance impact. For me it looks like it has.
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ac6ca5c86c63dd95acc6a34dff8d33c23b703a37
 
-I agree with your opinion about performance impact.
-I thought this will make no problem,
-because schedstat is categorized as "Kernel hacking" section.
-But according to you, many production kernels enable it
-so my patch will make widespread performance degradation.
-I didn't know that, sorry.
+thx - i thus dropped this:
 
-> 
-> Also I'm not sure exactly what good such a metric is. Do you have 
-> a concrete use case?
-> 
+  130c5b2 kprobes: Fix kprobe selftest configuration dependency
 
-I want to know about behavior of Apache.
-Because Apache uses sendfile() system call,
-and according to this paper, sendfile() acquires many spinlocks
+Kept the other two patches - one for tracing/urgent (for .31), the 
+other for tracing/core (.32). Agreed?
 
-http://www.usenix.org/events/vm04/tech/uhlig.html
-
-And spinlocks may cause terrible performance problem when Linux is running on VM.
-
-> The normal way to check for lock contention or lock bouncingis to
-> simply profile cycles or time and see if there is a lot of CPU time in
-> locks.
-
-According to Ingo's advice, I'll try to add lock counter to perfcounter.
+	Ingo
