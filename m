@@ -1,135 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbZGABqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbZGABtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759810AbZGABqg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZGABq1
+	id S1761271AbZGABtZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZGABtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:46:27 -0400
-Received: from mga11.intel.com ([192.55.52.93]:57409 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754019AbZGABq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:46:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,319,1243839600"; 
-   d="scan'208";a="471021531"
-Date: Wed, 1 Jul 2009 09:46:27 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Tue, 30 Jun 2009 21:49:21 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54543 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbZGABtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:49:19 -0400
+Date: Wed, 1 Jul 2009 10:47:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mel@csn.ul.ie" <mel@csn.ul.ie>, "Zhao, Yakui" <yakui.zhao@intel.com>
-Subject: Re: + memory-hotplug-update-zone-pcp-at-memory-online.patch added
-	to -mm tree
-Message-ID: <20090701014627.GA23264@sli10-desk.sh.intel.com>
-References: <200906291949.n5TJno8X028680@imap1.linux-foundation.org> <alpine.DEB.1.10.0906291814150.21956@gentwo.org> <20090630005828.GC21254@sli10-desk.sh.intel.com> <alpine.DEB.1.10.0906301020420.6124@gentwo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906301020420.6124@gentwo.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>
+Subject: [PATCH] memcg: fix cgroup rmdir hang v4
+Message-Id: <20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 10:21:34PM +0800, Christoph Lameter wrote:
-> On Tue, 30 Jun 2009, Shaohua Li wrote:
-> 
-> > > foreach possible cpu?
-> > Just follows zone_pcp_init(), do you think we should change that too?
-> 
-> I plan to change that but for now this would be okay.
-> 
-> > > > +		struct per_cpu_pageset *pset;
-> > > > +		struct per_cpu_pages *pcp;
-> > > > +
-> > > > +		pset = zone_pcp(zone, cpu);
-> > > > +		pcp = &pset->pcp;
-> > > > +
-> > > > +		local_irq_save(flags);
-> > > > +		free_pages_bulk(zone, pcp->count, &pcp->list, 0);
-> > >
-> > > There are no pages in the pageset since the pcp batch is zero right?
-> > It might not be zero for a populated zone, see above comments.
-> 
-> But you are populating an unpopulated zone?
-yes, but free_pages_bulk() works with zero pcp->count too. And the zone
-might/might not populate before hotplug, so free the pages is always ok
-here to me.
+ok, here.
 
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-In my test, 128M memory is hot add, but zone's pcp batch is 0, which
-is an obvious error. When pages are onlined, zone pcp should be
-updated accordingly.
+After commit: cgroup: fix frequent -EBUSY at rmdir
+	      ec64f51545fffbc4cb968f0cea56341a4b07e85a
+cgroup's rmdir (especially against memcg) doesn't return -EBUSY
+by temporal ref counts. That commit expects all refs after pre_destroy()
+is temporary but...it wasn't. Then, rmdir can wait permanently.
+This patch tries to fix that and change followings.
 
-Include fixes suggested by Christoph Lameter and Andrew Morton.
+ - set CGRP_WAIT_ON_RMDIR flag before pre_destroy().
+ - clear CGRP_WAIT_ON_RMDIR flag when the subsys finds racy case.
+   if there are sleeping ones, wakes them up.
+ - rmdir() sleeps only when CGRP_WAIT_ON_RMDIR flag is set.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Changelog v4->v5:
+  - added cgroup_exclude_rmdir(), cgroup_release_rmdir().
+
+Changelog v3->v4:
+  - rewrite/add comments.
+  - remane cgroup_wakeup_rmdir_waiters() to cgroup_wakeup_rmdir_waiter().
+Changelog v2->v3:
+  - removed retry_rmdir() callback.
+  - make use of CGRP_WAIT_ON_RMDIR flag more.
+
+Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- include/linux/mm.h  |    2 ++
- mm/memory_hotplug.c |    1 +
- mm/page_alloc.c     |   26 ++++++++++++++++++++++++++
- 3 files changed, 29 insertions(+)
+ include/linux/cgroup.h |   14 ++++++++++++
+ kernel/cgroup.c        |   55 +++++++++++++++++++++++++++++++++----------------
+ mm/memcontrol.c        |   23 +++++++++++++++++---
+ 3 files changed, 72 insertions(+), 20 deletions(-)
 
-Index: linux/include/linux/mm.h
+Index: mmotm-2.6.31-Jun25/include/linux/cgroup.h
 ===================================================================
---- linux.orig/include/linux/mm.h	2009-06-30 09:14:21.000000000 +0800
-+++ linux/include/linux/mm.h	2009-07-01 09:13:22.000000000 +0800
-@@ -1073,6 +1073,8 @@ extern void setup_per_cpu_pageset(void);
- static inline void setup_per_cpu_pageset(void) {}
- #endif
+--- mmotm-2.6.31-Jun25.orig/include/linux/cgroup.h
++++ mmotm-2.6.31-Jun25/include/linux/cgroup.h
+@@ -366,6 +366,20 @@ int cgroup_task_count(const struct cgrou
+ int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task);
  
-+extern void zone_pcp_update(struct zone *zone);
+ /*
++ * When the subsys has to access css and may add permanent refcnt to css,
++ * it should take care of racy conditions with rmdir(). Following set of
++ * functions, is for stop/restart rmdir if necessary.
++ * Because these will call css_get/put, "css" should be alive css.
++ *
++ *  cgroup_exclude_rmdir();
++ *  ...do some jobs which may access arbitrary empty cgroup
++ *  cgroup_release_rmdir();
++ */
 +
- /* nommu.c */
- extern atomic_long_t mmap_pages_allocated;
- 
-Index: linux/mm/memory_hotplug.c
++void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
++void cgroup_release_rmdir(struct cgroup_subsys_state *css);
++
++/*
+  * Control Group subsystem type.
+  * See Documentation/cgroups/cgroups.txt for details
+  */
+Index: mmotm-2.6.31-Jun25/kernel/cgroup.c
 ===================================================================
---- linux.orig/mm/memory_hotplug.c	2009-06-30 09:14:21.000000000 +0800
-+++ linux/mm/memory_hotplug.c	2009-07-01 09:13:22.000000000 +0800
-@@ -422,6 +422,7 @@ int online_pages(unsigned long pfn, unsi
- 	zone->present_pages += onlined_pages;
- 	zone->zone_pgdat->node_present_pages += onlined_pages;
+--- mmotm-2.6.31-Jun25.orig/kernel/cgroup.c
++++ mmotm-2.6.31-Jun25/kernel/cgroup.c
+@@ -734,16 +734,28 @@ static void cgroup_d_remove_dir(struct d
+  * reference to css->refcnt. In general, this refcnt is expected to goes down
+  * to zero, soon.
+  *
+- * CGRP_WAIT_ON_RMDIR flag is modified under cgroup's inode->i_mutex;
++ * CGRP_WAIT_ON_RMDIR flag is set under cgroup's inode->i_mutex;
+  */
+ DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
  
-+	zone_pcp_update(zone);
- 	setup_per_zone_wmarks();
- 	calculate_zone_inactive_ratio(zone);
- 	if (onlined_pages) {
-Index: linux/mm/page_alloc.c
-===================================================================
---- linux.orig/mm/page_alloc.c	2009-06-30 09:14:21.000000000 +0800
-+++ linux/mm/page_alloc.c	2009-07-01 09:40:08.000000000 +0800
-@@ -3131,6 +3131,32 @@ int zone_wait_table_init(struct zone *zo
+-static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
++static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
+ {
+-	if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
++	if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
+ 		wake_up_all(&cgroup_rmdir_waitq);
+ }
+ 
++void cgroup_exclude_rmdir(struct cgroup_subsys_state *css)
++{
++	css_get(css);
++}
++
++void cgroup_release_rmdir(struct cgroup_subsys_state *css)
++{
++	cgroup_wakeup_rmdir_waiter(css->cgroup);
++	css_put(css);
++}
++
++
+ static int rebind_subsystems(struct cgroupfs_root *root,
+ 			      unsigned long final_bits)
+ {
+@@ -1357,7 +1369,7 @@ int cgroup_attach_task(struct cgroup *cg
+ 	 * wake up rmdir() waiter. the rmdir should fail since the cgroup
+ 	 * is no longer empty.
+ 	 */
+-	cgroup_wakeup_rmdir_waiters(cgrp);
++	cgroup_wakeup_rmdir_waiter(cgrp);
  	return 0;
  }
  
-+static int __zone_pcp_update(void *data)
-+{
-+	struct zone *zone = data;
-+	int cpu;
-+	unsigned long batch = zone_batchsize(zone), flags;
+@@ -2696,33 +2708,42 @@ again:
+ 	mutex_unlock(&cgroup_mutex);
+ 
+ 	/*
++	 * In general, subsystem has no css->refcnt after pre_destroy(). But
++	 * in racy cases, subsystem may have to get css->refcnt after
++	 * pre_destroy() and it makes rmdir return with -EBUSY. This sometimes
++	 * make rmdir return -EBUSY too often. To avoid that, we use waitqueue
++	 * for cgroup's rmdir. CGRP_WAIT_ON_RMDIR is for synchronizing rmdir
++	 * and subsystem's reference count handling. Please see css_get/put
++	 * and css_tryget() and cgroup_wakeup_rmdir_waiter() implementation.
++	 */
++	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
 +
-+	for_each_possible_cpu(cpu) {
-+		struct per_cpu_pageset *pset;
-+		struct per_cpu_pages *pcp;
-+
-+		pset = zone_pcp(zone, cpu);
-+		pcp = &pset->pcp;
-+
-+		local_irq_save(flags);
-+		free_pages_bulk(zone, pcp->count, &pcp->list, 0);
-+		setup_pageset(pset, batch);
-+		local_irq_restore(flags);
++	/*
+ 	 * Call pre_destroy handlers of subsys. Notify subsystems
+ 	 * that rmdir() request comes.
+ 	 */
+ 	ret = cgroup_call_pre_destroy(cgrp);
+-	if (ret)
++	if (ret) {
++		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		return ret;
 +	}
-+	return 0;
-+}
-+
-+void zone_pcp_update(struct zone *zone)
-+{
-+	stop_machine(__zone_pcp_update, zone, NULL);
-+}
-+
- static __meminit void zone_pcp_init(struct zone *zone)
- {
- 	int cpu;
+ 
+ 	mutex_lock(&cgroup_mutex);
+ 	parent = cgrp->parent;
+ 	if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
++		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		mutex_unlock(&cgroup_mutex);
+ 		return -EBUSY;
+ 	}
+-	/*
+-	 * css_put/get is provided for subsys to grab refcnt to css. In typical
+-	 * case, subsystem has no reference after pre_destroy(). But, under
+-	 * hierarchy management, some *temporal* refcnt can be hold.
+-	 * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
+-	 * is really busy, it should return -EBUSY at pre_destroy(). wake_up
+-	 * is called when css_put() is called and refcnt goes down to 0.
+-	 */
+-	set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 	prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
+-
+ 	if (!cgroup_clear_css_refs(cgrp)) {
+ 		mutex_unlock(&cgroup_mutex);
+-		schedule();
++		/*
++		 * Because someone may call cgroup_wakeup_rmdir_waiter() before
++		 * prepare_to_wait(), we need to check this flag.
++		 */
++		if (test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags))
++			schedule();
+ 		finish_wait(&cgroup_rmdir_waitq, &wait);
+ 		clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
+ 		if (signal_pending(current))
+@@ -3294,7 +3315,7 @@ void __css_put(struct cgroup_subsys_stat
+ 			set_bit(CGRP_RELEASABLE, &cgrp->flags);
+ 			check_for_release(cgrp);
+ 		}
+-		cgroup_wakeup_rmdir_waiters(cgrp);
++		cgroup_wakeup_rmdir_waiter(cgrp);
+ 	}
+ 	rcu_read_unlock();
+ }
+Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
++++ mmotm-2.6.31-Jun25/mm/memcontrol.c
+@@ -1234,6 +1234,12 @@ static int mem_cgroup_move_account(struc
+ 	ret = 0;
+ out:
+ 	unlock_page_cgroup(pc);
++	/*
++	 * We charges against "to" which may not have any tasks. Then, "to"
++	 * can be under rmdir(). But in current implementation, caller of
++	 * this function is just force_empty() and it's garanteed that
++	 * "to" is never removed. So, we don't check rmdir status here.
++	 */
+ 	return ret;
+ }
+ 
+@@ -1455,6 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
+ 		return;
+ 	if (!ptr)
+ 		return;
++	cgroup_exclude_rmdir(&ptr->css);
+ 	pc = lookup_page_cgroup(page);
+ 	mem_cgroup_lru_del_before_commit_swapcache(page);
+ 	__mem_cgroup_commit_charge(ptr, pc, ctype);
+@@ -1484,8 +1491,12 @@ __mem_cgroup_commit_charge_swapin(struct
+ 		}
+ 		rcu_read_unlock();
+ 	}
+-	/* add this page(page_cgroup) to the LRU we want. */
+-
++	/*
++	 * At swapin, we may charge account against cgroup which has no tasks.
++	 * So, rmdir()->pre_destroy() can be called while we do this charge.
++	 * In that case, we need to call pre_destroy() again. check it here.
++	 */
++	cgroup_release_rmdir(&ptr->css);
+ }
+ 
+ void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+@@ -1691,7 +1702,7 @@ void mem_cgroup_end_migration(struct mem
+ 
+ 	if (!mem)
+ 		return;
+-
++	cgroup_exclude_rmdir(&mem->css);
+ 	/* at migration success, oldpage->mapping is NULL. */
+ 	if (oldpage->mapping) {
+ 		target = oldpage;
+@@ -1731,6 +1742,12 @@ void mem_cgroup_end_migration(struct mem
+ 	 */
+ 	if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+ 		mem_cgroup_uncharge_page(target);
++	/*
++	 * At migration, we may charge account against cgroup which has no tasks
++	 * So, rmdir()->pre_destroy() can be called while we do this charge.
++	 * In that case, we need to call pre_destroy() again. check it here.
++	 */
++	cgroup_release_rmdir(&mem->css);
+ }
+ 
+ /*
+
