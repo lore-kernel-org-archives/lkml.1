@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750917AbZGAOsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZGAOt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750917AbZGAOsJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZGAOr4
+	id S1753598AbZGAOt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZGAOtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:47:56 -0400
-Received: from ey-out-1920.google.com ([74.125.78.150]:34510 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbZGAOrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:47:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=o3+PSpFA+j+eYw1yTE5Kpuxxy/rYYIziPjmwBJpmvkVUPmoesqGv5WwL3Z+DEjh8sG
-         6Q6ye8360b/te59wO42BHjN8/N3oh673EpIR6w/UDLVHSm0xGwpnQWcSTUp/yJ6EIjsN
-         kE7me3OtPrpiiSZ1HaiF9EFpeG7xTKDAxQ5ZY=
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       bzolnier@gmail.com, Ralf Baechle <ralf@linux-mips.org>,
-       linux-mips@linux-mips.org, linux-ide@vger.kernel.org
-In-Reply-To: <b6a2187b0907010731k510150b5u1c7fce8cbed7c33b@mail.gmail.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <5Hhc7UkUKEO.A.RvE.BjASKB@chimera> <4A489775.6020102@numericable.fr>
-	 <20090629.033730.193709457.davem@davemloft.net>
-	 <4A48E307.2010208@numericable.fr>
-	 <b6a2187b0906290921w15afd443qccb943ccfd48688b@mail.gmail.com>
-	 <b6a2187b0907010731k510150b5u1c7fce8cbed7c33b@mail.gmail.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 01 Jul 2009 22:47:41 +0800
-Message-Id: <1246459661.9660.40.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 10:49:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51858 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752443AbZGAOtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:49:21 -0400
+Date: Wed, 1 Jul 2009 16:49:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Howells <dhowells@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Wire up new syscalls
+Message-ID: <20090701144913.GA28172@elte.hu>
+References: <19019.22629.720187.794661@cargo.ozlabs.ibm.com> <20090701115425.GJ15958@elte.hu> <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de> <22582.1246447691@redhat.com> <32551.1246450797@redhat.com> <32707.1246452087@redhat.com> <30887.1246457403@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <30887.1246457403@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
-> On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
-> 
-> > I just tried, and it "seems" to work. Will try a few more cycles.
-> 
-> STD/STR survived quite a few cycles now. Patch seems to be doing the
-> right thing.
-> 
-> On Mon, Jun 29, 2009 at 11:51 PM, Etienne
-> Basset<etienne.basset@numericable.fr> wrote:
-> 
-> > To have STR/resume work with current git, I have to :
-> 
-> > 1) apply Bart's patch
-> 
-> This is not yet in Linus's tree. And much needed to really fix the problem.
-> 
-> > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-> 
 
-Yes, This commit must be reverted, otherwise, STD/Hibernation will not
-work either. I have tested it on two different loongson-based machines:
-fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
+* David Howells <dhowells@redhat.com> wrote:
 
-Here is what i have traced:
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Yeah - still i'd suggest to just go with the generic code initially, 
+> 
+> Nah, that's no fun!  Besides, the code is very similar to the 32-bit code, and
+> I'm fairly certain it'll work.  I can also check it very easily by dumping
+> some temp test code in setup.c.
+> 
+> Anyway, I see the following errors:
+> 
+> kernel/perf_counter.c: In function 'perf_counter_index':
+> kernel/perf_counter.c:1889: error: 'PERF_COUNTER_INDEX_OFFSET' undeclared (first use in this function)
+> kernel/perf_counter.c:1889: error: (Each undeclared identifier is reported only once
+> kernel/perf_counter.c:1889: error: for each function it appears in.)
+>   CC      block/as-iosched.o
+> kernel/perf_counter.c:1890: warning: control reaches end of non-void function
 
-        hibernate(kernel/power/hibernate.c)
-        --> hibernation_snapshot
-        --> dpm_resume_end
-        --> dpm_resume
-        --> device_resume
-        --> dev->bus->resume(generic_ide_resume), dev_name(dev) = 0.0
-        --> blk_execute_rq
-        {
-                DECLARE_COMPLETION_ONSTACK(wait);
-                ...
-                wait_for_completion(&wait);     // stop here
-                ...
-        }
+Ok, indeed - you can define it to 0 for now - FRV wont set hw 
+counters so it doesnt matter. It is used for the hw index in the 
+mmap head for 'direct' access to the PMU, using special instructions 
+like RDPMC (on x86). Probably not relevant to FRV.
 
-and I have tried to revert this part of the above patch:
+> But this symbol appears to be undocumented:
+> 
+> 	warthog>grep -r PERF_COUNTER_INDEX_OFFSET Documentation/
+> 	warthog1>grep -r INDEX_OFFSET Documentation/
+> 	warthog1>
 
--
--               WARN_ON_ONCE(hwif->rq);
- repeat:
-                prev_port = hwif->host->cur_port;
-+
-+               if (drive->dev_flags & IDE_DFLAG_BLOCKED)
-+                       rq = hwif->rq;
-+               else
-+                       WARN_ON_ONCE(hwif->rq);
-+
+You can use the power of the Git space:
 
-it works! need more time to test!
+   git log -SPERF_COUNTER_INDEX_OFFSET
 
-thanks!
-Wu Zhangjin
+:-)
 
+	Ingo
