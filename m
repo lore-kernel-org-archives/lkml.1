@@ -1,122 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZGAMxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZGANAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbZGAMxY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGAMxR
+	id S1754116AbZGANAj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGANAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 08:53:17 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:64859 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbZGAMxQ (ORCPT
+	Wed, 1 Jul 2009 09:00:30 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:54750 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557AbZGANA3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 08:53:16 -0400
-Date: Wed, 01 Jul 2009 21:53:04 +0900 (JST)
-Message-Id: <20090701.215304.864843820974206197.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: acme@redhat.com, a.p.zijlstra@chello.nl, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
- how many spinlocks to schedstat
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20090701110620.GB15958@elte.hu>
-References: <20090701090749.GA13535@elte.hu>
-	<20090701.184232.131509470674490734.mitake@dcl.info.waseda.ac.jp>
-	<20090701110620.GB15958@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Wed, 1 Jul 2009 09:00:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=Jdl3leI33Awu0CwIfqAhJAWkelWljSv9XMadcSPea/zDzJj5KfwfM8xH1nUbdGBhNI
+         4611oA0GiF5+ty16R2HCY9l3e5WqLNSmcBxRE2IzBmDfYw+U7GjJBJW4ktCC4rC7+6dh
+         7+H9maIW8GZ6tw706W/DHXnghOg9o4LrHEwvA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for July 1 (fix CONFIG_AUDIT_WATCH=n build)
+Date: Wed, 1 Jul 2009 15:06:14 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30-next-20090617-09943-g5d77a4c; KDE/4.2.4; i686; ; )
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>
+References: <20090701183903.bd203c62.sfr@canb.auug.org.au>
+In-Reply-To: <20090701183903.bd203c62.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907011506.16145.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n61CrUoU026898
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-Date: Wed, 1 Jul 2009 13:06:20 +0200
 
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-> > Date: Wed, 1 Jul 2009 11:07:49 +0200
-> > 
-> > > 
-> > > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> > > 
-> > > > From: Andi Kleen <andi@firstfloor.org>
-> > > > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-> > > > Date: Wed, 01 Jul 2009 09:38:04 +0200
-> > > > 
-> > > > > Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
-> > > > > 
-> > > > > > Hi,
-> > > > > >
-> > > > > > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
-> > > > > > After applied this patch, /proc/<PID>/sched will change like this,
-> > > > > 
-> > > > > The problem is that spinlocks are very common and schedstats is 
-> > > > > enabled commonly in production kernels. You would need to 
-> > > > > demonstrate that such a change doesn't have significant 
-> > > > > performance impact. For me it looks like it has.
-> > > > 
-> > > > I agree with your opinion about performance impact.
-> > > > I thought this will make no problem,
-> > > > because schedstat is categorized as "Kernel hacking" section.
-> > > > But according to you, many production kernels enable it
-> > > > so my patch will make widespread performance degradation.
-> > > > I didn't know that, sorry.
-> > > 
-> > > His arguments are bogus: both lockstat and perfcounters are optional 
-> > > (and default off), and the sw counter can be made near zero cost 
-> > > even if both perfcounters and lockstat is enabled. Also, sw counters 
-> > > are generally per CPU, etc. so not a performance issue.
-> > > 
-> > > The only (small) overhead will be when the lock-acquire sw counter 
-> > > is actively enabled because you run 'perf stat -e lock-acquire' - 
-> > > but that is expected and inherent in pretty much any kind of 
-> > > instrumentation.
-> > > 
-> > > The feature you are working on has the chance to be a very useful 
-> > > and popular piece of instrumentation. Being able to tell the lock 
-> > > acquire stats on a per task, per workload, per CPU or system-wide 
-> > > basis is a unique capability no other tool can offer right now.
-> > > 
-> > > Andi is often trolling perfcounters related (and other) threads, 
-> > > please dont let yourself be deterred by that and feel free to ignore 
-> > > him.
-> > OK, at least it is truth that
-> > counter in perfcounters makes only valid overhead.
-> > 
-> > And I have a question,
-> > I tried to build perf, but I got a build error,
-> > 
-> > util/symbol.c: In function â€˜dso__load_symâ€™:
-> > util/symbol.c:466: error: â€˜ELF_C_READ_MMAPâ€™ undeclared (first use in this function)
-> > util/symbol.c:466: error: (Each undeclared identifier is reported only once
-> > util/symbol.c:466: error: for each function it appears in.)
-> > 
-> > I used this libelf,
-> > http://www.mr511.de/software/english.html
-> > but constant ELF_C_READ_MMAP is not provided...
-> > 
-> > which "libelf" should I use?
-> > It seems that there are some libelf implementations.
-> 
-> I use the elfutils-libelf* packages:
-> 
->  elfutils-libelf-devel-static-0.141-1.fc10.i386
->  elfutils-0.141-1.fc10.i386
->  elfutils-libelf-0.141-1.fc10.i386
->  elfutils-libs-0.141-1.fc10.i386
->  elfutils-libelf-devel-0.141-1.fc10.i386
-> 
-> do they work fine or you?
+Hi,
 
-I'm a Debian user, so I build this library from source
+On Wednesday 01 July 2009 10:39:03 Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090630:
 
-https://fedorahosted.org/releases/e/l/elfutils/elfutils-0.141.tar.bz2
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] audit: fix CONFIG_AUDIT_WATCH=n build
 
-And I succeed to build perf, thanks!
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Fix:
+
+kernel/auditfilter.c: In function â€˜audit_data_to_entryâ€™:
+kernel/auditfilter.c:501: error: expected expression before â€˜{â€™ token
+kernel/auditfilter.c: In function â€˜audit_add_ruleâ€™:
+kernel/auditfilter.c:891: error: expected expression before â€˜{â€™ token
+make[1]: *** [kernel/auditfilter.o] Error 1
+make: *** [kernel/auditfilter.o] Error 2
+
+introduced by commit de85e5bc3690c3063aea790279e898adb5bac0ba
+("Audit: split audit watch Kconfig").
+
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+BTW defines are passÃ© (using static inlines instead for CONFIG_AUDIT=n
+and CONFIG_AUDIT_WATCH=n stuff would be an even better solution)..
+
+ kernel/audit.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: b/kernel/audit.h
+===================================================================
+--- a/kernel/audit.h
++++ b/kernel/audit.h
+@@ -117,12 +117,11 @@ extern int audit_watch_compare(struct au
+ #else
+ #define audit_put_watch(w) {}
+ #define audit_get_watch(w) {}
+-#define audit_to_watch(k, p, l, o) { -EINVAL }
+-#define audit_add_watch(k, l) { -EINVAL }
++#define audit_to_watch(k, p, l, o) (-EINVAL)
++#define audit_add_watch(k, l) (-EINVAL)
+ #define audit_remove_watch_rule(k) BUG()
+ #define audit_watch_path(w) ""
+ #define audit_watch_compare(w, i, d) 0
+-
+ #endif /* CONFIG_AUDIT_WATCH */
+ 
+ #ifdef CONFIG_AUDIT_TREE
