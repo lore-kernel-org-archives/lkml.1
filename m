@@ -1,405 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbZGABYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287AbZGAB0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932833AbZGABYb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763495AbZGABGW
+	id S932287AbZGAB0V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760890AbZGABHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:06:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44966 "EHLO mx2.redhat.com"
+	Tue, 30 Jun 2009 21:07:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36530 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753350AbZGABGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:06:16 -0400
+	id S1761886AbZGABHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:07:09 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v10 2/7] x86: x86 instruction decoder build-time selftest
+Subject: [PATCH -tip -v10 0/7] tracing: kprobe-based event tracer and x86
+	instruction decoder
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+Cc: Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
        =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
 	<przemyslaw@pawelczyk.it>,
-       Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 30 Jun 2009 21:08:54 -0400
-Message-ID: <20090701010854.32547.92066.stgit@localhost.localdomain>
-In-Reply-To: <20090701010838.32547.62843.stgit@localhost.localdomain>
-References: <20090701010838.32547.62843.stgit@localhost.localdomain>
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Tue, 30 Jun 2009 21:08:38 -0400
+Message-ID: <20090701010838.32547.62843.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a user-space selftest of x86 instruction decoder at kernel build time.
-When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
-instruction decoder and performs it after building vmlinux.
-The test compares the results of objdump and x86 instruction decoder
-code and check there are no differences.
+Hi,
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Here are the v10 patches. I just updated for the latest -tip and
+fixed typos and Kconfig dependency.
+
+Here are the patches of kprobe-based event tracer for x86, version 10,
+which allows you to probe various kernel events through ftrace interface.
+The tracer supports per-probe filtering which allows you to set filters
+on each probe and shows formats of each probe. I think this is more
+generic integration with ftrace, especially event-tracer.
+
+This patchset also includes x86(-64) instruction decoder which
+supports non-SSE/FP opcodes and includes x86 opcode map. The decoder
+is used for finding the instruction boundaries when inserting new
+kprobes. I think it will be possible to share this opcode map
+with KVM's decoder.
+The decoder is tested when building kernel, the test compares the 
+results of objdump and the decoder right after building vmlinux.
+You can enable that test by CONFIG_X86_DECODER_SELFTEST=y.
+
+This series can be applied on the latest linux-2.6-tip tree.
+
+This supports only x86(-32/-64) (but porting it on other arch
+just needs kprobes/kretprobes and register and stack access APIs).
+
+This patchset includes following changes:
+- Add x86 instruction decoder [1/7]
+- Add x86 instruction decoder selftest [2/7]
+- Check insertion point safety in kprobe [3/7]
+- Cleanup fix_riprel() with insn decoder [4/7]
+- Add arch-dep register and stack fetching functions [5/7]
+- Add dynamic event_call support to ftrace [6/7]
+- Add kprobe-based event tracer [7/7]
+
+
+Enhancement ideas will be added after merging:
+- Add profiling interface for each event.
+- Make a stress test of kprobes on this tracer.
+  (see http://sources.redhat.com/ml/systemtap/2009-q2/msg01055.html)
+- .init function tracing support.
+- Support primitive types(long, ulong, int, uint, etc) for args.
+
+
+Kprobe-based Event Tracer
+=========================
+
+Overview
+--------
+This tracer is similar to the events tracer which is based on Tracepoint
+infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+and kretprobe). It probes anywhere where kprobes can probe(this means, all
+functions body except for __kprobes functions).
+
+Unlike the function tracer, this tracer can probe instructions inside of
+kernel functions. It allows you to check which instruction has been executed.
+
+Unlike the Tracepoint based events tracer, this tracer can add new probe points
+on the fly.
+
+Similar to the events tracer, this tracer doesn't need to be activated via
+current_tracer, instead of that, just set probe points via
+/sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
+probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+
+
+Synopsis of kprobe_events
+-------------------------
+  p[:EVENT] SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
+  r[:EVENT] SYMBOL[+0] [FETCHARGS]			: set a return probe
+
+ EVENT			: Event name
+ SYMBOL[+offs|-offs]	: Symbol+offset where the probe is inserted
+ MEMADDR		: Address where the probe is inserted
+
+ FETCHARGS		: Arguments
+  %REG	: Fetch register REG
+  sN	: Fetch Nth entry of stack (N >= 0)
+  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
+  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
+  aN	: Fetch function argument. (N >= 0)(*)
+  rv	: Fetch return value.(**)
+  ra	: Fetch return address.(**)
+  +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.(***)
+
+  (*) aN may not correct on asmlinkaged functions and at the middle of
+      function body.
+  (**) only for return probe.
+  (***) this is useful for fetching a field of data structures.
+
+
+Per-Probe Event Filtering
+-------------------------
+ Per-probe event filtering feature allows you to set different filter on each
+probe and gives you what arguments will be shown in trace buffer. If an event
+name is specified right after 'p:' or 'r:' in kprobe_events, the tracer adds
+an event under tracing/events/kprobes/<EVENT>, at the directory you can see
+'id', 'enabled', 'format' and 'filter'.
+
+enabled:
+  You can enable/disable the probe by writing 1 or 0 on it.
+
+format:
+  It shows the format of this probe event. It also shows aliases of arguments
+ which you specified to kprobe_events.
+
+filter:
+  You can write filtering rules of this event. And you can use both of aliase
+ names and field names for describing filters.
+
+
+Usage examples
+--------------
+To add a probe as a new event, write a new definition to kprobe_events
+as below.
+
+  echo p:myprobe do_sys_open a0 a1 a2 a3 > /sys/kernel/debug/tracing/kprobe_events
+
+ This sets a kprobe on the top of do_sys_open() function with recording
+1st to 4th arguments as "myprobe" event.
+
+  echo r:myretprobe do_sys_open rv ra >> /sys/kernel/debug/tracing/kprobe_events
+
+ This sets a kretprobe on the return point of do_sys_open() function with
+recording return value and return address as "myretprobe" event.
+ You can see the format of these events via
+/sys/kernel/debug/tracing/events/kprobes/<EVENT>/format.
+
+  cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
+name: myprobe
+ID: 23
+format:
+	field:unsigned short common_type;	offset:0;	size:2;
+	field:unsigned char common_flags;	offset:2;	size:1;
+	field:unsigned char common_preempt_count;	offset:3;	size:1;
+	field:int common_pid;	offset:4;	size:4;
+	field:int common_tgid;	offset:8;	size:4;
+
+	field: unsigned long ip;	offset:16;tsize:8;
+	field: int nargs;	offset:24;tsize:4;
+	field: unsigned long arg0;	offset:32;tsize:8;
+	field: unsigned long arg1;	offset:40;tsize:8;
+	field: unsigned long arg2;	offset:48;tsize:8;
+	field: unsigned long arg3;	offset:56;tsize:8;
+
+	alias: a0;	original: arg0;
+	alias: a1;	original: arg1;
+	alias: a2;	original: arg2;
+	alias: a3;	original: arg3;
+
+print fmt: "%lx: 0x%lx 0x%lx 0x%lx 0x%lx", ip, arg0, arg1, arg2, arg3
+
+
+ You can see that the event has 4 arguments and alias expressions
+corresponding to it.
+
+  echo > /sys/kernel/debug/tracing/kprobe_events
+
+ This clears all probe points. and you can see the traced information via
+/sys/kernel/debug/tracing/trace.
+
+  cat /sys/kernel/debug/tracing/trace
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: 0x3 0x7fffd1ec4440 0x8000 0x0
+           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: 0xfffffffffffffffe 0xffffffff81367a3a
+           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: 0xffffff9c 0x40413c 0x8000 0x1b6
+           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
+           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: 0xffffff9c 0x4041c6 0x98800 0x10
+           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <- do_sys_open: 0x3 0xffffffff81367a3a
+
+
+ Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
+returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
+returns from do_sys_open to sys_open+0x1b).
+
+
+Thank you,
+
 ---
 
- arch/x86/Kconfig.debug          |    9 ++++
- arch/x86/Makefile               |    3 +
- arch/x86/include/asm/inat.h     |    2 +
- arch/x86/include/asm/insn.h     |    2 +
- arch/x86/lib/inat.c             |    2 +
- arch/x86/lib/insn.c             |    2 +
- arch/x86/scripts/Makefile       |   19 +++++++
- arch/x86/scripts/distill.awk    |   42 +++++++++++++++++
- arch/x86/scripts/test_get_len.c |   99 +++++++++++++++++++++++++++++++++++++++
- arch/x86/scripts/user_include.h |   49 +++++++++++++++++++
- 10 files changed, 229 insertions(+), 0 deletions(-)
+Masami Hiramatsu (7):
+      tracing: add kprobe-based event tracer
+      tracing: ftrace dynamic ftrace_event_call support
+      x86: add pt_regs register and stack access APIs
+      kprobes: cleanup fix_riprel() using insn decoder on x86
+      kprobes: checks probe address is instruction boudary on x86
+      x86: x86 instruction decoder build-time selftest
+      x86: instruction decoder API
+
+
+ Documentation/trace/kprobes.txt        |  138 ++++
+ arch/x86/Kconfig.debug                 |    9 
+ arch/x86/Makefile                      |    3 
+ arch/x86/include/asm/inat.h            |  127 +++
+ arch/x86/include/asm/insn.h            |  136 ++++
+ arch/x86/include/asm/ptrace.h          |  122 +++
+ arch/x86/kernel/kprobes.c              |  197 ++---
+ arch/x86/kernel/ptrace.c               |   73 ++
+ arch/x86/lib/Makefile                  |   13 
+ arch/x86/lib/inat.c                    |   82 ++
+ arch/x86/lib/insn.c                    |  473 +++++++++++++
+ arch/x86/lib/x86-opcode-map.txt        |  711 +++++++++++++++++++
+ arch/x86/scripts/Makefile              |   19 +
+ arch/x86/scripts/distill.awk           |   42 +
+ arch/x86/scripts/gen-insn-attr-x86.awk |  314 ++++++++
+ arch/x86/scripts/test_get_len.c        |   99 +++
+ arch/x86/scripts/user_include.h        |   49 +
+ include/linux/ftrace_event.h           |   13 
+ include/trace/ftrace.h                 |   22 -
+ kernel/trace/Kconfig                   |   12 
+ kernel/trace/Makefile                  |    1 
+ kernel/trace/trace.h                   |   22 +
+ kernel/trace/trace_event_types.h       |   20 +
+ kernel/trace/trace_events.c            |   70 +-
+ kernel/trace/trace_export.c            |   27 -
+ kernel/trace/trace_kprobe.c            | 1183 ++++++++++++++++++++++++++++++++
+ 26 files changed, 3825 insertions(+), 152 deletions(-)
+ create mode 100644 Documentation/trace/kprobes.txt
+ create mode 100644 arch/x86/include/asm/inat.h
+ create mode 100644 arch/x86/include/asm/insn.h
+ create mode 100644 arch/x86/lib/inat.c
+ create mode 100644 arch/x86/lib/insn.c
+ create mode 100644 arch/x86/lib/x86-opcode-map.txt
  create mode 100644 arch/x86/scripts/Makefile
  create mode 100644 arch/x86/scripts/distill.awk
+ create mode 100644 arch/x86/scripts/gen-insn-attr-x86.awk
  create mode 100644 arch/x86/scripts/test_get_len.c
  create mode 100644 arch/x86/scripts/user_include.h
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index d105f29..7d0b681 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
- config HAVE_MMIOTRACE_SUPPORT
- 	def_bool y
- 
-+config X86_DECODER_SELFTEST
-+     bool "x86 instruction decoder selftest"
-+     depends on DEBUG_KERNEL
-+	---help---
-+	 Perform x86 instruction decoder selftests at build time.
-+	 This option is useful for checking the sanity of x86 instruction
-+	 decoder code.
-+	 If unsure, say "N".
-+
- #
- # IO delay types:
- #
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1b68659..7046556 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -154,6 +154,9 @@ all: bzImage
- KBUILD_IMAGE := $(boot)/bzImage
- 
- bzImage: vmlinux
-+ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
-+	$(Q)$(MAKE) $(build)=arch/x86/scripts posttest
-+endif
- 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
- 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
- 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
-index 01e079a..9090665 100644
---- a/arch/x86/include/asm/inat.h
-+++ b/arch/x86/include/asm/inat.h
-@@ -20,7 +20,9 @@
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
-+#ifdef __KERNEL__
- #include <linux/types.h>
-+#endif
- 
- /* Instruction attributes */
- typedef u32 insn_attr_t;
-diff --git a/arch/x86/include/asm/insn.h b/arch/x86/include/asm/insn.h
-index 5b50fa3..5736404 100644
---- a/arch/x86/include/asm/insn.h
-+++ b/arch/x86/include/asm/insn.h
-@@ -20,7 +20,9 @@
-  * Copyright (C) IBM Corporation, 2009
-  */
- 
-+#ifdef __KERNEL__
- #include <linux/types.h>
-+#endif
- /* insn_attr_t is defined in inat.h */
- #include <asm/inat.h>
- 
-diff --git a/arch/x86/lib/inat.c b/arch/x86/lib/inat.c
-index d6a34be..564ecbd 100644
---- a/arch/x86/lib/inat.c
-+++ b/arch/x86/lib/inat.c
-@@ -18,7 +18,9 @@
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-  *
-  */
-+#ifdef __KERNEL__
- #include <linux/module.h>
-+#endif
- #include <asm/insn.h>
- 
- /* Attribute tables are generated from opcode map */
-diff --git a/arch/x86/lib/insn.c b/arch/x86/lib/insn.c
-index 254c848..3b9451a 100644
---- a/arch/x86/lib/insn.c
-+++ b/arch/x86/lib/insn.c
-@@ -18,8 +18,10 @@
-  * Copyright (C) IBM Corporation, 2002, 2004, 2009
-  */
- 
-+#ifdef __KERNEL__
- #include <linux/string.h>
- #include <linux/module.h>
-+#endif
- #include <asm/inat.h>
- #include <asm/insn.h>
- 
-diff --git a/arch/x86/scripts/Makefile b/arch/x86/scripts/Makefile
-new file mode 100644
-index 0000000..f08859e
---- /dev/null
-+++ b/arch/x86/scripts/Makefile
-@@ -0,0 +1,19 @@
-+PHONY += posttest
-+quiet_cmd_posttest = TEST    $@
-+      cmd_posttest = objdump -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/scripts/distill.awk | $(obj)/test_get_len
-+
-+posttest: $(obj)/test_get_len vmlinux
-+	$(call cmd,posttest)
-+
-+test_get_len_SRC = $(srctree)/arch/x86/scripts/test_get_len.c $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c
-+test_get_len_INC = $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
-+
-+quiet_cmd_test_get_len = CC      $@
-+      cmd_test_get_len = $(CC) -Wall $(test_get_len_SRC) -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include -include $(srctree)/arch/x86/scripts/user_include.h -o $@
-+
-+
-+$(obj)/test_get_len: $(test_get_len_SRC) $(test_get_len_INC)
-+	$(call cmd,test_get_len)
-+
-+clean-files := test_get_len
-+
-diff --git a/arch/x86/scripts/distill.awk b/arch/x86/scripts/distill.awk
-new file mode 100644
-index 0000000..d433619
---- /dev/null
-+++ b/arch/x86/scripts/distill.awk
-@@ -0,0 +1,42 @@
-+#!/bin/awk -f
-+# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+# Distills the disassembly as follows:
-+# - Removes all lines except the disassembled instructions.
-+# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
-+# into a single line.
-+# - Remove bad(or prefix only) instructions
-+
-+BEGIN {
-+	prev_addr = ""
-+	prev_hex = ""
-+	prev_mnemonic = ""
-+	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
-+	fwait_expr = "^9b "
-+	fwait_str="9b\tfwait"
-+}
-+
-+/^ *[0-9a-f]+:/ {
-+	if (split($0, field, "\t") < 3) {
-+		# This is a continuation of the same insn.
-+		prev_hex = prev_hex field[2]
-+	} else {
-+		# Skip bad instructions
-+		if (match(prev_mnemonic, bad_expr))
-+			prev_addr = ""
-+		# Split fwait from other f* instructions
-+		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
-+			printf "%s\t%s\n", prev_addr, fwait_str
-+			sub(fwait_expr, "", prev_hex)
-+		}
-+		if (prev_addr != "")
-+			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+		prev_addr = field[1]
-+		prev_hex = field[2]
-+		prev_mnemonic = field[3]
-+	}
-+}
-+
-+END {
-+	if (prev_addr != "")
-+		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+}
-diff --git a/arch/x86/scripts/test_get_len.c b/arch/x86/scripts/test_get_len.c
-new file mode 100644
-index 0000000..0f702e8
---- /dev/null
-+++ b/arch/x86/scripts/test_get_len.c
-@@ -0,0 +1,99 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <assert.h>
-+
-+#include <asm/insn.h>
-+
-+/*
-+ * Test of instruction analysis in general and insn_get_length() in
-+ * particular.  See if insn_get_length() and the disassembler agree
-+ * on the length of each instruction in an elf disassembly.
-+ *
-+ * usage: test_get_len < distilled_disassembly
-+ */
-+
-+const char *prog;
-+
-+static void usage()
-+{
-+	fprintf(stderr, "usage: %s < distilled_disassembly\n", prog);
-+	exit(1);
-+}
-+
-+static void malformed_line(const char *line, int line_nr)
-+{
-+	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
-+	exit(3);
-+}
-+
-+#define BUFSIZE 256
-+
-+int main(int argc, char **argv)
-+{
-+	char line[BUFSIZE];
-+	unsigned char insn_buf[16];
-+	struct insn insn;
-+	int insns = 0;
-+
-+	prog = argv[0];
-+	if (argc > 1)
-+		usage();
-+
-+	while (fgets(line, BUFSIZE, stdin)) {
-+		char copy[BUFSIZE], *s, *tab1, *tab2;
-+		int nb = 0;
-+		unsigned b;
-+
-+		insns++;
-+		memset(insn_buf, 0, 16);
-+		strcpy(copy, line);
-+		tab1 = strchr(copy, '\t');
-+		if (!tab1)
-+			malformed_line(line, insns);
-+		s = tab1 + 1;
-+		s += strspn(s, " ");
-+		tab2 = strchr(s, '\t');
-+		if (!tab2)
-+			malformed_line(line, insns);
-+		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
-+		while (s < tab2) {
-+			if (sscanf(s, "%x", &b) == 1) {
-+				insn_buf[nb++] = (unsigned char) b;
-+				s += 3;
-+			} else
-+				break;
-+		}
-+		/* Decode an instruction */
-+		kernel_insn_init(&insn, insn_buf);
-+		insn_get_length(&insn);
-+		if (insn.length != nb) {
-+			fprintf(stderr, "Error: %s", line);
-+			fprintf(stderr, "Error: objdump says %d bytes, but "
-+				"insn_get_length() says %d (attr:%x)\n", nb,
-+				insn.length, insn.attr);
-+			exit(2);
-+		}
-+	}
-+	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
-+		insns);
-+	return 0;
-+}
-diff --git a/arch/x86/scripts/user_include.h b/arch/x86/scripts/user_include.h
-new file mode 100644
-index 0000000..3bdcc55
---- /dev/null
-+++ b/arch/x86/scripts/user_include.h
-@@ -0,0 +1,49 @@
-+#ifndef __USER_TYPES_H
-+#define __USER_TYPES_H
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <string.h>
-+
-+#ifdef __x86_64__
-+#define CONFIG_X86_64
-+#else
-+#define CONFIG_X86_32
-+#endif
-+typedef unsigned char u8;
-+typedef unsigned short u16;
-+typedef unsigned int u32;
-+typedef unsigned long long u64;
-+
-+typedef signed char s8;
-+typedef short s16;
-+typedef int s32;
-+typedef long long s64;
-+
-+typedef enum bool { false = 0, true } bool;
-+
-+/* any harmless file-scope decl */
-+#define NOP_DECL struct __nop
-+#define EXPORT_SYMBOL_GPL(symbol) NOP_DECL
-+#define MODULE_LICENSE(gpl) NOP_DECL
-+
-+#define WARN_ON(cond) do { } while (0)
-+#define unlikely(cond) (cond)
-+
-+#endif /* __USER_TYPES_H */
-
+ create mode 100644 kernel/trace/trace_kprobe.c
 
 -- 
 Masami Hiramatsu
