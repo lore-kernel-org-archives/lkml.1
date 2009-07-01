@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZGALlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZGALmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbZGALlk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbZGALld
+	id S1755279AbZGALmf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:42:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZGALm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:41:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51157 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751292AbZGALlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:41:32 -0400
-Subject: Re: [PATCH 3/6 -tip] perf_counter: Add Generalized Hardware
- vectored co-processor support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090701112704.GF15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
-	 <20090701112704.GF15958@elte.hu>
-Content-Type: text/plain
-Date: Wed, 01 Jul 2009 17:10:41 +0530
-Message-Id: <1246448441.6940.3.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Wed, 1 Jul 2009 07:42:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:64904 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbZGALm1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:42:27 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [microblaze-uclinux] [PATCH 03/11] microblaze: fall back on generic header files for the ABI
+Date: Wed, 1 Jul 2009 13:42:26 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-9-generic; KDE/4.2.90; x86_64; ; )
+Cc: microblaze-uclinux@itee.uq.edu.au, LKML <linux-kernel@vger.kernel.org>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+References: <cover.1245345894.git.arnd@arndb.de> <7a92dd639b7887bc972118d16a5fda6093200b96.1245347640.git.arnd@arndb.de> <4A4B49D0.2090101@monstr.eu>
+In-Reply-To: <4A4B49D0.2090101@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907011342.26669.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19wKeWWbl/YYkF4YG5b7pWDKgq1KY5LmIY5k0n
+ 3IdzrqxV90c6eqEjMDPdD5b72MVPSMOOK1BFm3BnuzBddT4mEF
+ /ncPsw3+bwX1boNRrtY4A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 13:27 +0200, Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Wednesday 01 July 2009, Michal Simek wrote:
+> Added to next branch for test.
 > 
-> > >  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
-> > > 
-> > >     20177177044  vec-adds                  (scaled from 66.63%)
-> > >     34101687027  vec-muls                  (scaled from 66.64%)
-> > >      3984060862  vec-divs                  (scaled from 66.71%)
-> > >     26349684710  vec-idle-cycles           (scaled from 66.65%)
-> > >      9052001905  vec-stall-cycles          (scaled from 66.66%)
-> > >     76440734242  vec-ops                   (scaled from 66.71%)
-> > > 
-> > >   272.523058097  seconds time elapsed
-> 
-> btw., the 'perf list' bits are missing - any new counter added 
-> should be listed by 'perf list' as well - otherwise people wont know 
-> what we have and what to use.
-> 
+> I had to do one change.
+> Microblaze needs __kernel_mode_t as short.
 
-Even cache is not available for 'perf list'. Should I also resend patch
-for adding cache along with vector and interrupt.
+Can you explain why that is needed? Should I change the default in the generic file?
 
-Thanks,
---
-JSR
+> + I removed __kernel_size_t and I'll recompile toolchain
+> for removing warning messages
 
+Ah, good.
+
+	Arnd <><
