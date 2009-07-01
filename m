@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758840AbZGADKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZGADUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758840AbZGADKi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 23:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZGADKb
+	id S1756514AbZGADUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 23:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZGADUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 23:10:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:51320 "EHLO ozlabs.org"
+	Tue, 30 Jun 2009 23:20:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33082 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753377AbZGADKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 23:10:31 -0400
-Date: Wed, 1 Jul 2009 13:07:01 +1000
-From: Anton Blanchard <anton@samba.org>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, paulus@samba.org,
-       benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/perf_counter: POWER7 has alternate PR/HV bits
-Message-ID: <20090701030701.GI3563@kryten>
+	id S1752455AbZGADUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 23:20:06 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 1 Jul 2009 13:20:47 +1000
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19018.54799.551738.530964@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Mike Snitzer <snitzer@redhat.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PULL REQUEST] md updates for 2.6.31-rc
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-POWER7 has the same PR/HV bit layout as POWER6, so set the flag.
+Hi Linus,
+ please pull these md updates:  They add the appropriate call for the
+ new 'topology' numbers, and fix a small assortment of bugs.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Thanks,
+NeilBrown
 
-Index: linux-2.6-tip/arch/powerpc/kernel/power7-pmu.c
-===================================================================
---- linux-2.6-tip.orig/arch/powerpc/kernel/power7-pmu.c	2009-07-01 12:41:49.000000000 +1000
-+++ linux-2.6-tip/arch/powerpc/kernel/power7-pmu.c	2009-07-01 12:42:09.000000000 +1000
-@@ -358,6 +358,7 @@
- 	.get_constraint		= power7_get_constraint,
- 	.get_alternatives	= power7_get_alternatives,
- 	.disable_pmc		= power7_disable_pmc,
-+	.flags			= PPMU_ALT_SIPR,
- 	.n_generic		= ARRAY_SIZE(power7_generic_events),
- 	.generic_events		= power7_generic_events,
- 	.cache_events		= &power7_cache_events,
+
+The following changes since commit 5a4f13fad1ab5bd08dea78fc55321e429d83cddf:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/ide-2.6
+
+are available in the git repository at:
+
+  git://neil.brown.name/md for-linus
+
+Martin K. Petersen (1):
+      md: Use new topology calls to indicate alignment and I/O sizes
+
+NeilBrown (5):
+      md: avoid dereferencing NULL pointer when accessing suspend_* sysfs attributes.
+      md: fix error path when duplicate name is found on md device creation.
+      md: tidy up error paths in md_alloc
+      md/raid5: suspend shouldn't affect read requests.
+      md: use interruptible wait when duration is controlled by userspace.
+
+ drivers/md/linear.c    |    4 +-
+ drivers/md/md.c        |   56 +++++++++++++++++++++++++++--------------------
+ drivers/md/multipath.c |    7 +++--
+ drivers/md/raid0.c     |    9 ++++++-
+ drivers/md/raid1.c     |    9 +++----
+ drivers/md/raid10.c    |   19 +++++++++++-----
+ drivers/md/raid5.c     |   28 ++++++++++++++++++-----
+ 7 files changed, 84 insertions(+), 48 deletions(-)
