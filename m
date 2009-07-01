@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZGAOX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZGAOY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbZGAOX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZGAOXv
+	id S1756088AbZGAOY6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZGAOYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:23:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56289 "EHLO hera.kernel.org"
+	Wed, 1 Jul 2009 10:24:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56320 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbZGAOXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:23:50 -0400
-Subject: [PATCH -tip] x86: amd_iommu.c device_nb should be static
+	id S1751640AbZGAOYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:24:50 -0400
+Subject: [PATCH -tip] x86: mm/init.c declare check_efer() before it get used
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Joerg Roedel <joerg.roedel@amd.com>,
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 01 Jul 2009 19:53:14 +0530
-Message-Id: <1246458194.6940.20.camel@hpdv5.satnam>
+Date: Wed, 01 Jul 2009 19:54:23 +0530
+Message-Id: <1246458263.6940.22.camel@hpdv5.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -26,44 +26,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This sparse warning:
 
-  arch/x86/kernel/amd_iommu.c:1195:23: warning: symbol 'device_nb' was not declared. Should it be static?
+  arch/x86/mm/init.c:83:16: warning: symbol 'check_efer' was not declared. Should it be static?
 
-triggers because device_nb is global but is only used in a single .c file.
-change device_nb to static to fix that - this also address the sparse warning.
-
-This sparse warning:
-
-  arch/x86/kernel/amd_iommu.c:1766:10: warning: Using plain integer as NULL pointer
-
-triggers because plain integer 0 is used inplace of NULL pointer.
-change 0 to NULL to fix that - this also address the sparse warning.
+triggers because check_efer() is not decalared before using it.
+asm/proto.h includes the declaration of check_efer(),
+so including asm/proto.h to fix that - this also address the sparse warning.
 
 Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- arch/x86/kernel/amd_iommu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/mm/init.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 9372f04..6c99f50 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -1192,7 +1192,7 @@ out:
- 	return 0;
- }
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 47ce9a2..0607119 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -12,6 +12,7 @@
+ #include <asm/system.h>
+ #include <asm/tlbflush.h>
+ #include <asm/tlb.h>
++#include <asm/proto.h>
  
--struct notifier_block device_nb = {
-+static struct notifier_block device_nb = {
- 	.notifier_call = device_change_notifier,
- };
- 
-@@ -1763,7 +1763,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
- 	flag |= __GFP_ZERO;
- 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
- 	if (!virt_addr)
--		return 0;
-+		return NULL;
- 
- 	paddr = virt_to_phys(virt_addr);
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
  
 -- 
 1.6.0.6
