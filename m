@@ -1,184 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZGAPe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZGAPfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752437AbZGAPe5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZGAPet
+	id S1754142AbZGAPfb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbZGAPfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:34:49 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41552 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbZGAPet (ORCPT
+	Wed, 1 Jul 2009 11:35:20 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36128 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751555AbZGAPfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:34:49 -0400
-Date: Wed, 1 Jul 2009 11:34:44 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: oleg@redhat.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       akpm@linux-foundation.org, earl_chew@agilent.com
-Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
-	concurrent dumps to pipes (v5)
-Message-ID: <20090701153444.GF29601@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701152640.GD29601@hmsreliant.think-freely.org>
+	Wed, 1 Jul 2009 11:35:18 -0400
+Date: Wed, 1 Jul 2009 11:35:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC] Run-time PM framework (was: Re: [patch update] PM: Introduce
+ core framework for run-time PM of I/O devices (rev. 6))
+In-Reply-To: <200907010030.13775.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0907011039100.3066-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701152640.GD29601@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Introduce core pipe limiting sysctl
+On Wed, 1 Jul 2009, Rafael J. Wysocki wrote:
 
-Since we can dump cores to pipe, rather than directly to the filesystem, we
-create a condition in which a user can create a very high load on the system
-simply by running bad applications.  If the pipe reader specified in
-core_pattern is poorly written, we can have lots of ourstandig resources and
-processes in the system.  This sysctl introduces an ability to limit that
-resource consumption.  core_pipe_limit defines how many in-flight dumps may be
-run in parallel, dumps beyond this value are skipped and a note is made in the
-kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
-dumps may be handled (this is the default value).
+> On Tuesday 30 June 2009, Alan Stern wrote:
+> ... 
+> > That's enough to give you the general idea.  I think this design is 
+> > a lot cleaner than the current one.
+> 
+> Well, I'm not really happy with starting over, but if you think we should do
+> that, then let's do it.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+It's not a complete restart.  Much of the existing interface and quite
+a bit of code would remain the same.
+
+> I think we both agree that the callbacks, ->runtime_idle(), ->runtime_suspend()
+> and ->runtime_resume() make sense.  Now, the role of the framework, IMO, is to
+> provide a mechanism by which it is possible:
+> (1) to schedule a delayed execution of ->runtime_suspend(), possibly from
+>     interrupt context,
+> (2) to schedule execution of ->runtime_resume() or ->runtime_idle(), possibly
+>     from interrupt context,
+> (3) to execute ->runtime_suspend() or ->runtime_resume() directly in a
+>     synchronous way (I'm not sure about ->runtime_idle())
+
+Yes, runtime_idle also, for drivers that require minimal overhead.
+
+> _and_ to ensure that these callbacks will be executed when it makes sense.
+
+Thus if the situation changes before the callback can be made, so that
+it no longer makes sense, the framework should cancel the callback.
+
+> There's no other point, because the core has no information to make choices,
+> it can only prevent wrong things from happening, if possible.
+
+Exactly.
+
+> I think you will agree that the users of the framework should be able to
+> prevent ->runtime_suspend() from being called and that's what the usage counter
+> is for.  Also, IMO it should be impossible to execute ->runtime_idle(), via the
+> framework, when the usage counter is nonzero.
+
+Right, because then by definition the device is in use so it can't be 
+idle.
+
+> BTW, I don't think resume_count is the best name; it used to be in the version
+> of my patch where it was automatically incremented when ->runtime_resume() was
+> about to called.  usage_count is probably better.
+
+Fine.
+
+> Next, I think that the framework should refuse to call ->runtime_suspend() and
+> ->runtime_idle() if the children of the device are not suspended and the
+> "ignore children" flag is unset.
+
+Yes; this is part of the "makes sense" requirement.
+
+>  The counter of unsuspended children is used
+> for that.  I think the rule should be that it is decremented for the parent
+> whenever ->runtime_suspend() is called for a child and it is incremented
+> for the parent whenever ->runtime_resume() is called for a child.
+
+Of course.  (Minor change: decremented when runtime_suspend _succeeds_ 
+for a child.)
+
+> Now, the question is what rules should apply to the ordering and possible
+> simultaneous execution of ->runtime_idle(), ->runtime_suspend() and
+> ->runtime_resume().  I think the following rules make sense:
+
+Oh dear.  I wouldn't attempt to make a complete list of all possible 
+interactions.  It's too hard to know whether you have really covered 
+all the cases.
+
+>   * It is forbidden to run ->runtime_suspend() twice in a row.
+> 
+>   * It is forbidden to run ->runtime_suspend() in parallel with another instance
+>     of ->runtime_suspend().
+> 
+>   * It is forbidden to run ->runtime_resume() twice in a row.
+> 
+>   * It is forbidden to run ->runtime_resume() in parallel with another instance
+>     of ->runtime_resume().
+> 
+>   * It is allowed to run ->runtime_suspend() after ->runtime_resume() or after
+>     ->runtime_idle(), but the latter case is preferred. 
+> 
+>   * It is allowed to run ->runtime_resume() after ->runtime_suspend().
+> 
+>   * It is forbidden to run ->runtime_resume() after ->runtime_idle().
+> 
+>   * It is forbidden to run ->runtime_suspend() and ->runtime_resume() in
+>     parallel with each other.
+> 
+>   * It is forbidden to run ->runtime_idle() twice in a row.
+> 
+>   * It is forbidden to run ->runtime_idle() in parallel with another instance
+>     of ->runtime_idle().
+> 
+>   * It is forbidden to run ->runtime_idle() after ->runtime_suspend().
+> 
+>   * It is allowed to run ->runtime_idle() after ->runtime_resume().
+> 
+>   * It is allowed to execute ->runtime_suspend() or ->runtime_resume() when
+>     ->runtime_idle() is running.  In particular, it is allowed to (indirectly)
+>     call ->runtime_suspend() from within ->runtime_idle().
+> 
+>   * It is forbidden to execute ->runtime_idle() when ->runtime_resume() or
+>     ->runtime_suspend() is running.
+
+We can summarize these rules as follows:
+
+	Never allow more than one callback at a time, except that
+	runtime_suspend may be invoked while runtime_idle is running.
+
+	Don't call runtime_resume while the device is active.
+
+	Don't call runtime_suspend or runtime_idle while the device
+	is suspended.
+
+	Don't invoke any callbacks if the device state is unknown
+	(RPM_ERROR).
+
+Implicit is the notion that the device is suspended when 
+runtime_suspend returns successfully, it is active when runtime_resume 
+returns successfully, and it is unknown when either returns an error.
+
+>   * If ->runtime_resume() is about to be called immediately after
+>     ->runtime_suspend(), the execution of ->runtime_suspend() should be
+>     prevented from happening, if possible, in which case the execution of
+>     ->runtime_resume() shouldn't happen.
+> 
+>   * If ->runtime_suspend() is about to be called immediately after
+>     ->runtime_resume(), the execution of ->runtime_resume() should be
+>     prevented from happening, if possible, in which case the execution of
+>     ->runtime_suspend() shouldn't happen.
+
+These could be considered optional optimizations.  Or if you prefer, 
+they could be covered by a "New requests override previous requests" 
+rule.
+
+> [Are there any more rules related to these callbacks we should take into
+> account?]
+
+	Runtime PM callbacks are mutually exclusive with other driver
+	core callbacks (probe, remove, dev_pm_ops, etc.).
+
+	If a callback occurs asynchronously then it will be invoked
+	in process context.  If it occurs as part of a synchronous
+	request then it is invoked in the caller's context.
+
+Related to this is the requirement that pm_runtime_idle,
+pm_runtime_suspend, and pm_runtime_resume must always be called in
+process context whereas pm_runtime_idle_atomic,
+pm_runtime_suspend_atomic, and pm_runtime_resume_atomic may be called
+in any context.
+
+> Next, if we agree about the rules above, the question is what helper functions
+> should be provided by the core allowing these rules to be followed
+> automatically and what error codes should be returned by them in case it
+> wasn't possible to proceed without breaking the rules.
+> 
+> IMO, it is reasonable to provide:
+> 
+>   * pm_schedule_suspend(dev, delay) - schedule the execution of
+>     ->runtime_suspend(dev) after delay.
+> 
+>   * pm_runtime_suspend(dev) - execute ->runtime_suspend(dev) right now.
+> 
+>   * pm_runtime_resume(dev) - execute ->runtime_resume(dev) right now.
+> 
+>   * pm_request_resume(dev) - put a request to execute ->runtime_resume(dev)
+>     into the run-time PM workqueue.
+> 
+>   * pm_runtime_get(dev) - increment the device's usage counter.
+> 
+>   * pm_runtime_put(dev) - decrement the device's usage counter.
+> 
+>   * pm_runtime_idle(dev) - execute ->runtime_idle(dev) right now if the usage
+>     counter is zero and all of the device's children are suspended (or the
+>     "ignore children" flag is set).
+> 
+>   * pm_request_idle(dev) - put a request to execute ->runtime_idle(dev)
+>     into the run-time PM workqueue.  The usage counter and children will be
+>     checked immediately before executing ->runtime_idle(dev).
+
+Should the counters also be checked when the request is submitted?  
+And should the same go for pm_schedule_suspend?  These are nontrivial
+questions; good arguments can be made both ways.
+
+> I'm not sure if it is really necessary to combine pm_runtime_idle() or
+> pm_request_idle() with pm_runtime_put().  At least right now I don't see any
+> real value of that.
+
+Likewise combining pm_runtime_get with pm_runtime_resume.  The only
+value is to make things easier for drivers, because these will be very
+common idioms.
+
+> I also am not sure what error codes should be returned by the above helper
+> functions and in what conditions.
+
+The error codes you have been using seem okay to me, in general.
+
+However, some of those requests would violate the rules in a trivial 
+way.  For these we might return a positive value rather than a negative 
+error code.  For example, calling pm_runtime_resume while the device is 
+already active shouldn't be considered an error.  But it can't be 
+considered a complete success either, because it won't invoke the 
+runtime_resume method.
+
+To be determined: How runtime PM will interact with system sleep.
 
 
- Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
- fs/exec.c                       |   21 +++++++++++++++++----
- kernel/sysctl.c                 |    9 +++++++++
- 3 files changed, 48 insertions(+), 4 deletions(-)
+About all I can add is the "New requests override previous requests"  
+policy.  This would apply to all the non-synchronous requests, whether
+they are delayed or added directly to the workqueue.  If a new request
+(synchronous or not) is received before the old one has started to run,
+the old one will be cancelled.  This holds even if the new request is
+redundant, like a resume request received while the device is active.
 
-diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
-index 322a00b..bb226ba 100644
---- a/Documentation/sysctl/kernel.txt
-+++ b/Documentation/sysctl/kernel.txt
-@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
- - acct
- - auto_msgmni
- - core_pattern
-+- core_pipe_limit
- - core_uses_pid
- - ctrl-alt-del
- - dentry-state
-@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
- 
- ==============================================================
- 
-+core_pipe_limit:
-+
-+This sysctl is only applicable when core_pattern is configured to pipe core
-+files to user space helper a (when the first character of core_pattern is a '|',
-+see above).  When collecting cores via a pipe to an application, it is
-+occasionally usefull for the collecting application to gather data about the
-+crashing process from its /proc/pid directory.  In order to do this safely, the
-+kernel must wait for the collecting process to exit, so as not to remove the
-+crashing processes proc files prematurely.  This in turn creates the possibility
-+that a misbehaving userspace collecting process can block the reaping of a
-+crashed process simply by never exiting.  This sysctl defends against that.  It
-+defines how many concurrent crashing processes may be piped to user space
-+applications in parallel.  If this value is exceeded, then those crashing
-+processes above that value are noted via the kernel log and their cores are
-+skipped.  0 is a special value, indicating that unlimited processes may be
-+captured in parallel, but that no waiting will take place (i.e. the collecting
-+process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-+to 0.
-+
-+==============================================================
-+
- core_uses_pid:
- 
- The default coredump filename is "core".  By setting
-diff --git a/fs/exec.c b/fs/exec.c
-index 9defd20..93ab6eb 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -63,6 +63,7 @@
- 
- int core_uses_pid;
- char core_pattern[CORENAME_MAX_SIZE] = "core";
-+unsigned int core_pipe_limit;
- int suid_dumpable = 0;
- 
- /* The maximal length of core_pattern is also specified in sysctl.c */
-@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	char **helper_argv = NULL;
- 	int helper_argc = 0;
--	char *delimit;
-+	int dump_count = 0;
-+	static atomic_t core_dump_count = ATOMIC_INIT(0);
- 
- 	audit_core_dumps(signr);
- 
-@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 			goto fail_unlock;
- 		}
- 
-+		dump_count = atomic_inc_return(&core_dump_count);
-+		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
-+			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
-+			       task_tgid_vnr(current), current->comm);
-+			printk(KERN_WARNING "Skipping core dump\n");
-+			goto fail_dropcount;
-+		}
-+
- 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
- 		if (!helper_argv) {
- 			printk(KERN_WARNING "%s failed to allocate memory\n",
- 			       __func__);
--			goto fail_unlock;
-+			goto fail_dropcount;
- 		}
- 
- 		core_limit = RLIM_INFINITY;
- 
- 		/* SIGPIPE can happen, but it's just never processed */
-- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
-+ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
- 				&file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
- 			       corename);
-- 			goto fail_unlock;
-+ 			goto fail_dropcount;
-  		}
- 	} else {
- 		if (core_limit < binfmt->min_coredump)
-@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 
- close_fail:
- 	filp_close(file, NULL);
-+fail_dropcount:
-+	if (dump_count)
-+		atomic_dec(&core_dump_count);
- fail_unlock:
- 	if (helper_argv)
- 		argv_free(helper_argv);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 62e4ff9..681052f 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -77,6 +77,7 @@ extern int max_threads;
- extern int core_uses_pid;
- extern int suid_dumpable;
- extern char core_pattern[];
-+extern unsigned int core_pipe_limit;
- extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
-@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dostring,
- 		.strategy	= &sysctl_string,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "core_pipe_limit",
-+		.data		= &core_pipe_limit,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #ifdef CONFIG_PROC_SYSCTL
- 	{
- 		.procname	= "tainted",
+There is one exception to this rule: An idle_notify request does not 
+cancel a delayed or queued suspend request.
+
+Alan Stern
+
