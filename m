@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZGAJEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZGAJFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZGAJEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZGAJEX
+	id S1755323AbZGAJFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZGAJFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:04:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50391 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbZGAJEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:04:23 -0400
-Date: Wed, 1 Jul 2009 12:03:54 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org
-Subject: Re: [KVM PATCH v7 0/5] irqfd fixes and enhancements
-Message-ID: <20090701090354.GA14046@redhat.com>
-References: <20090629181954.1886.20225.stgit@dev.haskins.net> <4A4B2406.2020901@redhat.com>
+	Wed, 1 Jul 2009 05:05:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46568 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754320AbZGAJFZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:05:25 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX18p3YV1LcUpVUHlsooDkhQB9U7k1obT/wDyf/D0CT
+	AFRLikfpZVOSuV
+From: Peter =?utf-8?q?H=C3=BCwe?= <PeterHuewe@gmx.de>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] block: adding __init/__exit macros to DAC960.c
+Date: Wed, 1 Jul 2009 11:05:24 +0200
+User-Agent: KMail/1.9.9
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906121307.29865.PeterHuewe@gmx.de> <200907011054.59988.PeterHuewe@gmx.de> <alpine.LNX.2.00.0907011057570.4994@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0907011057570.4994@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4A4B2406.2020901@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200907011105.24761.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 11:53:26AM +0300, Avi Kivity wrote:
-> On 06/29/2009 09:28 PM, Gregory Haskins wrote:
->> (Applies to kvm.git/master:4631e094)
->>
->> The following is the latest attempt to fix the races in irqfd/eventfd, as
->> well as restore DEASSIGN support.  For more details, please read the patch
->> headers.  I've restored the slow-work variant of the logic as a separate
->> patch (5/5) so we can get a better idea of the true difference between
->> the workqueue approach and the slow-work style.  I am personally in favor
->> of the slow-work approach since it doesnt require a mostly-idle+dedicated
->> thread to hang around.  But that is just me.  5/5 can be ignored, folded
->> in to 3/5+4/5 as appropriate, or merged as is per the whim of Avi et. al.
->>    
+Am Mittwoch 01 Juli 2009 10:58:46 schrieb Jiri Kosina:
+> On Wed, 1 Jul 2009, Peter Hüwe wrote:
+> Hi Peter,
 >
-> I think a good compromise would be to create the workqueue when the  
-> first VM is launched.
->
->> As always, this series has been tested against the kvm-eventfd unit test
->> with both 5/5 applied and unapplied, and everything appears to be
->> functioning properly. You can download this test here:
->>
->> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
->>
->> I've included version 4 of Davide's eventfd patch (ported to kvm.git) so
->> that its a complete reviewable series.  Note, however, that there may be
->> later versions of his patch to consider for merging, so we should
->> coordinate with him.
->>    
->
-> Davide's patch was merged upstream.  Please take a look to make sure  
-> this patchset is compatible with what was merged.
->
-> Patchset looks good to me, but I'd appreciate an ack from Michael (or  
-> anyone else who's interested).
-
-For patches 1,3,4:
-Acked-by: Michael S. Tsirkin <mst@redhat.com>
-
-As for 5: IMHO, let's keep it simple meanwhile.
+> I guess you looked into the wrong branch -- it is in 'for-next' branch,
+> see
+> http://git.kernel.org/?p=linux/kernel/git/jikos/trivial.git;a=commit;h=ef59
+>a28cbb29dd6ec4fcd59eaacb15ea85adbd2e
 
 
--- 
-MST
+Oh - my fault :) Seems I'm still not familiar enough with git :/
+Thank you for the hint and merging my patch.
+
+Thanks,
+Peter
+
