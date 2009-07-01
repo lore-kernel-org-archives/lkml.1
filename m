@@ -1,304 +1,400 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZGAIs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZGAIss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752731AbZGAIs1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZGAIsT
+	id S1754367AbZGAIss (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZGAIsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:48:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42124 "EHLO hera.kernel.org"
+	Wed, 1 Jul 2009 04:48:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42132 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750727AbZGAIsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:48:17 -0400
-Date: Wed, 1 Jul 2009 08:46:43 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+	id S1750917AbZGAIsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:48:37 -0400
+Date: Wed, 1 Jul 2009 08:47:08 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, anton@samba.org,
-       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, anton@samba.org,
-       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
        a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
        mingo@elte.hu
-In-Reply-To: <1246419315-9968-4-git-send-email-fweisbec@gmail.com>
-References: <1246419315-9968-4-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Various fixes for callchains
-Message-ID: <tip-deac911cbdcb124fa0cee47c588e0cb0400b23b7@git.kernel.org>
-Git-Commit-ID: deac911cbdcb124fa0cee47c588e0cb0400b23b7
+In-Reply-To: <19018.53826.843815.189847@cargo.ozlabs.ibm.com>
+References: <19018.53826.843815.189847@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Rework event string parsing/syntax
+Message-ID: <tip-61c45981ddbd718136d49464f00d2f11938aaa6e@git.kernel.org>
+Git-Commit-ID: 61c45981ddbd718136d49464f00d2f11938aaa6e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:46:44 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:47:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  deac911cbdcb124fa0cee47c588e0cb0400b23b7
-Gitweb:     http://git.kernel.org/tip/deac911cbdcb124fa0cee47c588e0cb0400b23b7
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Wed, 1 Jul 2009 05:35:15 +0200
+Commit-ID:  61c45981ddbd718136d49464f00d2f11938aaa6e
+Gitweb:     http://git.kernel.org/tip/61c45981ddbd718136d49464f00d2f11938aaa6e
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Wed, 1 Jul 2009 13:04:34 +1000
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Jul 2009 09:58:52 +0200
+CommitDate: Wed, 1 Jul 2009 10:23:17 +0200
 
-perf_counter tools: Various fixes for callchains
+perf_counter tools: Rework event string parsing/syntax
 
-The symbol resolving has of course revealed some bugs in the
-callchain tree handling. This patch fixes some of them,
-including:
+This reworks the parser for event descriptors to make it more
+consistent in what it accepts.  It is now structured as a
+recursive descent parser for the following grammar:
 
-- inherit the children from the parents while splitting a node
-- fix list range moving
-- fix indexes setting in callchains
-- create a child on the current node if the path doesn't match in
-  the existent children (was only done on the root)
-- compare using symbols when possible so that we can match a function
-  using any ip inside by referring to its start address.
+events		::= event ( ("," | space) space* event )*
+event		::= ( raw_event | numeric_event | symbolic_event |
+		      generic_hw_event ) [ event_modifier ]
+raw_event	::= "r" hex_number
+numeric_event	::= number ":" number
+number		::= decimal_number | "0x" hex_number | "0" octal_number
+symbolic_event	::= string_from_event_symbols_array
+generic_hw_event::= cache_type ( "-" ( cache_op | cache_result ) )*
+event_modifier	::= ":" ( "u" | "k" | "h" )+
 
-The practical effects are:
+with the extra restriction that you can have at most one
+cache_op and at most one cache_result.
 
-- remove double callchains
-- fix upside down or any random order of callchains
-- fix wrong paths
-- fix bad hits and percentage accounts
+We pass the current string pointer by reference (i.e. as a
+const char **) to the various parsing functions so that they
+can advance the pointer to indicate how much they consumed.
+They return 0 if they didn't recognize the thing at the pointer
+or 1 if they did (and advance the pointer past it).
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+This also fixes parse_aliases to take the longest matching
+alias from the table, not the first one.  Otherwise "l1-data"
+would match the "l1-d" alias and the "ata" would not be
+consumed.
+
+This allows event modifiers indicating what processor modes to
+count in to be applied to any event, not just numeric events,
+and adds a ":h" modifier to indicate counting in hypervisor
+mode.  Specifying ":u" now sets both exclude_kernel and
+exclude_hv, and so on.  Multiple modes can be specified, e.g.
+":uk" will count in user or hypervisor mode (i.e. only
+exclude_kernel will be set).
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
-Cc: Anton Blanchard <anton@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1246419315-9968-4-git-send-email-fweisbec@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <19018.53826.843815.189847@cargo.ozlabs.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/util/callchain.c |  122 +++++++++++++++++++++++++++++++-----------
- 1 files changed, 90 insertions(+), 32 deletions(-)
+ tools/perf/util/parse-events.c |  232 +++++++++++++++++++++++++++------------
+ 1 files changed, 160 insertions(+), 72 deletions(-)
 
-diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
-index 6568cb1..440db12 100644
---- a/tools/perf/util/callchain.c
-+++ b/tools/perf/util/callchain.c
-@@ -4,6 +4,9 @@
-  * Handle the callchains from the stream in an ad-hoc radix tree and then
-  * sort them in an rbtree.
-  *
-+ * Using a radix for code path provides a fast retrieval and factorizes
-+ * memory use. Also that lets us use the paths in a hierarchical graph view.
-+ *
-  */
- 
- #include <stdlib.h>
-@@ -14,7 +17,8 @@
- #include "callchain.h"
- 
- 
--static void rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
-+static void
-+rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
- {
- 	struct rb_node **p = &root->rb_node;
- 	struct rb_node *parent = NULL;
-@@ -49,7 +53,12 @@ void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
- 		rb_insert_callchain(rb_root, node);
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 4d042f1..e6b83a3 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -184,16 +184,20 @@ char *event_name(int counter)
+ 	return "unknown";
  }
  
--static struct callchain_node *create_child(struct callchain_node *parent)
-+/*
-+ * Create a child for a parent. If inherit_children, then the new child
-+ * will become the new parent of it's parent children
-+ */
-+static struct callchain_node *
-+create_child(struct callchain_node *parent, bool inherit_children)
+-static int parse_aliases(const char *str, char *names[][MAX_ALIASES], int size)
++static int parse_aliases(const char **str, char *names[][MAX_ALIASES], int size)
  {
- 	struct callchain_node *new;
+ 	int i, j;
++	int n, longest = -1;
  
-@@ -61,14 +70,27 @@ static struct callchain_node *create_child(struct callchain_node *parent)
- 	new->parent = parent;
- 	INIT_LIST_HEAD(&new->children);
- 	INIT_LIST_HEAD(&new->val);
-+
-+	if (inherit_children) {
-+		struct callchain_node *next;
-+
-+		list_splice(&parent->children, &new->children);
-+		INIT_LIST_HEAD(&parent->children);
-+
-+		list_for_each_entry(next, &new->children, brothers)
-+			next->parent = new;
-+	}
- 	list_add_tail(&new->brothers, &parent->children);
- 
- 	return new;
- }
- 
-+/*
-+ * Fill the node with callchain values
-+ */
- static void
--fill_node(struct callchain_node *node, struct ip_callchain *chain, int start,
--	  struct symbol **syms)
-+fill_node(struct callchain_node *node, struct ip_callchain *chain,
-+	  int start, struct symbol **syms)
- {
- 	int i;
- 
-@@ -84,54 +106,80 @@ fill_node(struct callchain_node *node, struct ip_callchain *chain, int start,
- 		call->sym = syms[i];
- 		list_add_tail(&call->list, &node->val);
+ 	for (i = 0; i < size; i++) {
+-		for (j = 0; j < MAX_ALIASES; j++) {
+-			if (!names[i][j])
+-				break;
+-			if (strcasestr(str, names[i][j]))
+-				return i;
++		for (j = 0; j < MAX_ALIASES && names[i][j]; j++) {
++			n = strlen(names[i][j]);
++			if (n > longest && !strncasecmp(*str, names[i][j], n))
++				longest = n;
++		}
++		if (longest > 0) {
++			*str += longest;
++			return i;
+ 		}
  	}
--	node->val_nr = i - start;
-+	node->val_nr = chain->nr - start;
-+	if (!node->val_nr)
-+		printf("Warning: empty node in callchain tree\n");
- }
  
--static void add_child(struct callchain_node *parent, struct ip_callchain *chain,
--		      struct symbol **syms)
-+static void
-+add_child(struct callchain_node *parent, struct ip_callchain *chain,
-+	  int start, struct symbol **syms)
- {
- 	struct callchain_node *new;
- 
--	new = create_child(parent);
--	fill_node(new, chain, parent->val_nr, syms);
-+	new = create_child(parent, false);
-+	fill_node(new, chain, start, syms);
- 
- 	new->hit = 1;
- }
- 
-+/*
-+ * Split the parent in two parts (a new child is created) and
-+ * give a part of its callchain to the created child.
-+ * Then create another child to host the given callchain of new branch
-+ */
- static void
- split_add_child(struct callchain_node *parent, struct ip_callchain *chain,
--		struct callchain_list *to_split, int idx, struct symbol **syms)
-+		struct callchain_list *to_split, int idx_parents, int idx_local,
-+		struct symbol **syms)
- {
- 	struct callchain_node *new;
-+	struct list_head *old_tail;
-+	int idx_total = idx_parents + idx_local;
- 
- 	/* split */
--	new = create_child(parent);
--	list_move_tail(&to_split->list, &new->val);
--	new->hit = parent->hit;
--	parent->hit = 0;
--	parent->val_nr = idx;
-+	new = create_child(parent, true);
-+
-+	/* split the callchain and move a part to the new child */
-+	old_tail = parent->val.prev;
-+	list_del_range(&to_split->list, old_tail);
-+	new->val.next = &to_split->list;
-+	new->val.prev = old_tail;
-+	to_split->list.prev = &new->val;
-+	old_tail->next = &new->val;
- 
--	/* create the new one */
--	add_child(parent, chain, syms);
-+	/* split the hits */
-+	new->hit = parent->hit;
-+	new->val_nr = parent->val_nr - idx_local;
-+	parent->val_nr = idx_local;
-+
-+	/* create a new child for the new branch if any */
-+	if (idx_total < chain->nr) {
-+		parent->hit = 0;
-+		add_child(parent, chain, idx_total, syms);
-+	} else {
-+		parent->hit = 1;
-+	}
+@@ -201,30 +205,53 @@ static int parse_aliases(const char *str, char *names[][MAX_ALIASES], int size)
  }
  
  static int
- __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	       int start, struct symbol **syms);
- 
--static int
-+static void
- __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
--			struct symbol **syms)
-+			struct symbol **syms, int start)
+-parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
++parse_generic_hw_event(const char **str, struct perf_counter_attr *attr)
  {
- 	struct callchain_node *rnode;
+-	int cache_type = -1, cache_op = 0, cache_result = 0;
++	const char *s = *str;
++	int cache_type = -1, cache_op = -1, cache_result = -1;
  
- 	/* lookup in childrens */
- 	list_for_each_entry(rnode, &root->children, brothers) {
--		int ret = __append_chain(rnode, chain, root->val_nr, syms);
-+		int ret = __append_chain(rnode, chain, start, syms);
- 		if (!ret)
--			return 0;
-+			return;
- 	}
--	return -1;
-+	/* nothing in children, add to the current node */
-+	add_child(root, chain, start, syms);
+-	cache_type = parse_aliases(str, hw_cache, PERF_COUNT_HW_CACHE_MAX);
++	cache_type = parse_aliases(&s, hw_cache, PERF_COUNT_HW_CACHE_MAX);
+ 	/*
+ 	 * No fallback - if we cannot get a clear cache type
+ 	 * then bail out:
+ 	 */
+ 	if (cache_type == -1)
+-		return -EINVAL;
++		return 0;
++
++	while ((cache_op == -1 || cache_result == -1) && *s == '-') {
++		++s;
++
++		if (cache_op == -1) {
++			cache_op = parse_aliases(&s, hw_cache_op,
++						PERF_COUNT_HW_CACHE_OP_MAX);
++			if (cache_op >= 0) {
++				if (!is_cache_op_valid(cache_type, cache_op))
++					return 0;
++				continue;
++			}
++		}
++
++		if (cache_result == -1) {
++			cache_result = parse_aliases(&s, hw_cache_result,
++						PERF_COUNT_HW_CACHE_RESULT_MAX);
++			if (cache_result >= 0)
++				continue;
++		}
++
++		/*
++		 * Can't parse this as a cache op or result, so back up
++		 * to the '-'.
++		 */
++		--s;
++		break;
++	}
+ 
+-	cache_op = parse_aliases(str, hw_cache_op, PERF_COUNT_HW_CACHE_OP_MAX);
+ 	/*
+ 	 * Fall back to reads:
+ 	 */
+ 	if (cache_op == -1)
+ 		cache_op = PERF_COUNT_HW_CACHE_OP_READ;
+ 
+-	if (!is_cache_op_valid(cache_type, cache_op))
+-		return -EINVAL;
+-
+-	cache_result = parse_aliases(str, hw_cache_result,
+-					PERF_COUNT_HW_CACHE_RESULT_MAX);
+ 	/*
+ 	 * Fall back to accesses:
+ 	 */
+@@ -234,93 +261,154 @@ parse_generic_hw_symbols(const char *str, struct perf_counter_attr *attr)
+ 	attr->config = cache_type | (cache_op << 8) | (cache_result << 16);
+ 	attr->type = PERF_TYPE_HW_CACHE;
+ 
+-	return 0;
++	*str = s;
++	return 1;
  }
  
- static int
-@@ -142,14 +190,22 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 	int i = start;
- 	bool found = false;
+ static int check_events(const char *str, unsigned int i)
+ {
+-	if (!strncmp(str, event_symbols[i].symbol,
+-		     strlen(event_symbols[i].symbol)))
+-		return 1;
++	int n;
  
--	/* lookup in the current node */
-+	/*
-+	 * Lookup in the current node
-+	 * If we have a symbol, then compare the start to match
-+	 * anywhere inside a function.
-+	 */
- 	list_for_each_entry(cnode, &root->val, list) {
--		if (cnode->ip != chain->ips[i++])
-+		if (i == chain->nr)
-+			break;
-+		if (cnode->sym && syms[i]) {
-+			if (cnode->sym->start != syms[i]->start)
-+				break;
-+		} else if (cnode->ip != chain->ips[i])
- 			break;
- 		if (!found)
- 			found = true;
--		if (i == chain->nr)
--			break;
-+		i++;
- 	}
- 
- 	/* matches not, relay on the parent */
-@@ -157,23 +213,25 @@ __append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		return -1;
- 
- 	/* we match only a part of the node. Split it and add the new chain */
--	if (i < root->val_nr) {
--		split_add_child(root, chain, cnode, i, syms);
-+	if (i - start < root->val_nr) {
-+		split_add_child(root, chain, cnode, start, i - start, syms);
- 		return 0;
- 	}
- 
- 	/* we match 100% of the path, increment the hit */
--	if (i == root->val_nr) {
-+	if (i - start == root->val_nr && i == chain->nr) {
- 		root->hit++;
- 		return 0;
- 	}
- 
--	return __append_chain_children(root, chain, syms);
-+	/* We match the node and still have a part remaining */
-+	__append_chain_children(root, chain, syms, i);
+-	if (strlen(event_symbols[i].alias))
+-		if (!strncmp(str, event_symbols[i].alias,
+-			     strlen(event_symbols[i].alias)))
+-			return 1;
++	n = strlen(event_symbols[i].symbol);
++	if (!strncmp(str, event_symbols[i].symbol, n))
++		return n;
 +
++	n = strlen(event_symbols[i].alias);
++	if (n)
++		if (!strncmp(str, event_symbols[i].alias, n))
++			return n;
+ 	return 0;
+ }
+ 
+-/*
+- * Each event can have multiple symbolic names.
+- * Symbolic names are (almost) exactly matched.
+- */
+-static int parse_event_symbols(const char *str, struct perf_counter_attr *attr)
++static int
++parse_symbolic_event(const char **strp, struct perf_counter_attr *attr)
+ {
+-	u64 config, id;
+-	int type;
++	const char *str = *strp;
+ 	unsigned int i;
+-	const char *sep, *pstr;
++	int n;
+ 
+-	if (str[0] == 'r' && hex2u64(str + 1, &config) > 0) {
+-		attr->type = PERF_TYPE_RAW;
+-		attr->config = config;
++	for (i = 0; i < ARRAY_SIZE(event_symbols); i++) {
++		n = check_events(str, i);
++		if (n > 0) {
++			attr->type = event_symbols[i].type;
++			attr->config = event_symbols[i].config;
++			*strp = str + n;
++			return 1;
++		}
++	}
 +	return 0;
++}
++
++static int parse_raw_event(const char **strp, struct perf_counter_attr *attr)
++{
++	const char *str = *strp;
++	u64 config;
++	int n;
+ 
++	if (*str != 'r')
+ 		return 0;
++	n = hex2u64(str + 1, &config);
++	if (n > 0) {
++		*strp = str + n + 1;
++		attr->type = PERF_TYPE_RAW;
++		attr->config = config;
++		return 1;
+ 	}
++	return 0;
++}
+ 
+-	pstr = str;
+-	sep = strchr(pstr, ':');
+-	if (sep) {
+-		type = atoi(pstr);
+-		pstr = sep + 1;
+-		id = atoi(pstr);
+-		sep = strchr(pstr, ':');
+-		if (sep) {
+-			pstr = sep + 1;
+-			if (strchr(pstr, 'k'))
+-				attr->exclude_user = 1;
+-			if (strchr(pstr, 'u'))
+-				attr->exclude_kernel = 1;
++static int
++parse_numeric_event(const char **strp, struct perf_counter_attr *attr)
++{
++	const char *str = *strp;
++	char *endp;
++	unsigned long type;
++	u64 config;
++
++	type = strtoul(str, &endp, 0);
++	if (endp > str && type < PERF_TYPE_MAX && *endp == ':') {
++		str = endp + 1;
++		config = strtoul(str, &endp, 0);
++		if (endp > str) {
++			attr->type = type;
++			attr->config = config;
++			*strp = endp;
++			return 1;
+ 		}
+-		attr->type = type;
+-		attr->config = id;
++	}
++	return 0;
++}
++
++static int
++parse_event_modifier(const char **strp, struct perf_counter_attr *attr)
++{
++	const char *str = *strp;
++	int eu = 1, ek = 1, eh = 1;
+ 
++	if (*str++ != ':')
+ 		return 0;
++	while (*str) {
++		if (*str == 'u')
++			eu = 0;
++		else if (*str == 'k')
++			ek = 0;
++		else if (*str == 'h')
++			eh = 0;
++		else
++			break;
++		++str;
+ 	}
++	if (str >= *strp + 2) {
++		*strp = str;
++		attr->exclude_user   = eu;
++		attr->exclude_kernel = ek;
++		attr->exclude_hv     = eh;
++		return 1;
++	}
++	return 0;
++}
+ 
+-	for (i = 0; i < ARRAY_SIZE(event_symbols); i++) {
+-		if (check_events(str, i)) {
+-			attr->type = event_symbols[i].type;
+-			attr->config = event_symbols[i].config;
++/*
++ * Each event can have multiple symbolic names.
++ * Symbolic names are (almost) exactly matched.
++ */
++static int parse_event_symbols(const char **str, struct perf_counter_attr *attr)
++{
++	if (!(parse_raw_event(str, attr) ||
++	      parse_numeric_event(str, attr) ||
++	      parse_symbolic_event(str, attr) ||
++	      parse_generic_hw_event(str, attr)))
++		return 0;
+ 
+-			return 0;
+-		}
+-	}
++	parse_event_modifier(str, attr);
+ 
+-	return parse_generic_hw_symbols(str, attr);
++	return 1;
  }
  
- void append_chain(struct callchain_node *root, struct ip_callchain *chain,
- 		  struct symbol **syms)
+ int parse_events(const struct option *opt, const char *str, int unset)
  {
--	if (__append_chain_children(root, chain, syms) == -1)
--		add_child(root, chain, syms);
-+	__append_chain_children(root, chain, syms, 0);
- }
+ 	struct perf_counter_attr attr;
+-	int ret;
+ 
+-	memset(&attr, 0, sizeof(attr));
+-again:
+-	if (nr_counters == MAX_COUNTERS)
+-		return -1;
++	for (;;) {
++		if (nr_counters == MAX_COUNTERS)
++			return -1;
++
++		memset(&attr, 0, sizeof(attr));
++		if (!parse_event_symbols(&str, &attr))
++			return -1;
+ 
+-	ret = parse_event_symbols(str, &attr);
+-	if (ret < 0)
+-		return ret;
++		if (!(*str == 0 || *str == ',' || isspace(*str)))
++			return -1;
+ 
+-	attrs[nr_counters] = attr;
+-	nr_counters++;
++		attrs[nr_counters] = attr;
++		nr_counters++;
+ 
+-	str = strstr(str, ",");
+-	if (str) {
+-		str++;
+-		goto again;
++		if (*str == 0)
++			break;
++		if (*str == ',')
++			++str;
++		while (isspace(*str))
++			++str;
+ 	}
+ 
+ 	return 0;
