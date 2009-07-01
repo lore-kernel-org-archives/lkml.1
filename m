@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbZGASrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZGAStT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbZGASrS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGASrJ
+	id S1755218AbZGAStT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGAStM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:47:09 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:46873 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbZGASrI convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 14:49:12 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:63209 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056AbZGAStL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:47:08 -0400
-MIME-Version: 1.0
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901A13854@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901A13822@mi8nycmail19.Mi8.com> 
-	<ac3eb2510907011055r5d5f06c1k754e52ebae88efab@mail.gmail.com> 
-	<BD79186B4FD85F4B8E60E381CAEE190901A1383F@mi8nycmail19.Mi8.com> 
-	<ac3eb2510907011112k690e5c38y2a8871dde5db1f13@mail.gmail.com> 
-	<BD79186B4FD85F4B8E60E381CAEE190901A13854@mi8nycmail19.Mi8.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 1 Jul 2009 20:46:55 +0200
-Message-ID: <ac3eb2510907011146o25204845i9deb0ebdd114f655@mail.gmail.com>
-Subject: Re: Problem with /proc/iomem on ARM
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 1 Jul 2009 14:49:11 -0400
+From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+To: linux-kernel@vger.kernel.org
+Cc: v9fs-developer@lists.sourceforge.net,
+       Abhishek Kulkarni <adkulkar@umail.iu.edu>
+Subject: [9P PATCH 1/2] 9p: Fix incorrect parameters to v9fs_file_readn.
+Date: Wed,  1 Jul 2009 12:50:53 -0600
+Message-Id: <1246474254-10401-1-git-send-email-adkulkar@umail.iu.edu>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 20:24, H Hartley
-Sweeten<hartleys@visionengravers.com> wrote:
-> On Wednesday, July 01, 2009 11:13 AM, Kay Sievers wrote:
->>> The serial ports on my system are amba bus devices.
->>>
->>>> After all, it seems like this should be fixed in arm somewhere, not to
->>>> copy and store internal driver core pointers, but use the device
->>>> itself to retrieve the values.
->>>
->>> Maybe the problem is in drivers/amba/bus.c? amba_device_register() does:
->>>
->>>        dev->res.name = dev_name(&dev->dev);
->>
->> Looks like. If you get the name directly from dev->init_name. Does that work?
->>
->
-> The following patch does fix /proc/iomem for the amba uarts on my system.
-> Is this the correct approach to fixing the issue?
+Fix v9fs_vfs_readpage. The offset and size parameters to v9fs_file_readn
+were interchanged and hence passed incorrectly.
 
-Looks fine to work around the issue that statically allocated struct
-devices can cause. The proper fix would be to convert them to dynamic
-objects and get rid of .init_name entirely.
+Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+---
+:100644 100644 6fcb1e7... 9282828... M	fs/9p/vfs_addr.c
+ fs/9p/vfs_addr.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Kay
+diff --git a/fs/9p/vfs_addr.c b/fs/9p/vfs_addr.c
+index 6fcb1e7..9282828 100644
+--- a/fs/9p/vfs_addr.c
++++ b/fs/9p/vfs_addr.c
+@@ -57,7 +57,7 @@ static int v9fs_vfs_readpage(struct file *filp, struct page *page)
+ 	buffer = kmap(page);
+ 	offset = page_offset(page);
+ 
+-	retval = v9fs_file_readn(filp, buffer, NULL, offset, PAGE_CACHE_SIZE);
++	retval = v9fs_file_readn(filp, buffer, NULL, PAGE_CACHE_SIZE, offset);
+ 	if (retval < 0)
+ 		goto done;
+ 
+-- 
+1.6.3.3
+
