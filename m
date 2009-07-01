@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZGAQ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZGAQ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754293AbZGAQ1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZGAQ1G
+	id S1754983AbZGAQ12 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbZGAQ1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:27:06 -0400
-Received: from carryall.technologeek.org ([62.4.18.94]:42361 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752900AbZGAQ1G (ORCPT
+	Wed, 1 Jul 2009 12:27:13 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:45364 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754244AbZGAQ1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:27:06 -0400
-From: Julien BLACHE <jb@jblache.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <gregkh@suse.de>,
-       felixb@sgi.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [patch 000/108] 2.6.30-stable review
-References: <20090701002838.GA7100@kroah.com>
-	<87tz1wd4vi.fsf@sonic.technologeek.org>
-	<4A4B7A77.8010208@s5r6.in-berlin.de>
-	<87hbxwcswp.fsf@sonic.technologeek.org>
-	<43e72e890907010922t7bd80108xa3caaf4decfd87a6@mail.gmail.com>
-Date: Wed, 01 Jul 2009 18:27:07 +0200
-In-Reply-To: <43e72e890907010922t7bd80108xa3caaf4decfd87a6@mail.gmail.com>
-	(Luis R. Rodriguez's message of "Wed, 1 Jul 2009 09:22:23 -0700")
-Message-ID: <87d48kcqsk.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Jul 2009 12:27:11 -0400
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, <stable@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] fb: move mutex_init to framebuffer_alloc()
+Date: Wed,  1 Jul 2009 18:26:46 +0200
+Message-Id: <1246465606-29346-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+In 537a1bf05, a per-fbinfo mutex was added and framebuffer drivers were
+adopted accordingly. This new lock is currently initialized in
+register_framebuffer().
 
-Hi,
+The mx3fb driver takes this lock in mx3fb_map_video_memory() _before_
+register_framebuffer() is called and hence crashes the system very
+early.
 
->> Actually I was under the impression that the proper request had been
->> made for inclusion into -stable, but it looks like it's not been done
->> after all.
->>
->> So, here goes.
->
-> Better inline.
+Moving this mutex_init() to framebuffer_alloc() solves this and also
+seems a lot more straight forward.
 
-Crap, I got tricked by the inline thing again. Sorry, properly inlined
-this time.
-
-JB.
-
--- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
-
-
-
-From: Felix Blyakher <felixb@sgi.com>
-Date: Thu, 11 Jun 2009 22:07:28 +0000 (-0500)
-Subject: xfs: fix freeing memory in xfs_getbmap()
-X-Git-Url: http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs%2Fxfs.git;a=commitdiff_plain;h=7747a0b0af5976ba3828796b4f7a7adc3bb76dbd
-
-xfs: fix freeing memory in xfs_getbmap()
-
-Regression from commit 28e211700a81b0a934b6c7a4b8e7dda843634d2f.
-Need to free temporary buffer allocated in xfs_getbmap().
-
-Signed-off-by: Felix Blyakher <felixb@sgi.com>
-Signed-off-by: Hedi Berriche <hedi@sgi.com>
-Reported-by: Justin Piszcz <jpiszcz@lucidpixels.com>
-Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc:: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: <stable@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
+ drivers/video/fbmem.c   |    3 ---
+ drivers/video/fbsysfs.c |    3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
-index 4b0f6ef..7928b99 100644
---- a/fs/xfs/xfs_bmap.c
-+++ b/fs/xfs/xfs_bmap.c
-@@ -6086,6 +6086,7 @@ xfs_getbmap(
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 53ea056..1d8d098 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -1513,9 +1513,6 @@ register_framebuffer(struct fb_info *fb_info)
+ 		if (!registered_fb[i])
  			break;
- 	}
+ 	fb_info->node = i;
+-	mutex_init(&fb_info->lock);
+-	mutex_init(&fb_info->mm_lock);
+-
+ 	fb_info->dev = device_create(fb_class, fb_info->device,
+ 				     MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
+ 	if (IS_ERR(fb_info->dev)) {
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index d4a2c11..60ddd1d 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -58,6 +58,9 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
  
-+	kmem_free(out);
- 	return error;
- }
+ 	info->device = dev;
  
++	mutex_init(&info->lock);
++	mutex_init(&info->mm_lock);
++
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	mutex_init(&info->bl_curve_mutex);
+ #endif
+-- 
+1.6.3.1
+
