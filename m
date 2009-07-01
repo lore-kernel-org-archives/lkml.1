@@ -1,78 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963AbZGAOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZGAOzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963AbZGAOvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbZGAOvM
+	id S1753136AbZGAOzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:55:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbZGAOzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:51:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35088 "EHLO mx2.redhat.com"
+	Wed, 1 Jul 2009 10:55:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35522 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752781AbZGAOvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:51:11 -0400
-Date: Wed, 1 Jul 2009 16:48:16 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       earl_chew@agilent.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v4)
-Message-ID: <20090701144816.GA26536@redhat.com>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090630173836.GA15612@hmsreliant.think-freely.org> <20090630174634.GD15612@hmsreliant.think-freely.org> <20090701055151.GB26877@redhat.com> <20090701103109.GA29601@hmsreliant.think-freely.org> <20090701122533.GA11411@redhat.com> <20090701141220.GC29601@hmsreliant.think-freely.org>
+	id S1751827AbZGAOzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:55:07 -0400
+Date: Wed, 1 Jul 2009 14:54:35 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joerg.roedel@amd.com, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1246458194.6940.20.camel@hpdv5.satnam>
+References: <1246458194.6940.20.camel@hpdv5.satnam>
+Subject: [tip:x86/urgent] x86: Mark device_nb as static and fix NULL noise
+Message-ID: <tip-b25ae679f613ed04aaf6ccbfdb9122fce668e4bb@git.kernel.org>
+Git-Commit-ID: b25ae679f613ed04aaf6ccbfdb9122fce668e4bb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090701141220.GC29601@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 14:54:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01, Neil Horman wrote:
->
-> On Wed, Jul 01, 2009 at 02:25:33PM +0200, Oleg Nesterov wrote:
-> > On 07/01, Neil Horman wrote:
-> > >
-> > > On Wed, Jul 01, 2009 at 07:52:57AM +0200, Oleg Nesterov wrote:
-> > > > > This extra count is reclaimed in
-> > > > > +		 * wait_for_dump_helpers
-> > > > > +		 */
-> > > > > +		pipe = file->f_path.dentry->d_inode->i_pipe;
-> > > > > +		pipe_lock(pipe);
-> > > > > +		pipe->readers++;
-> > > > > +		pipe_unlock(pipe);
-> > > >
-> > > > why should we inc ->readers in advance?
-> > > >
-> > > Read the comment immediately above it and look at the filp_close path.  We inc
-> > > ->readers in advance so as to prevent pipe_inode_info getting freed between the
-> > > time we write out the core file and the time we wait on the pipe.
-> >
-> > Can't understand.
-> >
-> > call_usermodehelper_stdinpipe() creates 2 files, both share the same
-> > inode/pipe_inode_info (->f_path actually).
-> >
-> > Until we close the file returned by call_usermodehelper_pipe(),
-> > pipe_inode_info can't go away.
-> >
-> > > If the
-> > > userspace helper exits in between those points we inode->i_pipe will be null by
-> > > the time we get to wait_for_dump_helpers.
-> >
-> > See above. Can't understand how this can happen.
-> >
-> Yes, I apologize, in reviewing that code, I don't see how it could happen
-> either.  I think that I must have changed to things at once and gotten erroneous
-> results in my testing (most likely I did the wait_for_dump_helpers after the
-> filp_close and that cause the race).
+Commit-ID:  b25ae679f613ed04aaf6ccbfdb9122fce668e4bb
+Gitweb:     http://git.kernel.org/tip/b25ae679f613ed04aaf6ccbfdb9122fce668e4bb
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Wed, 1 Jul 2009 19:53:14 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Jul 2009 16:52:53 +0200
 
-Yes, this can explain the bug you hit.
+x86: Mark device_nb as static and fix NULL noise
 
-Anyway. I appiled my patch and tested it with "!/bin/true" in
-proc/sys/core_pattern. It works even if I add
-schedule_timeout_interruptible(3*HZ) before binfmt->core_dump()
-to make sure core_pattern task exits before we start to wait.
+This sparse warning:
 
-Oleg.
+  arch/x86/kernel/amd_iommu.c:1195:23: warning: symbol 'device_nb' was not declared. Should it be static?
 
+triggers because device_nb is global but is only used in a
+single .c file. change device_nb to static to fix that - this
+also addresses the sparse warning.
+
+This sparse warning:
+
+  arch/x86/kernel/amd_iommu.c:1766:10: warning: Using plain integer as NULL pointer
+
+triggers because plain integer 0 is used in place of a NULL
+pointer. change 0 to NULL to fix that - this also address the
+sparse warning.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+LKML-Reference: <1246458194.6940.20.camel@hpdv5.satnam>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/amd_iommu.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index 9372f04..6c99f50 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -1192,7 +1192,7 @@ out:
+ 	return 0;
+ }
+ 
+-struct notifier_block device_nb = {
++static struct notifier_block device_nb = {
+ 	.notifier_call = device_change_notifier,
+ };
+ 
+@@ -1763,7 +1763,7 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	flag |= __GFP_ZERO;
+ 	virt_addr = (void *)__get_free_pages(flag, get_order(size));
+ 	if (!virt_addr)
+-		return 0;
++		return NULL;
+ 
+ 	paddr = virt_to_phys(virt_addr);
+ 
