@@ -1,98 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZGAJmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZGAJnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZGAJmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbZGAJmn
+	id S1755339AbZGAJnH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbZGAJmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:42:43 -0400
-Received: from ns.dcl.info.waseda.ac.jp ([133.9.216.194]:62744 "EHLO
-	ns.dcl.info.waseda.ac.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754034AbZGAJmn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:42:43 -0400
-Date: Wed, 01 Jul 2009 18:42:32 +0900 (JST)
-Message-Id: <20090701.184232.131509470674490734.mitake@dcl.info.waseda.ac.jp>
-To: mingo@elte.hu
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
- how many spinlocks to schedstat
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-In-Reply-To: <20090701090749.GA13535@elte.hu>
-References: <87hbxwj1k3.fsf@basil.nowhere.org>
-	<20090701.174226.419764642024067218.mitake@dcl.info.waseda.ac.jp>
-	<20090701090749.GA13535@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Wed, 1 Jul 2009 05:42:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49531 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755175AbZGAJmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:42:52 -0400
+Message-ID: <4A4B3007.7080303@redhat.com>
+Date: Wed, 01 Jul 2009 12:44:39 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v6 3/4] KVM: Fix races in irqfd using new	eventfd_kref_get
+ interface
+References: <20090629153627.31959.76947.stgit@dev.haskins.net> <20090629154415.31959.2666.stgit@dev.haskins.net> <20090629161159.GB22029@redhat.com> <4A48F148.5030501@novell.com>
+In-Reply-To: <4A48F148.5030501@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n619gwoU024970
 
-From: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-Date: Wed, 1 Jul 2009 11:07:49 +0200
+On 06/29/2009 07:52 PM, Gregory Haskins wrote:
+>
+>>    One idea I had to make it even clearer was to have a shutdown list
+>> of irqfds per-kvm, together with the items list, and make work_struct for
+>> shutdown global, not per-irqfd.  We can then unconditionally do
+>> list_move + schedule_work to shut down an irqfd, and it's safe to do
+>> even if it is already on the shutdown list - it just gets moved to tail.
+>>
+>>      
+>
+> Hmm..I'm not sure that churn really buys us anything, tho.  Technically
+> the "active" bit is redundant with list_del_init()+list_empty() that I
+> employed in previous versions.  However, I made it explicit with the
+> active bit to be more self-documenting.  IMO, the latest code is pretty
+> clear, and the change you are proposing is moving towards a slightly
+> trickier variant like I originally had.  I'd say "lets leave this as is".
+>    
 
-> 
-> * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> 
-> > From: Andi Kleen <andi@firstfloor.org>
-> > Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-> > Date: Wed, 01 Jul 2009 09:38:04 +0200
-> > 
-> > > Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
-> > > 
-> > > > Hi,
-> > > >
-> > > > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
-> > > > After applied this patch, /proc/<PID>/sched will change like this,
-> > > 
-> > > The problem is that spinlocks are very common and schedstats is 
-> > > enabled commonly in production kernels. You would need to 
-> > > demonstrate that such a change doesn't have significant 
-> > > performance impact. For me it looks like it has.
-> > 
-> > I agree with your opinion about performance impact.
-> > I thought this will make no problem,
-> > because schedstat is categorized as "Kernel hacking" section.
-> > But according to you, many production kernels enable it
-> > so my patch will make widespread performance degradation.
-> > I didn't know that, sorry.
-> 
-> His arguments are bogus: both lockstat and perfcounters are optional 
-> (and default off), and the sw counter can be made near zero cost 
-> even if both perfcounters and lockstat is enabled. Also, sw counters 
-> are generally per CPU, etc. so not a performance issue.
-> 
-> The only (small) overhead will be when the lock-acquire sw counter 
-> is actively enabled because you run 'perf stat -e lock-acquire' - 
-> but that is expected and inherent in pretty much any kind of 
-> instrumentation.
-> 
-> The feature you are working on has the chance to be a very useful 
-> and popular piece of instrumentation. Being able to tell the lock 
-> acquire stats on a per task, per workload, per CPU or system-wide 
-> basis is a unique capability no other tool can offer right now.
-> 
-> Andi is often trolling perfcounters related (and other) threads, 
-> please dont let yourself be deterred by that and feel free to ignore 
-> him.
-OK, at least it is truth that
-counter in perfcounters makes only valid overhead.
+Could retain self documentation by introducing a helper irqfd_active() 
+which does the list_blah() magic.
 
-And I have a question,
-I tried to build perf, but I got a build error,
+-- 
+error compiling committee.c: too many arguments to function
 
-util/symbol.c: In function â€˜dso__load_symâ€™:
-util/symbol.c:466: error: â€˜ELF_C_READ_MMAPâ€™ undeclared (first use in this function)
-util/symbol.c:466: error: (Each undeclared identifier is reported only once
-util/symbol.c:466: error: for each function it appears in.)
-
-I used this libelf,
-http://www.mr511.de/software/english.html
-but constant ELF_C_READ_MMAP is not provided...
-
-which "libelf" should I use?
-It seems that there are some libelf implementations.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
