@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbZGABQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbZGABSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480AbZGABQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761624AbZGAAf5
+	id S1765638AbZGABSK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761585AbZGAAf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:57 -0400
-Received: from kroah.org ([198.145.64.141]:60735 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:59 -0400
+Received: from kroah.org ([198.145.64.141]:60743 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761570AbZGAAfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:50 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:43 2009
-Message-Id: <20090701002443.452696983@mini.kroah.org>
+	id S1761590AbZGAAfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:44 2009
+Message-Id: <20090701002444.090084909@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:30 -0700
+Date: Tue, 30 Jun 2009 17:24:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <cl@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: [patch 101/108] vmscan: count the number of times zone_reclaim() scans and fails
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 103/108] CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=vmscan-count-the-number-of-times-zone_reclaim-scans-and-fails.patch
+Content-Disposition: inline; filename=config_file_locking-should-not-depend-on-config_block.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,75 +29,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mel Gorman <mel@csn.ul.ie>
+From: Tomas Szepe <szepe@pinerecords.com>
 
-commit 24cf72518c79cdcda486ed26074ff8151291cf65 upstream.
+commit 69050eee8e08a6234f29fe71a56f8c7c7d4d7186 upstream.
 
-On NUMA machines, the administrator can configure zone_reclaim_mode that
-is a more targetted form of direct reclaim.  On machines with large NUMA
-distances for example, a zone_reclaim_mode defaults to 1 meaning that
-clean unmapped pages will be reclaimed if the zone watermarks are not
-being met.
+CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK.
 
-There is a heuristic that determines if the scan is worthwhile but it is
-possible that the heuristic will fail and the CPU gets tied up scanning
-uselessly.  Detecting the situation requires some guesswork and
-experimentation so this patch adds a counter "zreclaim_failed" to
-/proc/vmstat.  If during high CPU utilisation this counter is increasing
-rapidly, then the resolution to the problem may be to set
-/proc/sys/vm/zone_reclaim_mode to 0.
+This makes it possible to run complete systems out of a CONFIG_BLOCK=n
+initramfs on current kernels again (this last worked on 2.6.27.*).
 
-[akpm@linux-foundation.org: name things consistently]
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/vmstat.h |    3 +++
- mm/vmscan.c            |    3 +++
- mm/vmstat.c            |    3 +++
- 3 files changed, 9 insertions(+)
+ fs/Kconfig |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
---- a/include/linux/vmstat.h
-+++ b/include/linux/vmstat.h
-@@ -36,6 +36,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
- 		FOR_ALL_ZONES(PGSTEAL),
- 		FOR_ALL_ZONES(PGSCAN_KSWAPD),
- 		FOR_ALL_ZONES(PGSCAN_DIRECT),
-+#ifdef CONFIG_NUMA
-+		PGSCAN_ZONE_RECLAIM_FAILED,
-+#endif
- 		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
- 		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
- #ifdef CONFIG_HUGETLB_PAGE
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2452,6 +2452,9 @@ int zone_reclaim(struct zone *zone, gfp_
- 	ret = __zone_reclaim(zone, gfp_mask, order);
- 	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -39,6 +39,13 @@ config FS_POSIX_ACL
+ 	bool
+ 	default n
  
-+	if (!ret)
-+		count_vm_event(PGSCAN_ZONE_RECLAIM_FAILED);
++source "fs/xfs/Kconfig"
++source "fs/gfs2/Kconfig"
++source "fs/ocfs2/Kconfig"
++source "fs/btrfs/Kconfig"
 +
- 	return ret;
- }
- #endif
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -675,6 +675,9 @@ static const char * const vmstat_text[] 
- 	TEXTS_FOR_ZONES("pgscan_kswapd")
- 	TEXTS_FOR_ZONES("pgscan_direct")
++endif # BLOCK
++
+ config FILE_LOCKING
+ 	bool "Enable POSIX file locking API" if EMBEDDED
+ 	default y
+@@ -47,13 +54,6 @@ config FILE_LOCKING
+           for filesystems like NFS and for the flock() system
+           call. Disabling this option saves about 11k.
  
-+#ifdef CONFIG_NUMA
-+	"zone_reclaim_failed",
-+#endif
- 	"pginodesteal",
- 	"slabs_scanned",
- 	"kswapd_steal",
+-source "fs/xfs/Kconfig"
+-source "fs/gfs2/Kconfig"
+-source "fs/ocfs2/Kconfig"
+-source "fs/btrfs/Kconfig"
+-
+-endif # BLOCK
+-
+ source "fs/notify/Kconfig"
+ 
+ source "fs/quota/Kconfig"
 
 
