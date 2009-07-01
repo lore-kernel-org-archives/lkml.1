@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbZGANhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZGANip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbZGANhi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZGANh0
+	id S1753353AbZGANip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZGANii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:37:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36978 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750981AbZGANhZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:37:25 -0400
-Date: Wed, 1 Jul 2009 14:38:44 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: tridge@samba.org
-Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090701143844.07728fdf@lxorguk.ukuu.org.uk>
-In-Reply-To: <19019.25035.244941.352337@samba.org>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-	<20090701123141.402c17d2@lxorguk.ukuu.org.uk>
-	<19019.25035.244941.352337@samba.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Jul 2009 09:38:38 -0400
+Received: from co203.xi-lite.net ([149.6.83.203]:57188 "EHLO co203.xi-lite.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZGANii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:38:38 -0400
+X-Greylist: delayed 1359 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 09:38:38 EDT
+Message-ID: <4A4B6184.7000903@parrot.com>
+Date: Wed, 1 Jul 2009 15:15:48 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: <sdhci-devel@lists.ossman.eu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       <pierre@ossman.eu>
+Subject: sdhci can turn off irq up to 200 ms
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> yes, vendors can make the patch unconditional of course. I thought
-> that we were not trying to encourage divergance between the kernel.org
-> tree and the vendor trees though? I know some divergance is always
-> going to happen, but it seems counter productive to be encouraging it.
+Hi,
 
-What about all the other damage vendors do to the tree and the junk they
-stuff in their kernels - we don't accept that upstream either ?
+sdhci code got tasklets (sdhci_tasklet_card and sdhci_tasklet_finish),
+that does :
+{
+spin_lock_irqsave
 
-> 
->  > Its a standard usage pattern for some people. Think about Linux based
->  > commodity devices such as the N770 and plugging it into the users general
->  > purpose PC box. Whenever it got pulled out wrongly it *will* get a chkdsk
->  > in Windows.
-> 
-> really? I haven't noticed that behaviour for removable devices in
-> windows. You can manually set a drive to be checked on reboot, but I
-> wasn't aware of any automatic chkdsk mechanism for VFAT removable
-> media in windows. Have you seen this yourself?
+if (cond) {
+sdhci_reset
+sdhci_reset
+}
 
-Its manual unless the device is visibly corrupted but it should still
-work. The point I was making is that the world of "Windows PC & Linux
-handheld device" is an important one.
+spin_unlock_irqrestore
+}
 
-> lot of the time. If people manually ran windows chkdsk on removable
-> VFAT media created on Linux then they also would have hit this and I
-> would have expected at least someone to have mentioned it.
+The problem is that sdhci_reset [1] does busy pooling on a register up
+to a timeout of 100 ms.
+That's not low latency friendly.
 
-Devices come formatted for VFAT already - and I can't duplicate your bug
-report on a USB key here so presumably some specific size/defaults are
-needed ? (Would be good to fix that anyway)
+On our system, we saw that sdhci_reset take 1 ms. That should be because
+we enter in mdelay, even if the hardware clears the bit faster.
+I wonder why there is an mdelay(1). Using cpu_relax and
+time_is_after_jiffies should make sdhci_reset faster.
+
+
+Matthieu
+
+[1]
+static void sdhci_reset(struct sdhci_host *host, u8 mask)
+{
+    unsigned long timeout;
+    u32 uninitialized_var(ier);
+[...]
+    sdhci_writeb(host, mask, SDHCI_SOFTWARE_RESET);
+
+    if (mask & SDHCI_RESET_ALL)
+        host->clock = 0;
+
+    /* Wait max 100 ms */
+    timeout = 100;
+
+    /* hw clears the bit when it's done */
+    while (sdhci_readb(host, SDHCI_SOFTWARE_RESET) & mask) {
+        if (timeout == 0) {
+            printk(KERN_ERR "%s: Reset 0x%x never completed.\n",
+                mmc_hostname(host->mmc), (int)mask);
+            sdhci_dumpregs(host);
+            return;
+        }
+        timeout--;
+        mdelay(1);
+    }
+[...]
+}
