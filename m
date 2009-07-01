@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbZGAOFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZGAOH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbZGAOFf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZGAOF0
+	id S1754254AbZGAOH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZGAOHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:05:26 -0400
-Received: from thunk.org ([69.25.196.29]:42449 "EHLO thunker.thunk.org"
+	Wed, 1 Jul 2009 10:07:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38799 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752936AbZGAOFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:05:25 -0400
-Date: Wed, 1 Jul 2009 10:05:03 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090701140503.GA21185@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-	tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	john.lanza@linux.com, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-	Paul McKenney <paulmck@linux.vnet.ibm.com>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	id S1751752AbZGAOHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:07:19 -0400
+Date: Wed, 1 Jul 2009 14:06:32 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A4B2351.5010300@cn.fujitsu.com>
+References: <4A4B2351.5010300@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] tracing: Fix trace_print_seq()
+Message-ID: <tip-5c37f525657e879a17a27c83021602cd55837531@git.kernel.org>
+Git-Commit-ID: 5c37f525657e879a17a27c83021602cd55837531
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 14:06:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 12:25:58PM +0100, Alan Cox wrote:
-> 
-> Also please stop calling it VFAT. With the changes made it isn't VFAT and
-> it's misleading to an end user to advertise it as vfat and users
-> shouldn't accidentally be able to specify -o vfat and get non-vfat. Thats
-> asking for incompatibility, data loss and unpleasant unwarned of suprises.
+Commit-ID:  5c37f525657e879a17a27c83021602cd55837531
+Gitweb:     http://git.kernel.org/tip/5c37f525657e879a17a27c83021602cd55837531
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Wed, 1 Jul 2009 16:50:25 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Jul 2009 16:03:50 +0200
 
-There really was no such thing as "vfat" anyway.  VFAT in the Windows
-world names a specific implementation (the "V" stands for virtual)
-back in the days when Windows 3.1 was primarily a 16-bit OS, and there
-were two instances of the "fat" filesystem code; one for the 16 bit
-implementation, and one for 32-bit applications.  As it happened the
-32-bit implementation under Windows 3.1 happened to contain support
-for the Long File Names extension, and due to this confusion of
-implementation vs. specification, in Linux is misnamed something as
-"vfat" when most of the rest of the world simply just calls it "FAT".
+tracing: Fix trace_print_seq()
 
-Arguably what we should have done is kept it as a single filesystem,
-with a mount options "lfn" and "nolfn", but that's water under the
-bridge now.
+We will lose something if trace_seq->buffer[0] is 0, because the copy length
+is calculated by strlen() in seq_puts(), so using seq_write() instead of
+seq_puts().
 
-> (most *FAT using products don't use Microsofts
-> implementation). Testing it versus Windows and saying it works is
-> not really adequate. Thats what ACPI and BIOS people do that *we*
-> moan about all the time.
+There have a example:
+after reboot:
 
-This *is* a legitimate concern.  I'll note that many of the modern-day
-products actually use Linux (i.e., the Sony eReader, the Kindle,
-etc. --- and so as much as you might kvetch about the rest of the
-"Free World" not having the same broken patent system as the US, the
-economic realities of these products losing access to the US market
-would be quite devastating to most of these products' manufacturers
-even if some of them are developed and manufactured outside of the
-US), and so doing compatibility testing with Linux is relatively easy.
+ # echo kmemtrace > current_tracer
+ # echo 0 > options/kmem_minimalistic
+ # cat trace
+ # tracer: kmemtrace
+ #
+ #
 
-The other big user I can think of are digital cameras, but (a)
-normally most users read from them and then delete the pictures, and
-rarely write to media meant for a digital camera, and (b) the DCIM
-standard for digital cameras explicitly only supports 8.3 filenames
-and so digital camera manufacturers explicitly don't need to deal with
-Long File Names at all.  (Hmm.... I wonder why....)  
+Nothing is exported, because the first byte of trace_seq->buffer[ ]
+is KMEMTRACE_USER_ALLOC.
 
-This suggests that some userspace mechanism for detecting media cards
-used for cameras and explicitly mounting them with FAT might be useful
---- since the camera isn't going to be able to recognize LFN's anyway.
-It also suggests that some testing to make sure there aren't bugs in
-various non-Linux FAT using devices would probably be useful, and that
-a config option might be a good way to enable people to do such
-testing and fall back if it turns out to be problems with such
-devices.
+( the value of KMEMTRACE_USER_ALLOC is zero, seeing
+  kmemtrace_print_alloc_user() in kernel/trace/kmemtrace.c)
 
-Ultimately, though, requiring that every single possible device be
-tested is probably not reasonable, so the best way to do this testing
-is the way do most of our testing; we do basic due diligence, but then
-we merge it into mainline and let our huge user community try it out.
-If there are regressions we can work through those issues if and when
-they arise.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+LKML-Reference: <4A4B2351.5010300@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-						- Ted
 
+---
+ kernel/trace/trace_output.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 7938f3a..e0c2545 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -27,8 +27,7 @@ void trace_print_seq(struct seq_file *m, struct trace_seq *s)
+ {
+ 	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
+ 
+-	s->buffer[len] = 0;
+-	seq_puts(m, s->buffer);
++	seq_write(m, s->buffer, len);
+ 
+ 	trace_seq_init(s);
+ }
