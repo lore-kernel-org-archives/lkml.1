@@ -1,77 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZGAXvC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZGAXyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbZGAXvC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 19:51:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZGAXuy
+	id S1752344AbZGAXyr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 19:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZGAXyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 19:50:54 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:43646
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751678AbZGAXuy (ORCPT
+	Wed, 1 Jul 2009 19:54:40 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:58045 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750969AbZGAXyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 19:50:54 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvMBAEKTS0p8qMex/2dsb2JhbAAI0EeEEQU
-X-IronPort-AV: E=Sophos;i="4.42,328,1243785600"; 
-   d="scan'208";a="471242434"
-Subject: [PATCH] MMC Core: Drop initialization frequency floor to 50kHz
-From: Ben Nizette <bn@niasdigital.com>
-To: pierre@ossman.eu
-Cc: s.hauer@pengutronix.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel <kernel@avr32linux.org>, Ben Nizette <bn@niasdigital.com>
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 09:49:56 +1000
-Message-Id: <1246492196.2980.17.camel@linux-51e8.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 19:54:39 -0400
+Date: Thu, 2 Jul 2009 09:54:39 +1000
+From: David McCullough <David_Mccullough@securecomputing.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       David Howells <dhowells@redhat.com>, Greg Ungerer <gerg@uclinux.org>,
+       Paul Mundt <lethal@linux-sh.org>, uclinux-dev@uclinux.org
+Subject: Re: [PATCH] FLAT: use IS_ERR_VALUE() helper macro
+Message-ID: <20090701235439.GC16727@securecomputing.com>
+References: <1246472802-15824-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246472802-15824-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch
 
-commit 8dfd0374be84793360db7fff2e635d2cd3bbcb21
-Author: Sascha Hauer <s.hauer@pengutronix.de>
-Date:   Thu Apr 9 08:32:02 2009 +0200
+Jivin Mike Frysinger lays it down ...
+> There is a common macro now for testing mixed pointer/errno values, so use
+> that rather than handling the casts ourself.
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 
-    MMC core: limit minimum initialization frequency to 400kHz
+Acked-by: David McCullough <david_mccullough@securecomputing.com>
 
-Was recently merged.  This is too fast for at least one setup
-permutation - the one on my desk which through trial and error won't
-initialise at anything above ~350kHz (older Sandisk 256MB SD on
-atmel-mci).
+Cheers,
+Davidm
 
-To avoid a string of "just found card X which requires clock
-(current_clock - epsilon)" this patch drops the floor right down to
-50kHz.  This is about the slowest rate before which the discovery
-process takes a noticeable slowdown.
+> ---
+>  fs/binfmt_flat.c |   22 ++++++++++------------
+>  1 files changed, 10 insertions(+), 12 deletions(-)
+> 
+> diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
+> index 697f6b5..f22b312 100644
+> --- a/fs/binfmt_flat.c
+> +++ b/fs/binfmt_flat.c
+> @@ -278,8 +278,6 @@ static int decompress_exec(
+>  		ret = bprm->file->f_op->read(bprm->file, buf, LBUFSIZE, &fpos);
+>  		if (ret <= 0)
+>  			break;
+> -		if (ret >= (unsigned long) -4096)
+> -			break;
+>  		len -= ret;
+>  
+>  		strm.next_in = buf;
+> @@ -335,7 +333,7 @@ calc_reloc(unsigned long r, struct lib_info *p, int curid, int internalp)
+>  					"(%d != %d)", (unsigned) r, curid, id);
+>  			goto failed;
+>  		} else if ( ! p->lib_list[id].loaded &&
+> -				load_flat_shared_library(id, p) > (unsigned long) -4096) {
+> +				IS_ERR_VALUE(load_flat_shared_library(id, p))) {
+>  			printk("BINFMT_FLAT: failed to load library %d", id);
+>  			goto failed;
+>  		}
+> @@ -545,7 +543,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  		textpos = do_mmap(bprm->file, 0, text_len, PROT_READ|PROT_EXEC,
+>  				  MAP_PRIVATE|MAP_EXECUTABLE, 0);
+>  		up_write(&current->mm->mmap_sem);
+> -		if (!textpos  || textpos >= (unsigned long) -4096) {
+> +		if (!textpos || IS_ERR_VALUE(textpos)) {
+>  			if (!textpos)
+>  				textpos = (unsigned long) -ENOMEM;
+>  			printk("Unable to mmap process text, errno %d\n", (int)-textpos);
+> @@ -560,7 +558,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			PROT_READ|PROT_WRITE|PROT_EXEC, MAP_PRIVATE, 0);
+>  		up_write(&current->mm->mmap_sem);
+>  
+> -		if (realdatastart == 0 || realdatastart >= (unsigned long)-4096) {
+> +		if (realdatastart == 0 || IS_ERR_VALUE(realdatastart)) {
+>  			if (!realdatastart)
+>  				realdatastart = (unsigned long) -ENOMEM;
+>  			printk("Unable to allocate RAM for process data, errno %d\n",
+> @@ -587,7 +585,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			result = bprm->file->f_op->read(bprm->file, (char *) datapos,
+>  					data_len + (relocs * sizeof(unsigned long)), &fpos);
+>  		}
+> -		if (result >= (unsigned long)-4096) {
+> +		if (IS_ERR_VALUE(result)) {
+>  			printk("Unable to read data+bss, errno %d\n", (int)-result);
+>  			do_munmap(current->mm, textpos, text_len);
+>  			do_munmap(current->mm, realdatastart, data_len + extra);
+> @@ -607,7 +605,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE, 0);
+>  		up_write(&current->mm->mmap_sem);
+>  
+> -		if (!textpos  || textpos >= (unsigned long) -4096) {
+> +		if (!textpos || IS_ERR_VALUE(textpos)) {
+>  			if (!textpos)
+>  				textpos = (unsigned long) -ENOMEM;
+>  			printk("Unable to allocate RAM for process text/data, errno %d\n",
+> @@ -641,7 +639,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			fpos = 0;
+>  			result = bprm->file->f_op->read(bprm->file,
+>  					(char *) textpos, text_len, &fpos);
+> -			if (result < (unsigned long) -4096)
+> +			if (!IS_ERR_VALUE(result))
+>  				result = decompress_exec(bprm, text_len, (char *) datapos,
+>  						 data_len + (relocs * sizeof(unsigned long)), 0);
+>  		}
+> @@ -651,13 +649,13 @@ static int load_flat_file(struct linux_binprm * bprm,
+>  			fpos = 0;
+>  			result = bprm->file->f_op->read(bprm->file,
+>  					(char *) textpos, text_len, &fpos);
+> -			if (result < (unsigned long) -4096) {
+> +			if (!IS_ERR_VALUE(result)) {
+>  				fpos = ntohl(hdr->data_start);
+>  				result = bprm->file->f_op->read(bprm->file, (char *) datapos,
+>  					data_len + (relocs * sizeof(unsigned long)), &fpos);
+>  			}
+>  		}
+> -		if (result >= (unsigned long)-4096) {
+> +		if (IS_ERR_VALUE(result)) {
+>  			printk("Unable to read code+data+bss, errno %d\n",(int)-result);
+>  			do_munmap(current->mm, textpos, text_len + data_len + extra +
+>  				MAX_SHARED_LIBS * sizeof(unsigned long));
+> @@ -830,7 +828,7 @@ static int load_flat_shared_library(int id, struct lib_info *libs)
+>  
+>  	res = prepare_binprm(&bprm);
+>  
+> -	if (res <= (unsigned long)-4096)
+> +	if (!IS_ERR_VALUE(res))
+>  		res = load_flat_file(&bprm, libs, id, NULL);
+>  	if (bprm.file) {
+>  		allow_write_access(bprm.file);
+> @@ -873,7 +871,7 @@ static int load_flat_binary(struct linux_binprm * bprm, struct pt_regs * regs)
+>  	stack_len += FLAT_DATA_ALIGN - 1;  /* reserve for upcoming alignment */
+>  	
+>  	res = load_flat_file(bprm, &libinfo, 0, &stack_len);
+> -	if (res > (unsigned long)-4096)
+> +	if (IS_ERR_VALUE(res))
+>  		return res;
+>  	
+>  	/* Update data segment pointers for all libraries */
+> -- 
+> 1.6.3.3
+> 
 
-Signed-off-by: Ben Nizette <bn@niasdigital.com>
----
-diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-index d84c880..6ee1931 100644
---- a/drivers/mmc/core/core.c
-+++ b/drivers/mmc/core/core.c
-@@ -708,12 +708,13 @@ static void mmc_power_up(struct mmc_host *host)
- 	 */
- 	mmc_delay(10);
- 
--	if (host->f_min > 400000) {
--		pr_warning("%s: Minimum clock frequency too high for "
--				"identification mode\n", mmc_hostname(host));
--		host->ios.clock = host->f_min;
--	} else
--		host->ios.clock = 400000;
-+	/*
-+	 * Card discovery is typically done at the controller's minimum
-+	 * allowable frequency but for some controllers this is minimum
-+	 * is unreasonably slow.  In that case we limit slow clock rate
-+	 * to 50KHz.
-+	 */
-+	host->ios.clock = max(host->f_min, 50000);
- 
- 	host->ios.power_mode = MMC_POWER_ON;
- 	mmc_set_ios(host);
-
-
+-- 
+David McCullough,  david_mccullough@securecomputing.com,  Ph:+61 734352815
+McAfee - SnapGear  http://www.snapgear.com                http://www.uCdot.org
