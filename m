@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752356AbZGAMUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752854AbZGAMUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752356AbZGAMUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbZGAMUJ
+	id S1752854AbZGAMUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 08:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZGAMUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 08:20:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35187 "EHLO hera.kernel.org"
+	Wed, 1 Jul 2009 08:20:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50200 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750955AbZGAMUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 08:20:08 -0400
-Subject: [PATCH -tip RESEND] x86: msr-index.h remove double declaration of
- MSR_P6_EVNTSEL0 and MSR_P6_EVNTSEL1
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 01 Jul 2009 17:49:38 +0530
-Message-Id: <1246450778.6940.8.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751052AbZGAMUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 08:20:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090701115425.GJ15958@elte.hu>
+References: <20090701115425.GJ15958@elte.hu> <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de> <22582.1246447691@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, Arnd Bergmann <arnd@arndb.de>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Wire up new syscalls
+Date: Wed, 01 Jul 2009 13:19:57 +0100
+Message-ID: <32551.1246450797@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> wrote:
 
-MSR_P6_EVNTSEL0 and MSR_P6_EVNTSEL1 is already declared in msr-index.h.
+> [ There might be unanticipated problems of course - please report to
+>   us any problems (tools/perf/ does not build cleanly, features dont
+>   work as expected, etc.). ]
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/msr-index.h |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+It requires atomic64_t.  Is that mandatory on all arches now?
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 4d58d04..35ec37a 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -239,10 +239,6 @@
- #define MSR_IA32_MISC_ENABLE_TURBO_DISABLE	(1ULL << 38)
- #define MSR_IA32_MISC_ENABLE_IP_PREF_DISABLE	(1ULL << 39)
- 
--/* Intel Model 6 */
--#define MSR_P6_EVNTSEL0			0x00000186
--#define MSR_P6_EVNTSEL1			0x00000187
--
- /* P4/Xeon+ specific */
- #define MSR_IA32_MCG_EAX		0x00000180
- #define MSR_IA32_MCG_EBX		0x00000181
--- 
-1.6.0.6
-
-
-
+David
