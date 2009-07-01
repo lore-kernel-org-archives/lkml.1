@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZGAQOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753848AbZGAQPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZGAQOt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZGAQOk
+	id S1753848AbZGAQPw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZGAQPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:14:40 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:39616 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZGAQOj (ORCPT
+	Wed, 1 Jul 2009 12:15:43 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:58003 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZGAQPm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:14:39 -0400
+	Wed, 1 Jul 2009 12:15:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KVEIqpf6Y92z+T5m/RB0Tq6+9PTHQOEXWDdkqoFjVFDTTteEde2Vj+BUs/NE6mfbrP
-         XqNzDf93HhelEbIBbffAQMjj5fPtL37T1gF3yUonFxWODMIshXG2jQ9khbunOcjlXucV
-         T9u1S2CXvDPuL+vOHQUhnwJYuG1yW1J2GDLUI=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=WfU+9CAOiqfE1XChqJbYYcJfa1irnofHwO4ZyN5bvy69YQzIS7KnJGqVr6SsPX8kIS
+         TPRgUdYvgywLWQso+ceh4bUh8dp7U+NcSe30Btc5S3hpyhJYapGgkOhADTRItA0hcrK1
+         Z/IINGx7sQLIS3DAEorpGY0skZYEa9Gn+IxAg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: wuzhangjin@gmail.com
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+Date: Wed, 1 Jul 2009 18:21:25 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090701-03251-gbe98b01-dirty; KDE/4.2.4; i686; ; )
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-ide@vger.kernel.org
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <b6a2187b0907010731k510150b5u1c7fce8cbed7c33b@mail.gmail.com> <1246459661.9660.40.camel@falcon>
+In-Reply-To: <1246459661.9660.40.camel@falcon>
 MIME-Version: 1.0
-In-Reply-To: <20090701151344.GA4372@gondor.apana.org.au>
-References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera>
-	 <6JJ2m5kyucK.A.AtD.NJASKB@chimera>
-	 <b6a2187b0907010734w7e7a5bbfm271f44e57e12d1b4@mail.gmail.com>
-	 <20090701151344.GA4372@gondor.apana.org.au>
-Date: Thu, 2 Jul 2009 00:14:37 +0800
-Message-ID: <b6a2187b0907010914x1c68e09k24bc9378e9c0519c@mail.gmail.com>
-Subject: Re: [Bug #13627] Tunnel device ignores TCP/UDP traffic
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, Paul Martin <pm@debian.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200907011821.26091.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 11:13 PM, Herbert Xu<herbert@gondor.apana.org.au> wrote:
+On Wednesday 01 July 2009 16:47:41 Wu Zhangjin wrote:
+> On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
+> > On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
+> > 
+> > > I just tried, and it "seems" to work. Will try a few more cycles.
+> > 
+> > STD/STR survived quite a few cycles now. Patch seems to be doing the
+> > right thing.
+> > 
+> > On Mon, Jun 29, 2009 at 11:51 PM, Etienne
+> > Basset<etienne.basset@numericable.fr> wrote:
+> > 
+> > > To have STR/resume work with current git, I have to :
+> > 
+> > > 1) apply Bart's patch
+> > 
+> > This is not yet in Linus's tree. And much needed to really fix the problem.
+> > 
+> > > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+> > 
+> 
+> Yes, This commit must be reverted, otherwise, STD/Hibernation will not
+> work either. I have tested it on two different loongson-based machines:
+> fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
 
-> So you mean that 71f9dacd2e4d233029e9e956ca3f79531f411827 doesn't
-> work? Does reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f help?
+Since it seems like Dave is taking his sweet time with doing the revert
+I stared at the code a bit more and I think that I finally found the bug
+(thanks to your debugging work for giving me the right hint!).
 
-My Linux git already has these two commits, and I tested it with vpnc
-(0.5.3) and it connected, but can't ping or ssh to remote. It was
-working prior to 2.6.30.
+The patch needs to take into the account a new code introduced by the recent
+block layer changes (commit 8f6205cd572fece673da0255d74843680f67f879):
 
-Tested reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f, but still
-no good. Also reverted 71f9dacd2e4d233029e9e956ca3f79531f411827, still
-no good.
+@@ -555,8 +560,11 @@ repeat:
+                startstop = start_request(drive, rq);
+                spin_lock_irq(&hwif->lock);
+ 
+-               if (startstop == ide_stopped)
++               if (startstop == ide_stopped) {
++                       rq = hwif->rq;
++                       hwif->rq = NULL;
+                        goto repeat;
++               }
+        } else
+                goto plug_device;
+ out:
 
-> If not can you elaborate on what you mean by not working?
+and not zero hwif->rq if the device is blocked. 
 
-It seems the tunnel is not setup correctly, but I'll have to revert
-back to 2.6.29+ to verify.
+Could you try the attached patch and see if it fixes the issue?
 
-On kvm (again, it could be KVM which I'm not 100% sure. kvm-87),  it
-won't ping to/from the guest system with host ... Used to work before
-2.6.31-rc1 with guest net model=e1000 and model=virtio, but with
-2.6.31-rc1, only works with model=virtio. .. This could be an
-_unrelated_ issue though.
+[ Dave: while I appreciate fast handling of my patches I had strongly
+  suggested giving this particular one some extra testing (because there
+  were a lot of changes in between the time that it has been tested
+  against other kernel subsystems).  Yet, it seems that its linux-next
+  exposure was minimal at best..  :( ]
 
-/usr/local/kvm/bin/qemu-system-x86_64 \
-        -localtime \
-        -net nic,vlan=0,model=e1000 \
-        -net tap,script=/root/scripts2/tunx \
+---
+ drivers/ide/ide-io.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
-Thanks,
-Jeff.
+Index: b/drivers/ide/ide-io.c
+===================================================================
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -532,7 +532,8 @@ repeat:
+ 
+ 		if (startstop == ide_stopped) {
+ 			rq = hwif->rq;
+-			hwif->rq = NULL;
++			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
++				hwif->rq = NULL;
+ 			goto repeat;
+ 		}
+ 	} else
