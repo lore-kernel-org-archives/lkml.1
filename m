@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZGAL1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZGAL2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZGAL1q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGAL1h
+	id S1755848AbZGAL2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGAL2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:27:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47960 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbZGAL1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:27:37 -0400
-Date: Wed, 1 Jul 2009 13:27:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 3/6 -tip] perf_counter: Add Generalized Hardware
-	vectored co-processor support for AMD
-Message-ID: <20090701112704.GF15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
+	Wed, 1 Jul 2009 07:28:10 -0400
+Received: from carryall.technologeek.org ([62.4.18.94]:36677 "EHLO
+	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750812AbZGAL2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:28:10 -0400
+X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 07:28:09 EDT
+From: Julien BLACHE <jb@jblache.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, felixb@sgi.com
+Subject: Re: [patch 000/108] 2.6.30-stable review
+References: <20090701002838.GA7100@kroah.com>
+Date: Wed, 01 Jul 2009 13:22:57 +0200
+In-Reply-To: <20090701002838.GA7100@kroah.com> (Greg KH's message of "Tue, 30
+	Jun 2009 17:28:38 -0700")
+Message-ID: <87tz1wd4vi.fsf@sonic.technologeek.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701112007.GD15958@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH <gregkh@suse.de> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hi,
 
-> >  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
-> > 
-> >     20177177044  vec-adds                  (scaled from 66.63%)
-> >     34101687027  vec-muls                  (scaled from 66.64%)
-> >      3984060862  vec-divs                  (scaled from 66.71%)
-> >     26349684710  vec-idle-cycles           (scaled from 66.65%)
-> >      9052001905  vec-stall-cycles          (scaled from 66.66%)
-> >     76440734242  vec-ops                   (scaled from 66.71%)
-> > 
-> >   272.523058097  seconds time elapsed
+>  fs/Kconfig                                |   14 ++--
+>  fs/cifs/file.c                            |   10 +-
+>  fs/eventpoll.c                            |   21 +++--
+>  fs/fs-writeback.c                         |    2 -
+>  fs/jfs/jfs_extent.c                       |    1 +
+>  fs/ocfs2/super.c                          |   32 +++++----
+>  fs/ramfs/inode.c                          |    9 ++-
 
-btw., the 'perf list' bits are missing - any new counter added 
-should be listed by 'perf list' as well - otherwise people wont know 
-what we have and what to use.
+There is a memory leak in XFS in 2.6.30 that was fixed in commit
+7747a0b0af5976ba3828796b4f7a7adc3bb76dbd (xfs: fix freeing memory in
+xfs_getbmap()).
 
-	Ingo
+Felix wrote it was a candidate for stable (obviously!) but it's not on
+the list you posted. Care to include it?
+
+Thanks,
+
+JB.
+
+-- 
+Julien BLACHE                                   <http://www.jblache.org> 
+<jb@jblache.org>                                  GPG KeyID 0xF5D65169
