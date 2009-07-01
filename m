@@ -1,116 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbZGAPbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752437AbZGAPe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbZGAPbf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZGAPb2
+	id S1752437AbZGAPe5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZGAPet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:31:28 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:54982 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbZGAPb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:31:27 -0400
-Message-ID: <4A4B812E.2080308@atmel.com>
-Date: Wed, 01 Jul 2009 17:30:54 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 1 Jul 2009 11:34:49 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41552 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbZGAPet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:34:49 -0400
+Date: Wed, 1 Jul 2009 11:34:44 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: oleg@redhat.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       akpm@linux-foundation.org, earl_chew@agilent.com
+Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
+	concurrent dumps to pipes (v5)
+Message-ID: <20090701153444.GF29601@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701152640.GD29601@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, dan.j.williams@intel.com
-CC: maciej.sosnowski@intel.com, avictor.za@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
-       linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel
- AHB DMA Controller
-References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com> <20090628.000624.208780184.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090628.000624.208780184.anemo@mba.ocn.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701152640.GD29601@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+core_pattern: Introduce core pipe limiting sysctl
 
-Atsushi Nemoto :
-> On Fri, 26 Jun 2009 12:42:15 +0200, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
->> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
->> at91sam9rl chip. It will be used on other products in the future.
-> 
-> It seems this driver was written based on dw_dmac driver.  A while ago
-> I had some investigation of that driver.
-> (http://lkml.org/lkml/2008/12/29/172)
+Since we can dump cores to pipe, rather than directly to the filesystem, we
+create a condition in which a user can create a very high load on the system
+simply by running bad applications.  If the pipe reader specified in
+core_pattern is poorly written, we can have lots of ourstandig resources and
+processes in the system.  This sysctl introduces an ability to limit that
+resource consumption.  core_pipe_limit defines how many in-flight dumps may be
+run in parallel, dumps beyond this value are skipped and a note is made in the
+kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
+dumps may be handled (this is the default value).
 
-Thank you for recall me this thread.
-
-> Some of issues reported at that time could be applied on your driver
-> too.  With a quick look, the queue list management issue is a
-> candidate.  Here is an excerpt from the thread:
-> 
-> --- --- ---
-> 3.  dwc->queue list management
-> 
-> The function dwc_tx_submit() add the descriptor to dwc->queue list if
-> active list was not empty.  But it does not manage lli.llp list.  And
-> all descriptors in the queue list will be moved to active list at a
-> time.  So it seems non-first descriptors in queue list will never
-> processed by the hardware.
-> 
-> The dwc_tx_submit() should rewrite lli.llp of the last descriptor in
-> queue list (it it had children, the last children of it) by txd.phys
-> of newly queued descriptor.  Or, only first elements of queue list
-> should be moved to active list at a time.
-> 
-> Is my analysis correct?
-
-I try to replay the life of a descriptor chain in "queue" list:
-- it is queued by atc_tx_submit()
-- tasklet or atc_issue_pendig() will "advance_work" and so run
-atc_complete_all() at some point.
-- atc_complete_all() will issue an atc_dostart() on the first chain in
-queue list and move all to active_list
-- then all chains will be managed as active_list members:
-  - tasklet or atc_issue_pendig() will "advance_work"
-  - first member will be managed by chain_complete()
-  - next member will be started by dostart()
-  - and so on...
-- last chain in active_list will run complete_all() and may move again
-queued descriptors to active_list.
-
-=> non-first descriptor moved from queue to active_list will be
-proceeded by act_dostart() in atc_advance_work() function.
-
-In this way of addressing descriptors, I try to keep descriptor chains
-as they are built by the prep_dma_memcpy function. I am not trying to
-rewrite the internal arrangement of a descriptor chain (not touching
-lli.dscr).
-It may be not optimal for the descriptor management speed but it tries
-to split problems in a kind of layered way (we build chains and then
-manage their flow in dma engine and associated lists).
-
-I hope that there is no hole in this management as I am sure it is
-difficult to debug...
-I hope that my response is solid enough. Please do not hesitate to break
-my demonstration ;-).
-
-> --- --- ---
-> 
-> And one more comment.
-> 
->> +	/*
->> +	 * We use dma_unmap_page() regardless of how the buffers were
->> +	 * mapped before they were submitted...
->> +	 */
-> 
-> You can use DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE since 2.6.30.
-
-Ok, even if it is exactly the same for ARM implementation, I do the
-modification for my driver (taking iop_dma.c as an example).
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Reported-by: Earl Chew <earl_chew@agilent.com>
 
 
-Thanks a lot for your help and your deep review.
+ Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
+ fs/exec.c                       |   21 +++++++++++++++++----
+ kernel/sysctl.c                 |    9 +++++++++
+ 3 files changed, 48 insertions(+), 4 deletions(-)
 
-Best regards,
--- 
-Nicolas Ferre
-
+diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+index 322a00b..bb226ba 100644
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
+ - acct
+ - auto_msgmni
+ - core_pattern
++- core_pipe_limit
+ - core_uses_pid
+ - ctrl-alt-del
+ - dentry-state
+@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+ 
+ ==============================================================
+ 
++core_pipe_limit:
++
++This sysctl is only applicable when core_pattern is configured to pipe core
++files to user space helper a (when the first character of core_pattern is a '|',
++see above).  When collecting cores via a pipe to an application, it is
++occasionally usefull for the collecting application to gather data about the
++crashing process from its /proc/pid directory.  In order to do this safely, the
++kernel must wait for the collecting process to exit, so as not to remove the
++crashing processes proc files prematurely.  This in turn creates the possibility
++that a misbehaving userspace collecting process can block the reaping of a
++crashed process simply by never exiting.  This sysctl defends against that.  It
++defines how many concurrent crashing processes may be piped to user space
++applications in parallel.  If this value is exceeded, then those crashing
++processes above that value are noted via the kernel log and their cores are
++skipped.  0 is a special value, indicating that unlimited processes may be
++captured in parallel, but that no waiting will take place (i.e. the collecting
++process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
++to 0.
++
++==============================================================
++
+ core_uses_pid:
+ 
+ The default coredump filename is "core".  By setting
+diff --git a/fs/exec.c b/fs/exec.c
+index 9defd20..93ab6eb 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -63,6 +63,7 @@
+ 
+ int core_uses_pid;
+ char core_pattern[CORENAME_MAX_SIZE] = "core";
++unsigned int core_pipe_limit;
+ int suid_dumpable = 0;
+ 
+ /* The maximal length of core_pattern is also specified in sysctl.c */
+@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+ 	char **helper_argv = NULL;
+ 	int helper_argc = 0;
+-	char *delimit;
++	int dump_count = 0;
++	static atomic_t core_dump_count = ATOMIC_INIT(0);
+ 
+ 	audit_core_dumps(signr);
+ 
+@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 			goto fail_unlock;
+ 		}
+ 
++		dump_count = atomic_inc_return(&core_dump_count);
++		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
++			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
++			       task_tgid_vnr(current), current->comm);
++			printk(KERN_WARNING "Skipping core dump\n");
++			goto fail_dropcount;
++		}
++
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+-			goto fail_unlock;
++			goto fail_dropcount;
+ 		}
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
+ 		/* SIGPIPE can happen, but it's just never processed */
+- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
++ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+ 				&file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+ 			       corename);
+- 			goto fail_unlock;
++ 			goto fail_dropcount;
+  		}
+ 	} else {
+ 		if (core_limit < binfmt->min_coredump)
+@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 
+ close_fail:
+ 	filp_close(file, NULL);
++fail_dropcount:
++	if (dump_count)
++		atomic_dec(&core_dump_count);
+ fail_unlock:
+ 	if (helper_argv)
+ 		argv_free(helper_argv);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 62e4ff9..681052f 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -77,6 +77,7 @@ extern int max_threads;
+ extern int core_uses_pid;
+ extern int suid_dumpable;
+ extern char core_pattern[];
++extern unsigned int core_pipe_limit;
+ extern int pid_max;
+ extern int min_free_kbytes;
+ extern int pid_max_min, pid_max_max;
+@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dostring,
+ 		.strategy	= &sysctl_string,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "core_pipe_limit",
++		.data		= &core_pipe_limit,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #ifdef CONFIG_PROC_SYSCTL
+ 	{
+ 		.procname	= "tainted",
