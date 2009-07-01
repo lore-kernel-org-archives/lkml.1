@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZGAAeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbZGAAe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbZGAAeD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759767AbZGAAaP
+	id S1761380AbZGAAe1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759822AbZGAAaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:15 -0400
-Received: from kroah.org ([198.145.64.141]:34350 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:16 -0400
+Received: from kroah.org ([198.145.64.141]:34355 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759669AbZGAAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759681AbZGAAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:30:08 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:58 2009
-Message-Id: <20090701000358.640178641@mini.kroah.org>
+Message-Id: <20090701000358.828625631@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 16:59:59 -0700
+Date: Tue, 30 Jun 2009 17:00:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Philippe De Muyter <phdm@macqel.be>, Adam M Belay <abelay@mit.edu>,
-       Robert Hancock <hancockrwd@gmail.com>
-Subject: [patch 15/30] floppy: request and release only the ports we actually use
+       Jack Morgenstein <jackm@dev.mellanox.co.il>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [patch 16/30] IB/mlx4: Add strong ordering to local inval and fast reg work requests
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=floppy-request-and-release-only-the-ports-we-actually-use.patch
+Content-Disposition: inline; filename=ib-mlx4-add-strong-ordering-to-local-inval-and-fast-reg-work-requests.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,200 +31,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Philippe De Muyter <phdm@macqel.be>
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
 
-commit 5a74db06cc8d36a325913aa4968ae169f997a466 upstream.
+commit 2ac6bf4ddc87c3b6b609f8fa82f6ebbffeac12f4 upstream.
 
-The floppy driver requests an I/O port it doesn't need, and sometimes this
-causes a conflict with a motherboard device reported by PNPBIOS.
+The ConnectX Programmer's Reference Manual states that the "SO" bit
+must be set when posting Fast Register and Local Invalidate send work
+requests.  When this bit is set, the work request will be executed
+only after all previous work requests on the send queue have been
+executed.  (If the bit is not set, Fast Register and Local Invalidate
+WQEs may begin execution too early, which violates the defined
+semantics for these operations)
 
-This patch makes the floppy driver request and release only the ports it
-actually uses.  It also factors out the request/release stuff and the
-io-ports list so they're all in one place now.
+This fixes the issue with NFS/RDMA reported in
+<http://lists.openfabrics.org/pipermail/general/2009-April/059253.html>
 
-The current floppy driver uses only these ports:
-
-    0x3f2 (FD_DOR)
-    0x3f4 (FD_STATUS)
-    0x3f5 (FD_DATA)
-    0x3f7 (FD_DCR/FD_DIR)
-
-but it requests 0x3f2-0x3f5 and 0x3f7, which includes the unused port
-0x3f3.
-
-Some BIOSes report 0x3f3 as a motherboard resource.  The PNP system driver
-reserves that, which causes a conflict when the floppy driver requests
-0x3f2-0x3f5 later.
-
-Philippe reported that this conflict broke the floppy driver between
-2.6.11 and 2.6.22.  His PNPBIOS reports these devices:
-
-    $ cat 00:07/id 00:07/resources	# motherboard device
-    PNP0c02
-    state = active
-    io 0x80-0x80
-    io 0x10-0x1f
-    io 0x22-0x3f
-    io 0x44-0x5f
-    io 0x90-0x9f
-    io 0xa2-0xbf
-    io 0x3f0-0x3f1
-    io 0x3f3-0x3f3
-
-    $ cat 00:03/id 00:03/resources	# floppy device
-    PNP0700
-    state = active
-    io 0x3f4-0x3f5
-    io 0x3f2-0x3f2
-
-Reference:
-    http://lkml.org/lkml/2009/1/31/162
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-Reported-by: Philippe De Muyter <phdm@macqel.be>
-Tested-by: Philippe De Muyter <phdm@macqel.be>
-Cc: Adam M Belay <abelay@mit.edu>
-Cc: Robert Hancock <hancockrwd@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/floppy.c |   79 ++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 52 insertions(+), 27 deletions(-)
+ drivers/infiniband/hw/mlx4/qp.c |    4 ++++
+ include/linux/mlx4/qp.h         |    1 +
+ 2 files changed, 5 insertions(+)
 
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -552,6 +552,8 @@ static void process_fd_request(void);
- static void recalibrate_floppy(void);
- static void floppy_shutdown(unsigned long);
+--- a/drivers/infiniband/hw/mlx4/qp.c
++++ b/drivers/infiniband/hw/mlx4/qp.c
+@@ -1563,12 +1563,16 @@ int mlx4_ib_post_send(struct ib_qp *ibqp
+ 				break;
  
-+static int floppy_request_regions(int);
-+static void floppy_release_regions(int);
- static int floppy_grab_irq_and_dma(void);
- static void floppy_release_irq_and_dma(void);
+ 			case IB_WR_LOCAL_INV:
++				ctrl->srcrb_flags |=
++					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
+ 				set_local_inv_seg(wqe, wr->ex.invalidate_rkey);
+ 				wqe  += sizeof (struct mlx4_wqe_local_inval_seg);
+ 				size += sizeof (struct mlx4_wqe_local_inval_seg) / 16;
+ 				break;
  
-@@ -4274,8 +4276,7 @@ static int __init floppy_init(void)
- 		FDCS->rawcmd = 2;
- 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			FDCS->version = FDC_NONE;
- 			continue;
-@@ -4284,8 +4285,7 @@ static int __init floppy_init(void)
- 		FDCS->version = get_fdc_version();
- 		if (FDCS->version == FDC_NONE) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
-+			floppy_release_regions(fdc);
- 			FDCS->address = -1;
- 			continue;
- 		}
-@@ -4358,6 +4358,47 @@ out_put_disk:
+ 			case IB_WR_FAST_REG_MR:
++				ctrl->srcrb_flags |=
++					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
+ 				set_fmr_seg(wqe, wr);
+ 				wqe  += sizeof (struct mlx4_wqe_fmr_seg);
+ 				size += sizeof (struct mlx4_wqe_fmr_seg) / 16;
+--- a/include/linux/mlx4/qp.h
++++ b/include/linux/mlx4/qp.h
+@@ -165,6 +165,7 @@ enum {
+ 	MLX4_WQE_CTRL_IP_CSUM		= 1 << 4,
+ 	MLX4_WQE_CTRL_TCP_UDP_CSUM	= 1 << 5,
+ 	MLX4_WQE_CTRL_INS_VLAN		= 1 << 6,
++	MLX4_WQE_CTRL_STRONG_ORDER	= 1 << 7,
+ };
  
- static DEFINE_SPINLOCK(floppy_usage_lock);
- 
-+static const struct io_region {
-+	int offset;
-+	int size;
-+} io_regions[] = {
-+	{ 2, 1 },
-+	/* address + 3 is sometimes reserved by pnp bios for motherboard */
-+	{ 4, 2 },
-+	/* address + 6 is reserved, and may be taken by IDE.
-+	 * Unfortunately, Adaptec doesn't know this :-(, */
-+	{ 7, 1 },
-+};
-+
-+static void floppy_release_allocated_regions(int fdc, const struct io_region *p)
-+{
-+	while (p != io_regions) {
-+		p--;
-+		release_region(FDCS->address + p->offset, p->size);
-+	}
-+}
-+
-+#define ARRAY_END(X) (&((X)[ARRAY_SIZE(X)]))
-+
-+static int floppy_request_regions(int fdc)
-+{
-+	const struct io_region *p;
-+
-+	for (p = io_regions; p < ARRAY_END(io_regions); p++) {
-+		if (!request_region(FDCS->address + p->offset, p->size, "floppy")) {
-+			DPRINT("Floppy io-port 0x%04lx in use\n", FDCS->address + p->offset);
-+			floppy_release_allocated_regions(fdc, p);
-+			return -EBUSY;
-+		}
-+	}
-+	return 0;
-+}
-+
-+static void floppy_release_regions(int fdc)
-+{
-+	floppy_release_allocated_regions(fdc, ARRAY_END(io_regions));
-+}
-+
- static int floppy_grab_irq_and_dma(void)
- {
- 	unsigned long flags;
-@@ -4399,18 +4440,8 @@ static int floppy_grab_irq_and_dma(void)
- 
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
- 		if (FDCS->address != -1) {
--			if (!request_region(FDCS->address + 2, 4, "floppy")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 2);
--				goto cleanup1;
--			}
--			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
--				DPRINT("Floppy io-port 0x%04lx in use\n",
--				       FDCS->address + 7);
--				goto cleanup2;
--			}
--			/* address + 6 is reserved, and may be taken by IDE.
--			 * Unfortunately, Adaptec doesn't know this :-(, */
-+			if (floppy_request_regions(fdc))
-+				goto cleanup;
- 		}
- 	}
- 	for (fdc = 0; fdc < N_FDC; fdc++) {
-@@ -4432,15 +4463,11 @@ static int floppy_grab_irq_and_dma(void)
- 	fdc = 0;
- 	irqdma_allocated = 1;
- 	return 0;
--cleanup2:
--	release_region(FDCS->address + 2, 4);
--cleanup1:
-+cleanup:
- 	fd_free_irq();
- 	fd_free_dma();
--	while (--fdc >= 0) {
--		release_region(FDCS->address + 2, 4);
--		release_region(FDCS->address + 7, 1);
--	}
-+	while (--fdc >= 0)
-+		floppy_release_regions(fdc);
- 	spin_lock_irqsave(&floppy_usage_lock, flags);
- 	usage_count--;
- 	spin_unlock_irqrestore(&floppy_usage_lock, flags);
-@@ -4501,10 +4528,8 @@ static void floppy_release_irq_and_dma(v
- #endif
- 	old_fdc = fdc;
- 	for (fdc = 0; fdc < N_FDC; fdc++)
--		if (FDCS->address != -1) {
--			release_region(FDCS->address + 2, 4);
--			release_region(FDCS->address + 7, 1);
--		}
-+		if (FDCS->address != -1)
-+			floppy_release_regions(fdc);
- 	fdc = old_fdc;
- }
- 
+ struct mlx4_wqe_ctrl_seg {
 
 
