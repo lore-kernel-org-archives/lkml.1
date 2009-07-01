@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZGANNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZGANNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZGANNA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZGANMw
+	id S1754032AbZGANNp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZGANNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:12:52 -0400
-Received: from mail.digidescorp.com ([66.244.163.200]:24835 "EHLO
-	digidescorp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZGANMv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:12:51 -0400
-X-Greylist: delayed 317 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 09:12:50 EDT
-X-Spam-Processed: digidescorp.com, Wed, 01 Jul 2009 08:07:35 -0500
-X-Authenticated-Sender: steve@digidescorp.com
-X-Return-Path: prvs=1433facca9=steve@digidescorp.com
-X-Envelope-From: steve@digidescorp.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FAT: optimize FSINFO writeback
-From: "Steven J. Magnani" <steve@digidescorp.com>
-Reply-To: steve@digidescorp.com
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <873a9hfdqz.fsf@devron.myhome.or.jp>
-References: <1246392130-4261-1-git-send-email-steve@digidescorp.com>
-	 <87ocs5h238.fsf@devron.myhome.or.jp>
-	 <1246400345.2247.4.camel@iscandar.digidescorp.com>
-	 <873a9hfdqz.fsf@devron.myhome.or.jp>
-Content-Type: text/plain
-Organization: Digital Design Corporation
-Date: Wed, 01 Jul 2009 08:07:03 -0500
-Message-Id: <1246453623.2260.4.camel@iscandar.digidescorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 09:13:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33517 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751054AbZGANNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:13:37 -0400
+Date: Wed, 1 Jul 2009 15:13:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Howells <dhowells@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Wire up new syscalls
+Message-ID: <20090701131326.GB13524@elte.hu>
+References: <19019.22629.720187.794661@cargo.ozlabs.ibm.com> <20090701115425.GJ15958@elte.hu> <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de> <22582.1246447691@redhat.com> <32551.1246450797@redhat.com> <32707.1246452087@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32707.1246452087@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 09:28 +0900, OGAWA Hirofumi wrote:
-> "Steven J. Magnani" <steve@digidescorp.com> writes:
+
+* David Howells <dhowells@redhat.com> wrote:
+
+> Paul Mackerras <paulus@samba.org> wrote:
 > 
-> >> Well, now, we are using sb->s_dirty for fsinfo, so I'm wondering why
-> >> this happen frequently.
-> >
-> > My scenario was modifying a sector of an existing file and using
-> > fdatasync() to flush it. The FSINFO sector was being updated even though
-> > nothing about the FAT layout had changed.
+> > I did a generic implementation using irq disable on UP and 
+> > hashed spin-locks on SMP.  See 09d4e0ed for the implementation
 > 
-> I see. Probably, I'm missing something, or handling of sb->s_dirt may be
-> buggy, or something.
-> 
-> If it was fixed, is this patch still needed?  I guess this patch would
-> still be useful on some case though.  If you can explain, it would be
-> good.
+> I can do better than that on FRV.  FRV has load/store-double 
+> instructions that I can use to atomically load/store 64-bit memory 
+> locations by using paired registers for the data.
 
-It is I who am missing something. The patch originated against a 2.6.20
-kernel, where it does indeed suppress unnecessary updates. I saw the
-same code in the 2.6.30 kernel and assumed the same issue was present,
-and tested that with the patch present there were no unnecessary
-updates. It appears that there are no unnecessary updates even _without_
-the patch, so I withdraw it.
+Yeah - still i'd suggest to just go with the generic code initially, 
+as then 'perf' output itself can be used to verify whether the FRV 
+atomic64_t implementation is correct.
 
-> 
-> Thanks.
-
-Thanks for looking at this so carefully.
-
-Regards,
-------------------------------------------------------------------------
- Steven J. Magnani               "I claim this network for MARS!
- www.digidescorp.com              Earthling, return my space modulator!"
-
- #include <standard.disclaimer>
-
-
+	Ingo
