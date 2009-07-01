@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZGAJIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZGAJIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbZGAJIY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZGAJH6
+	id S1755324AbZGAJIn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbZGAJIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:07:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42631 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Jul 2009 05:08:35 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:54766 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755416AbZGAJH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:07:56 -0400
-Date: Wed, 1 Jul 2009 11:07:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RFC] Adding information of counts processes acquired
-	how many spinlocks to schedstat
-Message-ID: <20090701090749.GA13535@elte.hu>
-References: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp> <87hbxwj1k3.fsf@basil.nowhere.org> <20090701.174226.419764642024067218.mitake@dcl.info.waseda.ac.jp>
+	id S1754048AbZGAJIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:08:34 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <4A4B27D0.8020906@crca.org.au>
+Date: Wed, 01 Jul 2009 19:09:36 +1000
+From: Nigel Cunningham <ncunningham@crca.org.au>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701.174226.419764642024067218.mitake@dcl.info.waseda.ac.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+CC: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by
+ encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au> <87d48k2992.fsf@jeremyms.com>
+In-Reply-To: <87d48k2992.fsf@jeremyms.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi again.
 
-* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-
-> From: Andi Kleen <andi@firstfloor.org>
-> Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
-> Date: Wed, 01 Jul 2009 09:38:04 +0200
+Jeremy Maitin-Shepard wrote:
+> Nigel Cunningham <ncunningham@crca.org.au> writes:
 > 
-> > Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
-> > 
-> > > Hi,
-> > >
-> > > I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
-> > > After applied this patch, /proc/<PID>/sched will change like this,
-> > 
-> > The problem is that spinlocks are very common and schedstats is 
-> > enabled commonly in production kernels. You would need to 
-> > demonstrate that such a change doesn't have significant 
-> > performance impact. For me it looks like it has.
+>> Hi Jeremy.
+>> I'd suggest emailing the Linux-PM list rather than tuxonice-devel.
+>> TuxOnIce devel focuses on the out-of-vanilla suspend to disk
+>> enhancements rather than on suspend to ram.
 > 
-> I agree with your opinion about performance impact.
-> I thought this will make no problem,
-> because schedstat is categorized as "Kernel hacking" section.
-> But according to you, many production kernels enable it
-> so my patch will make widespread performance degradation.
-> I didn't know that, sorry.
+> The Linux-PM list is a good suggestion, but I specifically included
+> tuxonice because of the note at the bottom --- namely that I believe
+> that tuxonice in particular already includes support for much of what is
+> needed to implement the idea.
 
-His arguments are bogus: both lockstat and perfcounters are optional 
-(and default off), and the sw counter can be made near zero cost 
-even if both perfcounters and lockstat is enabled. Also, sw counters 
-are generally per CPU, etc. so not a performance issue.
+Ah, sorry. I read too quickly.
 
-The only (small) overhead will be when the lock-acquire sw counter 
-is actively enabled because you run 'perf stat -e lock-acquire' - 
-but that is expected and inherent in pretty much any kind of 
-instrumentation.
+> Specifically, suppose right at the stage in tuxonice hibernation when
+> the kernel as about to write the page cache pages to disk, it instead
+> just encrypts in place those pages, clears the encryption key, then
+> waits for the userspace helper to pass it back the key again to use to
+> decrypt the pages.
+> 
+> In fact it would seems that actually entering S3 is mostly irrelevant in
+> terms of the implementation.
+> 
+> Tuoxnice already has code to deal with interfacing with a userspace
+> helper that is kept unfrozen (and its pages handled specially) while
+> everything else is frozen and the page cache is overwritten, which is
+> precisely what is needed for this idea.  In particular, it seems that an
+> implementation of the idea I proposed would look a lot like tuxonice
+> with a powerdown mode of entering S3, just that instead of writing the
+> page cache to disk, it is encrypted in place.  I suppose it could well be that
+> all of the facilities used by tuxonice to do this are actually already
+> in the kernel, in which case it is indeed not relevant to tuxonice, but
+> it is not clear that the uswsusp infrastructure has everything that is
+> needed.
 
-The feature you are working on has the chance to be a very useful 
-and popular piece of instrumentation. Being able to tell the lock 
-acquire stats on a per task, per workload, per CPU or system-wide 
-basis is a unique capability no other tool can offer right now.
+You're absolutely right - TuxOnIce could be modified to do that, quite
+easily.
 
-Andi is often trolling perfcounters related (and other) threads, 
-please dont let yourself be deterred by that and feel free to ignore 
-him.
+As far as the possibility of using uswsusp goes, I'd like to get
+Rafael's input there - he knows it much better than I do (explicitly
+adding him to the ccs).
 
-	Ingo
+Regards,
+
+Nigel
