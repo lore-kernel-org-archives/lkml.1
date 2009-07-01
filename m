@@ -1,79 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbZGARca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZGARdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbZGARca (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 13:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZGARcU
+	id S1755806AbZGARdm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 13:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZGARdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 13:32:20 -0400
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:44975 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755355AbZGARcT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 13:32:19 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: Problem with /proc/iomem on ARM
-Date: Wed, 1 Jul 2009 13:32:19 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901A13822@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Problem with /proc/iomem on ARM
-Thread-Index: Acn6ceJ1e1ANMaXmSxOIOJb7Dx7rYQ==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <kay.sievers@vrfy.org>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 01 Jul 2009 17:32:20.0882 (UTC) FILETIME=[E351FF20:01C9FA71]
+	Wed, 1 Jul 2009 13:33:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36317 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753415AbZGARdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 13:33:33 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+References: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, mingo@elte.hu, akpm@linux-foundation.org,
+       paulus@samba.org, arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
+Date: Wed, 01 Jul 2009 18:33:24 +0100
+Message-ID: <20552.1246469604@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Kay,
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I just noticed a problem with /proc/iomem on my ARM system
-that I think was introduced by your patch:
+> > +#define atomic64_read(v)	((v)->counter)
+> > +#define atomic64_set(v, i)	(((v)->counter) = (i))
+> 
+> These seem to be buggy.
 
-commit 1d559e29138834bbcdf34ac072232bf543bfc4e0
-Author: Kay Sievers <kay.sievers@vrfy.org>
-Date:   Tue Jan 6 10:44:43 2009 -0800
+Good point.  I should be doing inline asm with LDD and STD instructions.
 
-    arm: struct device - replace bus_id with dev_name(), dev_set_name()
-
-    Cc: Russell King <rmk@arm.linux.org.uk>
-    Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-On my ep93xx ARM system I have three pl010 uarts: "apb:uart1",
-"apb:uart2", and "apb:uart3".  For /proc/iomem I used to see:
-
-/ # cat proc/iomem
-...
-808c0000-808c0fff : apb:uart1
-  808c0000-808c003f : uart-pl010
-808d0000-808d0fff : apb:uart2
-  808d0000-808d003f : uart-pl010
-808e0000-808e0fff : apb:uart3
-  808e0000-808e003f : uart-pl010
-...
-
-Now it shows up as:
-
-/ # cat proc/iomem
-...
-808c0000-808c0fff : <BAD>
-  808c0000-808c003f : uart-pl010
-808d0000-808d0fff : <BAD>
-  808d0000-808d003f : uart-pl010
-808e0000-808e0fff : <BAD>
-  808e0000-808e003f : uart-pl010
-...
-
-Is this a regression or is there something else going on?
-
-This was seen with kernel 2.6.30.  I havn't looked at /proc/iomem for
-a while so I'm not sure when this first started.
-
-Regards,
-Hartley
+David
