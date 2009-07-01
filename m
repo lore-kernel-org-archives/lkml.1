@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbZGAAho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbZGAAh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761809AbZGAAho (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbZGAAaa
+	id S1762023AbZGAAh4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759904AbZGAAaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Jun 2009 20:30:30 -0400
-Received: from kroah.org ([198.145.64.141]:34397 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:34400 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759904AbZGAAaT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:19 -0400
+	id S1759915AbZGAAaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:04:00 2009
-Message-Id: <20090701000400.649668117@mini.kroah.org>
+Message-Id: <20090701000400.797655009@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:00:11 -0700
+Date: Tue, 30 Jun 2009 17:00:12 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Mel Gorman <mel@csn.ul.ie>
-Subject: [patch 27/30] mm: fix handling of pagesets for downed cpus
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 28/30] dm mpath: validate hw_handler argument count
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=mm-fix-handling-of-pagesets-for-downed-cpus.patch
+Content-Disposition: inline; filename=dm-mpath-validate-hw_handler-argument-count.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,62 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dimitri Sivanich <sivanich@sgi.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 364df0ebfbbb1330bfc6ca159f4d6020efc15a12 upstream.
+commit e094f4f15f5169526c7200b9bde44b900548a81e upstream.
 
-After downing/upping a cpu, an attempt to set
-/proc/sys/vm/percpu_pagelist_fraction results in an oops in
-percpu_pagelist_fraction_sysctl_handler().
+Fix arg count parsing error in hw handlers.
 
-If a processor is downed then we need to set the pageset pointer back to
-the boot pageset.
-
-Updates of the high water marks should not access pagesets of unpopulated
-zones (those pointer go to the boot pagesets which would be no longer
-functional if their size would be increased beyond zero).
-
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/md/dm-mpath.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2764,7 +2764,7 @@ bad:
- 		if (dzone == zone)
- 			break;
- 		kfree(zone_pcp(dzone, cpu));
--		zone_pcp(dzone, cpu) = NULL;
-+		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
- 	}
- 	return -ENOMEM;
- }
-@@ -2779,7 +2779,7 @@ static inline void free_zone_pagesets(in
- 		/* Free per_cpu_pageset if it is slab allocated */
- 		if (pset != &boot_pageset[cpu])
- 			kfree(pset);
--		zone_pcp(zone, cpu) = NULL;
-+		zone_pcp(zone, cpu) = &boot_pageset[cpu];
- 	}
- }
+--- a/drivers/md/dm-mpath.c
++++ b/drivers/md/dm-mpath.c
+@@ -684,6 +684,11 @@ static int parse_hw_handler(struct arg_s
+ 	if (!hw_argc)
+ 		return 0;
  
-@@ -4409,6 +4409,8 @@ int percpu_pagelist_fraction_sysctl_hand
- 	if (!write || (ret == -EINVAL))
- 		return ret;
- 	for_each_zone(zone) {
-+		if (!populated_zone(zone))
-+			continue;
- 		for_each_online_cpu(cpu) {
- 			unsigned long  high;
- 			high = zone->present_pages / percpu_pagelist_fraction;
++	if (hw_argc > as->argc) {
++		ti->error = "not enough arguments for hardware handler";
++		return -EINVAL;
++	}
++
+ 	m->hw_handler_name = kstrdup(shift(as), GFP_KERNEL);
+ 	request_module("scsi_dh_%s", m->hw_handler_name);
+ 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
 
 
