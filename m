@@ -1,116 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZGAHFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419AbZGAHJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbZGAHFx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZGAHFo
+	id S1752419AbZGAHJT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZGAHJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:05:44 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:56997 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZGAHFn (ORCPT
+	Wed, 1 Jul 2009 03:09:08 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:40296 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZGAHJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:05:43 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 1 Jul 2009 00:04:56 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Jiri Olsa <jolsa@redhat.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and receive
- callbacks
-In-Reply-To: <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com>
-Message-ID: <alpine.DEB.1.10.0907010002010.8492@makko.or.mcafeemobile.com>
-References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com> <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 1 Jul 2009 03:09:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=P17ShVh2TzpeZs0m1hbqmrf7e3J/spe1cLsh+XTIW4triac/YkoxXMsoByWSIdhiSu
+         YokZckOZZABzbPuV8gntBdYHDGOKH/5eWc5BD+E3+olIVWxU1Q/YtubNxO7Vvdk1QYlu
+         WYX9ODJEzAmDu7beT/SNWtypaqjdk1mGRzhT8=
+From: Alberto Gonzalez <alberto6674@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Kernel 2.6.30 and udevd problem
+Date: Wed, 1 Jul 2009 09:09:03 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.29-ARCH; KDE/4.2.4; x86_64; ; )
+Cc: Dave Airlie <airlied@linux.ie>, Alberto Gonzalez <alberto6674@gmail.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       linux-hotplug@vger.kernel.org
+References: <200906280821.58631.info@gnebu.es> <alpine.DEB.2.00.0906300445550.4758@skynet.skynet.ie> <20090630090835.5536a465@jbarnes-g45>
+In-Reply-To: <20090630090835.5536a465@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907010909.03645.info@gnebu.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Jiri Olsa wrote:
+On Tuesday 30 June 2009 18:08:35 Jesse Barnes wrote:
+> On Tue, 30 Jun 2009 04:46:38 +0100 (IST)
+>
+> Dave Airlie <airlied@linux.ie> wrote:
+> > > On Sunday 28 June 2009 16:28:44 Kay Sievers wrote:
+> > > > If there isn't something else running which acts on uevents that
+> > > > trigger drm events, which I wouldn't expect, it seems like a drm
+> > > > kernel problem.
+> > >
+> > > Ok, thanks for looking at it. I'll sum up the problem for DRM
+> > > people:
+> > >
+> > > The problem started after upgrading to 2.6.30. At some point, udevd
+> > > starts to use a lot of CPU time. It happens randomly, but it seems
+> > > easier to trigger when running something graphics intensive
+> > > (glxgears, gtkperf, tuxracer..).
+> > >
+> > > Killing udevd and starting it with the --debug switch throws up
+> > > this when the problem starts:
+> >
+> > I've added jbarnes to the list,
+> >
+> > Jesses are we sending events yet? what for?
+>
+> Right now we just send uevents at hotplug time, so maybe one of our
+> hotplug interrupt bits is getting stuck, resulting in a continuous
+> stream of events as we generate other interrupts (which would happen
+> when running 3D apps for example).
+>
+> There's a DRM_DEBUG statement in drivers/gpu/drm/i915/i915_irq.c under
+> the if (I915_HAS_HOTPLUG(dev)) { check, if you make it into DRM_ERROR
+> we can see which one is getting stuck.
 
-> On Tue, Jun 30, 2009 at 12:13:40PM -0700, Davide Libenzi wrote:
-> > On Tue, 30 Jun 2009, Jiri Olsa wrote:
-> > 
-> > > Adding memory barrier after the poll_wait function, paired with
-> > > receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
-> > > to wrap the memory barrier.
-> > > 
-> > > Without the memory barrier, following race can happen.
-> > > The race fires, when following code paths meet, and the tp->rcv_nxt 
-> > > and __add_wait_queue updates stay in CPU caches.
-> > > 
-> > > 
-> > > CPU1                         CPU2
-> > > 
-> > > sys_select                   receive packet
-> > >   ...                        ...
-> > >   __add_wait_queue           update tp->rcv_nxt
-> > >   ...                        ...
-> > >   tp->rcv_nxt check          sock_def_readable
-> > >   ...                        {
-> > >   schedule                      ...
-> > >                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> > >                                         wake_up_interruptible(sk->sk_sleep)
-> > >                                 ...
-> > >                              }
-> > > 
-> > > If there was no cache the code would work ok, since the wait_queue and
-> > > rcv_nxt are opposit to each other.
-> > > 
-> > > Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> > > passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> > > tp->rcv_nxt and will return with new data mask.
-> > > In both cases the process (CPU1) is being added to the wait queue, so the
-> > > waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> > > 
-> > > The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> > > cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> > > endup calling schedule and sleep forever if there are no more data on the
-> > > socket.
-> > 
-> > > +static inline int sk_has_sleeper(struct sock *sk)
-> > > +{
-> > > +	/*
-> > > +	 * We need to be sure we are in sync with the
-> > > +	 * add_wait_queue modifications to the wait queue.
-> > > +	 *
-> > > +	 * This memory barrier is paired in the sock_poll_wait.
-> > > +	 */
-> > > +	smp_mb();
-> > > +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> > > +}
-> > 
-> > Jiri, since this is a pretty tricky condition, would you mind to have a 
-> > reduced version of the patch comment added to the source code?
-> > Patch comments are not really useful when you're trying to make sense of 
-> > some code ;)
-> > 
-> 
-> well, to be honest I thought it was already reduced :) however I have
-> no problem to make it shorter.. any suggestions? 
-> 
-> "This memory barrier protects the add_wait_queue modifications.
-> It is paired in the sock_poll_wait."
-> 
-> or do you want only the 
-> 
-> "This memory barrier is paired in the sock_poll_wait."
+I am afraid I'll need a bit more guidance here. I guess this means patching 
+the kernel. Would it be possible to get a test patch against 2.6.30? And then 
+after patching and compiling, how should I debug it?
 
-Heh, no, not that comment :)
-You detailed very clearly why the MB machinery is needed in your email 
-body, but the comment in the source code is pretty vague.
-So when I was talking about comment reduction, I meant using a reduced 
-version of the comment in the email body, into the proper place in the 
-source code.
-
-
-- Davide
-
-
+Thanks,
+Alberto.
