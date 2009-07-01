@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZGAX2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZGAXbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbZGAX2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 19:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZGAX2b
+	id S1753819AbZGAXbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 19:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZGAXba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 19:28:31 -0400
-Received: from jack.hrz.tu-chemnitz.de ([134.109.132.46]:47282 "EHLO
-	jack.hrz.tu-chemnitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753334AbZGAX2a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 19:28:30 -0400
-From: Tobias Doerffel <tobias.doerffel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tobias Doerffel <tobias.doerffel@gmail.com>
-Subject: [PATCH] Include linux/errno.h in linux/sysrq.h
-Date: Thu,  2 Jul 2009 01:28:26 +0200
-Message-Id: <1246490906-16024-1-git-send-email-tobias.doerffel@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-X-Spam-Score: -1.4 (-)
-X-Spam-Report: --- Start der SpamAssassin 3.2.5 Textanalyse (-1.4 Punkte)
-	Fragen an/questions to:  Postmaster TU Chemnitz <postmaster@tu-chemnitz.de>
-	-1.4 ALL_TRUSTED            Nachricht wurde nur ueber vertrauenswuerdige Rechner
-	weitergeleitet
-	--- Ende der SpamAssassin Textanalyse
-X-Scan-Signature: e3260060fbba42ba6f18958e4f5000eb
+	Wed, 1 Jul 2009 19:31:30 -0400
+Received: from claw.goop.org ([74.207.240.146]:48382 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751710AbZGAXba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 19:31:30 -0400
+Message-ID: <4A4BF1D2.8010305@goop.org>
+Date: Wed, 01 Jul 2009 16:31:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Dan Magenheimer <dan.magenheimer@oracle.com>
+CC: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, npiggin@suse.de, chris.mason@oracle.com,
+       kurt.hackel@oracle.com, dave.mccracken@oracle.com,
+       Avi Kivity <avi@redhat.com>, Rik van Riel <riel@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: [RFC] transcendent memory for Linux
+References: <79a405e4-3c4c-4194-aed4-a3832c6c5d6e@default>
+In-Reply-To: <79a405e4-3c4c-4194-aed4-a3832c6c5d6e@default>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In include/linux/sysrq.h the constant EINVAL is being used but is undefined
-if include/linux/errno.h is not included before.
+On 07/01/09 16:02, Dan Magenheimer wrote:
+> All of these still require a large number of guesses
+> across a 128-bit space of possible uuids, right?
+> It should be easy to implement "guess limits" in xen
+> that disable tmem use by a guest if it fails too many guesses.
+>   
 
-Fix this by adding #include <linux/errno.h> at the beginning.
+How does Xen distinguish between someone "guessing" uuids and a normal
+user which wants to create lots of pools?
 
-Signed-off-by: Tobias Doerffel <tobias.doerffel@gmail.com>
----
- include/linux/sysrq.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+>> You also have to consider the case of a domain which was once part of
+>> the ocfs cluster, but now is not - it may still know the uuid, but not
+>> be otherwise allowed to use the cluster.
+>>     
+>
+> But on the other hand, the security model here can be that
+> if a trusted entity becomes untrusted, you have to change
+> the locks.
+>   
 
-diff --git a/include/linux/sysrq.h b/include/linux/sysrq.h
-index 98a1d8c..99adcdc 100644
---- a/include/linux/sysrq.h
-+++ b/include/linux/sysrq.h
-@@ -14,6 +14,8 @@
- #ifndef _LINUX_SYSRQ_H
- #define _LINUX_SYSRQ_H
- 
-+#include <linux/errno.h>
-+
- struct pt_regs;
- struct tty_struct;
- 
--- 
-1.6.3.3
+Revocation is one of the big problems with capabilities-based systems.
 
+>> Yeah, a shared namespace of accessible objects is an entirely 
+>> new thing
+>> in the Xen universe.  I would also drop Xen support until 
+>> there's a good
+>> security story about how they can be used.
+>>     
+>
+> While I agree that the security is not bulletproof, I wonder
+> if this position might be a bit extreme.  Certainly, the NSA
+> should not turn on tmem in a cluster, but that doesn't mean that
+> nobody should be allowed to.  I really suspect that there are
+> less costly / more rewarding attack vectors at several layers
+> in the hardware/software stack of most clusters.
+>   
+
+Well, I think you can define any security model you like, but I think
+you need to have a defined security model before making it an available
+API.  At the moment the model is defined by whatever you currently have
+implemented, and anyone using the API as-is - without special
+consideration of its security properties - is going to end up vulnerable.
+
+In an earlier mail I said "a shared namespace of accessible objects is
+an entirely new thing in the Xen universe", which is obviously not true:
+we have Xenbus.
+
+It seems to me that a better approach to shared tmem pools should be
+moderated via Xenbus, which in turn allows dom0/xenstored/tmemd/etc to
+apply arbitrary policies to who gets to see what handles, revoke them, etc.
+
+You don't need to deal with "uuids" at the tmem hypercall level. 
+Instead, you have a well-defined xenbus path corresponding to the
+resource; reading it will return a handle number, which you can then use
+with your hypercalls.  If your access is denied or revoked, then the
+read will fail (or the current handle will stop working if revoked). 
+This requires some privileged hypercalls to establish and remove tmem
+handles for a particular domain.
+
+I'm assuming that the job of managing and balancing tmem resources will
+need to happen in a tmem-domain rather than trying to build all that
+policy into Xen itself, so putting a bit more logic in there to manage
+shared access rules doesn't add much complexity to the system.
+
+    J
