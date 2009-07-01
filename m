@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZGANL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbZGANMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZGANL4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZGANLs
+	id S1752928AbZGANMl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbZGANMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:11:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45062 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZGANLr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:11:47 -0400
-Date: Wed, 1 Jul 2009 15:11:46 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
-Message-ID: <20090701131146.GR6760@one.firstfloor.org>
-References: <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org> <20090701064250.GM6760@one.firstfloor.org> <4A4B38C5.1070504@kernel.org> <20090701122312.GP6760@one.firstfloor.org> <4A4B5C32.1010009@kernel.org>
-Mime-Version: 1.0
+	Wed, 1 Jul 2009 09:12:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33147 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZGANMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:12:34 -0400
+Date: Wed, 1 Jul 2009 15:12:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter: Add Generalized Hardware FPU
+	support for AMD
+Message-ID: <20090701131217.GA13524@elte.hu>
+References: <1246267985.3185.3.camel@hpdv5.satnam> <20090630101105.GF6942@elte.hu> <1246368049.3026.11.camel@hpdv5.satnam> <20090630224220.GI1241@elte.hu> <19019.22396.776453.297335@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4B5C32.1010009@kernel.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <19019.22396.776453.297335@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 09:53:06PM +0900, Tejun Heo wrote:
-> It would be nice to have something to test cpu on/offlining
-> automatically.  Something which keeps bringing cpus up and down as the
-> system goes through stress testing.
 
-That's an trivial shell script using echo into sysfs files. It doesn't
-seem to be widely done (the last time I tried it I promptly ran
-into some RCU bug). You need a large enough machine for it.
+* Paul Mackerras <paulus@samba.org> wrote:
 
-But most stress testing does not actually have good code coverage 
-in my experience. It just runs the same small set of core code all over 
-(you can check now, kernel gcov is finally in)
-
-The tricky part is to actually test the code you want to test.
-
-> > ending up with lots of badly tested code is to:
+> Ingo Molnar writes:
 > 
-> But I don't think it would be that drastic.  Most users are quite
-> simple.
+> >         19583739  vec-adds               (   2.01x scaled)
+> >         20856051  vec-muls               (   2.01x scaled)
+> >         20856051  vec-divs               (   2.01x scaled)
+> >      25100224054  vec-idle-cycles        (   1.99x scaled)
+> >         12540131  vec-busy-cycles        (   1.99x scaled)
+> >         42286702  vec-ops                (   2.01x scaled)
+> > 
+> > Paulus: would this categorization fit PowerPC too?
+> 
+> Conceptually that looks nice, but unfortunately we don't have 
+> events that correspond to that categorization on any PowerPC with 
+> vector hardware (VMX/Altivec).  POWER6 seems to have the most 
+> vector events, and they are mostly divided up along the lines of 
+> simple / complex / permute / load / store operations, and whether 
+> they are integer or floating-point operations.
 
-But how do you test them properly?  And educate
-the driver writers?  Also it would likely increase code sizes drastically.
+Here's what we have on x86:
 
-Philosophically I think code like that should be a simple
-operation and turning all the per cpu init code into
-callbacks is not simple. That makes everything more error prone.
+     20177177044  vec-adds                  (scaled from 66.63%)
+     34101687027  vec-muls                  (scaled from 66.64%)
+      3984060862  vec-divs                  (scaled from 66.71%)
+     26349684710  vec-idle-cycles           (scaled from 66.65%)
+      9052001905  vec-stall-cycles          (scaled from 66.66%)
+     76440734242  vec-ops                   (scaled from 66.71%)
 
-And it's imho unclear if that is all worth it just to avoid 
-wasting some memory in the "256 possible CPUs" case (which 
-I doubt is particularly realistic anyways, at least I don't
-know of any Hypervisor today that scales to 256 CPUs)
+Could at least the idle/busy/stall/total generic stats be filled in 
+on powerpc, with a reasonable enough approximation? Those 
+utilization metrics are the most important ones when one tries to 
+figure out how well utilized the vector units are.
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Ingo
