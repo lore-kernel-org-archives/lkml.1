@@ -1,105 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZGAN0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbZGAN1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754099AbZGAN0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 09:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZGAN0Y
+	id S1755237AbZGAN1F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 09:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZGAN0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 09:26:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51847 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750971AbZGAN0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 09:26:23 -0400
-Subject: Re: [PATCH -tip] perf_counter: Add Generalized Hardware FPU
- support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <19019.22396.776453.297335@cargo.ozlabs.ibm.com>
-References: <1246267985.3185.3.camel@hpdv5.satnam>
-	 <20090630101105.GF6942@elte.hu> <1246368049.3026.11.camel@hpdv5.satnam>
-	 <20090630224220.GI1241@elte.hu>
-	 <19019.22396.776453.297335@cargo.ozlabs.ibm.com>
+	Wed, 1 Jul 2009 09:26:54 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:43625 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752239AbZGAN0x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 09:26:53 -0400
+Subject: Re: [patch] buildfix ppc randconfig
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: David Brownell <david-b@pacbell.net>, Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       sachinp <sachinp@linux.vnet.ibm.com>,
+       balbir <balbir@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200906190535.35138.david-b@pacbell.net>
+References: <200906190535.35138.david-b@pacbell.net>
 Content-Type: text/plain
-Date: Wed, 01 Jul 2009 18:55:46 +0530
-Message-Id: <1246454746.3072.10.camel@ht.satnam>
+Organization: IBM
+Date: Wed, 01 Jul 2009 18:56:04 +0530
+Message-Id: <1246454764.6978.60.camel@subratamodak.linux.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 22:33 +1000, Paul Mackerras wrote:
-> Ingo Molnar writes:
-> 
-> >         19583739  vec-adds               (   2.01x scaled)
-> >         20856051  vec-muls               (   2.01x scaled)
-> >         20856051  vec-divs               (   2.01x scaled)
-> >      25100224054  vec-idle-cycles        (   1.99x scaled)
-> >         12540131  vec-busy-cycles        (   1.99x scaled)
-> >         42286702  vec-ops                (   2.01x scaled)
-> > 
-> > Paulus: would this categorization fit PowerPC too?
-> 
-> Conceptually that looks nice, but unfortunately we don't have events
-> that correspond to that categorization on any PowerPC with vector
-> hardware (VMX/Altivec).  POWER6 seems to have the most vector events,
-> and they are mostly divided up along the lines of simple / complex /
-> permute / load / store operations, and whether they are integer or
-> floating-point operations.
-> 
-> Here are the vector-related events we have on POWER6:
-> 
-> MRK_VMX0_LD_WRBACK	Marked VMX0 load writeback valid
-> MRK_VMX1_LD_WRBACK	Marked VMX1 load writeback valid
-> MRK_VMX_COMPLEX_ISSUED	Marked VMX instruction issued to complex
-> MRK_VMX_FLOAT_ISSUED	Marked VMX instruction issued to float
-> MRK_VMX_PERMUTE_ISSUED	Marked VMX instruction issued to permute
-> MRK_VMX_SIMPLE_ISSUED	Marked VMX instruction issued to simple
-> MRK_VMX_ST_ISSUED	Marked VMX store issued
-> VMX0_INST_ISSUED	VMX0 instruction issued
-> VMX0_LD_ISSUED		VMX0 load issued
-> VMX0_LD_WRBACK		VMX0 load writeback valid
-> VMX0_STALL		VMX0 stall
-> VMX1_INST_ISSUED	VMX1 instruction issued
-> VMX1_LD_ISSUED		VMX1 load issued
-> VMX1_LD_WRBACK		VMX1 load writeback valid
-> VMX1_STALL		VMX1 stall
-> VMX_COMPLEX_ISSUED	VMX instruction issued to complex
-> VMX_FLOAT_ISSUED	VMX instruction issued to float
-> VMX_FLOAT_MULTICYCLE	VMX multi-cycle floating point instruction issued
-> VMX_PERMUTE_ISSUED	VMX instruction issued to permute
-> VMX_RESULT_SAT_0_1	VMX valid result with sat bit is set (0->1)
-> VMX_RESULT_SAT_1	VMX valid result with sat=1
-> VMX_SIMPLE_ISSUED	VMX instruction issued to simple
-> VMX_ST_ISSUED		VMX store issued
-> 
-> I'm not sure what the exact distinction is between VMX0 and VMX1.
-> I'll find out.
-> 
+Greg/David,
 
-I am just guessing for powerpc, normally different units are for
-different purpose like some do addition/multiplication and others do
-division.
+Has this been checked in? I am not sure if i know this.
 
-Like in Intel Corei7/Nehalem :
+Regards--
+Subrata
 
-UOPS_EXECUTED.PORT0:     Counts number of Uops executed
-                         that were issued on port 0. Port 0
-                         handles integer arithmetic, SIMD
-                         and FP add Uops.
-UOPS_EXECUTED.PORT1:     Counts number of Uops executed
-                         that were issued on port 1. Port 1
-                         handles integer arithmetic, SIMD,
-                         integer shift, FP multiply and FP
-                         divide Uops.
-
-Can you provide me the link of the Hardware manual so that I can check
-it out.
-
-Thanks,
---
-JSR
+On Fri, 2009-06-19 at 05:35 -0700, David Brownell wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> We could just make the USB_OHCI_HCD_PPC_OF option implicit
+> and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
+> and USB_OHCI_HCD_PPC_OF_LE are set.
+> 
+> [ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Tested-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> ---
+>  drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
+>  1 file changed, 15 insertions(+), 14 deletions(-)
+> 
+> --- a/drivers/usb/host/Kconfig
+> +++ b/drivers/usb/host/Kconfig
+> @@ -181,26 +181,27 @@ config USB_OHCI_HCD_PPC_SOC
+>  	  Enables support for the USB controller on the MPC52xx or
+>  	  STB03xxx processor chip.  If unsure, say Y.
+> 
+> -config USB_OHCI_HCD_PPC_OF
+> -	bool "OHCI support for PPC USB controller on OF platform bus"
+> -	depends on USB_OHCI_HCD && PPC_OF
+> -	default y
+> -	---help---
+> -	  Enables support for the USB controller PowerPC present on the
+> -	  OpenFirmware platform bus.
+> -
+>  config USB_OHCI_HCD_PPC_OF_BE
+> -	bool "Support big endian HC"
+> -	depends on USB_OHCI_HCD_PPC_OF
+> -	default y
+> +	bool "OHCI support for OF platform bus (big endian)"
+> +	depends on USB_OHCI_HCD && PPC_OF
+>  	select USB_OHCI_BIG_ENDIAN_DESC
+>  	select USB_OHCI_BIG_ENDIAN_MMIO
+> +	---help---
+> +	  Enables support for big-endian USB controllers present on the
+> +	  OpenFirmware platform bus.
+> 
+>  config USB_OHCI_HCD_PPC_OF_LE
+> -	bool "Support little endian HC"
+> -	depends on USB_OHCI_HCD_PPC_OF
+> -	default n
+> +	bool "OHCI support for OF platform bus (little endian)"
+> +	depends on USB_OHCI_HCD && PPC_OF
+>  	select USB_OHCI_LITTLE_ENDIAN
+> +	---help---
+> +	  Enables support for little-endian USB controllers present on the
+> +	  OpenFirmware platform bus.
+> +
+> +config USB_OHCI_HCD_PPC_OF
+> +	bool
+> +	depends on USB_OHCI_HCD && PPC_OF
+> +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
+> 
+>  config USB_OHCI_HCD_PCI
+>  	bool "OHCI support for PCI-bus USB controllers"
 
