@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765176AbZGABI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbZGABGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765176AbZGABI4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbZGAAfZ
+	id S1759368AbZGABGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761527AbZGAAfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:25 -0400
-Received: from kroah.org ([198.145.64.141]:60566 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:17 -0400
+Received: from kroah.org ([198.145.64.141]:60524 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761518AbZGAAfS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:18 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:37 2009
-Message-Id: <20090701002437.050628914@mini.kroah.org>
+	id S1761496AbZGAAfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:11 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:35 2009
+Message-Id: <20090701002434.723163004@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:05 -0700
+Date: Tue, 30 Jun 2009 17:23:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dan.j.williams@intel.com>, NeilBrown <neilb@suse.de>
-Subject: [patch 076/108] md/raid5: add missing call to schedule() after prepare_to_wait()
+       Sujith <Sujith.Manoharan@atheros.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 069/108] ath9k: Fix bug in determining calibration support
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=md-raid5-add-missing-call-to-schedule-after-prepare_to_wait.patch
+Content-Disposition: inline; filename=ath9k-fix-bug-in-determining-calibration-support.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: Sujith <Sujith.Manoharan@atheros.com>
 
-commit 7a3ab908948b6296ee7e81d42f7c176361c51975 upstream.
+commit a451aa66dcb14efcb7addf1d8edcac8df76a97b6 upstream.
 
-In the unlikely event that reshape progresses past the current request
-while it is waiting for a stripe we need to schedule() before retrying
-for 2 reasons:
-1/ Prevent list corruption from duplicated list_add() calls without
-   intervening list_del().
-2/ Give the reshape code a chance to make some progress to resolve the
-   conflict.
+ADC gain calibration has to be done for all non 2GHZ-HT20 channels.
+Regression from "ath9k: use ieee80211_conf on ath9k_hw_iscal_supported()"
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Sujith <Sujith.Manoharan@atheros.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid5.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/wireless/ath9k/calib.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -3696,6 +3696,7 @@ static int make_request(struct request_q
- 				spin_unlock_irq(&conf->device_lock);
- 				if (must_retry) {
- 					release_stripe(sh);
-+					schedule();
- 					goto retry;
- 				}
- 			}
+--- a/drivers/net/wireless/ath9k/calib.c
++++ b/drivers/net/wireless/ath9k/calib.c
+@@ -284,8 +284,8 @@ static bool ath9k_hw_iscal_supported(str
+ 		return true;
+ 	case ADC_GAIN_CAL:
+ 	case ADC_DC_CAL:
+-		if (conf->channel->band == IEEE80211_BAND_5GHZ &&
+-		  conf_is_ht20(conf))
++		if (!(conf->channel->band == IEEE80211_BAND_2GHZ &&
++		      conf_is_ht20(conf)))
+ 			return true;
+ 		break;
+ 	}
 
 
