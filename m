@@ -1,105 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbZGAG5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZGAG6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbZGAG5j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZGAG53
+	id S1753030AbZGAG6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZGAG6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:57:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41832 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751928AbZGAG52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:57:28 -0400
-Date: Wed, 1 Jul 2009 08:57:24 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and
-	receive callbacks
-Message-ID: <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com>
-References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 1 Jul 2009 02:58:13 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:41314 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753071AbZGAG6N convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:58:13 -0400
+Date: Wed, 01 Jul 2009 08:57:50 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers
+ without MISO or MOSI pin
+In-reply-to: <200906301839.13764.david-b@pacbell.net>
+To: "'David Brownell'" <david-b@pacbell.net>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>,
+       spi-devel-general@lists.sourceforge.net, kyungmin.park@samsung.com,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <000101c9fa19$44051540$cc0f3fc0$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=iso-8859-2
+Content-language: pl
+Content-transfer-encoding: 8BIT
+Thread-index: Acn57NIk+CNcABZzRiisPDMCPVXqgQAK/IdQ
+References: <000a01c9f61f$fd7ff3d0$f87fdb70$%szyprowski@samsung.com>
+ <200906301839.13764.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 12:13:40PM -0700, Davide Libenzi wrote:
-> On Tue, 30 Jun 2009, Jiri Olsa wrote:
-> 
-> > Adding memory barrier after the poll_wait function, paired with
-> > receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
-> > to wrap the memory barrier.
-> > 
-> > Without the memory barrier, following race can happen.
-> > The race fires, when following code paths meet, and the tp->rcv_nxt 
-> > and __add_wait_queue updates stay in CPU caches.
-> > 
-> > 
-> > CPU1                         CPU2
-> > 
-> > sys_select                   receive packet
-> >   ...                        ...
-> >   __add_wait_queue           update tp->rcv_nxt
-> >   ...                        ...
-> >   tp->rcv_nxt check          sock_def_readable
-> >   ...                        {
-> >   schedule                      ...
-> >                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> >                                         wake_up_interruptible(sk->sk_sleep)
-> >                                 ...
-> >                              }
-> > 
-> > If there was no cache the code would work ok, since the wait_queue and
-> > rcv_nxt are opposit to each other.
-> > 
-> > Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> > passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> > tp->rcv_nxt and will return with new data mask.
-> > In both cases the process (CPU1) is being added to the wait queue, so the
-> > waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> > 
-> > The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> > cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> > endup calling schedule and sleep forever if there are no more data on the
-> > socket.
-> 
-> > +static inline int sk_has_sleeper(struct sock *sk)
-> > +{
-> > +	/*
-> > +	 * We need to be sure we are in sync with the
-> > +	 * add_wait_queue modifications to the wait queue.
-> > +	 *
-> > +	 * This memory barrier is paired in the sock_poll_wait.
-> > +	 */
-> > +	smp_mb();
-> > +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> > +}
-> 
-> Jiri, since this is a pretty tricky condition, would you mind to have a 
-> reduced version of the patch comment added to the source code?
-> Patch comments are not really useful when you're trying to make sense of 
-> some code ;)
-> 
+Hello,
 
-well, to be honest I thought it was already reduced :) however I have
-no problem to make it shorter.. any suggestions? 
+On Wednesday, July 01, 2009 3:39 AM, David Brownell wrote:
 
-"This memory barrier protects the add_wait_queue modifications.
-It is paired in the sock_poll_wait."
+> > --- a/drivers/spi/spi_bitbang.c
+> > +++ b/drivers/spi/spi_bitbang.c
+> > @@ -392,6 +392,22 @@ int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)
+> >         unsigned long           flags;
+> >         int                     status = 0;
+> >
+> > +       if (spi->master->flags & SPI_MASTER_NO_RX) {
+> > +               struct spi_transfer *xfer;
+> > +               list_for_each_entry(xfer, &m->transfers, transfer_list) {
+> > +                       if (xfer->rx_buf)
+> > +                               return -EINVAL;
+> > +               }
+> > +       }
+> 
+> Actually these two loops should merge, and likely move with
+> spi_async() into the spi.c core code ... I'll split this
+> support into a separate patch.
 
-or do you want only the 
+Ok. 
 
-"This memory barrier is paired in the sock_poll_wait."
+I created two separate loops because I thought that it will be faster, especially when the check must be done for each transfer
+message request.
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
 
 
-jirka
-> 
-> - Davide
-> 
-> 
+
