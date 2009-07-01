@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761825AbZGABU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764777AbZGABXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761825AbZGABU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbZGAAtF
+	id S1764777AbZGABXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765518AbZGABEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:49:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43818 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932192AbZGAAtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:49:03 -0400
-Message-ID: <4A4AB24F.6050707@kernel.org>
-Date: Wed, 01 Jul 2009 09:48:15 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, linux-arch@vger.kernel.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <20090630224018.GJ6760@one.firstfloor.org>
-In-Reply-To: <20090630224018.GJ6760@one.firstfloor.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 00:48:18 +0000 (UTC)
+	Tue, 30 Jun 2009 21:04:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:34989 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765521AbZGABES (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:04:18 -0400
+From: Andy Isaacson <adi@vmware.com>
+To: linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net
+Cc: adi@hexapodia.org, Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
+       dds@google.com, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com,
+       Andy Isaacson <adi@vmware.com>
+Subject: [PATCH 3/6] tpm_tis: set timeouts before calling request_locality
+Date: Tue, 30 Jun 2009 18:04:12 -0700
+Message-Id: <1246410255-6839-4-git-send-email-adi@vmware.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1246410255-6839-1-git-send-email-adi@vmware.com>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Andi.
+On Intel iTPM implementations, the timeouts must be set before
+calling request_locality.
 
-Andi Kleen wrote:
->> How would you allow that guest to stay on 2 virtual CPUs but still 
->> be able to hot-plug many other CPUs if the guest context rises above 
->> its original CPU utilization?
-> 
-> (unless you're planning to rewrite lots of possible cpu users all over
-> the tree) -- the only way is to keep the percpu area small and preallocate. 
-> 
-> As long as the per cpu data size stays reasonable (not more than a 100-200k)
-> that's very doable. It probably won't work with 4096 guest CPUs without
-> wasting too much memory, but then I don't think we have any Hypervisor
-> that scales to that many CPUs anyways, so it's not the biggest
-> concern. For the 128CPU case it works (although i might need
-> to enlarge vmalloc area a bit on 32bit) 
+Based on a patch from Colin Didier and the tpmdd-devel mailing list:
+http://cybione.org/~cdidier/log/data/200812020841/itpm.diff
 
-I don't see much reason why we should put artificial limit on how much
-percpu memory could be used.  For lockdep, that much of percpu memory
-is actually necessary.  Another layer of indirection surely can lessen
-the pressure on the generic percpu implementation but the problem can
-be solved by the generic code without too much difficulty.
+Signed-off-by: Andy Isaacson <adi@vmware.com>
+---
+ drivers/char/tpm/tpm_tis.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Thanks.
-
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index e859e0e..e0bda02 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -450,6 +450,12 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+ 		goto out_err;
+ 	}
+ 
++	/* Default timeouts */
++	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
++	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++
+ 	if (request_locality(chip, 0) != 0) {
+ 		rc = -ENODEV;
+ 		goto out_err;
+@@ -457,12 +463,6 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+ 
+ 	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
+ 
+-	/* Default timeouts */
+-	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
+-	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-
+ 	dev_info(dev,
+ 		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
+ 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
 -- 
-tejun
+1.6.3.1
+
