@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993AbZGAHDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZGAHER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752993AbZGAHDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZGAHDe
+	id S1753256AbZGAHER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZGAHED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:03:34 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:41351 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751046AbZGAHDd (ORCPT
+	Wed, 1 Jul 2009 03:04:03 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:27264 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbZGAHED convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:03:33 -0400
-Date: Wed, 1 Jul 2009 15:03:32 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: jolsa@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, oleg@redhat.com,
-       eric.dumazet@gmail.com
-Subject: Re: [PATCH] net: fix race in the receive/select
-Message-ID: <20090701070332.GA31103@gondor.apana.org.au>
-References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au> <20090701062732.GK6760@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Jul 2009 03:04:03 -0400
+Message-Id: <4A4B2683020000780000862F@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 01 Jul 2009 08:04:03 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Cc: <tony.luck@intel.com>, "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Tim Abbott" <tabbott@mit.edu>, <sam@ravnborg.org>,
+       "Paul Mackerras" <paulus@samba.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] also discard .*init sections after module
+	 initialization
+References: <4A4A19C60200007800008353@vpn.id2.novell.com>
+ <200907011452.26720.rusty@rustcorp.com.au>
+In-Reply-To: <200907011452.26720.rusty@rustcorp.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090701062732.GK6760@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 08:27:32AM +0200, Andi Kleen wrote:
+>>> Rusty Russell <rusty@rustcorp.com.au> 01.07.09 07:22 >>>
+>On Tue, 30 Jun 2009 09:27:26 pm Jan Beulich wrote:
+>> Just like .init, these sections are supposed to be unneeded after init,
+>> and modpost warns about improper section references anyway.
 >
-> mfence is not needed for normal C code (not using non temporal
-> stores) in the Linux memory model on x86 and is a no-op. Only the compile
-> time barrier matters.
+>Tim Abbot had a section renaming patch, for -ffunction-sections.  Can we kill 
+>two birds with one stone and have a unique string for init sections, and 
+>another for exit sections?
 
-In that case this bug needs to be digged deeper regardless of
-this patch.
+Not sure, would need to see what that patch does first. And then, the patch
+here doesn't do any renaming.
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+>> Likewise
+>> for .*exit which, other than .exit, aren't needed for the module unload
+>> path.
+>
+>Currently true, but I can't see that being true in general.
+
+Why? .*exit sections deal with device/memory/CPU hot remove, which is
+orthogonal to module unload.
+
+Jan
+
