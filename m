@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762379AbZGAAkp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbZGAAk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762379AbZGAAkp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:40:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760905AbZGAAco
+	id S1762554AbZGAAk6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760906AbZGAAcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:32:44 -0400
-Received: from kroah.org ([198.145.64.141]:59766 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:32:45 -0400
+Received: from kroah.org ([198.145.64.141]:59770 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760882AbZGAAcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760888AbZGAAcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:32:43 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:49 2009
-Message-Id: <20090701001549.565804796@mini.kroah.org>
+Message-Id: <20090701001549.750098757@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:05 -0700
+Date: Tue, 30 Jun 2009 17:14:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 09/35] atkbd: add forced release quirks for four more keyboard models
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Andrew Victor <avictor.za@gmail.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [patch 10/35] atmel_lcdfb: correct fifo size for some products
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=atkbd-add-forced-release-quirks-for-four-more-keyboard-models.patch
+Content-Disposition: inline; filename=atmel_lcdfb-correct-fifo-size-for-some-products.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,289 +32,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chuck Ebbert <cebbert@redhat.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-Add atkbd forced key release quirks for four more notebook models.
+commit 53b7479bbdaedcc7846c66fd608fe66f1b5aa35b upstream.
 
-Rollup of:
-linux-2.6.git-391916985b009b8934d00f772a3bde0d8a495ebd.patch
-linux-2.6.git-adcb523eb39e0dd2f712d8dbd8e18b5d36a97825.patch
-linux-2.6.git-157f3a3e17cd498571db2a472dc3a15a7679ee3f.patch
-linux-2.6.git-e04126c79242d2740b469292d42c239bad7807cc.patch
-linux-2.6.git-9166d0f620d5dd4a128711bdeedb3e0f534d9d49.patch
+Remove wrong fifo size definition for some AT91 products.
 
-Cc: Dmitry Torokhov <dtor@mail.ru>
+Due to a misunderstanding of some AT91 datasheets, a fifo size of 2048
+(words) has been introduced by mistake.  In fact, all products (AT91/AT32)
+are sharing the same fifo size of 512 words.
+
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Andrew Victor <avictor.za@gmail.com>
+Acked-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/input/keyboard/atkbd.c |  169 +++++++++++++++++++++++------------------
- 1 file changed, 96 insertions(+), 73 deletions(-)
+ drivers/video/atmel_lcdfb.c |   10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -229,7 +229,8 @@ struct atkbd {
- /*
-  * System-specific ketymap fixup routine
-  */
--static void (*atkbd_platform_fixup)(struct atkbd *);
-+static void (*atkbd_platform_fixup)(struct atkbd *, const void *data);
-+static void *atkbd_platform_fixup_data;
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -29,14 +29,8 @@
  
- static ssize_t atkbd_attr_show_helper(struct device *dev, char *buf,
- 				ssize_t (*handler)(struct atkbd *, char *));
-@@ -834,87 +835,71 @@ static void atkbd_disconnect(struct seri
- }
- 
- /*
-- * Most special keys (Fn+F?) on Dell laptops do not generate release
-- * events so we have to do it ourselves.
-+ * generate release events for the keycodes given in data
-  */
--static void atkbd_dell_laptop_keymap_fixup(struct atkbd *atkbd)
-+static void atkbd_apply_forced_release_keylist(struct atkbd* atkbd,
-+						const void *data)
- {
--	static const unsigned int forced_release_keys[] = {
--		0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f, 0x93,
--	};
--	int i;
-+	const unsigned int *keys = data;
-+	unsigned int i;
- 
- 	if (atkbd->set == 2)
--		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
--			__set_bit(forced_release_keys[i],
--				  atkbd->force_release_mask);
-+		for (i = 0; keys[i] != -1U; i++)
-+			__set_bit(keys[i], atkbd->force_release_mask);
- }
- 
- /*
-+ * Most special keys (Fn+F?) on Dell laptops do not generate release
-+ * events so we have to do it ourselves.
-+ */
-+static unsigned int atkbd_dell_laptop_forced_release_keys[] = {
-+	0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f, 0x93, -1U
-+};
-+
-+/*
-  * Perform fixup for HP system that doesn't generate release
-  * for its video switch
-  */
--static void atkbd_hp_keymap_fixup(struct atkbd *atkbd)
--{
--	static const unsigned int forced_release_keys[] = {
--		0x94,
--	};
--	int i;
+ /* configurable parameters */
+ #define ATMEL_LCDC_CVAL_DEFAULT		0xc8
+-#define ATMEL_LCDC_DMA_BURST_LEN	8
 -
--	if (atkbd->set == 2)
--		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
--			__set_bit(forced_release_keys[i],
--					atkbd->force_release_mask);
--}
-+static unsigned int atkbd_hp_forced_release_keys[] = {
-+	0x94, -1U
-+};
+-#if defined(CONFIG_ARCH_AT91SAM9263) || defined(CONFIG_ARCH_AT91CAP9) || \
+-	defined(CONFIG_ARCH_AT91SAM9RL)
+-#define ATMEL_LCDC_FIFO_SIZE		2048
+-#else
+-#define ATMEL_LCDC_FIFO_SIZE		512
+-#endif
++#define ATMEL_LCDC_DMA_BURST_LEN	8	/* words */
++#define ATMEL_LCDC_FIFO_SIZE		512	/* words */
  
- /*
-  * Inventec system with broken key release on volume keys
-  */
--static void atkbd_inventec_keymap_fixup(struct atkbd *atkbd)
--{
--	const unsigned int forced_release_keys[] = {
--		0xae, 0xb0,
--	};
--	int i;
--
--	if (atkbd->set == 2)
--		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
--			__set_bit(forced_release_keys[i],
--				  atkbd->force_release_mask);
--}
-+static unsigned int atkbd_inventec_forced_release_keys[] = {
-+	0xae, 0xb0, -1U
-+};
- 
- /*
-  * Perform fixup for HP Pavilion ZV6100 laptop that doesn't generate release
-  * for its volume buttons
-  */
--static void atkbd_hp_zv6100_keymap_fixup(struct atkbd *atkbd)
--{
--	const unsigned int forced_release_keys[] = {
--		0xae, 0xb0,
--	};
--	int i;
-+static unsigned int atkbd_hp_zv6100_forced_release_keys[] = {
-+	0xae, 0xb0, -1U
-+};
- 
--	if (atkbd->set == 2)
--		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
--			__set_bit(forced_release_keys[i],
--					atkbd->force_release_mask);
--}
-+/*
-+ * Samsung NC10,NC20 with Fn+F? key release not working
-+ */
-+static unsigned int atkbd_samsung_forced_release_keys[] = {
-+	0x82, 0x83, 0x84, 0x86, 0x88, 0x89, 0xb3, 0xf7, 0xf9, -1U
-+};
- 
- /*
-- * Samsung NC10 with Fn+F? key release not working
-+ * The volume up and volume down special keys on a Fujitsu Amilo PA 1510 laptop
-+ * do not generate release events so we have to do it ourselves.
-  */
--static void atkbd_samsung_keymap_fixup(struct atkbd *atkbd)
--{
--	const unsigned int forced_release_keys[] = {
--		0x82, 0x83, 0x84, 0x86, 0x88, 0x89, 0xb3, 0xf7, 0xf9,
--	};
--	int i;
-+static unsigned int atkbd_amilo_pa1510_forced_release_keys[] = {
-+	0xb0, 0xae, -1U
-+};
- 
--	if (atkbd->set == 2)
--		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
--			__set_bit(forced_release_keys[i],
--				  atkbd->force_release_mask);
--}
-+/*
-+ * Amilo Xi 3650 key release for light touch bar not working
-+ */
-+static unsigned int atkbd_amilo_xi3650_forced_release_keys[] = {
-+	0x67, 0xed, 0x90, 0xa2, 0x99, 0xa4, 0xae, 0xb0, -1U
-+};
- 
- /*
-  * atkbd_set_keycode_table() initializes keyboard's keycode table
-@@ -967,7 +952,7 @@ static void atkbd_set_keycode_table(stru
-  * Perform additional fixups
-  */
- 	if (atkbd_platform_fixup)
--		atkbd_platform_fixup(atkbd);
-+		atkbd_platform_fixup(atkbd, atkbd_platform_fixup_data);
- }
- 
- /*
-@@ -1492,9 +1477,11 @@ static ssize_t atkbd_show_err_count(stru
- 	return sprintf(buf, "%lu\n", atkbd->err_count);
- }
- 
--static int __init atkbd_setup_fixup(const struct dmi_system_id *id)
-+static int __init atkbd_setup_forced_release(const struct dmi_system_id *id)
- {
--	atkbd_platform_fixup = id->driver_data;
-+	atkbd_platform_fixup = atkbd_apply_forced_release_keylist;
-+	atkbd_platform_fixup_data = id->driver_data;
-+
- 	return 0;
- }
- 
-@@ -1505,8 +1492,8 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
- 			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_dell_laptop_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_dell_laptop_forced_release_keys,
- 	},
- 	{
- 		.ident = "Dell Laptop",
-@@ -1514,8 +1501,8 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer Corporation"),
- 			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_dell_laptop_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_dell_laptop_forced_release_keys,
- 	},
- 	{
- 		.ident = "HP 2133",
-@@ -1523,8 +1510,8 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "HP 2133"),
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_hp_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_hp_forced_release_keys,
- 	},
- 	{
- 		.ident = "HP Pavilion ZV6100",
-@@ -1532,8 +1519,8 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Pavilion ZV6100"),
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_hp_zv6100_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_hp_zv6100_forced_release_keys,
- 	},
- 	{
- 		.ident = "Inventec Symphony",
-@@ -1541,8 +1528,8 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "INVENTEC"),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "SYMPHONY 6.0/7.0"),
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_inventec_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_inventec_forced_release_keys,
- 	},
- 	{
- 		.ident = "Samsung NC10",
-@@ -1550,8 +1537,44 @@ static struct dmi_system_id atkbd_dmi_qu
- 			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
- 			DMI_MATCH(DMI_PRODUCT_NAME, "NC10"),
- 		},
--		.callback = atkbd_setup_fixup,
--		.driver_data = atkbd_samsung_keymap_fixup,
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_samsung_forced_release_keys,
-+	},
-+	{
-+		.ident = "Samsung NC20",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "NC20"),
-+		},
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_samsung_forced_release_keys,
-+	},
-+	{
-+		.ident = "Samsung SQ45S70S",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "SQ45S70S"),
-+		},
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_samsung_forced_release_keys,
-+	},
-+	{
-+		.ident = "Fujitsu Amilo PA 1510",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Pa 1510"),
-+		},
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_amilo_pa1510_forced_release_keys,
-+	},
-+	{
-+		.ident = "Fujitsu Amilo Xi 3650",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU SIEMENS"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "AMILO Xi 3650"),
-+		},
-+		.callback = atkbd_setup_forced_release,
-+		.driver_data = atkbd_amilo_xi3650_forced_release_keys,
- 	},
- 	{ }
- };
+ #if defined(CONFIG_ARCH_AT91)
+ #define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
 
 
