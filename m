@@ -1,64 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZGAGfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752632AbZGAGhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbZGAGfA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZGAGex
+	id S1752632AbZGAGhp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZGAGhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:34:53 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51276 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbZGAGew (ORCPT
+	Wed, 1 Jul 2009 02:37:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:25891 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZGAGhg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:34:52 -0400
-Date: Wed, 1 Jul 2009 08:34:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, tj@kernel.org,
-       linux-kernel@vger.kernel.org, x86@kernel.org,
-       linux-arch@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
-Message-ID: <20090701063455.GL6760@one.firstfloor.org>
-References: <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <20090630223138.GH1241@elte.hu> <alpine.DEB.1.10.0906301847260.19482@gentwo.org> <20090630230743.GA17968@elte.hu>
+	Wed, 1 Jul 2009 02:37:36 -0400
+Date: Wed, 1 Jul 2009 08:37:37 +0200
+From: Erik Ekman <erik@kryo.se>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip][RFC] serial8250: update to dev_pm_ops
+Message-Id: <20090701083737.41f28c7d.erik@kryo.se>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630230743.GA17968@elte.hu>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Say it says "256 CPUs".
-> 
-> But i only run a 2 CPU guest system. But i want to run it with the 
-> _on demand capability_ to scale up to 256 virtual CPUs if needed, 
-> without having to reboot the guest and without having to allocate 
-> all the percpu space for 256 CPUs beforehand. Ok?
+serial8250: update to dev_pm_ops
 
-Then you would need to fix lots of subsystems. Everyone doing
-for_each_possible_cpu() today and not having a cpu notifier callback.
+>From dmesg:
+Platform driver 'serial8250' needs updating - please use dev_pm_ops
 
-git/linux-2.6% gid for_each_possible_cpu | wc -l
-247
-git/linux-2.6% gid CPU_UP_PREPARE | wc -l
-48
+Is this how it should be done? I have not tested it, but it compiles fine.
+Should I send in similar patches for other drivers that also give this
+message?
 
-Essentially you would discard the concept of possible CPUs
-and replace it only with online CPUs, but possible CPUs
-are widely used.
-
-It's unclear to me it's worth all that work (and how to test
-it properly), assuming we fix the few per cpu pigs today that make it 
-very expensive to preallocate percpu in the big debug configurations.
-
-> It is a simple, basic OS feature and concept.
-
-.. that Linux doesn't support without some heavy lifting.
-
-Not answering emails will not change that fact.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Signed-off-by: Erik Ekman <erik@kryo.se>
+---
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index fb867a9..dcbc6da 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2982,42 +2982,46 @@ static int __devexit serial8250_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
++static int serial8250_suspend(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			uart_suspend_port(&serial8250_reg, &up->port);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static int serial8250_resume(struct platform_device *dev)
++static int serial8250_resume(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			serial8250_resume_port(i);
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static struct dev_pm_ops serial8250_pm_ops = {
++	.suspend = serial8250_suspend,
++	.resume  = serial8250_resume,
++};
++
+ static struct platform_driver serial8250_isa_driver = {
+ 	.probe		= serial8250_probe,
+ 	.remove		= __devexit_p(serial8250_remove),
+-	.suspend	= serial8250_suspend,
+-	.resume		= serial8250_resume,
+ 	.driver		= {
+ 		.name	= "serial8250",
+ 		.owner	= THIS_MODULE,
++		.pm     = &serial8250_pm_ops, 
+ 	},
+ };
+ 
