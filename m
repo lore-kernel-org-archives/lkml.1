@@ -1,50 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZGAG42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbZGAG5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZGAG42 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGAG4V
+	id S1752939AbZGAG5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZGAG53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:56:21 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:57395 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZGAG4U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:56:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=rCBm/ZXgQ0stkZtwUKv7ByolWn6YnR2111ITehF8CgyIHqLNceC8bXh/mjKJ5BZBhW
-         q99PmayRDXf0XYPp+/cheE5AKLAwIGW2bLhlWvbOhuPt8NdPbbye77WFHezF5x4F+SLm
-         0giThgDHmcA5wGLQK28Bu5DmEVjx7v0es8YaU=
-Message-ID: <4A4B088A.9030905@gmail.com>
-Date: Wed, 01 Jul 2009 08:56:10 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.7 Thunderbird/3.0b3pre
+	Wed, 1 Jul 2009 02:57:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41832 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751928AbZGAG52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:57:28 -0400
+Date: Wed, 1 Jul 2009 08:57:24 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and
+	receive callbacks
+Message-ID: <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com>
+References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com>
 MIME-Version: 1.0
-To: Daniel Ribeiro <drwyrm@gmail.com>
-CC: sameo@linux.intel.com, LKML <linux-kernel@vger.kernel.org>,
-       laforge@openezx.org
-Subject: Re: MFD: mutex from ISR in ezx-pcap?
-References: <4A49175E.3020409@gmail.com> <1246306840.18231.29.camel@brutus>	 <4A493BF9.7010304@gmail.com> <1246352256.18231.408.camel@brutus>
-In-Reply-To: <1246352256.18231.408.camel@brutus>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/30/2009 10:57 AM, Daniel Ribeiro wrote:
-> Em Ter, 2009-06-30 às 00:11 +0200, Jiri Slaby escreveu: 
->> so that
->> pcap_adc_irq shouldn't sleep, right? Or maybe I missed something again...
+On Tue, Jun 30, 2009 at 12:13:40PM -0700, Davide Libenzi wrote:
+> On Tue, 30 Jun 2009, Jiri Olsa wrote:
 > 
-> No. Interrupts are enabled again before pcap_adc_irq() runs.
+> > Adding memory barrier after the poll_wait function, paired with
+> > receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
+> > to wrap the memory barrier.
+> > 
+> > Without the memory barrier, following race can happen.
+> > The race fires, when following code paths meet, and the tp->rcv_nxt 
+> > and __add_wait_queue updates stay in CPU caches.
+> > 
+> > 
+> > CPU1                         CPU2
+> > 
+> > sys_select                   receive packet
+> >   ...                        ...
+> >   __add_wait_queue           update tp->rcv_nxt
+> >   ...                        ...
+> >   tp->rcv_nxt check          sock_def_readable
+> >   ...                        {
+> >   schedule                      ...
+> >                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> >                                         wake_up_interruptible(sk->sk_sleep)
+> >                                 ...
+> >                              }
+> > 
+> > If there was no cache the code would work ok, since the wait_queue and
+> > rcv_nxt are opposit to each other.
+> > 
+> > Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
+> > passed the tp->rcv_nxt check and sleeps, or will get the new value for
+> > tp->rcv_nxt and will return with new data mask.
+> > In both cases the process (CPU1) is being added to the wait queue, so the
+> > waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
+> > 
+> > The bad case is when the __add_wait_queue changes done by CPU1 stay in its
+> > cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
+> > endup calling schedule and sleep forever if there are no more data on the
+> > socket.
 > 
-> pcap_isr_work() doesn't call pcap_adc_irq directly, it calls the
-> irq_flow_handler, handle_simple_irq(), which needs to run with
-> interrupts disabled. Interrupts are enabled again on handle_IRQ_event(),
-> as pcap_adc_irq is requested _without_ IRQF_DISABLED.
+> > +static inline int sk_has_sleeper(struct sock *sk)
+> > +{
+> > +	/*
+> > +	 * We need to be sure we are in sync with the
+> > +	 * add_wait_queue modifications to the wait queue.
+> > +	 *
+> > +	 * This memory barrier is paired in the sock_poll_wait.
+> > +	 */
+> > +	smp_mb();
+> > +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> > +}
+> 
+> Jiri, since this is a pretty tricky condition, would you mind to have a 
+> reduced version of the patch comment added to the source code?
+> Patch comments are not really useful when you're trying to make sense of 
+> some code ;)
+> 
 
-Correct. Thanks for clarification. I posted at least a lock fix which
-made me poke in this all.
+well, to be honest I thought it was already reduced :) however I have
+no problem to make it shorter.. any suggestions? 
+
+"This memory barrier protects the add_wait_queue modifications.
+It is paired in the sock_poll_wait."
+
+or do you want only the 
+
+"This memory barrier is paired in the sock_poll_wait."
+
+
+jirka
+> 
+> - Davide
+> 
+> 
