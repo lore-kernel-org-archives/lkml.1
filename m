@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZGAQDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZGAQJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbZGAQDK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZGAQC6
+	id S1752905AbZGAQJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZGAQJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:02:58 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:41235 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752672AbZGAQC5 convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 12:09:04 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:34211 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbZGAQJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:02:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=R2cHi959cylXXSM8h/7P4bnlBau1maepA7dbOfz0x7ryah5RJqNzcoUJrNYbBN5y1s
-         zOw759yQEt25ckXfsI5EqrrDsGK/MzB2eoicQiAeR9MPeF4Xs/eGUMMgsYpMC54Kfmp1
-         Db5OLMuuel9xiDQqRbadsp1jKGSO8kdzQSvYQ=
+	Wed, 1 Jul 2009 12:09:03 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v8 0/3] irqfd fixes and enhancements
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
+       davidel@xmailserver.org
+Date: Wed, 01 Jul 2009 12:08:57 -0400
+Message-ID: <20090701160208.3615.99153.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
-References: <20090701120814.30741.10146.stgit@warthog.procyon.org.uk>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 1 Jul 2009 12:02:28 -0400
-Message-ID: <8bd0f97a0907010902y4c6b4d86m36a1116d5af67f0@mail.gmail.com>
-Subject: Re: [PATCH] FDPIC: Ignore the loader's PT_GNU_STACK when calculating 
-	the stack size
-To: David Howells <dhowells@redhat.com>
-Cc: rgetz@blackfin.uclinux.org, lethal@linux-sh.org, gerg@uclinux.org,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 08:08, David Howells wrote:
-> WARNING: This patch is slightly dangerous - it may render a system inoperable
-> if the loader's stack size is larger than that of important executables, and
-> the system relies unknowingly on this increasing the size of the stack.
+(Applies to kvm.git/master:beeaacd1)
 
-every toolchain ive seen sets the stack size in the linker to the
-default value, and the only way to change that is to manually set the
-size yourself with the relevant command line option.  so it's only
-going to break people who have been doing it wrong themselves --
-setting the stack size to a smaller option than is acceptable.
+The following is the latest attempt to fix the races in irqfd/eventfd, as
+well as restore DEASSIGN support.  For more details, please read the patch
+headers.
 
-> -       else
-> +       else
+As always, this series has been tested against the kvm-eventfd unit test
+and everything appears to be functioning properly. You can download this
+test here:
 
-this change just adds trailing whitespace ...
+ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
 
-otherwise, just tested it and it works for me, thanks
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
--mike
+Kind Regards,
+-Greg
+
+
+[Changelog:
+
+	v8:
+	   *) Rebased to kvm.git/master:beeaacd1)
+	   *) Dropped Davide's patch (2/5 in v7) since it's now upstream
+	   *) Folded v7's 1/5 and 3/5 together, and added a single
+	      eventfd hunk to convert wake_up_locked_polled to wake_up_polled
+	   *) Dropped irqfd->active bit in favor of irqfd_is_active() function
+	   *) Cleaned up comments in 1/3
+	   *) Dropped v7's 5/5 (slow-work)
+	   *) Added new patch (3/3) which makes the cleanup-wq's creation
+	      dynamic so to avoid the resource penalty for guests that do
+	      not use irqfd.
+
+	v7:
+	   *) Addressed minor-nit feedback from Michael
+	   *) Cleaned up patch headers
+	   *) Re-added separate slow-work feature patch to end for comparison
+
+	v6:
+	   *) Removed slow-work in favor of using a dedicated single-thread
+              workqueue.
+	   *) Condensed cleanup path to always use deferred shutdown
+	   *) Saved about 56 lines over v5, with the following diffstat:
+
+ 	   include/linux/kvm_host.h |    2 
+ 	   virt/kvm/eventfd.c       |  248 ++++++++++++++++++-----------------------------
+ 	   2 files changed, 97 insertions(+), 153 deletions(-)
+	v5:
+           Untracked..
+]
+
+---
+
+Gregory Haskins (3):
+      KVM: create irqfd-cleanup-wq on demand
+      KVM: add irqfd DEASSIGN feature
+      KVM: Fix races in irqfd using new eventfd_kref_get interface
+
+
+ fs/eventfd.c             |    7 -
+ include/linux/kvm.h      |    2 
+ include/linux/kvm_host.h |    6 +
+ virt/kvm/eventfd.c       |  281 ++++++++++++++++++++++++++++++++++++----------
+ 4 files changed, 229 insertions(+), 67 deletions(-)
+
+-- 
+Signature
