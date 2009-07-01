@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764027AbZGAAvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbZGAAwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764027AbZGAAvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759666AbZGAAe0
+	id S1764059AbZGAAwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761378AbZGAAe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:26 -0400
-Received: from kroah.org ([198.145.64.141]:60144 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:27 -0400
+Received: from kroah.org ([198.145.64.141]:60153 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761336AbZGAAeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:22 -0400
+	id S1761352AbZGAAeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:24 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:18 2009
-Message-Id: <20090701002418.219188826@mini.kroah.org>
+Message-Id: <20090701002418.436619378@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:07 -0700
+Date: Tue, 30 Jun 2009 17:23:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Neil Horman <nhorman@tuxdriver.com>,
+       Neil Horman <nhorman@redhat.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 018/108] ipv4: fix NULL pointer + success return in route lookup path
+Subject: [patch 019/108] ipv4 routing: Ensure that route cache entries are usable and reclaimable with caching is off
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ipv4-fix-null-pointer-success-return-in-route-lookup-path.patch
+Content-Disposition: inline; filename=ipv4-routing-ensure-that-route-cache-entries-are-usable-and-reclaimable-with-caching-is-off.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,61 +33,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Neil Horman <nhorman@tuxdriver.com>
 
-[ Upstream commit 73e42897e8e5619eacb787d2ce69be12f47cfc21 ]
+[ Upstream commit b6280b47a7a42970d098a3059f4ebe7e55e90d8d ]
 
-Don't drop route if we're not caching
+When route caching is disabled (rt_caching returns false), We still use route
+cache entries that are created and passed into rt_intern_hash once.  These
+routes need to be made usable for the one call path that holds a reference to
+them, and they need to be reclaimed when they're finished with their use.  To be
+made usable, they need to be associated with a neighbor table entry (which they
+currently are not), otherwise iproute_finish2 just discards the packet, since we
+don't know which L2 peer to send the packet to.  To do this binding, we need to
+follow the path a bit higher up in rt_intern_hash, which calls
+arp_bind_neighbour, but not assign the route entry to the hash table.
+Currently, if caching is off, we simply assign the route to the rp pointer and
+are reutrn success.  This patch associates us with a neighbor entry first.
 
-	I recently got a report of an oops on a route lookup.  Maxime was
-testing what would happen if route caching was turned off (doing so by setting
-making rt_caching always return 0), and found that it triggered an oops.  I
-looked at it and found that the problem stemmed from the fact that the route
-lookup routines were returning success from their lookup paths (which is good),
-but never set the **rp pointer to anything (which is bad).  This happens because
-in rt_intern_hash, if rt_caching returns false, we call rt_drop and return 0.
-This almost emulates slient success.  What we should be doing is assigning *rp =
-rt and _not_ dropping the route.  This way, during slow path lookups, when we
-create a new route cache entry, we don't immediately discard it, rather we just
-don't add it into the cache hash table, but we let this one lookup use it for
-the purpose of this route request.  Maxime has tested and reports it prevents
-the oops.  There is still a subsequent routing issue that I'm looking into
-further, but I'm confident that, even if its related to this same path, this
-patch makes sense to take.
+Secondly, we need to make sure that any single use routes like this are known to
+the garbage collector when caching is off.  If caching is off, and we try to
+hash in a route, it will leak when its refcount reaches zero.  To avoid this,
+this patch calls rt_free on the route cache entry passed into rt_intern_hash.
+This places us on the gc list for the route cache garbage collector, so that
+when its refcount reaches zero, it will be reclaimed (Thanks to Alexey for this
+suggestion).
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+I've tested this on a local system here, and with these patches in place, I'm
+able to maintain routed connectivity to remote systems, even if I set
+/proc/sys/net/ipv4/rt_cache_rebuild_count to -1, which forces rt_caching to
+return false.
+
+Signed-off-by: Neil Horman <nhorman@redhat.com>
+Reported-by: Jarek Poplawski <jarkao2@gmail.com>
+Reported-by: Maxime Bizon <mbizon@freebox.fr>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/route.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ net/ipv4/route.c |   26 +++++++++++++++++++++++---
+ 1 file changed, 23 insertions(+), 3 deletions(-)
 
 --- a/net/ipv4/route.c
 +++ b/net/ipv4/route.c
-@@ -1081,8 +1081,16 @@ restart:
- 	now = jiffies;
- 
- 	if (!rt_caching(dev_net(rt->u.dst.dev))) {
--		rt_drop(rt);
--		return 0;
-+		/*
-+		 * If we're not caching, just tell the caller we
-+		 * were successful and don't touch the route.  The
-+		 * caller hold the sole reference to the cache entry, and
-+		 * it will be released when the caller is done with it.
-+		 * If we drop it here, the callers have no way to resolve routes
-+		 * when we're not caching.  Instead, just point *rp at rt, so
-+		 * the caller gets a single use out of the route
-+		 */
-+		goto report_and_exit;
+@@ -1089,8 +1089,27 @@ restart:
+ 		 * If we drop it here, the callers have no way to resolve routes
+ 		 * when we're not caching.  Instead, just point *rp at rt, so
+ 		 * the caller gets a single use out of the route
++		 * Note that we do rt_free on this new route entry, so that
++		 * once its refcount hits zero, we are still able to reap it
++		 * (Thanks Alexey)
++		 * Note also the rt_free uses call_rcu.  We don't actually
++		 * need rcu protection here, this is just our path to get
++		 * on the route gc list.
+ 		 */
+-		goto report_and_exit;
++
++		if (rt->rt_type == RTN_UNICAST || rt->fl.iif == 0) {
++			int err = arp_bind_neighbour(&rt->u.dst);
++			if (err) {
++				if (net_ratelimit())
++					printk(KERN_WARNING
++					    "Neighbour table failure & not caching routes.\n");
++				rt_drop(rt);
++				return err;
++			}
++		}
++
++		rt_free(rt);
++		goto skip_hashing;
  	}
  
  	rthp = &rt_hash_table[hash].chain;
-@@ -1210,6 +1218,8 @@ restart:
- 	rcu_assign_pointer(rt_hash_table[hash].chain, rt);
+@@ -1204,7 +1223,8 @@ restart:
+ #if RT_CACHE_DEBUG >= 2
+ 	if (rt->u.dst.rt_next) {
+ 		struct rtable *trt;
+-		printk(KERN_DEBUG "rt_cache @%02x: %pI4", hash, &rt->rt_dst);
++		printk(KERN_DEBUG "rt_cache @%02x: %pI4",
++		       hash, &rt->rt_dst);
+ 		for (trt = rt->u.dst.rt_next; trt; trt = trt->u.dst.rt_next)
+ 			printk(" . %pI4", &trt->rt_dst);
+ 		printk("\n");
+@@ -1219,7 +1239,7 @@ restart:
  
  	spin_unlock_bh(rt_hash_lock_addr(hash));
-+
-+report_and_exit:
+ 
+-report_and_exit:
++skip_hashing:
  	*rp = rt;
  	return 0;
  }
