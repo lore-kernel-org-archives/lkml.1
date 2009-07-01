@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZGAK4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZGAK7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZGAK4o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 06:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZGAK4f
+	id S1753116AbZGAK7J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 06:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbZGAK6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 06:56:35 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:37863 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbZGAK4e (ORCPT
+	Wed, 1 Jul 2009 06:58:54 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:43999 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753476AbZGAK6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 06:56:34 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Arseniy Lartsev <ars3n@yandex.ru>
-Subject: Re: PROBLEM: USB ACM device does not work
-Date: Wed, 1 Jul 2009 12:56:46 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.30-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0906301656440.5222-100000@iolanthe.rowland.org> <200907011301.06574.ars3n@yandex.ru>
-In-Reply-To: <200907011301.06574.ars3n@yandex.ru>
+	Wed, 1 Jul 2009 06:58:54 -0400
+Date: Wed, 1 Jul 2009 18:58:52 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jiri Olsa <jolsa@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090701105852.GA925@gondor.apana.org.au>
+References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au> <20090701062732.GK6760@one.firstfloor.org> <20090701070332.GA31103@gondor.apana.org.au> <20090701072226.GN6760@one.firstfloor.org> <20090701083144.GA31863@gondor.apana.org.au> <20090701084430.GC4769@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907011256.47550.oliver@neukum.org>
+In-Reply-To: <20090701084430.GC4769@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 1. Juli 2009 11:01:06 schrieb Arseniy Lartsev:
-> On Wednesday 01 July 2009 01:01:00 Alan Stern wrote:
-> > This looks like your problem.  Low-speed devices are not allowed to
-> > have bulk endpoints.  Linux internally changes them to interrupt
-> > endpoints with interval = 1 and maxpacket size no larger than 8.
+On Wed, Jul 01, 2009 at 10:44:30AM +0200, Jiri Olsa wrote:
 >
-> Maybe this device is a little "buggy". But Linux should support buggy
-> devices as well.
+> no, only RHEL 4.. 
+> 
+> it is very hard to reproduce. I was succesfull once
+> on RHEL4 after 8 days, never on upstream though.
 
-Yes, it should. We just needed to understand why it failed.
+It would be good to know whether this bug occurs on the upstream
+kernel because as it stands, the patch is a no-op for the upstream
+kernel on x86-64.
 
-
-> +		ep = (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in : acm->dev->ep_out)
-> +				[usb_pipeendpoint(acm->rx_endpoint)];
-> +		if (usb_endpoint_xfer_int(&ep->desc))
-> +			usb_fill_int_urb(rcv->urb, acm->dev,
-> +					 acm->rx_endpoint,
-> +					 buf->base,
-> +					 acm->readsize,
-> +					 acm_read_bulk, rcv, 0xff);
-
-The patch is good except for this.
-We should make sure this interval matches usbcore's value.
-Would you care to redo it with that change?
-
-	Regards
-		Oliver
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
