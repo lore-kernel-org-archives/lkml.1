@@ -1,119 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZGAHaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZGAHaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZGAHaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZGAHaH
+	id S1753797AbZGAHaq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZGAHan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:30:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40761 "EHLO mx2.redhat.com"
+	Wed, 1 Jul 2009 03:30:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40806 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750969AbZGAHaF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:30:05 -0400
-Date: Wed, 1 Jul 2009 09:30:01 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, eric.dumazet@gmail.com
-Subject: Re: [PATCHv3 1/2] net: adding memory barrier to the poll and
-	receive callbacks
-Message-ID: <20090701073001.GA4769@jolsa.lab.eng.brq.redhat.com>
-References: <20090630125240.GB4406@jolsa.lab.eng.brq.redhat.com> <20090630125425.GC4406@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0906301210210.3968@makko.or.mcafeemobile.com> <20090701065724.GA2852@jolsa.lab.eng.brq.redhat.com> <alpine.DEB.1.10.0907010002010.8492@makko.or.mcafeemobile.com>
+	id S1752279AbZGAHam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 03:30:42 -0400
+Message-ID: <4A4B1106.8000506@redhat.com>
+Date: Wed, 01 Jul 2009 10:32:22 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0907010002010.8492@makko.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gregory Haskins <ghaskins@novell.com>
+Subject: Re: linux-next: manual merge of the kvm tree with Linus' tree
+References: <20090701145711.1c9c8935.sfr@canb.auug.org.au> <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 12:04:56AM -0700, Davide Libenzi wrote:
-> On Wed, 1 Jul 2009, Jiri Olsa wrote:
-> 
-> > On Tue, Jun 30, 2009 at 12:13:40PM -0700, Davide Libenzi wrote:
-> > > On Tue, 30 Jun 2009, Jiri Olsa wrote:
-> > > 
-> > > > Adding memory barrier after the poll_wait function, paired with
-> > > > receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
-> > > > to wrap the memory barrier.
-> > > > 
-> > > > Without the memory barrier, following race can happen.
-> > > > The race fires, when following code paths meet, and the tp->rcv_nxt 
-> > > > and __add_wait_queue updates stay in CPU caches.
-> > > > 
-> > > > 
-> > > > CPU1                         CPU2
-> > > > 
-> > > > sys_select                   receive packet
-> > > >   ...                        ...
-> > > >   __add_wait_queue           update tp->rcv_nxt
-> > > >   ...                        ...
-> > > >   tp->rcv_nxt check          sock_def_readable
-> > > >   ...                        {
-> > > >   schedule                      ...
-> > > >                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
-> > > >                                         wake_up_interruptible(sk->sk_sleep)
-> > > >                                 ...
-> > > >                              }
-> > > > 
-> > > > If there was no cache the code would work ok, since the wait_queue and
-> > > > rcv_nxt are opposit to each other.
-> > > > 
-> > > > Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
-> > > > passed the tp->rcv_nxt check and sleeps, or will get the new value for
-> > > > tp->rcv_nxt and will return with new data mask.
-> > > > In both cases the process (CPU1) is being added to the wait queue, so the
-> > > > waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
-> > > > 
-> > > > The bad case is when the __add_wait_queue changes done by CPU1 stay in its
-> > > > cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
-> > > > endup calling schedule and sleep forever if there are no more data on the
-> > > > socket.
-> > > 
-> > > > +static inline int sk_has_sleeper(struct sock *sk)
-> > > > +{
-> > > > +	/*
-> > > > +	 * We need to be sure we are in sync with the
-> > > > +	 * add_wait_queue modifications to the wait queue.
-> > > > +	 *
-> > > > +	 * This memory barrier is paired in the sock_poll_wait.
-> > > > +	 */
-> > > > +	smp_mb();
-> > > > +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
-> > > > +}
-> > > 
-> > > Jiri, since this is a pretty tricky condition, would you mind to have a 
-> > > reduced version of the patch comment added to the source code?
-> > > Patch comments are not really useful when you're trying to make sense of 
-> > > some code ;)
-> > > 
-> > 
-> > well, to be honest I thought it was already reduced :) however I have
-> > no problem to make it shorter.. any suggestions? 
-> > 
-> > "This memory barrier protects the add_wait_queue modifications.
-> > It is paired in the sock_poll_wait."
-> > 
-> > or do you want only the 
-> > 
-> > "This memory barrier is paired in the sock_poll_wait."
-> 
-> Heh, no, not that comment :)
-> You detailed very clearly why the MB machinery is needed in your email 
-> body, but the comment in the source code is pretty vague.
-> So when I was talking about comment reduction, I meant using a reduced 
-> version of the comment in the email body, into the proper place in the 
-> source code.
-> 
+On 07/01/2009 10:10 AM, Davide Libenzi wrote:
+> On Wed, 1 Jul 2009, Stephen Rothwell wrote:
+>
+>    
+>> Hi Avi,
+>>
+>> Today's linux-next merge of the kvm tree got a conflict in fs/eventfd.c
+>> between commit 133890103b9de08904f909995973e4b5c08a780e ("eventfd:
+>> revised interface and cleanups") from Linus' tree and commit
+>> 28ddf0aebbf546e56efd1951725d5457ce1ebf98 ("eventfd: Allow waiters to be
+>> notified about the eventfd file* going away") from the kvm tree.
+>>
+>> Overlapping changes.  I fixed it up (see below), but don't know if this
+>> is the correct fix.
+>>
+>> -- 
+>> Cheers,
+>> Stephen Rothwell                    sfr@canb.auug.org.au
+>>
+>> diff --cc fs/eventfd.c
+>> index 31d12de,72f5f8d..0000000
+>> --- a/fs/eventfd.c
+>> +++ b/fs/eventfd.c
+>> @@@ -105,8 -63,13 +105,13 @@@ static int eventfd_release(struct inod
+>>    {
+>>    	struct eventfd_ctx *ctx = file->private_data;
+>>
+>> - 	wake_up_poll(&ctx->wqh, POLLHUP);
+>> + 	/*
+>> + 	 * No need to hold the lock here, since we are on the file cleanup
+>> + 	 * path and the ones still attached to the wait queue will be
+>> + 	 * serialized by wake_up_locked_poll().
+>> + 	 */
+>> + 	wake_up_locked_poll(&ctx->wqh, POLLHUP);
+>>   -	kfree(ctx);
+>>   +	eventfd_ctx_put(ctx);
+>>    	return 0;
+>>    }
+>>      
+>
+> That's fine.
+> There are a couple of extra spaces before the last two -+ in that patch
+> though ;)
+>    
 
-uf, good :) 
-I'll see what I can do, I'll resend
+No, that's a git N-way diff format.  The first column shows the changes 
+relative to mainline by kvm.git, and the second the changes to kvm.git 
+made by mainline.
 
-jirka
+I've merged and will push soon, which will resolve the conflict, but I 
+think the patch wake_up_locked_poll() is better off in mainline rather 
+than kvm.git.
 
-> 
-> - Davide
-> 
-> 
+-- 
+error compiling committee.c: too many arguments to function
+
