@@ -1,184 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGASdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbZGASdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZGASdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZGASc7
+	id S1755822AbZGASdv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZGASdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:32:59 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:34167 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934AbZGASc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:32:58 -0400
-Date: Wed, 1 Jul 2009 14:32:54 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, akpm@linux-foundation.org, earl_chew@agilent.com
-Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
-	concurrent dumps to pipes (v6)
-Message-ID: <20090701183254.GE31414@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701182834.GC31414@hmsreliant.think-freely.org>
+	Wed, 1 Jul 2009 14:33:42 -0400
+Received: from kroah.org ([198.145.64.141]:33840 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbZGASdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 14:33:41 -0400
+Date: Wed, 1 Jul 2009 11:33:31 -0700
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 000/108] 2.6.30-stable review
+Message-ID: <20090701183331.GA12823@kroah.com>
+References: <20090701002838.GA7100@kroah.com>
+ <20090701181034.GA3491@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090701182834.GC31414@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <20090701181034.GA3491@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Introduce core pipe limiting sysctl
+On Wed, Jul 01, 2009 at 11:10:34AM -0700, Greg KH wrote:
+> On Tue, Jun 30, 2009 at 05:28:38PM -0700, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.30.1 release.
+> 
+> Ok, we had some kvm issues with the -rc1 kernel, so there is a -rc2
+> kernel out now.  It can be found at:
+> 
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.1-rc2.gz
+> 
+> The full diffstat is below, and here is what has changed:
+> 	- removed 3 kvm patches
+> 	- added 1 kvm patch to replace the removed ones
+> 	- added 3 more patches, they will be sent to the list now.
+> 
 
-Since we can dump cores to pipe, rather than directly to the filesystem, we
-create a condition in which a user can create a very high load on the system
-simply by running bad applications.  If the pipe reader specified in
-core_pattern is poorly written, we can have lots of ourstandig resources and
-processes in the system.  This sysctl introduces an ability to limit that
-resource consumption.  core_pipe_limit defines how many in-flight dumps may be
-run in parallel, dumps beyond this value are skipped and a note is made in the
-kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
-dumps may be handled (this is the default value).
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+Oops, forgot the diffstat.
 
 
- Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
- fs/exec.c                       |   21 +++++++++++++++++----
- kernel/sysctl.c                 |    9 +++++++++
- 3 files changed, 48 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
-index 322a00b..bb226ba 100644
---- a/Documentation/sysctl/kernel.txt
-+++ b/Documentation/sysctl/kernel.txt
-@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
- - acct
- - auto_msgmni
- - core_pattern
-+- core_pipe_limit
- - core_uses_pid
- - ctrl-alt-del
- - dentry-state
-@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
- 
- ==============================================================
- 
-+core_pipe_limit:
-+
-+This sysctl is only applicable when core_pattern is configured to pipe core
-+files to user space helper a (when the first character of core_pattern is a '|',
-+see above).  When collecting cores via a pipe to an application, it is
-+occasionally usefull for the collecting application to gather data about the
-+crashing process from its /proc/pid directory.  In order to do this safely, the
-+kernel must wait for the collecting process to exit, so as not to remove the
-+crashing processes proc files prematurely.  This in turn creates the possibility
-+that a misbehaving userspace collecting process can block the reaping of a
-+crashed process simply by never exiting.  This sysctl defends against that.  It
-+defines how many concurrent crashing processes may be piped to user space
-+applications in parallel.  If this value is exceeded, then those crashing
-+processes above that value are noted via the kernel log and their cores are
-+skipped.  0 is a special value, indicating that unlimited processes may be
-+captured in parallel, but that no waiting will take place (i.e. the collecting
-+process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
-+to 0.
-+
-+==============================================================
-+
- core_uses_pid:
- 
- The default coredump filename is "core".  By setting
-diff --git a/fs/exec.c b/fs/exec.c
-index 9defd20..93ab6eb 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -63,6 +63,7 @@
- 
- int core_uses_pid;
- char core_pattern[CORENAME_MAX_SIZE] = "core";
-+unsigned int core_pipe_limit;
- int suid_dumpable = 0;
- 
- /* The maximal length of core_pattern is also specified in sysctl.c */
-@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	char **helper_argv = NULL;
- 	int helper_argc = 0;
--	char *delimit;
-+	int dump_count = 0;
-+	static atomic_t core_dump_count = ATOMIC_INIT(0);
- 
- 	audit_core_dumps(signr);
- 
-@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 			goto fail_unlock;
- 		}
- 
-+		dump_count = atomic_inc_return(&core_dump_count);
-+		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
-+			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
-+			       task_tgid_vnr(current), current->comm);
-+			printk(KERN_WARNING "Skipping core dump\n");
-+			goto fail_dropcount;
-+		}
-+
- 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
- 		if (!helper_argv) {
- 			printk(KERN_WARNING "%s failed to allocate memory\n",
- 			       __func__);
--			goto fail_unlock;
-+			goto fail_dropcount;
- 		}
- 
- 		core_limit = RLIM_INFINITY;
- 
- 		/* SIGPIPE can happen, but it's just never processed */
-- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
-+ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
- 				&file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
- 			       corename);
-- 			goto fail_unlock;
-+ 			goto fail_dropcount;
-  		}
- 	} else {
- 		if (core_limit < binfmt->min_coredump)
-@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 
- close_fail:
- 	filp_close(file, NULL);
-+fail_dropcount:
-+	if (dump_count)
-+		atomic_dec(&core_dump_count);
- fail_unlock:
- 	if (helper_argv)
- 		argv_free(helper_argv);
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 62e4ff9..681052f 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -77,6 +77,7 @@ extern int max_threads;
- extern int core_uses_pid;
- extern int suid_dumpable;
- extern char core_pattern[];
-+extern unsigned int core_pipe_limit;
- extern int pid_max;
- extern int min_free_kbytes;
- extern int pid_max_min, pid_max_max;
-@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dostring,
- 		.strategy	= &sysctl_string,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "core_pipe_limit",
-+		.data		= &core_pipe_limit,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
- #ifdef CONFIG_PROC_SYSCTL
- 	{
- 		.procname	= "tainted",
+ Documentation/sysctl/vm.txt               |   12 ++-
+ Makefile                                  |    2 +-
+ arch/arm/include/asm/cacheflush.h         |    8 ++
+ arch/x86/crypto/aesni-intel_asm.S         |    5 +-
+ arch/x86/include/asm/apic.h               |    2 +-
+ arch/x86/include/asm/cpufeature.h         |    1 +
+ arch/x86/include/asm/kvm_host.h           |    2 +
+ arch/x86/include/asm/mce.h                |    2 +
+ arch/x86/include/asm/uv/uv_bau.h          |    2 +-
+ arch/x86/include/asm/uv/uv_hub.h          |    6 +-
+ arch/x86/include/asm/vmx.h                |    1 +
+ arch/x86/kernel/apic/x2apic_uv_x.c        |   15 ++--
+ arch/x86/kernel/cpu/amd.c                 |   14 +++-
+ arch/x86/kernel/cpu/mcheck/mce_32.c       |    1 +
+ arch/x86/kernel/cpu/mcheck/mce_64.c       |    1 +
+ arch/x86/kernel/hpet.c                    |    3 +-
+ arch/x86/kernel/pci-gart_64.c             |   10 ++-
+ arch/x86/kernel/reboot.c                  |    9 ++
+ arch/x86/kernel/setup.c                   |   15 +---
+ arch/x86/kernel/tlb_uv.c                  |   24 ++++--
+ arch/x86/kernel/tsc.c                     |   11 +++-
+ arch/x86/kernel/vm86_32.c                 |    9 +-
+ arch/x86/kernel/vsyscall_64.c             |    8 --
+ arch/x86/kvm/vmx.c                        |   64 +++++++++++++++-
+ arch/x86/kvm/x86.c                        |   10 ++-
+ arch/x86/mm/memtest.c                     |   14 ++--
+ drivers/char/epca.c                       |    9 +-
+ drivers/char/moxa.c                       |    7 ++-
+ drivers/char/n_r3964.c                    |   26 ++++---
+ drivers/char/pcmcia/cm4000_cs.c           |    3 +-
+ drivers/char/rocket.c                     |    6 +-
+ drivers/char/vt_ioctl.c                   |    3 +-
+ drivers/firmware/memmap.c                 |   16 ++--
+ drivers/gpu/drm/i915/i915_drv.c           |    4 +-
+ drivers/ide/ide-cd.c                      |    2 +-
+ drivers/infiniband/hw/mlx4/qp.c           |    4 +
+ drivers/isdn/hisax/hfc_pci.c              |   41 ++++++++---
+ drivers/isdn/hisax/hisax.h                |    2 +-
+ drivers/md/dm-exception-store.c           |    9 ++-
+ drivers/md/dm-exception-store.h           |    2 +-
+ drivers/md/dm-log.c                       |    2 +-
+ drivers/md/dm-mpath.c                     |   12 +++
+ drivers/md/dm-table.c                     |    3 +-
+ drivers/md/dm.c                           |    4 +
+ drivers/md/raid5.c                        |    1 +
+ drivers/media/dvb/frontends/lgdt3305.c    |   17 +----
+ drivers/media/video/Makefile              |   77 ++++++++++---------
+ drivers/media/video/cx18/cx18-controls.c  |    2 +
+ drivers/media/video/cx2341x.c             |    2 +
+ drivers/media/video/ivtv/ivtv-controls.c  |    2 +
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c |   56 ++++++++------
+ drivers/media/video/saa7134/Makefile      |    3 +-
+ drivers/net/bonding/bond_sysfs.c          |    1 +
+ drivers/net/e1000e/netdev.c               |    2 +-
+ drivers/net/mv643xx_eth.c                 |    7 +-
+ drivers/net/sky2.c                        |   31 ++++----
+ drivers/net/tun.c                         |    7 +-
+ drivers/net/usb/pegasus.c                 |   29 ++++---
+ drivers/net/via-velocity.c                |    2 +-
+ drivers/net/wireless/ath5k/base.c         |    7 ++
+ drivers/net/wireless/ath9k/calib.c        |   67 ++++++----------
+ drivers/net/wireless/ath9k/main.c         |   28 +++++---
+ drivers/net/wireless/ath9k/pci.c          |   18 +++++
+ drivers/net/wireless/ath9k/regd.c         |    2 +-
+ drivers/net/wireless/ath9k/xmit.c         |    5 +-
+ drivers/parport/parport_pc.c              |   34 +++++++--
+ drivers/pci/pci.c                         |    7 +-
+ drivers/pci/pcie/aspm.c                   |    4 +
+ drivers/scsi/qla2xxx/qla_dbg.c            |    2 +-
+ drivers/scsi/sym53c8xx_2/sym_hipd.c       |    5 +-
+ drivers/serial/bfin_5xx.c                 |    5 +
+ drivers/spi/spi_mpc83xx.c                 |    6 +-
+ drivers/staging/uc2322/aten2011.c         |    4 +-
+ drivers/usb/class/usbtmc.c                |    6 ++
+ drivers/usb/serial/aircable.c             |    5 +-
+ drivers/usb/serial/belkin_sa.c            |    7 +-
+ drivers/usb/serial/cp210x.c               |    6 +-
+ drivers/usb/serial/cyberjack.c            |   20 ++++-
+ drivers/usb/serial/cypress_m8.c           |   11 +--
+ drivers/usb/serial/digi_acceleport.c      |   20 ++++-
+ drivers/usb/serial/empeg.c                |    8 --
+ drivers/usb/serial/ftdi_sio.c             |   14 ----
+ drivers/usb/serial/garmin_gps.c           |   16 +++-
+ drivers/usb/serial/generic.c              |    9 ++-
+ drivers/usb/serial/io_edgeport.c          |   29 +++++--
+ drivers/usb/serial/io_tables.h            |   12 ++-
+ drivers/usb/serial/io_ti.c                |   22 ++++-
+ drivers/usb/serial/ipaq.c                 |    7 --
+ drivers/usb/serial/iuu_phoenix.c          |    6 +-
+ drivers/usb/serial/keyspan.c              |   13 +++-
+ drivers/usb/serial/keyspan.h              |   12 ++-
+ drivers/usb/serial/keyspan_pda.c          |    4 +-
+ drivers/usb/serial/kl5kusb105.c           |   39 ++++++----
+ drivers/usb/serial/kobil_sct.c            |   12 +--
+ drivers/usb/serial/mct_u232.c             |   13 +--
+ drivers/usb/serial/mos7720.c              |    9 +--
+ drivers/usb/serial/mos7840.c              |   42 +++++++++-
+ drivers/usb/serial/omninet.c              |   19 ++++-
+ drivers/usb/serial/opticon.c              |   14 +++-
+ drivers/usb/serial/option.c               |   17 +++-
+ drivers/usb/serial/oti6858.c              |    7 +-
+ drivers/usb/serial/pl2303.c               |    5 +-
+ drivers/usb/serial/sierra.c               |   28 ++++++-
+ drivers/usb/serial/spcp8x5.c              |    5 +-
+ drivers/usb/serial/symbolserial.c         |   14 +++-
+ drivers/usb/serial/ti_usb_3410_5052.c     |   10 +--
+ drivers/usb/serial/usb-serial.c           |   29 +++----
+ drivers/usb/serial/visor.c                |   13 +--
+ drivers/usb/serial/whiteheat.c            |    6 +-
+ fs/Kconfig                                |   14 ++--
+ fs/cifs/file.c                            |   10 +-
+ fs/eventpoll.c                            |   21 +++--
+ fs/fs-writeback.c                         |    2 -
+ fs/jfs/jfs_extent.c                       |    1 +
+ fs/ocfs2/super.c                          |   32 +++++----
+ fs/ramfs/inode.c                          |    9 ++-
+ fs/xfs/xfs_bmap.c                         |    1 +
+ include/linux/firmware-map.h              |   12 +--
+ include/linux/kvm_host.h                  |    1 +
+ include/linux/mlx4/qp.h                   |    1 +
+ include/linux/serial.h                    |  116 +++++++++++++++++------------
+ include/linux/usb/serial.h                |   12 ++-
+ include/linux/vmstat.h                    |    3 +
+ include/net/x25.h                         |    2 +-
+ kernel/acct.c                             |    6 +-
+ kernel/trace/trace_functions.c            |    8 +-
+ lib/Kconfig.debug                         |    2 +-
+ lib/dma-debug.c                           |   43 ++++++++++-
+ lib/genalloc.c                            |    1 -
+ mm/page_alloc.c                           |    6 +-
+ mm/vmscan.c                               |   55 ++++++++++++--
+ mm/vmstat.c                               |    3 +
+ net/ipv4/route.c                          |   36 ++++++++-
+ net/mac80211/rc80211_minstrel.c           |    2 +-
+ net/wireless/nl80211.c                    |   26 +++++--
+ net/wireless/reg.c                        |   10 ++-
+ net/x25/af_x25.c                          |   23 +++++-
+ net/x25/x25_timer.c                       |    2 +-
+ security/integrity/ima/ima_audit.c        |    2 +-
+ security/integrity/ima/ima_main.c         |   13 ++-
+ sound/core/seq/seq_midi_event.c           |    8 +-
+ sound/isa/cmi8330.c                       |    2 +-
+ sound/pci/ca0106/ca0106_mixer.c           |    6 ++
+ sound/pci/hda/patch_realtek.c             |    2 +
+ sound/pci/intel8x0.c                      |   24 +++---
+ sound/soc/codecs/wm8903.c                 |    4 -
+ virt/kvm/kvm_main.c                       |   18 ++++-
+ 147 files changed, 1223 insertions(+), 664 deletions(-)
