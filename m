@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762039AbZGABKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763763AbZGABLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762039AbZGABKG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbZGAAfa
+	id S1763763AbZGABLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761582AbZGAAfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:30 -0400
-Received: from kroah.org ([198.145.64.141]:60585 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:40 -0400
+Received: from kroah.org ([198.145.64.141]:60611 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760446AbZGAAfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:22 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
-Message-Id: <20090701002438.502935424@mini.kroah.org>
+	id S1760913AbZGAAf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:28 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:39 2009
+Message-Id: <20090701002439.494893968@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:09 -0700
+Date: Tue, 30 Jun 2009 17:24:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Lubomir Rintel <lkundrak@v3.sk>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Steven Noonan <steven@uplinklabs.net>
-Subject: [patch 080/108] x86: Fix non-lazy GS handling in sys_vm86()
+       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
+Subject: [patch 084/108] n_r3964: fix lock imbalance
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=x86-fix-non-lazy-gs-handling-in-sys_vm86.patch
+Content-Disposition: inline; filename=n_r3964-fix-lock-imbalance.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,53 +30,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lubomir Rintel <lkundrak@v3.sk>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 3aa6b186f86c5d06d6d92d14311ffed51f091f40 upstream.
+commit eca41044268887838fa122aa24475df8f23d614c upstream.
 
-This fixes a stack corruption panic or null dereference oops
-due to a bad GS in resume_userspace() when returning from
-sys_vm86() and calling lockdep_sys_exit().
+There is omitted BKunL in r3964_read.
 
-Only a problem when CONFIG_LOCKDEP and CONFIG_CC_STACKPROTECTOR
-enabled.
+Centralize the paths to one point with one unlock.
 
-Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-Cc: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <1244384628.2323.4.camel@bimbo>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/vm86_32.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/char/n_r3964.c |   26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
---- a/arch/x86/kernel/vm86_32.c
-+++ b/arch/x86/kernel/vm86_32.c
-@@ -287,10 +287,9 @@ static void do_sys_vm86(struct kernel_vm
- 	info->regs.pt.ds = 0;
- 	info->regs.pt.es = 0;
- 	info->regs.pt.fs = 0;
--
--/* we are clearing gs later just before "jmp resume_userspace",
-- * because it is not saved/restored.
-- */
-+#ifndef CONFIG_X86_32_LAZY_GS
-+	info->regs.pt.gs = 0;
-+#endif
+--- a/drivers/char/n_r3964.c
++++ b/drivers/char/n_r3964.c
+@@ -1062,7 +1062,7 @@ static ssize_t r3964_read(struct tty_str
+ 	struct r3964_client_info *pClient;
+ 	struct r3964_message *pMsg;
+ 	struct r3964_client_message theMsg;
+-	int count;
++	int ret;
  
- /*
-  * The flags register is also special: we cannot trust that the user
-@@ -343,7 +342,9 @@ static void do_sys_vm86(struct kernel_vm
- 	__asm__ __volatile__(
- 		"movl %0,%%esp\n\t"
- 		"movl %1,%%ebp\n\t"
-+#ifdef CONFIG_X86_32_LAZY_GS
- 		"mov  %2, %%gs\n\t"
-+#endif
- 		"jmp resume_userspace"
- 		: /* no outputs */
- 		:"r" (&info->regs), "r" (task_thread_info(tsk)), "r" (0));
+ 	TRACE_L("read()");
+ 
+@@ -1074,8 +1074,8 @@ static ssize_t r3964_read(struct tty_str
+ 		if (pMsg == NULL) {
+ 			/* no messages available. */
+ 			if (file->f_flags & O_NONBLOCK) {
+-				unlock_kernel();
+-				return -EAGAIN;
++				ret = -EAGAIN;
++				goto unlock;
+ 			}
+ 			/* block until there is a message: */
+ 			wait_event_interruptible(pInfo->read_wait,
+@@ -1085,29 +1085,31 @@ static ssize_t r3964_read(struct tty_str
+ 		/* If we still haven't got a message, we must have been signalled */
+ 
+ 		if (!pMsg) {
+-			unlock_kernel();
+-			return -EINTR;
++			ret = -EINTR;
++			goto unlock;
+ 		}
+ 
+ 		/* deliver msg to client process: */
+ 		theMsg.msg_id = pMsg->msg_id;
+ 		theMsg.arg = pMsg->arg;
+ 		theMsg.error_code = pMsg->error_code;
+-		count = sizeof(struct r3964_client_message);
++		ret = sizeof(struct r3964_client_message);
+ 
+ 		kfree(pMsg);
+ 		TRACE_M("r3964_read - msg kfree %p", pMsg);
+ 
+-		if (copy_to_user(buf, &theMsg, count)) {
+-			unlock_kernel();
+-			return -EFAULT;
++		if (copy_to_user(buf, &theMsg, ret)) {
++			ret = -EFAULT;
++			goto unlock;
+ 		}
+ 
+-		TRACE_PS("read - return %d", count);
+-		return count;
++		TRACE_PS("read - return %d", ret);
++		goto unlock;
+ 	}
++	ret = -EPERM;
++unlock:
+ 	unlock_kernel();
+-	return -EPERM;
++	return ret;
+ }
+ 
+ static ssize_t r3964_write(struct tty_struct *tty, struct file *file,
 
 
