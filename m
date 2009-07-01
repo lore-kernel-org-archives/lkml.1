@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765606AbZGABLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761696AbZGABKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765606AbZGABLP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbZGAAfj
+	id S1761696AbZGABKf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761519AbZGAAfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:39 -0400
-Received: from kroah.org ([198.145.64.141]:60607 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:31 -0400
+Received: from kroah.org ([198.145.64.141]:60594 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761520AbZGAAf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:27 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:39 2009
-Message-Id: <20090701002439.222808279@mini.kroah.org>
+	id S1761506AbZGAAfX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:23 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
+Message-Id: <20090701002438.714465250@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:12 -0700
+Date: Tue, 30 Jun 2009 17:24:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 083/108] pcmcia/cm4000: fix lock imbalance
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 081/108] x86: Set cpu_llc_id on AMD CPUs
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=pcmcia-cm4000-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=x86-set-cpu_llc_id-on-amd-cpus.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,32 +31,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
 
-commit 69ae59d7d8df14413cf0a97b3e372d7dc8352563 upstream.
+commit 99bd0c0fc4b04da54cb311953ef9489931c19c63 upstream.
 
-Don't return from switch/case, break instead, so that we unlock BKL.
+This counts when building sched domains in case NUMA information
+is not available.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+( See cpu_coregroup_mask() which uses llc_shared_map which in turn is
+  created based on cpu_llc_id. )
+
+Currently Linux builds domains as follows:
+(example from a dual socket quad-core system)
+
+ CPU0 attaching sched-domain:
+  domain 0: span 0-7 level CPU
+   groups: 0 1 2 3 4 5 6 7
+
+  ...
+
+ CPU7 attaching sched-domain:
+  domain 0: span 0-7 level CPU
+   groups: 7 0 1 2 3 4 5 6
+
+Ever since that is borked for multi-core AMD CPU systems.
+This patch fixes that and now we get a proper:
+
+ CPU0 attaching sched-domain:
+  domain 0: span 0-3 level MC
+   groups: 0 1 2 3
+   domain 1: span 0-7 level CPU
+    groups: 0-3 4-7
+
+  ...
+
+ CPU7 attaching sched-domain:
+  domain 0: span 4-7 level MC
+   groups: 7 4 5 6
+   domain 1: span 0-7 level CPU
+    groups: 4-7 0-3
+
+This allows scheduler to assign tasks to cores on different sockets
+(i.e. that don't share last level cache) for performance reasons.
+
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+LKML-Reference: <20090619085909.GJ5218@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/pcmcia/cm4000_cs.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/kernel/cpu/amd.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1575,7 +1575,8 @@ static long cmm_ioctl(struct file *filp,
- 		clear_bit(LOCK_IO, &dev->flags);
- 		wake_up_interruptible(&dev->ioq);
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -258,13 +258,15 @@ static void __cpuinit amd_detect_cmp(str
+ {
+ #ifdef CONFIG_X86_HT
+ 	unsigned bits;
++	int cpu = smp_processor_id();
  
--		return 0;
-+		rc = 0;
-+		break;
- 	case CM_IOCSPTS:
- 		{
- 			struct ptsreq krnptsreq;
+ 	bits = c->x86_coreid_bits;
+-
+ 	/* Low order bits define the core id (index of core in socket) */
+ 	c->cpu_core_id = c->initial_apicid & ((1 << bits)-1);
+ 	/* Convert the initial APIC ID into the socket ID */
+ 	c->phys_proc_id = c->initial_apicid >> bits;
++	/* use socket ID also for last level cache */
++	per_cpu(cpu_llc_id, cpu) = c->phys_proc_id;
+ #endif
+ }
+ 
 
 
