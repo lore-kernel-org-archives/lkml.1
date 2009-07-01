@@ -1,71 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbZGABjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZGABlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763108AbZGABjn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758386AbZGABjf
+	id S1754491AbZGABlO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZGABk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:39:35 -0400
-Received: from smtp107.sbc.mail.gq1.yahoo.com ([67.195.14.110]:40858 "HELO
-	smtp107.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757146AbZGABje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:39:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=NewaKD4dMIGemBF+yWAWxTRSu5RJmbBeg8QCuJNDEUqEIm56t2G/XcVr9klt+g+eRRBJfUrnzHWbFhSm3tM8FrsyX1dKxQPPu5GA3w9E6xgG5eQHgZ4Z/3WTpicLbq0dTEH6U3LUXBqiSVOWS0WhUIWVqPua7lTYFCv2YiAL7Xo=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: lRl_G8MVM1lr_lb0AhEI64ERDxSpSAbfNwFr0CH5z9cNvU6U_rYeHt3tLYjJiG1frmo9fsWBKepm7tzEWmny56NdaNXTQAjsgbtdX35oaT30j5VDiJ46of5IXSAWPE9zmOJ5wuu9SG0dA1F1tCJyZu95V3Aa3n6nj.0R4rj4Kj4i.gVouPAbC1Ec0V7QTOBPiYxNfM.2AL1MStorqDu0Bpfemwj6PWsMy8U8zkfD8cz4v6Mk2ZNGVI53VVqEaz43vP8B41R.5CrRrhH.6MKhs8nFb3j86knIcV9X3MadnRSuJbc-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers without MISO or MOSI pin
-Date: Tue, 30 Jun 2009 18:39:13 -0700
-User-Agent: KMail/1.9.10
-Cc: "'LKML'" <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net, kyungmin.park@samsung.com
-References: <000a01c9f61f$fd7ff3d0$f87fdb70$%szyprowski@samsung.com>
-In-Reply-To: <000a01c9f61f$fd7ff3d0$f87fdb70$%szyprowski@samsung.com>
+	Tue, 30 Jun 2009 21:40:58 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55009 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750946AbZGABk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:40:57 -0400
+Message-ID: <4A4ABE91.8020307@cn.fujitsu.com>
+Date: Wed, 01 Jul 2009 09:40:33 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200906301839.13764.david-b@pacbell.net>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH] io-controller: Don't expire an idle ioq if it's the	only
+ ioq in hierarchy
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-9-git-send-email-vgoyal@redhat.com> <4A49C381.3040302@cn.fujitsu.com> <20090701013239.GB13958@redhat.com>
+In-Reply-To: <20090701013239.GB13958@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 25 June 2009, Marek Szyprowski wrote:
-> --- a/drivers/spi/spi_bitbang.c
-> +++ b/drivers/spi/spi_bitbang.c
-> @@ -392,6 +392,22 @@ int spi_bitbang_transfer(struct spi_device *spi, struct spi_message *m)
->         unsigned long           flags;
->         int                     status = 0;
->  
-> +       if (spi->master->flags & SPI_MASTER_NO_RX) {
-> +               struct spi_transfer *xfer;
-> +               list_for_each_entry(xfer, &m->transfers, transfer_list) {
-> +                       if (xfer->rx_buf)
-> +                               return -EINVAL;
-> +               }
-> +       }
+Vivek Goyal wrote:
+> On Tue, Jun 30, 2009 at 03:49:21PM +0800, Gui Jianfeng wrote:
+>> Hi Vivek,
+>>
+>> We don't expect expiring an idle ioq if it's the only ioq 
+>> in the hierarchy.
+>>
+> 
+> Hi Gui,
+> 
+> This patch will avoid idle queue expiry for single ioq schedulers. But
+> that's not an issue anyway as single ioq schedulers don't have the notion
+> of idle queue. It is only CFQ which allows creation of idle ioq.
 
-Actually these two loops should merge, and likely move with
-spi_async() into the spi.c core code ... I'll split this
-support into a separate patch.
+  Oh, yes, please ignore this mindless patch.
 
-> +
-> +       if (spi->master->flags & SPI_MASTER_NO_TX) {
-> +               struct spi_transfer *xfer;
-> +               list_for_each_entry(xfer, &m->transfers, transfer_list) {
-> +                       if (xfer->tx_buf)
-> +                               return -EINVAL;
-> +               }
-> +       }
-> +
->         m->actual_length = 0;
->         m->status = -EINPROGRESS;
->  
+> 
+> Thanks
+> Vivek
+> 
+>> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+>> ---
+>>  block/elevator-fq.c |   12 ++++++------
+>>  1 files changed, 6 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+>> index 4270cfd..0b65e16 100644
+>> --- a/block/elevator-fq.c
+>> +++ b/block/elevator-fq.c
+>> @@ -4058,12 +4058,6 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+>>  			elv_clear_ioq_slice_new(ioq);
+>>  		}
+>>  
+>> -		if (elv_ioq_class_idle(ioq)) {
+>> -			if (elv_iosched_expire_ioq(q, 1, 0))
+>> -				elv_ioq_slice_expired(q);
+>> -			goto done;
+>> -		}
+>> -
+>>  		/*
+>>  		 * If there is only root group present, don't expire the queue
+>>  		 * for single queue ioschedulers (noop, deadline, AS). It is
+>> @@ -4077,6 +4071,12 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+>>  			goto done;
+>>  		}
+>>  
+>> +		if (elv_ioq_class_idle(ioq)) {
+>> +			if (elv_iosched_expire_ioq(q, 1, 0))
+>> +				elv_ioq_slice_expired(q);
+>> +			goto done;
+>> +		}
+>> +
+>>  		/* For async queue try to do wait busy */
+>>  		if (efqd->fairness && !elv_ioq_sync(ioq) && !ioq->nr_queued
+>>  		    && (elv_iog_nr_active(iog) <= 1)) {
+>> -- 
+>> 1.5.4.rc3
+>>
+> 
+> 
+> 
 
+-- 
+Regards
+Gui Jianfeng
 
