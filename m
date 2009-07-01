@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZGALsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZGALvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbZGALsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZGALsq
+	id S1754252AbZGALvT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZGALvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:48:46 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:20030
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751557AbZGALsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:48:45 -0400
-Message-ID: <4A4B4D1D.8070308@panasas.com>
-Date: Wed, 01 Jul 2009 14:48:45 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Wed, 1 Jul 2009 07:51:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47683 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbZGALvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:51:08 -0400
+Date: Wed, 1 Jul 2009 13:49:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 3/6 -tip] perf_counter: Add Generalized Hardware
+	vectored co-processor support for AMD
+Message-ID: <20090701114928.GI15958@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam>
 MIME-Version: 1.0
-To: tridge@samba.org
-CC: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-References: <19013.8005.541836.436991@samba.org>	<20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org>
-In-Reply-To: <19019.16217.291678.588673@samba.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jul 2009 11:48:49.0347 (UTC) FILETIME=[E5E35930:01C9FA41]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246448441.6940.3.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01/2009 01:50 PM, tridge@samba.org wrote:
-> Hi Pavel,
+
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> On Wed, 2009-07-01 at 13:27 +0200, Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > >  Performance counter stats for '/usr/bin/vlc /home/jaswinder/Videos/Linus_Torvalds_interview_with_Charlie_Rose_Part_1.flv':
+> > > > 
+> > > >     20177177044  vec-adds                  (scaled from 66.63%)
+> > > >     34101687027  vec-muls                  (scaled from 66.64%)
+> > > >      3984060862  vec-divs                  (scaled from 66.71%)
+> > > >     26349684710  vec-idle-cycles           (scaled from 66.65%)
+> > > >      9052001905  vec-stall-cycles          (scaled from 66.66%)
+> > > >     76440734242  vec-ops                   (scaled from 66.71%)
+> > > > 
+> > > >   272.523058097  seconds time elapsed
+> > 
+> > btw., the 'perf list' bits are missing - any new counter added 
+> > should be listed by 'perf list' as well - otherwise people wont know 
+> > what we have and what to use.
+> > 
 > 
-> We did of course consider that, and the changes to the patch to
-> implement collision avoidance are relatively simple. We didn't do it
-> as it would weaken the legal basis behind the patch. I'll leave it to
-> John Lanza (the LF patent attorney) to expand on that if you want more
-> information.
-> 
+> Even cache is not available for 'perf list'. Should I also resend 
+> patch for adding cache along with vector and interrupt.
 
-You completely lost me here. And I thought I did understand the patent
-and the fix.
+I'd suggest for you to send a separate patch for the cache bits 
+first (that way it's not held up by other dependencies) - and keep 
+the vector and irq bits in their respective patches.
 
-what is the difference between.
+I.e. when we add new generic events, we want to enable it in the 
+full tool-space in a single patch.
 
-short_name = rand(sid);
-and
-short_name = sid++;
-
-Now if you would do
-short_name = MD5(long_name);
-
-That I understand since short_name is some function of long_name
-but if I'm just inventing the short_name out of my hat. In what legal
-system does it matter what is my random function I use?
-
-> Cheers, Tridge
-
-Boaz
+	Ingo
