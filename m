@@ -1,57 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755993AbZGALa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZGALbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755993AbZGALa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZGALaS
+	id S1755279AbZGALbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZGALbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:30:18 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57755 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750812AbZGALaR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:30:17 -0400
-Date: Wed, 1 Jul 2009 12:31:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: tridge@samba.org
-Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090701123141.402c17d2@lxorguk.ukuu.org.uk>
-In-Reply-To: <19019.16217.291678.588673@samba.org>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 07:31:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53134 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752455AbZGALbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:31:10 -0400
+Date: Wed, 1 Jul 2009 11:30:33 GMT
+From: tip-bot for Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       peterz@infradead.org, jaswinder@kernel.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       jaswinder@kernel.org, peterz@infradead.org, jaswinderrajput@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1246440909.3403.5.camel@hpdv5.satnam>
+References: <1246440909.3403.5.camel@hpdv5.satnam>
+Subject: [tip:perfcounters/urgent] perf stat: Define MATCH_EVENT for easy attr checking
+Message-ID: <tip-b9ebdcc0ce1c676ebf5dc4f6df6b440d8fcf88ab@git.kernel.org>
+Git-Commit-ID: b9ebdcc0ce1c676ebf5dc4f6df6b440d8fcf88ab
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 11:30:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I would usually agree, but I think we have an unusual situation here,
-> in some ways similar to a demonstrated security hole. The previous
-> behaviour exposed a lot of Linux vendors to the possibility of an
-> expensive legal fight.
+Commit-ID:  b9ebdcc0ce1c676ebf5dc4f6df6b440d8fcf88ab
+Gitweb:     http://git.kernel.org/tip/b9ebdcc0ce1c676ebf5dc4f6df6b440d8fcf88ab
+Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+AuthorDate: Wed, 1 Jul 2009 15:05:09 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 1 Jul 2009 13:28:38 +0200
 
-They don't have to ship the code. They can rip it out. They deal with
-video players the same way for the USSA market and have done for years.
+perf stat: Define MATCH_EVENT for easy attr checking
 
->   - chkdsk.exe will complain about duplicates, and will rename one of
->     the two files. That is a 50% chance of 1 file being renamed for a
->     single directory containing 60k files. Given it isn't all that
->     common to run chkdsk on removable media that is shared between
+MATCH_EVENT is useful:
 
-Its a standard usage pattern for some people. Think about Linux based
-commodity devices such as the N770 and plugging it into the users general
-purpose PC box. Whenever it got pulled out wrongly it *will* get a chkdsk
-in Windows.
+ 1. for multiple attrs checking
+ 2. avoid repetition of PERF_TYPE_ and PERF_COUNT_ and save space
+ 3. avoids line breakage
 
->     Linux and Windows, I thought that this is not a terribly large
->     concern.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1246440909.3403.5.camel@hpdv5.satnam>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Disagree. Its a rapidly growing market segment.
+
+---
+ tools/perf/builtin-stat.c |   27 ++++++++++-----------------
+ 1 files changed, 10 insertions(+), 17 deletions(-)
+
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 095a90e..01cc07e 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -96,6 +96,10 @@ static u64			walltime_nsecs_noise;
+ static u64			runtime_cycles_avg;
+ static u64			runtime_cycles_noise;
+ 
++#define MATCH_EVENT(t, c, counter)			\
++	(attrs[counter].type == PERF_TYPE_##t &&	\
++	 attrs[counter].config == PERF_COUNT_##c)
++
+ #define ERR_PERF_OPEN \
+ "Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n"
+ 
+@@ -133,13 +137,8 @@ static void create_perf_stat_counter(int counter, int pid)
+  */
+ static inline int nsec_counter(int counter)
+ {
+-	if (attrs[counter].type != PERF_TYPE_SOFTWARE)
+-		return 0;
+-
+-	if (attrs[counter].config == PERF_COUNT_SW_CPU_CLOCK)
+-		return 1;
+-
+-	if (attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK)
++	if (MATCH_EVENT(SOFTWARE, SW_CPU_CLOCK, counter) ||
++	    MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter))
+ 		return 1;
+ 
+ 	return 0;
+@@ -194,11 +193,9 @@ static void read_counter(int counter)
+ 	/*
+ 	 * Save the full runtime - to allow normalization during printout:
+ 	 */
+-	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
+-		attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK)
++	if (MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter))
+ 		runtime_nsecs[run_idx] = count[0];
+-	if (attrs[counter].type == PERF_TYPE_HARDWARE &&
+-		attrs[counter].config == PERF_COUNT_HW_CPU_CYCLES)
++	if (MATCH_EVENT(HARDWARE, HW_CPU_CYCLES, counter))
+ 		runtime_cycles[run_idx] = count[0];
+ }
+ 
+@@ -292,9 +289,7 @@ static void nsec_printout(int counter, u64 *count, u64 *noise)
+ 
+ 	fprintf(stderr, " %14.6f  %-24s", msecs, event_name(counter));
+ 
+-	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
+-		attrs[counter].config == PERF_COUNT_SW_TASK_CLOCK) {
+-
++	if (MATCH_EVENT(SOFTWARE, SW_TASK_CLOCK, counter)) {
+ 		if (walltime_nsecs_avg)
+ 			fprintf(stderr, " # %10.3f CPUs ",
+ 				(double)count[0] / (double)walltime_nsecs_avg);
+@@ -307,9 +302,7 @@ static void abs_printout(int counter, u64 *count, u64 *noise)
+ 	fprintf(stderr, " %14Ld  %-24s", count[0], event_name(counter));
+ 
+ 	if (runtime_cycles_avg &&
+-		attrs[counter].type == PERF_TYPE_HARDWARE &&
+-			attrs[counter].config == PERF_COUNT_HW_INSTRUCTIONS) {
+-
++	    MATCH_EVENT(HARDWARE, HW_INSTRUCTIONS, counter)) {
+ 		fprintf(stderr, " # %10.3f IPC  ",
+ 			(double)count[0] / (double)runtime_cycles_avg);
+ 	} else {
