@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZGAA2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZGAA3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757633AbZGAA2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZGAA2d
+	id S1758564AbZGAA3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbZGAA2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:28:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57942 "EHLO mx2.suse.de"
+	Tue, 30 Jun 2009 20:28:45 -0400
+Received: from kroah.org ([198.145.64.141]:34269 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756278AbZGAA2a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:28:30 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andreas Dilger <adilger@sun.com>
-Date: Wed, 1 Jul 2009 10:29:10 +1000
+	id S1757948AbZGAA2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:28:44 -0400
+Date: Tue, 30 Jun 2009 17:28:17 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/30] 2.6.27-stable review
+Message-ID: <20090701002817.GA6156@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19018.44502.425131.683796@notabene.brown>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Mike Snitzer <snitzer@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>
-Subject: Re: [dm-devel] REQUEST for new 'topology' metrics to be moved out	of
- the 'queue' sysfs directory.
-In-Reply-To: message from Andreas Dilger on Tuesday June 30
-References: <125b48b7ffc99a496fbdd512f38cada5.squirrel@neil.brown.name>
-	<20090625194015.GB31415@kernel.dk>
-	<19012.49673.454853.975682@notabene.brown>
-	<20090626125037.GO23611@kernel.dk>
-	<f0d53a7338e1be4e7bdcbe09223c6f73.squirrel@neil.brown.name>
-	<20090626132940.GR23611@kernel.dk>
-	<19014.4447.248248.63960@notabene.brown>
-	<20090629101841.GF23611@kernel.dk>
-	<b0aa07ac85efd6040501e4ea875176a3.squirrel@neil.brown.name>
-	<20090629114121.GH23611@kernel.dk>
-	<20090629230927.GU3570@webber.adilger.int>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday June 30, adilger@sun.com wrote:
-> On Jun 29, 2009  13:41 +0200, Jens Axboe wrote:
-> > ... externally it just makes the API worse since tools then have to know
-> > which device type they are talking to.
-> > 
-> > So I still see absolutely zero point in making such a change, quite the
-> > opposite.
-> 
-> Exactly correct.  Changing these tunables just for the sake of giving
-> them a slightly different name is madness.  Making all block devices
-> appear more uniform to userspace (even if they don't strictly need all
-> of the semantics) is very sensible.  The whole point of the kernel is
-> to abstract away the underlying details so that userspace doesn't need
-> to understand it all again.
+This is the start of the stable review cycle for the 2.6.27.26 release.
+There are 30 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Uniformity is certainly desirable.  But we shouldn't take it so far
-as to make apples look like oranges.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-We wouldn't want a SATA disk drive to have 'chunk_size' and 'raid_disks'.
-Nor would we want a software RAID array to have a 'scheduler' or
-'iosched' attributes.
+Responses should be made by Friday, Jul 3, 00:00:00 2009 UTC.
+Anything received after that time might be too late.
 
-> 
-> In order to get good throughput on RAID arrays we need to tune the
-> queue/max_* values to ensure the IO requests don't get split.
-> 
-> It would be great if the MD queue/max_* values would pass these tunings
-> down to the underlying disk devices as well.  As it stands now, we have
-> to follow the /sys/block/*/slaves tree to set all of these ourselves,
-> and before "slaves/" was introduced it was nigh impossible to automatically
-> tune these values.
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.26-rc1.gz
+and the diffstat can be found below.
 
-I don't think that passing these values down is - in general - a well
-defined problem.  This is (in part) because md/dm devices can be based on
-partitions, and partitions don't have independent max_* values.
 
-In your particular case, I don't expect that you use partitions, so it
-makes perfect sense to do the tuning on a per-array basis.  But I
-don't think that it is a concept that fits in the kernel.  As you say,
-we have 'slaves/', which makes it practical to do this in user-space
-and I would rather it stayed there.
+thanks,
 
-NeilBrown
+greg k-h
+
+ Makefile                         |    2 +-
+ arch/x86/kernel/reboot.c         |   18 ++++++++
+ arch/x86/kernel/setup.c          |   15 +-----
+ drivers/block/floppy.c           |   87 ++++++++++++++++++++++++++------------
+ drivers/char/moxa.c              |    7 +++-
+ drivers/char/mxser.c             |    2 +-
+ drivers/char/pcmcia/cm4000_cs.c  |    3 +-
+ drivers/firmware/memmap.c        |   16 ++++---
+ drivers/infiniband/hw/mlx4/qp.c  |    4 ++
+ drivers/isdn/hisax/hfc_pci.c     |   41 +++++++++++++-----
+ drivers/isdn/hisax/hisax.h       |    2 +-
+ drivers/md/dm-mpath.c            |   11 +++++
+ drivers/md/dm.c                  |    4 ++
+ drivers/md/raid5.c               |    1 +
+ drivers/net/bonding/bond_sysfs.c |    1 +
+ drivers/net/r8169.c              |   11 ++---
+ drivers/parport/parport_pc.c     |   34 ++++++++++++---
+ drivers/parport/parport_serial.c |   30 +++++++++++--
+ drivers/pci/pci.c                |    7 ++-
+ drivers/pci/pcie/aspm.c          |    4 ++
+ drivers/video/atmel_lcdfb.c      |   10 +----
+ fs/jbd/commit.c                  |    6 ++-
+ include/linux/firmware-map.h     |   12 ++----
+ include/linux/mlx4/qp.h          |    1 +
+ lib/Kconfig.debug                |    2 +-
+ mm/page_alloc.c                  |    6 ++-
+ net/ipv4/tcp_ipv4.c              |    4 ++
+ net/ipv4/tcp_output.c            |   13 ++++-
+ sound/core/seq/seq_midi_event.c  |    8 ++--
+ sound/pci/ca0106/ca0106_mixer.c  |    6 +++
+ 30 files changed, 258 insertions(+), 110 deletions(-)
