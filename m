@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZGAJB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZGAJEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbZGAJB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbZGAJBR
+	id S1755341AbZGAJEc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZGAJEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:01:17 -0400
-Received: from fe02x03-cgp.akado.ru ([77.232.31.165]:61109 "EHLO akado.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754977AbZGAJBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:01:11 -0400
-From: Arseniy Lartsev <ars3n@yandex.ru>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: PROBLEM: USB ACM device does not work
-Date: Wed, 1 Jul 2009 13:01:06 +0400
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc1-git3-0.1-default; KDE/4.1.3; i686; ; )
-Cc: Oliver Neukum <oliver@neukum.org>, USB list <linux-usb@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0906301656440.5222-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906301656440.5222-100000@iolanthe.rowland.org>
+	Wed, 1 Jul 2009 05:04:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50391 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753129AbZGAJEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:04:23 -0400
+Date: Wed, 1 Jul 2009 12:03:54 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org
+Subject: Re: [KVM PATCH v7 0/5] irqfd fixes and enhancements
+Message-ID: <20090701090354.GA14046@redhat.com>
+References: <20090629181954.1886.20225.stgit@dev.haskins.net> <4A4B2406.2020901@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907011301.06574.ars3n@yandex.ru>
+In-Reply-To: <4A4B2406.2020901@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009 01:01:00 Alan Stern wrote:
-> This looks like your problem.  Low-speed devices are not allowed to
-> have bulk endpoints.  Linux internally changes them to interrupt
-> endpoints with interval = 1 and maxpacket size no larger than 8.
+On Wed, Jul 01, 2009 at 11:53:26AM +0300, Avi Kivity wrote:
+> On 06/29/2009 09:28 PM, Gregory Haskins wrote:
+>> (Applies to kvm.git/master:4631e094)
+>>
+>> The following is the latest attempt to fix the races in irqfd/eventfd, as
+>> well as restore DEASSIGN support.  For more details, please read the patch
+>> headers.  I've restored the slow-work variant of the logic as a separate
+>> patch (5/5) so we can get a better idea of the true difference between
+>> the workqueue approach and the slow-work style.  I am personally in favor
+>> of the slow-work approach since it doesnt require a mostly-idle+dedicated
+>> thread to hang around.  But that is just me.  5/5 can be ignored, folded
+>> in to 3/5+4/5 as appropriate, or merged as is per the whim of Avi et. al.
+>>    
+>
+> I think a good compromise would be to create the workqueue when the  
+> first VM is launched.
+>
+>> As always, this series has been tested against the kvm-eventfd unit test
+>> with both 5/5 applied and unapplied, and everything appears to be
+>> functioning properly. You can download this test here:
+>>
+>> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
+>>
+>> I've included version 4 of Davide's eventfd patch (ported to kvm.git) so
+>> that its a complete reviewable series.  Note, however, that there may be
+>> later versions of his patch to consider for merging, so we should
+>> coordinate with him.
+>>    
+>
+> Davide's patch was merged upstream.  Please take a look to make sure  
+> this patchset is compatible with what was merged.
+>
+> Patchset looks good to me, but I'd appreciate an ack from Michael (or  
+> anyone else who's interested).
 
-Maybe this device is a little "buggy". But Linux should support buggy devices 
-as well.
+For patches 1,3,4:
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
 
-What about something like
+As for 5: IMHO, let's keep it simple meanwhile.
 
---- a/drivers/usb/class/cdc-acm.c
-+++ b/drivers/usb/class/cdc-acm.c
-@@ -387,6 +387,7 @@ static void acm_rx_tasklet(unsigned long
- 	struct acm_ru *rcv;
- 	unsigned long flags;
- 	unsigned char throttled;
-+	struct usb_host_endpoint *ep;
- 
- 	dbg("Entering acm_rx_tasklet");
- 
-@@ -462,11 +463,20 @@ urbs:
- 
- 		rcv->buffer = buf;
- 
--		usb_fill_bulk_urb(rcv->urb, acm->dev,
--				  acm->rx_endpoint,
--				  buf->base,
--				  acm->readsize,
--				  acm_read_bulk, rcv);
-+		ep = (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in : acm->dev->ep_out)
-+				[usb_pipeendpoint(acm->rx_endpoint)];
-+		if (usb_endpoint_xfer_int(&ep->desc))
-+			usb_fill_int_urb(rcv->urb, acm->dev,
-+					 acm->rx_endpoint,
-+					 buf->base,
-+					 acm->readsize,
-+					 acm_read_bulk, rcv, 0xff);
-+		else
-+			usb_fill_bulk_urb(rcv->urb, acm->dev,
-+					  acm->rx_endpoint,
-+					  buf->base,
-+					  acm->readsize,
-+					  acm_read_bulk, rcv);
- 		rcv->urb->transfer_dma = buf->dma;
- 		rcv->urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
- 
-@@ -1227,9 +1237,14 @@ made_compressed_probe:
- 			goto alloc_fail7;
- 		}
- 
--		usb_fill_bulk_urb(snd->urb, usb_dev,
--			usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
--			NULL, acm->writesize, acm_write_bulk, snd);
-+		if (usb_endpoint_xfer_int(epwrite))
-+			usb_fill_int_urb(snd->urb, usb_dev,
-+				usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
-+				NULL, acm->writesize, acm_write_bulk, snd, 0xff);
-+		else
-+			usb_fill_bulk_urb(snd->urb, usb_dev,
-+				usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
-+				NULL, acm->writesize, acm_write_bulk, snd);
- 		snd->urb->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
- 		snd->instance = acm;
- 	}
 
-It should work around devices like mine, but should not affect previously 
-supported devices.
-
+-- 
+MST
