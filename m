@@ -1,62 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZGALZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZGALZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755646AbZGALZN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZGALYz
+	id S1755825AbZGALZr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZGALZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:24:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52246 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755562AbZGALYx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:24:53 -0400
-Date: Wed, 1 Jul 2009 12:25:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Pavel Machek <pavel@ucw.cz>, tridge@samba.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-In-Reply-To: <200907012019.53932.rusty@rustcorp.com.au>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Jul 2009 07:25:38 -0400
+Received: from fe01x03-cgp.akado.ru ([77.232.31.164]:60003 "EHLO akado.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752234AbZGALZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:25:37 -0400
+From: Arseniy Lartsev <ars3n@yandex.ru>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: PROBLEM: USB ACM device does not work
+Date: Wed, 1 Jul 2009 15:24:55 +0400
+User-Agent: KMail/1.10.3 (Linux/2.6.31-rc1-git3-0.1-default; KDE/4.1.3; i686; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0906301656440.5222-100000@iolanthe.rowland.org> <200907011301.06574.ars3n@yandex.ru> <200907011256.47550.oliver@neukum.org>
+In-Reply-To: <200907011256.47550.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1436998.HoCYDNPjgS";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907011525.00689.ars3n@yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'd actually prefer to see the code ripped out and no config option available; 
-> it would the clearest avoidance case possible.
+--nextPart1436998.HoCYDNPjgS
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-What about the free world - why should we suffer because Americans have
-a broken patent system ? That just leads to a Farenheit 451 model where
-the kernel sources end up containing no code, text or image that can
-offend, harm or be found wanting in any possible legal jurisdiction.
+On Wednesday 01 July 2009 14:56:46 Oliver Neukum wrote:
+> > +		ep =3D (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in :
+> > acm->dev->ep_out) +				[usb_pipeendpoint(acm->rx_endpoint)];
+> > +		if (usb_endpoint_xfer_int(&ep->desc))
+> > +			usb_fill_int_urb(rcv->urb, acm->dev,
+> > +					 acm->rx_endpoint,
+> > +					 buf->base,
+> > +					 acm->readsize,
+> > +					 acm_read_bulk, rcv, 0xff);
+>
+> The patch is good except for this.
+> We should make sure this interval matches usbcore's value.
+> Would you care to redo it with that change?
 
-If we put in VFAT american fixes presumably we need to put in monitoring
-features required by dubious governments ?
+Am I right that 0xff here should be changed to ep->desc.bInterval (and to=20
+epwrite->bInterval in the other call to usb_fill_int_urb)?
 
-If you want to rip stuff out of your copy feel free. I am quite sure many
-US based vendors will do that (because they do so already with things
-like video codecs rather than just disabling the build option).
+=2D-- a/drivers/usb/class/cdc-acm.c
++++ b/drivers/usb/class/cdc-acm.c
+@@ -387,6 +387,7 @@ static void acm_rx_tasklet(unsigned long
+ 	struct acm_ru *rcv;
+ 	unsigned long flags;
+ 	unsigned char throttled;
++	struct usb_host_endpoint *ep;
+=20
+ 	dbg("Entering acm_rx_tasklet");
+=20
+@@ -462,11 +463,20 @@ urbs:
+=20
+ 		rcv->buffer =3D buf;
+=20
+=2D		usb_fill_bulk_urb(rcv->urb, acm->dev,
+=2D				  acm->rx_endpoint,
+=2D				  buf->base,
+=2D				  acm->readsize,
+=2D				  acm_read_bulk, rcv);
++		ep =3D (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in : acm->dev->ep_ou=
+t)
++				[usb_pipeendpoint(acm->rx_endpoint)];
++		if (usb_endpoint_xfer_int(&ep->desc))
++			usb_fill_int_urb(rcv->urb, acm->dev,
++					 acm->rx_endpoint,
++					 buf->base,
++					 acm->readsize,
++					 acm_read_bulk, rcv, ep->desc.bInterval);
++		else
++			usb_fill_bulk_urb(rcv->urb, acm->dev,
++					  acm->rx_endpoint,
++					  buf->base,
++					  acm->readsize,
++					  acm_read_bulk, rcv);
+ 		rcv->urb->transfer_dma =3D buf->dma;
+ 		rcv->urb->transfer_flags |=3D URB_NO_TRANSFER_DMA_MAP;
+=20
+@@ -1227,9 +1237,14 @@ made_compressed_probe:
+ 			goto alloc_fail7;
+ 		}
+=20
+=2D		usb_fill_bulk_urb(snd->urb, usb_dev,
+=2D			usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
+=2D			NULL, acm->writesize, acm_write_bulk, snd);
++		if (usb_endpoint_xfer_int(epwrite))
++			usb_fill_int_urb(snd->urb, usb_dev,
++				usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
++				NULL, acm->writesize, acm_write_bulk, snd, epwrite->bInterval);
++		else
++			usb_fill_bulk_urb(snd->urb, usb_dev,
++				usb_sndbulkpipe(usb_dev, epwrite->bEndpointAddress),
++				NULL, acm->writesize, acm_write_bulk, snd);
+ 		snd->urb->transfer_flags |=3D URB_NO_TRANSFER_DMA_MAP;
+ 		snd->instance =3D acm;
+ 	}
 
-Also please stop calling it VFAT. With the changes made it isn't VFAT and
-it's misleading to an end user to advertise it as vfat and users
-shouldn't accidentally be able to specify -o vfat and get non-vfat. Thats
-asking for incompatibility, data loss and unpleasant unwarned of suprises.
 
-Its "linfat" or something which when you've fixed the bugs Pavel has
-pointed out might be semi-compatible with other products (most *FAT using
-products don't use Microsofts implementation). Testing it versus Windows
-and saying it works is not really adequate. Thats what ACPI and BIOS
-people do that *we* moan about all the time.
+--nextPart1436998.HoCYDNPjgS
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Alan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iJwEAAECAAYFAkpLR4wACgkQIHDkq2F9exahCQQAjIhpf25wGMeh0PbagC9iCM+x
+uBmJM7TVUJZefcV0WqU65dFbXsQ9TOzwx4CtPtjUj+0O1Np+p0q3MH+yxXBfvdwc
+6TtfHPb/wVmbM6ChT14xjiTudMJxjeyb+wEge2q0U2/bpXcrq8Aoc/d4u0et6fpS
+7CpBaJnzKiGPW4NzNx8=
+=ez01
+-----END PGP SIGNATURE-----
+
+--nextPart1436998.HoCYDNPjgS--
