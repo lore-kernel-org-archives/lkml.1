@@ -1,65 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbZGACgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755651AbZGACqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbZGACgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 22:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZGACg3
+	id S1755651AbZGACqW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 22:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZGACqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 22:36:29 -0400
-Received: from n74.bullet.mail.sp1.yahoo.com ([98.136.44.186]:24545 "HELO
-	n74.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751016AbZGACg2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 22:36:28 -0400
-X-Yahoo-Newman-Id: 182987.29075.bm@omp402.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=LjfbasPUal8qZcHdz/0GP2MgF7LfkGlFmR+pANp4i4ki6Q1vnwom/hQageQGJ+xnNLlMoiTDs6pBm/o5fRVZGfsbesFcwdgAF2JGYIDdrfaNGAsBDNU+E0I4J+l2RbHs9O2n4bzFiwIKpENaU73QJRz+HgMCgwfPgd24/TsQQUw=  ;
-X-YMail-OSG: ..UbwHkVM1mhZfSh5_.Bkiu1w9BL90tJznAv2fxSQcv7gMVTf1Q6nb2G058auSFRr0LdJLlcpEb4yFNDom8H3IPpIoOE6Hd0Z_VHjrvkkNZx4mUmFGx9Ozd10nur0GboVdhV6XxbfUEsYOswN2Ara75uI0MtvPNAFJjdSTKLrSsH7nOZdj_a15Qk7AQ6ZSbp9O3GZ510nMagLK47nqzORG987L_2WM0BCSvaFr11omClQkcV32GmuWswFKcvKnJA0BIgOdhYDWZU3a7YYXlhsIq37JfWLwTqQlthsbPGWMDF0Lw-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/2] MMC/pxamci: workaround regulator framework bugs
-Date: Tue, 30 Jun 2009 19:36:20 -0700
-User-Agent: KMail/1.9.10
-Cc: Eric Miao <eric.y.miao@gmail.com>, Daniel Ribeiro <drwyrm@gmail.com>,
-       Pierre Ossman <pierre@ossman.eu>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "openezx-devel" <openezx-devel@lists.openezx.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       "linux-arm-kernel" <linux-arm-kernel@lists.arm.linux.org.uk>
-References: <1246057668.10360.316.camel@brutus> <4A482E56.1070604@gmail.com> <20090629094311.GD11855@sirena.org.uk>
-In-Reply-To: <20090629094311.GD11855@sirena.org.uk>
+	Tue, 30 Jun 2009 22:46:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:65367 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752955AbZGACqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 22:46:12 -0400
+Message-ID: <4A4ACE29.3010407@cn.fujitsu.com>
+Date: Wed, 01 Jul 2009 10:47:05 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/events: add trace_event boot option
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906301936.20818.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 29 June 2009, Mark Brown wrote:
-> At the minute the regulator API actually copes pretty well with this -
-> the only problem I'm aware of is with drivers like the MMC driver which
-> require exclusive control of the regulator.
+We already have ftrace= boot option, and this adds a similar
+boot option for trace events, so allow trace events to be
+enabled at boot, for boot debugging purpose.
 
-Which is a fairly typical situation for power-aware drivers.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ Documentation/kernel-parameters.txt |    5 ++++
+ Documentation/trace/events.txt      |    9 ++++++++
+ kernel/trace/trace.c                |    4 +-
+ kernel/trace/trace.h                |    3 ++
+ kernel/trace/trace_events.c         |   37 +++++++++++++++++++++++++++++++---
+ 5 files changed, 52 insertions(+), 6 deletions(-)
 
-Which belies your claim that the regulator API "copes pretty well".
-It'd be more accurate to say "broken-as-designed", since you have
-rejected numerous attempts to fix this, yet not fixed it yourself.
-
-
-> With other drivers the core 
-> API can clean up after startup and the drivers never need to worry about
-> fixing things up.
-
-MMC isn't particularly unusual.  It's just the first place this
-type problem tends to come up.  Expect more such problelms as
-folkl actually try to *use* the regulator framework.
-
-
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index d77fbd8..6f98ed7 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2476,6 +2476,11 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	trace_buf_size=nn[KMG]
+ 			[FTRACE] will set tracing buffer size.
+ 
++	trace_event=[event-list]
++			[FTRACE] Set and start specified trace events in order
++			to facilitate early boot debugging.
++			See also Documentation/trace/events.txt
++
+ 	trix=		[HW,OSS] MediaTrix AudioTrix Pro
+ 			Format:
+ 			<io>,<irq>,<dma>,<dma2>,<sb_io>,<sb_irq>,<sb_dma>,<mpu_io>,<mpu_irq>
+diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
+index f157d75..2bcc8d4 100644
+--- a/Documentation/trace/events.txt
++++ b/Documentation/trace/events.txt
+@@ -83,6 +83,15 @@ When reading one of these enable files, there are four results:
+  X - there is a mixture of events enabled and disabled
+  ? - this file does not affect any event
+ 
++2.3 Boot option
++---------------
++
++In order to facilitate early boot debugging, use boot option:
++
++	trace_event=[event-list]
++
++The format of this boot option is the same as described in section 2.1.
++
+ 3. Defining an event-enabled tracepoint
+ =======================================
+ 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 3aa0a0d..bdb3afc 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -49,7 +49,7 @@ unsigned long __read_mostly	tracing_thresh;
+  * On boot up, the ring buffer is set to the minimum size, so that
+  * we do not waste memory on systems that are not using tracing.
+  */
+-static int ring_buffer_expanded;
++int ring_buffer_expanded;
+ 
+ /*
+  * We need to change this state when a selftest is running.
+@@ -63,7 +63,7 @@ static bool __read_mostly tracing_selftest_running;
+ /*
+  * If a tracer is running, we do not want to run SELFTEST.
+  */
+-static bool __read_mostly tracing_selftest_disabled;
++bool __read_mostly tracing_selftest_disabled;
+ 
+ /* For tracers that don't implement custom flags */
+ static struct tracer_opt dummy_tracer_opt[] = {
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 206cb7d..61b4e94 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -538,6 +538,9 @@ extern unsigned long ftrace_update_tot_cnt;
+ extern int DYN_FTRACE_TEST_NAME(void);
+ #endif
+ 
++extern int ring_buffer_expanded;
++extern bool tracing_selftest_disabled;
++
+ #ifdef CONFIG_FTRACE_STARTUP_TEST
+ extern int trace_selftest_startup_function(struct tracer *trace,
+ 					   struct trace_array *tr);
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 53c8fd3..fecac13 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -17,6 +17,8 @@
+ #include <linux/ctype.h>
+ #include <linux/delay.h>
+ 
++#include <asm/setup.h>
++
+ #include "trace_output.h"
+ 
+ #define TRACE_SYSTEM "TRACE_SYSTEM"
+@@ -1133,6 +1135,18 @@ struct notifier_block trace_module_nb = {
+ extern struct ftrace_event_call __start_ftrace_events[];
+ extern struct ftrace_event_call __stop_ftrace_events[];
+ 
++static char bootup_event_buf[COMMAND_LINE_SIZE] __initdata;
++
++static __init int setup_trace_event(char *str)
++{
++	strlcpy(bootup_event_buf, str, COMMAND_LINE_SIZE);
++	ring_buffer_expanded = 1;
++	tracing_selftest_disabled = 1;
++
++	return 1;
++}
++__setup("trace_event=", setup_trace_event);
++
+ static __init int event_trace_init(void)
+ {
+ 	struct ftrace_event_call *call;
+@@ -1140,6 +1154,8 @@ static __init int event_trace_init(void)
+ 	struct dentry *entry;
+ 	struct dentry *d_events;
+ 	int ret;
++	char *buf = bootup_event_buf;
++	char *token;
+ 
+ 	d_tracer = tracing_init_dentry();
+ 	if (!d_tracer)
+@@ -1185,6 +1201,19 @@ static __init int event_trace_init(void)
+ 				 &ftrace_event_format_fops);
+ 	}
+ 
++	while (true) {
++		token = strsep(&buf, ",");
++
++		if (!token)
++			break;
++		if (!*token)
++			continue;
++
++		ret = ftrace_set_clr_event(token, 1);
++		if (ret)
++			pr_warning("Failed to enable trace event: %s\n", token);
++	}
++
+ 	ret = register_module_notifier(&trace_module_nb);
+ 	if (ret)
+ 		pr_warning("Failed to register trace events module notifier\n");
+@@ -1392,10 +1421,10 @@ static __init void event_trace_self_test_with_function(void)
+ 
+ static __init int event_trace_self_tests_init(void)
+ {
+-
+-	event_trace_self_tests();
+-
+-	event_trace_self_test_with_function();
++	if (!tracing_selftest_disabled) {
++		event_trace_self_tests();
++		event_trace_self_test_with_function();
++	}
+ 
+ 	return 0;
+ }
+-- 
+1.5.4.rc3
 
