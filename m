@@ -1,68 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZGAGMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZGAGQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZGAGMG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZGAGLz
+	id S1755171AbZGAGQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZGAGQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:11:55 -0400
-Received: from manchmal.in-ulm.de ([217.10.9.201]:55438 "EHLO
-	manchmal.in-ulm.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbZGAGLz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:11:55 -0400
-X-Greylist: delayed 438 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 02:11:55 EDT
-Date: Wed, 1 Jul 2009 08:04:34 +0200
-From: Christoph Biedl <linux-kernel.bfrz@manchmal.in-ulm.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [patch 00/30] 2.6.27-stable review
-Message-ID: <1246427880@msgid.manchmal.in-ulm.de>
-References: <20090701002817.GA6156@kroah.com>
+	Wed, 1 Jul 2009 02:16:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:40011 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750866AbZGAGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:16:20 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Jan Beulich" <JBeulich@novell.com>
+Subject: Re: [PATCH 1/2] reduce symbol table for loaded modules
+Date: Wed, 1 Jul 2009 15:46:21 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <4A4A1C6C0200007800008369@vpn.id2.novell.com>
+In-Reply-To: <4A4A1C6C0200007800008369@vpn.id2.novell.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090701002817.GA6156@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907011546.21597.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 30 Jun 2009 09:38:43 pm Jan Beulich wrote:
+> Discard all symbols not interesting for kallsyms use: absolute,
+> section, and in the common case (!KALLSYMS_ALL) data ones.
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I like the idea, but implementation could probably be polished a little bit.
 
-Greg KH wrote...
+> +static unsigned int filter_symbols(Elf_Sym *dst,
+> +				   const Elf_Sym *src, unsigned int nsrc,
+> +				   const Elf_Shdr *sechdrs, unsigned int shnum)
 
-> This is the start of the stable review cycle for the 2.6.27.26 release.
+How about splitting the test out to an:
 
-Please consider
+	bool is_core_symbol(const Elf_Sym *src, const Elf_Shdr *sechdrs, unsigned int shnum)
 
-| commit 1f8ae0a21d83f43006d7f6d2862e921dbf2eeddd
-| Author: Tomasz Lemiech <szpajder@staszic.waw.pl>
-| Date:   Fri Mar 13 15:43:38 2009 -0700
-|=20
-|     tulip: Fix for MTU problems with 802.1q tagged frames
+Then split filter_symbols into num_core_symbols() and copy_core_symbols().
 
-for inclusion which was added in 2.6.30 - although probably I am the
-last one in the world who uses VLANs on tulip.  That patch applied on
-2.6.27.25 and worked for me.  If I should do another test on top of
-2.6.27.26-rc1, drop me a line.
+> +static unsigned long layout_symtab(struct module *mod,
 
-    Christoph
+How about append_symbols() instead?
 
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> +				   Elf_Shdr *sechdrs,
+> +				   unsigned int symindex,
+> +				   const Elf_Ehdr *hdr,
+> +				   const char *secstrings)
+> +{
+> +	unsigned long symoffs;
+> +	Elf_Shdr *symsect = sechdrs + symindex;
+> +
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Comment would help me here:
 
-iEUEARECAAYFAkpK/HIACgkQBq/69tVAGy2VFQCYqjOxCHO+pEyrVclIA9PzFr2b
-fQCfTVnmz5ZYg8Ggqd7Kh6GOljwOc9I=
-=nT+9
------END PGP SIGNATURE-----
+/* Put symbol section at end of init part of module. */
+> +	symsect->sh_flags |= SHF_ALLOC;
+> +	symsect->sh_entsize = get_offset(mod, &mod->init_size, symsect,
+> +					 symindex) | INIT_OFFSET_MASK;
+> +	DEBUGP("\t%s\n", secstrings + symsect->sh_name);
+> +
 
---45Z9DzgjV8m4Oswq--
+Here too:
+/* Append room for core symbols at end of core part. */
+> +	symoffs = ALIGN(mod->core_size, symsect->sh_addralign ?: 1);
+> +	mod->core_size = symoffs
+> +			 + filter_symbols(NULL,
+> +			 		  (void *)hdr + symsect->sh_offset,
+> +					  symsect->sh_size / sizeof(Elf_Sym),
+> +					  sechdrs, hdr->e_shnum)
+> +			 * sizeof(Elf_Sym);
+> +
+> +	return symoffs;
+> +}
+> +
+>  static void add_kallsyms(struct module *mod,
+>  			 Elf_Shdr *sechdrs,
+> +			 unsigned int shnum,
+>  			 unsigned int symindex,
+>  			 unsigned int strindex,
+> +			 unsigned long symoffs,
+>  			 const char *secstrings)
+>  {
+>  	unsigned int i;
+> @@ -1857,12 +1914,26 @@ static void add_kallsyms(struct module *
+>  	for (i = 0; i < mod->num_symtab; i++)
+>  		mod->symtab[i].st_info
+>  			= elf_type(&mod->symtab[i], sechdrs, secstrings, mod);
+> +
+> +	mod->core_symtab = mod->module_core + symoffs;
+> +	mod->core_num_syms = filter_symbols(mod->core_symtab,
+> +					    mod->symtab, mod->num_symtab,
+> +					    sechdrs, shnum);
+
+Hmm, could avoid symoffs if copy_core_symbols worked backwards.  Probably
+not worthwhile tho.
+
+>  	trim_init_extable(mod);
+> +#ifdef CONFIG_KALLSYMS
+> +	mod->num_symtab = mod->core_num_syms;
+> +	mod->symtab = mod->core_symtab;
+> +#endif
+>  	module_free(mod, mod->module_init);
+>  	mod->module_init = NULL;
+>  	mod->init_size = 0;
+
+core_num_syms/core_symtab is really a temporary; we should note that in
+the module.h header next to those fields.
+
+Thanks!
+Rusty.
+
