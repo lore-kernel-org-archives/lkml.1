@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764287AbZGABH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763302AbZGABGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764287AbZGABH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbZGAAfW
+	id S1763302AbZGABGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761524AbZGAAfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:22 -0400
-Received: from kroah.org ([198.145.64.141]:60549 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:16 -0400
+Received: from kroah.org ([198.145.64.141]:60516 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761519AbZGAAfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:15 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:36 2009
-Message-Id: <20090701002436.136350710@mini.kroah.org>
+	id S1761486AbZGAAfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:10 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:34 2009
+Message-Id: <20090701002434.361785637@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:02 -0700
+Date: Tue, 30 Jun 2009 17:23:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Sujith <Sujith.Manoharan@atheros.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 073/108] ath9k: Initialize ANI timers
+Subject: [patch 068/108] ath9k: Fix bug in calibration initialization
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ath9k-initialize-ani-timers.patch
+Content-Disposition: inline; filename=ath9k-fix-bug-in-calibration-initialization.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,65 +33,127 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sujith <Sujith.Manoharan@atheros.com>
 
-commit 415f738ecf41b427921b503ecfd427e26f89dc23 upstream.
+commit 04d19ddd254b404703151ab25aa5041e50ff40f7 upstream.
 
-The various ANI timers have to be initialized properly when
-starting the calibration timer.
+This patch fixes a bug in ath9k_hw_init_cal() where the wrong
+calibration was being done for non-AR9285 chipsets.
+Also add a few helpful comments.
 
 Signed-off-by: Sujith <Sujith.Manoharan@atheros.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath9k/main.c |   24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ drivers/net/wireless/ath9k/calib.c |   61 +++++++++++++------------------------
+ 1 file changed, 22 insertions(+), 39 deletions(-)
 
---- a/drivers/net/wireless/ath9k/main.c
-+++ b/drivers/net/wireless/ath9k/main.c
-@@ -408,6 +408,18 @@ set_timer:
- 	mod_timer(&sc->ani.timer, jiffies + msecs_to_jiffies(cal_interval));
+--- a/drivers/net/wireless/ath9k/calib.c
++++ b/drivers/net/wireless/ath9k/calib.c
+@@ -919,83 +919,66 @@ static bool ar9285_clc(struct ath_hw *ah
+ 	return true;
  }
  
-+static void ath_start_ani(struct ath_softc *sc)
-+{
-+	unsigned long timestamp = jiffies_to_msecs(jiffies);
-+
-+	sc->ani.longcal_timer = timestamp;
-+	sc->ani.shortcal_timer = timestamp;
-+	sc->ani.checkani_timer = timestamp;
-+
-+	mod_timer(&sc->ani.timer,
-+		  jiffies + msecs_to_jiffies(ATH_ANI_POLLINTERVAL));
-+}
-+
- /*
-  * Update tx/rx chainmask. For legacy association,
-  * hard code chainmask to 1x1, for 11n association, use
-@@ -920,9 +932,7 @@ static void ath9k_bss_assoc_info(struct 
- 		sc->nodestats.ns_avgtxrssi = ATH_RSSI_DUMMY_MARKER;
- 		sc->nodestats.ns_avgtxrate = ATH_RATE_DUMMY_MARKER;
+-bool ath9k_hw_init_cal(struct ath_hw *ah,
+-		       struct ath9k_channel *chan)
++bool ath9k_hw_init_cal(struct ath_hw *ah, struct ath9k_channel *chan)
+ {
+ 	if (AR_SREV_9285(ah) && AR_SREV_9285_12_OR_LATER(ah)) {
+ 		if (!ar9285_clc(ah, chan))
+ 			return false;
+-	} else if (AR_SREV_9280_10_OR_LATER(ah)) {
+-		REG_CLR_BIT(ah, AR_PHY_ADC_CTL, AR_PHY_ADC_CTL_OFF_PWDADC);
+-		REG_SET_BIT(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_FLTR_CAL);
+-		REG_CLR_BIT(ah, AR_PHY_CL_CAL_CTL, AR_PHY_CL_CAL_ENABLE);
++	} else {
++		if (AR_SREV_9280_10_OR_LATER(ah)) {
++			REG_CLR_BIT(ah, AR_PHY_ADC_CTL, AR_PHY_ADC_CTL_OFF_PWDADC);
++			REG_SET_BIT(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_FLTR_CAL);
++		}
  
--		/* Start ANI */
--		mod_timer(&sc->ani.timer,
--			  jiffies + msecs_to_jiffies(ATH_ANI_POLLINTERVAL));
-+		ath_start_ani(sc);
- 	} else {
- 		DPRINTF(sc, ATH_DBG_CONFIG, "Bss Info DISSOC\n");
- 		sc->curaid = 0;
-@@ -2271,12 +2281,8 @@ static int ath9k_add_interface(struct ie
+-		/* Kick off the cal */
++		/* Calibrate the AGC */
+ 		REG_WRITE(ah, AR_PHY_AGC_CONTROL,
+-				REG_READ(ah, AR_PHY_AGC_CONTROL) |
+-				AR_PHY_AGC_CONTROL_CAL);
++			  REG_READ(ah, AR_PHY_AGC_CONTROL) |
++			  AR_PHY_AGC_CONTROL_CAL);
  
- 	ath9k_hw_set_interrupts(sc->sc_ah, sc->imask);
+-		if (!ath9k_hw_wait(ah, AR_PHY_AGC_CONTROL,
+-					AR_PHY_AGC_CONTROL_CAL, 0,
+-					AH_WAIT_TIMEOUT)) {
++		/* Poll for offset calibration complete */
++		if (!ath9k_hw_wait(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_CAL,
++				   0, AH_WAIT_TIMEOUT)) {
+ 			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+ 				"offset calibration failed to complete in 1ms; "
+ 				"noisy environment?\n");
+ 			return false;
+ 		}
  
--	if (conf->type == NL80211_IFTYPE_AP) {
--		/* TODO: is this a suitable place to start ANI for AP mode? */
--		/* Start ANI */
--		mod_timer(&sc->ani.timer,
--			  jiffies + msecs_to_jiffies(ATH_ANI_POLLINTERVAL));
+-		REG_CLR_BIT(ah, AR_PHY_ADC_CTL, AR_PHY_ADC_CTL_OFF_PWDADC);
+-		REG_SET_BIT(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_FLTR_CAL);
+-		REG_SET_BIT(ah, AR_PHY_CL_CAL_CTL, AR_PHY_CL_CAL_ENABLE);
 -	}
-+	if (conf->type == NL80211_IFTYPE_AP)
-+		ath_start_ani(sc);
+-
+-	/* Calibrate the AGC */
+-	REG_WRITE(ah, AR_PHY_AGC_CONTROL,
+-			REG_READ(ah, AR_PHY_AGC_CONTROL) |
+-			AR_PHY_AGC_CONTROL_CAL);
+-
+-	if (!ath9k_hw_wait(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_CAL,
+-				0, AH_WAIT_TIMEOUT)) {
+-		DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+-			"offset calibration failed to complete in 1ms; "
+-			"noisy environment?\n");
+-		return false;
+-	}
+-
+-	if (AR_SREV_9280_10_OR_LATER(ah)) {
+-		REG_SET_BIT(ah, AR_PHY_ADC_CTL, AR_PHY_ADC_CTL_OFF_PWDADC);
+-		REG_CLR_BIT(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_FLTR_CAL);
++		if (AR_SREV_9280_10_OR_LATER(ah)) {
++			REG_SET_BIT(ah, AR_PHY_ADC_CTL, AR_PHY_ADC_CTL_OFF_PWDADC);
++			REG_CLR_BIT(ah, AR_PHY_AGC_CONTROL, AR_PHY_AGC_CONTROL_FLTR_CAL);
++		}
+ 	}
  
- out:
- 	mutex_unlock(&sc->mutex);
+ 	/* Do PA Calibration */
+ 	if (AR_SREV_9285(ah) && AR_SREV_9285_11_OR_LATER(ah))
+ 		ath9k_hw_9285_pa_cal(ah);
+ 
+-	/* Do NF Calibration */
++	/* Do NF Calibration after DC offset and other calibrations */
+ 	REG_WRITE(ah, AR_PHY_AGC_CONTROL,
+-			REG_READ(ah, AR_PHY_AGC_CONTROL) |
+-			AR_PHY_AGC_CONTROL_NF);
++		  REG_READ(ah, AR_PHY_AGC_CONTROL) | AR_PHY_AGC_CONTROL_NF);
+ 
+ 	ah->cal_list = ah->cal_list_last = ah->cal_list_curr = NULL;
+ 
++	/* Enable IQ, ADC Gain and ADC DC offset CALs */
+ 	if (AR_SREV_9100(ah) || AR_SREV_9160_10_OR_LATER(ah)) {
+ 		if (ath9k_hw_iscal_supported(ah, ADC_GAIN_CAL)) {
+ 			INIT_CAL(&ah->adcgain_caldata);
+ 			INSERT_CAL(ah, &ah->adcgain_caldata);
+ 			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+-					"enabling ADC Gain Calibration.\n");
++				"enabling ADC Gain Calibration.\n");
+ 		}
+ 		if (ath9k_hw_iscal_supported(ah, ADC_DC_CAL)) {
+ 			INIT_CAL(&ah->adcdc_caldata);
+ 			INSERT_CAL(ah, &ah->adcdc_caldata);
+ 			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+-					"enabling ADC DC Calibration.\n");
++				"enabling ADC DC Calibration.\n");
+ 		}
+ 		if (ath9k_hw_iscal_supported(ah, IQ_MISMATCH_CAL)) {
+ 			INIT_CAL(&ah->iq_caldata);
+ 			INSERT_CAL(ah, &ah->iq_caldata);
+ 			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+-					"enabling IQ Calibration.\n");
++				"enabling IQ Calibration.\n");
+ 		}
+ 
+ 		ah->cal_list_curr = ah->cal_list;
 
 
