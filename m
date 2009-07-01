@@ -1,105 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbZGAVRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZGAVVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbZGAVRk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZGAVRc
+	id S1755585AbZGAVVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZGAVVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:17:32 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:57763 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751212AbZGAVRb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 17:17:31 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqcFAC9rS0pMQWU3/2dsb2JhbACBUc8ehBEF
-Date: Wed, 1 Jul 2009 17:17:30 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [BUGFIX PATCH -tip] x86: Fix fixmap page order in text_poke()
-Message-ID: <20090701211730.GG19926@Krystal>
-References: <20090701210246.22089.65697.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090701210246.22089.65697.stgit@localhost.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:16:35 up 123 days, 17:42,  3 users,  load average: 0.29, 0.38,
-	0.46
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 1 Jul 2009 17:21:09 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:49492 "EHLO mail.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752684AbZGAVVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 17:21:07 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+CC: Hansjoerg Lipp <hjlipp@web.de>
+Message-ID: <20090701-patch-01.tilman@imap.cc>
+In-Reply-To: <20090701-patch-00.tilman@imap.cc>
+References: <20090701-patch-00.tilman@imap.cc>
+Subject: [PATCH 1/2] gigaset: accept connection establishment messages in any order
+Date: Wed,  1 Jul 2009 23:20:57 +0200 (CEST)
+X-Spam-Score: 0.1 () RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Since the fixmap pages are assigned higher address to lower, text_poke()
-> has to use it with inverted order (FIX_TEXT_POKE1 to FIX_TEXT_POKE0).
-> 
+ISDN connection setup failed if the "connection active" and
+"B channel up" messages from the device arrived in a different
+order than expected. Modify the state machine to accept them in
+any order.
 
-Hrm, is that only true for x86_32 or also for x86_64 ?
+Impact: bugfix
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+CC: stable <stable@kernel.org>
+---
+ drivers/isdn/gigaset/ev-layer.c |   44 +++++++++++++++++---------------------
+ 1 files changed, 20 insertions(+), 24 deletions(-)
 
-Reading arch/x86/include/asm/fixmap.h :
-
- * for x86_32: We allocate these special addresses
- * from the end of virtual memory (0xfffff000) backwards.
- * Also this lets us do fail-safe vmalloc(), we
- * can guarantee that these special addresses and
- * vmalloc()-ed addresses never overlap.
-
-Mathieu
-
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
-> 
->  arch/x86/kernel/alternative.c |   14 +++++++++-----
->  1 files changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-> index f576587..4d8b40b 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -527,14 +527,18 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
->  	}
->  	BUG_ON(!pages[0]);
->  	local_irq_save(flags);
-> -	set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[0]));
-> +	/*
-> +	 * Since the fixmaps are assinged from higher address to lower,
-> +	 * we use FIX_TEXT_POKE1 first, and FIX_TEXT_POKE0 second.
-> +	 */
-> +	set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[0]));
->  	if (pages[1])
-> -		set_fixmap(FIX_TEXT_POKE1, page_to_phys(pages[1]));
-> -	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE0);
-> +		set_fixmap(FIX_TEXT_POKE0, page_to_phys(pages[1]));
-> +	vaddr = (char *)fix_to_virt(FIX_TEXT_POKE1);
->  	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
-> -	clear_fixmap(FIX_TEXT_POKE0);
-> +	clear_fixmap(FIX_TEXT_POKE1);
->  	if (pages[1])
-> -		clear_fixmap(FIX_TEXT_POKE1);
-> +		clear_fixmap(FIX_TEXT_POKE0);
->  	local_flush_tlb();
->  	sync_core();
->  	/* Could also do a CLFLUSH here to speed up CPU recovery; but
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-
+diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
+index ec51696..2d91049 100644
+--- a/drivers/isdn/gigaset/ev-layer.c
++++ b/drivers/isdn/gigaset/ev-layer.c
+@@ -294,32 +294,33 @@ struct reply_t gigaset_tab_cid[] =
+ 	{RSP_OK,      604,604, -1,                605, 5, {ACT_CMD+AT_MSN}},
+ 	{RSP_OK,      605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
+ 	{RSP_NULL,    605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
+-	{RSP_OK,      606,606, -1,                607, 5, {0},             "+VLS=17\r"}, /* set "Endgeraetemodus" */
++	{RSP_OK,      606,606, -1,                607, 5, {0}, "+VLS=17\r"},
+ 	{RSP_OK,      607,607, -1,                608,-1},
+-	//{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    608, 0, {ACT_ERROR}},//DELETE
+ 	{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    609, 5, {ACT_CMD+AT_DIAL}},
+ 	{RSP_OK,      609,609, -1,                650, 0, {ACT_DIALING}},
+ 
+-	{RSP_ZVLS,    608,608, 17,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCTP,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCPN,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
+ 	{RSP_ERROR,   601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
+ 	{EV_TIMEOUT,  601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
+ 
+-	/* dialing */
+-	{RSP_ZCTP,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCPN,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZSAU,    650,650,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}}, /* some devices don't send this */
+-
+-	/* connection established  */
+-	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
+-	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
+-
+-	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}}, //FIXME new constate + timeout
++	/* optional dialing responses */
++	{EV_BC_OPEN,  650,650, -1,                651,-1},
++	{RSP_ZVLS,    608,651, 17,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZCTP,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZCPN,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZSAU,    650,651,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}},
++
++	/* connect */
++	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
++	{RSP_ZSAU,    651,651,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
++							   ACT_NOTIFY_BC_UP}},
++	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
++	{RSP_ZSAU,    751,751,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
++							   ACT_NOTIFY_BC_UP}},
++	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}},
+ 
+ 	/* remote hangup */
+-	{RSP_ZSAU,    650,650,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
+-	{RSP_ZSAU,    750,750,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
++	{RSP_ZSAU,    650,651,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
++	{RSP_ZSAU,    750,751,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+ 	{RSP_ZSAU,    800,800,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+ 
+ 	/* hangup */
+@@ -358,7 +359,8 @@ struct reply_t gigaset_tab_cid[] =
+ 	{RSP_ZSAU,    700,729,ZSAU_ACTIVE,          0, 0, {ACT_ABORTACCEPT}},
+ 	{RSP_ZSAU,    700,729,ZSAU_DISCONNECT_IND,  0, 0, {ACT_ABORTACCEPT}},
+ 
+-	{EV_TIMEOUT,  750,750, -1,                  0, 0, {ACT_CONNTIMEOUT}},
++	{EV_BC_OPEN,  750,750, -1,                751,-1},
++	{EV_TIMEOUT,  750,751, -1,                  0, 0, {ACT_CONNTIMEOUT}},
+ 
+ 	/* B channel closed (general case) */
+ 	{EV_BC_CLOSED, -1, -1, -1,                 -1,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME
+@@ -876,12 +878,6 @@ static void bchannel_down(struct bc_state *bcs)
+ 
+ static void bchannel_up(struct bc_state *bcs)
+ {
+-	if (!(bcs->chstate & CHS_D_UP)) {
+-		dev_notice(bcs->cs->dev, "%s: D channel not up\n", __func__);
+-		bcs->chstate |= CHS_D_UP;
+-		gigaset_i4l_channel_cmd(bcs, ISDN_STAT_DCONN);
+-	}
+-
+ 	if (bcs->chstate & CHS_B_UP) {
+ 		dev_notice(bcs->cs->dev, "%s: B channel already up\n",
+ 			   __func__);
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.6.2.1.214.ge986c
+
