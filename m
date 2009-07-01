@@ -1,178 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZGAICr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbZGAIEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbZGAICr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZGAIC1
+	id S1753833AbZGAIEy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZGAIEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:02:27 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:39131 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZGAICY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:02:24 -0400
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-To: david-b@pacbell.net, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ext-jani.1.nikula@nokia.com
-Subject: [PATCH v2] gpiolib: allow exported GPIO nodes to be named using sysfs links
-Date: Wed,  1 Jul 2009 11:01:46 +0300
-Message-Id: <1246435306-7371-1-git-send-email-ext-jani.1.nikula@nokia.com>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <200906301843.22646.david-b@pacbell.net>
-References: <200906301843.22646.david-b@pacbell.net>
-X-OriginalArrivalTime: 01 Jul 2009 08:01:52.0418 (UTC) FILETIME=[3190E020:01C9FA22]
-X-Nokia-AV: Clean
+	Wed, 1 Jul 2009 04:04:37 -0400
+Received: from mail.opencsw.org ([147.87.98.73]:61343 "EHLO mail.opencsw.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752263AbZGAIEe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:04:34 -0400
+Date: Wed, 1 Jul 2009 10:04:32 +0200
+From: Attila Kinali <attila@kinali.ch>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: Long lasting MM bug when swap is smaller than RAM
+Message-Id: <20090701100432.2d328e46.attila@kinali.ch>
+In-Reply-To: <4A4ABD8F.40907@gmail.com>
+References: <20090630115819.38b40ba4.attila@kinali.ch>
+	<4A4ABD8F.40907@gmail.com>
+Organization: GEHIRN
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 926b663ce8215ba448960e1ff6e58b67a2c3b99b (gpiolib: allow GPIOs to
-be named) already provides naming on the chip level. This patch provides
-more flexibility by allowing multiple names where ever in sysfs on a per
-GPIO basis.
+On Tue, 30 Jun 2009 19:36:15 -0600
+Robert Hancock <hancockrwd@gmail.com> wrote:
 
-Adapted from David Brownell's comments on a similar concept:
-http://lkml.org/lkml/2009/4/20/203.
+> On 06/30/2009 03:58 AM, Attila Kinali wrote:
+> > Moin,
+> >
+> > There has been a bug back in the 2.4.17 days that is somehow
+> > triggered by swap being smaller than RAM, which i thought had
+> > been fixed long ago, reappeared on one of the machines i manage.
+> >
+> > <history>
+> 
+> It's quite unlikely what you are seeing is at all related to that 
+> problem. The VM subsystem has been hugely changed since then.
 
-Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+That's why i thought this problem was fixed.
 
----
+> You didn't post what the swap usage history before the upgrade was. 
 
-Changes in v2:
- - remove BUG_ON()
----
- Documentation/gpio.txt     |   10 +++++++++
- drivers/gpio/gpiolib.c     |   45 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-generic/gpio.h |    8 +++++++
- include/linux/gpio.h       |    9 ++++++++
- 4 files changed, 72 insertions(+), 0 deletions(-)
+Because i don't have any hard data on this. I checked it by hand
+from time to time and we never had more than a few MB of swap used.
 
-diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
-index e4b6985..566edaa 100644
---- a/Documentation/gpio.txt
-+++ b/Documentation/gpio.txt
-@@ -555,6 +555,11 @@ requested using gpio_request():
- 	/* reverse gpio_export() */
- 	void gpio_unexport();
+> But 
+> swapping does not only occur if memory is running low. If disk usage is 
+> high then non-recently used data may be swapped out to make more room 
+> for disk caching.
+
+Hmm..I didn't know this.. thanks!
+
  
-+	/* create a sysfs link to an exported GPIO node */
-+	int gpio_export_link(struct device *dev, const char *name,
-+		unsigned gpio)
-+
-+
- After a kernel driver requests a GPIO, it may only be made available in
- the sysfs interface by gpio_export().  The driver can control whether the
- signal direction may change.  This helps drivers prevent userspace code
-@@ -563,3 +568,8 @@ from accidentally clobbering important system state.
- This explicit exporting can help with debugging (by making some kinds
- of experiments easier), or can provide an always-there interface that's
- suitable for documenting as part of a board support package.
-+
-+After the GPIO has been exported, gpio_export_link() allows creating
-+symlinks from elsewhere in sysfs to the GPIO sysfs node.  Drivers can
-+use this to provide the interface under their own device in sysfs with
-+a descriptive name.
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 51a8d41..aef6b3d 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -505,6 +505,51 @@ static int match_export(struct device *dev, void *data)
- }
- 
- /**
-+ * gpio_export_link - create a sysfs link to an exported GPIO node
-+ * @dev: device under which to create symlink
-+ * @name: name of the symlink
-+ * @gpio: gpio to create symlink to, already exported
-+ *
-+ * Set up a symlink from /sys/.../dev/name to /sys/class/gpio/gpioN
-+ * node. Caller is responsible for unlinking.
-+ *
-+ * Returns zero on success, else an error.
-+ */
-+int gpio_export_link(struct device *dev, const char *name, unsigned gpio)
-+{
-+	struct gpio_desc	*desc;
-+	int			status = -EINVAL;
-+
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	desc = &gpio_desc[gpio];
-+
-+	if (test_bit(FLAG_EXPORT, &desc->flags)) {
-+		struct device *tdev;
-+
-+		tdev = class_find_device(&gpio_class, NULL, desc, match_export);
-+		if (tdev != NULL) {
-+			status = sysfs_create_link(&dev->kobj, &tdev->kobj,
-+						name);
-+		} else {
-+			status = -ENODEV;
-+		}
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+
-+done:
-+	if (status)
-+		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_export_link);
-+
-+/**
-  * gpio_unexport - reverse effect of gpio_export()
-  * @gpio: gpio to make unavailable
-  *
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index d6c379d..9cca378 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -141,6 +141,8 @@ extern int __gpio_to_irq(unsigned gpio);
-  * but more typically is configured entirely from userspace.
-  */
- extern int gpio_export(unsigned gpio, bool direction_may_change);
-+extern int gpio_export_link(struct device *dev, const char *name,
-+			unsigned gpio);
- extern void gpio_unexport(unsigned gpio);
- 
- #endif	/* CONFIG_GPIO_SYSFS */
-@@ -185,6 +187,12 @@ static inline int gpio_export(unsigned gpio, bool direction_may_change)
- 	return -ENOSYS;
- }
- 
-+static inline int gpio_export_link(struct device *dev, const char *name,
-+				unsigned gpio)
-+{
-+	return -ENOSYS;
-+}
-+
- static inline void gpio_unexport(unsigned gpio)
- {
- }
-diff --git a/include/linux/gpio.h b/include/linux/gpio.h
-index e10c49a..ff374ce 100644
---- a/include/linux/gpio.h
-+++ b/include/linux/gpio.h
-@@ -89,6 +89,15 @@ static inline int gpio_export(unsigned gpio, bool direction_may_change)
- 	return -EINVAL;
- }
- 
-+static inline int gpio_export_link(struct device *dev, const char *name,
-+				unsigned gpio)
-+{
-+	/* GPIO can never have been exported */
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
-+
- static inline void gpio_unexport(unsigned gpio)
- {
- 	/* GPIO can never have been exported */
--- 
-1.6.3.2
+> Also, by increasing memory from 2GB to 6GB on a 32-bit kernel, some 
+> memory pressure may actually be increased since many kernel data 
+> structures can only be in low memory (the bottom 896MB).
 
+Interesting. But shouldnt memory be "swapped" to highmem first
+before going out onto disk?
+
+> The more that 
+> the system memory is increased the more the pressure on low memory can 
+> become. Using a 64-bit kernel avoids this problem.
+
+Unfortunately, the CPU we have is still a pure 32bit CPU, so this option
+cannot be used.
+
+			Attila Kinali
