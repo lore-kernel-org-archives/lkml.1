@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbZGAWwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZGAW4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbZGAWwj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 18:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZGAWwZ
+	id S1754640AbZGAW4l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 18:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZGAW4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 18:52:25 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:41557 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754534AbZGAWwY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 18:52:24 -0400
-MIME-Version: 1.0
-In-Reply-To: <4A4B49D0.2090101@monstr.eu>
-References: <cover.1245345894.git.arnd@arndb.de>
-	 <7a92dd639b7887bc972118d16a5fda6093200b96.1245347640.git.arnd@arndb.de>
-	 <4A4B49D0.2090101@monstr.eu>
-Date: Thu, 2 Jul 2009 08:52:27 +1000
-Message-ID: <1d3f23370907011552h5b3c96b9h208d5567e7a2a615@mail.gmail.com>
-Subject: Re: [microblaze-uclinux] [PATCH 03/11] microblaze: fall back on 
-	generic header files for the ABI
-From: John Williams <john.williams@petalogix.com>
-To: microblaze-uclinux@itee.uq.edu.au
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       Arnd Bergmann <arnd@arndb.de>, John Linn <John.Linn@xilinx.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Jul 2009 18:56:32 -0400
+Received: from mga11.intel.com ([192.55.52.93]:7959 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752685AbZGAW4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 18:56:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,328,1243839600"; 
+   d="scan'208";a="471321798"
+Subject: Re: [PATCH v3] enable x2APIC without interrupt remapping under KVM
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Avi Kivity <avi@redhat.com>, Gleb Natapov <gleb@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>, garyhade@us.ibm.com
+In-Reply-To: <m1k52t1plq.fsf@fess.ebiederm.org>
+References: <20090629132926.GB20289@redhat.com>
+	 <m1ocs6axca.fsf@fess.ebiederm.org> <20090630092623.GI20289@redhat.com>
+	 <m1eit1acxl.fsf@fess.ebiederm.org> <4A4A476C.2070305@redhat.com>
+	 <m1ljn94k16.fsf@fess.ebiederm.org> <4A4A6499.9000406@redhat.com>
+	 <m1k52t1plq.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Wed, 01 Jul 2009 15:53:28 -0700
+Message-Id: <1246488808.27006.10691.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michal, Arnd,
+On Tue, 2009-06-30 at 12:36 -0700, Eric W. Biederman wrote:
+> Dropped irqs..  Driver hangs because it is waiting for an irq.  Hardware
+> hangs because it is waiting for the cpu to process the irq.
+> 
+> Potentially we get a level triggered irq that is never acked by
+> the cpu that won't arm until the cpu send an ack, and we can't
+> send an ack from another cpu.
 
-On Wed, Jul 1, 2009 at 9:34 PM, Michal Simek<monstr@monstr.eu> wrote:
-> Added to next branch for test.
->
-> I had to do one change.
-> Microblaze needs __kernel_mode_t as short.
->
-> + I removed __kernel_size_t and I'll recompile toolchain
-> for removing warning messages
+Eric,
 
-We need to be a little bit mindful here regarding which of the
-asm-generic changes we merge immediately.
+Among number of experiments you have tried in the past to fix this, have
+you tried the experiment of explicitly clearing the remoteIRR by
+changing the trigger mode to edge and then back to level.
 
-Ones that do not change the ABI at all, but simply pull from
-asm-generic instead of asm-microblaze are obviously fine (identical
-structures, bitfields etc).
+Is there a problem with this?
 
-However, we've just "broken" the ABI in 2.6.31, if we merge further
-ABI breakage in 2.6.32 it's more pain and confusion.
+We can send a spurious IPI (after the RTE migration) with the new vector
+to another cpu and handler which services the level interrupt will check
+if we saw the edge mode for a level interrupt and then the handler can
+explicitly restore the level trigger and reset the remote IRR by mask
++edge and unmask+level.
 
-So, unless we can merge and validate this ABI breakage during the
-2.6.31-rc cycle, I think we need to hold on changes that would break
-the ABI again, so soon.
+We might have to work with some rough edges but do you recollect any
+major issue with this approach..
 
-Longer term there will be a complete redo of glibc up to the latest
-version, which will obviously require a new toolchain for users - I
-think that is the right place to do the next round of ABI breakage.
+thanks,
+suresh
 
-Any thoughts?
-
-John
--- 
-John Williams, PhD, B.Eng, B.IT
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com  p: +61-7-30090663  f: +61-7-30090663
