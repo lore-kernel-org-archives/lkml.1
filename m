@@ -1,70 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbZGABT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbZGABYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932496AbZGABT6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761964AbZGAAh3
+	id S932833AbZGABYb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763495AbZGABGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:37:29 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:33274 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761954AbZGAAh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:37:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=CjRgMme691O7m7C7I7ncXb60QMhzWDs7QxpdZ+zJjsWTVmw0tDrnP56Uq0Rzywcv0X
-         Vbduri8cz1Q1ANiX8qze+owHZ/IYn9S2hbiKmxUinsGwOslDAZ7bQ4QZ4W3T8a27ORhM
-         FyQskDiP6kbvOtyEenVr1A3jNv6UDqftJxE7w=
-Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
- not work
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: yanhua <yanh@lemote.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
-       Pavel Machek <pavel@ucw.cz>, Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <4A4AAB93.6040306@lemote.com>
-References: <1246372868.19049.17.camel@falcon> <4A4AAB93.6040306@lemote.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: DSLab, Lanzhou University, China
-Date: Wed, 01 Jul 2009 08:37:16 +0800
-Message-Id: <1246408636.12459.3.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 30 Jun 2009 21:06:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44966 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbZGABGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:06:16 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip -v10 2/7] x86: x86 instruction decoder build-time selftest
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
+       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
+	<przemyslaw@pawelczyk.it>,
+       Sam Ravnborg <sam@ravnborg.org>
+Date: Tue, 30 Jun 2009 21:08:54 -0400
+Message-ID: <20090701010854.32547.92066.stgit@localhost.localdomain>
+In-Reply-To: <20090701010838.32547.62843.stgit@localhost.localdomain>
+References: <20090701010838.32547.62843.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 08:19 +0800, yanhua wrote:
-> Wu Zhangjin 写道:
-> > Hi,
-> >
-> > I just updated my git repository to the master branch of the latest
-> > linux-mips git repository, and tested the STD/Hibernation support on
-> > fuloong2e and yeeloong2f, it failed:
-> >
-> > when using the no_console_suspend kernel command line to debug, it
-> > stopped on:
-> >
-> > PM: Shringking memory... done (1000 pages freed)
-> > PM: Freed 160000 kbytes in 1.68 seconds (95.23 MB/s)
-> > PM: Creating hibernation image:
-> > PM: Need to copy 5053 pages
-> > PM: Hibernation image created (4195 pages copied)
-> >
-> > and then, the number indicator light of keyboard works well, but can not
-> > type anything. 
-> >
-> >   
-> Are there any other information about it? such as: it just freezes
-> there, or IDE irq lost messages after some time?
->
-> Is it duplicable every time?
+Add a user-space selftest of x86 instruction decoder at kernel build time.
+When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
+instruction decoder and performs it after building vmlinux.
+The test compares the results of objdump and x86 instruction decoder
+code and check there are no differences.
 
-Yes, it is reproductive, I'm tracing it!
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
 
-Thanks!
+ arch/x86/Kconfig.debug          |    9 ++++
+ arch/x86/Makefile               |    3 +
+ arch/x86/include/asm/inat.h     |    2 +
+ arch/x86/include/asm/insn.h     |    2 +
+ arch/x86/lib/inat.c             |    2 +
+ arch/x86/lib/insn.c             |    2 +
+ arch/x86/scripts/Makefile       |   19 +++++++
+ arch/x86/scripts/distill.awk    |   42 +++++++++++++++++
+ arch/x86/scripts/test_get_len.c |   99 +++++++++++++++++++++++++++++++++++++++
+ arch/x86/scripts/user_include.h |   49 +++++++++++++++++++
+ 10 files changed, 229 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/scripts/Makefile
+ create mode 100644 arch/x86/scripts/distill.awk
+ create mode 100644 arch/x86/scripts/test_get_len.c
+ create mode 100644 arch/x86/scripts/user_include.h
 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index d105f29..7d0b681 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
+ config HAVE_MMIOTRACE_SUPPORT
+ 	def_bool y
+ 
++config X86_DECODER_SELFTEST
++     bool "x86 instruction decoder selftest"
++     depends on DEBUG_KERNEL
++	---help---
++	 Perform x86 instruction decoder selftests at build time.
++	 This option is useful for checking the sanity of x86 instruction
++	 decoder code.
++	 If unsure, say "N".
++
+ #
+ # IO delay types:
+ #
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 1b68659..7046556 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -154,6 +154,9 @@ all: bzImage
+ KBUILD_IMAGE := $(boot)/bzImage
+ 
+ bzImage: vmlinux
++ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
++	$(Q)$(MAKE) $(build)=arch/x86/scripts posttest
++endif
+ 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
+ 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
+ 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
+diff --git a/arch/x86/include/asm/inat.h b/arch/x86/include/asm/inat.h
+index 01e079a..9090665 100644
+--- a/arch/x86/include/asm/inat.h
++++ b/arch/x86/include/asm/inat.h
+@@ -20,7 +20,9 @@
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  *
+  */
++#ifdef __KERNEL__
+ #include <linux/types.h>
++#endif
+ 
+ /* Instruction attributes */
+ typedef u32 insn_attr_t;
+diff --git a/arch/x86/include/asm/insn.h b/arch/x86/include/asm/insn.h
+index 5b50fa3..5736404 100644
+--- a/arch/x86/include/asm/insn.h
++++ b/arch/x86/include/asm/insn.h
+@@ -20,7 +20,9 @@
+  * Copyright (C) IBM Corporation, 2009
+  */
+ 
++#ifdef __KERNEL__
+ #include <linux/types.h>
++#endif
+ /* insn_attr_t is defined in inat.h */
+ #include <asm/inat.h>
+ 
+diff --git a/arch/x86/lib/inat.c b/arch/x86/lib/inat.c
+index d6a34be..564ecbd 100644
+--- a/arch/x86/lib/inat.c
++++ b/arch/x86/lib/inat.c
+@@ -18,7 +18,9 @@
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  *
+  */
++#ifdef __KERNEL__
+ #include <linux/module.h>
++#endif
+ #include <asm/insn.h>
+ 
+ /* Attribute tables are generated from opcode map */
+diff --git a/arch/x86/lib/insn.c b/arch/x86/lib/insn.c
+index 254c848..3b9451a 100644
+--- a/arch/x86/lib/insn.c
++++ b/arch/x86/lib/insn.c
+@@ -18,8 +18,10 @@
+  * Copyright (C) IBM Corporation, 2002, 2004, 2009
+  */
+ 
++#ifdef __KERNEL__
+ #include <linux/string.h>
+ #include <linux/module.h>
++#endif
+ #include <asm/inat.h>
+ #include <asm/insn.h>
+ 
+diff --git a/arch/x86/scripts/Makefile b/arch/x86/scripts/Makefile
+new file mode 100644
+index 0000000..f08859e
+--- /dev/null
++++ b/arch/x86/scripts/Makefile
+@@ -0,0 +1,19 @@
++PHONY += posttest
++quiet_cmd_posttest = TEST    $@
++      cmd_posttest = objdump -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/scripts/distill.awk | $(obj)/test_get_len
++
++posttest: $(obj)/test_get_len vmlinux
++	$(call cmd,posttest)
++
++test_get_len_SRC = $(srctree)/arch/x86/scripts/test_get_len.c $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c
++test_get_len_INC = $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
++
++quiet_cmd_test_get_len = CC      $@
++      cmd_test_get_len = $(CC) -Wall $(test_get_len_SRC) -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include -include $(srctree)/arch/x86/scripts/user_include.h -o $@
++
++
++$(obj)/test_get_len: $(test_get_len_SRC) $(test_get_len_INC)
++	$(call cmd,test_get_len)
++
++clean-files := test_get_len
++
+diff --git a/arch/x86/scripts/distill.awk b/arch/x86/scripts/distill.awk
+new file mode 100644
+index 0000000..d433619
+--- /dev/null
++++ b/arch/x86/scripts/distill.awk
+@@ -0,0 +1,42 @@
++#!/bin/awk -f
++# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
++# Distills the disassembly as follows:
++# - Removes all lines except the disassembled instructions.
++# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
++# into a single line.
++# - Remove bad(or prefix only) instructions
++
++BEGIN {
++	prev_addr = ""
++	prev_hex = ""
++	prev_mnemonic = ""
++	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
++	fwait_expr = "^9b "
++	fwait_str="9b\tfwait"
++}
++
++/^ *[0-9a-f]+:/ {
++	if (split($0, field, "\t") < 3) {
++		# This is a continuation of the same insn.
++		prev_hex = prev_hex field[2]
++	} else {
++		# Skip bad instructions
++		if (match(prev_mnemonic, bad_expr))
++			prev_addr = ""
++		# Split fwait from other f* instructions
++		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
++			printf "%s\t%s\n", prev_addr, fwait_str
++			sub(fwait_expr, "", prev_hex)
++		}
++		if (prev_addr != "")
++			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
++		prev_addr = field[1]
++		prev_hex = field[2]
++		prev_mnemonic = field[3]
++	}
++}
++
++END {
++	if (prev_addr != "")
++		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
++}
+diff --git a/arch/x86/scripts/test_get_len.c b/arch/x86/scripts/test_get_len.c
+new file mode 100644
+index 0000000..0f702e8
+--- /dev/null
++++ b/arch/x86/scripts/test_get_len.c
+@@ -0,0 +1,99 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2009
++ */
++
++#include <stdlib.h>
++#include <stdio.h>
++#include <string.h>
++#include <assert.h>
++
++#include <asm/insn.h>
++
++/*
++ * Test of instruction analysis in general and insn_get_length() in
++ * particular.  See if insn_get_length() and the disassembler agree
++ * on the length of each instruction in an elf disassembly.
++ *
++ * usage: test_get_len < distilled_disassembly
++ */
++
++const char *prog;
++
++static void usage()
++{
++	fprintf(stderr, "usage: %s < distilled_disassembly\n", prog);
++	exit(1);
++}
++
++static void malformed_line(const char *line, int line_nr)
++{
++	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
++	exit(3);
++}
++
++#define BUFSIZE 256
++
++int main(int argc, char **argv)
++{
++	char line[BUFSIZE];
++	unsigned char insn_buf[16];
++	struct insn insn;
++	int insns = 0;
++
++	prog = argv[0];
++	if (argc > 1)
++		usage();
++
++	while (fgets(line, BUFSIZE, stdin)) {
++		char copy[BUFSIZE], *s, *tab1, *tab2;
++		int nb = 0;
++		unsigned b;
++
++		insns++;
++		memset(insn_buf, 0, 16);
++		strcpy(copy, line);
++		tab1 = strchr(copy, '\t');
++		if (!tab1)
++			malformed_line(line, insns);
++		s = tab1 + 1;
++		s += strspn(s, " ");
++		tab2 = strchr(s, '\t');
++		if (!tab2)
++			malformed_line(line, insns);
++		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
++		while (s < tab2) {
++			if (sscanf(s, "%x", &b) == 1) {
++				insn_buf[nb++] = (unsigned char) b;
++				s += 3;
++			} else
++				break;
++		}
++		/* Decode an instruction */
++		kernel_insn_init(&insn, insn_buf);
++		insn_get_length(&insn);
++		if (insn.length != nb) {
++			fprintf(stderr, "Error: %s", line);
++			fprintf(stderr, "Error: objdump says %d bytes, but "
++				"insn_get_length() says %d (attr:%x)\n", nb,
++				insn.length, insn.attr);
++			exit(2);
++		}
++	}
++	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
++		insns);
++	return 0;
++}
+diff --git a/arch/x86/scripts/user_include.h b/arch/x86/scripts/user_include.h
+new file mode 100644
+index 0000000..3bdcc55
+--- /dev/null
++++ b/arch/x86/scripts/user_include.h
+@@ -0,0 +1,49 @@
++#ifndef __USER_TYPES_H
++#define __USER_TYPES_H
++
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2009
++ */
++
++#include <string.h>
++
++#ifdef __x86_64__
++#define CONFIG_X86_64
++#else
++#define CONFIG_X86_32
++#endif
++typedef unsigned char u8;
++typedef unsigned short u16;
++typedef unsigned int u32;
++typedef unsigned long long u64;
++
++typedef signed char s8;
++typedef short s16;
++typedef int s32;
++typedef long long s64;
++
++typedef enum bool { false = 0, true } bool;
++
++/* any harmless file-scope decl */
++#define NOP_DECL struct __nop
++#define EXPORT_SYMBOL_GPL(symbol) NOP_DECL
++#define MODULE_LICENSE(gpl) NOP_DECL
++
++#define WARN_ON(cond) do { } while (0)
++#define unlikely(cond) (cond)
++
++#endif /* __USER_TYPES_H */
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
