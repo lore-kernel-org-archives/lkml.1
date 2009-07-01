@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbZGAOY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753198AbZGAObb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbZGAOY6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZGAOYu
+	id S1753198AbZGAObb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZGAObX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:24:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56320 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbZGAOYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:24:50 -0400
-Subject: [PATCH -tip] x86: mm/init.c declare check_efer() before it get used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 01 Jul 2009 19:54:23 +0530
-Message-Id: <1246458263.6940.22.camel@hpdv5.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Wed, 1 Jul 2009 10:31:23 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:63804 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZGAObW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 10:31:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xqYopawGWOYwHB6g8sJwcJF6Q0+OER8bhT7yiNFOqd/mYoYgTeTFz6vHcthCnNAM0W
+         vl1kjrzoFzCWw+ydlPRkxC3xCXIZi9iCdqoblEAx4ODBgUQhi9bYS1GVoAXGVp5kBMuq
+         cUXRpqeH2Fn0OcKka0pm3iasVriyO0C54vH7I=
+MIME-Version: 1.0
+In-Reply-To: <b6a2187b0906290921w15afd443qccb943ccfd48688b@mail.gmail.com>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
+	 <5Hhc7UkUKEO.A.RvE.BjASKB@chimera> <4A489775.6020102@numericable.fr>
+	 <20090629.033730.193709457.davem@davemloft.net>
+	 <4A48E307.2010208@numericable.fr>
+	 <b6a2187b0906290921w15afd443qccb943ccfd48688b@mail.gmail.com>
+Date: Wed, 1 Jul 2009 22:31:24 +0800
+Message-ID: <b6a2187b0907010731k510150b5u1c7fce8cbed7c33b@mail.gmail.com>
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Etienne Basset <etienne.basset@numericable.fr>
+Cc: David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       bzolnier@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
 
-This sparse warning:
+> I just tried, and it "seems" to work. Will try a few more cycles.
 
-  arch/x86/mm/init.c:83:16: warning: symbol 'check_efer' was not declared. Should it be static?
+STD/STR survived quite a few cycles now. Patch seems to be doing the
+right thing.
 
-triggers because check_efer() is not decalared before using it.
-asm/proto.h includes the declaration of check_efer(),
-so including asm/proto.h to fix that - this also address the sparse warning.
+On Mon, Jun 29, 2009 at 11:51 PM, Etienne
+Basset<etienne.basset@numericable.fr> wrote:
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/mm/init.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> To have STR/resume work with current git, I have to :
 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 47ce9a2..0607119 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -12,6 +12,7 @@
- #include <asm/system.h>
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
-+#include <asm/proto.h>
- 
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--- 
-1.6.0.6
+> 1) apply Bart's patch
+
+This is not yet in Linus's tree. And much needed to really fix the problem.
+
+> 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+
+This is already in Linus's tree.
 
 
-
+Thanks,
+Jeff.
