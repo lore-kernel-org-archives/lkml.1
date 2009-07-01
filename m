@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZGAIvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZGAIzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891AbZGAIvu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbZGAIvl
+	id S1754190AbZGAIzN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZGAIzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:51:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55621 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753986AbZGAIvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:51:39 -0400
-Message-ID: <4A4B2406.2020901@redhat.com>
-Date: Wed, 01 Jul 2009 11:53:26 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 1 Jul 2009 04:55:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36093 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751890AbZGAIzA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:55:00 -0400
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+tfpQ//cutImHbP34KiM03VKNYU60ApbLXG+Ct3c
+	1aY3HggbvC1h9O
+From: Peter =?utf-8?q?H=C3=BCwe?= <PeterHuewe@gmx.de>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: Re: [PATCH] block: adding __init/__exit macros to DAC960.c
+Date: Wed, 1 Jul 2009 10:54:59 +0200
+User-Agent: KMail/1.9.9
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200906121307.29865.PeterHuewe@gmx.de> <200906230004.36995.PeterHuewe@gmx.de> <alpine.LNX.2.00.0906231048070.7457@wotan.suse.de>
+In-Reply-To: <alpine.LNX.2.00.0906231048070.7457@wotan.suse.de>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v7 0/5] irqfd fixes and enhancements
-References: <20090629181954.1886.20225.stgit@dev.haskins.net>
-In-Reply-To: <20090629181954.1886.20225.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907011054.59988.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29/2009 09:28 PM, Gregory Haskins wrote:
-> (Applies to kvm.git/master:4631e094)
+Am Dienstag 23 Juni 2009 10:48:28 schrieb Jiri Kosina:
+> On Tue, 23 Jun 2009, Peter Hüwe wrote:
+> > > Trivial patch which adds the __init and __exit macros to the
+> > > module_init / module_exit functions from drivers/block/DAC960.c
+> > > linux version 2.6.30
+> >
+> > I was wondering if there is anything wrong with the patch or is it still
+> > in the review phase ?
 >
-> The following is the latest attempt to fix the races in irqfd/eventfd, as
-> well as restore DEASSIGN support.  For more details, please read the patch
-> headers.  I've restored the slow-work variant of the logic as a separate
-> patch (5/5) so we can get a better idea of the true difference between
-> the workqueue approach and the slow-work style.  I am personally in favor
-> of the slow-work approach since it doesnt require a mostly-idle+dedicated
-> thread to hang around.  But that is just me.  5/5 can be ignored, folded
-> in to 3/5+4/5 as appropriate, or merged as is per the whim of Avi et. al.
->    
+> I have applied it to trivial queue, thanks Peter.
 
-I think a good compromise would be to create the workqueue when the 
-first VM is launched.
+Hi Jiri,
 
-> As always, this series has been tested against the kvm-eventfd unit test
-> with both 5/5 applied and unapplied, and everything appears to be
-> functioning properly. You can download this test here:
->
-> ftp://ftp.novell.com/dev/ghaskins/kvm-eventfd.tar.bz2
->
-> I've included version 4 of Davide's eventfd patch (ported to kvm.git) so
-> that its a complete reviewable series.  Note, however, that there may be
-> later versions of his patch to consider for merging, so we should
-> coordinate with him.
->    
+I just looked in your git tree - it still does not appear there :)
+I'm sorry for bugging you with this trivial patch.
 
-Davide's patch was merged upstream.  Please take a look to make sure 
-this patchset is compatible with what was merged.
-
-Patchset looks good to me, but I'd appreciate an ack from Michael (or 
-anyone else who's interested).
-
--- 
-error compiling committee.c: too many arguments to function
-
+Peter
