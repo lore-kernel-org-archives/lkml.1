@@ -1,167 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbZGASGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbZGASGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755217AbZGASGb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZGASGU
+	id S1755316AbZGASGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZGASGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:06:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37890 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751791AbZGASGS (ORCPT
+	Wed, 1 Jul 2009 14:06:24 -0400
+Received: from smtp106.sbc.mail.gq1.yahoo.com ([67.195.14.109]:47186 "HELO
+	smtp106.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753928AbZGASGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:06:18 -0400
-Date: Wed, 1 Jul 2009 11:06:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David =?ISO-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-input@vger.kernel.org, jbarnes@virtuousgeek.org
-Subject: Re: [PATCH 2/2] Add a driver for the Winbond WPCD376I IR 
- functionality.
-Message-Id: <20090701110616.60c05a5d.akpm@linux-foundation.org>
-In-Reply-To: <35c700707581a42af21dd9edc82a5e84.squirrel@www.hardeman.nu>
-References: <1246079912-17619-1-git-send-email-david@hardeman.nu>
-	<1246079912-17619-3-git-send-email-david@hardeman.nu>
-	<20090630142345.58e97b50.akpm@linux-foundation.org>
-	<35c700707581a42af21dd9edc82a5e84.squirrel@www.hardeman.nu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Jul 2009 14:06:22 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=yxy3UK+B7y5eoHkqnL0E7nBhlihFYZSwD/CK29+my7a99YiGdFPTGup3HTQqQuiM/wNbWaQ2AE9RkF0vVAy/WCmFbtr/xxoka8fu5vroVBrLlYsHXTLy7GdYZb3kNmR0T3qmGY9+7YrrNFihSeW89zWgRlivVkbpXcZ/VHbKDEk=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: QP_9VmUVM1lfeo0uykfvkn3Q3ByDRFYbP2wNriQQd9XG.IZotXyNDgF5pHUa6nKN1MoOAERendlLer5ntn6kHmUgcyrnoSZyoF0AZdlD6._6RzgC0uTblnVK9N8lCHu9RpdDAyZBvNEAytYfVHQkBLROUUMC1Wk77kRRnI996g3CV68Umr7_ypzAtcv1aG.ZIe.lmeB1rdqz5Dxic8__wF0PMr1XtSgUbjuHo2l1C10nDSMe5W4C9s0TmtLQAMkSWMlK0g--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: subrata@linux.vnet.ibm.com
+Subject: Re: [patch] buildfix ppc randconfig
+Date: Wed, 1 Jul 2009 11:06:23 -0700
+User-Agent: KMail/1.9.10
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>, sachinp <sachinp@linux.vnet.ibm.com>,
+       balbir <balbir@linux.vnet.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200906190535.35138.david-b@pacbell.net> <1246454764.6978.60.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1246454764.6978.60.camel@subratamodak.linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907011106.24043.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009 09:47:46 +0200 (CEST)
-David H__rdeman <david@hardeman.nu> wrote:
+On Wednesday 01 July 2009, Subrata Modak wrote:
+> Greg/David,
+> 
+> Has this been checked in? I am not sure if i know this.
 
-> >> +	struct wbcir_data *data = input_get_drvdata(dev);
-> >> +
-> >> +	if (scancode < 0 || scancode > 0xFFFFFFFF)
-> >
-> > Neither of the comparisons in this expression can ever be true.
-> 
-> Didn't know if I could be certain that int is always 32 bit on all
-> platforms which use/might use the chip...can I?
+It seems not to be in Greg's "gregkh-02-usb.current"
+quilt queue.  If Greg's not got near-future cycles
+to get USB patches upstream, maybe this can merge
+sooner through the PPC tree.
 
-Yep, int and unsigned int are always 32-bit.
+- Dave
 
-It's not a big deal at all - the compiler will optimise the tests away
-completely.  The tests may have some value as code commentary, and they
-provide robustness should someone change the type of `scancode'.
 
-> >> +		return -EINVAL;
-> >> +
-> >> +	*keycode = (int)wbcir_do_getkeycode(data, (u32)scancode);
-> >
-> > uneeded casts.
-> >
-> > Something has gone wrong with the types here.  Where does the fault lie
-> > - this driver, or input core?
+> Regards--
+> Subrata
 > 
-> Two issues:
+> On Fri, 2009-06-19 at 05:35 -0700, David Brownell wrote:
+> > From: Arnd Bergmann <arnd@arndb.de>
+> > 
+> > We could just make the USB_OHCI_HCD_PPC_OF option implicit
+> > and selected only if at least one of USB_OHCI_HCD_PPC_OF_BE
+> > and USB_OHCI_HCD_PPC_OF_LE are set.
+> > 
+> > [ dbrownell@users.sourceforge.net: fix patch manglation and dependencies ]
+> > 
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > Tested-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+> > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > ---
+> >  drivers/usb/host/Kconfig |   29 +++++++++++++++--------------
+> >  1 file changed, 15 insertions(+), 14 deletions(-)
+> > 
+> > --- a/drivers/usb/host/Kconfig
+> > +++ b/drivers/usb/host/Kconfig
+> > @@ -181,26 +181,27 @@ config USB_OHCI_HCD_PPC_SOC
+> >  	  Enables support for the USB controller on the MPC52xx or
+> >  	  STB03xxx processor chip.  If unsure, say Y.
+> > 
+> > -config USB_OHCI_HCD_PPC_OF
+> > -	bool "OHCI support for PPC USB controller on OF platform bus"
+> > -	depends on USB_OHCI_HCD && PPC_OF
+> > -	default y
+> > -	---help---
+> > -	  Enables support for the USB controller PowerPC present on the
+> > -	  OpenFirmware platform bus.
+> > -
+> >  config USB_OHCI_HCD_PPC_OF_BE
+> > -	bool "Support big endian HC"
+> > -	depends on USB_OHCI_HCD_PPC_OF
+> > -	default y
+> > +	bool "OHCI support for OF platform bus (big endian)"
+> > +	depends on USB_OHCI_HCD && PPC_OF
+> >  	select USB_OHCI_BIG_ENDIAN_DESC
+> >  	select USB_OHCI_BIG_ENDIAN_MMIO
+> > +	---help---
+> > +	  Enables support for big-endian USB controllers present on the
+> > +	  OpenFirmware platform bus.
+> > 
+> >  config USB_OHCI_HCD_PPC_OF_LE
+> > -	bool "Support little endian HC"
+> > -	depends on USB_OHCI_HCD_PPC_OF
+> > -	default n
+> > +	bool "OHCI support for OF platform bus (little endian)"
+> > +	depends on USB_OHCI_HCD && PPC_OF
+> >  	select USB_OHCI_LITTLE_ENDIAN
+> > +	---help---
+> > +	  Enables support for little-endian USB controllers present on the
+> > +	  OpenFirmware platform bus.
+> > +
+> > +config USB_OHCI_HCD_PPC_OF
+> > +	bool
+> > +	depends on USB_OHCI_HCD && PPC_OF
+> > +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
+> > 
+> >  config USB_OHCI_HCD_PCI
+> >  	bool "OHCI support for PCI-bus USB controllers"
 > 
-> a) the input layer API confused me
 > 
-> include/linux/input.h provides:
-> 
-> struct input_event {
->          struct timeval time;
->          __u16 type;
->          __u16 code;
->          __s32 value;
-> };
-> 
-> (keycode is an unsigned 16 bit integer)
-> 
-> int input_get_keycode(struct input_dev *dev, int scancode, int *keycode);
-> int input_set_keycode(struct input_dev *dev, int scancode, int keycode);
-> 
-> (keycode is an int)
-> 
-> static inline void input_report_key(struct input_dev *dev,
->                                     unsigned int code,
->                                     int value)
-> {
->         input_event(dev, EV_KEY, code, !!value);
-> }
-> 
-> (keycode is an uint)
-> 
-> 
-> b) 32 bit scancodes
-> 
-> I wanted to use 32 bit scancodes in my driver since the largest IR message
-> supported by the driver is RC6 mode 6A which can potentially have a 1 + 15
-> bits "customer" field + 8 bits address + 8 bits command = 32 bits.
-> 
-> Casting the int scancode passed to input_[get__set]_keycode to an uint and
-> assuming it would be at least 32 bits on all platforms using the chip was
-> the best solution I could come up with without changing the input API.
 
-erp.  Hopefully this is all something which Dmitry can help us with.
-
-> >> +{
-> >> +        struct wbcir_data *data = (struct wbcir_data *)cookie;
-> >> +        unsigned long flags;
-> >> +
-> >> +        /*
-> >> +         * data->keyup_jiffies is used to prevent a race condition if a
-> >> +         * hardware interrupt occurs at this point and the keyup timer
-> >> +         * event is moved further into the future as a result.
-> >> +         */
-> >
-> >hm.  I don't see what the race is, nor how the comparison fixes it.  If
-> >I _did_ understand this, perhaps I could suggest alternative fixes.
-> >But I don't so I can't.  Oh well.
-> 
-> When the interrupt service routine detects an IR command it reports a
-> keydown event and sets a timer to report a keyup event in the future if no
-> repeated ir messages are detected (in which case the timer-driven keyup
-> should be pushed further into the future to allow the input core to do its
-> auto-repeat-handling magic).
-> 
-> What I wanted to protect against was something like this:
-> 
-> Thread 1                        Thread 2
-> --------                        --------
-> ISR called, grabs
-> wbcir_lock, reports
-> keydown for key X,
-> sets up keyup timer,
-> releases lock, exits
-> 
->                     (many ms later)
-> 
->                                 keyup timer function called
->                                 and preempted before grabbing
->                                 wbcir_lock
-> 
-> ISR called, grabs wbcir_lock,
-> notices a repeat event for
-> key X, pushes the keyup timer
-> further into the future using
-> mod_timer (thus reenabling the
-> timer), releases lock, exits
->                                 keyup timer function grabs
->                                 wbcir_lock, reports keyup,
->                                 exits.
->                     (many ms later)
-> 
->                                 keyup timer function called *again*,
->                                 reports keyup, exits.
-> 
-> The result would be (if I understood the timer implementation correctly)
-> that a keyup event is reported immediately after the second ISR even
-> though the "first" timer function call should have been cancelled/pushed
-> further into the future at that point.
-> 
-> Does this make any sense? :)
-
-yes.  The timer will be rescheduledin the scenario which you describe.
-
-Here's my problem: often when I ask a question about some code, what I
-_really_ mean is "if I didn't understand this code today, others
-probably won't understand it when reading it a year from now.  Hence it
-perhaps needs additional commentary to prevent this".  But I tire of
-complaining about code comments ;)
 
