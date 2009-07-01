@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763151AbZGAAp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763206AbZGAApn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763151AbZGAAp0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761106AbZGAAdL
+	id S1763206AbZGAApn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761085AbZGAAdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:33:11 -0400
+	Tue, 30 Jun 2009 20:33:12 -0400
 Received: from kroah.org ([198.145.64.141]:59887 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761003AbZGAAdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:33:09 -0400
+	id S1761126AbZGAAdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:33:11 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:53 2009
-Message-Id: <20090701001553.429647333@mini.kroah.org>
+Message-Id: <20090701001553.278599027@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:25 -0700
+Date: Tue, 30 Jun 2009 17:14:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 29/35] pcmcia/cm4000: fix lock imbalance
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 28/35] PCI PM: Follow PCI_PM_CTRL_NO_SOFT_RESET during transitions from D3
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=pcmcia-cm4000-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=pci-pm-follow-pci_pm_ctrl_no_soft_reset-during-transitions-from-d3.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,32 +31,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 69ae59d7d8df14413cf0a97b3e372d7dc8352563 upstream.
+commit f62795f1e892ca9269849fa83de97621da7e02c0 upstream.
 
-Don't return from switch/case, break instead, so that we unlock BKL.
+According to the PCI PM specification (PCI Bus Power Management
+Interface Specification, Rev. 1.2, Section 5.4.1) we are supposed to
+reinitialize devices that have PCI_PM_CTRL_NO_SOFT_RESET clear during
+all transitions from PCI_D3hot to PCI_D0, but we only do it if the
+device's current_state field is equal to PCI_UNKNOWN.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This may lead to problems if a device with PCI_PM_CTRL_NO_SOFT_RESET
+unset is put into PCI_D3hot at run time by its driver and
+pci_set_power_state() is used to put it back into PCI_D0, because in
+that case the device will remain uninitialized after
+pci_set_power_state() has returned.  Prevent that from happening by
+modifying pci_raw_set_power_state() to reinitialize devices with
+PCI_PM_CTRL_NO_SOFT_RESET unset during all transitions from D3 to D0.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/pcmcia/cm4000_cs.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/pci/pci.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1575,7 +1575,8 @@ static long cmm_ioctl(struct file *filp,
- 		clear_bit(LOCK_IO, &dev->flags);
- 		wake_up_interruptible(&dev->ioq);
- 
--		return 0;
-+		rc = 0;
-+		break;
- 	case CM_IOCSPTS:
- 		{
- 			struct ptsreq krnptsreq;
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -479,6 +479,8 @@ pci_raw_set_power_state(struct pci_dev *
+ 		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
+ 		pmcsr |= state;
+ 		break;
++	case PCI_D3hot:
++	case PCI_D3cold:
+ 	case PCI_UNKNOWN: /* Boot-up */
+ 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
+ 		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET)) {
 
 
