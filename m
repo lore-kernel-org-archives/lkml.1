@@ -1,174 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZGAEjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbZGAEtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbZGAEjd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 00:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZGAEjX
+	id S1753828AbZGAEtD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 00:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZGAEs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 00:39:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43819
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751278AbZGAEjW (ORCPT
+	Wed, 1 Jul 2009 00:48:58 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:51116 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbZGAEs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 00:39:22 -0400
-Date: Tue, 30 Jun 2009 21:39:27 -0700 (PDT)
-Message-Id: <20090630.213927.180401151.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 00:48:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=wdHwtMBYD5FwqiNrQnMq1d45QLFLOIj8IJoaPimwONJe/gUcqF+GAauYLca3gzWmp5
+         KhrDYFn2rhmTRT7KUZbzsOXhHCqz8k9bqdJRyR3pzlN3tWuKQkIIabEYW2SGyvjFACtU
+         SZrkLf1g2DuMFG/Q1NO90B7qSGDN3e1wm7Mhc=
+Date: Wed, 1 Jul 2009 12:51:02 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Hui Zhu <teawater@gmail.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk, dhowells@redhat.com
+Subject: Re: [PATCH] Fix the multithread program core thread message error
+Message-ID: <20090701045102.GA6076@cr0.nay.redhat.com>
+References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com> <20090701005437.GA5856@cr0.nay.redhat.com> <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 01, 2009 at 11:27:41AM +0800, Hui Zhu wrote:
+>Hi Amerigo,
+>
+>Thanks for your reply.
+>
+>On Wed, Jul 1, 2009 at 08:54, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>>
+>> Hi, Hui.
+>>
+>> On Tue, Jun 30, 2009 at 05:12:31PM +0800, Hui Zhu wrote:
+>>>Fix the multithread program core thread message error.
+>>>The thread message of core file is generated in
+>>>elf_dump_thread_status.  The register values is set by
+>>>elf_core_copy_task_regs in this function.
+>>>static inline int elf_core_copy_task_regs(struct task_struct *t,
+>>>                                          elf_gregset_t* elfregs)
+>>>{
+>>>
+>>>       return ELF_CORE_COPY_TASK_REGS(t, elfregs);
+>>>       return 0;
+>>>}
+>>>If a arch doesn't define ELF_CORE_COPY_TASK_REGS, This function will do
+>>>nothing.  Then the core file will not have the register message of
+>>>thread.
+>>>So add elf_core_copy_regs to set regiser values if
+>>>ELF_CORE_COPY_TASK_REGS doesn't define.
+>>
+>>
+>> You forgot your Signed-off-by line. :)
+>
+>Signed-off-by: Hui Zhu <hui.zhu@windriver.com>
+>
+>>
+>> Hmmm, this patch looks sane for me. But could you please
+>> send us your test program? i.e. how did you test this?
+>>
+>
+>I test this issue in a arm board.  My test code is:
 
-1) Revert ARP windows IP conflict verification support, it breaks
-   things, from Eric W. Biederman.
+Thanks!
 
-2) SCTP unintentionally broken by routing changes, fix from
-   Wei Yongjun.
+Hmm, this only affects the arch which neither has
+CORE_DUMP_USE_REGSET nor ELF_CORE_COPY_TASK_REGS,
+arm is one of them, but x86 not...
 
-3) XFRM layer code does xfrm_addr_cmp() by hand, leading to
-   code duplication and the usual assortment of cut&paste
-   bugs.  Also from Wei Yongjun.
+Could you please resend this patch with your
+favourite Signed-off-by and also put the reproduce
+steps below into your change log?
 
-4) Netfilter fixes from Patrick McHardy, Jaswinder Singh Rajput,
-   Jan Engelhardt, and Jesper Dangaard Brouer.
+P.S. Add some Cc's for more reviews, don't drop
+them when you resend your patch.
 
-5) bnx2x driver has same link reporting bug as bnx2 driver, from
-   Naohiro Ooiwa.
 
-6) More fib_trie rebalancing fixes from Jarek Poplawski.
-
-7) usbnet was converted to use netdev->stats to record stats
-   instead of using a private copy.  Unfortunately, there are
-   a bunch of sub-drivers that code share with usbnet, and those
-   did not get converted so stats got lost.  Fixed by Herbert Xu.
-
-8) Fixes for the new ieee802154 stack from Dmitry Eremin-Solenikov.
-
-9) Non-TSO packets can become TSO ones and vice versa, which is
-   illegal and results in packets which have an illegal state.
-   Fixes from Herbert Xu.
-
-10) bfin_sir doesn't compile, missed net_device_ops conversion.
-    Fix from Graf Yang.
-
-11) Intel ethernet driver fixes from J. Kirsher and the rest of
-    the Intel driver team.  In particular, more bugs caught by
-    the DMA mapping API debugging layer.
-
-Please pull, thanks a lot.
-
-The following changes since commit 52989765629e7d182b4f146050ebba0abf2cb0b7:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../davem/net-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alexander Duyck (1):
-      igb: return PCI_ERS_RESULT_DISCONNECT on permanent error
-
-Andre Detsch (1):
-      e1000: return PCI_ERS_RESULT_DISCONNECT on permanent error
-
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
-      Merge branch 'for-linus' of git://git.kernel.org/.../lowpan/lowpan
-
-Dmitry Eremin-Solenikov (3):
-      MAINTAINERS: ieee802154 lists are moderated for non-subscribers.
-      nl802154: fix Oops in ieee802154_nl_get_dev
-      nl802154: add module license and description
-
-Don Skidmore (1):
-      ixgbe: Fix SFP log messages
-
-Eric W. Biederman (1):
-      Revert "ipv4: arp announce, arp_proxy and windows ip conflict verification"
-
-Graf Yang (1):
-      net/irda: convert bfin_sir to net_device_ops
-
-Herbert Xu (9):
-      tcp: Stop non-TSO packets morphing into TSO
-      tcp: Do not tack on TSO data to non-TSO packet
-      cdc_eem: Use netdev stats structure
-      dm9601: Use netdev stats structure
-      net1080: Use netdev stats structure
-      rndis_host: Use netdev stats structure
-      smsc95xx: Use netdev stats structure
-      usbnet: Use netdev stats structure
-      usbnet: Remove private stats structure
-
-Jan Engelhardt (1):
-      netfilter: xtables: conntrack match revision 2
-
-Jarek Poplawski (1):
-      ipv4: Fix fib_trie rebalancing, part 3
-
-Jaswinder Singh Rajput (1):
-      netfilter: headers_check fix: linux/netfilter/xt_osf.h
-
-Jesper Dangaard Brouer (1):
-      nf_conntrack: Use rcu_barrier()
-
-Jesse Brandeburg (3):
-      ixgbe: fix unmap length bug
-      igb: fix unmap length bug
-      e1000: fix unmap bug
-
-Mallikarjuna R Chilakala (2):
-      ixgbe: Fix device capabilities of 82599 single speed fiber NICs.
-      ixgbe: Fix link capabilities during adapter resets
-
-Mike Mason (1):
-      e1000e: io_error_detected callback should return PCI_ERS_RESULT_DISCONNECT
-
-Naohiro Ooiwa (1):
-      bnx2x: Fix the behavior of ethtool when ONBOOT=no
-
-Patrick McHardy (1):
-      netfilter: tcp conntrack: fix unacknowledged data detection with NAT
-
-Wei Yongjun (2):
-      xfrm: use xfrm_addr_cmp() instead of compare addresses directly
-      sctp: xmit sctp packet always return no route error
-
- MAINTAINERS                            |    2 +-
- drivers/net/bnx2x_main.c               |   10 ++++-
- drivers/net/e1000/e1000_main.c         |   11 +++++-
- drivers/net/e1000e/netdev.c            |    3 +
- drivers/net/igb/igb_main.c             |   14 ++++--
- drivers/net/irda/bfin_sir.c            |   16 +++++---
- drivers/net/ixgbe/ixgbe_ethtool.c      |    5 +-
- drivers/net/ixgbe/ixgbe_main.c         |   45 ++++++++++++++-------
- drivers/net/usb/cdc_eem.c              |    2 +-
- drivers/net/usb/dm9601.c               |   10 ++--
- drivers/net/usb/net1080.c              |   12 +++---
- drivers/net/usb/rndis_host.c           |    2 +-
- drivers/net/usb/smsc95xx.c             |   10 ++--
- drivers/net/usb/usbnet.c               |   30 +++++++-------
- include/linux/netfilter/xt_conntrack.h |   13 ++++++
- include/linux/netfilter/xt_osf.h       |    2 +
- include/linux/usb/usbnet.h             |    1 -
- include/net/netfilter/nf_conntrack.h   |    4 +-
- net/ieee802154/netlink.c               |    6 +++
- net/ipv4/arp.c                         |    7 +--
- net/ipv4/fib_trie.c                    |    3 +
- net/ipv4/netfilter/nf_nat_helper.c     |   17 +++++---
- net/ipv4/tcp.c                         |   15 +++++--
- net/ipv4/tcp_output.c                  |    3 +-
- net/netfilter/nf_conntrack_expect.c    |    4 +-
- net/netfilter/nf_conntrack_extend.c    |    2 +-
- net/netfilter/nf_conntrack_proto_tcp.c |    6 +-
- net/netfilter/xt_conntrack.c           |   66 +++++++++++++++++++++++++++++---
- net/sctp/output.c                      |    2 +-
- net/xfrm/xfrm_state.c                  |   57 ++++-----------------------
- 30 files changed, 235 insertions(+), 145 deletions(-)
+>#include <stdio.h>
+>#include <pthread.h>
+>#include <assert.h>
+>
+>void td1(void * i)
+>{
+>	while (1)
+>	{
+>		printf ("1\n");
+>		sleep (1);
+>	}
+>
+>	return;
+>}
+>
+>void td2(void * i)
+>{
+>	while (1)
+>	{
+>		printf ("2\n");
+>		sleep (1);
+>	}
+>
+>	return;
+>}
+>
+>int
+>main(int argc,char *argv[],char *envp[])
+>{
+>	pthread_t	t1,t2;
+>
+>	pthread_create(&t1, NULL, (void*)td1, NULL);
+>	pthread_create(&t2, NULL, (void*)td2, NULL);
+>
+>	sleep (10);
+>
+>	assert(0);
+>
+>	return (0);
+>}
+>
+>The follow is how to reproduce this issue:
+>arm-xxx-gcc -g -lpthread 1.c -o 1
+>copy 1.c and 1 to a arm board.
+>Goto this board.
+>ulimit -c 1800000
+>./1
+># ./1
+>1
+>2
+>1
+>...
+>...
+>1
+>1: 1.c:37: main: Assertion `0' failed.
+>Aborted (core dumped)
+>Then you can get a core file.
+>gdb 1 core.xxx
+>
+>Without the patch:
+>(gdb) info threads
+>  3 process 909  0x00000000 in ?? ()
+>  2 process 908  0x00000000 in ?? ()
+>* 1 process 907  0x4a6e2238 in raise () from /lib/libc.so.6
+>You can found that the pc of 909 and 908 is 0x00000000.
+>
+>With the patch:
+>(gdb) info threads
+>  3 process 885  0x4a749974 in nanosleep () from /lib/libc.so.6
+>  2 process 884  0x4a749974 in nanosleep () from /lib/libc.so.6
+>* 1 process 883  0x4a6e2238 in raise () from /lib/libc.so.6
+>The pc of 885 and 884 is right.
+>
+>
+>Thanks,
+>Hui
