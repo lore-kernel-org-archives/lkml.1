@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbZGAAfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbZGAAfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbZGAAfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759918AbZGAAaV
+	id S1761593AbZGAAfw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759957AbZGAAaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:21 -0400
-Received: from kroah.org ([198.145.64.141]:34367 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:23 -0400
+Received: from kroah.org ([198.145.64.141]:34369 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759552AbZGAAaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:11 -0400
+	id S1759658AbZGAAaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:12 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:59 2009
-Message-Id: <20090701000359.325415307@mini.kroah.org>
+Message-Id: <20090701000359.496473288@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:00:03 -0700
+Date: Tue, 30 Jun 2009 17:00:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dan Williams <dan.j.williams@intel.com>, NeilBrown <neilb@suse.de>
-Subject: [patch 19/30] md/raid5: add missing call to schedule() after prepare_to_wait()
+       Tom Quetchenbach <virtualphtn@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>, Willy Tarreau <w@1wt.eu>
+Subject: [patch 20/30] tcp: advertise MSS requested by user
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=md-raid5-add-missing-call-to-schedule-after-prepare_to_wait.patch
+Content-Disposition: inline; filename=tcp-advertise-mss-requested-by-user.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +31,103 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: Tom Quetchenbach <virtualphtn@gmail.com>
 
-commit 7a3ab908948b6296ee7e81d42f7c176361c51975 upstream.
+commit f5fff5dc8a7a3f395b0525c02ba92c95d42b7390 upstream.
 
-In the unlikely event that reshape progresses past the current request
-while it is waiting for a stripe we need to schedule() before retrying
-for 2 reasons:
-1/ Prevent list corruption from duplicated list_add() calls without
-   intervening list_del().
-2/ Give the reshape code a chance to make some progress to resolve the
-   conflict.
+I'm trying to use the TCP_MAXSEG option to setsockopt() to set the MSS
+for both sides of a bidirectional connection.
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
+man tcp says: "If this option is set before connection establishment, it
+also changes the MSS value announced to the other end in the initial
+packet."
+
+However, the kernel only uses the MTU/route cache to set the advertised
+MSS. That means if I set the MSS to, say, 500 before calling connect(),
+I will send at most 500-byte packets, but I will still receive 1500-byte
+packets in reply.
+
+This is a bug, either in the kernel or the documentation.
+
+This patch (applies to latest net-2.6) reduces the advertised value to
+that requested by the user as long as setsockopt() is called before
+connect() or accept(). This seems like the behavior that one would
+expect as well as that which is documented.
+
+I've tried to make sure that things that depend on the advertised MSS
+are set correctly.
+
+Signed-off-by: Tom Quetchenbach <virtualphtn@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Willy Tarreau <w@1wt.eu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid5.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/ipv4/tcp_ipv4.c   |    4 ++++
+ net/ipv4/tcp_output.c |   13 ++++++++++---
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -3431,6 +3431,7 @@ static int make_request(struct request_q
- 				spin_unlock_irq(&conf->device_lock);
- 				if (must_retry) {
- 					release_stripe(sh);
-+					schedule();
- 					goto retry;
- 				}
- 			}
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1364,6 +1364,10 @@ struct sock *tcp_v4_syn_recv_sock(struct
+ 	tcp_mtup_init(newsk);
+ 	tcp_sync_mss(newsk, dst_mtu(dst));
+ 	newtp->advmss = dst_metric(dst, RTAX_ADVMSS);
++	if (tcp_sk(sk)->rx_opt.user_mss &&
++	    tcp_sk(sk)->rx_opt.user_mss < newtp->advmss)
++		newtp->advmss = tcp_sk(sk)->rx_opt.user_mss;
++
+ 	tcp_initialize_rcv_mss(newsk);
+ 
+ #ifdef CONFIG_TCP_MD5SIG
+--- a/net/ipv4/tcp_output.c
++++ b/net/ipv4/tcp_output.c
+@@ -2252,6 +2252,7 @@ struct sk_buff *tcp_make_synack(struct s
+ 	struct sk_buff *skb;
+ 	struct tcp_md5sig_key *md5;
+ 	__u8 *md5_hash_location;
++	int mss;
+ 
+ 	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
+ 	if (skb == NULL)
+@@ -2262,13 +2263,17 @@ struct sk_buff *tcp_make_synack(struct s
+ 
+ 	skb->dst = dst_clone(dst);
+ 
++	mss = dst_metric(dst, RTAX_ADVMSS);
++	if (tp->rx_opt.user_mss && tp->rx_opt.user_mss < mss)
++		mss = tp->rx_opt.user_mss;
++
+ 	if (req->rcv_wnd == 0) { /* ignored for retransmitted syns */
+ 		__u8 rcv_wscale;
+ 		/* Set this up on the first call only */
+ 		req->window_clamp = tp->window_clamp ? : dst_metric(dst, RTAX_WINDOW);
+ 		/* tcp_full_space because it is guaranteed to be the first packet */
+ 		tcp_select_initial_window(tcp_full_space(sk),
+-			dst_metric(dst, RTAX_ADVMSS) - (ireq->tstamp_ok ? TCPOLEN_TSTAMP_ALIGNED : 0),
++			mss - (ireq->tstamp_ok ? TCPOLEN_TSTAMP_ALIGNED : 0),
+ 			&req->rcv_wnd,
+ 			&req->window_clamp,
+ 			ireq->wscale_ok,
+@@ -2283,8 +2288,7 @@ struct sk_buff *tcp_make_synack(struct s
+ 	else
+ #endif
+ 	TCP_SKB_CB(skb)->when = tcp_time_stamp;
+-	tcp_header_size = tcp_synack_options(sk, req,
+-					     dst_metric(dst, RTAX_ADVMSS),
++	tcp_header_size = tcp_synack_options(sk, req, mss,
+ 					     skb, &opts, &md5) +
+ 			  sizeof(struct tcphdr);
+ 
+@@ -2353,6 +2357,9 @@ static void tcp_connect_init(struct sock
+ 	if (!tp->window_clamp)
+ 		tp->window_clamp = dst_metric(dst, RTAX_WINDOW);
+ 	tp->advmss = dst_metric(dst, RTAX_ADVMSS);
++	if (tp->rx_opt.user_mss && tp->rx_opt.user_mss < tp->advmss)
++		tp->advmss = tp->rx_opt.user_mss;
++
+ 	tcp_initialize_rcv_mss(sk);
+ 
+ 	tcp_select_initial_window(tcp_full_space(sk),
 
 
