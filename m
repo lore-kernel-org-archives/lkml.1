@@ -1,39 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZGAPaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754099AbZGAPaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbZGAPaG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZGAP3y
+	id S1754099AbZGAPaf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZGAPaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:29:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35701 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751894AbZGAP3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:29:54 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090701144913.GA28172@elte.hu>
-References: <20090701144913.GA28172@elte.hu> <19019.22629.720187.794661@cargo.ozlabs.ibm.com> <20090701115425.GJ15958@elte.hu> <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de> <22582.1246447691@redhat.com> <32551.1246450797@redhat.com> <32707.1246452087@redhat.com> <30887.1246457403@redhat.com> 
-To: Ingo Molnar <mingo@elte.hu>
-Cc: dhowells@redhat.com, Paul Mackerras <paulus@samba.org>,
-       Arnd Bergmann <arnd@arndb.de>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] FRV: Wire up new syscalls
-Date: Wed, 01 Jul 2009 16:19:35 +0100
-Message-ID: <10833.1246461575@redhat.com>
+	Wed, 1 Jul 2009 11:30:24 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34249 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbZGAPaW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:30:22 -0400
+Date: Wed, 1 Jul 2009 11:30:18 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: oleg@redhat.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
+       akpm@linux-foundation.org, earl_chew@agilent.com
+Subject: Re: [PATCH 1/3] exec: Make do_coredump more resilient to recursive
+	crashes (v5)
+Message-ID: <20090701153018.GE29601@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701152640.GD29601@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701152640.GD29601@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
+core_pattern: Change how we detect recursive dumps with core_pattern pipes
 
-> Ok, indeed - you can define it to 0 for now - FRV wont set hw counters so it
-> doesnt matter.
+Change how we detect recursive dumps.  Currently we have a mechanism by which
+we try to compare pathnames of the crashing process to the core_pattern path.
+This is broken for a dozen reasons, and just doesn't work in any sort of robust
+way.  I'm replacing it with the use of a 0 RLIMIT_CORE value.  Since helper
+apps set RLIMIT_CORE to zero, we don't write out core files for any process with
+that particular limit set.  It the core_pattern is a pipe, any non-zero limit is
+translated to RLIM_INFINITY.  This allows complete dumps to be captured, but
+prevents infinite recursion in the event that the core_pattern process itself
+crashes.
 
-Okay.  FRV does have some h/w perf counters for measuring various things about
-userspace and kernel execution.  I'll have to look at how to use them with
-this.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Reported-by: Earl Chew <earl_chew@agilent.com>
 
-David
+
+ exec.c |   43 +++++++++++++++++++++----------------------
+ 1 file changed, 21 insertions(+), 22 deletions(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 9e05bd8..9defd20 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1776,35 +1776,34 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+  	lock_kernel();
+ 	ispipe = format_corename(corename, signr);
+ 	unlock_kernel();
+-	/*
+-	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
+-	 * to a pipe.  Since we're not writing directly to the filesystem
+-	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
+-	 * created unless the pipe reader choses to write out the core file
+-	 * at which point file size limits and permissions will be imposed
+-	 * as it does with any other process
+-	 */
++
+  	if (ispipe) {
++		if (core_limit == 0) {
++			 /*
++			  * Normally core limits are irrelevant to pipes, since
++			  * we're not writing to the file system, but we use
++			  * core_limit of 0 here as a speacial value. Any
++			  * non-zero limit gets set to RLIM_INFINITY below, but
++			  * a limit of 0 skips the dump.  This is a consistent
++			  * way to catch recursive crashes.  We can still crash
++			  * if the core_pattern binary sets RLIM_CORE =  !0
++			  * but it runs as root, and can do lots of stupid things
++			  * Note that we use task_tgid_vnr here to grab the pid of the
++			  * process group leader.  That way we get the right pid if a thread
++			  * in a multi-threaded core_pattern process dies.
++			  */
++			printk(KERN_WARNING "Process %d(%s) has RLIMIT_CORE set to 0\n",
++			       task_tgid_vnr(current), current->comm);
++			printk(KERN_WARNING "Aborting core\n");
++			goto fail_unlock;
++		}
++
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+ 			goto fail_unlock;
+ 		}
+-		/* Terminate the string before the first option */
+-		delimit = strchr(corename, ' ');
+-		if (delimit)
+-			*delimit = '\0';
+-		delimit = strrchr(helper_argv[0], '/');
+-		if (delimit)
+-			delimit++;
+-		else
+-			delimit = helper_argv[0];
+-		if (!strcmp(delimit, current->comm)) {
+-			printk(KERN_NOTICE "Recursive core dump detected, "
+-					"aborting\n");
+-			goto fail_unlock;
+-		}
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
