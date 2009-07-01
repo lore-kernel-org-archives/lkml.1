@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763947AbZGABJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764565AbZGABO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763947AbZGABJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761133AbZGAAf3
+	id S1764565AbZGABO2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbZGAAfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:29 -0400
-Received: from kroah.org ([198.145.64.141]:60582 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:48 -0400
+Received: from kroah.org ([198.145.64.141]:60676 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761522AbZGAAfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:21 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
-Message-Id: <20090701002438.308543471@mini.kroah.org>
+	id S1753667AbZGAAfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:38 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:41 2009
+Message-Id: <20090701002441.356908481@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:08 -0700
+Date: Tue, 30 Jun 2009 17:24:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 079/108] vt_ioctl: fix lock imbalance
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Mel Gorman <mel@csn.ul.ie>
+Subject: [patch 093/108] mm: fix handling of pagesets for downed cpus
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=vt_ioctl-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=mm-fix-handling-of-pagesets-for-downed-cpus.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +32,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Dimitri Sivanich <sivanich@sgi.com>
 
-commit a115902f67ef51fbbe83e214fb761aaa9734c1ce upstream.
+commit 364df0ebfbbb1330bfc6ca159f4d6020efc15a12 upstream.
 
-Don't return from switch/case directly in vt_ioctl. Set ret and break
-instead so that we unlock BKL.
+After downing/upping a cpu, an attempt to set
+/proc/sys/vm/percpu_pagelist_fraction results in an oops in
+percpu_pagelist_fraction_sysctl_handler().
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+If a processor is downed then we need to set the pageset pointer back to
+the boot pageset.
+
+Updates of the high water marks should not access pagesets of unpopulated
+zones (those pointer go to the boot pagesets which would be no longer
+functional if their size would be increased beyond zero).
+
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/vt_ioctl.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ mm/page_alloc.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/char/vt_ioctl.c
-+++ b/drivers/char/vt_ioctl.c
-@@ -396,7 +396,8 @@ int vt_ioctl(struct tty_struct *tty, str
- 	kbd = kbd_table + console;
- 	switch (cmd) {
- 	case TIOCLINUX:
--		return tioclinux(tty, arg);
-+		ret = tioclinux(tty, arg);
-+		break;
- 	case KIOCSOUND:
- 		if (!perm)
- 			goto eperm;
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2812,7 +2812,7 @@ bad:
+ 		if (dzone == zone)
+ 			break;
+ 		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = NULL;
++		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
+ 	}
+ 	return -ENOMEM;
+ }
+@@ -2827,7 +2827,7 @@ static inline void free_zone_pagesets(in
+ 		/* Free per_cpu_pageset if it is slab allocated */
+ 		if (pset != &boot_pageset[cpu])
+ 			kfree(pset);
+-		zone_pcp(zone, cpu) = NULL;
++		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+ 	}
+ }
+ 
+@@ -4501,7 +4501,7 @@ int percpu_pagelist_fraction_sysctl_hand
+ 	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+-	for_each_zone(zone) {
++	for_each_populated_zone(zone) {
+ 		for_each_online_cpu(cpu) {
+ 			unsigned long  high;
+ 			high = zone->present_pages / percpu_pagelist_fraction;
 
 
