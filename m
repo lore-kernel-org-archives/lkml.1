@@ -1,39 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752188AbZGAGXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbZGAG1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752188AbZGAGXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZGAGXe
+	id S1752171AbZGAG1r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZGAG1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:23:34 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:35467 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751054AbZGAGXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:23:34 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <4A4B0125.2090502@crca.org.au>
-Date: Wed, 01 Jul 2009 16:24:37 +1000
-From: Nigel Cunningham <ncunningham@crca.org.au>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
-CC: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by
- encrypting page cache
-References: <87hbxx0wcp.fsf@jeremyms.com>
-In-Reply-To: <87hbxx0wcp.fsf@jeremyms.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 02:27:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49781 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZGAG1e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:27:34 -0400
+Date: Wed, 1 Jul 2009 08:27:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Andi Kleen <andi@firstfloor.org>, jolsa@redhat.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, oleg@redhat.com, eric.dumazet@gmail.com
+Subject: Re: [PATCH] net: fix race in the receive/select
+Message-ID: <20090701062732.GK6760@one.firstfloor.org>
+References: <87eit3l7y6.fsf@basil.nowhere.org> <20090701033924.GA29762@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701033924.GA29762@gondor.apana.org.au>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeremy.
+On Wed, Jul 01, 2009 at 11:39:24AM +0800, Herbert Xu wrote:
+> Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> > At least on x86 I can't see how it happens. mb() is only a compile
+> > time barrier and the compiler doesn't optimize over indirect callbacks
+> > like __pollwait() anyways.
+> 
+> mb() does more than just a compiler barrier, it also issues mfence.
 
-I'd suggest emailing the Linux-PM list rather than tuxonice-devel.
-TuxOnIce devel focuses on the out-of-vanilla suspend to disk
-enhancements rather than on suspend to ram.
+mfence is not needed for normal C code (not using non temporal
+stores) in the Linux memory model on x86 and is a no-op. Only the compile
+time barrier matters.
 
-Regards,
+-Andi
 
-Nigel
+-- 
+ak@linux.intel.com -- Speaking for myself only.
