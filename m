@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763206AbZGAApn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763294AbZGAAp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763206AbZGAApn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761085AbZGAAdM
+	id S1763294AbZGAAp4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761096AbZGAAdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:33:12 -0400
-Received: from kroah.org ([198.145.64.141]:59887 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:33:16 -0400
+Received: from kroah.org ([198.145.64.141]:59909 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761126AbZGAAdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:33:11 -0400
+	id S1761102AbZGAAdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:33:15 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:53 2009
-Message-Id: <20090701001553.278599027@mini.kroah.org>
+Message-Id: <20090701001553.621173501@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:24 -0700
+Date: Tue, 30 Jun 2009 17:14:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 28/35] PCI PM: Follow PCI_PM_CTRL_NO_SOFT_RESET during transitions from D3
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 30/35] qla2xxx: Correct (again) overflow during dump-processing on large-memory ISP23xx parts.
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=pci-pm-follow-pci_pm_ctrl_no_soft_reset-during-transitions-from-d3.patch
+Content-Disposition: inline; filename=qla2xxx-correct-overflow-during-dump-processing-on-large-memory-isp23xx-parts.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,42 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
 
-commit f62795f1e892ca9269849fa83de97621da7e02c0 upstream.
+commit e18e963b7e533149676b5d387d0a56160df9f111 upstream.
 
-According to the PCI PM specification (PCI Bus Power Management
-Interface Specification, Rev. 1.2, Section 5.4.1) we are supposed to
-reinitialize devices that have PCI_PM_CTRL_NO_SOFT_RESET clear during
-all transitions from PCI_D3hot to PCI_D0, but we only do it if the
-device's current_state field is equal to PCI_UNKNOWN.
+Commit 7b867cf76fbcc8d77867cbec6f509f71dce8a98f ([SCSI] qla2xxx:
+Refactor qla data structures) inadvertently reverted
+e792121ec85672c1fa48f79d13986a3f4f56c590 ([SCSI] qla2xxx: Correct
+overflow during dump-processing on large-memory ISP23xx parts.).
 
-This may lead to problems if a device with PCI_PM_CTRL_NO_SOFT_RESET
-unset is put into PCI_D3hot at run time by its driver and
-pci_set_power_state() is used to put it back into PCI_D0, because in
-that case the device will remain uninitialized after
-pci_set_power_state() has returned.  Prevent that from happening by
-modifying pci_raw_set_power_state() to reinitialize devices with
-PCI_PM_CTRL_NO_SOFT_RESET unset during all transitions from D3 to D0.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pci.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/qla2xxx/qla_dbg.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -479,6 +479,8 @@ pci_raw_set_power_state(struct pci_dev *
- 		pmcsr &= ~PCI_PM_CTRL_STATE_MASK;
- 		pmcsr |= state;
- 		break;
-+	case PCI_D3hot:
-+	case PCI_D3cold:
- 	case PCI_UNKNOWN: /* Boot-up */
- 		if ((pmcsr & PCI_PM_CTRL_STATE_MASK) == PCI_D3hot
- 		 && !(pmcsr & PCI_PM_CTRL_NO_SOFT_RESET)) {
+--- a/drivers/scsi/qla2xxx/qla_dbg.c
++++ b/drivers/scsi/qla2xxx/qla_dbg.c
+@@ -218,7 +218,7 @@ qla24xx_soft_reset(struct qla_hw_data *h
+ 
+ static int
+ qla2xxx_dump_ram(struct qla_hw_data *ha, uint32_t addr, uint16_t *ram,
+-    uint16_t ram_words, void **nxt)
++    uint32_t ram_words, void **nxt)
+ {
+ 	int rval;
+ 	uint32_t cnt, stat, timer, words, idx;
 
 
