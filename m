@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZGAOQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZGAORN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZGAOQM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 10:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZGAOP7
+	id S1752720AbZGAORN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 10:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZGAOQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 10:15:59 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46103 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbZGAOP6 (ORCPT
+	Wed, 1 Jul 2009 10:16:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43413 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752534AbZGAOQ5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 10:15:58 -0400
-Subject: Re: [tip:tracing/urgent] tracing: Fix trace_print_seq()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eduard.munteanu@linux360.ro, xiaoguangrong@cn.fujitsu.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-5c37f525657e879a17a27c83021602cd55837531@git.kernel.org>
-References: <4A4B2351.5010300@cn.fujitsu.com>
-	 <tip-5c37f525657e879a17a27c83021602cd55837531@git.kernel.org>
-Date: Wed, 01 Jul 2009 17:15:59 +0300
-Message-Id: <1246457759.20817.2.camel@penberg-laptop>
+	Wed, 1 Jul 2009 10:16:57 -0400
+Date: Wed, 1 Jul 2009 15:17:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090701151727.38928bd9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090701140503.GA21185@mit.edu>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 14:06 +0000, tip-bot for Xiao Guangrong wrote:
-> Commit-ID:  5c37f525657e879a17a27c83021602cd55837531
-> Gitweb:     http://git.kernel.org/tip/5c37f525657e879a17a27c83021602cd55837531
-> Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> AuthorDate: Wed, 1 Jul 2009 16:50:25 +0800
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 1 Jul 2009 16:03:50 +0200
+> > shouldn't accidentally be able to specify -o vfat and get non-vfat. Thats
+> > asking for incompatibility, data loss and unpleasant unwarned of suprises.
 > 
-> tracing: Fix trace_print_seq()
-> 
-> We will lose something if trace_seq->buffer[0] is 0, because the copy length
-> is calculated by strlen() in seq_puts(), so using seq_write() instead of
-> seq_puts().
-> 
-> There have a example:
-> after reboot:
-> 
->  # echo kmemtrace > current_tracer
->  # echo 0 > options/kmem_minimalistic
->  # cat trace
->  # tracer: kmemtrace
->  #
->  #
-> 
-> Nothing is exported, because the first byte of trace_seq->buffer[ ]
-> is KMEMTRACE_USER_ALLOC.
-> 
-> ( the value of KMEMTRACE_USER_ALLOC is zero, seeing
->   kmemtrace_print_alloc_user() in kernel/trace/kmemtrace.c)
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-> Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-> LKML-Reference: <4A4B2351.5010300@cn.fujitsu.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> There really was no such thing as "vfat" anyway.  VFAT in the Windows
 
-Nice catch!
+In the eyes of the end user there is such a thing as vfat. This is about
+expectations not technical issues.
+ 
+> Arguably what we should have done is kept it as a single filesystem,
+> with a mount options "lfn" and "nolfn", but that's water under the
+> bridge now.
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Well we didn't so now we need to add "lfat" or similar for our fat style.
+Doesn't need new code just making sure that USSA_COMPLIANCE_MODE=y
+causes mount -o lfat to work and without it both lfat and vfat work.
 
+> The other big user I can think of are digital cameras, but (a)
+> normally most users read from them and then delete the pictures, and
+> rarely write to media meant for a digital camera, and (b) the DCIM
+
+Except when they hit save instead of "save as" and they get a long file
+name and invisible loss of space on the camera.
+
+> standard for digital cameras explicitly only supports 8.3 filenames
+> and so digital camera manufacturers explicitly don't need to deal with
+> Long File Names at all.  (Hmm.... I wonder why....)  
+
+Can't think - but HAL should clearly mount those 8.3 to avoid the
+problem. It seems to use the dcim to find them.
+
+> This suggests that some userspace mechanism for detecting media cards
+> used for cameras and explicitly mounting them with FAT might be useful
+
+HAL is very good at that already.
+
+> Ultimately, though, requiring that every single possible device be
+> tested is probably not reasonable, so the best way to do this testing
+> is the way do most of our testing; we do basic due diligence, but then
+> we merge it into mainline and let our huge user community try it out.
+> If there are regressions we can work through those issues if and when
+> they arise.
+
+>From the funnies we've had in the past with FAT my gut impression is
+there are only a few implementations out there. Psion seems to have their
+own but most of the rest behave remarkably similarly which makes me
+suspect they all licensed a tiny number of implementations (DRDOS one
+perhaps ?). If we can keep most of those devices mounted 8.3 we nicely
+sidestep the issue anyway.
+
+Alan
