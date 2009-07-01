@@ -1,50 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbZGAMaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbZGAMbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbZGAMaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZGAMaF
+	id S1753533AbZGAMbM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 08:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZGAMa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 08:30:05 -0400
-Received: from mail.samba.org ([66.70.73.150]:53000 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbZGAMaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 08:30:04 -0400
+	Wed, 1 Jul 2009 08:30:58 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53341 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZGAMa5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 08:30:57 -0400
+Message-ID: <4A4B56FE.8060407@novell.com>
+Date: Wed, 01 Jul 2009 08:30:54 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19019.22108.733265.140158@samba.org>
-Date: Wed, 1 Jul 2009 22:28:12 +1000
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <4A4B4D1D.8070308@panasas.com>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-	<4A4B4D1D.8070308@panasas.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+To: Avi Kivity <avi@redhat.com>, Davide Libenzi <davidel@xmailserver.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: manual merge of the kvm tree with Linus' tree
+References: <20090701145711.1c9c8935.sfr@canb.auug.org.au> <alpine.DEB.1.10.0907010007020.8745@makko.or.mcafeemobile.com> <4A4B1106.8000506@redhat.com>
+In-Reply-To: <4A4B1106.8000506@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6F8E9D14B783B39E33B1021D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boaz,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6F8E9D14B783B39E33B1021D
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
- > That I understand since short_name is some function of long_name
- > but if I'm just inventing the short_name out of my hat. In what legal
- > system does it matter what is my random function I use?
+Avi Kivity wrote:
+> On 07/01/2009 10:10 AM, Davide Libenzi wrote:
+>> On Wed, 1 Jul 2009, Stephen Rothwell wrote:
+>>
+>>  =20
+>>> Hi Avi,
+>>>
+>>> Today's linux-next merge of the kvm tree got a conflict in fs/eventfd=
+=2Ec
+>>> between commit 133890103b9de08904f909995973e4b5c08a780e ("eventfd:
+>>> revised interface and cleanups") from Linus' tree and commit
+>>> 28ddf0aebbf546e56efd1951725d5457ce1ebf98 ("eventfd: Allow waiters to =
+be
+>>> notified about the eventfd file* going away") from the kvm tree.
+>>>
+>>> Overlapping changes.  I fixed it up (see below), but don't know if th=
+is
+>>> is the correct fix.
+>>>
+>>> --=20
+>>> Cheers,
+>>> Stephen Rothwell                    sfr@canb.auug.org.au
+>>>
+>>> diff --cc fs/eventfd.c
+>>> index 31d12de,72f5f8d..0000000
+>>> --- a/fs/eventfd.c
+>>> +++ b/fs/eventfd.c
+>>> @@@ -105,8 -63,13 +105,13 @@@ static int eventfd_release(struct inod
+>>>    {
+>>>        struct eventfd_ctx *ctx =3D file->private_data;
+>>>
+>>> -     wake_up_poll(&ctx->wqh, POLLHUP);
+>>> +     /*
+>>> +      * No need to hold the lock here, since we are on the file
+>>> cleanup
+>>> +      * path and the ones still attached to the wait queue will be
+>>> +      * serialized by wake_up_locked_poll().
+>>> +      */
+>>> +     wake_up_locked_poll(&ctx->wqh, POLLHUP);
+>>>   -    kfree(ctx);
+>>>   +    eventfd_ctx_put(ctx);
+>>>        return 0;
+>>>    }
+>>>     =20
+>>
+>> That's fine.
+>> There are a couple of extra spaces before the last two -+ in that patc=
+h
+>> though ;)
+>>   =20
+>
+> No, that's a git N-way diff format.  The first column shows the
+> changes relative to mainline by kvm.git, and the second the changes to
+> kvm.git made by mainline.
+>
+> I've merged and will push soon, which will resolve the conflict, but I
+> think the patch wake_up_locked_poll() is better off in mainline rather
+> than kvm.git.
 
-I like to defer to John Lanza for a more complete answer to this, but
-I can tell you that it is not related to the choice of random
-function.
+Just to be clear: the final form will need to be wake_up_poll(), not
+wake_up_locked_poll.  However, I think what Steven did was optimal
+because converting to the locked form without coordinating with kvm.git
+would break bisectability.
 
-I'd also suggest that if anyone wants to go into this in any depth
-then private email with John Lanza is the best option.
+In the irqfd-fixes series, I had 3 patches related to this situation
+(1/5 to prepare to change, 2/5 was Davide's patch, and 3/5 did the final
+change-over).  Now that the vast majority of Davide's work is in
+mainline+kvm.git, here is my proposal:
 
-Cheers, Tridge
+*) drop 2/5 (already upstream, sans the locked POLLHUP)
+*) fold 1/5 + 3/5, and add new fs/eventfd.c hunk to convert to locked
+variant
+*) drop 5/5
+
+Sound good?
+-Greg
+
+
+
+
+--------------enig6F8E9D14B783B39E33B1021D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkpLVwIACgkQlOSOBdgZUxlkjACfQYHkGD2gD1yg8JDNM9Xp4UTH
+/UIAmQH2NKH2Sc/4Ys0O4DVv/yjXHIjQ
+=Nahm
+-----END PGP SIGNATURE-----
+
+--------------enig6F8E9D14B783B39E33B1021D--
