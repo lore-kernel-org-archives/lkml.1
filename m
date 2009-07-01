@@ -1,124 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZGAVDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbZGAVED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbZGAVDp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZGAVDg
+	id S1755712AbZGAVED (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZGAVDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:03:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44121 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753211AbZGAVDe (ORCPT
+	Wed, 1 Jul 2009 17:03:53 -0400
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:35034 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753292AbZGAVDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 17:03:34 -0400
-Date: Wed, 1 Jul 2009 14:01:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       vapier.adi@gmail.com, lethal@linux-sh.org
-Subject: Re: [RFC v2] kernel/printk.c - handling more than one CON_BOOT
-Message-Id: <20090701140128.7924f3c4.akpm@linux-foundation.org>
-In-Reply-To: <200907011650.19173.rgetz@blackfin.uclinux.org>
-References: <200906290703.21539.rgetz@blackfin.uclinux.org>
-	<200906302251.52966.rgetz@blackfin.uclinux.org>
-	<20090701124414.fe188893.akpm@linux-foundation.org>
-	<200907011650.19173.rgetz@blackfin.uclinux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 17:03:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=2S1gXx5r0bzMiypNyHGfaiR09RsDxlm2Sn4dn1mPWSPbU7yr7a2eCH8zpDCFMf12aOM7ErVofbXa82qX+iSe8Y+SxzLKha5BQwO3ssbbD3vPhp0qqsCwCgqDpOQ+5h9bihSNTbEAmasnhWP/1l5IrjBy434xlVvmQVahaNedt5U=  ;
+X-YMail-OSG: NU2YzdgVM1m7S1UsMWTIPlanTVFQnYRVvtNR7PscMWHOwJV4rOQJTIesX0.9V2wdvBu_Vf3nWf.49V0kzuo1VgPSKgtEAGTADuL13pNv8Z2dLhk5tJNtnAJpzh4rjEXRIfHED8eqcuHwt00Z3he7bHg6iMcWLzKxgdIGrcpnz7Y2Hcv4gOICMAfJU6ZV5vfXZqTntgNODy8hviOtEgdWXeiMyJ9mNsbmQ61tEmf6HNNAr6asIKfhisH0ncT.Mlz.TTVU9JysEl53YDXJVKTM.tWS.GIAmVz93SvjfKue6.G7iaLchw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Subject: Re: [RFC PATCH 0/3] GPIO switch framework
+Date: Wed, 1 Jul 2009 14:03:53 -0700
+User-Agent: KMail/1.9.10
+Cc: ext Ben Nizette <bn@niasdigital.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "juha.yrjola@solidboot.com" <juha.yrjola@solidboot.com>
+References: <1237557050-13742-1-git-send-email-ext-jani.1.nikula@nokia.com> <1237703121.2720.39.camel@linux-51e8.site> <1238491138.5936.86.camel@jani-desktop>
+In-Reply-To: <1238491138.5936.86.camel@jani-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200907011403.53811.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009 16:50:19 -0400
-Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-
-> On Wed 1 Jul 2009 15:44, Andrew Morton pondered:
-> > On Tue, 30 Jun 2009 22:51:52 -0400
-> > Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> > 
-> > > From: Robin Getz <rgetz@blackfin.uclinux.org>
+On Tuesday 31 March 2009, Jani Nikula wrote:
+> Hi Ben, and thanks for your feedback.
+> 
+> On Sun, 2009-03-22 at 07:25 +0100, ext Ben Nizette wrote:
+> > On Fri, 2009-03-20 at 15:50 +0200, Jani Nikula wrote:
+> > > Hi -
 > > > 
-> > > Today, register_console() assumes the following usage:
-> > >   - The first console to register with a flag set to CON_BOOT is the
-> > >     one and only bootconsole.
-> > >   - If another register_console() is called with an additional
-> > >     CON_BOOT, it is silently rejected.
-> > >   - As soon as a console without the CON_BOOT set calls registers
-> > >     the bootconsole is automatically unregistered.
-> > >   - Once there is a "real" console - register_console() will silently
-> > >     reject any consoles with it's CON_BOOT flag set.
-> > 
-> > hm.  I never knew all that.  Thanks for taking the time to explain all
-> > this - it helps.
-> 
-> Is it also worthwhile to mention that this function (when used with 
-> early_printk) can get called _very_ early in the boot process, (before 
-> setup_arch() completes)
-
-OK.
-
-> > I think it would be useful if we had a description of the new design,
-> > similar to your description of the "Today" behaviour above.  Perhaps
-> > as a comment over register_console()?
-> 
-> Can do - do you want it as v3 or on-top of this one?
-
-I'm easy either way.  Ingo might have applied to one of his trees, in
-which case a replacement patch might cause him problems, dunno.
-
-> > > In many systems (alpha, blackfin, microblaze, mips, powerpc, sh, &
-> > > x86), there are early_printk implementations, which use the CON_BOOT 
-> > > which come out serial ports, vga, usb, & memory buffers. In many 
-> > > embedded systems, it would be nice to have two - in case the primary
-> > > fails, you always have access to a backup memory buffer - but this
-> > > requires at least two CON_BOOT consoles.
+> > > This RFC patchset is a pretty straightforward adaptation of OMAP GPIO
+> > > switch framework for mainline integration.
 > > > 
-> > > This changeset allows multiple boot consoles, and changes the
-> > functionality
-> > > to, be mostly the same as the above.
-> > >  - Any number CON_BOOT consoles of can be registered
-> > >  - A "real" console will unregister all the CON_BOOT consoles
-> > >  - Once a "real" console is registered, no more CON_BOOT consoles 
-> > >    can be added (still silently rejected)
+> > > The GPIO switch framework allows reporting and changing GPIO switches
+> > > via sysfs, with debouncing and sysfs/in-kernel notifications for input
+> > > switches.
 > > 
-> > Is the "silent" rejection desirable?  Perhaps that's a
-> > programming/configuration error which the developer should be informed
-> > of?
+> > OK, so what does this do that /sys/class/gpio/gpioN doesn't currently do
+> > apart from debouncing?  And the output being a string rather than a
+> > simple value (which IMO might be better suited to userspace
+> > interpretation anyway).
 > 
-> That is what it is today. I would actually prefer not silent - as it 
-> would have meant 10 min that I would have saved myself trying to figure out 
-> what was going on... :)
+> In addition to debouncing, there's sysfs and in-kernel notifications.
+
+And you had said off-list you were looking at adding
+some debouncing support to the sysfs hooks.
+
+
+> To hide potential changes in hardware from userspace, there's naming of
+> the sysfs entries (e.g. /sys/class/gpio/switch-foo) and a flag for
+> inverting the value.
+
+You've recently sent a patch to do that using the existing
+gpio sysfs support ... it's in the MM tree, although an update
+will remove the BUG_ON calls.
+
+  http://marc.info/?l=linux-kernel&m=124471204121635&w=2
+
+I agree with Ben that string names are better left for userspace
+tools to handle.  (Why limit things to English?)  Same for all
+interpretation -- "0" might mean "open" or "connected" or "on",
+or maybe sometimes it's "1" which means that.
+
+
+> > I've got a patch, little abandoned at the bottom of my queue, which adds
+> > poll(2) compatibility to the gpiolib sysfs entries [1] and extending
+> > this patch to do debouncing as well would be almost trivial.
 > 
-> But when I was figuring out how things worked, and had a few too many printks 
-> in register_console - I was getting BUG: "recent printk recursion!" - so I 
-> just left it silent (rather than figuring this out).
+> Your patch certainly looks promising, and indeed overlaps with my work.
+> Debouncing could be easily added, and perhaps symbolic links to provide
+> names for the switches.
 
-OK - I was just wondering.   Whatever you think is best..
+And as you know, Daniel Glöckner has an updated version:
 
-> > 
-> > > diff -puN
-> > kernel/printk.c~kernel-printkc-handling-more-than-one-con_boot
-> > kernel/printk.c
-> > > --- a/kernel/printk.c~kernel-printkc-handling-more-than-one-con_boot
-> > > +++ a/kernel/printk.c
-> > > @@ -37,6 +37,12 @@
-> > >  #include <asm/uaccess.h>
-> > >  
-> > >  /*
-> > > + * for_each_console() allows you to iterate on each console
-> > > + */
-> > > +#define for_each_console(con) \
-> > > +	for (con = console_drivers; con != NULL; con = con->next)
-> > 
-> > hum.  Fair enough.
+  http://marc.info/?l=linux-kernel&m=124463747423885
+
+Looks promising.
+
+ 
+> However, if I didn't miss anything, your patch allows setting up the
+> notification through sysfs only, and there's no way of doing it from
+> kernel side. Also, I'd need debounced callback notifications.
+
+That is, in-kernel notifications?  Normally that's what GPIO interrupts
+handle.
+
+Debouncing gets messy, what with hardware support varying so much,
+but presumably some low-bitrate software debounce may serve.  Folk
+have asked for such things in the not-so-distant past.
+
+
+> > I guess what I'm getting at is that this seems like it solves a problem
+> > which has been pretty much solved elsewhere since the OMAP boys wrote
+> > this.
 > 
-> Was there an issue with this? (Or you just want me to split that up into a 
-> separate patch?)
+> It's been only partially solved by your patch, and as you say yourself,
+> it's still at the bottom of your queue. There's also the gpio-keys
+> (pointed out by Philipp Zabel elsewhere in this thread), but that's
+> input only and lacks in-kernel notifications.
 
-Just a general allergy to fancypants macros, especially those which
-hide control flow. But this one is straightforward enough.
+Note that gpio-keys has some minimal debouncing already.
+Maybe not the most effective solution for software debounce
+of GPIOs, but if there's a generalized version of debounce
+then maybe that driver could use it too.
 
-Formally one should parenthesize `con' here, but if that change is ever
-actually necessary then we have other problems, and the macro was
-probably a bad idea anyway.
+As for the input framework ... stuff like MMC/SD and PCMCIA
+card insert/remove events have not yet been handled through
+that framework, and I think it's very appropriate that an
+MMC host adapter be independent of the input subsystem.  :)
+
+But maybe some of those cases should be handled through small
+shims that can issue the event callbacks to MMC or PCMCIA
+host adapter code based on input events.  The systems you
+work with can assume the input subsystem, I think.
+
+
+> AFAIK the input layer is 
+> also pretty fixed in what can be reported. So I am not convinced this
+> has been solved elsewhere.
+
+Parts of it have been, and in more general ways.  I'm a lot more
+comfortable with the notion of having a solution that's built of
+reusable chunks than having something quite so focussed on what,
+say, only a Nokia tablet needs.  Which seems to be what you're
+thinking lately too, so all is fine.  ;)
+
+- Dave
+
