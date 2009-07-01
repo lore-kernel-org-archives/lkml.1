@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZGAWcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbZGAWlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbZGAWcl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 18:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZGAWcd
+	id S1752837AbZGAWlw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 18:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZGAWlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 18:32:33 -0400
-Received: from smtp105.sbc.mail.gq1.yahoo.com ([67.195.14.108]:30160 "HELO
-	smtp105.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750981AbZGAWcc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 18:32:32 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EAZNQusMkBuFNgylCcRoopYosqwVhIDaFc6GPrfQa5TDOVoQwZhK9Tpv2gsMBd7KO2UCqsSPdstjk13mA7nVXp5/lc8D+avoSIYCPVcuRI5op1ypZSbLvgJlNmI2MomFB7UZvBcWfoQnwzYhQy75m+DkipxMlbNoHupw7N9llHo=  ;
-X-YMail-OSG: XA1RsM4VM1kqhA.HdjVJlk6Hw8aT35NWerfj8UXLSOA7vT44R8_A_l0u5ijLwbVKpb.wa6zoIIIslbq0zSAz6Ij3S2U0QdXmuMJyGYiwy.d_6CtYZmOebl.LVEYzWty.zxsNf8TuMa3B1G7MQXsy.c3PMhGCedf.D4ofgdNvYpLsJhpR9_WaoVgbogMEnF3zfqDm1GVbVvJXziPPBOK7u0yLiOPDAYimA5Uew_9uzNtepGJ2e3ban5u.UB00u5DNVqLUrjgUVEu_kLUjcSg1.Wz84nSAAcHTDE3LEJ0hYzJImp_4hYHc
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andres Salomon <dilinger@collabora.co.uk>, Tobias_Mueller@twam.info
-Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver   support
-Date: Wed, 1 Jul 2009 15:32:34 -0700
-User-Agent: KMail/1.9.10
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       jordan@cosmicpenguin.net, cjb@laptop.org
-References: <20090610001033.27b7f69f@mycelium.queued.net> <17be05570906111311s717f126cyd4edf0847b839eef@mail.gmail.com> <20090611172850.6c418b1d@mycelium.queued.net>
-In-Reply-To: <20090611172850.6c418b1d@mycelium.queued.net>
+	Wed, 1 Jul 2009 18:41:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33819 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbZGAWlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 18:41:44 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jeremy Maitin-Shepard" <jeremy@jeremyms.com>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+Date: Thu, 2 Jul 2009 00:41:51 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+References: <87hbxx0wcp.fsf@jeremyms.com> <200907011755.10386.rjw@sisk.pl> <874otw15r6.fsf@jeremyms.com>
+In-Reply-To: <874otw15r6.fsf@jeremyms.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907011532.34677.david-b@pacbell.net>
+Message-Id: <200907020041.52198.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 June 2009, Andres Salomon wrote:
+On Wednesday 01 July 2009, Jeremy Maitin-Shepard wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> > I mentioned this in an ealier mail too. When I request the GPIO from
-> > userspace the direction file always contains "in", so I thought
-> > this is the standard direction after resetting as I should be in a
-> > defined state after requesting. But I didn't found anything
-> > about this in GPIO lib documentation, so I would be fine to change
-> > this if there is any common default behavoir.
+> > [snip]
 > 
-> To be honest, I'd have to play around with it a bit before I
-> knew whether it actually breaks anything or not. I'm not sure if
-> it would break anything on OLPC, and I don't have any other geode
-> machines that do anything interesting w/ GPIOs.
+> >> As far as the possibility of using uswsusp goes, I'd like to get
+> >> Rafael's input there - he knows it much better than I do (explicitly
+> >> adding him to the ccs).
 > 
-> Maybe David can clear up whether this behavior is correct from the
-> userspace GPIO usage standpoint..
+> > No, the current mainline hibernation code can't be modified easily
+> > to encrypt the page cache before suspending.
+> 
+> > Also, I don't see much value in doing that before suspend to RAM, because
+> > (1) passwords and encryption keys should be stored in mlocked memory
+> 
+> I do not have a complete understanding of linux memory management, but
+> couldn't such memory also be included in the encryption?  The page cache
+> is presumably the bulk of memory, but I realize there are likely several
+> other places in memory that may contain sensitive data.  However, it
+> would seem that encrypting these in place should, for the most part,
+> also be quite feasible.
 
-Correct-but-annoying ... and maybe worth changing.  The
-direction *displayed* may not reflect the actual hardware
-until after that GPIO signal is initialized.  Boot firmware
-may well have set the direction; Linux shouldn't change it
-without explicit instructions to do so.
+What is the particular attach scenario you'd like to prevent
 
-The issue is that when it first comes up, nobody has tod
-Linux that direction ... so instead of defining an "unknown"
-state, that code applies a heuristic.  In gpiochip_add():
+> > and (2)
+> > the encryption overhead (including measures to protect the encrypted page cache
+> > from being corrupted) would hurt the speed of suspend to RAM and resume, which
+> > is a very important thing.
+> 
+> I am not suggesting that it be done unconditionally.  I am simply
+> suggesting that it be made available as an option, just as hibernating
+> to encrypted swap is an option, and using dm-crypt in general is an
+> option.  Surely encrypting and decrypting would take additional time,
+> but it would also surely take far less time than hibernating and
+> resuming.  On machines with hardware encryption support (such as the
+> future Intel Westmere processor), encrypting several gigabytes of memory
+> may not take very much time at all.
+> 
+> > Moreover, I don't really see how we can feed the decryption key to the
+> > kernel during resume before the page cache can be accessed.
+> 
+> My understanding is that this is something that is already done in
+> tuxonice.  After the contents of the page cache are written to disk,
+> some of the page cache is overwritten with a copy of the rest of memory,
+> and the kernel continues to interact with the userspace UI program.  I
+> would assume that this state is effectively equivalent to the state the
+> system would be in after encrypting the page cache.  (Obviously the
+> memory needed by the userspace helper would have to be treated
+> specially.)
 
-                for (id = base; id < base + chip->ngpio; id++) {
-                        gpio_desc[id].chip = chip;
+There's one problem with this approach, which is that we're not sure if the
+encrypted pages won't be written to by someone else.  TuxOnIce makes the
+assumption that it won't, but that has yet to be demonstrated.
 
-                        /* REVISIT:  most hardware initializes GPIOs as
-                         * inputs (often with pullups enabled) so power
-                         * usage is minimized.  Linux code should set the
-                         * gpio direction first thing; but until it does,
-                         * we may expose the wrong direction in sysfs.
-                         */
-                        gpio_desc[id].flags = !chip->direction_input
-                                ? (1 << FLAG_IS_OUT)
-                                : 0;
-                }
-
-Now, as far as heuristics go that one seems to cover most
-of the common cases.  But like all heuristics, the result
-produced may be wrong.
-
-So it would be nice to remove the heuristic.  The best
-way would be to add a new method to query gpio direction.
-Then that when it's available, instead of the heuristic.
-
-- Dave
-
+Best,
+Rafael
