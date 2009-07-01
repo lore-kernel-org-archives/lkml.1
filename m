@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761112AbZGABJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763329AbZGABN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761112AbZGABJf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761528AbZGAAf2
+	id S1763329AbZGABN5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:13:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761536AbZGAAfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:28 -0400
-Received: from kroah.org ([198.145.64.141]:60577 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:47 -0400
+Received: from kroah.org ([198.145.64.141]:60671 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761529AbZGAAfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:35:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:38 2009
-Message-Id: <20090701002437.962186526@mini.kroah.org>
+	id S1761574AbZGAAfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:37 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:41 2009
+Message-Id: <20090701002441.091270814@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:24:07 -0700
+Date: Tue, 30 Jun 2009 17:24:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Layton <jlayton@redhat.com>,
-       Shirish Pargaonkar <shirishp@us.ibm.com>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [patch 078/108] cifs: fix fh_mutex locking in cifs_reopen_file
+       Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 092/108] qla2xxx: Correct (again) overflow during dump-processing on large-memory ISP23xx parts.
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-fix-fh_mutex-locking-in-cifs_reopen_file.patch
+Content-Disposition: inline; filename=qla2xxx-correct-overflow-during-dump-processing-on-large-memory-isp23xx-parts.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,63 +31,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeff Layton <jlayton@redhat.com>
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
 
-commit f0a71eb820596bd8f6abf64beb4cb181edaa2341 upstream.
+commit e18e963b7e533149676b5d387d0a56160df9f111 upstream.
 
-Fixes a regression caused by commit a6ce4932fbdbcd8f8e8c6df76812014351c32892
+Commit 7b867cf76fbcc8d77867cbec6f509f71dce8a98f ([SCSI] qla2xxx:
+Refactor qla data structures) inadvertently reverted
+e792121ec85672c1fa48f79d13986a3f4f56c590 ([SCSI] qla2xxx: Correct
+overflow during dump-processing on large-memory ISP23xx parts.).
 
-When this lock was converted to a mutex, the locks were turned into
-unlocks and vice-versa.
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Acked-by: Shirish Pargaonkar <shirishp@us.ibm.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/file.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/scsi/qla2xxx/qla_dbg.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/cifs/file.c
-+++ b/fs/cifs/file.c
-@@ -491,9 +491,9 @@ static int cifs_reopen_file(struct file 
- 		return -EBADF;
+--- a/drivers/scsi/qla2xxx/qla_dbg.c
++++ b/drivers/scsi/qla2xxx/qla_dbg.c
+@@ -218,7 +218,7 @@ qla24xx_soft_reset(struct qla_hw_data *h
  
- 	xid = GetXid();
--	mutex_unlock(&pCifsFile->fh_mutex);
-+	mutex_lock(&pCifsFile->fh_mutex);
- 	if (!pCifsFile->invalidHandle) {
--		mutex_lock(&pCifsFile->fh_mutex);
-+		mutex_unlock(&pCifsFile->fh_mutex);
- 		FreeXid(xid);
- 		return 0;
- 	}
-@@ -524,7 +524,7 @@ static int cifs_reopen_file(struct file 
- 	if (full_path == NULL) {
- 		rc = -ENOMEM;
- reopen_error_exit:
--		mutex_lock(&pCifsFile->fh_mutex);
-+		mutex_unlock(&pCifsFile->fh_mutex);
- 		FreeXid(xid);
- 		return rc;
- 	}
-@@ -566,14 +566,14 @@ reopen_error_exit:
- 			 cifs_sb->local_nls, cifs_sb->mnt_cifs_flags &
- 				CIFS_MOUNT_MAP_SPECIAL_CHR);
- 	if (rc) {
--		mutex_lock(&pCifsFile->fh_mutex);
-+		mutex_unlock(&pCifsFile->fh_mutex);
- 		cFYI(1, ("cifs_open returned 0x%x", rc));
- 		cFYI(1, ("oplock: %d", oplock));
- 	} else {
- reopen_success:
- 		pCifsFile->netfid = netfid;
- 		pCifsFile->invalidHandle = false;
--		mutex_lock(&pCifsFile->fh_mutex);
-+		mutex_unlock(&pCifsFile->fh_mutex);
- 		pCifsInode = CIFS_I(inode);
- 		if (pCifsInode) {
- 			if (can_flush) {
+ static int
+ qla2xxx_dump_ram(struct qla_hw_data *ha, uint32_t addr, uint16_t *ram,
+-    uint16_t ram_words, void **nxt)
++    uint32_t ram_words, void **nxt)
+ {
+ 	int rval;
+ 	uint32_t cnt, stat, timer, words, idx;
 
 
