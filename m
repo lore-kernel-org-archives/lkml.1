@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZGAQWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZGAQXC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZGAQWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZGAQWm
+	id S1754082AbZGAQXC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:23:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZGAQWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:22:42 -0400
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:59933 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbZGAQWk (ORCPT
+	Wed, 1 Jul 2009 12:22:51 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:49672 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753939AbZGAQWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:22:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=r2jqQ5pakXWByaUhBZ14TXFv6/u5zcyoF2koPEP49LztgVc1Z1jwiR3zJpY/lG1kYQ
-         CQDYprjh4ivdpHVepLQDGHeUllMh3vvxADgZwDpUuJW9hjuQgLvvXFKutK3Nbz8ErqTK
-         4aQ/3EFkl2UcsoKK7/tFyw02Qmzyx6gsfBeMY=
+	Wed, 1 Jul 2009 12:22:49 -0400
+Date: Thu, 2 Jul 2009 00:22:48 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>, Paul Martin <pm@debian.org>
+Subject: Re: [Bug #13627] Tunnel device ignores TCP/UDP traffic
+Message-ID: <20090701162248.GB5338@gondor.apana.org.au>
+References: <ij4ZQY4URcP.A.F3B.vIASKB@chimera> <6JJ2m5kyucK.A.AtD.NJASKB@chimera> <b6a2187b0907010734w7e7a5bbfm271f44e57e12d1b4@mail.gmail.com> <20090701151344.GA4372@gondor.apana.org.au> <b6a2187b0907010914x1c68e09k24bc9378e9c0519c@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87hbxwcswp.fsf@sonic.technologeek.org>
-References: <20090701002838.GA7100@kroah.com> <87tz1wd4vi.fsf@sonic.technologeek.org> 
-	<4A4B7A77.8010208@s5r6.in-berlin.de> <87hbxwcswp.fsf@sonic.technologeek.org>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 1 Jul 2009 09:22:23 -0700
-Message-ID: <43e72e890907010922t7bd80108xa3caaf4decfd87a6@mail.gmail.com>
-Subject: Re: [Stable-review] [patch 000/108] 2.6.30-stable review
-To: Julien BLACHE <jb@jblache.org>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Greg KH <gregkh@suse.de>,
-       felixb@sgi.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6a2187b0907010914x1c68e09k24bc9378e9c0519c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 8:41 AM, Julien BLACHE<jb@jblache.org> wrote:
-> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->
-> Hi,
->
->>> Felix wrote it was a candidate for stable (obviously!) but it's not on
->>> the list you posted. Care to include it?
->>
->> I am routinely astonished by the "please include patch XY" postings. :-)
->
-> Actually I was under the impression that the proper request had been
-> made for inclusion into -stable, but it looks like it's not been done
-> after all.
->
-> So, here goes.
+On Thu, Jul 02, 2009 at 12:14:37AM +0800, Jeff Chua wrote:
+> > work? Does reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f help?
+> 
+> My Linux git already has these two commits, and I tested it with vpnc
+> (0.5.3) and it connected, but can't ping or ssh to remote. It was
+> working prior to 2.6.30.
+> 
+> Tested reverting d55d87fdff8252d0e2f7c28c2d443aee17e9d70f, but still
+> no good. Also reverted 71f9dacd2e4d233029e9e956ca3f79531f411827, still
+> no good.
 
-Better inline.
+OK then your problem is a completely different issue.  Please
+strace vpnc and see what it's doing.  You should also take a
+tcpdump on the tun interface to go with the strace.
 
-  Luis
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
