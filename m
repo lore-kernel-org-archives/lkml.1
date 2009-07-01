@@ -1,279 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZGAP5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZGAP6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZGAP5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZGAP5K
+	id S1753706AbZGAP6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZGAP6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:57:10 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5293 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZGAP5J convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 11:58:37 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:61902 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751964AbZGAP6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:57:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=iXaRjGDZFxfK1SCa1sS3aB0x0mB5ShJTaYUlU9xMfrx6aDfwmKdh5pbjOeOrTNNiG
-	R8ympcUKAPIlLQ2hKOkbg==
+	Wed, 1 Jul 2009 11:58:36 -0400
+From: Frans Pop <elendil@planet.nl>
+To: reinette chatre <reinette.chatre@intel.com>
+Subject: Re: [2.6.31-rc1] iwlagn (4965): regression when hardware rf switch is used
+Date: Wed, 1 Jul 2009 17:58:35 +0200
+User-Agent: KMail/1.9.9
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Netdev <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200906291128.05639.elendil@planet.nl> <1246383858.17896.527.camel@rc-desk>
+In-Reply-To: <1246383858.17896.527.camel@rc-desk>
 MIME-Version: 1.0
-In-Reply-To: <20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 1 Jul 2009 08:57:03 -0700
-Message-ID: <6599ad830907010857r7fae2215r2e8aadb3003dcc4d@mail.gmail.com>
-Subject: Re: [PATCH] memcg: fix cgroup rmdir hang v4
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907011758.36621.elendil@planet.nl>
+X-OriginalArrivalTime: 01 Jul 2009 15:58:37.0052 (UTC) FILETIME=[CB41A3C0:01C9FA64]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 6:47 PM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> ok, here.
+On Tuesday 30 June 2009, reinette chatre wrote:
+> Subject: [PATCH] iwlagn: do not send key clear commands when rfkill
+> enabled
 >
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Do all key clearing except sending sommands to device when rfkill
+> enabled. When rfkill enabled the interface is brought down and will
+> be brought back up correctly after rfkill is enabled again.
 >
-> After commit: cgroup: fix frequent -EBUSY at rmdir
->              ec64f51545fffbc4cb968f0cea56341a4b07e85a
-> cgroup's rmdir (especially against memcg) doesn't return -EBUSY
-> by temporal ref counts. That commit expects all refs after pre_destroy()
-> is temporary but...it wasn't. Then, rmdir can wait permanently.
-> This patch tries to fix that and change followings.
->
->  - set CGRP_WAIT_ON_RMDIR flag before pre_destroy().
->  - clear CGRP_WAIT_ON_RMDIR flag when the subsys finds racy case.
->   if there are sleeping ones, wakes them up.
->  - rmdir() sleeps only when CGRP_WAIT_ON_RMDIR flag is set.
->
-> Changelog v4->v5:
->  - added cgroup_exclude_rmdir(), cgroup_release_rmdir().
->
-> Changelog v3->v4:
->  - rewrite/add comments.
->  - remane cgroup_wakeup_rmdir_waiters() to cgroup_wakeup_rmdir_waiter().
-> Changelog v2->v3:
->  - removed retry_rmdir() callback.
->  - make use of CGRP_WAIT_ON_RMDIR flag more.
->
-> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Same change is not needed for iwl3945 as it ignores return code when
+> sending key clearing command to device.
 
-Reviewed-by: Paul Menage <menage@google.com>
+With this patch things look a lot cleaner:
 
-Looks great, thanks.
+[enable hardware rf kill switch]
+iwlagn 0000:10:00.0: RF_KILL bit toggled to disable radio.
+wlan0: deauthenticating by local choice (reason=3)
+usb 3-1: USB disconnect, address 2
+[disable hardware rf kill switch]
+iwlagn 0000:10:00.0: RF_KILL bit toggled to enable radio.
+usb 3-1: new full speed USB device using uhci_hcd and address 3
+usb 3-1: configuration #1 chosen from 1 choice
+[ifdown wlan0]
+Registered led device: iwl-phy0::radio
+Registered led device: iwl-phy0::assoc
+Registered led device: iwl-phy0::RX
+Registered led device: iwl-phy0::TX
+ADDRCONF(NETDEV_UP): wlan0: link is not ready
+[ifup wlan0]
+Registered led device: iwl-phy0::radio
+Registered led device: iwl-phy0::assoc
+Registered led device: iwl-phy0::RX
+Registered led device: iwl-phy0::TX
+ADDRCONF(NETDEV_UP): wlan0: link is not ready
+wlan0: authenticate with AP 00:14:c1:38:e5:15
+wlan0: authenticated
+wlan0: associate with AP 00:14:c1:38:e5:15
+wlan0: RX AssocResp from 00:14:c1:38:e5:15 (capab=0x411 status=0 aid=1)
+wlan0: associated
+ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+wlan0: no IPv6 routers present
 
-Paul
 
-> ---
->  include/linux/cgroup.h |   14 ++++++++++++
->  kernel/cgroup.c        |   55 +++++++++++++++++++++++++++++++++----------------
->  mm/memcontrol.c        |   23 +++++++++++++++++---
->  3 files changed, 72 insertions(+), 20 deletions(-)
+One thing I do not quite get is why both ifdown and ifup result in leds 
+getting registered. It does not happen when I do a "normal" ifdown (when 
+the wireless interface is up and rfkill is not enabled).
+
+I could understand the leds being registered immediately after I disable 
+the rf kill switch, but don't understand why it gets postponed until I do 
+ifdown. That makes it seem as if the change in RF_KILL only gets 
+processed halfway through with the registering of leds left dangling.
+
+
+> Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+Reported-by: Frans Pop <elendil@planet.nl>
+Tested-by: Frans Pop <elendil@planet.nl>
+
+
+> --- a/drivers/net/wireless/iwlwifi/iwl-agn.c
+> +++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+> @@ -960,7 +960,7 @@ static void iwl_irq_tasklet_legacy(struct iwl_priv
+> *priv) CSR_GP_CNTRL_REG_FLAG_HW_RF_KILL_SW))
+>  			hw_rf_kill = 1;
 >
-> Index: mmotm-2.6.31-Jun25/include/linux/cgroup.h
-> ===================================================================
-> --- mmotm-2.6.31-Jun25.orig/include/linux/cgroup.h
-> +++ mmotm-2.6.31-Jun25/include/linux/cgroup.h
-> @@ -366,6 +366,20 @@ int cgroup_task_count(const struct cgrou
->  int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task);
+> -		IWL_DEBUG_RF_KILL(priv, "RF_KILL bit toggled to %s.\n",
+> +		IWL_WARN(priv, "RF_KILL bit toggled to %s.\n",
+>  				hw_rf_kill ? "disable radio" : "enable radio");
 >
->  /*
-> + * When the subsys has to access css and may add permanent refcnt to css,
-> + * it should take care of racy conditions with rmdir(). Following set of
-> + * functions, is for stop/restart rmdir if necessary.
-> + * Because these will call css_get/put, "css" should be alive css.
-> + *
-> + *  cgroup_exclude_rmdir();
-> + *  ...do some jobs which may access arbitrary empty cgroup
-> + *  cgroup_release_rmdir();
-> + */
-> +
-> +void cgroup_exclude_rmdir(struct cgroup_subsys_state *css);
-> +void cgroup_release_rmdir(struct cgroup_subsys_state *css);
-> +
-> +/*
->  * Control Group subsystem type.
->  * See Documentation/cgroups/cgroups.txt for details
->  */
-> Index: mmotm-2.6.31-Jun25/kernel/cgroup.c
-> ===================================================================
-> --- mmotm-2.6.31-Jun25.orig/kernel/cgroup.c
-> +++ mmotm-2.6.31-Jun25/kernel/cgroup.c
-> @@ -734,16 +734,28 @@ static void cgroup_d_remove_dir(struct d
->  * reference to css->refcnt. In general, this refcnt is expected to goes down
->  * to zero, soon.
->  *
-> - * CGRP_WAIT_ON_RMDIR flag is modified under cgroup's inode->i_mutex;
-> + * CGRP_WAIT_ON_RMDIR flag is set under cgroup's inode->i_mutex;
->  */
->  DECLARE_WAIT_QUEUE_HEAD(cgroup_rmdir_waitq);
+>  		priv->isr_stats.rfkill++;
+> @@ -1133,7 +1133,7 @@ static void iwl_irq_tasklet(struct iwl_priv
+> *priv) CSR_GP_CNTRL_REG_FLAG_HW_RF_KILL_SW))
+>  			hw_rf_kill = 1;
 >
-> -static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
-> +static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
->  {
-> -       if (unlikely(test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
-> +       if (unlikely(test_and_clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags)))
->                wake_up_all(&cgroup_rmdir_waitq);
->  }
->
-> +void cgroup_exclude_rmdir(struct cgroup_subsys_state *css)
-> +{
-> +       css_get(css);
-> +}
-> +
-> +void cgroup_release_rmdir(struct cgroup_subsys_state *css)
-> +{
-> +       cgroup_wakeup_rmdir_waiter(css->cgroup);
-> +       css_put(css);
-> +}
-> +
-> +
->  static int rebind_subsystems(struct cgroupfs_root *root,
->                              unsigned long final_bits)
->  {
-> @@ -1357,7 +1369,7 @@ int cgroup_attach_task(struct cgroup *cg
->         * wake up rmdir() waiter. the rmdir should fail since the cgroup
->         * is no longer empty.
->         */
-> -       cgroup_wakeup_rmdir_waiters(cgrp);
-> +       cgroup_wakeup_rmdir_waiter(cgrp);
->        return 0;
->  }
->
-> @@ -2696,33 +2708,42 @@ again:
->        mutex_unlock(&cgroup_mutex);
->
->        /*
-> +        * In general, subsystem has no css->refcnt after pre_destroy(). But
-> +        * in racy cases, subsystem may have to get css->refcnt after
-> +        * pre_destroy() and it makes rmdir return with -EBUSY. This sometimes
-> +        * make rmdir return -EBUSY too often. To avoid that, we use waitqueue
-> +        * for cgroup's rmdir. CGRP_WAIT_ON_RMDIR is for synchronizing rmdir
-> +        * and subsystem's reference count handling. Please see css_get/put
-> +        * and css_tryget() and cgroup_wakeup_rmdir_waiter() implementation.
-> +        */
-> +       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
-> +
-> +       /*
->         * Call pre_destroy handlers of subsys. Notify subsystems
->         * that rmdir() request comes.
->         */
->        ret = cgroup_call_pre_destroy(cgrp);
-> -       if (ret)
-> +       if (ret) {
-> +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->                return ret;
-> +       }
->
->        mutex_lock(&cgroup_mutex);
->        parent = cgrp->parent;
->        if (atomic_read(&cgrp->count) || !list_empty(&cgrp->children)) {
-> +               clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->                mutex_unlock(&cgroup_mutex);
->                return -EBUSY;
->        }
-> -       /*
-> -        * css_put/get is provided for subsys to grab refcnt to css. In typical
-> -        * case, subsystem has no reference after pre_destroy(). But, under
-> -        * hierarchy management, some *temporal* refcnt can be hold.
-> -        * To avoid returning -EBUSY to a user, waitqueue is used. If subsys
-> -        * is really busy, it should return -EBUSY at pre_destroy(). wake_up
-> -        * is called when css_put() is called and refcnt goes down to 0.
-> -        */
-> -       set_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->        prepare_to_wait(&cgroup_rmdir_waitq, &wait, TASK_INTERRUPTIBLE);
-> -
->        if (!cgroup_clear_css_refs(cgrp)) {
->                mutex_unlock(&cgroup_mutex);
-> -               schedule();
-> +               /*
-> +                * Because someone may call cgroup_wakeup_rmdir_waiter() before
-> +                * prepare_to_wait(), we need to check this flag.
-> +                */
-> +               if (test_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags))
-> +                       schedule();
->                finish_wait(&cgroup_rmdir_waitq, &wait);
->                clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
->                if (signal_pending(current))
-> @@ -3294,7 +3315,7 @@ void __css_put(struct cgroup_subsys_stat
->                        set_bit(CGRP_RELEASABLE, &cgrp->flags);
->                        check_for_release(cgrp);
->                }
-> -               cgroup_wakeup_rmdir_waiters(cgrp);
-> +               cgroup_wakeup_rmdir_waiter(cgrp);
->        }
->        rcu_read_unlock();
->  }
-> Index: mmotm-2.6.31-Jun25/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.31-Jun25.orig/mm/memcontrol.c
-> +++ mmotm-2.6.31-Jun25/mm/memcontrol.c
-> @@ -1234,6 +1234,12 @@ static int mem_cgroup_move_account(struc
->        ret = 0;
->  out:
->        unlock_page_cgroup(pc);
-> +       /*
-> +        * We charges against "to" which may not have any tasks. Then, "to"
-> +        * can be under rmdir(). But in current implementation, caller of
-> +        * this function is just force_empty() and it's garanteed that
-> +        * "to" is never removed. So, we don't check rmdir status here.
-> +        */
->        return ret;
->  }
->
-> @@ -1455,6 +1461,7 @@ __mem_cgroup_commit_charge_swapin(struct
->                return;
->        if (!ptr)
->                return;
-> +       cgroup_exclude_rmdir(&ptr->css);
->        pc = lookup_page_cgroup(page);
->        mem_cgroup_lru_del_before_commit_swapcache(page);
->        __mem_cgroup_commit_charge(ptr, pc, ctype);
-> @@ -1484,8 +1491,12 @@ __mem_cgroup_commit_charge_swapin(struct
->                }
->                rcu_read_unlock();
->        }
-> -       /* add this page(page_cgroup) to the LRU we want. */
-> -
-> +       /*
-> +        * At swapin, we may charge account against cgroup which has no tasks.
-> +        * So, rmdir()->pre_destroy() can be called while we do this charge.
-> +        * In that case, we need to call pre_destroy() again. check it here.
-> +        */
-> +       cgroup_release_rmdir(&ptr->css);
->  }
->
->  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
-> @@ -1691,7 +1702,7 @@ void mem_cgroup_end_migration(struct mem
->
->        if (!mem)
->                return;
-> -
-> +       cgroup_exclude_rmdir(&mem->css);
->        /* at migration success, oldpage->mapping is NULL. */
->        if (oldpage->mapping) {
->                target = oldpage;
-> @@ -1731,6 +1742,12 @@ void mem_cgroup_end_migration(struct mem
->         */
->        if (ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
->                mem_cgroup_uncharge_page(target);
-> +       /*
-> +        * At migration, we may charge account against cgroup which has no tasks
-> +        * So, rmdir()->pre_destroy() can be called while we do this charge.
-> +        * In that case, we need to call pre_destroy() again. check it here.
-> +        */
-> +       cgroup_release_rmdir(&mem->css);
->  }
->
->  /*
->
->
+> -		IWL_DEBUG_RF_KILL(priv, "RF_KILL bit toggled to %s.\n",
+> +		IWL_WARN(priv, "RF_KILL bit toggled to %s.\n",
+>  				hw_rf_kill ? "disable radio" : "enable radio");
+
+If these two messages get promoted to regular user messages, maybe they 
+could be made a bit less technical? I doubt "RF_KILL bit toggled" is 
+going to mean all that much to most users.
+
+Thanks,
+FJP
