@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765324AbZGABCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764904AbZGABCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765324AbZGABCi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759836AbZGAAfC
+	id S1764904AbZGABCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZGAAfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:35:02 -0400
-Received: from kroah.org ([198.145.64.141]:60434 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:35:04 -0400
+Received: from kroah.org ([198.145.64.141]:60443 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761491AbZGAAe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:59 -0400
+	id S1760126AbZGAAfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:35:00 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:31 2009
-Message-Id: <20090701002430.902345957@mini.kroah.org>
+Message-Id: <20090701002431.096318663@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:46 -0700
+Date: Tue, 30 Jun 2009 17:23:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jack Morgenstein <jackm@dev.mellanox.co.il>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [patch 057/108] IB/mlx4: Add strong ordering to local inval and fast reg work requests
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: [patch 058/108] epoll: fix nested calls support
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ib-mlx4-add-strong-ordering-to-local-inval-and-fast-reg-work-requests.patch
+Content-Disposition: inline; filename=epoll-fix-nested-calls-support.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,58 +30,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+From: Davide Libenzi <davidel@xmailserver.org>
 
-commit 2ac6bf4ddc87c3b6b609f8fa82f6ebbffeac12f4 upstream.
+commit 3fe4a975d662f11037cb710f8b4b158a3e38f9c0 upstream.
 
-The ConnectX Programmer's Reference Manual states that the "SO" bit
-must be set when posting Fast Register and Local Invalidate send work
-requests.  When this bit is set, the work request will be executed
-only after all previous work requests on the send queue have been
-executed.  (If the bit is not set, Fast Register and Local Invalidate
-WQEs may begin execution too early, which violates the defined
-semantics for these operations)
+This fixes a regression in 2.6.30.
 
-This fixes the issue with NFS/RDMA reported in
-<http://lists.openfabrics.org/pipermail/general/2009-April/059253.html>
+I unfortunately accepted a patch time ago, to drop the "current" usage
+from possible IRQ context, w/out proper thought over it.  The patch
+switched to using the CPU id by bounding the nested call callback with a
+get_cpu()/put_cpu().
 
-Signed-off-by: Jack Morgenstein <jackm@dev.mellanox.co.il>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
+Unfortunately the ep_call_nested() function can be called with a callback
+that grabs sleepy locks (from own f_op->poll()), that results in epic
+fails.  The following patch uses the proper "context" depending on the
+path where it is called, and on the kind of callback.
+
+This has been reported by Stefan Richter, that has also verified the patch
+is his previously failing environment.
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Reported-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/infiniband/hw/mlx4/qp.c |    4 ++++
- include/linux/mlx4/qp.h         |    1 +
- 2 files changed, 5 insertions(+)
+ fs/eventpoll.c |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
---- a/drivers/infiniband/hw/mlx4/qp.c
-+++ b/drivers/infiniband/hw/mlx4/qp.c
-@@ -1585,12 +1585,16 @@ int mlx4_ib_post_send(struct ib_qp *ibqp
- 				break;
- 
- 			case IB_WR_LOCAL_INV:
-+				ctrl->srcrb_flags |=
-+					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
- 				set_local_inv_seg(wqe, wr->ex.invalidate_rkey);
- 				wqe  += sizeof (struct mlx4_wqe_local_inval_seg);
- 				size += sizeof (struct mlx4_wqe_local_inval_seg) / 16;
- 				break;
- 
- 			case IB_WR_FAST_REG_MR:
-+				ctrl->srcrb_flags |=
-+					cpu_to_be32(MLX4_WQE_CTRL_STRONG_ORDER);
- 				set_fmr_seg(wqe, wr);
- 				wqe  += sizeof (struct mlx4_wqe_fmr_seg);
- 				size += sizeof (struct mlx4_wqe_fmr_seg) / 16;
---- a/include/linux/mlx4/qp.h
-+++ b/include/linux/mlx4/qp.h
-@@ -165,6 +165,7 @@ enum {
- 	MLX4_WQE_CTRL_IP_CSUM		= 1 << 4,
- 	MLX4_WQE_CTRL_TCP_UDP_CSUM	= 1 << 5,
- 	MLX4_WQE_CTRL_INS_VLAN		= 1 << 6,
-+	MLX4_WQE_CTRL_STRONG_ORDER	= 1 << 7,
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -98,7 +98,7 @@ struct epoll_filefd {
+ struct nested_call_node {
+ 	struct list_head llink;
+ 	void *cookie;
+-	int cpu;
++	void *ctx;
  };
  
- struct mlx4_wqe_ctrl_seg {
+ /*
+@@ -317,17 +317,17 @@ static void ep_nested_calls_init(struct 
+  * @nproc: Nested call core function pointer.
+  * @priv: Opaque data to be passed to the @nproc callback.
+  * @cookie: Cookie to be used to identify this nested call.
++ * @ctx: This instance context.
+  *
+  * Returns: Returns the code returned by the @nproc callback, or -1 if
+  *          the maximum recursion limit has been exceeded.
+  */
+ static int ep_call_nested(struct nested_calls *ncalls, int max_nests,
+ 			  int (*nproc)(void *, void *, int), void *priv,
+-			  void *cookie)
++			  void *cookie, void *ctx)
+ {
+ 	int error, call_nests = 0;
+ 	unsigned long flags;
+-	int this_cpu = get_cpu();
+ 	struct list_head *lsthead = &ncalls->tasks_call_list;
+ 	struct nested_call_node *tncur;
+ 	struct nested_call_node tnode;
+@@ -340,7 +340,7 @@ static int ep_call_nested(struct nested_
+ 	 * very much limited.
+ 	 */
+ 	list_for_each_entry(tncur, lsthead, llink) {
+-		if (tncur->cpu == this_cpu &&
++		if (tncur->ctx == ctx &&
+ 		    (tncur->cookie == cookie || ++call_nests > max_nests)) {
+ 			/*
+ 			 * Ops ... loop detected or maximum nest level reached.
+@@ -352,7 +352,7 @@ static int ep_call_nested(struct nested_
+ 	}
+ 
+ 	/* Add the current task and cookie to the list */
+-	tnode.cpu = this_cpu;
++	tnode.ctx = ctx;
+ 	tnode.cookie = cookie;
+ 	list_add(&tnode.llink, lsthead);
+ 
+@@ -364,10 +364,9 @@ static int ep_call_nested(struct nested_
+ 	/* Remove the current task from the list */
+ 	spin_lock_irqsave(&ncalls->lock, flags);
+ 	list_del(&tnode.llink);
+- out_unlock:
++out_unlock:
+ 	spin_unlock_irqrestore(&ncalls->lock, flags);
+ 
+-	put_cpu();
+ 	return error;
+ }
+ 
+@@ -408,8 +407,12 @@ static int ep_poll_wakeup_proc(void *pri
+  */
+ static void ep_poll_safewake(wait_queue_head_t *wq)
+ {
++	int this_cpu = get_cpu();
++
+ 	ep_call_nested(&poll_safewake_ncalls, EP_MAX_NESTS,
+-		       ep_poll_wakeup_proc, NULL, wq);
++		       ep_poll_wakeup_proc, NULL, wq, (void *) (long) this_cpu);
++
++	put_cpu();
+ }
+ 
+ /*
+@@ -663,7 +666,7 @@ static unsigned int ep_eventpoll_poll(st
+ 	 * could re-enter here.
+ 	 */
+ 	pollflags = ep_call_nested(&poll_readywalk_ncalls, EP_MAX_NESTS,
+-				   ep_poll_readyevents_proc, ep, ep);
++				   ep_poll_readyevents_proc, ep, ep, current);
+ 
+ 	return pollflags != -1 ? pollflags : 0;
+ }
 
 
