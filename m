@@ -1,219 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZGAW5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbZGAXEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbZGAW5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 18:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZGAW5W
+	id S1752214AbZGAXEN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 19:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZGAXD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 18:57:22 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:58771 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323AbZGAW5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 18:57:20 -0400
+	Wed, 1 Jul 2009 19:03:58 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:35138 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZGAXD5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 19:03:57 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
-Date: Thu, 2 Jul 2009 08:57:12 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
-       arnd@arndb.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Code atomic(64)_read and atomic(64)_set in C not
-   CPP [was Re: FRV: Implement atomic64_t]
-In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
-References: <20090701144913.GA28172@elte.hu>
-	<20090701164700.29780.15103.stgit@warthog.procyon.org.uk>
-	<alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+Message-ID: <79a405e4-3c4c-4194-aed4-a3832c6c5d6e@default>
+Date: Wed, 1 Jul 2009 16:02:38 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, npiggin@suse.de, chris.mason@oracle.com,
+       kurt.hackel@oracle.com, dave.mccracken@oracle.com,
+       Avi Kivity <avi@redhat.com>, Rik van Riel <riel@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: RE: [RFC] transcendent memory for Linux
+In-Reply-To: <4A4A95D8.6020708@goop.org>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A4BEB2C.0013:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Occasionally we get bugs where atomic_read or atomic_set are used on
-atomic64_t variables or vice versa.  These bugs don't generate
-warnings on x86 because atomic_read and atomic_set are coded as macros
-rather than C functions, so we don't get any type-checking on their
-arguments; similarly for atomic64_read and atomic64_set in 64-bit
-kernels.
-
-This converts them to C functions so that the arguments are
-type-checked and bugs like this will get caught more easily.
-It also converts atomic_cmpxchg and atomic_xchg, and atomic64_cmpxchg
-and atomic64_xchg on 64-bit, so we get type-checking on their
-arguments too.
-
-Compiling a typical 64-bit x86 config, this generates no new warnings,
-and the vmlinux text is 86 bytes smaller.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Linus Torvalds writes:
-
-> Btw, Ingo: I looked at the x86-32 versions to be sure, and noticed a 
-> couple of buglets:
+> From: Jeremy Fitzhardinge [mailto:jeremy@goop.org]
+> On 06/30/09 14:21, Dan Magenheimer wrote:
+> > No, the uuid can't be verified.  Tmem gives no indication
+> > as to whether a newly-created pool is already in use (shared)
+> > by another guest.  So without both the 128-bit uuid and an
+> > already-in-use 64-bit object id and 32-bit page index, no data
+> > is readable or writable by the attacker.
 > 
->  - atomic64_xchg uses "atomic_read()". Sure, it happens to work, since 
->    the "atomic_read()" is not type-safe, and gets a non-atomic 64-bit 
->    read, but that looks really really bogus.
+> You have to consider things like timing attacks as well (for 
+> example, a
+> tmem hypercall might return faster if the uuid already exists).
 > 
->    It _should_ use __atomic64_read(), and the 64-bit versions should use a 
->    different counter name ("counter64"?) or we should use an inline 
->    function for atomic_read(), so that the type safety issue gets fixed.
+> Besides, you can tell whether a uuid exists, by at least a couple of
+> mechanisms (from a quick read of the source, so I might have 
+> overlooked something):
 
-I did this patch a few weeks ago (before the merge window) and sent it
-to Ingo, Thomas & Peter, but it seems to have got lost.
+All of these still require a large number of guesses
+across a 128-bit space of possible uuids, right?
+It should be easy to implement "guess limits" in xen
+that disable tmem use by a guest if it fails too many guesses.
+I'm a bit more worried about:
 
- arch/x86/include/asm/atomic_32.h |   25 +++++++++++++++++-----
- arch/x86/include/asm/atomic_64.h |   42 ++++++++++++++++++++++++++++++-------
- 2 files changed, 53 insertions(+), 14 deletions(-)
+> You also have to consider the case of a domain which was once part of
+> the ocfs cluster, but now is not - it may still know the uuid, but not
+> be otherwise allowed to use the cluster.
 
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index aff9f1f..0c466cb 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -19,7 +19,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -28,7 +31,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)	(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -200,8 +206,15 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- 	return atomic_add_return(-i, v);
- }
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is already a given value
-@@ -306,7 +319,7 @@ atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
- 	unsigned long long old_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
- 
- 	return old_val;
-@@ -354,7 +367,7 @@ atomic64_add_return(unsigned long long delta, atomic64_t *ptr)
- 	unsigned long long old_val, new_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 		new_val = old_val + delta;
- 
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
-diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-index 8c21731..7d5282e 100644
---- a/arch/x86/include/asm/atomic_64.h
-+++ b/arch/x86/include/asm/atomic_64.h
-@@ -18,7 +18,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -27,7 +30,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -192,7 +198,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-  */
--#define atomic64_read(v)		((v)->counter)
-+static inline long atomic64_read(const atomic64_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic64_set - set atomic64 variable
-@@ -201,7 +210,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic64_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic64_set(atomic64_t *v, long i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic64_add - add integer to atomic64 variable
-@@ -355,11 +367,25 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
- #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
- #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
- 
--#define atomic64_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
-+static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic64_xchg(atomic64_t *v, long new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is a given value
--- 
-1.6.0.4
+But on the other hand, the security model here can be that
+if a trusted entity becomes untrusted, you have to change
+the locks.
 
+> Yeah, a shared namespace of accessible objects is an entirely 
+> new thing
+> in the Xen universe.  I would also drop Xen support until 
+> there's a good
+> security story about how they can be used.
+
+While I agree that the security is not bulletproof, I wonder
+if this position might be a bit extreme.  Certainly, the NSA
+should not turn on tmem in a cluster, but that doesn't mean that
+nobody should be allowed to.  I really suspect that there are
+less costly / more rewarding attack vectors at several layers
+in the hardware/software stack of most clusters.
+
+Dan
