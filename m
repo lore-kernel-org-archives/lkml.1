@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZGAVLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZGAVOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZGAVLd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 17:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZGAVL0
+	id S1754220AbZGAVOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 17:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZGAVOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 17:11:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44787 "EHLO mx2.mail.elte.hu"
+	Wed, 1 Jul 2009 17:14:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51523 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753727AbZGAVL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 17:11:26 -0400
-Date: Wed, 1 Jul 2009 23:11:17 +0200
+	id S1752171AbZGAVOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 17:14:22 -0400
+Date: Wed, 1 Jul 2009 23:14:11 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       paulus@samba.org, arnd@arndb.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
-Message-ID: <20090701211117.GC631@elte.hu>
-References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, vapier.adi@gmail.com,
+       lethal@linux-sh.org
+Subject: Re: [RFC v2] kernel/printk.c - handling more than one CON_BOOT
+Message-ID: <20090701211411.GD631@elte.hu>
+References: <200906290703.21539.rgetz@blackfin.uclinux.org> <200906302251.52966.rgetz@blackfin.uclinux.org> <20090701124414.fe188893.akpm@linux-foundation.org> <200907011650.19173.rgetz@blackfin.uclinux.org> <20090701140128.7924f3c4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+In-Reply-To: <20090701140128.7924f3c4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,31 +35,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Wed, 1 Jul 2009, David Howells wrote:
-> > +
-> > +#define ATOMIC64_INIT(i)	{ (i) }
-> > +#define atomic64_read(v)	((v)->counter)
-> > +#define atomic64_set(v, i)	(((v)->counter) = (i))
+> > > I think it would be useful if we had a description of the new 
+> > > design, similar to your description of the "Today" behaviour 
+> > > above.  Perhaps as a comment over register_console()?
+> > 
+> > Can do - do you want it as v3 or on-top of this one?
 > 
-> These seem to be buggy.
-> 
-> At least "atomic64_read()" needs to make sure to actually read it 
-> atomically - otherwise you'll do two 32-bit reads, and that just 
-> gets crap. Imagine if somebody is adding 1 to 0x00000000ffffffff, 
-> and then "atomic64_read()" reads it as two accesses in the wrong 
-> place, and gets either 0, or 0x00000001ffffffff, both of which are 
-> totally incorrect.
-> 
-> The case of 'atomic64_set()' is _slightly_ less clear, because I 
-> think we use it mostly for initializers, so atomicity is often not 
-> strictly required. But at least on x86, we do guarantee that it 
-> sets it atomically too.
-> 
-> Btw, Ingo: I looked at the x86-32 versions to be sure, and noticed 
-> a couple of buglets:
+> I'm easy either way.  Ingo might have applied to one of his trees, 
+> in which case a replacement patch might cause him problems, dunno.
 
-thanks - we'll fix these!
+Not yet - i was waiting for feedback from you and Linus. Would be 
+nice to have a from-scratch v3 that adresses all the review 
+feedback.
 
 	Ingo
