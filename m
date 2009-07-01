@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZGATCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZGATHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbZGATCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 15:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZGATCO
+	id S1755318AbZGATHi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 15:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZGATHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 15:02:14 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:43599 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753596AbZGATCN (ORCPT
+	Wed, 1 Jul 2009 15:07:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752056AbZGATH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 15:02:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references
-         :mime-version:content-type:content-transfer-encoding;
-        b=b8a5qSJk/aYiwL6w13b96Lq6DjZ7X3LFv1DZAHxhzoHiphQMuu7H7Yaua6H28Y0lHu
-         YxiR2wTFr5m+0cvAxzwdLRpZuntu1FupxTDGgCpCa2AOyC8R8FRL7l8rTz7LPW1gKXy9
-         s5HU536JUi7S48rIIsQkTis4LpTgYnBAPliYE=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/2] perfcounter: Handle pipe read failures in perf stat
-Date: Wed,  1 Jul 2009 21:02:10 +0200
-Message-Id: <1246474930-6088-2-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1246474930-6088-1-git-send-email-fweisbec@gmail.com>
-References: <1246474930-6088-1-git-send-email-fweisbec@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Wed, 1 Jul 2009 15:07:29 -0400
+Date: Wed, 1 Jul 2009 12:05:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hui Zhu <teawater@gmail.com>
+Cc: xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, dhowells@redhat.com,
+       Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk, stable@kernel.org
+Subject: Re: [PATCH] Fix the multithread program core thread message error
+Message-Id: <20090701120519.d5b1ed78.akpm@linux-foundation.org>
+In-Reply-To: <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
+References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com>
+	<20090701005437.GA5856@cr0.nay.redhat.com>
+	<daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com>
+	<20090701045102.GA6076@cr0.nay.redhat.com>
+	<daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Building builtin-stat.c reports the following errors:
+On Wed, 1 Jul 2009 14:21:37 +0800
+Hui Zhu <teawater@gmail.com> wrote:
 
-cc1: warnings being treated as errors
-builtin-stat.c: In function ‘run_perf_stat’:
-builtin-stat.c:242: erreur: ignoring return value of ‘read’, declared with attribute warn_unused_result
-builtin-stat.c:255: erreur: ignoring return value of ‘read’, declared with attribute warn_unused_result
-make: *** [builtin-stat.o] Erreur 1
+> Thanks for your help, Amerigo.
+> 
+> Hui
+> 
+> Fix the multithread program core thread message error.
+> This issue just affect arch with neither has CORE_DUMP_USE_REGSET
+> nor ELF_CORE_COPY_TASK_REGS, ARM is one of them.
+> The thread message of core file is generated in
+> elf_dump_thread_status.  The register values is set by
+> elf_core_copy_task_regs in this function.
+> If a arch doesn't define ELF_CORE_COPY_TASK_REGS, The function
+> elf_core_copy_task_regs will do nothing.  Then the core file will
+> not have the register message of thread.
+> So add elf_core_copy_regs to set regiser values if
+> ELF_CORE_COPY_TASK_REGS doesn't define.
+> The following is how to reproduce this issue:
+>
+> ...
+>
+> Without the patch:
+> (gdb) info threads
+>  3 process 909  0x00000000 in ?? ()
+>  2 process 908  0x00000000 in ?? ()
+> * 1 process 907  0x4a6e2238 in raise () from /lib/libc.so.6
+> You can found that the pc of 909 and 908 is 0x00000000.
+> With the patch:
+> (gdb) info threads
+>  3 process 885  0x4a749974 in nanosleep () from /lib/libc.so.6
+>  2 process 884  0x4a749974 in nanosleep () from /lib/libc.so.6
+> * 1 process 883  0x4a6e2238 in raise () from /lib/libc.so.6
+> The pc of 885 and 884 is right.
 
-This patch handles the possible pipe read failures.
+I'm trying to work out if we should backport this fix into earlier
+kernels (2.6.30.x, 2.6.29.x, etc).
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- tools/perf/builtin-stat.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+I'd have though that having gdb produce crap for all the threads would
+be fairly irritating to ARM developers and hence we should backport
+this.  But perhaps it doens't affect many people, dunno.
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 01cc07e..27921a8 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -239,7 +239,8 @@ static int run_perf_stat(int argc __used, const char **argv)
- 		/*
- 		 * Wait until the parent tells us to go.
- 		 */
--		read(go_pipe[0], &buf, 1);
-+		if (read(go_pipe[0], &buf, 1) == -1)
-+			perror("unable to read pipe");
- 
- 		execvp(argv[0], (char **)argv);
- 
-@@ -252,7 +253,8 @@ static int run_perf_stat(int argc __used, const char **argv)
- 	 */
- 	close(child_ready_pipe[1]);
- 	close(go_pipe[0]);
--	read(child_ready_pipe[0], &buf, 1);
-+	if (read(child_ready_pipe[0], &buf, 1) == -1)
-+		perror("unable to read pipe");
- 	close(child_ready_pipe[0]);
- 
- 	for (counter = 0; counter < nr_counters; counter++)
--- 
-1.6.2.3
+What do poeple think?
 
