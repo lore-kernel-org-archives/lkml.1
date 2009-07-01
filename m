@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764260AbZGAAyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764350AbZGAAye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764260AbZGAAyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbZGAAef
+	id S1764350AbZGAAye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761418AbZGAAef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Jun 2009 20:34:35 -0400
-Received: from kroah.org ([198.145.64.141]:60218 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:60225 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761405AbZGAAeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:31 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:20 2009
-Message-Id: <20090701002420.652198255@mini.kroah.org>
+	id S1761409AbZGAAec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:32 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:21 2009
+Message-Id: <20090701002421.050263995@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:16 -0700
+Date: Tue, 30 Jun 2009 17:23:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Jiri Slaby <jirislaby@gmail.com>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 027/108] serial: refactor ASYNC_ flags
+Subject: [patch 028/108] rocket: fix test_bit parameters
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=serial-refactor-async_-flags.patch
+Content-Disposition: inline; filename=rocket-fix-test_bit-parameters.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,29 +32,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 70beaed22cbe12979e55d99b370e147e2e168562 upstream.
+commit a391ad0f09014856bbc4eeea309593eba977b3b0 upstream.
 
-Define ASYNCB_* flags which are bit numbers of the ASYNC_* flags.
-This is useful for {test,set,clear}_bit.
-
-Also convert each ASYNC_% to be (1 << ASYNCB_%) and define masks
-with the macros, not constants.
-
-Tested with:
-#include "PATH_TO_KERNEL/include/linux/serial.h"
-static struct {
-        unsigned int new, old;
-} as[] = {
-        { ASYNC_HUP_NOTIFY, 0x0001 },
-        { ASYNC_FOURPORT, 0x0002 },
-...
-	{ ASYNC_BOOT_ONLYMCA, 0x00400000 },
-        { ASYNC_INTERNAL_FLAGS, 0xFFC00000 }
-};
-...
-        for (a = 0; a < ARRAY_SIZE(as); a++)
-                if (as[a].old != as[a].new)
-                        printf("%.8x != %.8x\n", as[a].old, as[a].new);
+Switch from ASYNC_* to ASYNCB_*, because {test,set}_bit expect
+bit number, not mask.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Alan Cox <alan@linux.intel.com>
@@ -62,134 +43,37 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/serial.h |  116 +++++++++++++++++++++++++++++--------------------
- 1 file changed, 69 insertions(+), 47 deletions(-)
+ drivers/char/rocket.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/include/linux/serial.h
-+++ b/include/linux/serial.h
-@@ -96,54 +96,76 @@ struct serial_uart_config {
+--- a/drivers/char/rocket.c
++++ b/drivers/char/rocket.c
+@@ -934,7 +934,7 @@ static int rp_open(struct tty_struct *tt
+ 	/*
+ 	 * Info->count is now 1; so it's safe to sleep now.
+ 	 */
+-	if (!test_bit(ASYNC_INITIALIZED, &port->flags)) {
++	if (!test_bit(ASYNCB_INITIALIZED, &port->flags)) {
+ 		cp = &info->channel;
+ 		sSetRxTrigger(cp, TRIG_1);
+ 		if (sGetChanStatus(cp) & CD_ACT)
+@@ -958,7 +958,7 @@ static int rp_open(struct tty_struct *tt
+ 		sEnRxFIFO(cp);
+ 		sEnTransmit(cp);
  
- /*
-  * Definitions for async_struct (and serial_struct) flags field
-+ *
-+ * Define ASYNCB_* for convenient use with {test,set,clear}_bit.
-  */
--#define ASYNC_HUP_NOTIFY 0x0001 /* Notify getty on hangups and closes 
--				   on the callout port */
--#define ASYNC_FOURPORT  0x0002	/* Set OU1, OUT2 per AST Fourport settings */
--#define ASYNC_SAK	0x0004	/* Secure Attention Key (Orange book) */
--#define ASYNC_SPLIT_TERMIOS 0x0008 /* Separate termios for dialin/callout */
--
--#define ASYNC_SPD_MASK	0x1030
--#define ASYNC_SPD_HI	0x0010	/* Use 56000 instead of 38400 bps */
--
--#define ASYNC_SPD_VHI	0x0020  /* Use 115200 instead of 38400 bps */
--#define ASYNC_SPD_CUST	0x0030  /* Use user-specified divisor */
--
--#define ASYNC_SKIP_TEST	0x0040 /* Skip UART test during autoconfiguration */
--#define ASYNC_AUTO_IRQ  0x0080 /* Do automatic IRQ during autoconfiguration */
--#define ASYNC_SESSION_LOCKOUT 0x0100 /* Lock out cua opens based on session */
--#define ASYNC_PGRP_LOCKOUT    0x0200 /* Lock out cua opens based on pgrp */
--#define ASYNC_CALLOUT_NOHUP   0x0400 /* Don't do hangups for cua device */
--
--#define ASYNC_HARDPPS_CD	0x0800	/* Call hardpps when CD goes high  */
--
--#define ASYNC_SPD_SHI	0x1000	/* Use 230400 instead of 38400 bps */
--#define ASYNC_SPD_WARP	0x1010	/* Use 460800 instead of 38400 bps */
--
--#define ASYNC_LOW_LATENCY 0x2000 /* Request low latency behaviour */
--
--#define ASYNC_BUGGY_UART  0x4000 /* This is a buggy UART, skip some safety
--				  * checks.  Note: can be dangerous! */
--
--#define ASYNC_AUTOPROBE	 0x8000 /* Port was autoprobed by PCI or PNP code */
--
--#define ASYNC_FLAGS	0x7FFF	/* Possible legal async flags */
--#define ASYNC_USR_MASK	0x3430	/* Legal flags that non-privileged
--				 * users can set or reset */
--
--/* Internal flags used only by kernel/chr_drv/serial.c */
--#define ASYNC_INITIALIZED	0x80000000 /* Serial port was initialized */
--#define ASYNC_NORMAL_ACTIVE	0x20000000 /* Normal device is active */
--#define ASYNC_BOOT_AUTOCONF	0x10000000 /* Autoconfigure port on bootup */
--#define ASYNC_CLOSING		0x08000000 /* Serial port is closing */
--#define ASYNC_CTS_FLOW		0x04000000 /* Do CTS flow control */
--#define ASYNC_CHECK_CD		0x02000000 /* i.e., CLOCAL */
--#define ASYNC_SHARE_IRQ		0x01000000 /* for multifunction cards
--					     --- no longer used */
--#define ASYNC_CONS_FLOW		0x00800000 /* flow control for console  */
--
--#define ASYNC_BOOT_ONLYMCA	0x00400000 /* Probe only if MCA bus */
--#define ASYNC_INTERNAL_FLAGS	0xFFC00000 /* Internal flags */
-+#define ASYNCB_HUP_NOTIFY	 0 /* Notify getty on hangups and closes
-+				    * on the callout port */
-+#define ASYNCB_FOURPORT		 1 /* Set OU1, OUT2 per AST Fourport settings */
-+#define ASYNCB_SAK		 2 /* Secure Attention Key (Orange book) */
-+#define ASYNCB_SPLIT_TERMIOS	 3 /* Separate termios for dialin/callout */
-+#define ASYNCB_SPD_HI		 4 /* Use 56000 instead of 38400 bps */
-+#define ASYNCB_SPD_VHI		 5 /* Use 115200 instead of 38400 bps */
-+#define ASYNCB_SKIP_TEST	 6 /* Skip UART test during autoconfiguration */
-+#define ASYNCB_AUTO_IRQ		 7 /* Do automatic IRQ during
-+				    * autoconfiguration */
-+#define ASYNCB_SESSION_LOCKOUT	 8 /* Lock out cua opens based on session */
-+#define ASYNCB_PGRP_LOCKOUT	 9 /* Lock out cua opens based on pgrp */
-+#define ASYNCB_CALLOUT_NOHUP	10 /* Don't do hangups for cua device */
-+#define ASYNCB_HARDPPS_CD	11 /* Call hardpps when CD goes high  */
-+#define ASYNCB_SPD_SHI		12 /* Use 230400 instead of 38400 bps */
-+#define ASYNCB_LOW_LATENCY	13 /* Request low latency behaviour */
-+#define ASYNCB_BUGGY_UART	14 /* This is a buggy UART, skip some safety
-+				    * checks.  Note: can be dangerous! */
-+#define ASYNCB_AUTOPROBE	15 /* Port was autoprobed by PCI or PNP code */
-+#define ASYNCB_LAST_USER	15
-+
-+/* Internal flags used only by kernel */
-+#define ASYNCB_INITIALIZED	31 /* Serial port was initialized */
-+#define ASYNCB_NORMAL_ACTIVE	29 /* Normal device is active */
-+#define ASYNCB_BOOT_AUTOCONF	28 /* Autoconfigure port on bootup */
-+#define ASYNCB_CLOSING		27 /* Serial port is closing */
-+#define ASYNCB_CTS_FLOW		26 /* Do CTS flow control */
-+#define ASYNCB_CHECK_CD		25 /* i.e., CLOCAL */
-+#define ASYNCB_SHARE_IRQ	24 /* for multifunction cards, no longer used */
-+#define ASYNCB_CONS_FLOW	23 /* flow control for console  */
-+#define ASYNCB_BOOT_ONLYMCA	22 /* Probe only if MCA bus */
-+#define ASYNCB_FIRST_KERNEL	22
-+
-+#define ASYNC_HUP_NOTIFY	(1U << ASYNCB_HUP_NOTIFY)
-+#define ASYNC_FOURPORT		(1U << ASYNCB_FOURPORT)
-+#define ASYNC_SAK		(1U << ASYNCB_SAK)
-+#define ASYNC_SPLIT_TERMIOS	(1U << ASYNCB_SPLIT_TERMIOS)
-+#define ASYNC_SPD_HI		(1U << ASYNCB_SPD_HI)
-+#define ASYNC_SPD_VHI		(1U << ASYNCB_SPD_VHI)
-+#define ASYNC_SKIP_TEST		(1U << ASYNCB_SKIP_TEST)
-+#define ASYNC_AUTO_IRQ		(1U << ASYNCB_AUTO_IRQ)
-+#define ASYNC_SESSION_LOCKOUT	(1U << ASYNCB_SESSION_LOCKOUT)
-+#define ASYNC_PGRP_LOCKOUT	(1U << ASYNCB_PGRP_LOCKOUT)
-+#define ASYNC_CALLOUT_NOHUP	(1U << ASYNCB_CALLOUT_NOHUP)
-+#define ASYNC_HARDPPS_CD	(1U << ASYNCB_HARDPPS_CD)
-+#define ASYNC_SPD_SHI		(1U << ASYNCB_SPD_SHI)
-+#define ASYNC_LOW_LATENCY	(1U << ASYNCB_LOW_LATENCY)
-+#define ASYNC_BUGGY_UART	(1U << ASYNCB_BUGGY_UART)
-+#define ASYNC_AUTOPROBE		(1U << ASYNCB_AUTOPROBE)
-+
-+#define ASYNC_FLAGS		((1U << ASYNCB_LAST_USER) - 1)
-+#define ASYNC_USR_MASK		(ASYNC_SPD_HI|ASYNC_SPD_VHI| \
-+		ASYNC_CALLOUT_NOHUP|ASYNC_SPD_SHI|ASYNC_LOW_LATENCY)
-+#define ASYNC_SPD_CUST		(ASYNC_SPD_HI|ASYNC_SPD_VHI)
-+#define ASYNC_SPD_WARP		(ASYNC_SPD_HI|ASYNC_SPD_SHI)
-+#define ASYNC_SPD_MASK		(ASYNC_SPD_HI|ASYNC_SPD_VHI|ASYNC_SPD_SHI)
-+
-+#define ASYNC_INITIALIZED	(1U << ASYNCB_INITIALIZED)
-+#define ASYNC_NORMAL_ACTIVE	(1U << ASYNCB_NORMAL_ACTIVE)
-+#define ASYNC_BOOT_AUTOCONF	(1U << ASYNCB_BOOT_AUTOCONF)
-+#define ASYNC_CLOSING		(1U << ASYNCB_CLOSING)
-+#define ASYNC_CTS_FLOW		(1U << ASYNCB_CTS_FLOW)
-+#define ASYNC_CHECK_CD		(1U << ASYNCB_CHECK_CD)
-+#define ASYNC_SHARE_IRQ		(1U << ASYNCB_SHARE_IRQ)
-+#define ASYNC_CONS_FLOW		(1U << ASYNCB_CONS_FLOW)
-+#define ASYNC_BOOT_ONLYMCA	(1U << ASYNCB_BOOT_ONLYMCA)
-+#define ASYNC_INTERNAL_FLAGS	(~((1U << ASYNCB_FIRST_KERNEL) - 1))
+-		set_bit(ASYNC_INITIALIZED, &info->port.flags);
++		set_bit(ASYNCB_INITIALIZED, &info->port.flags);
  
- /*
-  * Multiport serial configuration structure --- external structure
+ 		/*
+ 		 * Set up the tty->alt_speed kludge
+@@ -1641,7 +1641,7 @@ static int rp_write(struct tty_struct *t
+ 	/*  Write remaining data into the port's xmit_buf */
+ 	while (1) {
+ 		/* Hung up ? */
+-		if (!test_bit(ASYNC_NORMAL_ACTIVE, &info->port.flags))
++		if (!test_bit(ASYNCB_NORMAL_ACTIVE, &info->port.flags))
+ 			goto end;
+ 		c = min(count, XMIT_BUF_SIZE - info->xmit_cnt - 1);
+ 		c = min(c, XMIT_BUF_SIZE - info->xmit_head);
 
 
