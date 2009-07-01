@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764672AbZGAA4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764753AbZGAA46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764672AbZGAA4o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761288AbZGAAem
+	id S1764753AbZGAA46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761427AbZGAAem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 30 Jun 2009 20:34:42 -0400
-Received: from kroah.org ([198.145.64.141]:60294 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:60299 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761427AbZGAAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759924AbZGAAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:34:40 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:24 2009
-Message-Id: <20090701002424.245854224@mini.kroah.org>
+Message-Id: <20090701002424.559577537@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:25 -0700
+Date: Tue, 30 Jun 2009 17:23:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hans Verkuil <hverkuil@xs4all.nl>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Michael Krufky <mkrufky@linuxtv.org>
-Subject: [patch 036/108] V4L: i2c modules must be linked before the v4l2 drivers
+       John Stoffel <john@stoffel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 037/108] sym53c8xx: ratelimit parity errors
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-i2c-modules-must-be-linked-before-the-v4l2-drivers.patch
+Content-Disposition: inline; filename=sym53c8xx-ratelimit-parity-errors.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,197 +31,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hans Verkuil <hverkuil@xs4all.nl>
+From: John Stoffel <john@stoffel.org>
 
-(backported from commit df59f0b3df3cc35fa03ea395f5106d1625e3726a)
+commit 75be63bcf73ebdd1fdc1d49f6bf2d1326a1ba7de upstream.
 
-Please note that this patch attached has been BACKPORTED to fit kernel
-2.6.30.y
+This makes a huge difference when you have a serial console on bootup to limit
+these messages to a sane number.
 
-Since i2c autoprobing is no longer supported by v4l2 we need to make sure
-that the i2c modules are linked before the v4l2 modules. The v4l2 modules
-now rely on the presence of the i2c modules, so these must have initialized
-themselves before the v4l2 modules.
-
-The exception is the ir-kbd-i2c module, which is the only one still using
-autoprobing. This one should be loaded at the end of the v4l2 module. Loading
-it earlier actually causes problems with tveeprom. Once ir-kbd-i2c is no
-longer autoprobing, then it has to move up as well.
-
-This is only an issue when everything is compiled into the kernel.
-
-Thanks to Marcus Swoboda for reporting this and Udo Steinberg for testing
-this patch.
-
-Tested-by: Udo A. Steinberg <udo@hypervisor.org>
-Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Signed-off-by: John Stoffel <john@stoffel.org>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/Makefile         |   77 ++++++++++++++++++-----------------
- drivers/media/video/saa7134/Makefile |    3 -
- 2 files changed, 42 insertions(+), 38 deletions(-)
+ drivers/scsi/sym53c8xx_2/sym_hipd.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/media/video/Makefile
-+++ b/drivers/media/video/Makefile
-@@ -12,6 +12,8 @@ omap2cam-objs	:=	omap24xxcam.o omap24xxc
+--- a/drivers/scsi/sym53c8xx_2/sym_hipd.c
++++ b/drivers/scsi/sym53c8xx_2/sym_hipd.c
+@@ -2312,8 +2312,9 @@ static void sym_int_par (struct sym_hcb 
+ 	int phase	= cmd & 7;
+ 	struct sym_ccb *cp	= sym_ccb_from_dsa(np, dsa);
  
- videodev-objs	:=	v4l2-dev.o v4l2-ioctl.o v4l2-device.o
+-	printf("%s: SCSI parity error detected: SCR1=%d DBC=%x SBCL=%x\n",
+-		sym_name(np), hsts, dbc, sbcl);
++	if (printk_ratelimit())
++		printf("%s: SCSI parity error detected: SCR1=%d DBC=%x SBCL=%x\n",
++			sym_name(np), hsts, dbc, sbcl);
  
-+# V4L2 core modules
-+
- obj-$(CONFIG_VIDEO_DEV) += videodev.o v4l2-int-device.o
- ifeq ($(CONFIG_COMPAT),y)
-   obj-$(CONFIG_VIDEO_DEV) += v4l2-compat-ioctl32.o
-@@ -23,21 +25,15 @@ ifeq ($(CONFIG_VIDEO_V4L1_COMPAT),y)
-   obj-$(CONFIG_VIDEO_DEV) += v4l1-compat.o
- endif
- 
--obj-$(CONFIG_VIDEO_TUNER) += tuner.o
-+# All i2c modules must come first:
- 
--obj-$(CONFIG_VIDEO_BT848) += bt8xx/
--obj-$(CONFIG_VIDEO_IR_I2C)  += ir-kbd-i2c.o
-+obj-$(CONFIG_VIDEO_TUNER) += tuner.o
- obj-$(CONFIG_VIDEO_TVAUDIO) += tvaudio.o
- obj-$(CONFIG_VIDEO_TDA7432) += tda7432.o
- obj-$(CONFIG_VIDEO_TDA9875) += tda9875.o
--
- obj-$(CONFIG_VIDEO_SAA6588) += saa6588.o
- obj-$(CONFIG_VIDEO_SAA5246A) += saa5246a.o
- obj-$(CONFIG_VIDEO_SAA5249) += saa5249.o
--obj-$(CONFIG_VIDEO_CQCAM) += c-qcam.o
--obj-$(CONFIG_VIDEO_BWQCAM) += bw-qcam.o
--obj-$(CONFIG_VIDEO_W9966) += w9966.o
--
- obj-$(CONFIG_VIDEO_TDA9840) += tda9840.o
- obj-$(CONFIG_VIDEO_TEA6415C) += tea6415c.o
- obj-$(CONFIG_VIDEO_TEA6420) += tea6420.o
-@@ -54,11 +50,40 @@ obj-$(CONFIG_VIDEO_BT819) += bt819.o
- obj-$(CONFIG_VIDEO_BT856) += bt856.o
- obj-$(CONFIG_VIDEO_BT866) += bt866.o
- obj-$(CONFIG_VIDEO_KS0127) += ks0127.o
-+obj-$(CONFIG_VIDEO_VINO) += indycam.o
-+obj-$(CONFIG_VIDEO_TVP5150) += tvp5150.o
-+obj-$(CONFIG_VIDEO_TVP514X) += tvp514x.o
-+obj-$(CONFIG_VIDEO_MSP3400) += msp3400.o
-+obj-$(CONFIG_VIDEO_CS5345) += cs5345.o
-+obj-$(CONFIG_VIDEO_CS53L32A) += cs53l32a.o
-+obj-$(CONFIG_VIDEO_M52790) += m52790.o
-+obj-$(CONFIG_VIDEO_TLV320AIC23B) += tlv320aic23b.o
-+obj-$(CONFIG_VIDEO_WM8775) += wm8775.o
-+obj-$(CONFIG_VIDEO_WM8739) += wm8739.o
-+obj-$(CONFIG_VIDEO_VP27SMPX) += vp27smpx.o
-+obj-$(CONFIG_VIDEO_CX25840) += cx25840/
-+obj-$(CONFIG_VIDEO_UPD64031A) += upd64031a.o
-+obj-$(CONFIG_VIDEO_UPD64083) += upd64083.o
-+obj-$(CONFIG_VIDEO_OV7670) 	+= ov7670.o
-+obj-$(CONFIG_VIDEO_TCM825X) += tcm825x.o
-+obj-$(CONFIG_VIDEO_TVEEPROM) += tveeprom.o
- 
--obj-$(CONFIG_VIDEO_ZORAN) += zoran/
-+obj-$(CONFIG_SOC_CAMERA_MT9M001)	+= mt9m001.o
-+obj-$(CONFIG_SOC_CAMERA_MT9M111)	+= mt9m111.o
-+obj-$(CONFIG_SOC_CAMERA_MT9T031)	+= mt9t031.o
-+obj-$(CONFIG_SOC_CAMERA_MT9V022)	+= mt9v022.o
-+obj-$(CONFIG_SOC_CAMERA_OV772X)		+= ov772x.o
-+obj-$(CONFIG_SOC_CAMERA_TW9910)		+= tw9910.o
- 
-+# And now the v4l2 drivers:
-+
-+obj-$(CONFIG_VIDEO_BT848) += bt8xx/
-+obj-$(CONFIG_VIDEO_ZORAN) += zoran/
-+obj-$(CONFIG_VIDEO_CQCAM) += c-qcam.o
-+obj-$(CONFIG_VIDEO_BWQCAM) += bw-qcam.o
-+obj-$(CONFIG_VIDEO_W9966) += w9966.o
- obj-$(CONFIG_VIDEO_PMS) += pms.o
--obj-$(CONFIG_VIDEO_VINO) += vino.o indycam.o
-+obj-$(CONFIG_VIDEO_VINO) += vino.o
- obj-$(CONFIG_VIDEO_STRADIS) += stradis.o
- obj-$(CONFIG_VIDEO_CPIA) += cpia.o
- obj-$(CONFIG_VIDEO_CPIA_PP) += cpia_pp.o
-@@ -69,17 +94,7 @@ obj-$(CONFIG_VIDEO_CX88) += cx88/
- obj-$(CONFIG_VIDEO_EM28XX) += em28xx/
- obj-$(CONFIG_VIDEO_CX231XX) += cx231xx/
- obj-$(CONFIG_VIDEO_USBVISION) += usbvision/
--obj-$(CONFIG_VIDEO_TVP5150) += tvp5150.o
--obj-$(CONFIG_VIDEO_TVP514X) += tvp514x.o
- obj-$(CONFIG_VIDEO_PVRUSB2) += pvrusb2/
--obj-$(CONFIG_VIDEO_MSP3400) += msp3400.o
--obj-$(CONFIG_VIDEO_CS5345) += cs5345.o
--obj-$(CONFIG_VIDEO_CS53L32A) += cs53l32a.o
--obj-$(CONFIG_VIDEO_M52790) += m52790.o
--obj-$(CONFIG_VIDEO_TLV320AIC23B) += tlv320aic23b.o
--obj-$(CONFIG_VIDEO_WM8775) += wm8775.o
--obj-$(CONFIG_VIDEO_WM8739) += wm8739.o
--obj-$(CONFIG_VIDEO_VP27SMPX) += vp27smpx.o
- obj-$(CONFIG_VIDEO_OVCAMCHIP) += ovcamchip/
- obj-$(CONFIG_VIDEO_CPIA2) += cpia2/
- obj-$(CONFIG_VIDEO_MXB) += mxb.o
-@@ -92,19 +107,12 @@ obj-$(CONFIG_VIDEOBUF_DMA_CONTIG) += vid
- obj-$(CONFIG_VIDEOBUF_VMALLOC) += videobuf-vmalloc.o
- obj-$(CONFIG_VIDEOBUF_DVB) += videobuf-dvb.o
- obj-$(CONFIG_VIDEO_BTCX)  += btcx-risc.o
--obj-$(CONFIG_VIDEO_TVEEPROM) += tveeprom.o
- 
- obj-$(CONFIG_VIDEO_M32R_AR_M64278) += arv.o
- 
--obj-$(CONFIG_VIDEO_CX25840) += cx25840/
--obj-$(CONFIG_VIDEO_UPD64031A) += upd64031a.o
--obj-$(CONFIG_VIDEO_UPD64083) += upd64083.o
- obj-$(CONFIG_VIDEO_CX2341X) += cx2341x.o
- 
- obj-$(CONFIG_VIDEO_CAFE_CCIC) += cafe_ccic.o
--obj-$(CONFIG_VIDEO_OV7670) 	+= ov7670.o
--
--obj-$(CONFIG_VIDEO_TCM825X) += tcm825x.o
- 
- obj-$(CONFIG_USB_DABUSB)        += dabusb.o
- obj-$(CONFIG_USB_OV511)         += ov511.o
-@@ -134,24 +142,21 @@ obj-$(CONFIG_VIDEO_CX18) += cx18/
- obj-$(CONFIG_VIDEO_VIVI) += vivi.o
- obj-$(CONFIG_VIDEO_CX23885) += cx23885/
- 
-+obj-$(CONFIG_VIDEO_OMAP2)		+= omap2cam.o
-+obj-$(CONFIG_SOC_CAMERA)		+= soc_camera.o
-+obj-$(CONFIG_SOC_CAMERA_PLATFORM)	+= soc_camera_platform.o
-+# soc-camera host drivers have to be linked after camera drivers
- obj-$(CONFIG_VIDEO_MX1)			+= mx1_camera.o
- obj-$(CONFIG_VIDEO_MX3)			+= mx3_camera.o
- obj-$(CONFIG_VIDEO_PXA27x)		+= pxa_camera.o
- obj-$(CONFIG_VIDEO_SH_MOBILE_CEU)	+= sh_mobile_ceu_camera.o
--obj-$(CONFIG_VIDEO_OMAP2)		+= omap2cam.o
--obj-$(CONFIG_SOC_CAMERA)		+= soc_camera.o
--obj-$(CONFIG_SOC_CAMERA_MT9M001)	+= mt9m001.o
--obj-$(CONFIG_SOC_CAMERA_MT9M111)	+= mt9m111.o
--obj-$(CONFIG_SOC_CAMERA_MT9T031)	+= mt9t031.o
--obj-$(CONFIG_SOC_CAMERA_MT9V022)	+= mt9v022.o
--obj-$(CONFIG_SOC_CAMERA_OV772X)		+= ov772x.o
--obj-$(CONFIG_SOC_CAMERA_PLATFORM)	+= soc_camera_platform.o
--obj-$(CONFIG_SOC_CAMERA_TW9910)		+= tw9910.o
- 
- obj-$(CONFIG_VIDEO_AU0828) += au0828/
- 
- obj-$(CONFIG_USB_VIDEO_CLASS)	+= uvc/
- 
-+obj-$(CONFIG_VIDEO_IR_I2C)  += ir-kbd-i2c.o
-+
- EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core
- EXTRA_CFLAGS += -Idrivers/media/dvb/frontends
- EXTRA_CFLAGS += -Idrivers/media/common/tuners
---- a/drivers/media/video/saa7134/Makefile
-+++ b/drivers/media/video/saa7134/Makefile
-@@ -3,8 +3,7 @@ saa7134-objs :=	saa7134-cards.o saa7134-
- 		saa7134-ts.o saa7134-tvaudio.o saa7134-vbi.o    \
- 		saa7134-video.o saa7134-input.o
- 
--obj-$(CONFIG_VIDEO_SAA7134) +=  saa7134.o saa7134-empress.o \
--				saa6752hs.o
-+obj-$(CONFIG_VIDEO_SAA7134) +=  saa6752hs.o saa7134.o saa7134-empress.o
- 
- obj-$(CONFIG_VIDEO_SAA7134_ALSA) += saa7134-alsa.o
- 
+ 	/*
+ 	 *  Check that the chip is connected to the SCSI BUS.
 
 
