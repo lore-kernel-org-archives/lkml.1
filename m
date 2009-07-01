@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZGAJZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbZGAJZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbZGAJZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZGAJZN
+	id S1755132AbZGAJZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZGAJZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:25:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51826 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbZGAJZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:25:12 -0400
-Message-ID: <4A4B2B5E.3080309@cn.fujitsu.com>
-Date: Wed, 01 Jul 2009 17:24:46 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
- elevaotor layer
-References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 05:25:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40960 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbZGAJZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:25:40 -0400
+From: Michal Marek <mmarek@suse.cz>
+To: sam@ravnborg.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kbuild: fix generating of *.symtypes files
+Date: Wed,  1 Jul 2009 11:25:30 +0200
+Message-Id: <1246440330-21290-1-git-send-email-mmarek@suse.cz>
+X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> + * If ioscheduler has functionality of keeping track of close cooperator, check
-> + * with it if it has got a closely co-operating queue.
-> + */
-> +static inline struct io_queue *elv_close_cooperator(struct request_queue *q,
-> +					struct io_queue *ioq, int probe)
-> +{
-> +	struct elevator_queue *e = q->elevator;
-> +	struct io_queue *new_ioq = NULL;
-> +
-> +	/*
-> +	 * Currently this feature is supported only for flat hierarchy or
-> +	 * root group queues so that default cfq behavior is not changed.
-> +	 */
-> +	if (!is_root_group_ioq(q, ioq))
-> +		return NULL;
-> +
-> +	if (q->elevator->ops->elevator_close_cooperator_fn)
-> +		new_ioq = e->ops->elevator_close_cooperator_fn(q,
-> +						ioq->sched_queue, probe);
-> +
-> +	/* Only select co-operating queue if it belongs to root group */
-> +	if (new_ioq && !is_root_group_ioq(q, new_ioq))
-> +		return NULL;
-> +
-> +	return new_ioq;
-> +}
+Commit 37a8d9f ("kbuild: simplify use of genksyms") broke generating of
+*.symtypes files during build (with KBUILD_SYMTYPES set). This patch
+fixes it.
 
-  Hi Vivek,
+Signed-off-by: Michal Marek <mmarek@suse.cz>
+---
+ scripts/Makefile.build |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-  Currently, whether we can let this feature be supported if current queue 
-  and found queue are in the same group? I guess this change won't break 
-  the default cfq behavior. Am i missing something?
-
+diff --git a/scripts/Makefile.build b/scripts/Makefile.build
+index 5c4b7a4..fb749dd 100644
+--- a/scripts/Makefile.build
++++ b/scripts/Makefile.build
+@@ -156,9 +156,9 @@ $(obj)/%.i: $(src)/%.c FORCE
+ 
+ cmd_gensymtypes =                                                           \
+     $(CPP) -D__GENKSYMS__ $(c_flags) $< |                                   \
+-    $(GENKSYMS) -T $@ -a $(ARCH)                                            \
++    $(GENKSYMS) $(if $(strip $(1)), -T $(@:.o=.symtypes)) -a $(ARCH)        \
+      $(if $(KBUILD_PRESERVE),-p)                                            \
+-     $(if $(1),-r $(firstword $(wildcard $(@:.symtypes=.symref) /dev/null)))
++     -r $(firstword $(wildcard $(basename $@).symref /dev/null))
+ 
+ quiet_cmd_cc_symtypes_c = SYM $(quiet_modtag) $@
+ cmd_cc_symtypes_c =                                                         \
 -- 
-Regards
-Gui Jianfeng
+1.6.3.2
 
