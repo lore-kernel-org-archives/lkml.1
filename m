@@ -1,34 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZGAXre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZGAXs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZGAXre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 19:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZGAXr0
+	id S1753249AbZGAXs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 19:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZGAXsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 19:47:26 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:49642 "EHLO h5.dl5rb.org.uk"
+	Wed, 1 Jul 2009 19:48:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46233 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbZGAXr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 19:47:26 -0400
-Date: Thu, 2 Jul 2009 00:47:18 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Yong Zhang <yong.zhang@windriver.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
-Subject: Re: [PATCH] MIPS: o32 application running on 64bit kernel core dump
-Message-ID: <20090701234718.GA3933@linux-mips.org>
-References: <16bd35f2910f585740f4764fa1e80bf31c80d576.1242178813.git.yong.zhang@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <16bd35f2910f585740f4764fa1e80bf31c80d576.1242178813.git.yong.zhang@windriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752701AbZGAXsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 19:48:50 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+References: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: dhowells@redhat.com, mingo@elte.hu, akpm@linux-foundation.org,
+       paulus@samba.org, arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
+Date: Thu, 02 Jul 2009 00:48:38 +0100
+Message-ID: <9268.1246492118@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 09:35:39AM +0800, Yong Zhang wrote:
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Patch applied with the one issue in the macro I pointed out earlier fixed.
+> > +#define atomic64_read(v)	((v)->counter)
+> > +#define atomic64_set(v, i)	(((v)->counter) = (i))
 
-Thanks,
+This is now:
 
-  Ralf
+	static inline long long atomic64_read(atomic64_t *v)
+	{
+		long long counter;
+
+		asm("ldd%I1 %M1,%0"
+		    : "=e"(counter)
+		    : "m"(v->counter));
+		return counter;
+	}
+
+	static inline void atomic64_set(atomic64_t *v, long long i)
+	{
+		asm volatile("std%I0 %1,%M0"
+			     : "=m"(v->counter)
+			     : "e"(i));
+	}
+
+which causes the CPU to do 64-bit loads and stores to register pairs.
+
+David
