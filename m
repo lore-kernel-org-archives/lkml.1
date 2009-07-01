@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762144AbZGAA75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761431AbZGABAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762144AbZGAA75 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759530AbZGAAey
+	id S1761431AbZGABAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761485AbZGAAez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:54 -0400
-Received: from kroah.org ([198.145.64.141]:60389 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:55 -0400
+Received: from kroah.org ([198.145.64.141]:60383 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761494AbZGAAex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:34:53 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:29 2009
-Message-Id: <20090701002429.036408184@mini.kroah.org>
+	id S1761487AbZGAAew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:34:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:28 2009
+Message-Id: <20090701002428.620627552@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:39 -0700
+Date: Tue, 30 Jun 2009 17:23:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 050/108] ALSA: ca0106 - Add missing registrations of vmaster controls
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 049/108] x86: handle initrd that extends into unusable memory
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-ca0106-add-missing-registrations-of-vmaster-controls.patch
+Content-Disposition: inline; filename=x86-handle-initrd-that-extends-into-unusable-memory.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,42 +30,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit 601e1cc5df940b59e71c947726640811897d30df upstream.
+commit 8c5dd8f43367f4f266dd616f11658005bc2d20ef upstream.
 
-Although the vmaster controls are created, they aren't registered thus
-they don't appear in the real world.  Added the missing snd_ctl_add()
-calls.
+On a system where system memory (according e820) is not covered by
+mtrr, mtrr_trim_memory converts a portion of memory to reserved, but
+bootloader has already put the initrd in that range.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Thus, we need to have 64bit to use relocate_initrd too.
+
+[ Impact: fix using initrd when mtrr_trim_memory happen ]
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/ca0106/ca0106_mixer.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/x86/kernel/setup.c |   15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
---- a/sound/pci/ca0106/ca0106_mixer.c
-+++ b/sound/pci/ca0106/ca0106_mixer.c
-@@ -841,6 +841,9 @@ int __devinit snd_ca0106_mixer(struct sn
- 					      snd_ca0106_master_db_scale);
- 	if (!vmaster)
- 		return -ENOMEM;
-+	err = snd_ctl_add(card, vmaster);
-+	if (err < 0)
-+		return err;
- 	add_slaves(card, vmaster, slave_vols);
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -293,15 +293,13 @@ static void __init reserve_brk(void)
  
- 	if (emu->details->spi_dac == 1) {
-@@ -848,6 +851,9 @@ int __devinit snd_ca0106_mixer(struct sn
- 						      NULL);
- 		if (!vmaster)
- 			return -ENOMEM;
-+		err = snd_ctl_add(card, vmaster);
-+		if (err < 0)
-+			return err;
- 		add_slaves(card, vmaster, slave_sws);
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 
+-#ifdef CONFIG_X86_32
+-
+ #define MAX_MAP_CHUNK	(NR_FIX_BTMAPS << PAGE_SHIFT)
+ static void __init relocate_initrd(void)
+ {
+ 
+ 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+ 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+-	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
+ 	u64 ramdisk_here;
+ 	unsigned long slop, clen, mapaddr;
+ 	char *p, *q;
+@@ -357,14 +355,13 @@ static void __init relocate_initrd(void)
+ 		ramdisk_image, ramdisk_image + ramdisk_size - 1,
+ 		ramdisk_here, ramdisk_here + ramdisk_size - 1);
+ }
+-#endif
+ 
+ static void __init reserve_initrd(void)
+ {
+ 	u64 ramdisk_image = boot_params.hdr.ramdisk_image;
+ 	u64 ramdisk_size  = boot_params.hdr.ramdisk_size;
+ 	u64 ramdisk_end   = ramdisk_image + ramdisk_size;
+-	u64 end_of_lowmem = max_low_pfn << PAGE_SHIFT;
++	u64 end_of_lowmem = max_low_pfn_mapped << PAGE_SHIFT;
+ 
+ 	if (!boot_params.hdr.type_of_loader ||
+ 	    !ramdisk_image || !ramdisk_size)
+@@ -394,14 +391,8 @@ static void __init reserve_initrd(void)
+ 		return;
  	}
-         return 0;
+ 
+-#ifdef CONFIG_X86_32
+ 	relocate_initrd();
+-#else
+-	printk(KERN_ERR "initrd extends beyond end of memory "
+-	       "(0x%08llx > 0x%08llx)\ndisabling initrd\n",
+-	       ramdisk_end, end_of_lowmem);
+-	initrd_start = 0;
+-#endif
++
+ 	free_early(ramdisk_image, ramdisk_end);
+ }
+ #else
 
 
