@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbZGAAmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761514AbZGAAmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762817AbZGAAmj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760943AbZGAAcv
+	id S1761514AbZGAAmJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:42:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760926AbZGAAct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:32:51 -0400
-Received: from kroah.org ([198.145.64.141]:59808 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:32:49 -0400
+Received: from kroah.org ([198.145.64.141]:59801 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760948AbZGAAcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:32:50 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:51 2009
-Message-Id: <20090701001551.101806792@mini.kroah.org>
+	id S1760952AbZGAAcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:32:48 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:15:50 2009
+Message-Id: <20090701001550.709903218@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:14:13 -0700
+Date: Tue, 30 Jun 2009 17:14:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Scott James Remnant <scott@canonical.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Philippe De Muyter <phdm@macqel.be>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [patch 17/35] floppy: provide a PNP device table in the module.
+       Jean Delvare <jdelvare@suse.de>,
+       Steve Conklin <steve.conklin@canonical.com>,
+       Leann Ogasawara <leann.ogasawara@canonical.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 15/35] x86: Add quirk for reboot stalls on a Dell Optiplex 360
 References: <20090701001356.007288418@mini.kroah.org>
-Content-Disposition: inline; filename=floppy-provide-a-pnp-device-table-in-the-module.patch
+Content-Disposition: inline; filename=x86-add-quirk-for-reboot-stalls-on-a-dell-optiplex-360.patch
 In-Reply-To: <20090701002825.GA6518@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,53 +33,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Scott James Remnant <scott@canonical.com>
+From: Jean Delvare <jdelvare@suse.de>
 
-commit 83f9ef463bcb4ba7b4fee1d6212fac7d277010d3 upstream.
+commit 4a4aca641bc4598e77b866804f47c651ec4a764d upstream.
 
-The missing device table means that the floppy module is not auto-loaded,
-even when the appropriate PNP device (0700) is found.
+The Dell Optiplex 360 hangs on reboot, just like the Optiplex 330, so
+the same quirk is needed.
 
-We don't actually use the table in the module, since the device doesn't
-have a struct pnp_driver, but it's sufficient to cause an alias in the
-module that udev/modprobe will use.
-
-Signed-off-by: Scott James Remnant <scott@canonical.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Philippe De Muyter <phdm@macqel.be>
-Acked-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jean Delvare <jdelvare@suse.de>
+Cc: Steve Conklin <steve.conklin@canonical.com>
+Cc: Leann Ogasawara <leann.ogasawara@canonical.com>
+LKML-Reference: <200906051202.38311.jdelvare@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/floppy.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/x86/kernel/reboot.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/drivers/block/floppy.c
-+++ b/drivers/block/floppy.c
-@@ -177,6 +177,7 @@ static int print_unex = 1;
- #include <linux/interrupt.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/mod_devicetable.h>
- #include <linux/buffer_head.h>	/* for invalidate_buffers() */
- #include <linux/mutex.h>
- 
-@@ -4598,6 +4599,13 @@ MODULE_AUTHOR("Alain L. Knaff");
- MODULE_SUPPORTED_DEVICE("fd");
- MODULE_LICENSE("GPL");
- 
-+/* This doesn't actually get used other than for module information */
-+static const struct pnp_device_id floppy_pnpids[] = {
-+	{ "PNP0700", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(pnp, floppy_pnpids);
-+
- #else
- 
- __setup("floppy=", floppy_setup);
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -193,6 +193,15 @@ static struct dmi_system_id __initdata r
+ 			DMI_MATCH(DMI_BOARD_NAME, "0KP561"),
+ 		},
+ 	},
++	{   /* Handle problems with rebooting on Dell Optiplex 360 with 0T656F */
++		.callback = set_bios_reboot,
++		.ident = "Dell OptiPlex 360",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 360"),
++			DMI_MATCH(DMI_BOARD_NAME, "0T656F"),
++		},
++	},
+ 	{	/* Handle problems with rebooting on Dell 2400's */
+ 		.callback = set_bios_reboot,
+ 		.ident = "Dell PowerEdge 2400",
 
 
