@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZGAItp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZGAIu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbZGAItp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 04:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZGAIt0
+	id S1754804AbZGAIu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 04:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZGAIuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 04:49:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42169 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754617AbZGAItY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 04:49:24 -0400
-Date: Wed, 1 Jul 2009 08:47:21 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, ananth@in.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, jkenisto@us.ibm.com, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, ananth@in.ibm.com,
-       linux-kernel@vger.kernel.org, jkenisto@us.ibm.com, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <20090630210809.17851.28781.stgit@localhost.localdomain>
-References: <20090630210809.17851.28781.stgit@localhost.localdomain>
-Subject: [tip:tracing/core] kprobes: No need to unlock kprobe_insn_mutex
-Message-ID: <tip-4a2bb6fcc80e6330ca2f2393e98605052cc7780b@git.kernel.org>
-Git-Commit-ID: 4a2bb6fcc80e6330ca2f2393e98605052cc7780b
-X-Mailer: tip-git-log-daemon
+	Wed, 1 Jul 2009 04:50:18 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59827 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752462AbZGAIuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 04:50:17 -0400
+Message-ID: <4A4B2351.5010300@cn.fujitsu.com>
+Date: Wed, 01 Jul 2009 16:50:25 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: fix trace_print_seq()
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 08:47:21 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4a2bb6fcc80e6330ca2f2393e98605052cc7780b
-Gitweb:     http://git.kernel.org/tip/4a2bb6fcc80e6330ca2f2393e98605052cc7780b
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Tue, 30 Jun 2009 17:08:09 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 1 Jul 2009 10:43:07 +0200
+We will lose something if trace_seq->buffer[0] is 0, because the copy length
+is calculated by strlen() in seq_puts(), so using seq_write() instead of 
+seq_puts().
 
-kprobes: No need to unlock kprobe_insn_mutex
+There have a example:
+after reboot:
+# echo kmemtrace > current_tracer
+# echo 0 > options/kmem_minimalistic
+# cat trace
+# tracer: kmemtrace
+#
+#
+Nothing is exported, because the first byte of trace_seq->buffer[ ]
+is KMEMTRACE_USER_ALLOC.
+( the value of KMEMTRACE_USER_ALLOC is zero, seeing
+  kmemtrace_print_alloc_user() in kernel/trace/kmemtrace.c)
 
-Remove needless kprobe_insn_mutex unlocking during safety check
-in garbage collection, because if someone releases a dirty slot
-during safety check (which ensures other cpus doesn't execute
-all dirty slots), the safety check must be fail. So, we need to
-hold the mutex while checking safety.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-LKML-Reference: <20090630210809.17851.28781.stgit@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 ---
- kernel/kprobes.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+ kernel/trace/trace_output.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index c0fa54b..16b5739 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -237,13 +237,9 @@ static int __kprobes collect_garbage_slots(void)
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 7938f3a..e0c2545 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -27,8 +27,7 @@ void trace_print_seq(struct seq_file *m, struct trace_seq *s)
  {
- 	struct kprobe_insn_page *kip;
- 	struct hlist_node *pos, *next;
--	int safety;
+ 	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
  
- 	/* Ensure no-one is preepmted on the garbages */
--	mutex_unlock(&kprobe_insn_mutex);
--	safety = check_safety();
--	mutex_lock(&kprobe_insn_mutex);
--	if (safety != 0)
-+	if (check_safety())
- 		return -EAGAIN;
+-	s->buffer[len] = 0;
+-	seq_puts(m, s->buffer);
++	seq_write(m, s->buffer, len);
  
- 	hlist_for_each_entry_safe(kip, pos, next, &kprobe_insn_pages, hlist) {
+ 	trace_seq_init(s);
+ }
+-- 
+1.6.1.2
+
