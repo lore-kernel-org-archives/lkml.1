@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZGALYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZGALZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbZGALYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751013AbZGALYq
+	id S1755646AbZGALZN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZGALYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:24:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44821 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbZGALYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:24:46 -0400
-Date: Wed, 1 Jul 2009 13:24:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
-	interrupt support for AMD
-Message-ID: <20090701112406.GE15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <1246441094.3403.10.camel@hpdv5.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246441094.3403.10.camel@hpdv5.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 1 Jul 2009 07:24:55 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52246 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755562AbZGALYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:24:53 -0400
+Date: Wed, 1 Jul 2009 12:25:58 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Pavel Machek <pavel@ucw.cz>, tridge@samba.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+In-Reply-To: <200907012019.53932.rusty@rustcorp.com.au>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'd actually prefer to see the code ripped out and no config option available; 
+> it would the clearest avoidance case possible.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+What about the free world - why should we suffer because Americans have
+a broken patent system ? That just leads to a Farenheit 451 model where
+the kernel sources end up containing no code, text or image that can
+offend, harm or be found wanting in any possible legal jurisdiction.
 
-> 
-> $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
-> 
->  Performance counter stats for 'ls -lR /usr/include/':
-> 
->             377  interrupts
->        53429936  int-mask-cycles
->            1119  int-pending-mask-cycles
-> 
->     0.371457539  seconds time elapsed
+If we put in VFAT american fixes presumably we need to put in monitoring
+features required by dubious governments ?
 
-Agreed, this is another useful generalization - and the 'cycles 
-pending' metrics are not retrievable via any software means.
+If you want to rip stuff out of your copy feel free. I am quite sure many
+US based vendors will do that (because they do so already with things
+like video codecs rather than just disabling the build option).
 
-We could and should probably add a software counter for hardirqs as 
-wel. That would allow the vector/irqnr information to be passed in, 
-and it would allow architectures without irq metrics in the PMU to 
-have this counter too.
+Also please stop calling it VFAT. With the changes made it isn't VFAT and
+it's misleading to an end user to advertise it as vfat and users
+shouldn't accidentally be able to specify -o vfat and get non-vfat. Thats
+asking for incompatibility, data loss and unpleasant unwarned of suprises.
 
-This way we could profile based on a specific interrupt source only 
-- say based on the networking card.
+Its "linfat" or something which when you've fixed the bugs Pavel has
+pointed out might be semi-compatible with other products (most *FAT using
+products don't use Microsofts implementation). Testing it versus Windows
+and saying it works is not really adequate. Thats what ACPI and BIOS
+people do that *we* moan about all the time.
 
-	Ingo
+Alan
