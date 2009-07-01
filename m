@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbZGACcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbZGACc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbZGACcB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 22:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZGACbF
+	id S1759515AbZGACc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 22:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZGACbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 22:31:05 -0400
+	Tue, 30 Jun 2009 22:31:08 -0400
 Received: from mga11.intel.com ([192.55.52.93]:29001 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757267AbZGACbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 22:31:04 -0400
+	id S1757388AbZGACbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 22:31:07 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,320,1243839600"; 
-   d="scan'208";a="704014439"
-Message-ID: <4A4ACA6B.4050705@intel.com>
-Date: Tue, 30 Jun 2009 19:31:07 -0700
+   d="scan'208";a="704014454"
+Message-ID: <4A4ACA6E.6080702@intel.com>
+Date: Tue, 30 Jun 2009 19:31:10 -0700
 From: Joseph Cihula <joseph.cihula@intel.com>
 Reply-To: joseph.cihula@intel.com
 User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
@@ -23,111 +23,101 @@ To: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
 CC: chrisw@sous-sol.org, jmorris@namei.org, jbeulich@novell.com,
        peterm@redhat.com, joseph.cihula@intel.com, gang.wei@intel.com,
        shane.wang@intel.com
-Subject: [RFC v6][PATCH 3/4] intel_txt: Intel(R) TXT Sx shutdown support
+Subject: [RFC v6][PATCH 4/4] intel_txt: force IOMMU on for Intel(R) TXT launch
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support for graceful handling of sleep states (S3/S4/S5) after an Intel(R) TXT launch.
+The tboot module will DMA protect all of memory in order to ensure the that
+kernel will be able to initialize without compromise (from DMA).  Consequently,
+the kernel must enable Intel(R) Virtualization Technology for Directed I/O
+(VT-d or Intel IOMMU) in order to replace this broad protection with the
+appropriate page-granular protection.  Otherwise DMA devices will be unable
+to read or write from memory and the kernel will eventually panic.
 
-Without this patch, attempting to place the system in one of the ACPI sleep
-states (S3/S4/S5) will cause the TXT hardware to treat this as an attack and
-will cause a system reset, with memory locked.  Not only may the subsequent
-memory scrub take some time, but the platform will be unable to enter the
-requested power state.
-
-This patch calls back into the tboot so that it may properly and securely clean
-up system state and clear the secrets-in-memory flag, after which it will place
-the system into the requested sleep state using ACPI information passed by the kernel.
+Because runtime IOMMU support is configurable by command line options, this
+patch will force it to be enabled regardless of the options specified, and will
+log a message if it was required to force it on.
 
 
- arch/x86/kernel/smpboot.c     |    2 ++
- drivers/acpi/acpica/hwsleep.c |    3 +++
- kernel/cpu.c                  |    7 ++++++-
- 3 files changed, 11 insertions(+), 1 deletion(-)
+ dmar.c        |    7 +++++++
+ intel-iommu.c |   17 +++++++++++++++--
+ 2 files changed, 22 insertions(+), 2 deletions(-)
 
 Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
 Signed-off-by: Shane Wang <shane.wang@intel.com>
 
 ---
 
-diff -uprN -X linus-2.6.git-0629/Documentation/dontdiff linus-2.6.git-0629/arch/x86/kernel/smpboot.c linus-2.6.git-0629-txt/arch/x86/kernel/smpboot.c
---- linus-2.6.git-0629/arch/x86/kernel/smpboot.c	2009-06-29 21:57:17.000000000 -0700
-+++ linus-2.6.git-0629-txt/arch/x86/kernel/smpboot.c	2009-06-30 16:09:10.000000000 -0700
-@@ -62,6 +62,7 @@
- #include <asm/vmi.h>
- #include <asm/apic.h>
- #include <asm/setup.h>
-+#include <asm/tboot.h>
- #include <asm/uv/uv.h>
- #include <linux/mc146818rtc.h>
- 
-@@ -1317,6 +1318,7 @@ void play_dead_common(void)
- void native_play_dead(void)
- {
- 	play_dead_common();
-+	tboot_shutdown(TB_SHUTDOWN_WFS);
- 	wbinvd_halt();
- }
- 
-diff -uprN -X linus-2.6.git-0629/Documentation/dontdiff linus-2.6.git-0629/drivers/acpi/acpica/hwsleep.c linus-2.6.git-0629-txt/drivers/acpi/acpica/hwsleep.c
---- linus-2.6.git-0629/drivers/acpi/acpica/hwsleep.c	2009-06-29 21:57:18.000000000 -0700
-+++ linus-2.6.git-0629-txt/drivers/acpi/acpica/hwsleep.c	2009-06-30 16:07:51.000000000 -0700
-@@ -45,6 +45,7 @@
- #include <acpi/acpi.h>
- #include "accommon.h"
- #include "actables.h"
+diff -uprN -X linus-2.6.git-0629/Documentation/dontdiff linus-2.6.git-0629/drivers/pci/dmar.c linus-2.6.git-0629-txt/drivers/pci/dmar.c
+--- linus-2.6.git-0629/drivers/pci/dmar.c	2009-06-29 21:57:21.000000000 -0700
++++ linus-2.6.git-0629-txt/drivers/pci/dmar.c	2009-06-30 16:15:53.000000000 -0700
+@@ -33,6 +33,7 @@
+ #include <linux/timer.h>
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
 +#include <asm/tboot.h>
  
- #define _COMPONENT          ACPI_HARDWARE
- ACPI_MODULE_NAME("hwsleep")
-@@ -342,6 +343,8 @@ acpi_status asmlinkage acpi_enter_sleep_
+ #undef PREFIX
+ #define PREFIX "DMAR:"
+@@ -413,6 +414,12 @@ parse_dmar_table(void)
+ 	 */
+ 	dmar_table_detect();
  
- 	ACPI_FLUSH_CPU_CACHE();
- 
-+	tboot_sleep(sleep_state, pm1a_control, pm1b_control);
++	/*
++	 * ACPI tables may not be DMA protected by tboot, so use DMAR copy
++	 * SINIT saved in SinitMleData in TXT heap (which is DMA protected)
++	 */
++	dmar_tbl = tboot_get_dmar_table(dmar_tbl);
 +
- 	/* Write #2: Write both SLP_TYP + SLP_EN */
- 
- 	status = acpi_hw_write_pm1_control(pm1a_control, pm1b_control);
-diff -uprN -X linus-2.6.git-0629/Documentation/dontdiff linus-2.6.git-0629/kernel/cpu.c linus-2.6.git-0629-txt/kernel/cpu.c
---- linus-2.6.git-0629/kernel/cpu.c	2009-06-29 21:57:26.000000000 -0700
-+++ linus-2.6.git-0629-txt/kernel/cpu.c	2009-06-30 16:01:58.000000000 -0700
-@@ -14,6 +14,7 @@
- #include <linux/kthread.h>
- #include <linux/stop_machine.h>
- #include <linux/mutex.h>
+ 	dmar = (struct acpi_table_dmar *)dmar_tbl;
+ 	if (!dmar)
+ 		return -ENODEV;
+diff -uprN -X linus-2.6.git-0629/Documentation/dontdiff linus-2.6.git-0629/drivers/pci/intel-iommu.c linus-2.6.git-0629-txt/drivers/pci/intel-iommu.c
+--- linus-2.6.git-0629/drivers/pci/intel-iommu.c	2009-06-29 21:57:21.000000000 -0700
++++ linus-2.6.git-0629-txt/drivers/pci/intel-iommu.c	2009-06-30 17:17:43.000000000 -0700
+@@ -38,6 +38,7 @@
+ #include <linux/intel-iommu.h>
+ #include <linux/sysdev.h>
+ #include <asm/cacheflush.h>
 +#include <asm/tboot.h>
+ #include <asm/iommu.h>
+ #include "pci.h"
  
- #ifdef CONFIG_SMP
- /* Serializes the updates to cpu_online_mask, cpu_present_mask */
-@@ -376,7 +377,7 @@ static cpumask_var_t frozen_cpus;
- 
- int disable_nonboot_cpus(void)
+@@ -3113,12 +3114,22 @@ static int __init init_iommu_sysfs(void)
+ int __init intel_iommu_init(void)
  {
--	int cpu, first_cpu, error;
-+	int cpu, first_cpu, error, num_cpus = 0;
+ 	int ret = 0;
++	int force_on = 0;
  
- 	error = stop_machine_create();
- 	if (error)
-@@ -391,6 +392,7 @@ int disable_nonboot_cpus(void)
- 	for_each_online_cpu(cpu) {
- 		if (cpu == first_cpu)
- 			continue;
-+		num_cpus++;
- 		error = _cpu_down(cpu, 1);
- 		if (!error) {
- 			cpumask_set_cpu(cpu, frozen_cpus);
-@@ -401,6 +403,9 @@ int disable_nonboot_cpus(void)
- 			break;
- 		}
- 	}
-+	/* ensure all CPUs have gone into wait-for-SIPI */
-+	error |= tboot_wait_for_aps(num_cpus);
+-	if (dmar_table_init())
++	/* VT-d is required for a TXT/tboot launch, so enforce that */
++	force_on = tboot_force_iommu();
 +
- 	if (!error) {
- 		BUG_ON(num_online_cpus() > 1);
- 		/* Make sure the CPUs won't be enabled by someone else */
++	if (dmar_table_init()) {
++		if (force_on)
++			panic("tboot: Failed to initialize DMAR table\n");
+ 		return 	-ENODEV;
++	}
+ 
+-	if (dmar_dev_scope_init())
++	if (dmar_dev_scope_init()) {
++		if (force_on)
++			panic("tboot: Failed to initialize DMAR device scope\n");
+ 		return 	-ENODEV;
++	}
+ 
+ 	/*
+ 	 * Check the need for DMA-remapping initialization now.
+@@ -3134,6 +3145,8 @@ int __init intel_iommu_init(void)
+ 
+ 	ret = init_dmars();
+ 	if (ret) {
++		if (force_on)
++			panic("tboot: Failed to initialize DMARs\n");
+ 		printk(KERN_ERR "IOMMU: dmar init failed\n");
+ 		put_iova_domain(&reserved_iova_list);
+ 		iommu_exit_mempool();
 
