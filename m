@@ -1,37 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZGAJYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZGAJZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090AbZGAJYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 05:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZGAJYd
+	id S1754753AbZGAJZZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 05:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZGAJZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 05:24:33 -0400
-Received: from mailfilter2.ihug.co.nz ([203.109.136.2]:45827 "EHLO
-	mailfilter2.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbZGAJYc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 05:24:32 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuFGANPHSkpBeDlE/2dsb2JhbACBUY0oAoh1gXAmhgaucII0B4FVBYYH
-X-IronPort-AV: E=Sophos;i="4.42,322,1243771200"; 
-   d="scan'208";a="191735164"
+	Wed, 1 Jul 2009 05:25:13 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51826 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752375AbZGAJZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 05:25:12 -0400
+Message-ID: <4A4B2B5E.3080309@cn.fujitsu.com>
+Date: Wed, 01 Jul 2009 17:24:46 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Date: Wed, 01 Jul 2009 21:24:33 +1200
-From: Camelot <info@cgl.com>
-To: undisclosed-recipients:;
-Subject: REF NO.REF:UKL/74-A0802742009
-Reply-To: <claimsdomain@9.cn>
-Message-ID: <4e76b96d98dbb579903160fc01bb8507@vodafone.co.nz>
-SenderIP: 65.120.57.68
-User-Agent: Vodafone Webmail
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
+ elevaotor layer
+References: <1245443858-8487-1-git-send-email-vgoyal@redhat.com> <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1245443858-8487-3-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-REF NO.REF:UKL/74-A0802742009
-Congrats in our Uk monthly online award bonanza by sending your
-Name,Add,Age,Tel to(claimsdomain@9.cn) for 891,934GBP.send your data for
-more details.Choose your claims option.
-(1)Courier Delivery
-(2)Bank Transfer
+Vivek Goyal wrote:
+...
+> + * If ioscheduler has functionality of keeping track of close cooperator, check
+> + * with it if it has got a closely co-operating queue.
+> + */
+> +static inline struct io_queue *elv_close_cooperator(struct request_queue *q,
+> +					struct io_queue *ioq, int probe)
+> +{
+> +	struct elevator_queue *e = q->elevator;
+> +	struct io_queue *new_ioq = NULL;
+> +
+> +	/*
+> +	 * Currently this feature is supported only for flat hierarchy or
+> +	 * root group queues so that default cfq behavior is not changed.
+> +	 */
+> +	if (!is_root_group_ioq(q, ioq))
+> +		return NULL;
+> +
+> +	if (q->elevator->ops->elevator_close_cooperator_fn)
+> +		new_ioq = e->ops->elevator_close_cooperator_fn(q,
+> +						ioq->sched_queue, probe);
+> +
+> +	/* Only select co-operating queue if it belongs to root group */
+> +	if (new_ioq && !is_root_group_ioq(q, new_ioq))
+> +		return NULL;
+> +
+> +	return new_ioq;
+> +}
+
+  Hi Vivek,
+
+  Currently, whether we can let this feature be supported if current queue 
+  and found queue are in the same group? I guess this change won't break 
+  the default cfq behavior. Am i missing something?
+
+-- 
+Regards
+Gui Jianfeng
+
