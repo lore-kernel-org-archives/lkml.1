@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764059AbZGAAwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbZGAAw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764059AbZGAAwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761378AbZGAAe1
+	id S1764101AbZGAAw3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761381AbZGAAe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:34:27 -0400
-Received: from kroah.org ([198.145.64.141]:60153 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:34:28 -0400
+Received: from kroah.org ([198.145.64.141]:60144 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761352AbZGAAeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761084AbZGAAeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 30 Jun 2009 20:34:24 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:24:18 2009
-Message-Id: <20090701002418.436619378@mini.kroah.org>
+Message-Id: <20090701002418.606152665@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:23:08 -0700
+Date: Tue, 30 Jun 2009 17:23:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Neil Horman <nhorman@redhat.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 019/108] ipv4 routing: Ensure that route cache entries are usable and reclaimable with caching is off
+Subject: [patch 020/108] sky2: dont look for VPD size
 References: <20090701002249.937782934@mini.kroah.org>
-Content-Disposition: inline; filename=ipv4-routing-ensure-that-route-cache-entries-are-usable-and-reclaimable-with-caching-is-off.patch
+Content-Disposition: inline; filename=sky2-don-t-look-for-vpd-size.patch
 In-Reply-To: <20090701002838.GA7100@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,94 +31,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Neil Horman <nhorman@tuxdriver.com>
+From: Stephen Hemminger <shemminger@vyatta.com>
 
-[ Upstream commit b6280b47a7a42970d098a3059f4ebe7e55e90d8d ]
+[ Upstream commit 6cc90a5a6061428358d0f726a53fb44af5254111 ]
 
-When route caching is disabled (rt_caching returns false), We still use route
-cache entries that are created and passed into rt_intern_hash once.  These
-routes need to be made usable for the one call path that holds a reference to
-them, and they need to be reclaimed when they're finished with their use.  To be
-made usable, they need to be associated with a neighbor table entry (which they
-currently are not), otherwise iproute_finish2 just discards the packet, since we
-don't know which L2 peer to send the packet to.  To do this binding, we need to
-follow the path a bit higher up in rt_intern_hash, which calls
-arp_bind_neighbour, but not assign the route entry to the hash table.
-Currently, if caching is off, we simply assign the route to the rp pointer and
-are reutrn success.  This patch associates us with a neighbor entry first.
+The code to compute VPD size didn't handle some systems that use
+chip without VPD. Also some of the newer chips use some additional
+registers to store the actual size, and wasn't worth putting the
+additional complexity in, so just remove the code.
 
-Secondly, we need to make sure that any single use routes like this are known to
-the garbage collector when caching is off.  If caching is off, and we try to
-hash in a route, it will leak when its refcount reaches zero.  To avoid this,
-this patch calls rt_free on the route cache entry passed into rt_intern_hash.
-This places us on the gc list for the route cache garbage collector, so that
-when its refcount reaches zero, it will be reclaimed (Thanks to Alexey for this
-suggestion).
+No big loss since the code to set the VPD size was only a
+convenience so that utilities would not read the extra space past
+the end of the available VPD.
 
-I've tested this on a local system here, and with these patches in place, I'm
-able to maintain routed connectivity to remote systems, even if I set
-/proc/sys/net/ipv4/rt_cache_rebuild_count to -1, which forces rt_caching to
-return false.
+Move the first PCI config read earlier to detect bad hardware
+where it returns all ones and refuse loading driver before furthur
+damage.
 
-Signed-off-by: Neil Horman <nhorman@redhat.com>
-Reported-by: Jarek Poplawski <jarkao2@gmail.com>
-Reported-by: Maxime Bizon <mbizon@freebox.fr>
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+Tested-by: Andy Whitcroft <apw@canonical.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/route.c |   26 +++++++++++++++++++++++---
- 1 file changed, 23 insertions(+), 3 deletions(-)
+ drivers/net/sky2.c |   31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
 
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -1089,8 +1089,27 @@ restart:
- 		 * If we drop it here, the callers have no way to resolve routes
- 		 * when we're not caching.  Instead, just point *rp at rt, so
- 		 * the caller gets a single use out of the route
-+		 * Note that we do rt_free on this new route entry, so that
-+		 * once its refcount hits zero, we are still able to reap it
-+		 * (Thanks Alexey)
-+		 * Note also the rt_free uses call_rcu.  We don't actually
-+		 * need rcu protection here, this is just our path to get
-+		 * on the route gc list.
- 		 */
--		goto report_and_exit;
-+
-+		if (rt->rt_type == RTN_UNICAST || rt->fl.iif == 0) {
-+			int err = arp_bind_neighbour(&rt->u.dst);
-+			if (err) {
-+				if (net_ratelimit())
-+					printk(KERN_WARNING
-+					    "Neighbour table failure & not caching routes.\n");
-+				rt_drop(rt);
-+				return err;
-+			}
-+		}
-+
-+		rt_free(rt);
-+		goto skip_hashing;
+--- a/drivers/net/sky2.c
++++ b/drivers/net/sky2.c
+@@ -4365,6 +4365,22 @@ static int __devinit sky2_probe(struct p
+ 		goto err_out;
  	}
  
- 	rthp = &rt_hash_table[hash].chain;
-@@ -1204,7 +1223,8 @@ restart:
- #if RT_CACHE_DEBUG >= 2
- 	if (rt->u.dst.rt_next) {
- 		struct rtable *trt;
--		printk(KERN_DEBUG "rt_cache @%02x: %pI4", hash, &rt->rt_dst);
-+		printk(KERN_DEBUG "rt_cache @%02x: %pI4",
-+		       hash, &rt->rt_dst);
- 		for (trt = rt->u.dst.rt_next; trt; trt = trt->u.dst.rt_next)
- 			printk(" . %pI4", &trt->rt_dst);
- 		printk("\n");
-@@ -1219,7 +1239,7 @@ restart:
++	/* Get configuration information
++	 * Note: only regular PCI config access once to test for HW issues
++	 *       other PCI access through shared memory for speed and to
++	 *	 avoid MMCONFIG problems.
++	 */
++	err = pci_read_config_dword(pdev, PCI_DEV_REG2, &reg);
++	if (err) {
++		dev_err(&pdev->dev, "PCI read config failed\n");
++		goto err_out;
++	}
++
++	if (~reg == 0) {
++		dev_err(&pdev->dev, "PCI configuration read error\n");
++		goto err_out;
++	}
++
+ 	err = pci_request_regions(pdev, DRV_NAME);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "cannot obtain PCI resources\n");
+@@ -4390,21 +4406,6 @@ static int __devinit sky2_probe(struct p
+ 		}
+ 	}
  
- 	spin_unlock_bh(rt_hash_lock_addr(hash));
+-	/* Get configuration information
+-	 * Note: only regular PCI config access once to test for HW issues
+-	 *       other PCI access through shared memory for speed and to
+-	 *	 avoid MMCONFIG problems.
+-	 */
+-	err = pci_read_config_dword(pdev, PCI_DEV_REG2, &reg);
+-	if (err) {
+-		dev_err(&pdev->dev, "PCI read config failed\n");
+-		goto err_out_free_regions;
+-	}
+-
+-	/* size of available VPD, only impact sysfs */
+-	err = pci_vpd_truncate(pdev, 1ul << (((reg & PCI_VPD_ROM_SZ) >> 14) + 8));
+-	if (err)
+-		dev_warn(&pdev->dev, "Can't set VPD size\n");
  
--report_and_exit:
-+skip_hashing:
- 	*rp = rt;
- 	return 0;
- }
+ #ifdef __BIG_ENDIAN
+ 	/* The sk98lin vendor driver uses hardware byte swapping but
 
 
