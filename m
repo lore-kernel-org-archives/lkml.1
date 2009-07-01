@@ -1,113 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZGAPiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZGAPlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbZGAPiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZGAPiD
+	id S1753356AbZGAPlf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZGAPl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:38:03 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41566 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbZGAPiB (ORCPT
+	Wed, 1 Jul 2009 11:41:26 -0400
+Received: from carryall.technologeek.org ([62.4.18.94]:35736 "EHLO
+	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752340AbZGAPlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:38:01 -0400
-Date: Wed, 1 Jul 2009 11:37:57 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: oleg@redhat.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       akpm@linux-foundation.org, earl_chew@agilent.com
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v5)
-Message-ID: <20090701153757.GG29601@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701152640.GD29601@hmsreliant.think-freely.org>
+	Wed, 1 Jul 2009 11:41:25 -0400
+From: Julien BLACHE <jb@jblache.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, felixb@sgi.com
+Subject: Re: [patch 000/108] 2.6.30-stable review
+References: <20090701002838.GA7100@kroah.com>
+	<87tz1wd4vi.fsf@sonic.technologeek.org>
+	<4A4B7A77.8010208@s5r6.in-berlin.de>
+Date: Wed, 01 Jul 2009 17:41:26 +0200
+In-Reply-To: <4A4B7A77.8010208@s5r6.in-berlin.de> (Stefan Richter's message of
+	"Wed, 01 Jul 2009 17:02:15 +0200")
+Message-ID: <87hbxwcswp.fsf@sonic.technologeek.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701152640.GD29601@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Allow core_pattern pipes to wait for user space to complete
+--=-=-=
 
-One of the things that user space processes like to do is look at metadata for a
-crashing process in their /proc/<pid> directory.  this is racy however, since
-do_coredump in the kernel doesn't wait for the user space process to complete
-before it reaps the crashing process.  This patch corrects that.  Allowing the
-kernel to wait for the user space process to complete before cleaning up the
-crashing process.  This is a bit tricky to do for a few reasons:
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-1) The user space process isn't our child, so we can't sys_wait4 on it
-2) We need to close the pipe before waiting for the user process to complete,
-since the user process may rely on an EOF condition
+Hi,
 
-I've discussed several solutions with Oleg Nesterov off-list about this, and
-this is the one we've come up with.  We basically add ourselves as an additional
-reader (to prevent cleanup of the pipe), write the dump in ->core_dump(), then
-iteratively remove ourselves as a writer (to create the EOF condition) and wake
-up the user process.  note that we add ourselves as a reader before writing the
-file.  this closes the race in the window between the time we write the dump and
-the time we start checking for the user space process to be done with the pipe.
+>> Felix wrote it was a candidate for stable (obviously!) but it's not on
+>> the list you posted. Care to include it?
+>
+> I am routinely astonished by the "please include patch XY" postings. :-)
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+Actually I was under the impression that the proper request had been
+made for inclusion into -stable, but it looks like it's not been done
+after all.
+
+So, here goes.
+
+JB.
+
+-- 
+Julien BLACHE                                   <http://www.jblache.org> 
+<jb@jblache.org>                                  GPG KeyID 0xF5D65169
 
 
- exec.c |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+--=-=-=
+Content-Type: text/x-diff
+Content-Disposition: inline; filename=xfs_2.6.30_memleak_fix.patch
+Content-Description: XFS 2.6.30 memleak fix
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 93ab6eb..d124346 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -55,6 +55,7 @@
- #include <linux/kmod.h>
- #include <linux/fsnotify.h>
- #include <linux/fs_struct.h>
-+#include <linux/pipe_fs_i.h>
+From: Felix Blyakher <felixb@sgi.com>
+Date: Thu, 11 Jun 2009 22:07:28 +0000 (-0500)
+Subject: xfs: fix freeing memory in xfs_getbmap()
+X-Git-Url: http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs%2Fxfs.git;a=commitdiff_plain;h=7747a0b0af5976ba3828796b4f7a7adc3bb76dbd
+
+xfs: fix freeing memory in xfs_getbmap()
+
+Regression from commit 28e211700a81b0a934b6c7a4b8e7dda843634d2f.
+Need to free temporary buffer allocated in xfs_getbmap().
+
+Signed-off-by: Felix Blyakher <felixb@sgi.com>
+Signed-off-by: Hedi Berriche <hedi@sgi.com>
+Reported-by: Justin Piszcz <jpiszcz@lucidpixels.com>
+Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+---
+
+diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
+index 4b0f6ef..7928b99 100644
+--- a/fs/xfs/xfs_bmap.c
++++ b/fs/xfs/xfs_bmap.c
+@@ -6086,6 +6086,7 @@ xfs_getbmap(
+ 			break;
+ 	}
  
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1711,6 +1712,32 @@ int get_dumpable(struct mm_struct *mm)
- 	return (ret >= 2) ? 2 : ret;
++	kmem_free(out);
+ 	return error;
  }
  
-+static void wait_for_dump_helpers(struct file *file)
-+{
-+	struct pipe_inode_info *pipe;
-+ 
-+	pipe = file->f_path.dentry->d_inode->i_pipe;
-+ 
-+	pipe_lock(pipe);
-+	pipe->readers++;
-+	pipe->writers--;
-+	while (pipe->readers > 1) {
-+		wake_up_interruptible_sync(&pipe->wait);
-+		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-+		pipe_wait(pipe);
-+	}
-+ 
-+	/*
-+	 * This reclaims the additional readers count we took in
-+	 * do_coredump
-+	 */
-+	pipe->readers--;
-+	pipe->writers++;
-+	pipe_unlock(pipe);
-+ 
-+}
-+ 
-+
- void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- {
- 	struct core_state core_state;
-@@ -1862,6 +1889,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 		current->signal->group_exit_code |= 0x80;
- 
- close_fail:
-+	if (ispipe && core_pipe_limit)
-+		wait_for_dump_helpers(file);
- 	filp_close(file, NULL);
- fail_dropcount:
- 	if (dump_count)
+
+--=-=-=--
