@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZGAPlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbZGAPng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbZGAPlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZGAPl0
+	id S1753356AbZGAPng (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZGAPn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:41:26 -0400
-Received: from carryall.technologeek.org ([62.4.18.94]:35736 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752340AbZGAPlZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:41:25 -0400
-From: Julien BLACHE <jb@jblache.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, felixb@sgi.com
-Subject: Re: [patch 000/108] 2.6.30-stable review
-References: <20090701002838.GA7100@kroah.com>
-	<87tz1wd4vi.fsf@sonic.technologeek.org>
-	<4A4B7A77.8010208@s5r6.in-berlin.de>
-Date: Wed, 01 Jul 2009 17:41:26 +0200
-In-Reply-To: <4A4B7A77.8010208@s5r6.in-berlin.de> (Stefan Richter's message of
-	"Wed, 01 Jul 2009 17:02:15 +0200")
-Message-ID: <87hbxwcswp.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
+	Wed, 1 Jul 2009 11:43:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37694 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752553AbZGAPn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:43:28 -0400
+Message-ID: <4A4B8486.3020307@redhat.com>
+Date: Wed, 01 Jul 2009 18:45:10 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [RFC][PATCH] ZERO PAGE again
+References: <20090701185759.18634360.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090701185759.18634360.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-Hi,
-
->> Felix wrote it was a candidate for stable (obviously!) but it's not on
->> the list you posted. Care to include it?
+On 07/01/2009 12:57 PM, KAMEZAWA Hiroyuki wrote:
+> ZERO PAGE was removed in 2.6.24 (=>  http://lkml.org/lkml/2007/10/9/112)
+> and I had no objections.
 >
-> I am routinely astonished by the "please include patch XY" postings. :-)
+> In these days, at user support jobs, I noticed a few of customers
+> are making use of ZERO_PAGE intentionally...brutal mmap and scan, etc. They are
+> using RHEL4-5(before 2.6.18) then they don't notice that ZERO_PAGE
+> is gone, yet.
+> yes, I can say  "ZERO PAGE is gone" to them in next generation distro.
+>
+> Recently, a question comes to lkml (http://lkml.org/lkml/2009/6/4/383
+>
+> Maybe there are some users of ZERO_PAGE other than my customers.
+> So, can't we use ZERO_PAGE again ?
+>
+> IIUC, the problem of ZERO_PAGE was
+>    - reference count cache ping-pong
+>    - complicated handling.
+>    - the behavior page-fault-twice can make applications slow.
+>
+> This patch is a trial to de-refcounted ZERO_PAGE.
+> Any comments are welcome. I'm sorry for digging grave...
+>    
 
-Actually I was under the impression that the proper request had been
-made for inclusion into -stable, but it looks like it's not been done
-after all.
+kvm could use this.  There's a fairly involved scenario where the lack 
+of zero page hits us:
 
-So, here goes.
+- a guest is started
+- either it doesn't touch all of its memory, or it balloons some of its 
+memory away, so its resident set size is smaller than the total amount 
+of memory it has
+- the guest is live migrated to another host; this involves reading all 
+of the guest memory
 
-JB.
+If we don't have zero page, all of the not-present pages are faulted in 
+and the resident set size increases; this increases memory pressure, 
+which is what we're trying to avoid (one of the reasons to live migrate 
+is to free memory).
 
 -- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+error compiling committee.c: too many arguments to function
 
-
---=-=-=
-Content-Type: text/x-diff
-Content-Disposition: inline; filename=xfs_2.6.30_memleak_fix.patch
-Content-Description: XFS 2.6.30 memleak fix
-
-From: Felix Blyakher <felixb@sgi.com>
-Date: Thu, 11 Jun 2009 22:07:28 +0000 (-0500)
-Subject: xfs: fix freeing memory in xfs_getbmap()
-X-Git-Url: http://oss.sgi.com/cgi-bin/gitweb.cgi?p=xfs%2Fxfs.git;a=commitdiff_plain;h=7747a0b0af5976ba3828796b4f7a7adc3bb76dbd
-
-xfs: fix freeing memory in xfs_getbmap()
-
-Regression from commit 28e211700a81b0a934b6c7a4b8e7dda843634d2f.
-Need to free temporary buffer allocated in xfs_getbmap().
-
-Signed-off-by: Felix Blyakher <felixb@sgi.com>
-Signed-off-by: Hedi Berriche <hedi@sgi.com>
-Reported-by: Justin Piszcz <jpiszcz@lucidpixels.com>
-Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
-Reviewed-by: Christoph Hellwig <hch@lst.de>
----
-
-diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
-index 4b0f6ef..7928b99 100644
---- a/fs/xfs/xfs_bmap.c
-+++ b/fs/xfs/xfs_bmap.c
-@@ -6086,6 +6086,7 @@ xfs_getbmap(
- 			break;
- 	}
- 
-+	kmem_free(out);
- 	return error;
- }
- 
-
---=-=-=--
