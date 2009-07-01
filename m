@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbZGALqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZGALsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbZGALqb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755002AbZGALqV
+	id S1756008AbZGALsu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:48:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZGALsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:46:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47404 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043AbZGALqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:46:21 -0400
-Date: Wed, 1 Jul 2009 13:45:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT-PULL -tip][PATCH 0/6] perf_counter patches
-Message-ID: <20090701114559.GH15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
+	Wed, 1 Jul 2009 07:48:46 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:20030
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751557AbZGALsp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:48:45 -0400
+Message-ID: <4A4B4D1D.8070308@panasas.com>
+Date: Wed, 01 Jul 2009 14:48:45 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246440815.3403.3.camel@hpdv5.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: tridge@samba.org
+CC: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org>	<20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org>
+In-Reply-To: <19019.16217.291678.588673@samba.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jul 2009 11:48:49.0347 (UTC) FILETIME=[E5E35930:01C9FA41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> Ingo,
+On 07/01/2009 01:50 PM, tridge@samba.org wrote:
+> Hi Pavel,
 > 
-> Please pull perf_counter patches :
-> The following changes since commit 092304de242705abf24edcb0fc7beed4c4276865:
->   Ingo Molnar (1):
->         Merge branch 'perfcounters/urgent'
+> We did of course consider that, and the changes to the patch to
+> implement collision avoidance are relatively simple. We didn't do it
+> as it would weaken the legal basis behind the patch. I'll leave it to
+> John Lanza (the LF patent attorney) to expand on that if you want more
+> information.
 > 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
-> 
-> Jaswinder Singh Rajput (6):
->       perf stat: define MATCH_EVENT for easy attrs checking
->       perf stat: treat same behaviour for all CYCLES and CLOCKS
->       perf_counter: Add Generalized Hardware vectored co-processor support for AMD
->       perf_counter: Add Generalized Hardware interrupt support for AMD
->       perf_counter: Add hardware vector events for nehalem
->       perf_counter: Add hardware interrupt events for nehalem, core2 and atom
 
-A patch nit-picking sidenote, please try to use more consistent 
-capitalization in commit titles. I fixed the first commit's title
-to be:
+You completely lost me here. And I thought I did understand the patent
+and the fix.
 
-   b9ebdcc: perf stat: Define MATCH_EVENT for easy attr checking
+what is the difference between.
 
-Also, the way we want to refer to the above Intel CPU models is 
-"Corei7/Nehalem, Core2 and Atom".
+short_name = rand(sid);
+and
+short_name = sid++;
 
-	Ingo
+Now if you would do
+short_name = MD5(long_name);
+
+That I understand since short_name is some function of long_name
+but if I'm just inventing the short_name out of my hat. In what legal
+system does it matter what is my random function I use?
+
+> Cheers, Tridge
+
+Boaz
