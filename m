@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbZGAPDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZGAPFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753627AbZGAPDk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 11:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZGAPDc
+	id S1752990AbZGAPFZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 11:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZGAPFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 11:03:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37300 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752117AbZGAPDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 11:03:31 -0400
-Message-ID: <4A4B7AF4.4070205@redhat.com>
-Date: Wed, 01 Jul 2009 18:04:20 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 1 Jul 2009 11:05:15 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48013 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751871AbZGAPFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 11:05:14 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A4B7A77.8010208@s5r6.in-berlin.de>
+Date: Wed, 01 Jul 2009 17:02:15 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
-       ying.huang@intel.com, stable@kernel.org
-Subject: Re: patch kvm-add-vt-x-machine-check-support.patch added to 2.6.30-stable
- tree
-References: <20090629184144.76C9948FD3@coco.kroah.org> <200907010053.40900.s.L-H@gmx.de> <20090630234206.GA22546@suse.de> <4A4B0BB1.2010102@linux.intel.com> <4A4B11A6.6080402@redhat.com> <87d48kiliq.fsf@basil.nowhere.org> <4A4B67A2.9090300@redhat.com> <20090701141845.GW6760@one.firstfloor.org> <4A4B76F3.6070604@redhat.com> <20090701145836.GA8480@suse.de>
-In-Reply-To: <20090701145836.GA8480@suse.de>
+To: Julien BLACHE <jb@jblache.org>
+CC: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, felixb@sgi.com
+Subject: Re: [patch 000/108] 2.6.30-stable review
+References: <20090701002838.GA7100@kroah.com> <87tz1wd4vi.fsf@sonic.technologeek.org>
+In-Reply-To: <87tz1wd4vi.fsf@sonic.technologeek.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/01/2009 05:58 PM, Greg KH wrote:
->> Ack, thanks.  Stable boys, please use this instead of the patch from
->> mainline and the two patches it dragged in.
->>      
->
-> So, I should use this instead of:
-> 	kvm-vmx-fix-handling-of-a-fault-during-nmi-unblocked-due-to-iret.patch
-> 	kvm-move-exit-due-to-nmi-handling-into-vmx_complete_interrupts.patch
-> 	kvm-add-vt-x-machine-check-support.patch
->    
+Julien BLACHE wrote:
+> Felix wrote it was a candidate for stable (obviously!) but it's not on
+> the list you posted. Care to include it?
 
-Exactly.  I'll run my regression tests on stable-queue and let you know 
-if I encounter any trouble.
+I am routinely astonished by the "please include patch XY" postings. :-)
+Have a look at 
+http://lxr.linux.no/linux/Documentation/stable_kernel_rules.txt -- this 
+explains how you get a patch included with minimum effort by everyone 
+involved.  IOW, send the patch¹, not the question.  :-)
 
+¹) if the patch is actually applicable to the kernel and fulfills the 
+stable criteria.  If in doubt about the latter, the respective subsystem 
+developers might help you figure it out.)
 -- 
-error compiling committee.c: too many arguments to function
-
+Stefan Richter
+-=====-==--= -=== ----=
+http://arcgraph.de/sr/
