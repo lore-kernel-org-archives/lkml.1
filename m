@@ -1,111 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZGAShX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbZGASi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbZGAShX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbZGAShN
+	id S1755068AbZGASi0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZGASiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:37:13 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:32845 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753428AbZGAShM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:37:12 -0400
-Date: Wed, 1 Jul 2009 14:37:07 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@redhat.com>, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, akpm@linux-foundation.org, earl_chew@agilent.com
-Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
-	pipe readers to complete (v6)
-Message-ID: <20090701183707.GF31414@hmsreliant.think-freely.org>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701182834.GC31414@hmsreliant.think-freely.org>
+	Wed, 1 Jul 2009 14:38:18 -0400
+Received: from kroah.org ([198.145.64.141]:46752 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753065AbZGASiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 14:38:18 -0400
+Date: Wed, 1 Jul 2009 11:35:48 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/30] 2.6.27-stable review
+Message-ID: <20090701183548.GA14064@kroah.com>
+References: <20090701002817.GA6156@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090701182834.GC31414@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <20090701002817.GA6156@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-core_pattern: Allow core_pattern pipes to wait for user space to complete
+On Tue, Jun 30, 2009 at 05:28:17PM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.27.26 release.
 
-One of the things that user space processes like to do is look at metadata for a
-crashing process in their /proc/<pid> directory.  this is racy however, since
-do_coredump in the kernel doesn't wait for the user space process to complete
-before it reaps the crashing process.  This patch corrects that.  Allowing the
-kernel to wait for the user space process to complete before cleaning up the
-crashing process.  This is a bit tricky to do for a few reasons:
+And there's a -rc2 for this tree as well.  2 more patches were added.
 
-1) The user space process isn't our child, so we can't sys_wait4 on it
-2) We need to close the pipe before waiting for the user process to complete,
-since the user process may rely on an EOF condition
-
-I've discussed several solutions with Oleg Nesterov off-list about this, and
-this is the one we've come up with. We add ourselves as a pipe reader (to
-prevent premature cleanup of the pipe_inode_info), and remove ourselves as a
-writer (to provide an EOF condition to the writer in user space), then we
-iterate until the user space process exits (which we detect by pipe->readers ==
-1, hence the > 1 check in the loop).  When we exit the loop, we restore the
-proper reader/writer values, then we return and let filp_close in do_coredump
-clean up the pipe data properly.
-
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Reported-by: Earl Chew <earl_chew@agilent.com>
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.26-rc2.gz
+and the diffstat can be found below.
 
 
- exec.c |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+thanks,
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 93ab6eb..43872cc 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -55,6 +55,7 @@
- #include <linux/kmod.h>
- #include <linux/fsnotify.h>
- #include <linux/fs_struct.h>
-+#include <linux/pipe_fs_i.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1711,6 +1712,29 @@ int get_dumpable(struct mm_struct *mm)
- 	return (ret >= 2) ? 2 : ret;
- }
- 
-+static void wait_for_dump_helpers(struct file *file)
-+{
-+	struct pipe_inode_info *pipe;
-+ 
-+	pipe = file->f_path.dentry->d_inode->i_pipe;
-+ 
-+	pipe_lock(pipe);
-+	pipe->readers++;
-+	pipe->writers--;
-+
-+	while (pipe->readers > 1) {
-+		wake_up_interruptible_sync(&pipe->wait);
-+		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
-+		pipe_wait(pipe);
-+	}
-+ 
-+	pipe->readers--;
-+	pipe->writers++;
-+	pipe_unlock(pipe);
-+ 
-+}
-+ 
-+
- void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- {
- 	struct core_state core_state;
-@@ -1862,6 +1886,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
- 		current->signal->group_exit_code |= 0x80;
- 
- close_fail:
-+	if (ispipe && core_pipe_limit)
-+		wait_for_dump_helpers(file);
- 	filp_close(file, NULL);
- fail_dropcount:
- 	if (dump_count)
+greg k-h
+
+
+ Makefile                         |    2 +-
+ arch/x86/kernel/reboot.c         |   18 ++++++++
+ arch/x86/kernel/setup.c          |   15 +-----
+ drivers/block/floppy.c           |   87 ++++++++++++++++++++++++++------------
+ drivers/char/moxa.c              |    7 +++-
+ drivers/char/mxser.c             |    2 +-
+ drivers/char/pcmcia/cm4000_cs.c  |    3 +-
+ drivers/firmware/memmap.c        |   16 ++++---
+ drivers/infiniband/hw/mlx4/qp.c  |    4 ++
+ drivers/isdn/hisax/hfc_pci.c     |   41 +++++++++++++-----
+ drivers/isdn/hisax/hisax.h       |    2 +-
+ drivers/md/dm-mpath.c            |   11 +++++
+ drivers/md/dm.c                  |    4 ++
+ drivers/md/raid5.c               |    1 +
+ drivers/net/bonding/bond_sysfs.c |    1 +
+ drivers/net/r8169.c              |   11 ++---
+ drivers/parport/parport_pc.c     |   34 ++++++++++++---
+ drivers/parport/parport_serial.c |   30 +++++++++++--
+ drivers/pci/pci.c                |    7 ++-
+ drivers/pci/pcie/aspm.c          |    4 ++
+ drivers/video/atmel_lcdfb.c      |   10 +----
+ fs/jbd/commit.c                  |    6 ++-
+ include/linux/firmware-map.h     |   12 ++----
+ include/linux/mlx4/qp.h          |    1 +
+ kernel/acct.c                    |    6 ++-
+ lib/Kconfig.debug                |    2 +-
+ mm/page_alloc.c                  |    6 ++-
+ net/ipv4/tcp_ipv4.c              |    4 ++
+ net/ipv4/tcp_output.c            |   13 ++++-
+ scripts/unifdef.c                |    6 +-
+ sound/core/seq/seq_midi_event.c  |    8 ++--
+ sound/pci/ca0106/ca0106_mixer.c  |    6 +++
+ 32 files changed, 265 insertions(+), 115 deletions(-)
