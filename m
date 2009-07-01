@@ -1,171 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbZGABqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbZGABqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758494AbZGABqU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 21:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbZGABqD
+	id S1759810AbZGABqg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 21:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZGABq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 21:46:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60068 "EHLO mx2.suse.de"
+	Tue, 30 Jun 2009 21:46:27 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57409 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753507AbZGABqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 21:46:01 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Date: Wed, 1 Jul 2009 11:46:23 +1000
+	id S1754019AbZGABq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 21:46:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,319,1243839600"; 
+   d="scan'208";a="471021531"
+Date: Wed, 1 Jul 2009 09:46:27 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>, "Zhao, Yakui" <yakui.zhao@intel.com>
+Subject: Re: + memory-hotplug-update-zone-pcp-at-memory-online.patch added
+	to -mm tree
+Message-ID: <20090701014627.GA23264@sli10-desk.sh.intel.com>
+References: <200906291949.n5TJno8X028680@imap1.linux-foundation.org> <alpine.DEB.1.10.0906291814150.21956@gentwo.org> <20090630005828.GC21254@sli10-desk.sh.intel.com> <alpine.DEB.1.10.0906301020420.6124@gentwo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19018.49135.87053.44522@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MD: md, fix lock imbalance
-In-Reply-To: message from Jiri Slaby on Sunday June 21
-References: <1245621576-27066-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906301020420.6124@gentwo.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday June 21, jirislaby@gmail.com wrote:
-> Add unlock and put to one of fail paths in md_alloc.
+On Tue, Jun 30, 2009 at 10:21:34PM +0800, Christoph Lameter wrote:
+> On Tue, 30 Jun 2009, Shaohua Li wrote:
+> 
+> > > foreach possible cpu?
+> > Just follows zone_pcp_init(), do you think we should change that too?
+> 
+> I plan to change that but for now this would be okay.
+> 
+> > > > +		struct per_cpu_pageset *pset;
+> > > > +		struct per_cpu_pages *pcp;
+> > > > +
+> > > > +		pset = zone_pcp(zone, cpu);
+> > > > +		pcp = &pset->pcp;
+> > > > +
+> > > > +		local_irq_save(flags);
+> > > > +		free_pages_bulk(zone, pcp->count, &pcp->list, 0);
+> > >
+> > > There are no pages in the pageset since the pcp batch is zero right?
+> > It might not be zero for a populated zone, see above comments.
+> 
+> But you are populating an unpopulated zone?
+yes, but free_pages_bulk() works with zero pcp->count too. And the zone
+might/might not populate before hotplug, so free the pages is always ok
+here to me.
 
-Hi Jiri,
- thanks for finding this.
- I have split it up in to two patches.  One just fixes the bug as
- simply as possible.  This will be tagged for -stable.
- The other tidies up the exist paths (a little differently to the way
- you did).  That one won't go to -stable.
 
- See below.
+In my test, 128M memory is hot add, but zone's pcp batch is 0, which
+is an obvious error. When pages are onlined, zone pcp should be
+updated accordingly.
 
-Thanks,
-NeilBrown
+Include fixes suggested by Christoph Lameter and Andrew Morton.
 
-commit d7a0dc02b59b8656d7817bf2da3822df64fe4886
-Author: NeilBrown <neilb@suse.de>
-Date:   Wed Jul 1 11:45:14 2009 +1000
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+---
+ include/linux/mm.h  |    2 ++
+ mm/memory_hotplug.c |    1 +
+ mm/page_alloc.c     |   26 ++++++++++++++++++++++++++
+ 3 files changed, 29 insertions(+)
 
-    md: fix error patch which duplicate name is found on md device creation.
-    
-    When an md device is created by name (rather than number) we need to
-    check that the name is not already in use.  If this check finds a
-    duplicate, we return an error without dropping the lock or freeing
-    the newly create mddev.
-    This patch fixes that.
-    
-    Cc: stable@kernel.org
-    Found-by: Jiri Slaby <jirislaby@gmail.com>
-    Signed-off-by: NeilBrown <neilb@suse.de>
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 2166af8..58bee23 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3862,6 +3862,8 @@ static int md_alloc(dev_t dev, char *name)
- 			if (mddev2->gendisk &&
- 			    strcmp(mddev2->gendisk->disk_name, name) == 0) {
- 				spin_unlock(&all_mddevs_lock);
-+				mutex_unlock(&disks_mutex);
-+				mddev_put(mddev);
- 				return -EEXIST;
- 			}
- 		spin_unlock(&all_mddevs_lock);
-
-commit 84dfea9c9910a7e01ecb2463c6298c0689a0c6a1
-Author: NeilBrown <neilb@suse.de>
-Date:   Wed Jul 1 11:45:14 2009 +1000
-
-    md: tidy up error paths in md_alloc
-    
-    As the recent bug in md_alloc showed, having a single exit path for
-    unlocking and putting is a good idea.  So restructure md_alloc to have
-    a single mutex_unlock and mddev_put, and use gotos where necessary.
-    
-    Found-by: Jiri Slaby <jirislaby@gmail.com>
-    Signed-off-by: NeilBrown <neilb@suse.de>
-
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index 58bee23..65fe35b 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -3846,11 +3846,9 @@ static int md_alloc(dev_t dev, char *name)
- 	flush_scheduled_work();
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h	2009-06-30 09:14:21.000000000 +0800
++++ linux/include/linux/mm.h	2009-07-01 09:13:22.000000000 +0800
+@@ -1073,6 +1073,8 @@ extern void setup_per_cpu_pageset(void);
+ static inline void setup_per_cpu_pageset(void) {}
+ #endif
  
- 	mutex_lock(&disks_mutex);
--	if (mddev->gendisk) {
--		mutex_unlock(&disks_mutex);
--		mddev_put(mddev);
--		return -EEXIST;
--	}
-+	error = -EEXIST;
-+	if (mddev->gendisk)
-+		goto abort;
++extern void zone_pcp_update(struct zone *zone);
++
+ /* nommu.c */
+ extern atomic_long_t mmap_pages_allocated;
  
- 	if (name) {
- 		/* Need to ensure that 'name' is not a duplicate.
-@@ -3862,19 +3860,15 @@ static int md_alloc(dev_t dev, char *name)
- 			if (mddev2->gendisk &&
- 			    strcmp(mddev2->gendisk->disk_name, name) == 0) {
- 				spin_unlock(&all_mddevs_lock);
--				mutex_unlock(&disks_mutex);
--				mddev_put(mddev);
--				return -EEXIST;
-+				goto abort;
- 			}
- 		spin_unlock(&all_mddevs_lock);
- 	}
+Index: linux/mm/memory_hotplug.c
+===================================================================
+--- linux.orig/mm/memory_hotplug.c	2009-06-30 09:14:21.000000000 +0800
++++ linux/mm/memory_hotplug.c	2009-07-01 09:13:22.000000000 +0800
+@@ -422,6 +422,7 @@ int online_pages(unsigned long pfn, unsi
+ 	zone->present_pages += onlined_pages;
+ 	zone->zone_pgdat->node_present_pages += onlined_pages;
  
-+	error = -ENOMEM;
- 	mddev->queue = blk_alloc_queue(GFP_KERNEL);
--	if (!mddev->queue) {
--		mutex_unlock(&disks_mutex);
--		mddev_put(mddev);
--		return -ENOMEM;
--	}
-+	if (!mddev->queue)
-+		goto abort;
- 	mddev->queue->queuedata = mddev;
- 
- 	/* Can be unlocked because the queue is new: no concurrency */
-@@ -3884,11 +3878,9 @@ static int md_alloc(dev_t dev, char *name)
- 
- 	disk = alloc_disk(1 << shift);
- 	if (!disk) {
--		mutex_unlock(&disks_mutex);
- 		blk_cleanup_queue(mddev->queue);
- 		mddev->queue = NULL;
--		mddev_put(mddev);
--		return -ENOMEM;
-+		goto abort;
- 	}
- 	disk->major = MAJOR(mddev->unit);
- 	disk->first_minor = unit << shift;
-@@ -3910,16 +3902,22 @@ static int md_alloc(dev_t dev, char *name)
- 	mddev->gendisk = disk;
- 	error = kobject_init_and_add(&mddev->kobj, &md_ktype,
- 				     &disk_to_dev(disk)->kobj, "%s", "md");
--	mutex_unlock(&disks_mutex);
--	if (error)
-+	if (error) {
-+		/* This isn't possible, but as kobject_init_and_add is marked
-+		 * __must_check, we must do something with the result
-+		 */
- 		printk(KERN_WARNING "md: cannot register %s/md - name in use\n",
- 		       disk->disk_name);
--	else {
-+		error = 0;
-+	}
-+ abort:
-+	mutex_unlock(&disks_mutex);
-+	if (!error) {
- 		kobject_uevent(&mddev->kobj, KOBJ_ADD);
- 		mddev->sysfs_state = sysfs_get_dirent(mddev->kobj.sd, "array_state");
- 	}
- 	mddev_put(mddev);
--	return 0;
-+	return error;
++	zone_pcp_update(zone);
+ 	setup_per_zone_wmarks();
+ 	calculate_zone_inactive_ratio(zone);
+ 	if (onlined_pages) {
+Index: linux/mm/page_alloc.c
+===================================================================
+--- linux.orig/mm/page_alloc.c	2009-06-30 09:14:21.000000000 +0800
++++ linux/mm/page_alloc.c	2009-07-01 09:40:08.000000000 +0800
+@@ -3131,6 +3131,32 @@ int zone_wait_table_init(struct zone *zo
+ 	return 0;
  }
  
- static struct kobject *md_probe(dev_t dev, int *part, void *data)
++static int __zone_pcp_update(void *data)
++{
++	struct zone *zone = data;
++	int cpu;
++	unsigned long batch = zone_batchsize(zone), flags;
++
++	for_each_possible_cpu(cpu) {
++		struct per_cpu_pageset *pset;
++		struct per_cpu_pages *pcp;
++
++		pset = zone_pcp(zone, cpu);
++		pcp = &pset->pcp;
++
++		local_irq_save(flags);
++		free_pages_bulk(zone, pcp->count, &pcp->list, 0);
++		setup_pageset(pset, batch);
++		local_irq_restore(flags);
++	}
++	return 0;
++}
++
++void zone_pcp_update(struct zone *zone)
++{
++	stop_machine(__zone_pcp_update, zone, NULL);
++}
++
+ static __meminit void zone_pcp_init(struct zone *zone)
+ {
+ 	int cpu;
