@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbZGAWlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810AbZGAWnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbZGAWlw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 18:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZGAWlo
+	id S1754810AbZGAWnn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 18:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZGAWnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 18:41:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:33819 "EHLO ogre.sisk.pl"
+	Wed, 1 Jul 2009 18:43:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42610 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751716AbZGAWlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 18:41:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jeremy Maitin-Shepard" <jeremy@jeremyms.com>
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
-Date: Thu, 2 Jul 2009 00:41:51 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-References: <87hbxx0wcp.fsf@jeremyms.com> <200907011755.10386.rjw@sisk.pl> <874otw15r6.fsf@jeremyms.com>
-In-Reply-To: <874otw15r6.fsf@jeremyms.com>
+	id S1752448AbZGAWne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 18:43:34 -0400
+Message-ID: <4A4BE64A.3050805@kernel.org>
+Date: Thu, 02 Jul 2009 07:42:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       x86@kernel.org, linux-arch@vger.kernel.org, hpa@zytor.com,
+       tglx@linutronix.de
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
+ lpage NUMA support
+References: <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org> <20090701064250.GM6760@one.firstfloor.org> <4A4B38C5.1070504@kernel.org> <20090701122312.GP6760@one.firstfloor.org> <4A4B5C32.1010009@kernel.org> <20090701131146.GR6760@one.firstfloor.org> <alpine.DEB.1.10.0907011330450.9522@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0907011330450.9522@gentwo.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907020041.52198.rjw@sisk.pl>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 01 Jul 2009 22:42:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 July 2009, Jeremy Maitin-Shepard wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+Christoph Lameter wrote:
+> On Wed, 1 Jul 2009, Andi Kleen wrote:
 > 
-> > [snip]
+>> And it's imho unclear if that is all worth it just to avoid
+>> wasting some memory in the "256 possible CPUs" case (which
+>> I doubt is particularly realistic anyways, at least I don't
+>> know of any Hypervisor today that scales to 256 CPUs)
 > 
-> >> As far as the possibility of using uswsusp goes, I'd like to get
-> >> Rafael's input there - he knows it much better than I do (explicitly
-> >> adding him to the ccs).
+> I basically agree. Its not worth it given the rare cases where this
+> matters. It will be a lot of code with callbacks in each subsystem.
 > 
-> > No, the current mainline hibernation code can't be modified easily
-> > to encrypt the page cache before suspending.
-> 
-> > Also, I don't see much value in doing that before suspend to RAM, because
-> > (1) passwords and encryption keys should be stored in mlocked memory
-> 
-> I do not have a complete understanding of linux memory management, but
-> couldn't such memory also be included in the encryption?  The page cache
-> is presumably the bulk of memory, but I realize there are likely several
-> other places in memory that may contain sensitive data.  However, it
-> would seem that encrypting these in place should, for the most part,
-> also be quite feasible.
+> One of the motivations of working on revising the percpu handling for
+> me was that we could get rid of these screwy callbacks that are rarely
+> tested and cause all sorts of other issues with locking and serialization.
 
-What is the particular attach scenario you'd like to prevent
+Hmmm.... yeah.  I have to agree that callbacks are nasty and requiring
+all users to use callbacks wouldn't be very nice.  Once the current
+dust settles down, I'll look around and see whether this can be solved
+in some reasonable way.
 
-> > and (2)
-> > the encryption overhead (including measures to protect the encrypted page cache
-> > from being corrupted) would hurt the speed of suspend to RAM and resume, which
-> > is a very important thing.
-> 
-> I am not suggesting that it be done unconditionally.  I am simply
-> suggesting that it be made available as an option, just as hibernating
-> to encrypted swap is an option, and using dm-crypt in general is an
-> option.  Surely encrypting and decrypting would take additional time,
-> but it would also surely take far less time than hibernating and
-> resuming.  On machines with hardware encryption support (such as the
-> future Intel Westmere processor), encrypting several gigabytes of memory
-> may not take very much time at all.
-> 
-> > Moreover, I don't really see how we can feed the decryption key to the
-> > kernel during resume before the page cache can be accessed.
-> 
-> My understanding is that this is something that is already done in
-> tuxonice.  After the contents of the page cache are written to disk,
-> some of the page cache is overwritten with a copy of the rest of memory,
-> and the kernel continues to interact with the userspace UI program.  I
-> would assume that this state is effectively equivalent to the state the
-> system would be in after encrypting the page cache.  (Obviously the
-> memory needed by the userspace helper would have to be treated
-> specially.)
+Thanks.
 
-There's one problem with this approach, which is that we're not sure if the
-encrypted pages won't be written to by someone else.  TuxOnIce makes the
-assumption that it won't, but that has yet to be demonstrated.
-
-Best,
-Rafael
+-- 
+tejun
