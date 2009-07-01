@@ -1,64 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758231AbZGADZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbZGAD1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758231AbZGADZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 23:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbZGADZK
+	id S1758990AbZGAD1u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 23:27:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZGAD1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 23:25:10 -0400
-Received: from mga07.intel.com ([143.182.124.22]:58950 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753884AbZGADZJ (ORCPT
+	Tue, 30 Jun 2009 23:27:42 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:59789 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbZGAD1l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 23:25:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,320,1243839600"; 
-   d="scan'208";a="160307111"
-Subject: fio sync read 4k block size 35% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 01 Jul 2009 11:25:33 +0800
-Message-Id: <1246418733.2560.468.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 30 Jun 2009 23:27:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=P6F43Gwd05pFrww+wbYBkPAFMz2OPbr0MoPavv+O91KwjtGV3BLezaAGBSloWqEwSH
+         FYcQEA1AmUbrRAXulK203QxX29/Jr12mxLKgj+ZUm2EFxn/p7D8afTstoTWGYWfgkijH
+         +jrf0ETNnPqj1m1cferBXLd/npOT3nbyn07FM=
+MIME-Version: 1.0
+In-Reply-To: <20090701005437.GA5856@cr0.nay.redhat.com>
+References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com>
+	 <20090701005437.GA5856@cr0.nay.redhat.com>
+Date: Wed, 1 Jul 2009 11:27:41 +0800
+Message-ID: <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com>
+Subject: Re: [PATCH] Fix the multithread program core thread message error
+From: Hui Zhu <teawater@gmail.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comapraing with 2.6.30, fio sync read (block size 4k) has about 35% regression
-with kernel 2.6.31-rc1 ï»¿on my stoakley machine with a JBOD (13 SCSI disks).
+Hi Amerigo,
 
-Every disk has 1 partition and 4 1-GB files. Start 10 processes per disk to
-do syï»¿nc read sequentinally.
+Thanks for your reply.
 
-Bisected down to below patch.
+On Wed, Jul 1, 2009 at 08:54, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>
+> Hi, Hui.
+>
+> On Tue, Jun 30, 2009 at 05:12:31PM +0800, Hui Zhu wrote:
+>>Fix the multithread program core thread message error.
+>>The thread message of core file is generated in
+>>elf_dump_thread_status.  The register values is set by
+>>elf_core_copy_task_regs in this function.
+>>static inline int elf_core_copy_task_regs(struct task_struct *t,
+>>                                          elf_gregset_t* elfregs)
+>>{
+>>
+>>       return ELF_CORE_COPY_TASK_REGS(t, elfregs);
+>>       return 0;
+>>}
+>>If a arch doesn't define ELF_CORE_COPY_TASK_REGS, This function will do
+>>nothing.  Then the core file will not have the register message of
+>>thread.
+>>So add elf_core_copy_regs to set regiser values if
+>>ELF_CORE_COPY_TASK_REGS doesn't define.
+>
+>
+> You forgot your Signed-off-by line. :)
 
-51daa88ebd8e0d437289f589af29d4b39379ea76 is first bad commit
-commit 51daa88ebd8e0d437289f589af29d4b39379ea76
-Author: Wu Fengguang <fengguang.wu@intel.com>
-Date:   Tue Jun 16 15:31:24 2009 -0700
+Signed-off-by: Hui Zhu <hui.zhu@windriver.com>
 
-    readahead: remove sync/async readahead call dependency
+>
+> Hmmm, this patch looks sane for me. But could you please
+> send us your test program? i.e. how did you test this?
+>
 
-    The readahead call scheme is error-prone in that it expects the call sites
-    to check for async readahead after doing a sync one.  I.e.
+I test this issue in a arm board.  My test code is:
+#include <stdio.h>
+#include <pthread.h>
+#include <assert.h>
 
-                        if (!page)
-                                page_cache_sync_readahead();
-                        page = find_get_page();
-                        if (page && PageReadahead(page))
-                                page_cache_async_readahead();
+void td1(void * i)
+{
+	while (1)
+	{
+		printf ("1\n");
+		sleep (1);
+	}
+
+	return;
+}
+
+void td2(void * i)
+{
+	while (1)
+	{
+		printf ("2\n");
+		sleep (1);
+	}
+
+	return;
+}
+
+int
+main(int argc,char *argv[],char *envp[])
+{
+	pthread_t	t1,t2;
+
+	pthread_create(&t1, NULL, (void*)td1, NULL);
+	pthread_create(&t2, NULL, (void*)td2, NULL);
+
+	sleep (10);
+
+	assert(0);
+
+	return (0);
+}
+
+The follow is how to reproduce this issue:
+arm-xxx-gcc -g -lpthread 1.c -o 1
+copy 1.c and 1 to a arm board.
+Goto this board.
+ulimit -c 1800000
+./1
+# ./1
+1
+2
+1
+...
+...
+1
+1: 1.c:37: main: Assertion `0' failed.
+Aborted (core dumped)
+Then you can get a core file.
+gdb 1 core.xxx
+
+Without the patch:
+(gdb) info threads
+  3 process 909  0x00000000 in ?? ()
+  2 process 908  0x00000000 in ?? ()
+* 1 process 907  0x4a6e2238 in raise () from /lib/libc.so.6
+You can found that the pc of 909 and 908 is 0x00000000.
+
+With the patch:
+(gdb) info threads
+  3 process 885  0x4a749974 in nanosleep () from /lib/libc.so.6
+  2 process 884  0x4a749974 in nanosleep () from /lib/libc.so.6
+* 1 process 883  0x4a6e2238 in raise () from /lib/libc.so.6
+The pc of 885 and 884 is right.
 
 
-I also test block size 64k and 128k, but they don't have regression. Perhaps
-the default read_ahead_kb is equal to 128?
-
-Other 2 machines have no such regression. The JBODS of the 2 machines consists
-of 12 and 7 SATA/SAS disks while every disk has 2 partitions.
-
-
-
+Thanks,
+Hui
