@@ -1,57 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZGAL2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZGAL2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbZGAL2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 07:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGAL2K
+	id S1755962AbZGAL2e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 07:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZGAL2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 07:28:10 -0400
-Received: from carryall.technologeek.org ([62.4.18.94]:36677 "EHLO
-	sonic.technologeek.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750812AbZGAL2K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 07:28:10 -0400
-X-Greylist: delayed 314 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 07:28:09 EDT
-From: Julien BLACHE <jb@jblache.org>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, felixb@sgi.com
-Subject: Re: [patch 000/108] 2.6.30-stable review
-References: <20090701002838.GA7100@kroah.com>
-Date: Wed, 01 Jul 2009 13:22:57 +0200
-In-Reply-To: <20090701002838.GA7100@kroah.com> (Greg KH's message of "Tue, 30
-	Jun 2009 17:28:38 -0700")
-Message-ID: <87tz1wd4vi.fsf@sonic.technologeek.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Jul 2009 07:28:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48070 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754652AbZGAL2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 07:28:24 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090630215437.GB22851@elte.hu>
+References: <20090630215437.GB22851@elte.hu> <20090630212454.19294.75622.stgit@warthog.procyon.org.uk> <20090630213406.GB17492@elte.hu> <200906302341.58582.arnd@arndb.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: dhowells@redhat.com, Arnd Bergmann <arnd@arndb.de>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] FRV: Wire up new syscalls
+Date: Wed, 01 Jul 2009 12:28:11 +0100
+Message-ID: <22582.1246447691@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <gregkh@suse.de> wrote:
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Hi,
+> It would make sense to wire it up for real as it's really easy: just 
+> set HAVE_PERF_COUNTERS in arch/frv/Kconfig, add an empty 
+> arch/frv/include/asm/perf_counter.h file. (Optional: double check 
+> that tools/perf/ builds and works fine on FRV ;-)
 
->  fs/Kconfig                                |   14 ++--
->  fs/cifs/file.c                            |   10 +-
->  fs/eventpoll.c                            |   21 +++--
->  fs/fs-writeback.c                         |    2 -
->  fs/jfs/jfs_extent.c                       |    1 +
->  fs/ocfs2/super.c                          |   32 +++++----
->  fs/ramfs/inode.c                          |    9 ++-
+Are these for hardware performance counters?
 
-There is a memory leak in XFS in 2.6.30 that was fixed in commit
-7747a0b0af5976ba3828796b4f7a7adc3bb76dbd (xfs: fix freeing memory in
-xfs_getbmap()).
-
-Felix wrote it was a candidate for stable (obviously!) but it's not on
-the list you posted. Care to include it?
-
-Thanks,
-
-JB.
-
--- 
-Julien BLACHE                                   <http://www.jblache.org> 
-<jb@jblache.org>                                  GPG KeyID 0xF5D65169
+David
