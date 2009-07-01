@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbZGAQop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZGAQr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbZGAQop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 12:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZGAQoi
+	id S1753474AbZGAQr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 12:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZGAQrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 12:44:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48821 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbZGAQoh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 12:44:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A4B9228.8080503@s5r6.in-berlin.de>
-Date: Wed, 01 Jul 2009 18:43:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090523 SeaMonkey/1.1.16
+	Wed, 1 Jul 2009 12:47:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36657 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbZGAQrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 12:47:19 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/2] FRV: Add basic performance counter support
+To: mingo@elte.hu
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, paulus@samba.org,
+       arnd@arndb.de, dhowells@redhat.com, linux-kernel@vger.kernel.org
+Date: Wed, 01 Jul 2009 17:47:05 +0100
+Message-ID: <20090701164705.29780.60902.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090701144913.GA28172@elte.hu>
+References: <20090701144913.GA28172@elte.hu>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Julien BLACHE <jb@jblache.org>
-CC: "Luis R. Rodriguez" <mcgrof@gmail.com>, Greg KH <gregkh@suse.de>,
-       felixb@sgi.com, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [patch 000/108] 2.6.30-stable review
-References: <20090701002838.GA7100@kroah.com>	<87tz1wd4vi.fsf@sonic.technologeek.org>	<4A4B7A77.8010208@s5r6.in-berlin.de>	<87hbxwcswp.fsf@sonic.technologeek.org>	<43e72e890907010922t7bd80108xa3caaf4decfd87a6@mail.gmail.com> <87d48kcqsk.fsf@sonic.technologeek.org>
-In-Reply-To: <87d48kcqsk.fsf@sonic.technologeek.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julien BLACHE wrote:
-> "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
-> 
-> Hi,
-> 
->>> Actually I was under the impression that the proper request had been
->>> made for inclusion into -stable, but it looks like it's not been done
->>> after all.
->>>
->>> So, here goes.
->> Better inline.
+Add basic performance counter support to the FRV arch.
 
-The previous posting can be quilt-imported and git-am'ed as is.  Having 
-the diff inline rather than attached would be nicer if it was a 
-submission for review, but this was obviously just meant to be enqueued 
-for the next stable review round by the -stable maintainers (who will 
-repost it for review when it's time).
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-> Crap, I got tricked by the inline thing again. Sorry, properly inlined
-> this time.
+ arch/frv/Kconfig                    |    1 +
+ arch/frv/include/asm/perf_counter.h |   17 +++++++++++++++++
+ arch/frv/lib/Makefile               |    2 +-
+ arch/frv/lib/perf_counter.c         |   19 +++++++++++++++++++
+ 4 files changed, 38 insertions(+), 1 deletions(-)
+ create mode 100644 arch/frv/include/asm/perf_counter.h
+ create mode 100644 arch/frv/lib/perf_counter.c
 
-Uh oh, you inlined it after the '-- ' signature delimiter; responders 
-can't quote it. ;-)
--- 
-Stefan Richter
--=====-==--= -=== ----=
-http://arcgraph.de/sr/
+
+diff --git a/arch/frv/Kconfig b/arch/frv/Kconfig
+index 8a5bd7a..b86e19c 100644
+--- a/arch/frv/Kconfig
++++ b/arch/frv/Kconfig
+@@ -7,6 +7,7 @@ config FRV
+ 	default y
+ 	select HAVE_IDE
+ 	select HAVE_ARCH_TRACEHOOK
++	select HAVE_PERF_COUNTERS
+ 
+ config ZONE_DMA
+ 	bool
+diff --git a/arch/frv/include/asm/perf_counter.h b/arch/frv/include/asm/perf_counter.h
+new file mode 100644
+index 0000000..ccf726e
+--- /dev/null
++++ b/arch/frv/include/asm/perf_counter.h
+@@ -0,0 +1,17 @@
++/* FRV performance counter support
++ *
++ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#ifndef _ASM_PERF_COUNTER_H
++#define _ASM_PERF_COUNTER_H
++
++#define PERF_COUNTER_INDEX_OFFSET	0
++
++#endif /* _ASM_PERF_COUNTER_H */
+diff --git a/arch/frv/lib/Makefile b/arch/frv/lib/Makefile
+index 4ff2fb1..0a37721 100644
+--- a/arch/frv/lib/Makefile
++++ b/arch/frv/lib/Makefile
+@@ -5,4 +5,4 @@
+ lib-y := \
+ 	__ashldi3.o __lshrdi3.o __muldi3.o __ashrdi3.o __negdi2.o __ucmpdi2.o \
+ 	checksum.o memcpy.o memset.o atomic-ops.o atomic64-ops.o \
+-	outsl_ns.o outsl_sw.o insl_ns.o insl_sw.o cache.o
++	outsl_ns.o outsl_sw.o insl_ns.o insl_sw.o cache.o perf_counter.o
+diff --git a/arch/frv/lib/perf_counter.c b/arch/frv/lib/perf_counter.c
+new file mode 100644
+index 0000000..2000fee
+--- /dev/null
++++ b/arch/frv/lib/perf_counter.c
+@@ -0,0 +1,19 @@
++/* Performance counter handling
++ *
++ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++
++#include <linux/perf_counter.h>
++
++/*
++ * mark the performance counter as pending
++ */
++void set_perf_counter_pending(void)
++{
++}
+
