@@ -1,98 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZGAEeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZGAEjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZGAEeo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 00:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751035AbZGAEeg
+	id S1755940AbZGAEjd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 00:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZGAEjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 00:34:36 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37463 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750715AbZGAEef (ORCPT
+	Wed, 1 Jul 2009 00:39:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43819
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751278AbZGAEjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 00:34:35 -0400
-Message-ID: <4A4AE73A.7050907@jp.fujitsu.com>
-Date: Wed, 01 Jul 2009 13:34:02 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: kristen.c.accardi@intel.com, linux-pci@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pciehp resume handler - racy?
-References: <4A4A3697.7020804@tuffmail.co.uk>
-In-Reply-To: <4A4A3697.7020804@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 1 Jul 2009 00:39:22 -0400
+Date: Tue, 30 Jun 2009 21:39:27 -0700 (PDT)
+Message-Id: <20090630.213927.180401151.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Hi,
-> 
-> I've been hacking on the PCI hotplug driver otherwise known as
-> eeepc-laptop.  At one point I reliably triggered a race on resume.  In
-> the hot-unplug case, it seemed that the resume handler would try to
-> remove the PCI device at the same time as an acpi notification (run in a
-> workqueue) tried to do the same thing.  The result was an OOPS.  My
-> conclusion is that the PCI hotplug core does not protect against
-> multiple simultaneous removals of the same device.
 
-Though I don't know hotplug driver for eeepc-laptop at all, I guess
-it doesn't use pci_hp_register(), which is for registering a hotplug
-slot to pci hotplug core. The pci_hp_register() prevents a hot-plug
-slot from being managed by multiple hotplug controller drivers at
-the same time. Using pci_hp_register() would be one of the solution
-for eeepc-laptop hotplug driver.
+1) Revert ARP windows IP conflict verification support, it breaks
+   things, from Eric W. Biederman.
 
-> 
-> pciehp appears to have an analogous problem.  Assuming pciehp_force is
-> set, the resume handler can hot-unplug the device.  The interrupt
-> handler could try to hot-unplug the device at the same time.  Should the
-> resume handler take the slot mutex to avoid this problem?
-> 
+2) SCTP unintentionally broken by routing changes, fix from
+   Wei Yongjun.
 
-Hot-plug operations for the same hotplug slot are serialized by
-crit_sect mutex of struct controller in pciehp_enable_slot() and
-pciehp_disable_slot(). So I don't think multiple hot-plug
-operations for the same slot would be executed at the same time.
+3) XFRM layer code does xfrm_addr_cmp() by hand, leading to
+   code duplication and the usual assortment of cut&paste
+   bugs.  Also from Wei Yongjun.
 
-Thanks,
-Kenji Kaneshige
+4) Netfilter fixes from Patrick McHardy, Jaswinder Singh Rajput,
+   Jan Engelhardt, and Jesper Dangaard Brouer.
 
+5) bnx2x driver has same link reporting bug as bnx2 driver, from
+   Naohiro Ooiwa.
 
-> diff --faked-up a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-> --- a/drivers/pci/hotplug/pciehp_core.c
-> +++ b/drivers/pci/hotplug/pciehp_core.c
-> @@ -382,15 +382,18 @@ static int pciehp_resume (struct pcie_device *dev)
->  		/* reinitialize the chipset's event detection logic */
->  		pcie_enable_notification(ctrl);
->  
->  		t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
-> +		mutex_lock(&t_slot->lock);
->  
->  		/* Check if slot is occupied */
->  		t_slot->hpc_ops->get_adapter_status(t_slot, &status);
->  		if (status)
->  			pciehp_enable_slot(t_slot);
->  		else
->  			pciehp_disable_slot(t_slot);
-> +
-> +		mutex_unlock(&t_slot->lock);
->  	}
->  	return 0;
->  }
->  #endif /* PM */
-> 
-> 
-> Regards
-> Alan
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
+6) More fib_trie rebalancing fixes from Jarek Poplawski.
 
+7) usbnet was converted to use netdev->stats to record stats
+   instead of using a private copy.  Unfortunately, there are
+   a bunch of sub-drivers that code share with usbnet, and those
+   did not get converted so stats got lost.  Fixed by Herbert Xu.
 
+8) Fixes for the new ieee802154 stack from Dmitry Eremin-Solenikov.
+
+9) Non-TSO packets can become TSO ones and vice versa, which is
+   illegal and results in packets which have an illegal state.
+   Fixes from Herbert Xu.
+
+10) bfin_sir doesn't compile, missed net_device_ops conversion.
+    Fix from Graf Yang.
+
+11) Intel ethernet driver fixes from J. Kirsher and the rest of
+    the Intel driver team.  In particular, more bugs caught by
+    the DMA mapping API debugging layer.
+
+Please pull, thanks a lot.
+
+The following changes since commit 52989765629e7d182b4f146050ebba0abf2cb0b7:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alexander Duyck (1):
+      igb: return PCI_ERS_RESULT_DISCONNECT on permanent error
+
+Andre Detsch (1):
+      e1000: return PCI_ERS_RESULT_DISCONNECT on permanent error
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
+      Merge branch 'for-linus' of git://git.kernel.org/.../lowpan/lowpan
+
+Dmitry Eremin-Solenikov (3):
+      MAINTAINERS: ieee802154 lists are moderated for non-subscribers.
+      nl802154: fix Oops in ieee802154_nl_get_dev
+      nl802154: add module license and description
+
+Don Skidmore (1):
+      ixgbe: Fix SFP log messages
+
+Eric W. Biederman (1):
+      Revert "ipv4: arp announce, arp_proxy and windows ip conflict verification"
+
+Graf Yang (1):
+      net/irda: convert bfin_sir to net_device_ops
+
+Herbert Xu (9):
+      tcp: Stop non-TSO packets morphing into TSO
+      tcp: Do not tack on TSO data to non-TSO packet
+      cdc_eem: Use netdev stats structure
+      dm9601: Use netdev stats structure
+      net1080: Use netdev stats structure
+      rndis_host: Use netdev stats structure
+      smsc95xx: Use netdev stats structure
+      usbnet: Use netdev stats structure
+      usbnet: Remove private stats structure
+
+Jan Engelhardt (1):
+      netfilter: xtables: conntrack match revision 2
+
+Jarek Poplawski (1):
+      ipv4: Fix fib_trie rebalancing, part 3
+
+Jaswinder Singh Rajput (1):
+      netfilter: headers_check fix: linux/netfilter/xt_osf.h
+
+Jesper Dangaard Brouer (1):
+      nf_conntrack: Use rcu_barrier()
+
+Jesse Brandeburg (3):
+      ixgbe: fix unmap length bug
+      igb: fix unmap length bug
+      e1000: fix unmap bug
+
+Mallikarjuna R Chilakala (2):
+      ixgbe: Fix device capabilities of 82599 single speed fiber NICs.
+      ixgbe: Fix link capabilities during adapter resets
+
+Mike Mason (1):
+      e1000e: io_error_detected callback should return PCI_ERS_RESULT_DISCONNECT
+
+Naohiro Ooiwa (1):
+      bnx2x: Fix the behavior of ethtool when ONBOOT=no
+
+Patrick McHardy (1):
+      netfilter: tcp conntrack: fix unacknowledged data detection with NAT
+
+Wei Yongjun (2):
+      xfrm: use xfrm_addr_cmp() instead of compare addresses directly
+      sctp: xmit sctp packet always return no route error
+
+ MAINTAINERS                            |    2 +-
+ drivers/net/bnx2x_main.c               |   10 ++++-
+ drivers/net/e1000/e1000_main.c         |   11 +++++-
+ drivers/net/e1000e/netdev.c            |    3 +
+ drivers/net/igb/igb_main.c             |   14 ++++--
+ drivers/net/irda/bfin_sir.c            |   16 +++++---
+ drivers/net/ixgbe/ixgbe_ethtool.c      |    5 +-
+ drivers/net/ixgbe/ixgbe_main.c         |   45 ++++++++++++++-------
+ drivers/net/usb/cdc_eem.c              |    2 +-
+ drivers/net/usb/dm9601.c               |   10 ++--
+ drivers/net/usb/net1080.c              |   12 +++---
+ drivers/net/usb/rndis_host.c           |    2 +-
+ drivers/net/usb/smsc95xx.c             |   10 ++--
+ drivers/net/usb/usbnet.c               |   30 +++++++-------
+ include/linux/netfilter/xt_conntrack.h |   13 ++++++
+ include/linux/netfilter/xt_osf.h       |    2 +
+ include/linux/usb/usbnet.h             |    1 -
+ include/net/netfilter/nf_conntrack.h   |    4 +-
+ net/ieee802154/netlink.c               |    6 +++
+ net/ipv4/arp.c                         |    7 +--
+ net/ipv4/fib_trie.c                    |    3 +
+ net/ipv4/netfilter/nf_nat_helper.c     |   17 +++++---
+ net/ipv4/tcp.c                         |   15 +++++--
+ net/ipv4/tcp_output.c                  |    3 +-
+ net/netfilter/nf_conntrack_expect.c    |    4 +-
+ net/netfilter/nf_conntrack_extend.c    |    2 +-
+ net/netfilter/nf_conntrack_proto_tcp.c |    6 +-
+ net/netfilter/xt_conntrack.c           |   66 +++++++++++++++++++++++++++++---
+ net/sctp/output.c                      |    2 +-
+ net/xfrm/xfrm_state.c                  |   57 ++++-----------------------
+ 30 files changed, 235 insertions(+), 145 deletions(-)
