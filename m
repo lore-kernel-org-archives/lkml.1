@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZGAHfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753762AbZGAHiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbZGAHfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 03:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZGAHfc
+	id S1753762AbZGAHiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 03:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZGAHiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 03:35:32 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:57775 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbZGAHfb (ORCPT
+	Wed, 1 Jul 2009 03:38:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48395 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZGAHiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 03:35:31 -0400
-Date: Wed, 1 Jul 2009 00:31:41 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>, roland@redhat.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Cc: serue@us.ibm.com, Alexey Dobriyan <adobriyan@gmail.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] Disable CLONE_PARENT for init
-Message-ID: <20090701073140.GA14284@us.ibm.com>
+	Wed, 1 Jul 2009 03:38:05 -0400
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Adding information of counts processes acquired how many spinlocks to schedstat
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp>
+Date: Wed, 01 Jul 2009 09:38:04 +0200
+In-Reply-To: <20090701.152115.706994265076015808.mitake@dcl.info.waseda.ac.jp> (Hitoshi Mitake's message of "Wed, 01 Jul 2009 15:21:15 +0900 (JST)")
+Message-ID: <87hbxwj1k3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> writes:
 
-Disable CLONE_PARENT for init
+> Hi,
+>
+> I wrote a test patch which add information of counts processes acquired how many spinlocks to schedstat.
+> After applied this patch, /proc/<PID>/sched will change like this,
 
-When global or container-init processes use CLONE_PARENT, they create a
-multi-rooted process tree. Besides, if the siblings of init exit, the
-SIGCHLD is not sent to init process resulting in the zombies sticking
-around indefinitely. So disable CLONE_PARENT for init.
+The problem is that spinlocks are very common and schedstats is enabled commonly
+in production kernels. You would need to demonstrate that such a change doesn't
+have significant performance impact. For me it looks like it has.
 
-Lightly tested, RFC patch :-)
+Also I'm not sure exactly what good such a metric is. Do you have 
+a concrete use case?
 
-Changelog[v2]:
-	- Simplify patch description based on comments from Eric Biederman
-	  and Oleg Nesterov.
-	- [Oleg Nesterov] Use SIGNAL_UNKILLABLE instead of is_global_init()
+The normal way to check for lock contention or lock bouncingis to
+simply profile cycles or time and see if there is a lot of CPU time in
+locks.
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Acked-by: Roland McGrath <roland@redhat.com>
----
- kernel/fork.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+-Andi
 
-Index: linux-mmotm/kernel/fork.c
-===================================================================
---- linux-mmotm.orig/kernel/fork.c	2009-06-30 23:01:06.000000000 -0700
-+++ linux-mmotm/kernel/fork.c	2009-06-30 23:13:53.000000000 -0700
-@@ -974,6 +974,17 @@ static struct task_struct *copy_process(
- 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
- 		return ERR_PTR(-EINVAL);
- 
-+	/*
-+	 * Swapper process sets the handler for SIGCHLD to SIG_DFL. If init
-+	 * creates a sibling and the sibling exits, the SIGCHLD is sent to
-+	 * the swapper (since the swapper's handler for SIGCHLD is SIG_DFL).
-+	 * But since the swapper does not reap its children, the zombie will
-+	 * remain forever. So prevent init from using CLONE_PARENT.
-+	 */
-+	if ((clone_flags & CLONE_PARENT) &&
-+				current->signal->flags & SIGNAL_UNKILLABLE)
-+		return ERR_PTR(-EINVAL);
-+
- 	retval = security_task_create(clone_flags);
- 	if (retval)
- 		goto fork_out;
+-- 
+ak@linux.intel.com -- Speaking for myself only.
