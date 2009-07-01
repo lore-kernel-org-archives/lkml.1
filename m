@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZGASNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbZGASN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbZGASNF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 14:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274AbZGASMx
+	id S1756033AbZGASN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 14:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbZGASNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 14:12:53 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40878 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754523AbZGASMw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 14:12:52 -0400
+	Wed, 1 Jul 2009 14:13:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52029 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755274AbZGASNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 14:13:12 -0400
+Message-ID: <4A4BA71C.8000509@kernel.org>
+Date: Wed, 01 Jul 2009 11:12:44 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901A1383F@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901A13822@mi8nycmail19.Mi8.com> 
-	<ac3eb2510907011055r5d5f06c1k754e52ebae88efab@mail.gmail.com> 
-	<BD79186B4FD85F4B8E60E381CAEE190901A1383F@mi8nycmail19.Mi8.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 1 Jul 2009 20:12:38 +0200
-Message-ID: <ac3eb2510907011112k690e5c38y2a8871dde5db1f13@mail.gmail.com>
-Subject: Re: Problem with /proc/iomem on ARM
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: alex.shi@intel.com
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Chen, Tim C" <tim.c.chen@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [patch] fix hugepage unuseable issu on non-NUMA machine
+References: <1246273802.3160.28.camel@alexs-hp>	 <4A48F377.3020008@kernel.org> <1246441138.3042.18.camel@alexs-hp>
+In-Reply-To: <1246441138.3042.18.camel@alexs-hp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 20:01, H Hartley
-Sweeten<hartleys@visionengravers.com> wrote:
+Alex Shi wrote:
+> I have tried your patch. the specjbb2005 still can not run with the
+> following parameters under jrockit-R27.3.1-jre1.5.0_11 and with totla
+> 2GB hugepage memory setting. 
+> JAVA_OPTION= -Xmx2g -Xms2g -Xns1g -XXaggressive -Xlargepages -XXlazyUnlocking -Xgc:genpar -XXtlasize:min=16k,preferred=64k  -Djava.awt.headless=true
 
-> The serial ports on my system are amba bus devices.
->
->> After all, it seems like this should be fixed in arm somewhere, not to
->> copy and store internal driver core pointers, but use the device
->> itself to retrieve the values.
->
-> Maybe the problem is in drivers/amba/bus.c? amba_device_register() does:
->
->        dev->res.name = dev_name(&dev->dev);
+can you send out .config and bootlog?
 
-Looks like. If you get the name directly from dev->init_name. Does that work?
-
-Thanks,
-Kay
+YH
