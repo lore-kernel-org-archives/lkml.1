@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbZGAAfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbZGAAgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbZGAAfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 30 Jun 2009 20:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759957AbZGAAaX
+	id S1761638AbZGAAgO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 30 Jun 2009 20:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759966AbZGAAaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 30 Jun 2009 20:30:23 -0400
-Received: from kroah.org ([198.145.64.141]:34369 "EHLO coco.kroah.org"
+	Tue, 30 Jun 2009 20:30:24 -0400
+Received: from kroah.org ([198.145.64.141]:34373 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759658AbZGAAaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 30 Jun 2009 20:30:12 -0400
+	id S1756080AbZGAAaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 30 Jun 2009 20:30:13 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jun 30 17:03:59 2009
-Message-Id: <20090701000359.496473288@mini.kroah.org>
+Message-Id: <20090701000359.669419440@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 30 Jun 2009 17:00:04 -0700
+Date: Tue, 30 Jun 2009 17:00:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tom Quetchenbach <virtualphtn@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>, Willy Tarreau <w@1wt.eu>
-Subject: [patch 20/30] tcp: advertise MSS requested by user
+       Jens Rottmann <JRottmann@LiPPERTEmbedded.de>,
+       Alan Cox <alan@linux.intel.com>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 21/30] parport_pc: after superio probing restore original register values
 References: <20090630235944.868879272@mini.kroah.org>
-Content-Disposition: inline; filename=tcp-advertise-mss-requested-by-user.patch
+Content-Disposition: inline; filename=parport_pc-after-superio-probing-restore-original-register-values.patch
 In-Reply-To: <20090701002817.GA6156@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,103 +31,134 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tom Quetchenbach <virtualphtn@gmail.com>
+From: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
 
-commit f5fff5dc8a7a3f395b0525c02ba92c95d42b7390 upstream.
+commit e2434dc1c19412639dd047a4d4eff8ed0e5d0d50 upstream.
 
-I'm trying to use the TCP_MAXSEG option to setsockopt() to set the MSS
-for both sides of a bidirectional connection.
+CONFIG_PARPORT_PC_SUPERIO probes for various superio chips by writing
+byte sequences to a set of different potential I/O ranges.  But the
+probed ranges are not exclusive to parallel ports.  Some of our boards
+just happen to have a watchdog in one of them.  Took us almost a week
+to figure out why some distros reboot without warning after running
+flawlessly for 3 hours.  For exactly 170 = 0xAA minutes, that is ...
 
-man tcp says: "If this option is set before connection establishment, it
-also changes the MSS value announced to the other end in the initial
-packet."
+Fixed by restoring original values after probing.  Also fixed too small
+request_region() in detect_and_report_it87().
 
-However, the kernel only uses the MTU/route cache to set the advertised
-MSS. That means if I set the MSS to, say, 500 before calling connect(),
-I will send at most 500-byte packets, but I will still receive 1500-byte
-packets in reply.
-
-This is a bug, either in the kernel or the documentation.
-
-This patch (applies to latest net-2.6) reduces the advertised value to
-that requested by the user as long as setsockopt() is called before
-connect() or accept(). This seems like the behavior that one would
-expect as well as that which is documented.
-
-I've tried to make sure that things that depend on the advertised MSS
-are set correctly.
-
-Signed-off-by: Tom Quetchenbach <virtualphtn@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Willy Tarreau <w@1wt.eu>
+Signed-off-by: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Acked-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_ipv4.c   |    4 ++++
- net/ipv4/tcp_output.c |   13 ++++++++++---
- 2 files changed, 14 insertions(+), 3 deletions(-)
+ drivers/parport/parport_pc.c |   31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
 
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1364,6 +1364,10 @@ struct sock *tcp_v4_syn_recv_sock(struct
- 	tcp_mtup_init(newsk);
- 	tcp_sync_mss(newsk, dst_mtu(dst));
- 	newtp->advmss = dst_metric(dst, RTAX_ADVMSS);
-+	if (tcp_sk(sk)->rx_opt.user_mss &&
-+	    tcp_sk(sk)->rx_opt.user_mss < newtp->advmss)
-+		newtp->advmss = tcp_sk(sk)->rx_opt.user_mss;
+--- a/drivers/parport/parport_pc.c
++++ b/drivers/parport/parport_pc.c
+@@ -1413,11 +1413,13 @@ static void __devinit decode_smsc(int ef
+ 
+ static void __devinit winbond_check(int io, int key)
+ {
+-	int devid,devrev,oldid,x_devid,x_devrev,x_oldid;
++	int origval, devid, devrev, oldid, x_devid, x_devrev, x_oldid;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval = inb(io); /* Save original value */
 +
- 	tcp_initialize_rcv_mss(newsk);
+ 	/* First probe without key */
+ 	outb(0x20,io);
+ 	x_devid=inb(io+1);
+@@ -1437,6 +1439,8 @@ static void __devinit winbond_check(int 
+ 	oldid=inb(io+1);
+ 	outb(0xaa,io);    /* Magic Seal */
  
- #ifdef CONFIG_TCP_MD5SIG
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -2252,6 +2252,7 @@ struct sk_buff *tcp_make_synack(struct s
- 	struct sk_buff *skb;
- 	struct tcp_md5sig_key *md5;
- 	__u8 *md5_hash_location;
-+	int mss;
- 
- 	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
- 	if (skb == NULL)
-@@ -2262,13 +2263,17 @@ struct sk_buff *tcp_make_synack(struct s
- 
- 	skb->dst = dst_clone(dst);
- 
-+	mss = dst_metric(dst, RTAX_ADVMSS);
-+	if (tp->rx_opt.user_mss && tp->rx_opt.user_mss < mss)
-+		mss = tp->rx_opt.user_mss;
++	outb(origval, io); /* in case we poked some entirely different hardware */
 +
- 	if (req->rcv_wnd == 0) { /* ignored for retransmitted syns */
- 		__u8 rcv_wscale;
- 		/* Set this up on the first call only */
- 		req->window_clamp = tp->window_clamp ? : dst_metric(dst, RTAX_WINDOW);
- 		/* tcp_full_space because it is guaranteed to be the first packet */
- 		tcp_select_initial_window(tcp_full_space(sk),
--			dst_metric(dst, RTAX_ADVMSS) - (ireq->tstamp_ok ? TCPOLEN_TSTAMP_ALIGNED : 0),
-+			mss - (ireq->tstamp_ok ? TCPOLEN_TSTAMP_ALIGNED : 0),
- 			&req->rcv_wnd,
- 			&req->window_clamp,
- 			ireq->wscale_ok,
-@@ -2283,8 +2288,7 @@ struct sk_buff *tcp_make_synack(struct s
- 	else
- #endif
- 	TCP_SKB_CB(skb)->when = tcp_time_stamp;
--	tcp_header_size = tcp_synack_options(sk, req,
--					     dst_metric(dst, RTAX_ADVMSS),
-+	tcp_header_size = tcp_synack_options(sk, req, mss,
- 					     skb, &opts, &md5) +
- 			  sizeof(struct tcphdr);
+ 	if ((x_devid == devid) && (x_devrev == devrev) && (x_oldid == oldid))
+ 		goto out; /* protection against false positives */
  
-@@ -2353,6 +2357,9 @@ static void tcp_connect_init(struct sock
- 	if (!tp->window_clamp)
- 		tp->window_clamp = dst_metric(dst, RTAX_WINDOW);
- 	tp->advmss = dst_metric(dst, RTAX_ADVMSS);
-+	if (tp->rx_opt.user_mss && tp->rx_opt.user_mss < tp->advmss)
-+		tp->advmss = tp->rx_opt.user_mss;
+@@ -1447,11 +1451,15 @@ out:
+ 
+ static void __devinit winbond_check2(int io,int key)
+ {
+-        int devid,devrev,oldid,x_devid,x_devrev,x_oldid;
++	int origval[3], devid, devrev, oldid, x_devid, x_devrev, x_oldid;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval[0] = inb(io); /* Save original values */
++	origval[1] = inb(io + 1);
++	origval[2] = inb(io + 2);
 +
- 	tcp_initialize_rcv_mss(sk);
+ 	/* First probe without the key */
+ 	outb(0x20,io+2);
+ 	x_devid=inb(io+2);
+@@ -1470,6 +1478,10 @@ static void __devinit winbond_check2(int
+         oldid=inb(io+2);
+         outb(0xaa,io);    /* Magic Seal */
  
- 	tcp_select_initial_window(tcp_full_space(sk),
++	outb(origval[0], io); /* in case we poked some entirely different hardware */
++	outb(origval[1], io + 1);
++	outb(origval[2], io + 2);
++
+ 	if ((x_devid == devid) && (x_devrev == devrev) && (x_oldid == oldid))
+ 		goto out; /* protection against false positives */
+ 
+@@ -1480,11 +1492,13 @@ out:
+ 
+ static void __devinit smsc_check(int io, int key)
+ {
+-        int id,rev,oldid,oldrev,x_id,x_rev,x_oldid,x_oldrev;
++	int origval, id, rev, oldid, oldrev, x_id, x_rev, x_oldid, x_oldrev;
+ 
+ 	if (!request_region(io, 3, __func__))
+ 		return;
+ 
++	origval = inb(io); /* Save original value */
++
+ 	/* First probe without the key */
+ 	outb(0x0d,io);
+ 	x_oldid=inb(io+1);
+@@ -1508,6 +1522,8 @@ static void __devinit smsc_check(int io,
+ 	rev=inb(io+1);
+         outb(0xaa,io);    /* Magic Seal */
+ 
++	outb(origval, io); /* in case we poked some entirely different hardware */
++
+ 	if ((x_id == id) && (x_oldrev == oldrev) &&
+ 	    (x_oldid == oldid) && (x_rev == rev))
+ 		goto out; /* protection against false positives */
+@@ -1544,11 +1560,12 @@ static void __devinit detect_and_report_
+ static void __devinit detect_and_report_it87(void)
+ {
+ 	u16 dev;
+-	u8 r;
++	u8 origval, r;
+ 	if (verbose_probing)
+ 		printk(KERN_DEBUG "IT8705 Super-IO detection, now testing port 2E ...\n");
+-	if (!request_region(0x2e, 1, __func__))
++	if (!request_region(0x2e, 2, __func__))
+ 		return;
++	origval = inb(0x2e);		/* Save original value */
+ 	outb(0x87, 0x2e);
+ 	outb(0x01, 0x2e);
+ 	outb(0x55, 0x2e);
+@@ -1568,8 +1585,10 @@ static void __devinit detect_and_report_
+ 		outb(r | 8, 0x2F);
+ 		outb(0x02, 0x2E);	/* Lock */
+ 		outb(0x02, 0x2F);
++	} else {
++		outb(origval, 0x2e);	/* Oops, sorry to disturb */
+ 	}
+-	release_region(0x2e, 1);
++	release_region(0x2e, 2);
+ }
+ #endif /* CONFIG_PARPORT_PC_SUPERIO */
+ 
 
 
