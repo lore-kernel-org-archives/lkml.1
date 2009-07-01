@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZGAGm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752851AbZGAGoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZGAGm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 02:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZGAGmr
+	id S1752851AbZGAGoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 02:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGAGoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 02:42:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53370 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbZGAGmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 02:42:47 -0400
-Date: Wed, 1 Jul 2009 08:42:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       x86@kernel.org, linux-arch@vger.kernel.org, andi@firstfloor.org,
-       hpa@zytor.com, tglx@linutronix.de
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve lpage NUMA support
-Message-ID: <20090701064250.GM6760@one.firstfloor.org>
-References: <1245850216-31653-1-git-send-email-tj@kernel.org> <20090624165508.30b88343.akpm@linux-foundation.org> <alpine.DEB.1.10.0906291920100.32637@gentwo.org> <20090629163937.94c8cedd.akpm@linux-foundation.org> <20090630191517.GB20567@elte.hu> <alpine.DEB.1.10.0906301533400.29795@gentwo.org> <20090630213146.GA17492@elte.hu> <alpine.DEB.1.10.0906301809330.11362@gentwo.org> <4A4A9DC6.6020003@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4A9DC6.6020003@kernel.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 1 Jul 2009 02:44:14 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:47666 "EHLO deleuze.hcoop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751012AbZGAGoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 02:44:14 -0400
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Tue, 30 Jun 2009 23:43:53 -0700
+In-Reply-To: <4A4B0125.2090502@crca.org.au> (Nigel Cunningham's message of
+	"Wed, 01 Jul 2009 16:24:37 +1000")
+Message-ID: <87d48k2992.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't think it will be too complex.  The necessary bits are already
-> there and they are necessary for other stuff too, so...
+Nigel Cunningham <ncunningham@crca.org.au> writes:
 
-Are we looking at a different source base? Here's a random example
-using possible per cpu data I picked in current git: icmp.c
+> Hi Jeremy.
+> I'd suggest emailing the Linux-PM list rather than tuxonice-devel.
+> TuxOnIce devel focuses on the out-of-vanilla suspend to disk
+> enhancements rather than on suspend to ram.
 
-static int __net_init icmp_sk_init(struct net *net)
-{
-        int i, err;
+The Linux-PM list is a good suggestion, but I specifically included
+tuxonice because of the note at the bottom --- namely that I believe
+that tuxonice in particular already includes support for much of what is
+needed to implement the idea.
 
-        net->ipv4.icmp_sk =
-                kzalloc(nr_cpu_ids * sizeof(struct sock *), GFP_KERNEL);
-        if (net->ipv4.icmp_sk == NULL)
-                return -ENOMEM;
+Specifically, suppose right at the stage in tuxonice hibernation when
+the kernel as about to write the page cache pages to disk, it instead
+just encrypts in place those pages, clears the encryption key, then
+waits for the userspace helper to pass it back the key again to use to
+decrypt the pages.
 
-        for_each_possible_cpu(i) {
-		... allocate per cpu socket and some other setup ...
-	}
-} 
+In fact it would seems that actually entering S3 is mostly irrelevant in
+terms of the implementation.
 
-static void __net_exit icmp_sk_exit(struct net *net)
-{
-        int i;
+Tuoxnice already has code to deal with interfacing with a userspace
+helper that is kept unfrozen (and its pages handled specially) while
+everything else is frozen and the page cache is overwritten, which is
+precisely what is needed for this idea.  In particular, it seems that an
+implementation of the idea I proposed would look a lot like tuxonice
+with a powerdown mode of entering S3, just that instead of writing the
+page cache to disk, it is encrypted in place.  I suppose it could well be that
+all of the facilities used by tuxonice to do this are actually already
+in the kernel, in which case it is indeed not relevant to tuxonice, but
+it is not clear that the uswsusp infrastructure has everything that is
+needed.
 
-        for_each_possible_cpu(i)
-                inet_ctl_sock_destroy(net->ipv4.icmp_sk[i]);
-        kfree(net->ipv4.icmp_sk);
-        net->ipv4.icmp_sk = NULL;
-}
-
-You would need to convert that to use a CPU notifier and callbacks
-setting up the sockets. Then make sure there are no races in all of
-this. And get it somehow tested (where is the user base who
-tests cpu hotplug?) 
-
-And there is lots of similar code all over the tree
-
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jeremy Maitin-Shepard
