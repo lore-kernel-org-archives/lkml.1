@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753948AbZGAMcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZGAMdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753948AbZGAMcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 08:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZGAMcL
+	id S1754736AbZGAMdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 08:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZGAMdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 08:32:11 -0400
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:31564
-	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750914AbZGAMcK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 08:32:10 -0400
-X-Greylist: delayed 616 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Jul 2009 08:32:10 EDT
-X-IronPort-AV: E=Sophos;i="4.42,323,1243807200"; 
-   d="asc'?scan'208";a="30495911"
-Message-ID: <4A4B54D6.8080402@loria.fr>
-Date: Wed, 01 Jul 2009 14:21:42 +0200
-From: Jens Gustedt <Jens.Gustedt@loria.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090608 Lightning/0.9 Thunderbird/2.0.0.22 Mnenhy/0.7.6.666
+	Wed, 1 Jul 2009 08:33:05 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:37848 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750914AbZGAMdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 08:33:04 -0400
 MIME-Version: 1.0
-To: jeremy@jeremyms.com
-CC: tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by
- encrypting page cache
-References: <87hbxx0wcp.fsf@jeremyms.com>
-In-Reply-To: <87hbxx0wcp.fsf@jeremyms.com>
-X-Enigmail-Version: 0.95.6
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAAXNSR0IArs4c6QAAACRQTFRF
- ERslNjAsLTE9Ok9wUk9TaUs8iWhSrYZkj42Rz6aD3sGZ/P/7B+vw4wAAAAlwSFlzAAALEwAACxMB
- AJqcGAAAAAd0SU1FB9gGGQk7HLeKUa8AAAIoSURBVDjLhdOxbtswEABQyhmz8BjJ7WjRTVHAk2O3
- S5baUNNm1EB59iAJ6m4R2osgRdfWAv0H0Za6QGPo53onOxYtIOhNgh7IuyOPrH4h2H/hvp5Q/OjC
- djIN5lKKYRcmUxWHACCvOzCNojj0FAh5CpObJM1jpXDRyIZtX+uiREG4sGGcGgydUxpuwdYrCEqd
- KwB23cKfV6aJkoCftzDOzKaqUPL4FN4XL8AnY6oGNGbnZy3c7HBB9YDZk1DwXgtvaKeHpixcsS+r
- gbe4S2UOAGx0hEv8uWlyIPjs3NrqsJfOlzCwwG/K3VD2JW510TbYlgvgOy1c7fsrMYNAGB7hd7ah
- o6KS8A5lrz3d27UKVRpDA34L9S39W6z6OvYQhhasFajsV5TjREhpwU6nOi7WfY15pH9tgdFJataq
- ILBusN6VVNVapQjChtps6HDDiA7rBL5j1wgeTdYJ/DU5TlAISqkOaJUVJQJ0IY+aEwSI4cwqt35a
- RVqv8L+3FGwwsqY9iULsWxHwAd36M3xI869VsQQvBDZgKM/wlOrCJKoBisnxDX7Gh4DpPdgDO77B
- S61x3DzVge3YzbBeFYUHcA4g4V1EE5fgUDscwd1frT8TAWSmLGnae5Ix7u/nCjv7CQucN/xgcoAb
- AcF4Br77zVskCY4bOIHPOCe4ghmI4M5bNOPDe3OB8JHV2xmG/+VOpVgugjsXDnNxxaM7c93g9T0B
- dgHBXPQ4OP8ApiUfmpUgHuIAAAAASUVORK5CYII=
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2B49F2F3C0FB57DCF0D8FFF8"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19019.22396.776453.297335@cargo.ozlabs.ibm.com>
+Date: Wed, 1 Jul 2009 22:33:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf_counter: Add Generalized Hardware FPU
+	support for AMD
+In-Reply-To: <20090630224220.GI1241@elte.hu>
+References: <1246267985.3185.3.camel@hpdv5.satnam>
+	<20090630101105.GF6942@elte.hu>
+	<1246368049.3026.11.camel@hpdv5.satnam>
+	<20090630224220.GI1241@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2B49F2F3C0FB57DCF0D8FFF8
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Ingo Molnar writes:
 
-Hello Jeremy,
+>         19583739  vec-adds               (   2.01x scaled)
+>         20856051  vec-muls               (   2.01x scaled)
+>         20856051  vec-divs               (   2.01x scaled)
+>      25100224054  vec-idle-cycles        (   1.99x scaled)
+>         12540131  vec-busy-cycles        (   1.99x scaled)
+>         42286702  vec-ops                (   2.01x scaled)
+> 
+> Paulus: would this categorization fit PowerPC too?
 
-> Of course, hibernating to encrypted swap protects against this risk, bu=
-t
-> having to resort to this effectively limits the usefulness of
-> suspend-to-ram.
+Conceptually that looks nice, but unfortunately we don't have events
+that correspond to that categorization on any PowerPC with vector
+hardware (VMX/Altivec).  POWER6 seems to have the most vector events,
+and they are mostly divided up along the lines of simple / complex /
+permute / load / store operations, and whether they are integer or
+floating-point operations.
 
-I don't see how you come to this quick conclusion. If you are only
-interested in suspend-to-ram, it is fairly easy set up dmcrypt with a
-random key (determined at each boot) for your swap partition. The
-performance issues are not noticeable but for extreme swap loads or
-intensive parallel applications. In particular on a modern bi-core
-processor you will never see a difference.
+Here are the vector-related events we have on POWER6:
 
-Such an approach has the advantage of crypting everything that
-eventually is written to disk, in particular other privacy relevant
-data such as memory used by editors or web browsers.
+MRK_VMX0_LD_WRBACK	Marked VMX0 load writeback valid
+MRK_VMX1_LD_WRBACK	Marked VMX1 load writeback valid
+MRK_VMX_COMPLEX_ISSUED	Marked VMX instruction issued to complex
+MRK_VMX_FLOAT_ISSUED	Marked VMX instruction issued to float
+MRK_VMX_PERMUTE_ISSUED	Marked VMX instruction issued to permute
+MRK_VMX_SIMPLE_ISSUED	Marked VMX instruction issued to simple
+MRK_VMX_ST_ISSUED	Marked VMX store issued
+VMX0_INST_ISSUED	VMX0 instruction issued
+VMX0_LD_ISSUED		VMX0 load issued
+VMX0_LD_WRBACK		VMX0 load writeback valid
+VMX0_STALL		VMX0 stall
+VMX1_INST_ISSUED	VMX1 instruction issued
+VMX1_LD_ISSUED		VMX1 load issued
+VMX1_LD_WRBACK		VMX1 load writeback valid
+VMX1_STALL		VMX1 stall
+VMX_COMPLEX_ISSUED	VMX instruction issued to complex
+VMX_FLOAT_ISSUED	VMX instruction issued to float
+VMX_FLOAT_MULTICYCLE	VMX multi-cycle floating point instruction issued
+VMX_PERMUTE_ISSUED	VMX instruction issued to permute
+VMX_RESULT_SAT_0_1	VMX valid result with sat bit is set (0->1)
+VMX_RESULT_SAT_1	VMX valid result with sat=1
+VMX_SIMPLE_ISSUED	VMX instruction issued to simple
+VMX_ST_ISSUED		VMX store issued
 
-If you also want to do hibernation, the setup is a bit more complex,
-but very much doable for an average linux user nowadays, AFAIKS
-support exists in the major distributions. This works equally well
-with both hibernation implementations. I use this since several years
-now and I am much satisfied with the setup.
+I'm not sure what the exact distinction is between VMX0 and VMX1.
+I'll find out.
 
-Best
-Jens
+The MPC7450 (G4, 32-bit) cpu also has quite a few VMX/Altivec events,
+such as counts of cycles that individual vector units are waiting for
+operands, but not counts of how many vector add or vector multiply
+operations are done.
 
---
-:: INRIA Nancy Grand Est :: http://www.loria.fr/~gustedt/ ::
-:: Bat B - AlGorille :::::::::::::::::: fon +33 383593090 ::
-:: campus scientifique, BP 239 :::::::: gsm +33 688495246 ::
-:: 54506 Vand=BDuvre l=E8s Nancy, France :: fax +33 383278319 ::
-
-
---------------enig2B49F2F3C0FB57DCF0D8FFF8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkpLVNYACgkQD9PoadrVN+K+4wCeOQ4uqk1QZZi2tmQq0EBaPS7p
-27EAn1WT69oKPh8YsTUo7SnIqDAFLleL
-=BZM5
------END PGP SIGNATURE-----
-
---------------enig2B49F2F3C0FB57DCF0D8FFF8--
-
+Paul.
