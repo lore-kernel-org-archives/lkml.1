@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbZGBNwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZGBNv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756646AbZGBNwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZGBNuq
+	id S1756567AbZGBNv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZGBNuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:50:46 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:43088 "EHLO
+	Thu, 2 Jul 2009 09:50:37 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:42994 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZGBNuo (ORCPT
+	with ESMTP id S1756027AbZGBNue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 09:50:44 -0400
+	Thu, 2 Jul 2009 09:50:34 -0400
 X-Cam-AntiVirus: no malware found
 X-Cam-SpamDetails: not scanned
 X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
@@ -18,11 +18,11 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 10/14] IIO: lis3l02dq ring buffer and data ready trigger support
-Date: Thu,  2 Jul 2009 13:47:40 +0000
-Message-Id: <1246542464-6974-11-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 12/14] IIO: Periodic timer based trigger
+Date: Thu,  2 Jul 2009 13:47:42 +0000
+Message-Id: <1246542464-6974-13-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
@@ -33,682 +33,337 @@ References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-8-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-11-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-Example of relatively common case of device sampling
-based on internal clock and providing a data ready
-signal to indicate that new data is available to be
-read out.
-
-Generic trigger approach used to allow other devices
-to be sampled 'at the same time' as this the accelerometer.
-This is very useful in various motion estimation algorithms.
+The original posting of this driver led to a discussion in
+which it was commented that a better system was needed
+for dealing with the many possible periodic interrupt
+sources available on some SoCs.  Unfortunately that is
+a big task and as far as I know, no-one has taken it
+on as yet.  So in the meantime this driver is still
+in here.
 ---
- drivers/iio/accel/Makefile         |    1 +
- drivers/iio/accel/lis3l02dq.h      |   22 ++-
- drivers/iio/accel/lis3l02dq_ring.c |  599 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 621 insertions(+), 1 deletions(-)
- create mode 100644 drivers/iio/accel/lis3l02dq_ring.c
+ drivers/iio/Kconfig                         |    2 +
+ drivers/iio/Makefile                        |    4 +-
+ drivers/iio/trigger/Kconfig                 |   12 ++
+ drivers/iio/trigger/Makefile                |    5 +
+ drivers/iio/trigger/iio-trig-periodic-rtc.c |  230 +++++++++++++++++++++++++++
+ include/linux/iio/prtc_trigger.h            |    7 +
+ 6 files changed, 259 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/iio/trigger/Kconfig
+ create mode 100644 drivers/iio/trigger/Makefile
+ create mode 100644 drivers/iio/trigger/iio-trig-periodic-rtc.c
+ create mode 100644 include/linux/iio/prtc_trigger.h
 
-diff --git a/drivers/iio/accel/Makefile b/drivers/iio/accel/Makefile
-index d543208..d5335f9 100644
---- a/drivers/iio/accel/Makefile
-+++ b/drivers/iio/accel/Makefile
-@@ -4,6 +4,7 @@
- obj-$(CONFIG_KXSD9)	+= kxsd9.o
+diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
+index 936f954..3586984 100644
+--- a/drivers/iio/Kconfig
++++ b/drivers/iio/Kconfig
+@@ -38,3 +38,5 @@ config IIO_TRIGGER
+ source drivers/iio/accel/Kconfig
+ source drivers/iio/adc/Kconfig
+ source drivers/iio/light/Kconfig
++
++source drivers/iio/trigger/Kconfig
+\ No newline at end of file
+diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
+index dea4536..7ec0218 100644
+--- a/drivers/iio/Makefile
++++ b/drivers/iio/Makefile
+@@ -11,4 +11,6 @@ obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
  
- lis3l02dq-y		:= lis3l02dq_core.o
-+lis3l02dq-$(CONFIG_IIO_RING_BUFFER) += lis3l02dq_ring.o
- obj-$(CONFIG_LIS3L02DQ)	+= lis3l02dq.o
- 
- sca3000-y		:= sca3000_core.o sca3000_ring.o
-diff --git a/drivers/iio/accel/lis3l02dq.h b/drivers/iio/accel/lis3l02dq.h
-index 18cb49c..91a5375 100644
---- a/drivers/iio/accel/lis3l02dq.h
-+++ b/drivers/iio/accel/lis3l02dq.h
-@@ -183,6 +183,26 @@ int lis3l02dq_spi_write_reg_8(struct device *dev,
- #define LIS3L02DQ_SCAN_ACC_Y 1
- #define LIS3L02DQ_SCAN_ACC_Z 2
- 
+ obj-y += accel/
+ obj-y += adc/
+-obj-y += light/
+\ No newline at end of file
++obj-y += light/
 +
-+#ifdef CONFIG_IIO_RING_BUFFER
-+/* At the moment triggers are only used for ring buffer
-+ * filling. This may change!
-+ */
-+void lis3l02dq_remove_trigger(struct iio_dev *indio_dev);
-+int lis3l02dq_probe_trigger(struct iio_dev *indio_dev);
-+
-+ssize_t lis3l02dq_read_accel_from_ring(struct device *dev,
-+				       struct device_attribute *attr,
-+				       char *buf);
-+
-+
-+int lis3l02dq_configure_ring(struct iio_dev *indio_dev);
-+void lis3l02dq_unconfigure_ring(struct iio_dev *indio_dev);
-+
-+int lis3l02dq_initialize_ring(struct iio_ring_buffer *ring);
-+void lis3l02dq_uninitialize_ring(struct iio_ring_buffer *ring);
-+#else /* CONFIG_IIO_RING_BUFFER */
-+
- static inline void lis3l02dq_remove_trigger(struct iio_dev *indio_dev) {};
- static inline int lis3l02dq_probe_trigger(struct iio_dev *indio_dev)
- {
-@@ -208,5 +228,5 @@ static inline int lis3l02dq_initialize_ring(struct iio_ring_buffer *ring)
- 	return 0;
- };
- static inline void lis3l02dq_uninitialize_ring(struct iio_ring_buffer *ring) {};
--
-+#endif /* CONFIG_IIO_RING_BUFFER */
- #endif /* SPI_LIS3L02DQ_H_ */
-diff --git a/drivers/iio/accel/lis3l02dq_ring.c b/drivers/iio/accel/lis3l02dq_ring.c
++obj-y += trigger/
+\ No newline at end of file
+diff --git a/drivers/iio/trigger/Kconfig b/drivers/iio/trigger/Kconfig
 new file mode 100644
-index 0000000..133d0c9
+index 0000000..0c73ccc
 --- /dev/null
-+++ b/drivers/iio/accel/lis3l02dq_ring.c
-@@ -0,0 +1,599 @@
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/gpio.h>
-+#include <linux/workqueue.h>
-+#include <linux/mutex.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <linux/spi/spi.h>
-+#include <linux/sysfs.h>
-+#include <linux/list.h>
++++ b/drivers/iio/trigger/Kconfig
+@@ -0,0 +1,12 @@
++#
++# Industrial I/O standalone triggers
++#
++comment "Triggers - standalone"
++	depends on IIO
 +
-+#include <linux/iio/iio.h>
-+#include <linux/iio/sysfs.h>
-+#include <linux/iio/ring_sw.h>
-+#include <linux/iio/accel.h>
-+#include <linux/iio/trigger.h>
-+#include "lis3l02dq.h"
++config IIO_PERIODIC_RTC_TRIGGER
++	tristate "Periodic RTC triggers"
++	depends on IIO && IIO_TRIGGER && RTC_CLASS
++	help
++	    Provides support for using periodic capable real time
++	    clocks as IIO triggers.
+diff --git a/drivers/iio/trigger/Makefile b/drivers/iio/trigger/Makefile
+new file mode 100644
+index 0000000..4ae55b9
+--- /dev/null
++++ b/drivers/iio/trigger/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for triggers not associated with iio-devices
++#
++obj-$(CONFIG_IIO_PERIODIC_RTC_TRIGGER) += iio-trig-periodic-rtc.o
 +
-+/**
-+ * combine_8_to_16() utility function to munge to u8s into u16
-+ **/
-+static inline u16 combine_8_to_16(u8 lower, u8 upper)
-+{
-+	u16 _lower = lower;
-+	u16 _upper = upper;
-+	return _lower | (_upper << 8);
-+}
-+
-+/**
-+ * lis3l02dq_scan_el_set_state() set whether a scan contains a given channel
-+ * @scan_el:	associtate iio scan element attribute
-+ * @indio_dev:	the device structure
-+ * @bool:	desired state
+diff --git a/drivers/iio/trigger/iio-trig-periodic-rtc.c b/drivers/iio/trigger/iio-trig-periodic-rtc.c
+new file mode 100644
+index 0000000..feac4f3
+--- /dev/null
++++ b/drivers/iio/trigger/iio-trig-periodic-rtc.c
+@@ -0,0 +1,230 @@
++/* The industrial I/O periodic RTC trigger driver
 + *
-+ * mlock already held when this is called.
-+ **/
-+static int lis3l02dq_scan_el_set_state(struct iio_scan_el *scan_el,
-+				       struct iio_dev *indio_dev,
-+				       bool state)
-+{
-+	u8 t, mask;
-+	int ret;
-+
-+	ret = lis3l02dq_spi_read_reg_8(&indio_dev->dev,
-+				       LIS3L02DQ_REG_CTRL_1_ADDR,
-+				       &t);
-+	if (ret)
-+		goto error_ret;
-+	switch (scan_el->label) {
-+	case LIS3L02DQ_REG_OUT_X_L_ADDR:
-+		mask = LIS3L02DQ_REG_CTRL_1_AXES_X_ENABLE;
-+		break;
-+	case LIS3L02DQ_REG_OUT_Y_L_ADDR:
-+		mask = LIS3L02DQ_REG_CTRL_1_AXES_Y_ENABLE;
-+		break;
-+	case LIS3L02DQ_REG_OUT_Z_L_ADDR:
-+		mask = LIS3L02DQ_REG_CTRL_1_AXES_Z_ENABLE;
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		goto error_ret;
-+	}
-+
-+	if (!(mask & t) == state) {
-+		if (state)
-+			t |= mask;
-+		else
-+			t &= ~mask;
-+		ret = lis3l02dq_spi_write_reg_8(&indio_dev->dev,
-+						LIS3L02DQ_REG_CTRL_1_ADDR,
-+						&t);
-+	}
-+error_ret:
-+	return ret;
-+
-+}
-+static IIO_SCAN_EL_C(accel_x, LIS3L02DQ_SCAN_ACC_X, IIO_SIGNED(16),
-+		     LIS3L02DQ_REG_OUT_X_L_ADDR,
-+		     &lis3l02dq_scan_el_set_state);
-+static IIO_SCAN_EL_C(accel_y, LIS3L02DQ_SCAN_ACC_Y, IIO_SIGNED(16),
-+		     LIS3L02DQ_REG_OUT_Y_L_ADDR,
-+		     &lis3l02dq_scan_el_set_state);
-+static IIO_SCAN_EL_C(accel_z, LIS3L02DQ_SCAN_ACC_Z, IIO_SIGNED(16),
-+		     LIS3L02DQ_REG_OUT_Z_L_ADDR,
-+		     &lis3l02dq_scan_el_set_state);
-+static IIO_SCAN_EL_TIMESTAMP;
-+
-+static struct attribute *lis3l02dq_scan_el_attrs[] = {
-+	&iio_scan_el_accel_x.dev_attr.attr,
-+	&iio_scan_el_accel_y.dev_attr.attr,
-+	&iio_scan_el_accel_z.dev_attr.attr,
-+	&iio_scan_el_timestamp.dev_attr.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group lis3l02dq_scan_el_group = {
-+	.attrs = lis3l02dq_scan_el_attrs,
-+	.name = "scan_elements",
-+};
-+
-+/**
-+ * lis3l02dq_poll_func_th() top half interrupt handler called by trigger
-+ * @private_data:	iio_dev
-+ **/
-+static void lis3l02dq_poll_func_th(struct iio_dev *indio_dev)
-+{
-+  struct lis3l02dq_state *st = iio_dev_get_devdata(indio_dev);
-+	st->last_timestamp = indio_dev->trig->timestamp;
-+	schedule_work(&st->work_trigger_to_ring);
-+	/* Indicate that this interrupt is being handled */
-+
-+	/* Technically this is trigger related, but without this
-+	 * handler running there is currently now way for the interrupt
-+	 * to clear.
-+	 */
-+	st->inter = 1;
-+}
-+
-+/**
-+ * lis3l02dq_data_rdy_trig_poll() the event handler for the data rdy trig
-+ **/
-+static int lis3l02dq_data_rdy_trig_poll(struct iio_dev *dev_info,
-+				       int index,
-+				       s64 timestamp,
-+				       int no_test)
-+{
-+	struct lis3l02dq_state *st = iio_dev_get_devdata(dev_info);
-+	struct iio_trigger *trig = st->trig;
-+
-+	trig->timestamp = timestamp;
-+	iio_trigger_poll(trig);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* This is an event as it is a response to a physical interrupt */
-+IIO_EVENT_SH(data_rdy_trig, &lis3l02dq_data_rdy_trig_poll);
-+
-+/**
-+ * lis3l02dq_read_accel_from_ring() individual acceleration read from ring
-+ **/
-+ssize_t lis3l02dq_read_accel_from_ring(struct device *dev,
-+				       struct device_attribute *attr,
-+				       char *buf)
-+{
-+	struct iio_scan_el *el = NULL;
-+	int ret, len = 0, i = 0;
-+	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	s16 *data;
-+
-+	while (dev_info->scan_el_attrs->attrs[i]) {
-+		el = to_iio_scan_el((struct device_attribute *)
-+				    (dev_info->scan_el_attrs->attrs[i]));
-+		/* label is in fact the address */
-+		if (el->label == this_attr->address)
-+			break;
-+		i++;
-+	}
-+	if (!dev_info->scan_el_attrs->attrs[i]) {
-+		ret = -EINVAL;
-+		goto error_ret;
-+	}
-+	/* If this element is in the scan mask */
-+	ret = iio_scan_mask_query(dev_info, el->number);
-+	if (ret < 0)
-+		goto error_ret;
-+	if (ret) {
-+		data = kmalloc(dev_info->ring->access.get_bpd(dev_info->ring),
-+			       GFP_KERNEL);
-+		if (data == NULL)
-+			return -ENOMEM;
-+		ret = dev_info->ring->access.read_last(dev_info->ring,
-+						      (u8 *)data);
-+		if (ret)
-+			goto error_free_data;
-+	} else {
-+		ret = -EINVAL;
-+		goto error_ret;
-+	}
-+	len = iio_scan_mask_count_to_right(dev_info, el->number);
-+	if (len < 0) {
-+		ret = len;
-+		goto error_free_data;
-+	}
-+	len = sprintf(buf, "ring %d\n", data[len]);
-+error_free_data:
-+	kfree(data);
-+error_ret:
-+	return ret ? ret : len;
-+
-+}
-+
-+static const u8 read_all_tx_array[] =
-+{
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_X_L_ADDR), 0,
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_X_H_ADDR), 0,
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_Y_L_ADDR), 0,
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_Y_H_ADDR), 0,
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_Z_L_ADDR), 0,
-+	LIS3L02DQ_READ_REG(LIS3L02DQ_REG_OUT_Z_H_ADDR), 0,
-+};
-+
-+/**
-+ * lis3l02dq_read_all() Reads all channels currently selected
-+ * @st:		device specific state
-+ * @rx_array:	(dma capable) recieve array, must be at least
-+ *		4*number of channels
-+ **/
-+int lis3l02dq_read_all(struct lis3l02dq_state *st, u8 *rx_array)
-+{
-+	struct spi_transfer *xfers;
-+	struct spi_message msg;
-+	int ret, i, j = 0;
-+
-+	xfers = kzalloc((st->indio_dev->scan_count) * 2
-+			* sizeof(*xfers), GFP_KERNEL);
-+	if (!xfers)
-+		return -ENOMEM;
-+
-+	mutex_lock(&st->buf_lock);
-+
-+	for (i = 0; i < ARRAY_SIZE(read_all_tx_array)/4; i++) {
-+		if (st->indio_dev->scan_mask & (1 << i)) {
-+			/* lower byte */
-+			xfers[j].tx_buf = st->tx + 2*j;
-+			st->tx[2*j] = read_all_tx_array[i*4];
-+			st->tx[2*j + 1] = 0;
-+			if (rx_array)
-+				xfers[j].rx_buf = rx_array + j*2;
-+			xfers[j].bits_per_word = 8;
-+			xfers[j].len = 2;
-+			xfers[j].cs_change = 1;
-+			j++;
-+
-+			/* upper byte */
-+			xfers[j].tx_buf = st->tx + 2*j;
-+			st->tx[2*j] = read_all_tx_array[i*4 + 2];
-+			st->tx[2*j + 1] = 0;
-+			if (rx_array)
-+				xfers[j].rx_buf = rx_array + j*2;
-+			xfers[j].bits_per_word = 8;
-+			xfers[j].len = 2;
-+			xfers[j].cs_change = 1;
-+			j++;
-+		}
-+	}
-+	/* After these are transmitted, the rx_buff should have
-+	 * values in alternate bytes
-+	 */
-+	spi_message_init(&msg);
-+	for (j = 0; j < st->indio_dev->scan_count * 2; j++)
-+		spi_message_add_tail(&xfers[j], &msg);
-+
-+	ret = spi_sync(st->us, &msg);
-+	mutex_unlock(&st->buf_lock);
-+	kfree(xfers);
-+
-+	return ret;
-+}
-+
-+
-+/* Whilst this makes a lot of calls to iio_sw_ring functions - it is to device
-+ * specific to be rolled into the core.
++ * Copyright (c) 2008 Jonathan Cameron
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * This is a heavily rewritten version of the periodic timer system in
++ * earlier version of industrialio.  It supplies the same functionality
++ * but via a trigger rather than a specific periodic timer system.
 + */
-+static void lis3l02dq_trigger_bh_to_ring(struct work_struct *work_s)
++
++#include <linux/platform_device.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/rtc.h>
++#include <linux/iio/iio.h>
++#include <linux/iio/trigger.h>
++#include <linux/iio/prtc_trigger.h>
++
++LIST_HEAD(iio_prtc_trigger_list);
++DEFINE_MUTEX(iio_prtc_trigger_list_lock);
++
++struct iio_prtc_trigger_info {
++	struct rtc_device *rtc;
++	int frequency;
++	char *name;
++	struct rtc_task task;
++};
++
++static int iio_trig_periodic_rtc_set_state(struct iio_trigger *trig, bool state)
 +{
-+	struct lis3l02dq_state *st
-+		= container_of(work_s, struct lis3l02dq_state,
-+			       work_trigger_to_ring);
-+
-+	u8 *rx_array;
-+	int i = 0;
-+	u16 *data;
-+	size_t datasize = st->indio_dev
-+		->ring->access.get_bpd(st->indio_dev->ring);
-+
-+	data = kmalloc(datasize , GFP_KERNEL);
-+	if (data == NULL) {
-+		dev_err(&st->us->dev, "memory alloc failed in ring bh");
-+		return;
-+	}
-+	/* Due to interleaved nature of transmission this buffer must be
-+	 * twice the number of bytes, or 4 times the number of channels
-+	 */
-+	rx_array = kmalloc(4 * (st->indio_dev->scan_count), GFP_KERNEL);
-+	if (rx_array == NULL) {
-+		dev_err(&st->us->dev, "memory alloc failed in ring bh");
-+		return;
-+	}
-+
-+	/* whilst trigger specific, if this read does nto occur the data
-+	   ready interrupt will not be cleared.  Need to add a mechanism
-+	   to provide a dummy read function if this is not triggering on
-+	   the data ready function but something else is.
-+	*/
-+	st->inter = 0;
-+
-+	if (st->indio_dev->scan_count)
-+		if (lis3l02dq_read_all(st, rx_array) >= 0)
-+			for (; i < st->indio_dev->scan_count; i++)
-+				data[i] = combine_8_to_16(rx_array[i*4+1],
-+							  rx_array[i*4+3]);
-+	/* Guaranteed to be aligned with 8 byte boundary */
-+	if (st->indio_dev->scan_timestamp)
-+		*((s64 *)(data + ((i + 3)/4)*4)) = st->last_timestamp;
-+
-+	st->indio_dev->ring->access.store_to(st->indio_dev->ring,
-+					    (u8 *)data,
-+					    st->last_timestamp);
-+
-+	iio_trigger_notify_done(st->indio_dev->trig);
-+	kfree(rx_array);
-+	kfree(data);
-+
-+	return;
-+}
-+/* in these circumstances is it better to go with unaligned packing and
-+ * deal with the cost?*/
-+static int lis3l02dq_data_rdy_ring_preenable(struct iio_dev *indio_dev)
-+{
-+	size_t size;
-+	/* Check if there are any scan elements enabled, if not fail*/
-+	if (!(indio_dev->scan_count || indio_dev->scan_timestamp))
++	struct iio_prtc_trigger_info *trig_info = trig->private_data;
++	if (trig_info->frequency == 0)
 +		return -EINVAL;
-+
-+	if (indio_dev->ring->access.set_bpd) {
-+		if (indio_dev->scan_timestamp)
-+			if (indio_dev->scan_count) /* Timestamp and data */
-+				size = 2*sizeof(s64);
-+			else /* Timestamp only  */
-+				size = sizeof(s64);
-+		else /* Data only */
-+			size = indio_dev->scan_count*sizeof(s16);
-+		indio_dev->ring->access.set_bpd(indio_dev->ring, size);
-+	}
-+
-+	return 0;
++	printk(KERN_INFO "trigger frequency is %d\n", trig_info->frequency);
++	return rtc_irq_set_state(trig_info->rtc, &trig_info->task, state);
 +}
 +
-+static int lis3l02dq_data_rdy_ring_postenable(struct iio_dev *indio_dev)
++static ssize_t iio_trig_periodic_read_freq(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
 +{
-+	return indio_dev->trig
-+		? iio_trigger_attach_poll_func(indio_dev->trig,
-+					       indio_dev->pollfunc)
-+		: 0;
++	struct iio_trigger *trig = dev_get_drvdata(dev);
++	struct iio_prtc_trigger_info *trig_info = trig->private_data;
++	return sprintf(buf, "%u\n", trig_info->frequency);
 +}
 +
-+static int lis3l02dq_data_rdy_ring_predisable(struct iio_dev *indio_dev)
++static ssize_t iio_trig_periodic_write_freq(struct device *dev,
++					    struct device_attribute *attr,
++					    const char *buf,
++					    size_t len)
 +{
-+	return indio_dev->trig
-+		? iio_trigger_dettach_poll_func(indio_dev->trig,
-+						indio_dev->pollfunc)
-+		: 0;
-+}
-+
-+
-+/* Caller responsible for locking as necessary. */
-+static int __lis3l02dq_write_data_ready_config(struct device *dev,
-+					       struct
-+					       iio_event_handler_list *list,
-+					       bool state)
-+{
++	struct iio_trigger *trig = dev_get_drvdata(dev);
++	struct iio_prtc_trigger_info *trig_info = trig->private_data;
++	unsigned long val;
 +	int ret;
-+	u8 valold;
-+	bool currentlyset;
-+	struct iio_dev *indio_dev = dev_get_drvdata(dev);
 +
-+/* Get the current event mask register */
-+	ret = lis3l02dq_spi_read_reg_8(dev,
-+				       LIS3L02DQ_REG_CTRL_2_ADDR,
-+				       &valold);
++	ret = strict_strtoul(buf, 10, &val);
 +	if (ret)
 +		goto error_ret;
-+/* Find out if data ready is already on */
-+	currentlyset
-+		= valold & LIS3L02DQ_REG_CTRL_2_ENABLE_DATA_READY_GENERATION;
 +
-+/* Disable requested */
-+	if (!state && currentlyset) {
++	ret = rtc_irq_set_freq(trig_info->rtc, &trig_info->task, val);
++	if (ret)
++		goto error_ret;
 +
-+		valold &= ~LIS3L02DQ_REG_CTRL_2_ENABLE_DATA_READY_GENERATION;
-+		/* The double write is to overcome a hardware bug?*/
-+		ret = lis3l02dq_spi_write_reg_8(dev,
-+						LIS3L02DQ_REG_CTRL_2_ADDR,
-+						&valold);
-+		if (ret)
-+			goto error_ret;
-+		ret = lis3l02dq_spi_write_reg_8(dev,
-+						LIS3L02DQ_REG_CTRL_2_ADDR,
-+						&valold);
-+		if (ret)
-+			goto error_ret;
++	trig_info->frequency = val;
 +
-+		iio_remove_event_from_list(list,
-+					   &indio_dev->interrupts[0]
-+					   ->ev_list);
++	return len;
 +
-+/* Enable requested */
-+	} else if (state && !currentlyset) {
-+		/* if not set, enable requested */
-+		valold |= LIS3L02DQ_REG_CTRL_2_ENABLE_DATA_READY_GENERATION;
-+		iio_add_event_to_list(list, &indio_dev->interrupts[0]->ev_list);
-+		ret = lis3l02dq_spi_write_reg_8(dev,
-+						LIS3L02DQ_REG_CTRL_2_ADDR,
-+						&valold);
-+		if (ret)
-+			goto error_ret;
-+	}
-+
-+	return 0;
 +error_ret:
 +	return ret;
 +}
 +
-+/**
-+ * lis3l02dq_data_rdy_trigger_set_state() set datardy interrupt state
-+ *
-+ * If disabling the interrupt also does a final read to ensure it is clear.
-+ * This is only important in some cases where the scan enable elements are
-+ * switched before the ring is reenabled.
-+ **/
-+static int lis3l02dq_data_rdy_trigger_set_state(struct iio_trigger *trig,
-+						bool state)
++static ssize_t iio_trig_periodic_read_name(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
 +{
-+	struct lis3l02dq_state *st = trig->private_data;
-+	int ret = 0;
-+	u8 t;
-+	__lis3l02dq_write_data_ready_config(&st->indio_dev->dev,
-+					    &iio_event_data_rdy_trig,
-+					    state);
-+	if (state == false) {
-+		/* possible quirk with handler currently worked around
-+		   by ensuring the work queue is empty */
-+		flush_scheduled_work();
-+		/* Clear any outstanding ready events */
-+		ret = lis3l02dq_read_all(st, NULL);
-+	}
-+	lis3l02dq_spi_read_reg_8(&st->indio_dev->dev,
-+				 LIS3L02DQ_REG_WAKE_UP_SRC_ADDR,
-+				 &t);
-+	return ret;
++	struct iio_trigger *trig = dev_get_drvdata(dev);
++	struct iio_prtc_trigger_info *trig_info = trig->private_data;
++	return sprintf(buf, "%s\n", trig_info->name);
 +}
-+DEVICE_ATTR(name, S_IRUGO, iio_trigger_read_name, NULL);
 +
-+static struct attribute *lis3l02dq_trigger_attrs[] = {
++DEVICE_ATTR(name, S_IRUGO,
++	    iio_trig_periodic_read_name,
++	    NULL);
++DEVICE_ATTR(frequency, S_IRUGO | S_IWUSR,
++	    iio_trig_periodic_read_freq,
++	    iio_trig_periodic_write_freq);
++
++static struct attribute *iio_trig_prtc_attrs[] = {
++	&dev_attr_frequency.attr,
 +	&dev_attr_name.attr,
 +	NULL,
 +};
-+
-+static const struct attribute_group lis3l02dq_trigger_attr_group = {
-+	.attrs = lis3l02dq_trigger_attrs,
++static const struct attribute_group iio_trig_prtc_attr_group = {
++	.attrs = iio_trig_prtc_attrs,
 +};
 +
-+/**
-+ * lis3l02dq_trig_try_reen() try renabling irq for data rdy trigger
-+ * @trig:	the datardy trigger
-+ *
-+ * As the trigger may occur on any data element being updated it is
-+ * really rather likely to occur during the read from the previous
-+ * trigger event.  The only way to discover if this has occured on
-+ * boards not supporting level interrupts is to take a look at the line.
-+ * If it is indicating another interrupt and we don't seem to have a
-+ * handler looking at it, then we need to notify the core that we need
-+ * to tell the triggering core to try reading all these again.
-+ **/
-+static int lis3l02dq_trig_try_reen(struct iio_trigger *trig)
++static void iio_prtc_trigger_poll(void *private_data)
 +{
-+	struct lis3l02dq_state *st = trig->private_data;
-+	enable_irq(st->us->irq);
-+	/* If gpio still high (or high again) */
-+	if (gpio_get_value(irq_to_gpio(st->us->irq)))
-+		if (st->inter == 0) {
-+			/* already interrupt handler dealing with it */
-+			disable_irq_nosync(st->us->irq);
-+			if (st->inter == 1) {
-+				/* interrupt handler snuck in between test
-+				 * and disable */
-+				enable_irq(st->us->irq);
-+				return 0;
-+			}
-+			return -EAGAIN;
++	iio_trigger_poll(private_data);
++}
++
++
++
++static int iio_trig_periodic_rtc_probe(struct platform_device *dev)
++{
++	struct iio_prtc_trigger_group *pdata = dev->dev.platform_data;
++	struct iio_prtc_trigger_info *trig_info;
++	struct iio_trigger *trig, *trig2;
++
++	int i, ret;
++	for (i = 0; i < pdata->num_triggers; i++) {
++		trig = iio_allocate_trigger();
++		if (!trig) {
++			ret = -ENOMEM;
++			goto error_free_completed_registrations;
 +		}
-+	/* irq reenabled so success! */
-+	return 0;
-+}
++		list_add(&trig->alloc_list, &iio_prtc_trigger_list);
 +
-+int lis3l02dq_probe_trigger(struct iio_dev *indio_dev)
-+{
-+	int ret;
-+	struct lis3l02dq_state *state = indio_dev->dev_data;
-+
-+	state->trig = iio_allocate_trigger();
-+	state->trig->name = kmalloc(IIO_TRIGGER_NAME_LENGTH, GFP_KERNEL);
-+	if (!state->trig->name) {
-+		ret = -ENOMEM;
-+		goto error_free_trig;
++		trig_info = kzalloc(sizeof(*trig_info), GFP_KERNEL);
++		if (!trig_info) {
++			ret = -ENOMEM;
++			goto error_put_trigger_and_remove_from_list;
++		}
++		trig->private_data = trig_info;
++		trig->owner = THIS_MODULE;
++		trig->set_trigger_state = &iio_trig_periodic_rtc_set_state;
++		trig->name = kmalloc(IIO_TRIGGER_NAME_LENGTH, GFP_KERNEL);
++		if (trig->name == NULL) {
++			ret = -ENOMEM;
++			goto error_free_trig_info;
++		}
++		snprintf((char *)trig->name,
++			 IIO_TRIGGER_NAME_LENGTH,
++			 "periodic%s",
++			 pdata->triggers[i].name);
++		trig_info->name = (char *)trig->name;
++		/* RTC access */
++		trig_info->rtc
++			= rtc_class_open((char *)(pdata->triggers[i].name));
++		if (trig_info->rtc == NULL) {
++			ret = -EINVAL;
++			goto error_free_name;
++		}
++		trig_info->task.func = iio_prtc_trigger_poll;
++		trig_info->task.private_data = trig;
++		ret = rtc_irq_register(trig_info->rtc, &trig_info->task);
++		if (ret)
++			goto error_close_rtc;
++		trig->control_attrs = &iio_trig_prtc_attr_group;
++		ret = iio_trigger_register(trig);
++		if (ret)
++			goto error_unregister_rtc_irq;
 +	}
-+	snprintf((char *)state->trig->name,
-+		 IIO_TRIGGER_NAME_LENGTH,
-+		 "lis3l02dq-dev%d", indio_dev->id);
-+	state->trig->dev.parent = &state->us->dev;
-+	state->trig->owner = THIS_MODULE;
-+	state->trig->private_data = state;
-+	state->trig->set_trigger_state = &lis3l02dq_data_rdy_trigger_set_state;
-+	state->trig->try_reenable = &lis3l02dq_trig_try_reen;
-+	state->trig->control_attrs = &lis3l02dq_trigger_attr_group;
-+	ret = iio_trigger_register(state->trig);
-+	if (ret)
-+		goto error_free_trig_name;
-+
 +	return 0;
-+
-+error_free_trig_name:
-+	kfree(state->trig->name);
-+error_free_trig:
-+	iio_free_trigger(state->trig);
-+
++error_unregister_rtc_irq:
++	rtc_irq_unregister(trig_info->rtc, &trig_info->task);
++error_close_rtc:
++	rtc_class_close(trig_info->rtc);
++error_free_name:
++	kfree(trig->name);
++error_free_trig_info:
++	kfree(trig_info);
++error_put_trigger_and_remove_from_list:
++	list_del(&trig->alloc_list);
++	iio_put_trigger(trig);
++error_free_completed_registrations:
++	list_for_each_entry_safe(trig,
++				 trig2,
++				 &iio_prtc_trigger_list,
++				 alloc_list) {
++		trig_info = trig->private_data;
++		iio_trigger_unregister(trig);
++		rtc_irq_unregister(trig_info->rtc, &trig_info->task);
++		rtc_class_close(trig_info->rtc);
++		kfree(trig->name);
++		kfree(trig_info);
++		iio_put_trigger(trig);
++	}
 +	return ret;
 +}
 +
-+void lis3l02dq_remove_trigger(struct iio_dev *indio_dev)
++static int iio_trig_periodic_rtc_remove(struct platform_device *dev)
 +{
-+	struct lis3l02dq_state *state = indio_dev->dev_data;
-+
-+	iio_trigger_unregister(state->trig);
-+	kfree(state->trig->name);
-+	iio_free_trigger(state->trig);
-+}
-+
-+void lis3l02dq_unconfigure_ring(struct iio_dev *indio_dev)
-+{
-+	kfree(indio_dev->pollfunc);
-+	iio_sw_rb_free(indio_dev->ring);
-+}
-+
-+int lis3l02dq_configure_ring(struct iio_dev *indio_dev)
-+{
-+	int ret = 0;
-+	struct lis3l02dq_state *st = indio_dev->dev_data;
-+	struct iio_ring_buffer *ring;
-+	INIT_WORK(&st->work_trigger_to_ring, lis3l02dq_trigger_bh_to_ring);
-+	/* Set default scan mode */
-+
-+	iio_scan_mask_set(indio_dev, iio_scan_el_accel_x.number);
-+	iio_scan_mask_set(indio_dev, iio_scan_el_accel_y.number);
-+	iio_scan_mask_set(indio_dev, iio_scan_el_accel_z.number);
-+	indio_dev->scan_timestamp = true;
-+
-+	indio_dev->scan_el_attrs = &lis3l02dq_scan_el_group;
-+
-+	ring = iio_sw_rb_allocate(indio_dev);
-+	if (!ring) {
-+		ret = -ENOMEM;
-+		return ret;
++	struct iio_trigger *trig, *trig2;
++	struct iio_prtc_trigger_info *trig_info;
++	mutex_lock(&iio_prtc_trigger_list_lock);
++	list_for_each_entry_safe(trig,
++				 trig2,
++				 &iio_prtc_trigger_list,
++				 alloc_list) {
++		trig_info = trig->private_data;
++		iio_trigger_unregister(trig);
++		rtc_irq_unregister(trig_info->rtc, &trig_info->task);
++		rtc_class_close(trig_info->rtc);
++		kfree(trig->name);
++		kfree(trig_info);
++		iio_put_trigger(trig);
 +	}
-+	indio_dev->ring = ring;
-+	/* Effectively select the ring buffer implementation */
-+	iio_ring_sw_register_funcs(&ring->access);
-+	ring->preenable = &lis3l02dq_data_rdy_ring_preenable;
-+	ring->postenable = &lis3l02dq_data_rdy_ring_postenable;
-+	ring->predisable = &lis3l02dq_data_rdy_ring_predisable;
-+	ring->owner = THIS_MODULE;
-+
-+	indio_dev->pollfunc = kzalloc(sizeof(*indio_dev->pollfunc), GFP_KERNEL);
-+	if (indio_dev->pollfunc == NULL) {
-+		ret = -ENOMEM;
-+		goto error_iio_sw_rb_free;;
-+	}
-+	indio_dev->pollfunc->poll_func_main = &lis3l02dq_poll_func_th;
-+	indio_dev->pollfunc->private_data = indio_dev;
-+	indio_dev->modes |= INDIO_RING_TRIGGERED;
-+	return 0;
-+
-+error_iio_sw_rb_free:
-+	iio_sw_rb_free(indio_dev->ring);
-+	return ret;
-+}
-+
-+int lis3l02dq_initialize_ring(struct iio_ring_buffer *ring)
-+{
-+	return iio_ring_buffer_register(ring);
-+}
-+
-+void lis3l02dq_uninitialize_ring(struct iio_ring_buffer *ring)
-+{
-+	iio_ring_buffer_unregister(ring);
-+}
-+
-+
-+int lis3l02dq_set_ring_length(struct iio_dev *indio_dev, int length)
-+{
-+	/* Set sensible defaults for the ring buffer */
-+	if (indio_dev->ring->access.set_length)
-+		return indio_dev->ring->access.set_length(indio_dev->ring, 500);
++	mutex_unlock(&iio_prtc_trigger_list_lock);
 +	return 0;
 +}
 +
++static struct platform_driver iio_trig_periodic_rtc_driver = {
++	.probe = iio_trig_periodic_rtc_probe,
++	.remove = iio_trig_periodic_rtc_remove,
++	.driver = {
++		.name = "iio_prtc_trigger",
++		.owner = THIS_MODULE,
++	},
++};
 +
++static int __init iio_trig_periodic_rtc_init(void)
++{
++	return platform_driver_register(&iio_trig_periodic_rtc_driver);
++}
++
++static void __exit iio_trig_periodic_rtc_exit(void)
++{
++	return platform_driver_unregister(&iio_trig_periodic_rtc_driver);
++}
++
++module_init(iio_trig_periodic_rtc_init);
++module_exit(iio_trig_periodic_rtc_exit);
++MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
++MODULE_DESCRIPTION("Periodic realtime clock  trigger for the iio subsystem");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/iio/prtc_trigger.h b/include/linux/iio/prtc_trigger.h
+new file mode 100644
+index 0000000..9dabc19
+--- /dev/null
++++ b/include/linux/iio/prtc_trigger.h
+@@ -0,0 +1,7 @@
++struct iio_prtc_trigger {
++	const char *name;
++};
++struct iio_prtc_trigger_group {
++	int num_triggers;
++	struct iio_prtc_trigger *triggers;
++};
 -- 
 1.6.2
 
