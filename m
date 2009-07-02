@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754251AbZGBF13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbZGBFb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754251AbZGBF13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 01:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZGBF1V
+	id S1753353AbZGBFb4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 01:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZGBFbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 01:27:21 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54601 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750713AbZGBF1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 01:27:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18Z99VG4bEZ/9sP7djcICeg9yFF3v+Cbkok8z2L+t
-	8hv4he6UXUV05W
-Subject: [patch] x86: add missing annotation to
- arch/x86/lib/copy_user_64.S::copy_to_user
-From: Mike Galbraith <efault@gmx.de>
-To: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Cyrill Gorcunov <gorcunov@gmail.com>
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 07:27:20 +0200
-Message-Id: <1246512440.13293.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.52
+	Thu, 2 Jul 2009 01:31:47 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:58731 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbZGBFbr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 01:31:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=kFQDLbiNi4sTxQ11F41guXVBW2jHhxGlhKHzaaMdU/iL4HmUn3afmj9F4Ubc7pk8X9
+         Fp7+YU17UtEN5zGxi3l5+QTxOZViZkSEP3IyJoz/wCyrOZI63Q/Uq/Hqzf3wG18HZAWZ
+         gXJfXfIfeIU7SmgCD4tdu/HqumjL/Pp4w/WVw=
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: selinux@tycho.nsa.gov
+Subject: SELinux-non-trivial-fixes.
+Date: Wed,  1 Jul 2009 22:32:39 -0700
+Message-Id: <1246512767-2999-1-git-send-email-justinmattock@gmail.com>
+X-Mailer: git-send-email 1.6.3.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-x86: add missing annotation to arch/x86/lib/copy_user_64.S::copy_to_user
-
-While examining symbol generation in perf_counter tools, I noticed that
-copy_to_user() had no size in vmlinux's symtab.
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
-Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-LKML-Reference: <new-submission>
-
----
- arch/x86/lib/copy_user_64.S |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6/arch/x86/lib/copy_user_64.S
-===================================================================
---- linux-2.6.orig/arch/x86/lib/copy_user_64.S
-+++ linux-2.6/arch/x86/lib/copy_user_64.S
-@@ -75,6 +75,7 @@ ENTRY(copy_to_user)
- 	jae bad_to_user
- 	ALTERNATIVE_JUMP X86_FEATURE_REP_GOOD,copy_user_generic_unrolled,copy_user_generic_string
- 	CFI_ENDPROC
-+ENDPROC(copy_to_user)
+I decided to sit and manually write out all of the SELinux
+area(or at least some of it). So along the way
+whenever I saw what might need a bit of cleaning up
+I wrote it down, and then once finished
+created a patch to submit for you guy's to decide.
  
- /* Standard copy_from_user with segment limit checking */
- ENTRY(copy_from_user)
+So here you go(still need to go into the other directories,
+and will later on) but for now hope you like what you see,
+and if you see something that might need changing send me a post. 
+
+
+
+ security/selinux/avc.c       |   21 ++--
+ security/selinux/hooks.c     |  265 +++++++++++++++++++++---------------------
+ security/selinux/netif.c     |   12 +-
+ security/selinux/netlabel.c  |   10 +-
+ security/selinux/netnode.c   |   20 ++--
+ security/selinux/netport.c   |   12 +-
+ security/selinux/selinuxfs.c |   61 +++++-----
+ security/selinux/xfrm.c      |   26 ++--
+ 8 files changed, 213 insertions(+), 214 deletions(-)
+
 
 
