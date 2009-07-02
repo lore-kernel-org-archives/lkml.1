@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZGBRKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbZGBROb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbZGBRKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 13:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZGBRKf
+	id S1752669AbZGBROb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 13:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZGBROY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 13:10:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54669 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751428AbZGBRKe (ORCPT
+	Thu, 2 Jul 2009 13:14:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:61603 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbZGBROX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 13:10:34 -0400
-Date: Thu, 2 Jul 2009 10:10:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Pavel Levshin <lpk@581.spb.su>, wli@movementarian.org,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: fio mmap sequential read 30% regression
-In-Reply-To: <1246521682.2560.490.camel@ymzhang>
-Message-ID: <alpine.LFD.2.01.0907020956410.4830@localhost.localdomain>
-References: <1246521682.2560.490.camel@ymzhang>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 2 Jul 2009 13:14:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RWRgG3LQBsdOPbxbJXTMc27VdkXiHA0+MCTlghj0NnVLQ5xGh0NaT/jLYNRQ7j2+dx
+         fOOTd9k3N3yRyWe9EsYTqAhrY98nK6XhlRkSUDalQbAyI061F1c+crOj3t7tYjsu0sOR
+         bIJwtzmZ/7iUw+tfxPA3iyiYslUdBGGPbntog=
+Date: Thu, 2 Jul 2009 21:14:23 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH -tip] x86: Remove useless variable disable_x2apic
+Message-ID: <20090702171423.GD5140@lenovo>
+References: <1246554239.2242.27.camel@jaswinder.satnam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246554239.2242.27.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Jaswinder Singh Rajput - Thu, Jul 02, 2009 at 10:33:59PM +0530]
+| 
+| setup_nox2apic() is writing 1 to disable_x2apic but no one is reading it.
+| 
+| Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+| ---
+|  arch/x86/kernel/apic/apic.c |    2 --
+|  1 files changed, 0 insertions(+), 2 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+| index 8c7c042..0a1c283 100644
+| --- a/arch/x86/kernel/apic/apic.c
+| +++ b/arch/x86/kernel/apic/apic.c
+| @@ -140,7 +140,6 @@ int x2apic_mode;
+|  #ifdef CONFIG_X86_X2APIC
+|  /* x2apic enabled before OS handover */
+|  static int x2apic_preenabled;
+| -static int disable_x2apic;
+|  static __init int setup_nox2apic(char *str)
+|  {
+|  	if (x2apic_enabled()) {
+| @@ -149,7 +148,6 @@ static __init int setup_nox2apic(char *str)
+|  		return 0;
+|  	}
+|  
+| -	disable_x2apic = 1;
+|  	setup_clear_cpu_cap(X86_FEATURE_X2APIC);
+|  	return 0;
+|  }
+| -- 
+| 1.6.2.5
+|
 
-
-On Thu, 2 Jul 2009, Zhang, Yanmin wrote:
-> 
-> Bisect down to below patch.
-> 
-> ef00e08e26dd5d84271ef706262506b82195e752 ("readahead: clean up and 
-> simplify the code for filemap page fault readahead")
-> 
-> The bisect is stable.
-
-Hmm. That patch is the one patch in the whole series that should _not_ 
-have changed any behavior, but it got forward-ported by something like 8 
-months, so maybe something changed in the meantime.
-
-Also, I do think it changes the exact details of "ra->mmap_miss" (along 
-with the fault counters). The old code was really quite odd in the 
-statistics department, and would do some odd things wrt the miss counts 
-and statistics - because it had this re-try loop that essentially updated 
-the stats twice (once on the first try, and then once more when doing the 
-"retry_find" thing).
-
-The patch gets rid of the hard-to-follow retry logic (it had that 
-"did_readaround" logic to determine if it was on the first loop or the 
-second one, and used those _sometimes_), and should _fix_ those stats, but 
-obviously all historical tuning had happened with the old stats. So it's 
-entirely possible that as part of "fixing" them, I actually broke what the 
-old logic tried to do.
-
-There's also one _intentional_ change: the new code doesn't take the lock 
-on the page before it starts async read-ahead. That can certainly change 
-timings a lot. It _should_ cause better behavior (more IO overlap), but 
-depending on read-ahead code and the exact behavior of your IO subsystem, 
-maybe it causes you problems.
-
-But it is also possible that the patch simply changes behavior in 
-unintended ways. Either originally, or due to being forward-ported with 
-all the other read-ahead changes. I'm not seeing it, though - the patch 
-still looks like it shouldn't change any semantics.
-
-			Linus
+yes, at moment we use cpu_has_x2apic mostly.
+Ack. But lets CC Suresh to be sure. Maybe
+there is something in plans.
+ 
+	-- Cyrill
