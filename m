@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZGBPS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZGBPT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZGBPS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZGBPSU
+	id S1754303AbZGBPT2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZGBPTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:18:20 -0400
-Received: from ey-out-1920.google.com ([74.125.78.148]:14294 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbZGBPST (ORCPT
+	Thu, 2 Jul 2009 11:19:21 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:53138 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbZGBPTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:18:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=QagfQsN1/I8QfpyrRM/Cm8Hsa13QIB3lzhoncHBSXC8Wyv2ujRIPpnx39FxnL0PwDF
-         JQBQe5zzR/H4MvY/X3qFDps45TGqA59VJLIkFO7dMfgznUybBZt4ubsUR+C3R6Lf46Eu
-         FO9Bxb1DWArWDBCZCNVukkpGP8CnhNjjZnqwg=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       ralf@linux-mips.org, Jason Wessel <jason.wessel@windriver.com>
-Cc: Wu Zhangjin <wuzj@lemote.com>, Yan Hua <yanh@lemote.com>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>,
-       loongson-dev <loongson-dev@googlegroups.com>,
-       Liu Junliang <liujl@lemote.com>, Erwan Lerale <erwan@thiscow.com>,
-       Arnaud Patard <apatard@mandriva.com>
-Subject: [PATCH v4 01/16] [loongson] eary_printk: Remove existing implementation
-Date: Thu,  2 Jul 2009 23:18:09 +0800
-Message-Id: <5ba055de70110a166fdffb2871d3207c9abb4d48.1246546684.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <cover.1246546684.git.wuzhangjin@gmail.com>
-References: <cover.1246546684.git.wuzhangjin@gmail.com>
+	Thu, 2 Jul 2009 11:19:21 -0400
+Message-ID: <4A4CCF99.30104@gmail.com>
+Date: Thu, 02 Jul 2009 18:17:45 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Daniel Mack <daniel@caiaq.de>
+CC: linux-kernel@vger.kernel.org, Artem Bityutskiy <dedekind@infradead.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] ubifs: allow more than one volume to be mounted
+References: <1246547747-13366-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <1246547747-13366-1-git-send-email-daniel@caiaq.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 02 Jul 2009 15:17:47.0021 (UTC) FILETIME=[415653D0:01C9FB28]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzj@lemote.com>
+Daniel Mack wrote:
+> UBIFS uses a bdi device per volume, but does not care to hand out unique
+> names to each of them. This causes an error when trying to mount more
+> than one volumes.
+> 
+> [  239.277407] kobject_add_internal failed for ubifs with -EEXIST, don't try to register things with the same name in the same directory.
+> [  239.289618] [<c002a45c>] (unwind_backtrace+0x0/0xdc) from [<c0160628>] (kobject_add_internal+0x188/0x1b8)
+> [  239.299445] [<c0160628>] (kobject_add_internal+0x188/0x1b8) from [<c01607d8>] (kobject_add+0x48/0x5c)
+> [  239.308896] [<c01607d8>] (kobject_add+0x48/0x5c) from [<c019d96c>] (device_add+0xac/0x510)
+> [  239.317392] [<c019d96c>] (device_add+0xac/0x510) from [<c019de58>] (device_create_vargs+0x70/0xa4)
+> [  239.326589] [<c019de58>] (device_create_vargs+0x70/0xa4) from [<c0073138>] (bdi_register+0x44/0x64)
+> [  239.335854] [<c0073138>] (bdi_register+0x44/0x64) from [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc)
+> [  239.344769] [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc) from [<c008b054>] (vfs_kern_mount+0x50/0xa8)
+> [  239.353867] [<c008b054>] (vfs_kern_mount+0x50/0xa8) from [<c008b0f0>] (do_kern_mount+0x34/0xd0)
+> [  239.362799] [<c008b0f0>] (do_kern_mount+0x34/0xd0) from [<c009f7b4>] (do_mount+0x644/0x6b4)
+> [  239.371377] [<c009f7b4>] (do_mount+0x644/0x6b4) from [<c009f8a8>] (sys_mount+0x84/0xcc)
+> [  239.379538] [<c009f8a8>] (sys_mount+0x84/0xcc) from [<c0025e80>] (ret_fast_syscall+0x0/0x2c)
+> 
+> Append the UBI volume and device ID to avoid that.
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Artem Bityutskiy <dedekind@infradead.org>
+> Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> Cc: linux-mtd@lists.infradead.org
 
-This patch will remove the existing implementation of early_printk in
-fulong. for this old implementation is based on the board-specific
-source code(dbg_io.c), but dbg_io.c is out-of-date:
+Thanks, I'll look at this tomorrow and try to sent it to Linus
+ASAP.
 
-as the commit: 8d60a903d986ffa26c41f0092320a3b9da20bfaf shows, dbg_io.c
-is not needed. it will be removed in the next patch, and the new
-implementation of early_printk will be added later.
-
-Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
----
- arch/mips/lemote/lm2e/prom.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/arch/mips/lemote/lm2e/prom.c b/arch/mips/lemote/lm2e/prom.c
-index 7edc15d..d78cedf 100644
---- a/arch/mips/lemote/lm2e/prom.c
-+++ b/arch/mips/lemote/lm2e/prom.c
-@@ -21,7 +21,6 @@
- extern unsigned long bus_clock;
- extern unsigned long cpu_clock_freq;
- extern unsigned int memsize, highmemsize;
--extern int putDebugChar(unsigned char byte);
- 
- static int argc;
- /* pmon passes arguments in 32bit pointers */
-@@ -90,8 +89,3 @@ do {									\
- void __init prom_free_prom_memory(void)
- {
- }
--
--void prom_putchar(char c)
--{
--	putDebugChar(c);
--}
 -- 
-1.6.2.1
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
