@@ -1,38 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZGBWcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbZGBWdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZGBWcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZGBWcp
+	id S1757006AbZGBWdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756121AbZGBWdC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:32:45 -0400
-Received: from drutsystem.com ([80.72.38.138]:3978 "EHLO drutsystem.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752257AbZGBWco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:32:44 -0400
-X-Greylist: delayed 1911 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 18:32:44 EDT
-Message-ID: <4A4D2E11.4020707@ziu.info>
-Date: Fri, 03 Jul 2009 00:00:49 +0200
-From: Michal Soltys <soltys@ziu.info>
+	Thu, 2 Jul 2009 18:33:02 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:39494 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755022AbZGBWdB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 18:33:01 -0400
+Message-ID: <4A4D3596.8060209@gmail.com>
+Date: Fri, 03 Jul 2009 00:32:54 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
 User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-To: Alberto Gonzalez <alberto6674@gmail.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-hotplug@vger.kernel.org
-Subject: Re: Kernel 2.6.30 and udevd problem
-References: <200906280821.58631.info@gnebu.es> <200907020818.58541.info@gnebu.es> <20090702093547.7ca95116@jbarnes-g45> <200907022137.27847.info@gnebu.es>
-In-Reply-To: <200907022137.27847.info@gnebu.es>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV on drutsystem.com
+To: Ayaz Abdulla <aabdulla@nvidia.com>
+CC: David Miller <davem@davemloft.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT]: Networking
+References: <20090630.213927.180401151.davem@davemloft.net> <20090702075724.GA10608@elte.hu> <4A4C9125.8020705@gmail.com> <4A4CBE7D.2060603@gmail.com> <4A4CDCA4.3040505@nvidia.com>
+In-Reply-To: <4A4CDCA4.3040505@nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 03 Jul 2009 00:32:55 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regarding Arch's default distro kernel - it's a bit patched. Most of the 
-patch file is addition of aufs, but there're other diffs included as 
-well, some of them modifying i915_reg.h, intel_display.c and intel_tv.c
+Ayaz Abdulla a écrit :
+> 
+> 
+> Eric Dumazet wrote:
+>> Eric Dumazet a écrit :
+>>
+>>> Ingo Molnar a écrit :
+>>>
+>>>>> The following changes since commit
+>>>>> 52989765629e7d182b4f146050ebba0abf2cb0b7:
+>>>>>  Linus Torvalds (1):
+>>>>>        Merge git://git.kernel.org/.../davem/net-2.6
+>>>>>
+>>>>> are available in the git repository at:
+>>>>>
+>>>>>  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+>>>>
+>>>> Hm, something in this lot quickly wrecked networking here - see the
+>>>> tx timeout dump below. It starts with:
+>>>>
+>>>> [  351.004596] WARNING: at net/sched/sch_generic.c:246
+>>>> dev_watchdog+0x10b/0x19c()
+>>>> [  351.011815] Hardware name: System Product Name
+>>>> [  351.016220] NETDEV WATCHDOG: eth0 (forcedeth): transmit queue 0
+>>>> timed out
+>>>>
+>>>> Config attached. Unfortunately i've got no time to do bisection today.
+>>>
+>>>
+>>>
+>>> forcedeth might have a problem, in its netif_wake_queue() logic, but
+>>> I could not see why a recent patch could make this problem visible now.
+>>>
+>>> CPU0/1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
+>>> is not a new cpu either :)
+>>>
+>>> forcedeth uses an internal tx_stop without appropriate barrier.
+>>>
+>>> Could you try following patch ?
+>>>
+>>> (random guess as I dont have much time right now)
+>>
+>>
+>> Oh well this patch was soooo stupid, sorry Ingo.
+>>
+>>
+>> We might have a race in napi_schedule(), leaving interrupts disabled
+>> forever.
+>> I cannot test this patch, I dont have the hardware...
+>>
+>> Thanks
+>>
+>> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+>> index 1094d29..3b4e076 100644
+>> --- a/drivers/net/forcedeth.c
+>> +++ b/drivers/net/forcedeth.c
+>> @@ -3514,11 +3514,13 @@ static irqreturn_t nv_nic_irq(int foo, void
+>> *data)
+>>      nv_msi_workaround(np);
+>>  
+>>  #ifdef CONFIG_FORCEDETH_NAPI
+>> -    napi_schedule(&np->napi);
+>> -
+>> -    /* Disable furthur irq's
+>> -       (msix not enabled with napi) */
+>> -    writel(0, base + NvRegIrqMask);
+>> +    if (napi_schedule_prep(&np->napi)) {
+>> +        /*
+>> +         * Disable further irq's (msix not enabled with napi)
+>> +         */
+>> +        writel(0, base + NvRegIrqMask);
+>> +        __napi_schedule(&np->napi);
+>> +    }
+> 
+> Yes, good catch. There is a race condition here with napi poll.
+> 
+> I would prefer to do the following to keep the code simple and clean.
+> 
+> writel(0, base + NvRegIrqMask);
+> napi_schedule(&np->napi);
 
-ftp://ftp.archlinux.org/other/kernel26/patch-2.6.30-5-ARCH.bz2
 
-Not sure how relevant that is, but fyi.
+CC trimmed down to network devs only :)
+
+It would be racy too ...
+
+check drivers/net/amd8111e.c, drivers/net/natsemi.c ...
+
+If this cpu inconditionaly calls writel(0, base + NvRegIrqMask); 
+while another cpu just called writel(np->irqmask, base + NvRegIrqMask),
+we end with disabled interrupts ?
+
