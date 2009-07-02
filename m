@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZGBUJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbZGBUJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbZGBUJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 16:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbZGBUD5
+	id S1756240AbZGBUJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 16:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbZGBUDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 16:03:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53114 "EHLO mx2.redhat.com"
+	Thu, 2 Jul 2009 16:03:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53090 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755645AbZGBUDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 16:03:47 -0400
+	id S1755915AbZGBUDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 16:03:40 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -20,194 +20,350 @@ To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
 Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 11/25] io-controller: Export disk time used and nr sectors dipatched through cgroups
-Date: Thu,  2 Jul 2009 16:01:43 -0400
-Message-Id: <1246564917-19603-12-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 08/25] io-controller: cgroup related changes for hierarchical group support
+Date: Thu,  2 Jul 2009 16:01:40 -0400
+Message-Id: <1246564917-19603-9-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
 References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o This patch exports some statistics through cgroup interface. Two of the
-  statistics currently exported are actual disk time assigned to the cgroup
-  and actual number of sectors dispatched to disk on behalf of this cgroup.
+o This patch introduces some of the cgroup related code for io controller.
 
+Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
+Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
+Signed-off-by: Nauman Rafique <nauman@google.com>
 Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/elevator-fq.c |   81 +++++++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h |   10 ++++++
- 2 files changed, 89 insertions(+), 2 deletions(-)
+ block/blk-ioc.c               |    3 +
+ block/elevator-fq.c           |  174 +++++++++++++++++++++++++++++++++++++++++
+ block/elevator-fq.h           |   43 ++++++++++-
+ include/linux/cgroup_subsys.h |    6 ++
+ include/linux/iocontext.h     |    5 +
+ 5 files changed, 230 insertions(+), 1 deletions(-)
 
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index d4ed600..0d56336 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -95,6 +95,9 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ 		spin_lock_init(&ret->lock);
+ 		ret->ioprio_changed = 0;
+ 		ret->ioprio = 0;
++#ifdef CONFIG_GROUP_IOSCHED
++		ret->cgroup_changed = 0;
++#endif
+ 		ret->last_waited = jiffies; /* doesn't matter... */
+ 		ret->nr_batch_requests = 0; /* because this is 0 */
+ 		ret->aic = NULL;
 diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index f8d0b90..bab01b5 100644
+index 0acfa2c..84276d5 100644
 --- a/block/elevator-fq.c
 +++ b/block/elevator-fq.c
-@@ -15,6 +15,7 @@
- #include <linux/blkdev.h>
- #include "elevator-fq.h"
- #include <linux/blktrace_api.h>
-+#include <linux/seq_file.h>
+@@ -29,6 +29,9 @@ static int elv_rate_sampling_window = HZ / 10;
+ #define ELV_SLICE_SCALE		(5)
+ #define ELV_HW_QUEUE_MIN	(5)
  
- /* Values taken from cfq */
- const int elv_slice_sync = HZ / 10;
-@@ -971,13 +972,16 @@ update:
- 	}
++#define IO_DEFAULT_GRP_WEIGHT  500
++#define IO_DEFAULT_GRP_CLASS   IOPRIO_CLASS_BE
++
+ #define IO_SERVICE_TREE_INIT   ((struct io_service_tree)		\
+ 				{ RB_ROOT, RB_ROOT, NULL, NULL, 0, 0 })
+ 
+@@ -899,6 +902,177 @@ static void io_flush_idle_tree(struct io_service_tree *st)
+ 		__bfq_deactivate_entity(entity, 0);
  }
  
--static void entity_served(struct io_entity *entity, unsigned long served)
-+void entity_served(struct io_entity *entity, unsigned long served,
-+					unsigned long nr_sectors)
- {
- 	struct io_service_tree *st;
- 
- 	for_each_entity(entity) {
- 		st = io_entity_service_tree(entity);
- 		entity->service += served;
-+		entity->total_service += served;
-+		entity->total_sector_service += nr_sectors;
- 		BUG_ON(st->wsum == 0);
- 		st->vtime += bfq_delta(served, st->wsum);
- 		bfq_forget_idle(st);
-@@ -1140,6 +1144,66 @@ STORE_FUNCTION(weight, 1, WEIGHT_MAX);
- STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
- #undef STORE_FUNCTION
- 
-+static int io_cgroup_disk_time_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
++/* Mainly hierarchical grouping code */
++#ifdef CONFIG_GROUP_IOSCHED
++
++struct io_cgroup io_root_cgroup = {
++	.weight = IO_DEFAULT_GRP_WEIGHT,
++	.ioprio_class = IO_DEFAULT_GRP_CLASS,
++};
++
++static struct io_cgroup *cgroup_to_io_cgroup(struct cgroup *cgroup)
 +{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
-+	struct hlist_node *n;
-+
-+	if (!cgroup_lock_live_group(cgroup))
-+		return -ENODEV;
-+
-+	iocg = cgroup_to_io_cgroup(cgroup);
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		/*
-+		 * There might be groups which are not functional and
-+		 * waiting to be reclaimed upon cgoup deletion.
-+		 */
-+		if (iog->key) {
-+			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_service);
-+		}
-+	}
-+	rcu_read_unlock();
-+	cgroup_unlock();
-+
-+	return 0;
++	return container_of(cgroup_subsys_state(cgroup, io_subsys_id),
++			    struct io_cgroup, css);
 +}
 +
-+static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-+				struct cftype *cftype, struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_group *iog;
-+	struct hlist_node *n;
-+
-+	if (!cgroup_lock_live_group(cgroup))
-+		return -ENODEV;
-+
-+	iocg = cgroup_to_io_cgroup(cgroup);
-+
-+	rcu_read_lock();
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		/*
-+		 * There might be groups which are not functional and
-+		 * waiting to be reclaimed upon cgoup deletion.
-+		 */
-+		if (iog->key) {
-+			seq_printf(m, "%u %u %lu\n", MAJOR(iog->dev),
-+					MINOR(iog->dev),
-+					iog->entity.total_sector_service);
-+		}
-+	}
-+	rcu_read_unlock();
-+	cgroup_unlock();
-+
-+	return 0;
++#define SHOW_FUNCTION(__VAR)						\
++static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
++				       struct cftype *cftype)		\
++{									\
++	struct io_cgroup *iocg;					\
++	u64 ret;							\
++									\
++	if (!cgroup_lock_live_group(cgroup))				\
++		return -ENODEV;						\
++									\
++	iocg = cgroup_to_io_cgroup(cgroup);				\
++	spin_lock_irq(&iocg->lock);					\
++	ret = iocg->__VAR;						\
++	spin_unlock_irq(&iocg->lock);					\
++									\
++	cgroup_unlock();						\
++									\
++	return ret;							\
 +}
 +
- struct cftype bfqio_files[] = {
- 	{
- 		.name = "weight",
-@@ -1151,6 +1215,14 @@ struct cftype bfqio_files[] = {
- 		.read_u64 = io_cgroup_ioprio_class_read,
- 		.write_u64 = io_cgroup_ioprio_class_write,
- 	},
-+	{
-+		.name = "disk_time",
-+		.read_seq_string = io_cgroup_disk_time_read,
-+	},
-+	{
-+		.name = "disk_sectors",
-+		.read_seq_string = io_cgroup_disk_sectors_read,
-+	},
- };
- 
- static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-@@ -1252,6 +1324,8 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 	struct io_cgroup *iocg;
- 	struct io_group *iog, *leaf = NULL, *prev = NULL;
- 	gfp_t flags = GFP_ATOMIC |  __GFP_ZERO;
-+	unsigned int major, minor;
-+	struct backing_dev_info *bdi = &q->backing_dev_info;
- 
- 	for (; cgroup != NULL; cgroup = cgroup->parent) {
- 		iocg = cgroup_to_io_cgroup(cgroup);
-@@ -1272,6 +1346,9 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 
- 		iog->iocg_id = css_id(&iocg->css);
- 
-+		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
-+		iog->dev = MKDEV(major, minor);
++SHOW_FUNCTION(weight);
++SHOW_FUNCTION(ioprio_class);
++#undef SHOW_FUNCTION
 +
- 		io_group_init_entity(iocg, iog);
- 		iog->my_entity = &iog->entity;
- 
-@@ -1873,7 +1950,7 @@ EXPORT_SYMBOL(elv_get_slice_idle);
- 
- static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
++#define STORE_FUNCTION(__VAR, __MIN, __MAX)				\
++static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
++					struct cftype *cftype,		\
++					u64 val)			\
++{									\
++	struct io_cgroup *iocg;					\
++	struct io_group *iog;						\
++	struct hlist_node *n;						\
++									\
++	if (val < (__MIN) || val > (__MAX))				\
++		return -EINVAL;						\
++									\
++	if (!cgroup_lock_live_group(cgroup))				\
++		return -ENODEV;						\
++									\
++	iocg = cgroup_to_io_cgroup(cgroup);				\
++									\
++	spin_lock_irq(&iocg->lock);					\
++	iocg->__VAR = (unsigned long)val;				\
++	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
++		iog->entity.new_##__VAR = (unsigned long)val;		\
++		smp_wmb();						\
++		iog->entity.ioprio_changed = 1;				\
++	}								\
++	spin_unlock_irq(&iocg->lock);					\
++									\
++	cgroup_unlock();						\
++									\
++	return 0;							\
++}
++
++STORE_FUNCTION(weight, 1, WEIGHT_MAX);
++STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
++#undef STORE_FUNCTION
++
++struct cftype bfqio_files[] = {
++	{
++		.name = "weight",
++		.read_u64 = io_cgroup_weight_read,
++		.write_u64 = io_cgroup_weight_write,
++	},
++	{
++		.name = "ioprio_class",
++		.read_u64 = io_cgroup_ioprio_class_read,
++		.write_u64 = io_cgroup_ioprio_class_write,
++	},
++};
++
++static int iocg_populate(struct cgroup_subsys *subsys, struct cgroup *cgroup)
++{
++	return cgroup_add_files(cgroup, subsys, bfqio_files,
++				ARRAY_SIZE(bfqio_files));
++}
++
++static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
++						struct cgroup *cgroup)
++{
++	struct io_cgroup *iocg;
++
++	if (cgroup->parent != NULL) {
++		iocg = kzalloc(sizeof(*iocg), GFP_KERNEL);
++		if (iocg == NULL)
++			return ERR_PTR(-ENOMEM);
++	} else
++		iocg = &io_root_cgroup;
++
++	spin_lock_init(&iocg->lock);
++	INIT_HLIST_HEAD(&iocg->group_data);
++	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
++	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
++
++	return &iocg->css;
++}
++
++/*
++ * We cannot support shared io contexts, as we have no mean to support
++ * two tasks with the same ioc in two different groups without major rework
++ * of the main cic/bfqq data structures.  By now we allow a task to change
++ * its cgroup only if it's the only owner of its ioc; the drawback of this
++ * behavior is that a group containing a task that forked using CLONE_IO
++ * will not be destroyed until the tasks sharing the ioc die.
++ */
++static int iocg_can_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
++			    struct task_struct *tsk)
++{
++	struct io_context *ioc;
++	int ret = 0;
++
++	/* task_lock() is needed to avoid races with exit_io_context() */
++	task_lock(tsk);
++	ioc = tsk->io_context;
++	if (ioc != NULL && atomic_read(&ioc->nr_tasks) > 1)
++		/*
++		 * ioc == NULL means that the task is either too young or
++		 * exiting: if it has still no ioc the ioc can't be shared,
++		 * if the task is exiting the attach will fail anyway, no
++		 * matter what we return here.
++		 */
++		ret = -EINVAL;
++	task_unlock(tsk);
++
++	return ret;
++}
++
++static void iocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
++			 struct cgroup *prev, struct task_struct *tsk)
++{
++	struct io_context *ioc;
++
++	task_lock(tsk);
++	ioc = tsk->io_context;
++	if (ioc != NULL)
++		ioc->cgroup_changed = 1;
++	task_unlock(tsk);
++}
++
++static void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
++{
++
++	/* Implemented in later patch */
++}
++
++struct cgroup_subsys io_subsys = {
++	.name = "io",
++	.create = iocg_create,
++	.can_attach = iocg_can_attach,
++	.attach = iocg_attach,
++	.destroy = iocg_destroy,
++	.populate = iocg_populate,
++	.subsys_id = io_subsys_id,
++	.use_id = 1,
++};
++#endif /* GROUP_IOSCHED */
+ /* Elevator fair queuing function */
+ static inline struct io_queue *elv_active_ioq(struct elevator_queue *e)
  {
--	entity_served(&ioq->entity, served);
-+	entity_served(&ioq->entity, served, ioq->nr_sectors);
- }
- 
- /* Tells whether ioq is queued in root group or not */
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index c8987c0..d76bd96 100644
+index 57207c4..d9acb75 100644
 --- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -147,6 +147,13 @@ struct io_entity {
- 	unsigned short ioprio_class, new_ioprio_class;
+@@ -13,11 +13,13 @@
+  */
  
- 	int ioprio_changed;
+ #include <linux/blkdev.h>
++#include <linux/cgroup.h>
+ 
+ #ifndef _BFQ_SCHED_H
+ #define _BFQ_SCHED_H
+ 
+ #define IO_IOPRIO_CLASSES	3
++#define WEIGHT_MAX             1000
+ 
+ struct io_entity;
+ struct io_queue;
+@@ -88,7 +90,7 @@ struct io_sched_data {
+  *             this entity; used for O(log N) lookups into active trees.
+  * @service: service received during the last round of service.
+  * @budget: budget used to calculate F_i; F_i = S_i + @budget / @weight.
+- * @weight: weight of the queue, calculated as IOPRIO_BE_NR - @ioprio.
++ * @weight: the weight in use.
+  * @new_weight: when a weight change is requested, the new weight value
+  * @parent: parent entity, for hierarchical scheduling.
+  * @my_sched_data: for non-leaf nodes in the cgroup hierarchy, the
+@@ -181,8 +183,10 @@ struct io_queue {
+ 	void *sched_queue;
+ };
+ 
++#ifdef CONFIG_GROUP_IOSCHED
+ struct io_group {
+ 	struct io_entity entity;
++	struct hlist_node group_node;
+ 	struct io_sched_data sched_data;
+ 	struct io_entity *my_entity;
+ 
+@@ -199,8 +203,45 @@ struct io_group {
+ 	 * non-RT cfqq in service when this value is non-zero.
+ 	 */
+ 	unsigned int busy_rt_queues;
++	unsigned short iocg_id;
+ };
+ 
++/**
++ * struct io_cgroup - io cgroup data structure.
++ * @css: subsystem state for io in the containing cgroup.
++ * @weight: cgroup weight.
++ * @ioprio_class: cgroup ioprio_class.
++ * @lock: spinlock that protects @weight, @ioprio_class and @group_data.
++ * @group_data: list containing the io_group belonging to this cgroup.
++ *
++ * @group_data is accessed using RCU, with @lock protecting the updates,
++ * @weight and @ioprio_class are protected by @lock.
++ */
++struct io_cgroup {
++	struct cgroup_subsys_state css;
++
++	unsigned int weight;
++	unsigned short ioprio_class;
++
++	spinlock_t lock;
++	struct hlist_head group_data;
++};
++#else
++struct io_group {
++	struct io_sched_data sched_data;
++
++	/* async_queue and idle_queue are used only for cfq */
++	struct io_queue *async_queue[2][IOPRIO_BE_NR];
++	struct io_queue *async_idle_queue;
 +
 +	/*
-+	 * Keep track of total service received by this entity. Keep the
-+	 * stats both for time slices and number of sectors dispatched
++	 * Used to track any pending rt requests so we can pre-empt current
++	 * non-RT cfqq in service when this value is non-zero.
 +	 */
-+	unsigned long total_service;
-+	unsigned long total_sector_service;
- };
- 
- /*
-@@ -244,6 +251,9 @@ struct io_group {
- 
- 	int deleting;
- 	unsigned short iocg_id;
++	unsigned int busy_rt_queues;
++};
++#endif /* CONFIG_GROUP_IOSCHED */
 +
-+	/* The device MKDEV(major, minor), this group has been created for */
-+	dev_t	dev;
- };
+ struct elv_fq_data {
+ 	struct io_group *root_group;
  
- /**
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index 9c8d31b..baf544f 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -60,3 +60,9 @@ SUBSYS(net_cls)
+ #endif
+ 
+ /* */
++
++#ifdef CONFIG_GROUP_IOSCHED
++SUBSYS(io)
++#endif
++
++/* */
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index 1482b20..ccecf53 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -68,6 +68,11 @@ struct io_context {
+ 	unsigned short ioprio;
+ 	unsigned short ioprio_changed;
+ 
++#ifdef CONFIG_GROUP_IOSCHED
++	/* If task changes the cgroup, elevator processes it asynchronously */
++	unsigned short cgroup_changed;
++#endif
++
+ 	/*
+ 	 * For request batching
+ 	 */
 -- 
 1.6.0.6
 
