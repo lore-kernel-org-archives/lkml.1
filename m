@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZGBHx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZGBHzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752691AbZGBHx3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZGBHxU
+	id S1752822AbZGBHzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZGBHzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:53:20 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55340 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbZGBHxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:53:19 -0400
-Date: Thu, 2 Jul 2009 09:53:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Cc: Greg KH <gregkh@suse.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
-Message-ID: <20090702075305.GC19187@elte.hu>
-References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org> <20090701111003.GC15958@elte.hu> <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 2 Jul 2009 03:55:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47508 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751532AbZGBHzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 03:55:46 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19pC48j369pE/r5j+yN+3dVqe7lYhA55CRUiofJA+
+	gfkf6qdg8k1PPO
+Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
+ kernel modules
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090702074214.GA19187@elte.hu>
+References: <1246514639.13293.40.camel@marge.simson.net>
+	 <20090702064712.GA26690@elte.hu>
+	 <1246519076.6384.22.camel@marge.simson.net>
+	 <20090702074214.GA19187@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Jul 2009 09:55:42 +0200
+Message-Id: <1246521342.8681.5.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-07-02 at 09:42 +0200, Ingo Molnar wrote:
 
-* Maciej W. Rozycki <macro@linux-mips.org> wrote:
+(squirrels suggestions away for later reference)
 
-> On Wed, 1 Jul 2009, Ingo Molnar wrote:
+> Btw, another thing: we are thinking about making -F 1000 (1 KHz 
+> auto-freq sampling) the default for perf top and perf record. This 
+> way we'd always gather enough data (and never too much or too little 
+> data), regardless of the intensity of the workload. Have you played 
+> with -F before, what's your general experience about it? It's 
+> particularly useful for 'rare' and highly fluctuating events like 
+> cache-misses.
 > 
-> > >  ENOTIME, sorry.  Next year perhaps.  Or a homework project 
-> > > for one of the newbies. ;)
-> > 
-> > You know that this project would kill a newbie, right? :)
-> 
->  Well, that's just a fast track to become a veteran, isn't it? ;)
+> Maybe 1KHz is a bit too low - Oprofile defaults to 100000 cycles 
+> interval by default which is about 10 KHz on a 1GHz box and 30 KHz 
+> on a 3GHz box. Perhaps 10 KHz is a better default?
 
-No, that's just a fast track to quickly make it into the list of our 
-Fallen Heroes :-/ The fast track to become a kernel veteran is to, 
-if possible, not challenge a tank with a hand-grenade. But i 
-digress.
+My default usage is 1000Hz to keep overhead low.  Works fine for me.
 
-> > We have no real southbridge drivers on x86 - but we should 
-> > certainly add some. Also, walking the PCI device tree from NMI 
-> > context is tricky as the lists there are not NMI safe - we could 
-> > crash if we happen to get a #IOCK while loading/unloading 
-> > drivers (which is rare but could happen).
-> 
-> That shouldn't be a problem if we were about to panic().  For a 
-> more sophisticated attempt of recovery -- yes, that would have to 
-> be addressed.
+	-Mike
 
-We are only panic-ing if the sysctl is set. The diagnostics would be 
-useful anyway. The proper approach would be to defer it a bit in the 
-non-panic case an read it out from some friendlier context - such as 
-the EDAC core.
-
-	Ingo
