@@ -1,139 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZGBXAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZGBXAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751838AbZGBXAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZGBW76
+	id S1753619AbZGBXAp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZGBXAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:59:58 -0400
-Received: from hqemgate03.nvidia.com ([216.228.112.145]:2507 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751139AbZGBW75 (ORCPT
+	Thu, 2 Jul 2009 19:00:39 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42542 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbZGBXAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:59:57 -0400
-X-PGP-Universal: processed;
-	by hqnvupgp03.nvidia.com on Thu, 02 Jul 2009 16:00:01 -0700
-Message-ID: <4A4CEE7F.9060705@nvidia.com>
-Date: Thu, 02 Jul 2009 13:29:35 -0400
-From: Ayaz Abdulla <aabdulla@nvidia.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 2 Jul 2009 19:00:38 -0400
+Date: Thu, 2 Jul 2009 19:00:34 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, andi@firstfloor.org,
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 2/3] exec: let do_coredump limit the number of
+	concurrent dumps to pipes (v7)
+Message-ID: <20090702230034.GC11447@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090702225714.GA11447@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: David Miller <davem@davemloft.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: [GIT]: Networking
-References: <20090630.213927.180401151.davem@davemloft.net> <20090702075724.GA10608@elte.hu> <4A4C9125.8020705@gmail.com> <4A4CBE7D.2060603@gmail.com> <4A4CDCA4.3040505@nvidia.com> <4A4D3596.8060209@gmail.com>
-In-Reply-To: <4A4D3596.8060209@gmail.com>
-X-NVConfidentiality: public
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 02 Jul 2009 23:00:01.0717 (UTC) FILETIME=[D4811650:01C9FB68]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090702225714.GA11447@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+core_pattern: Introduce core pipe limiting sysctl
+
+Since we can dump cores to pipe, rather than directly to the filesystem, we
+create a condition in which a user can create a very high load on the system
+simply by running bad applications.  If the pipe reader specified in
+core_pattern is poorly written, we can have lots of ourstandig resources and
+processes in the system.  This sysctl introduces an ability to limit that
+resource consumption.  core_pipe_limit defines how many in-flight dumps may be
+run in parallel, dumps beyond this value are skipped and a note is made in the
+kernel log.  A special value of 0 in core_pipe_limit denotes unlimited core
+dumps may be handled (this is the default value).
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Reported-by: Earl Chew <earl_chew@agilent.com>
 
 
-Eric Dumazet wrote:
-> Ayaz Abdulla a écrit :
-> 
->>
->>Eric Dumazet wrote:
->>
->>>Eric Dumazet a écrit :
->>>
->>>
->>>>Ingo Molnar a écrit :
->>>>
->>>>
->>>>>>The following changes since commit
->>>>>>52989765629e7d182b4f146050ebba0abf2cb0b7:
->>>>>> Linus Torvalds (1):
->>>>>>       Merge git://git.kernel.org/.../davem/net-2.6
->>>>>>
->>>>>>are available in the git repository at:
->>>>>>
->>>>>> master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
->>>>>
->>>>>Hm, something in this lot quickly wrecked networking here - see the
->>>>>tx timeout dump below. It starts with:
->>>>>
->>>>>[  351.004596] WARNING: at net/sched/sch_generic.c:246
->>>>>dev_watchdog+0x10b/0x19c()
->>>>>[  351.011815] Hardware name: System Product Name
->>>>>[  351.016220] NETDEV WATCHDOG: eth0 (forcedeth): transmit queue 0
->>>>>timed out
->>>>>
->>>>>Config attached. Unfortunately i've got no time to do bisection today.
->>>>
->>>>
->>>>
->>>>forcedeth might have a problem, in its netif_wake_queue() logic, but
->>>>I could not see why a recent patch could make this problem visible now.
->>>>
->>>>CPU0/1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
->>>>is not a new cpu either :)
->>>>
->>>>forcedeth uses an internal tx_stop without appropriate barrier.
->>>>
->>>>Could you try following patch ?
->>>>
->>>>(random guess as I dont have much time right now)
->>>
->>>
->>>Oh well this patch was soooo stupid, sorry Ingo.
->>>
->>>
->>>We might have a race in napi_schedule(), leaving interrupts disabled
->>>forever.
->>>I cannot test this patch, I dont have the hardware...
->>>
->>>Thanks
->>>
->>>diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
->>>index 1094d29..3b4e076 100644
->>>--- a/drivers/net/forcedeth.c
->>>+++ b/drivers/net/forcedeth.c
->>>@@ -3514,11 +3514,13 @@ static irqreturn_t nv_nic_irq(int foo, void
->>>*data)
->>>     nv_msi_workaround(np);
->>> 
->>> #ifdef CONFIG_FORCEDETH_NAPI
->>>-    napi_schedule(&np->napi);
->>>-
->>>-    /* Disable furthur irq's
->>>-       (msix not enabled with napi) */
->>>-    writel(0, base + NvRegIrqMask);
->>>+    if (napi_schedule_prep(&np->napi)) {
->>>+        /*
->>>+         * Disable further irq's (msix not enabled with napi)
->>>+         */
->>>+        writel(0, base + NvRegIrqMask);
->>>+        __napi_schedule(&np->napi);
->>>+    }
->>
->>Yes, good catch. There is a race condition here with napi poll.
->>
->>I would prefer to do the following to keep the code simple and clean.
->>
->>writel(0, base + NvRegIrqMask);
->>napi_schedule(&np->napi);
-> 
-> 
-> 
-> CC trimmed down to network devs only :)
-> 
-> It would be racy too ...
-> 
-> check drivers/net/amd8111e.c, drivers/net/natsemi.c ...
-> 
-> If this cpu inconditionaly calls writel(0, base + NvRegIrqMask); 
-> while another cpu just called writel(np->irqmask, base + NvRegIrqMask),
-> we end with disabled interrupts ?
-<BCC linux-kernel>
+ Documentation/sysctl/kernel.txt |   22 ++++++++++++++++++++++
+ fs/exec.c                       |   21 +++++++++++++++++----
+ kernel/sysctl.c                 |    9 +++++++++
+ 3 files changed, 48 insertions(+), 4 deletions(-)
 
-Yes, but the next instruction is to call napi_schedule() which will 
-re-enable interrupts in napi function.
-
-
-> 
+diff --git a/Documentation/sysctl/kernel.txt b/Documentation/sysctl/kernel.txt
+index 322a00b..bb226ba 100644
+--- a/Documentation/sysctl/kernel.txt
++++ b/Documentation/sysctl/kernel.txt
+@@ -21,6 +21,7 @@ show up in /proc/sys/kernel:
+ - acct
+ - auto_msgmni
+ - core_pattern
++- core_pipe_limit
+ - core_uses_pid
+ - ctrl-alt-del
+ - dentry-state
+@@ -119,6 +120,27 @@ core_pattern is used to specify a core dumpfile pattern name.
+ 
+ ==============================================================
+ 
++core_pipe_limit:
++
++This sysctl is only applicable when core_pattern is configured to pipe core
++files to user space helper a (when the first character of core_pattern is a '|',
++see above).  When collecting cores via a pipe to an application, it is
++occasionally usefull for the collecting application to gather data about the
++crashing process from its /proc/pid directory.  In order to do this safely, the
++kernel must wait for the collecting process to exit, so as not to remove the
++crashing processes proc files prematurely.  This in turn creates the possibility
++that a misbehaving userspace collecting process can block the reaping of a
++crashed process simply by never exiting.  This sysctl defends against that.  It
++defines how many concurrent crashing processes may be piped to user space
++applications in parallel.  If this value is exceeded, then those crashing
++processes above that value are noted via the kernel log and their cores are
++skipped.  0 is a special value, indicating that unlimited processes may be
++captured in parallel, but that no waiting will take place (i.e. the collecting
++process is not guaranteed access to /proc/<crahing pid>/).  This value defaults
++to 0.
++
++==============================================================
++
+ core_uses_pid:
+ 
+ The default coredump filename is "core".  By setting
+diff --git a/fs/exec.c b/fs/exec.c
+index 9defd20..93ab6eb 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -63,6 +63,7 @@
+ 
+ int core_uses_pid;
+ char core_pattern[CORENAME_MAX_SIZE] = "core";
++unsigned int core_pipe_limit;
+ int suid_dumpable = 0;
+ 
+ /* The maximal length of core_pattern is also specified in sysctl.c */
+@@ -1726,7 +1727,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
+ 	char **helper_argv = NULL;
+ 	int helper_argc = 0;
+-	char *delimit;
++	int dump_count = 0;
++	static atomic_t core_dump_count = ATOMIC_INIT(0);
+ 
+ 	audit_core_dumps(signr);
+ 
+@@ -1798,21 +1800,29 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 			goto fail_unlock;
+ 		}
+ 
++		dump_count = atomic_inc_return(&core_dump_count);
++		if (core_pipe_limit && (core_pipe_limit < dump_count)) {
++			printk(KERN_WARNING "Pid %d(%s) over core_pipe_limit\n",
++			       task_tgid_vnr(current), current->comm);
++			printk(KERN_WARNING "Skipping core dump\n");
++			goto fail_dropcount;
++		}
++
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		if (!helper_argv) {
+ 			printk(KERN_WARNING "%s failed to allocate memory\n",
+ 			       __func__);
+-			goto fail_unlock;
++			goto fail_dropcount;
+ 		}
+ 
+ 		core_limit = RLIM_INFINITY;
+ 
+ 		/* SIGPIPE can happen, but it's just never processed */
+- 		if (call_usermodehelper_pipe(corename+1, helper_argv, NULL,
++ 		if (call_usermodehelper_pipe(helper_argv[0], helper_argv, NULL,
+ 				&file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+ 			       corename);
+- 			goto fail_unlock;
++ 			goto fail_dropcount;
+  		}
+ 	} else {
+ 		if (core_limit < binfmt->min_coredump)
+@@ -1853,6 +1863,9 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+ 
+ close_fail:
+ 	filp_close(file, NULL);
++fail_dropcount:
++	if (dump_count)
++		atomic_dec(&core_dump_count);
+ fail_unlock:
+ 	if (helper_argv)
+ 		argv_free(helper_argv);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 62e4ff9..681052f 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -77,6 +77,7 @@ extern int max_threads;
+ extern int core_uses_pid;
+ extern int suid_dumpable;
+ extern char core_pattern[];
++extern unsigned int core_pipe_limit;
+ extern int pid_max;
+ extern int min_free_kbytes;
+ extern int pid_max_min, pid_max_max;
+@@ -407,6 +408,14 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dostring,
+ 		.strategy	= &sysctl_string,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "core_pipe_limit",
++		.data		= &core_pipe_limit,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #ifdef CONFIG_PROC_SYSCTL
+ 	{
+ 		.procname	= "tainted",
