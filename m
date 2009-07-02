@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZGBP2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZGBP17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbZGBP2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZGBP1p
+	id S1756168AbZGBP17 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZGBP1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:27:45 -0400
-Received: from THUNK.ORG ([69.25.196.29]:57254 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084AbZGBP1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:27:43 -0400
-Date: Thu, 2 Jul 2009 11:27:27 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, tridge@samba.org,
-       Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090702152727.GB30665@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, tridge@samba.org,
-	Pavel Machek <pavel@ucw.cz>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-	Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-	Paul McKenney <paulmck@linux.vnet.ibm.com>
-References: <20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org> <20090701123141.402c17d2@lxorguk.ukuu.org.uk> <19019.25035.244941.352337@samba.org> <20090701143844.07728fdf@lxorguk.ukuu.org.uk> <19019.27736.647500.497114@samba.org> <20090701154151.7f45abad@lxorguk.ukuu.org.uk> <19020.12748.348370.708306@samba.org> <20090702113200.39a15f21@lxorguk.ukuu.org.uk> <1246546567.4055.27.camel@mulgrave.site>
+	Thu, 2 Jul 2009 11:27:32 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:33911 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756005AbZGBP1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 11:27:31 -0400
+Date: Thu, 2 Jul 2009 17:27:30 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Artem Bityutskiy <dedekind@infradead.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] ubifs: allow more than one volume to be mounted
+Message-ID: <20090702152730.GJ18340@buzzloop.caiaq.de>
+References: <1246547747-13366-1-git-send-email-daniel@caiaq.de> <4A4CCF99.30104@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246546567.4055.27.camel@mulgrave.site>
+In-Reply-To: <4A4CCF99.30104@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 02, 2009 at 02:56:07PM +0000, James Bottomley wrote:
->      3. For this patch, since there are legal issues which could harm
->         the defence of any company to be discussed openly, the LF is
->         paying the retainer for John Lanza to be available to any member
->         of the community on a one on one basis, so that the discussions
->         they engage in would be protected by client privilege (i.e. not
->         subject to discovery).
+On Thu, Jul 02, 2009 at 06:17:45PM +0300, Artem Bityutskiy wrote:
+> Daniel Mack wrote:
+>> UBIFS uses a bdi device per volume, but does not care to hand out unique
+>> names to each of them. This causes an error when trying to mount more
+>> than one volumes.
+>>
+>> [  239.277407] kobject_add_internal failed for ubifs with -EEXIST, don't try to register things with the same name in the same directory.
+>> [  239.289618] [<c002a45c>] (unwind_backtrace+0x0/0xdc) from [<c0160628>] (kobject_add_internal+0x188/0x1b8)
+>> [  239.299445] [<c0160628>] (kobject_add_internal+0x188/0x1b8) from [<c01607d8>] (kobject_add+0x48/0x5c)
+>> [  239.308896] [<c01607d8>] (kobject_add+0x48/0x5c) from [<c019d96c>] (device_add+0xac/0x510)
+>> [  239.317392] [<c019d96c>] (device_add+0xac/0x510) from [<c019de58>] (device_create_vargs+0x70/0xa4)
+>> [  239.326589] [<c019de58>] (device_create_vargs+0x70/0xa4) from [<c0073138>] (bdi_register+0x44/0x64)
+>> [  239.335854] [<c0073138>] (bdi_register+0x44/0x64) from [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc)
+>> [  239.344769] [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc) from [<c008b054>] (vfs_kern_mount+0x50/0xa8)
+>> [  239.353867] [<c008b054>] (vfs_kern_mount+0x50/0xa8) from [<c008b0f0>] (do_kern_mount+0x34/0xd0)
+>> [  239.362799] [<c008b0f0>] (do_kern_mount+0x34/0xd0) from [<c009f7b4>] (do_mount+0x644/0x6b4)
+>> [  239.371377] [<c009f7b4>] (do_mount+0x644/0x6b4) from [<c009f8a8>] (sys_mount+0x84/0xcc)
+>> [  239.379538] [<c009f8a8>] (sys_mount+0x84/0xcc) from [<c0025e80>] (ret_fast_syscall+0x0/0x2c)
+>>
+>> Append the UBI volume and device ID to avoid that.
+>>
+>> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+>> Cc: Artem Bityutskiy <dedekind@infradead.org>
+>> Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+>> Cc: linux-mtd@lists.infradead.org
+>
+> Thanks, I'll look at this tomorrow and try to sent it to Linus
+> ASAP.
 
-I believe what has been made available is that people who have some
-detailed legal questions can contact John Lanza who can either respond
-off-line via e-mail, schedule time for a phone call, and if really
-necessary, it _can_ be possible to establish a formal client/attorney
-privilege with John.  These different options are listed in order of
-increasing cost to the Linux Foundation.  
+Btw - Adrian Hunter's email in MAINTAINERS seems to be outdated:
 
-Which option gets chosen will depend on the specific question and who
-is asking the question; which is to say, setting up a formal
-client/attorney privilege might be more appropriate for Hirofumi or
-Linus, but obviously the LF can't afford to set up relationships where
-client privilege would apply for any random LKML reader who is
-randomly curious about the way things work.
+<ext-adrian.hunter@nokia.com>: host mx1.nokia.com[192.100.122.228] said:
+550 5.1.1 <ext-adrian.hunter@nokia.com>... User unknown (in reply to RCPT TO command)
 
-So just to make it clear, with respect to expectations, simply sending
-e-mail to John doesn't automatically set up a client relationship that
-which protects the discussion under client/attorney privilege.
-Setting that up *does* cost LF real money, so I would ask folks to be
-considerate about the LF's resources!
-
-BTW, Tridge has offered to be available for phone conversations, since
-he's probably asked the various lawyers that have been consulted most
-of the questions that people might have; so that's another option for
-people who have legal questions that would be kinder and gentler to
-the LF's budget.
-
-And of course, keep in mind that this offer is really only for people
-who want to clarification of any background legal issues, not to
-debate the issue of whether or not the patch should go in.  That
-policy discussion should happen openly, like any other proposed patch,
-and ultimately it's Hirofumi-san's and/or Linus's call.
-
-						- Ted
