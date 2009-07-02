@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbZGBMPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZGBMSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbZGBMPE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 08:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZGBMOz
+	id S1752758AbZGBMSl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 08:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGBMSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 08:14:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56766 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbZGBMOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 08:14:55 -0400
-Subject: Re: [PATCH] fs/notify/inotify: decrement user inotify count on
- close
-From: Eric Paris <eparis@redhat.com>
-To: Keith Packard <keithp@keithp.com>
-Cc: linux-kernel@vger.kernel.org, john@johnmccutchan.com, rlove@rlove.org,
-       eparis@parisplace.org
-In-Reply-To: <1246510598-6136-1-git-send-email-keithp@keithp.com>
-References: <1246510598-6136-1-git-send-email-keithp@keithp.com>
+	Thu, 2 Jul 2009 08:18:34 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:13408
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751054AbZGBMSd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 08:18:33 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvkBAN9BTEp8qMex/2dsb2JhbAAIzzWEEQWBOg
+X-IronPort-AV: E=Sophos;i="4.42,333,1243785600"; 
+   d="scan'208";a="545668119"
+Subject: Re: [PATCH] MMC Core: Drop initialization frequency floor to 50kHz
+From: Ben Nizette <bn@niasdigital.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: pierre@ossman.eu, s.hauer@pengutronix.de, kernel <kernel@avr32linux.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090702135849.21370282@hskinnemoen-d830>
+References: <1246492196.2980.17.camel@linux-51e8.site>
+	 <20090702135849.21370282@hskinnemoen-d830>
 Content-Type: text/plain
-Date: Thu, 02 Jul 2009 08:14:49 -0400
-Message-Id: <1246536889.22562.74.camel@dhcp235-23.rdu.redhat.com>
+Date: Thu, 02 Jul 2009 22:17:36 +1000
+Message-Id: <1246537056.2980.60.camel@linux-51e8.site>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 21:56 -0700, Keith Packard wrote:
-> The per-user inotify_devs value is incremented each time a new file is
-> allocated, but never decremented. This led to inotify_init failing after a
-> limited number of calls.
+On Thu, 2009-07-02 at 13:58 +0200, Haavard Skinnemoen wrote:
+> Ben Nizette wrote:
+> > Was recently merged.  This is too fast for at least one setup
+> > permutation - the one on my desk which through trial and error won't
+> > initialise at anything above ~350kHz (older Sandisk 256MB SD on
+> > atmel-mci).
 > 
-> Signed-off-by: Keith Packard <keithp@keithp.com>
+> What kind of board is this? It sounds a bit like the CMD or DATA0
+> pull-up is too weak...
 
-Thanks, I will push to Linus later today, sorry about the regression!
+It is a custom board (you'll see the board support soon) but those
+pullups are 47k same as NGW100 and STK1000.
 
--Eric
+'scope confirms all the waveforms are crisp and correct.
+
+> 
+> Haavard
 
