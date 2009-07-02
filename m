@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbZGBVpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZGBVq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756093AbZGBVpU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 17:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZGBVpI
+	id S1756302AbZGBVq7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 17:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZGBVqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 17:45:08 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60521 "EHLO
+	Thu, 2 Jul 2009 17:46:50 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60604 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbZGBVpH (ORCPT
+	with ESMTP id S1754233AbZGBVqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 17:45:07 -0400
-Date: Thu, 2 Jul 2009 23:45:03 +0200
+	Thu, 2 Jul 2009 17:46:50 -0400
+Date: Thu, 2 Jul 2009 23:46:46 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
-       Ralf Baechle <ralf@linux-mips.org>, Wu Zhangjin <wuzj@lemote.com>
-Subject: Re: [PATCH] [MIPS] Hibernation: only save pages in system ram
-Message-ID: <20090702214503.GC1485@ucw.cz>
-References: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090702214646.GD1485@ucw.cz>
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+In-Reply-To: <200907012019.53932.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-> arch/mips/include/asm/page.h:
+On Wed 2009-07-01 20:19:51, Rusty Russell wrote:
+> On Tue, 30 Jun 2009 04:01:03 pm Pavel Machek wrote:
+> > > +config VFAT_FS_DUALNAMES
+> > > +	bool "VFAT dual names support"
+> > > +	depends on VFAT_FS
+> >
+> > Defaults should be back-compatible.
 > 
-> 	...
-> 	#ifdef CONFIG_FLATMEM
+> Hi Pavel,
 > 
-> 	#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
-> 
-> 	#elif defined(CONFIG_SPARSEMEM)
-> 
-> 	/* pfn_valid is defined in linux/mmzone.h */
-> 	...
-> 
-> we can rewrite pfn_valid(pfn) to fix this problem, but I really do not
-> want to touch such a widely-used macro, so, I used another solution:
+> I disagree with this: given there's been testing with no known issues, it's 
+> not a back compat question.
 
-Well, fixing pfn_valid() is the right way to go. It makes mips behave
-like other architectures. Please do that.
-
-> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
-
-NAK.
+The testing uncovered some pretty serious issues. ('Causes XP to
+bluescreen').
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
