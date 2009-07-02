@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZGBAet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZGBAhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbZGBAet (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 20:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbZGBAek
+	id S1753741AbZGBAhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 20:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZGBAhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 20:34:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:59335 "EHLO ozlabs.org"
+	Wed, 1 Jul 2009 20:37:24 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:55043 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbZGBAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 20:34:40 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Date: Thu, 2 Jul 2009 10:04:41 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, tridge@samba.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-References: <19013.8005.541836.436991@samba.org> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	id S1751565AbZGBAhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 20:37:24 -0400
+Message-ID: <4A4C0144.5070203@anarazel.de>
+Date: Thu, 02 Jul 2009 02:37:24 +0200
+From: Andres Freund <andres@anarazel.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090629 Shredder/3.0b3pre
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jarek Poplawski <jarkao2@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Patrick McHardy <kaber@trash.net>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (possibly caused
+    by netem)
+References: <4A4A9DD6.8060800@anarazel.de> <4A4BAD5F.7050908@gmail.com> <4A4BD384.3090407@anarazel.de>
+In-Reply-To: <4A4BD384.3090407@anarazel.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907021004.41907.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009 08:55:58 pm Alan Cox wrote:
-> > I'd actually prefer to see the code ripped out and no config option
-> > available; it would the clearest avoidance case possible.
->
-> What about the free world - why should we suffer because Americans have
-> a broken patent system ? That just leads to a Farenheit 451 model where
-> the kernel sources end up containing no code, text or image that can
-> offend, harm or be found wanting in any possible legal jurisdiction.
+On 07/01/2009 11:22 PM, Andres Freund wrote:
+> On 07/01/2009 08:39 PM, Jarek Poplawski wrote:
+>> Andres Freund wrote, On 07/01/2009 01:20 AM:
+>>> While playing around with netem (time, not packet count based loss-
+>>> bursts) I experienced soft lockups several times - to exclude it was my
+>>> modifications causing this I recompiled with the original and it is
+>>> still locking up.
+>>> I captured several of those traces via the thankfully
+>>> still working netconsole.
+>>> The simplest policy I could reproduce the error with was:
+>>> tc qdisc add dev eth0 root handle 1: netem delay 10ms loss 0
+>>>
+>>> I could not reproduce the error without delay - but that may only be a
+>>> timing issue, as the host I was mainly transferring data to was on a
+>>> local network.
+>>> I could not reproduce the issue on lo.
+>>>
+>>> The time to reproduce the error varied from seconds after executing tc
+>>> to several minutes.
+>>>
+>>> Traces 5+6 are made with vanilla
+>>> 52989765629e7d182b4f146050ebba0abf2cb0b7
+>>>
+>>> The earlier traces are made with parts of my patches applied, and only
+>>> included for completeness as I don't believe my modifications were
+>>> causing this and all traces are different, so it may give some clues.
+>>>
+>>> Lockdep was enabled but did not diagnose anything relevant (one dvb
+>>> warning during bootup).
+>>>
+>>> Any ideas for debugging?
+>>
+>> Maybe these traces will be enough, but lockdep report could save time.
+>> If dvb warning triggers every time then lockdep probably turns off
+>> just after (it works this way, unless something was changed). So,
+>> could you try to repeat this without dvb? Btw., did you try this on
+>> some earlier kernel?
+> Yes. Today I could not manage to reproduce it on 2.6.30 but could on
+> current git...
+> Will try without dvb.
+So I tried - and I did not catch any lockdep output before the crash. 
+Unfortunately I do not have another machine on the same local network to 
+catch any messages after the crash... So I could be missing some warning 
+(I did synchronous logging though).
+Will check with netconsole tomorrow.
 
-We put in workarounds for broken hardware, even though we rightfully dislike 
-it.  Similarly, in this case a minor change prevents a real problem 
-experienced by our users (yes, I know we only have one public bug report).
-
-It's bad.  Yes, let's bitch about it.  And workaround it anyway.
-Rusty.
+Andres
