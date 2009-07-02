@@ -1,157 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZGBSOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbZGBSPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbZGBSOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZGBSOg
+	id S1756061AbZGBSPL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbZGBSOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 2 Jul 2009 14:14:38 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:37552 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754577AbZGBSOg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 14:14:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36367 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754728AbZGBSOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:14:35 -0400
-Date: Thu, 2 Jul 2009 20:11:45 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Ratan Nalumasu <rnalumasu@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] do not place sub-threads on task_struct->children list
-Message-ID: <20090702181145.GA28581@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=mOZqStPEx60w5vceTMmNl7g0c8UeYpMuMk/uF2h2H/E0ANlwXiLJ6ssnU1Fquz+Gin
+         R2ZSYE9dE6Xhu9S6bz1KVMHz7isd+QYS0x+rNduY0qbavYFa47lNsP6XPf4VurmgpDrp
+         t3rwE5nA4jE42xTX5P5NsFpytfVNv4UfFcXxU=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/3] perfcounter: Set the minimum percent for callchains to be displayed
+Date: Thu,  2 Jul 2009 20:14:33 +0200
+Message-Id: <1246558475-10624-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to Roland who pointed out de_thread() issues.
+Callchains output may become a burden on a trace because even
+rarely hit site are exposed. This can be too much information.
 
-Currently we add sub-threads to ->real_parent->children list. This
-buys nothing but slows down do_wait().
+Let the user set a threshold as a minimum percent of hits using
+the new pattern for the -c option:
 
-With this patch ->children contains only main threads (group leaders).
-The only complication is that forget_original_parent() should iterate
-over sub-threads by hand, and de_thread() needs another list_replace()
-when it changes ->group_leader.
+-c mode,min_percent
 
->From now do_wait_thread() can never see task_detached() && !EXIT_DEAD
-tasks, we can remove this check (and we can unify do_wait_thread() and
-ptrace_do_wait()).
+Example:
 
-This change can confuse the optimistic search in mm_update_next_owner(),
-but this is fixable and minor.
+$ perf report -s sym -c flat,4
 
-Perhaps badness() and oom_kill_process() should be updated, but they
-should be fixed in any case.
+     8.25%  [k] copy_user_generic_string
+             4.19%
+                copy_user_generic_string
+                generic_file_aio_read
+                do_sync_read
+                vfs_read
+                sys_pread64
+                system_call_fastpath
+                pread64
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+     5.39%  [k] search_by_key
+     4.63%  0x00000000009e0a
+     2.36%  [k] memcpy_c
+[...]
+
+$ perf report -s sym -c graph,2
+
+     8.25%  [k] copy_user_generic_string
+                |
+                |--4.31%-- generic_file_aio_read
+                |          do_sync_read
+                |          vfs_read
+                |          |
+                |           --4.19%-- sys_pread64
+                |                     system_call_fastpath
+                |                     pread64
+                |
+                 --3.24%-- generic_file_buffered_write
+                           __generic_file_aio_write_nolock
+                           generic_file_aio_write
+                           do_sync_write
+                           reiserfs_file_write
+                           vfs_write
+                           |
+                            --3.14%-- sys_pwrite64
+                                      system_call_fastpath
+                                      __pwrite64
+
+     5.39%  [k] search_by_key
+                |
+                 --2.23%-- reiserfs_update_sd_size
+
+     4.63%  0x00000000009e0a
+
+     2.36%  [k] memcpy_c
+[...]
+
+You can also omit it and it will default to 0.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
+ tools/perf/builtin-report.c |   45 ++++++++++++++++++++++++++++++++----------
+ tools/perf/util/callchain.c |   19 ++++++++++-------
+ tools/perf/util/callchain.h |    6 +++-
+ 3 files changed, 49 insertions(+), 21 deletions(-)
 
- fs/exec.c     |    2 ++
- kernel/fork.c |    2 +-
- kernel/exit.c |   36 +++++++++++++++++-------------------
- 3 files changed, 20 insertions(+), 20 deletions(-)
-
---- WAIT/fs/exec.c~4_CHILDREN_NO_THREADS	2009-07-01 20:01:54.000000000 +0200
-+++ WAIT/fs/exec.c	2009-07-02 19:27:36.000000000 +0200
-@@ -827,7 +827,9 @@ static int de_thread(struct task_struct 
- 		attach_pid(tsk, PIDTYPE_PID,  task_pid(leader));
- 		transfer_pid(leader, tsk, PIDTYPE_PGID);
- 		transfer_pid(leader, tsk, PIDTYPE_SID);
-+
- 		list_replace_rcu(&leader->tasks, &tsk->tasks);
-+		list_replace_init(&leader->sibling, &tsk->sibling);
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index a3ec4bd..0e2317d 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -58,6 +58,7 @@ static regex_t		parent_regex;
+ static int		exclude_other = 1;
+ static int		callchain;
+ static enum chain_mode	callchain_mode;
++static double		callchain_min_percent = 0.0;
  
- 		tsk->group_leader = tsk;
- 		leader->group_leader = tsk;
---- WAIT/kernel/fork.c~4_CHILDREN_NO_THREADS	2009-07-01 20:01:54.000000000 +0200
-+++ WAIT/kernel/fork.c	2009-07-02 19:27:36.000000000 +0200
-@@ -1245,7 +1245,6 @@ static struct task_struct *copy_process(
+ static u64		sample_type;
+ 
+@@ -1219,7 +1220,7 @@ static void collapse__resort(void)
+ 
+ static struct rb_root output_hists;
+ 
+-static void output__insert_entry(struct hist_entry *he)
++static void output__insert_entry(struct hist_entry *he, u64 min_callchain_hits)
+ {
+ 	struct rb_node **p = &output_hists.rb_node;
+ 	struct rb_node *parent = NULL;
+@@ -1227,9 +1228,11 @@ static void output__insert_entry(struct hist_entry *he)
+ 
+ 	if (callchain) {
+ 		if (callchain_mode == FLAT)
+-			sort_chain_flat(&he->sorted_chain, &he->callchain);
++			sort_chain_flat(&he->sorted_chain, &he->callchain,
++					min_callchain_hits);
+ 		else if (callchain_mode == GRAPH)
+-			sort_chain_graph(&he->sorted_chain, &he->callchain);
++			sort_chain_graph(&he->sorted_chain, &he->callchain,
++					 min_callchain_hits);
  	}
  
- 	if (likely(p->pid)) {
--		list_add_tail(&p->sibling, &p->real_parent->children);
- 		tracehook_finish_clone(p, clone_flags, trace);
- 
- 		if (thread_group_leader(p)) {
-@@ -1257,6 +1256,7 @@ static struct task_struct *copy_process(
- 			p->signal->tty = tty_kref_get(current->signal->tty);
- 			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
- 			attach_pid(p, PIDTYPE_SID, task_session(current));
-+			list_add_tail(&p->sibling, &p->real_parent->children);
- 			list_add_tail_rcu(&p->tasks, &init_task.tasks);
- 			__get_cpu_var(process_counts)++;
- 		}
---- WAIT/kernel/exit.c~4_CHILDREN_NO_THREADS	2009-07-02 18:44:43.000000000 +0200
-+++ WAIT/kernel/exit.c	2009-07-02 19:56:33.000000000 +0200
-@@ -68,10 +68,10 @@ static void __unhash_process(struct task
- 		detach_pid(p, PIDTYPE_SID);
- 
- 		list_del_rcu(&p->tasks);
-+		list_del_init(&p->sibling);
- 		__get_cpu_var(process_counts)--;
- 	}
- 	list_del_rcu(&p->thread_group);
--	list_del_init(&p->sibling);
+ 	while (*p != NULL) {
+@@ -1246,11 +1249,14 @@ static void output__insert_entry(struct hist_entry *he)
+ 	rb_insert_color(&he->rb_node, &output_hists);
  }
  
- /*
-@@ -736,12 +736,9 @@ static struct task_struct *find_new_reap
- /*
- * Any that need to be release_task'd are put on the @dead list.
-  */
--static void reparent_thread(struct task_struct *father, struct task_struct *p,
-+static void reparent_leader(struct task_struct *father, struct task_struct *p,
- 				struct list_head *dead)
+-static void output__resort(void)
++static void output__resort(u64 total_samples)
  {
--	if (p->pdeath_signal)
--		group_send_sig_info(p->pdeath_signal, SEND_SIG_NOINFO, p);
--
- 	list_move_tail(&p->sibling, &p->real_parent->children);
+ 	struct rb_node *next;
+ 	struct hist_entry *n;
+ 	struct rb_root *tree = &hist;
++	u64 min_callchain_hits;
++
++	min_callchain_hits = total_samples * (callchain_min_percent / 100);
  
- 	if (task_detached(p))
-@@ -780,12 +777,18 @@ static void forget_original_parent(struc
- 	reaper = find_new_reaper(father);
+ 	if (sort__need_collapse)
+ 		tree = &collapse_hists;
+@@ -1262,7 +1268,7 @@ static void output__resort(void)
+ 		next = rb_next(&n->rb_node);
  
- 	list_for_each_entry_safe(p, n, &father->children, sibling) {
--		p->real_parent = reaper;
--		if (p->parent == father) {
--			BUG_ON(task_ptrace(p));
--			p->parent = p->real_parent;
--		}
--		reparent_thread(father, p, &dead_children);
-+		struct task_struct *t = p;
-+		do {
-+			t->real_parent = reaper;
-+			if (t->parent == father) {
-+				BUG_ON(task_ptrace(t));
-+				t->parent = t->real_parent;
-+			}
-+			if (t->pdeath_signal)
-+				group_send_sig_info(t->pdeath_signal,
-+						    SEND_SIG_NOINFO, t);
-+		} while_each_thread(p, t);
-+		reparent_leader(father, p, &dead_children);
+ 		rb_erase(&n->rb_node, tree);
+-		output__insert_entry(n);
++		output__insert_entry(n, min_callchain_hits);
  	}
- 	write_unlock_irq(&tasklist_lock);
+ }
  
-@@ -1533,14 +1536,9 @@ static int do_wait_thread(struct wait_op
- 	struct task_struct *p;
+@@ -1796,7 +1802,7 @@ done:
+ 		dsos__fprintf(stdout);
  
- 	list_for_each_entry(p, &tsk->children, sibling) {
--		/*
--		 * Do not consider detached threads.
--		 */
--		if (!task_detached(p)) {
--			int ret = wait_consider_task(wo, tsk, 0, p);
--			if (ret)
--				return ret;
--		}
-+		int ret = wait_consider_task(wo, tsk, 0, p);
-+		if (ret)
-+			return ret;
- 	}
+ 	collapse__resort();
+-	output__resort();
++	output__resort(total);
+ 	output__fprintf(stdout, total);
  
+ 	return rc;
+@@ -1806,19 +1812,36 @@ static int
+ parse_callchain_opt(const struct option *opt __used, const char *arg,
+ 		    int unset __used)
+ {
++	char *tok;
++	char *endptr;
++
+ 	callchain = 1;
+ 
+ 	if (!arg)
+ 		return 0;
+ 
+-	if (!strncmp(arg, "graph", strlen(arg)))
++	tok = strtok((char *)arg, ",");
++	if (!tok)
++		return -1;
++
++	/* get the output mode */
++	if (!strncmp(tok, "graph", strlen(arg)))
+ 		callchain_mode = GRAPH;
+ 
+-	else if (!strncmp(arg, "flat", strlen(arg)))
++	else if (!strncmp(tok, "flat", strlen(arg)))
+ 		callchain_mode = FLAT;
+ 	else
+ 		return -1;
+ 
++	/* get the min percentage */
++	tok = strtok(NULL, ",");
++	if (!tok)
++		return 0;
++
++	callchain_min_percent = strtod(tok, &endptr);
++	if (tok == endptr)
++		return -1;
++
  	return 0;
+ }
+ 
+@@ -1843,9 +1866,9 @@ static const struct option options[] = {
+ 		   "regex filter to identify parent, see: '--sort parent'"),
+ 	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
+ 		    "Only display entries with parent-match"),
+-	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type",
+-		     "Display callchains with output_type: flat, graph. "
+-		     "Default to flat", &parse_callchain_opt, "flat"),
++	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type,min_percent",
++		     "Display callchains using output_type and min percent threshold. "
++		     "Default: flat,0", &parse_callchain_opt, "flat,100"),
+ 	OPT_STRING('d', "dsos", &dso_list_str, "dso[,dso...]",
+ 		   "only consider symbols in these dsos"),
+ 	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index a9873aa..c9900fe 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -57,18 +57,19 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
+  * Once we get every callchains from the stream, we can now
+  * sort them by hit
+  */
+-void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node)
++void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node,
++		     u64 min_hit)
+ {
+ 	struct callchain_node *child;
+ 
+ 	chain_for_each_child(child, node)
+-		sort_chain_flat(rb_root, child);
++		sort_chain_flat(rb_root, child, min_hit);
+ 
+-	if (node->hit)
++	if (node->hit && node->hit >= min_hit)
+ 		rb_insert_callchain(rb_root, node, FLAT);
+ }
+ 
+-static void __sort_chain_graph(struct callchain_node *node)
++static void __sort_chain_graph(struct callchain_node *node, u64 min_hit)
+ {
+ 	struct callchain_node *child;
+ 
+@@ -76,16 +77,18 @@ static void __sort_chain_graph(struct callchain_node *node)
+ 	node->cumul_hit = node->hit;
+ 
+ 	chain_for_each_child(child, node) {
+-		__sort_chain_graph(child);
+-		rb_insert_callchain(&node->rb_root, child, GRAPH);
++		__sort_chain_graph(child, min_hit);
++		if (child->cumul_hit >= min_hit)
++			rb_insert_callchain(&node->rb_root, child, GRAPH);
+ 		node->cumul_hit += child->cumul_hit;
+ 	}
+ }
+ 
+ void
+-sort_chain_graph(struct rb_root *rb_root, struct callchain_node *chain_root)
++sort_chain_graph(struct rb_root *rb_root, struct callchain_node *chain_root,
++		 u64 min_hit)
+ {
+-	__sort_chain_graph(chain_root);
++	__sort_chain_graph(chain_root, min_hit);
+ 	rb_root->rb_node = chain_root->rb_root.rb_node;
+ }
+ 
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+index dfa5600..f3e4776 100644
+--- a/tools/perf/util/callchain.h
++++ b/tools/perf/util/callchain.h
+@@ -38,6 +38,8 @@ static inline void callchain_init(struct callchain_node *node)
+ 
+ void append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ 		  struct symbol **syms);
+-void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node);
+-void sort_chain_graph(struct rb_root *rb_root, struct callchain_node *node);
++void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node,
++		     u64 min_hit);
++void sort_chain_graph(struct rb_root *rb_root, struct callchain_node *node,
++		      u64 min_hit);
+ #endif
+-- 
+1.6.2.3
 
