@@ -1,203 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZGBPjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZGBPlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbZGBPjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZGBPid
+	id S1754308AbZGBPlQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZGBPlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:38:33 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34015 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755813AbZGBPic (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:38:32 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v9 5/5] KVM: create irqfd-cleanup-wq on demand
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
-       davidel@xmailserver.org
-Date: Thu, 02 Jul 2009 11:38:22 -0400
-Message-ID: <20090702153821.20186.9344.stgit@dev.haskins.net>
-In-Reply-To: <20090702153454.20186.99191.stgit@dev.haskins.net>
-References: <20090702153454.20186.99191.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Thu, 2 Jul 2009 11:41:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41919 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbZGBPk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 11:40:59 -0400
+Date: Thu, 2 Jul 2009 17:37:36 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, akpm@linux-foundation.org, earl_chew@agilent.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
+	pipe readers to complete (v6)
+Message-ID: <20090702153736.GA15031@redhat.com>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701182834.GC31414@hmsreliant.think-freely.org> <20090701183707.GF31414@hmsreliant.think-freely.org> <20090702082854.GA15003@redhat.com> <20090702102936.GA8028@hmsreliant.think-freely.org> <20090702113610.GA3552@redhat.com> <20090702144422.GA8972@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090702144422.GA8972@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently create this wq on module_init, which may be wasteful if the
-host never creates a guest that uses irqfd.  This patch changes the
-algorithm so that the workqueue is only created when at least one guest
-is using irqfd.  The queue is cleaned up when the last guest using irqfd
-is shutdown.
+On 07/02, Neil Horman wrote:
+>
+> On Thu, Jul 02, 2009 at 01:36:10PM +0200, Oleg Nesterov wrote:
+> > On 07/02, Neil Horman wrote:
+> > >
+> > > > >  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> > > > >  {
+> > > > >  	struct core_state core_state;
+> > > > > @@ -1862,6 +1886,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+> > > > >  		current->signal->group_exit_code |= 0x80;
+> > > > >
+> > > > >  close_fail:
+> > > > > +	if (ispipe && core_pipe_limit)
+> > > > > +		wait_for_dump_helpers(file);
+> > > >
+> > > > Oh. I thought I misread the first version, but now I see I got it right.
+> > > > And now I confused again.
+> > > >
+> > > > So, we only wait if core_pipe_limit != 0. Why?
+> > > >
+> > > > The previous version, v4, called wait_for_dump_helpers() unconditionally.
+> > > > And this looks more right to me. Once again, even without wait_for_dump()
+> > > > the coredumping process can't be reaped until core_pattern app reads all
+> > > > data from the pipe.
+> > > >
+> > > > I won't insist. However, anybody else please take a look?
+> > > >
+> > > > core_pipe_limit != 0 limits the number of coredump-via-pipe in flight, OK.
+> > > >
+> > > > But, should wait_for_dump_helpers() depend on core_limit_pipe != 0?
+> > > >
+> > > I messed this up in v4 and am fixing it here.  If you read the documentation I
+> > > added in patch 2, you can see that my intent with the core_pipe_limit sysctl was
+> > > to designate 0 as a special value allowing unlimited parallel core_dumps in
+> > > which we do not wait for any user space process completion
+> >
+> > We do wait in any case. If core_dump app doesn't read the data from the pipe
+> > ->core_dump() can't complete. OK, unless all data fits into pipe buffers.
+> >
+> Thats true, but consider the converse situation, in which the userspace app does
+> read the pipe, so that we return from ->core_dump().  If the user app then
+> queries the /proc/<pid> directory of the crashing  process we are open to race.
+> Thats what this wait helps with.
 
-To keep things simple, we only check whether the guest has tried to create
-an irqfd, not whether there are actually irqfds active.
+Sure. And I do agree wait_for_dump_helpers() is useful.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+And I do agree with core_pipe_limit.
 
- include/linux/kvm_host.h |    1 
- virt/kvm/eventfd.c       |  100 ++++++++++++++++++++++++++++++++++------------
- 2 files changed, 75 insertions(+), 26 deletions(-)
+> > > (so that current
+> > > system behavior can be maintained, which I think is desireable for those user
+> > > space helpers who don't need access to a crashing processes meta data via proc.
+> > > If you look above in the second patch where we do an atomic_inc_return, you'll
+> > > see that we only honor the core_pipe_limit value if its non-zero.  This addional
+> > > check restores the behavior I documented in that patch.
+> >
+> > If you you look at my message you will see I am not arguing, but I am asking
+> > others to ack this behaviour.
+> >
+> Ok, but you asked the question as to why I added that check, this is the answer.
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 8e04a34..cd1a0f3 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -149,6 +149,7 @@ struct kvm {
- 	struct {
- 		spinlock_t        lock;
- 		struct list_head  items;
-+		bool              init;
- 	} irqfds;
- #endif
- 	struct kvm_vm_stat stat;
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 4092b8d..fcc3469 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -49,7 +49,16 @@ struct _irqfd {
- 	struct work_struct        shutdown;
- };
- 
--static struct workqueue_struct *irqfd_cleanup_wq;
-+struct _irqfd_cleanup {
-+	struct mutex             lock;
-+	int                      refs;
-+	struct workqueue_struct *wq;
-+};
-+
-+static struct _irqfd_cleanup irqfd_cleanup = {
-+	.lock = __MUTEX_INITIALIZER(irqfd_cleanup.lock),
-+	.refs = 0,
-+};
- 
- static void
- irqfd_inject(struct work_struct *work)
-@@ -110,7 +119,7 @@ irqfd_deactivate(struct _irqfd *irqfd)
- 
- 	list_del_init(&irqfd->list);
- 
--	queue_work(irqfd_cleanup_wq, &irqfd->shutdown);
-+	queue_work(irqfd_cleanup.wq, &irqfd->shutdown);
- }
- 
- /*
-@@ -161,6 +170,62 @@ irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
- 	add_wait_queue(wqh, &irqfd->wait);
- }
- 
-+/*
-+ * create a host-wide workqueue for issuing deferred shutdown requests
-+ * aggregated from all vm* instances. We need our own isolated single-thread
-+ * queue to prevent deadlock against flushing the normal work-queue.
-+ */
-+static int
-+irqfd_cleanup_init(struct kvm *kvm)
-+{
-+	int ret = 0;
-+
-+	mutex_lock(&irqfd_cleanup.lock);
-+
-+	/*
-+	 * Check the current init state from within the lock so that we
-+	 * sync all users to the thread creation.
-+	 */
-+	if (kvm->irqfds.init)
-+		goto out;
-+
-+	if (!irqfd_cleanup.refs) {
-+		struct workqueue_struct *wq;
-+
-+		wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
-+		if (!wq) {
-+			ret = -ENOMEM;
-+			goto out;
-+		}
-+
-+		irqfd_cleanup.wq = wq;
-+	}
-+
-+	irqfd_cleanup.refs++;
-+	kvm->irqfds.init = true;
-+
-+out:
-+	mutex_unlock(&irqfd_cleanup.lock);
-+
-+	return ret;
-+}
-+
-+static void
-+irqfd_cleanup_release(struct kvm *kvm)
-+{
-+	if (!kvm->irqfds.init)
-+		return;
-+
-+	mutex_lock(&irqfd_cleanup.lock);
-+
-+	if (!(--irqfd_cleanup.refs))
-+		destroy_workqueue(irqfd_cleanup.wq);
-+
-+	mutex_unlock(&irqfd_cleanup.lock);
-+
-+	kvm->irqfds.init = false;
-+}
-+
- static int
- kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- {
-@@ -170,6 +235,10 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	int ret;
- 	unsigned int events;
- 
-+	ret = irqfd_cleanup_init(kvm);
-+	if (ret < 0)
-+		return ret;
-+
- 	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
- 	if (!irqfd)
- 		return -ENOMEM;
-@@ -268,7 +337,7 @@ kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
- 	 * so that we guarantee there will not be any more interrupts on this
- 	 * gsi once this deassign function returns.
- 	 */
--	flush_workqueue(irqfd_cleanup_wq);
-+	flush_workqueue(irqfd_cleanup.wq);
- 
- 	return 0;
- }
-@@ -302,28 +371,7 @@ kvm_irqfd_release(struct kvm *kvm)
- 	 * Block until we know all outstanding shutdown jobs have completed
- 	 * since we do not take a kvm* reference.
- 	 */
--	flush_workqueue(irqfd_cleanup_wq);
--
--}
--
--/*
-- * create a host-wide workqueue for issuing deferred shutdown requests
-- * aggregated from all vm* instances. We need our own isolated single-thread
-- * queue to prevent deadlock against flushing the normal work-queue.
-- */
--static int __init irqfd_module_init(void)
--{
--	irqfd_cleanup_wq = create_singlethread_workqueue("kvm-irqfd-cleanup");
--	if (!irqfd_cleanup_wq)
--		return -ENOMEM;
--
--	return 0;
--}
-+	flush_workqueue(irqfd_cleanup.wq);
-+	irqfd_cleanup_release(kvm);
- 
--static void __exit irqfd_module_exit(void)
--{
--	destroy_workqueue(irqfd_cleanup_wq);
- }
--
--module_init(irqfd_module_init);
--module_exit(irqfd_module_exit);
+And I still can't understand your answer.
+
+My question is: why don't we do wait_for_dump_helpers() if core_pipe_limit == 0.
+
+Because I don't really understand how core_pipe_limit connected to
+wait_for_dump_helpers(). Because, once again, we have to wait for core_pattern
+app in any case.
+
+> > As for implementation, my only complaint is that wait_for_dump_helpers() lacks
+> > signal_pending() check, this wasn't answered.
+> >
+> I'll have to defer to others on this.  It seems to me that, given that we are
+> waiting here in the context of process that has already received a fatal signal,
+> theres no opportunity to handle subsequent signals,
+
+Yes, we can't handle subsequent signals, but this is not needed.
+
+> I agree we busy wait if a signal is
+> pending,
+
+Yes. And this is not nice.
+
+> but if we drop out of the loop if a signal is pending then we cancel
+> the wait early, leading to the early removal of the /proc file for the crashing
+> process.
+
+Yes. But if signal_pending() == T we already have other problems. In
+particular pipe_write() can fail, and in this case the coredump won't
+complete anyway.
+
+Hopefully this will be changed soon: the coredumping task should ignore
+ignore all signals except SIGKILL which should terminate the coredump,
+and in this case of course wait_for_dump_helpers() should abort.
+
+> Could we add a schedule to the loop to allow the user space helper to
+> run if a signal is pending instead of just dropping the loop?
+
+Not sure I understand what you mean, but no, we can't return to user-space
+to handle the signal. (and just in case, pipe_wait() does schedule()).
+
+Oleg.
 
