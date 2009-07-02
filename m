@@ -1,52 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZGBS5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZGBS6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbZGBS5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZGBS5g
+	id S1753349AbZGBS6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532AbZGBS6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:57:36 -0400
-Received: from smtp101.sbc.mail.gq1.yahoo.com ([67.195.15.60]:38792 "HELO
-	smtp101.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751345AbZGBS5g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:57:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eFcoNwkFDQZCrKAIy4B+rMAPFjSpwSN1ATojRBBSuihn3TV0k6BCC+IW8DC4c8sW2AUi/NKHk4Qj4ORSGcyySX2srG35PHWDHem5wjgJtyIhAjUV5+0R8Hwa+w5YeN7aNLhq1V0bE+CWIpj4TFOijEwsbsOJXsg3zeWN1eSYaPU=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: WYK9c_EVM1kGL761tPGNr5WnMHwK06g.X4yB8boDBzh_PKbSKetdVCUfgCIVry.r7KjOLz9RZIHX0oPRaL1cFvv68R_R5Vs.mNhNqArHcoZSNhirYsER0Hy6rhsk5hvOYu416F6UX.j4i.D8Ne9vcGDa.4kqHn0xlrCP959FejXno65UdToXj0Pvin18lPnOp55RUtNT7vTREkbQe7nWWA8Ye45THTwLbit4z8fP9RK_Xw9Xu2zvLYBR_auTYMLzaQfWOx5v6H8xjLov
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: [PATCH v2] gpiolib: allow poll(2) on gpio value
-Date: Thu, 2 Jul 2009 11:57:33 -0700
-User-Agent: KMail/1.9.10
-Cc: Daniel =?iso-8859-1?q?Gl=F6ckner?= <dg@emlix.com>,
-       Ben Nizette <bn@niasdigital.com>, linux-kernel@vger.kernel.org
-References: <1244212590-15620-1-git-send-email-dg@emlix.com> <200907011605.31154.david-b@pacbell.net> <359ed6810907020415n39062238q22d1637de2c9383f@mail.gmail.com>
-In-Reply-To: <359ed6810907020415n39062238q22d1637de2c9383f@mail.gmail.com>
+	Thu, 2 Jul 2009 14:58:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35785 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751145AbZGBS6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:58:36 -0400
+Date: Thu, 2 Jul 2009 18:57:56 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, anton@samba.org,
+       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, anton@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1246550301-8954-1-git-send-email-fweisbec@gmail.com>
+References: <1246550301-8954-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Create new chain_for_each_child() iterator
+Message-ID: <tip-14f4654cbd531d48651e005cf05907c14bddb193@git.kernel.org>
+Git-Commit-ID: 14f4654cbd531d48651e005cf05907c14bddb193
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200907021157.33250.david-b@pacbell.net>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 18:57:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 July 2009, Jani Nikula wrote:
-> > Looks pretty clean.  Comments from anyone else?
-> 
-> I'd appreciate a kernel side interface to gpio_setup_irq functionality
-> as well; now gpio_export from kernel won't setup support for poll(2)
-> nor is there any possibility to do so.
+Commit-ID:  14f4654cbd531d48651e005cf05907c14bddb193
+Gitweb:     http://git.kernel.org/tip/14f4654cbd531d48651e005cf05907c14bddb193
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Thu, 2 Jul 2009 17:58:19 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 2 Jul 2009 20:47:14 +0200
 
-I don't understand what you mean by this... there's no
-file descriptor open at that time, so there's no poll()
-that could be done.
+perf_counter tools: Create new chain_for_each_child() iterator
 
-And kernel-side functionality can just use existing
-interfaces to do whatever it likes...
+Iterating through children of a node in the callchain tree
+shows something that may be quite confusing at a first glance.
+The head is the children field of the parent and the list nodes
+are in the brothers field of the children.
 
+This is because the childs are linked to the parent as a list
+of "brothers" using the "children" list of the parent as a
+head:
+
+  ---------------
+ | Parent (head) |-------------------------------------
+  ---------------                                      |
+     |                                                 |
+  children                                             |
+     |                                                 |
+  -----------               -----------                |
+ | 1st child |---brother---| 2nd child |---brother-----
+  -----------               -----------
+
+This makes the following strange pattern often occuring:
+
+ list_for_each_entry(child, &parent->children, brothers) {
+        // do something with children
+ }
+
+Abstract it to chain_for_each_child() to factorize and simplify
+this pattern.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1246550301-8954-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/util/callchain.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 3dceabd..3c4a91f 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -16,6 +16,9 @@
+ 
+ #include "callchain.h"
+ 
++#define chain_for_each_child(child, parent)	\
++	list_for_each_entry(child, &parent->children, brothers)
++
+ 
+ static void
+ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
+@@ -46,7 +49,7 @@ void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
+ {
+ 	struct callchain_node *child;
+ 
+-	list_for_each_entry(child, &node->children, brothers)
++	chain_for_each_child(child, node)
+ 		sort_chain_to_rbtree(rb_root, child);
+ 
+ 	if (node->hit)
+@@ -77,7 +80,7 @@ create_child(struct callchain_node *parent, bool inherit_children)
+ 		list_splice(&parent->children, &new->children);
+ 		INIT_LIST_HEAD(&parent->children);
+ 
+-		list_for_each_entry(next, &new->children, brothers)
++		chain_for_each_child(next, new)
+ 			next->parent = new;
+ 	}
+ 	list_add_tail(&new->brothers, &parent->children);
+@@ -173,7 +176,7 @@ __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
+ 	struct callchain_node *rnode;
+ 
+ 	/* lookup in childrens */
+-	list_for_each_entry(rnode, &root->children, brothers) {
++	chain_for_each_child(rnode, root) {
+ 		unsigned int ret = __append_chain(rnode, chain, start, syms);
+ 
+ 		if (!ret)
