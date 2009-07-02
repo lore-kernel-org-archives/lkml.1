@@ -1,150 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbZGBHpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbZGBHx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358AbZGBHpW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZGBHpK
+	id S1752691AbZGBHx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZGBHxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:45:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:22682 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751312AbZGBHpH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:45:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=rnJWjbujs4K7Jc5+ZV+0VvyC779Cb5g9MPFCW4CRh348o3etRr31GuSDTGkLOKqbKo
-         pJSRWk8rsAmE6b5u/SUe9xu/S4xma0MclUdZZKGLlIEeeNyrYcHCkj8Ystl+DCBPTo4u
-         knSXKYcBGnsAFn8HQAL2MgfmPjsoRXsQmfv8k=
-Date: Thu, 2 Jul 2009 16:44:59 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: David Howells <dhowells@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       "riel\@redhat.com" <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "peterz\@infradead.org" <peterz@infradead.org>,
-       "tytso\@mit.edu" <tytso@mit.edu>,
-       "linux-mm\@kvack.org" <linux-mm@kvack.org>,
-       "elladan\@eskimo.com" <elladan@eskimo.com>,
-       "npiggin\@suse.de" <npiggin@suse.de>,
-       "Barnes\, Jesse" <jesse.barnes@intel.com>
-Subject: Re: Found the commit that causes the OOMs
-Message-Id: <20090702164459.2ce13498.minchan.kim@barrios-desktop>
-In-Reply-To: <20090702164106.76db077b.minchan.kim@barrios-desktop>
-References: <20090630130741.c191d042.minchan.kim@barrios-desktop>
-	<28c262360906280630n557bb182n5079e33d21ea4a83@mail.gmail.com>
-	<28c262360906280636l93130ffk14086314e2a6dcb7@mail.gmail.com>
-	<20090628142239.GA20986@localhost>
-	<2f11576a0906280801w417d1b9fpe10585b7a641d41b@mail.gmail.com>
-	<20090628151026.GB25076@localhost>
-	<20090629091741.ab815ae7.minchan.kim@barrios-desktop>
-	<17678.1246270219@redhat.com>
-	<20090629125549.GA22932@localhost>
-	<29432.1246285300@redhat.com>
-	<28c262360906290800v37f91d7av3642b1ad8b5f0477@mail.gmail.com>
-	<20090629160725.GF5065@csn.ul.ie>
-	<24767.1246391867@redhat.com>
-	<20090702164106.76db077b.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 03:53:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55340 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbZGBHxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 03:53:19 -0400
+Date: Thu, 2 Jul 2009 09:53:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Cc: Greg KH <gregkh@suse.de>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
+Message-ID: <20090702075305.GC19187@elte.hu>
+References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org> <20090701111003.GC15958@elte.hu> <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Jul 2009 16:41:06 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
 
-> 
-> 
-> On Tue, 30 Jun 2009 20:57:47 +0100
-> David Howells <dhowells@redhat.com> wrote:
-> 
-> > Minchan Kim <minchan.kim@gmail.com> wrote:
-> > 
-> > > David. Doesn't it happen OOM if you revert my patch, still?
-> > 
-> > It does happen, and indeed happens in v2.6.30, but requires two adjacent runs
-> > of msgctl11 to trigger, rather than usually triggering on the first run.  If
-> > you interpolate the rest of LTP between the iterations, it doesn't seem to
-> > happen at all on v2.6.30.  My guess is that with the rest of LTP interpolated,
-> > there's either enough time for some cleanup or something triggers a cleanup
-> > (the swapfile tests perhaps?).
-> > 
-> > > Befor I go to the trip, I made debugging patch in a hurry.  Mel and I
-> > > suspect to put the wrong page in lru list.
-> > > 
-> > > This patch's goal is that print page's detail on active anon lru when it
-> > > happen OOM.  Maybe you could expand your log buffer size.
-> > 
-> > Do you mean to expand the dmesg buffer?  That's probably unnecessary: I capture
-> > the kernel log over a serial port into a file on another machine.
-> > 
-> > > Could you show me the information with OOM, please ?
-> > 
-> > Attached.  It's compressed as there was rather a lot.
-> > 
-> > David
-> > ---
-> 
-> Hi, David. 
-> 
-> Sorry for late response.
-> 
-> I looked over your captured data when I got home but I didn't find any problem
-> in lru page moving scheme.
-> As Wu, Kosaki and Rik discussed, I think this issue is also related to process fork bomb. 
-> 
-> When I tested msgctl11 in my machine with 2.6.31-rc1, I found that:
-> 
-> 2.6.31-rc1		
-> real	0m38.628s
-> user	0m10.589s
-> sys	1m12.613s
-> 
-> vmstat
-> 
-> allocstall 3196
-> 
-> 2.6.31-rc1-revert-mypatch
-> 
-> real	1m17.396s
-> user	0m11.193s
-> sys	4m3.803s 
-> 
-> vmstat
-> 
-> allocstall 584
-> 
-> Sometimes I got OOM, sometime not in with 2.6.31-rc1.
-> 
-> Anyway, the current kernel's test took a rather short time than my reverted patch. 
-> In addition, the current kernel has small allocstall(direct reclaim)
-                                      ^^^^^
-                                      many
-typo
+* Maciej W. Rozycki <macro@linux-mips.org> wrote:
 
-> As you know, my patch was just to remove calling shrink_active_list in case of no swap.
-> shrink_active_list function is a big cost function.
-> The old shrink_active_list could throttle to fork processes by chance. 
-> But by removing that function with my patch, we have a high probability to make process fork bomb. Wu, KOSAKI and Rik, does it make sense? 
+> On Wed, 1 Jul 2009, Ingo Molnar wrote:
 > 
-> So I think you were just lucky with a unnecessary routine.
-> Anyway, AFAIK, Rik is making throttling page reclaim. 
-> I think it can solve your problem. 
+> > >  ENOTIME, sorry.  Next year perhaps.  Or a homework project 
+> > > for one of the newbies. ;)
+> > 
+> > You know that this project would kill a newbie, right? :)
 > 
-> -- 
-> Kind regards,
-> Minchan Kim
+>  Well, that's just a fast track to become a veteran, isn't it? ;)
 
+No, that's just a fast track to quickly make it into the list of our 
+Fallen Heroes :-/ The fast track to become a kernel veteran is to, 
+if possible, not challenge a tank with a hand-grenade. But i 
+digress.
 
--- 
-Kind regards,
-Minchan Kim
+> > We have no real southbridge drivers on x86 - but we should 
+> > certainly add some. Also, walking the PCI device tree from NMI 
+> > context is tricky as the lists there are not NMI safe - we could 
+> > crash if we happen to get a #IOCK while loading/unloading 
+> > drivers (which is rare but could happen).
+> 
+> That shouldn't be a problem if we were about to panic().  For a 
+> more sophisticated attempt of recovery -- yes, that would have to 
+> be addressed.
+
+We are only panic-ing if the sysctl is set. The diagnostics would be 
+useful anyway. The proper approach would be to defer it a bit in the 
+non-panic case an read it out from some friendlier context - such as 
+the EDAC core.
+
+	Ingo
