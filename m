@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZGBAYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbZGBA2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbZGBAYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 20:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZGBAYH
+	id S1752582AbZGBA2A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 20:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZGBA1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 20:24:07 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:37334 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbZGBAYG (ORCPT
+	Wed, 1 Jul 2009 20:27:53 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:51409 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbZGBA1w convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 20:24:06 -0400
-Date: Wed, 1 Jul 2009 20:24:07 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] kmod: Fix race in usermodehelper code
-Message-ID: <20090702002407.GA20298@localhost.localdomain>
-References: <20090701024803.GA19659@localhost.localdomain> <20090701135631.41e590f9.akpm@linux-foundation.org>
+	Wed, 1 Jul 2009 20:27:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=E1/NpCYm9gtjZTpsik9+O9AwjSpDqtUnsG0OPYc/ywJdMoMG1GEnQ+lf70hMXK4puN
+         p86Cnk9wH6ySiTH1hghq/8kZDe7kL4CY7CGcoGL79FHzQgfFZAtLUXUNq/dL/5ESwoRM
+         8qwBdJKTBnCcbjSeK+TLoD+GH4MQx6PGZrDB4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701135631.41e590f9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+In-Reply-To: <03676ce0e272d44d1d4ea19639b28afb994c65eb.1246173680.git.joe@perches.com>
+References: <cover.1246173664.git.joe@perches.com>
+	 <03676ce0e272d44d1d4ea19639b28afb994c65eb.1246173680.git.joe@perches.com>
+Date: Wed, 1 Jul 2009 17:27:55 -0700
+X-Google-Sender-Auth: dad1b958bbc46308
+Message-ID: <e9c3a7c20907011727y2263e3f0k59b7ad497cd67274@mail.gmail.com>
+Subject: Re: [PATCH 15/62] drivers/dma/fsldma.c: Remove unnecessary semicolons
+From: Dan Williams <dan.j.williams@intel.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       Zhang Wei <zw@zh-kernel.org>, Li Yang <leoli@freescale.com>,
+       linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 01, 2009 at 01:56:31PM -0700, Andrew Morton wrote:
-> On Tue, 30 Jun 2009 22:48:03 -0400
-> Neil Horman <nhorman@tuxdriver.com> wrote:
-> 
-> > User Mode Helper: Fix race in UMH_WAIT_EXEC case
-> > 
-> > The user mode helper code has a race in it.  call_usermodehelper_exec takes an
-> > allocated subprocess_info structure, which it passes to a workqueue, and then
-> > passes it to a kernel thread which it creates, after which it calls complete to
-> > signal to the caller of call_usremodehelper_exec that it can free the
-> > subprocess_info struct.  But since we use that structure in the created thread,
-> > we can't call complete from __call_usermodehelper, which is where we create the
-> > kernel_thread.  We need to call complete from within the kernel thread and then
-> > not use subprocess_info afterward in the case of UMH_WAIT_EXEC.  Tested
-> > successfully by me.
-> > 
-> 
-> <stares at the code for ten minutes>
-> 
-> Geeze that's getting complex, isn't it?  The patch looks OK.  I think.
-> 
-It really is.  I had initially considered solving the problem by eliminating the
-completion queue, and substituting a refcounting mechanism, but as I wrote it, I
-found that the memory allocation and freeing for subprocess_info was going to
-need a bunch of augmentation too.  Talk about convoluted.... I decided a simple
-fixing of the bug was probably for the best.
+On Sun, Jun 28, 2009 at 9:26 AM, Joe Perches<joe@perches.com> wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  drivers/dma/fsldma.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-> I wonder why people aren't reporting this.  Perhaps CLONE_VFORK plus
-> child-runs-first?  (_does_ the chld run first?  We seem to have changed
-> it a couple of times)
-> 
-I think the child currently does run first, but as you note, its not always been
-that way, and it might not be that way in the future, especially if the child
-queues to a different cpu for whatever reason.  
+Applied 15 and 16.
 
-Neil
-
+Thanks,
+Dan
