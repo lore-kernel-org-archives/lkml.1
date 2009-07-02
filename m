@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZGBRaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZGBRgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZGBRaO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 13:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbZGBRaD
+	id S1753522AbZGBRgk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 13:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbZGBRgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 13:30:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751783AbZGBRaB (ORCPT
+	Thu, 2 Jul 2009 13:36:32 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:58354 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbZGBRgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 13:30:01 -0400
-Date: Thu, 2 Jul 2009 10:27:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Thu, 2 Jul 2009 13:36:31 -0400
+Date: Thu, 2 Jul 2009 18:36:25 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Joe Perches <joe@perches.com>
-cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: printk regression?
-In-Reply-To: <1246513356.28915.62.camel@Joe-Laptop.home>
-Message-ID: <alpine.LFD.2.01.0907021020200.4830@localhost.localdomain>
-References: <4A4C3410.8080704@kernel.org>  <alpine.LFD.2.01.0907012119370.3380@localhost.localdomain> <1246513356.28915.62.camel@Joe-Laptop.home>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Message-ID: <20090702173624.GA4647@sirena.org.uk>
+References: <1246549388-29007-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1246550903.28915.87.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246550903.28915.87.camel@Joe-Laptop.home>
+X-Cookie: You are fairminded, just and loving.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH] MAINTAINERS: Add entry for Wolfson PMIC drivers
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 02, 2009 at 09:08:23AM -0700, Joe Perches wrote:
+> On Thu, 2009-07-02 at 16:43 +0100, Mark Brown wrote:
 
+> > +F:	drivers/leds/leds-wm83*.c
+> > +F:	drivers/mfd/wm8*.c
+> > +F:	drivers/power/wm83*.c
+> > +F:	drivers/rtc/rtc-wm83*.c
+> > +F:	drivers/regulator/wm8*.c
+> > +F:	drivers/watchdog/wm83*_wdt.c
 
-On Wed, 1 Jul 2009, Joe Perches wrote:
-> 
-> There's at least 72 of them:
-> 
-> $ grep -Pr --include=*.[ch] "\bprintk.*\\\n.*KERN_" *
+> Maybe this pattern is complete enough?
 
-Yes. Most of these seem to be of the type that have just "\n" in front - 
-probably exactly because the old code wasn't smart enough to notice the 
-log-level unless it started a line.
+> F:	drivers/*/*wm8*.c
 
-For those cases, the trivial fix is to just remove the "\n". The new world 
-order for printk is very much a simplification: the log-level is _always_ 
-at the front of the printk, and printk will add the newline automatically 
-if a log-level exists (unless it's KERN_CONT, of course).
+That misses the LED, RTC and watchdog drivers.  Making the match more
+general with a leading * in the filename is just asking for false
+positives.
 
-So a simple
+> > +F:	sound/soc/codecs/wm8350.c
+> > +F:	sound/soc/codecs/wm8400.c
 
-	sed 's/printk("\n"[ 	]*KERN_/printk(KERN_/'
+> What about the other wm8 codecs?  Maybe:
 
-should basically take care of it.
-
-Of course, some cases are just crazy. Here's one:
-
-	arch/m68knommu/kernel/traps.c:          printk(KERN_CONT "\n" KERN_EMERG " [%08lx] ", addr);
-
-and I have no clue about why it would have KERN_CONT there. That makes 
-little sense. Again, with the new printk logic, it really should be just
-
-	printk(KERN_EMERG " [%08lx] ", addr);
-
-and nothing odd.
-
-		Linus
+Those are not PMICs and therefore not relevant here.  Since I am the
+most active maintainer for the ASoC subsystem at the minute a separate
+entry for the drivers within it would be a bit redundant.  The CODEC
+drivers for the PMICs are included here for completeness more than
+anything else.
