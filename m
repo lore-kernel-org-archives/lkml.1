@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbZGBGoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbZGBGqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754147AbZGBGoW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 02:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZGBGoP
+	id S1754535AbZGBGqY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 02:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZGBGqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 02:44:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34194 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbZGBGoO (ORCPT
+	Thu, 2 Jul 2009 02:46:17 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47905 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZGBGqQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 02:44:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 2 Jul 2009 15:42:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, npiggin@suse.de,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
-Subject: Re: [RFC][PATCH] ZERO PAGE again
-Message-Id: <20090702154234.d7ee06a4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A4B8486.3020307@redhat.com>
-References: <20090701185759.18634360.kamezawa.hiroyu@jp.fujitsu.com>
-	<4A4B8486.3020307@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 02:46:16 -0400
+Date: Thu, 2 Jul 2009 08:46:12 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Wu Zhangjin <wuzhangjin@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mips@linux-mips.org
+Subject: Re: [BUG] MIPS: Hibernation in the latest linux-mips:master branch
+	not work
+Message-ID: <20090702064612.GB18157@elf.ucw.cz>
+References: <1246372868.19049.17.camel@falcon> <20090630144540.GA18212@linux-mips.org> <1246374687.20482.10.camel@falcon> <20090701180715.GA23121@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701180715.GA23121@linux-mips.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Jul 2009 18:45:10 +0300
-Avi Kivity <avi@redhat.com> wrote:
-
-> On 07/01/2009 12:57 PM, KAMEZAWA Hiroyuki wrote:
-> > ZERO PAGE was removed in 2.6.24 (=>  http://lkml.org/lkml/2007/10/9/112)
-> > and I had no objections.
-> >
-> > In these days, at user support jobs, I noticed a few of customers
-> > are making use of ZERO_PAGE intentionally...brutal mmap and scan, etc. They are
-> > using RHEL4-5(before 2.6.18) then they don't notice that ZERO_PAGE
-> > is gone, yet.
-> > yes, I can say  "ZERO PAGE is gone" to them in next generation distro.
-> >
-> > Recently, a question comes to lkml (http://lkml.org/lkml/2009/6/4/383
-> >
-> > Maybe there are some users of ZERO_PAGE other than my customers.
-> > So, can't we use ZERO_PAGE again ?
-> >
-> > IIUC, the problem of ZERO_PAGE was
-> >    - reference count cache ping-pong
-> >    - complicated handling.
-> >    - the behavior page-fault-twice can make applications slow.
-> >
-> > This patch is a trial to de-refcounted ZERO_PAGE.
-> > Any comments are welcome. I'm sorry for digging grave...
-> >    
+On Wed 2009-07-01 19:07:15, Ralf Baechle wrote:
+> On Tue, Jun 30, 2009 at 11:11:27PM +0800, Wu Zhangjin wrote:
 > 
-> kvm could use this.  There's a fairly involved scenario where the lack 
-> of zero page hits us:
+> > hi, ralf, in the latest master branch of linux-mips git repo, seems
+> > there is a need to select the SYS_SUPPORTS_HOTPLUG_CPU option in every
+> > uni-processor board, otherwise, the suspend/hibernation can not be used,
+> > because you have set:
+> > 
+> > config ARCH_HIBERNATION_POSSIBLE
+> >     def_bool y
+> >     depends on SYS_SUPPORTS_HOTPLUG_CPU
+> > 
+> > config ARCH_SUSPEND_POSSIBLE
+> >     def_bool y
+> >     depends on SYS_SUPPORTS_HOTPLUG_CPU
+> > 
+> > so, the board-specific patch must be pushed by the maintainers of
+> > boards. and if the board support SMP, they must implement the
+> > mips-specific hotplug support, is this right? I have selected
+> > SYS_SUPPORTS_HOTPLUG_CPU in LEMOTE_FULONG and will push a relative patch
+> > later.
 > 
-> - a guest is started
-> - either it doesn't touch all of its memory, or it balloons some of its 
-> memory away, so its resident set size is smaller than the total amount 
-> of memory it has
-> - the guest is live migrated to another host; this involves reading all 
-> of the guest memory
+> I think below patch should take care of this problem.  It simply assumes
+> that all uniprocessor systems support suspend and hibernate.  That's an
+> assumption that I'm not to unhappy with though it may force us to fix a
+> few systems.
 > 
-> If we don't have zero page, all of the not-present pages are faulted in 
-> and the resident set size increases; this increases memory pressure, 
-> which is what we're trying to avoid (one of the reasons to live migrate 
-> is to free memory).
+>   Ralf
 > 
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-Thank you. I'll make this patch cleaner and fix my English, then post again.
-maybe in the next week.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-A case I met was the application level migration. An application save its
-sparse table by scan-and-dump. To know "all memory contents are zero",
-it had to read memory, at least.
-
-Regards,
--Kame
-
-
-
-
-> -- 
-> error compiling committee.c: too many arguments to function
-> 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
