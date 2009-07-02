@@ -1,218 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZGBHWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZGBHW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbZGBHWp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZGBHWG
+	id S1756463AbZGBHW6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZGBHWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:22:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44602 "EHLO hera.kernel.org"
+	Thu, 2 Jul 2009 03:22:25 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51409 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753669AbZGBHWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:22:04 -0400
-Date: Thu, 2 Jul 2009 07:21:35 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, torvalds@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
-References: <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
-Subject: [tip:x86/urgent] x86: Code atomic(64)_read and atomic(64)_set in C not CPP
-Message-ID: <tip-584de8a67dcc5f70bd4fdb25ceaf9f840d57937b@git.kernel.org>
-Git-Commit-ID: 584de8a67dcc5f70bd4fdb25ceaf9f840d57937b
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1754147AbZGBHWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 03:22:23 -0400
+Date: Thu, 2 Jul 2009 09:22:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 02/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
+Message-ID: <20090702072225.GC2714@wotan.suse.de>
+References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-3-git-send-email-jack@suse.cz> <20090625161753.GB30755@wotan.suse.de> <20090625174754.GA21957@infradead.org> <20090626084225.GA12201@wotan.suse.de> <20090630173716.GA3150@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 07:21:35 +0000 (UTC)
+In-Reply-To: <20090630173716.GA3150@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  584de8a67dcc5f70bd4fdb25ceaf9f840d57937b
-Gitweb:     http://git.kernel.org/tip/584de8a67dcc5f70bd4fdb25ceaf9f840d57937b
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Thu, 2 Jul 2009 08:57:12 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 2 Jul 2009 09:19:11 +0200
+On Tue, Jun 30, 2009 at 01:37:17PM -0400, Christoph Hellwig wrote:
+> On Fri, Jun 26, 2009 at 10:42:25AM +0200, Nick Piggin wrote:
+> > Yes well we could get rid of ->truncate and have filesystems do it
+> > themselves in setattr, but I figure that moving truncate into
+> > generic setattr is helpful (makes conversions a bit easier too).
+> > Did you see my patch? What do you think of that basic approach?
+> 
+> I was waiting for a patch series for your for this to appear, but
+> noticed that you actually had a small proof of concept patch attached,
+> sorry :)
 
-x86: Code atomic(64)_read and atomic(64)_set in C not CPP
-
-Occasionally we get bugs where atomic_read or atomic_set are
-used on atomic64_t variables or vice versa.  These bugs don't
-generate warnings on x86 because atomic_read and atomic_set are
-coded as macros rather than C functions, so we don't get any
-type-checking on their arguments; similarly for atomic64_read
-and atomic64_set in 64-bit kernels.
-
-This converts them to C functions so that the arguments are
-type-checked and bugs like this will get caught more easily. It
-also converts atomic_cmpxchg and atomic_xchg, and
-atomic64_cmpxchg and atomic64_xchg on 64-bit, so we get
-type-checking on their arguments too.
-
-Compiling a typical 64-bit x86 config, this generates no new
-warnings, and the vmlinux text is 86 bytes smaller.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: akpm@linux-foundation.org
-Cc: arnd@arndb.de
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+No problem. I'm going to send out a patchset, I've just been working
+on exploring different ideas and trying to work out bugs.
 
 
----
- arch/x86/include/asm/atomic_32.h |   25 +++++++++++++++++-----
- arch/x86/include/asm/atomic_64.h |   42 ++++++++++++++++++++++++++++++-------
- 2 files changed, 53 insertions(+), 14 deletions(-)
+> Looking at your patch I really like that vmtruncate now really just
+> does what it's name claims to - truncate the VM-information about
+> the file (well, and the file size).   I'm not so happy about
+> still keeping the two level setattr/truncate indirection.
 
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index 2503d4e..6e26c23 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -19,7 +19,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
+In my patch series, i_size update eventually is moved out to the
+filesystem too, and vmtruncate just is renamed to truncate_pagecache
+(vmtruncate is not such a bad name, but rename will nicely break
+unconverted modules).
+
  
- /**
-  * atomic_set - set atomic variable
-@@ -28,7 +31,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)	(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
+> But instead of folding truncate into setattr I wonder if we should
+> just add a new ->setsize (aka new trunacte) methodas a top-level
+> entry point instead of ->setattr with ATTR_SIZE given that size
+> changes don't have much in common with the reset of ->setattr.
+
+OK that would be possible and makes sense I guess. The new truncate
+which returns error could basically be renamed in-place. Shall we
+continue to give ATTR_SIZE to setattr, or take that out completely?
+I guess truncate can be considered special because it operates on
+data not only metadata.
+
+Looks like ->setsize would need a flag for ATTR_OPEN too? Any others?
+I'll do a bit of an audit when I get around to it...
+
  
- /**
-  * atomic_add - add integer to atomic variable
-@@ -200,8 +206,15 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- 	return atomic_add_return(-i, v);
- }
+> The only bit shared is updating c/mtime and even that is conditional.
+> So I'd say take most of your patch, but instead of doing an all at
+> once migration migrate filesystems to the new ->setsize callback
+> incrementally and eventually kill off the old code.  This means
+> we'll need a new name for the new vmtruncate-lite but should otherwise
+> be pretty easy.
+
+Makes sense. I'll try to structure it to allow incremental changeover.
+
  
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is already a given value
-@@ -305,7 +318,7 @@ atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
- 	unsigned long long old_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
- 
- 	return old_val;
-@@ -353,7 +366,7 @@ atomic64_add_return(unsigned long long delta, atomic64_t *ptr)
- 	unsigned long long old_val, new_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 		new_val = old_val + delta;
- 
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
-diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-index 0d63602..d605dc2 100644
---- a/arch/x86/include/asm/atomic_64.h
-+++ b/arch/x86/include/asm/atomic_64.h
-@@ -18,7 +18,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -27,7 +30,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -192,7 +198,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-  */
--#define atomic64_read(v)		((v)->counter)
-+static inline long atomic64_read(const atomic64_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic64_set - set atomic64 variable
-@@ -201,7 +210,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic64_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic64_set(atomic64_t *v, long i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic64_add - add integer to atomic64 variable
-@@ -355,11 +367,25 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
- #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
- #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
- 
--#define atomic64_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
-+static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic64_xchg(atomic64_t *v, long new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is a given value
+> > >  The only problem is the generic aops calling
+> > > vmtruncate directly.
+> > 
+> > What should be done is require that filesystems trim blocks past
+> > i_size in case of any errors. I actually need to fix up a few
+> > existing bugs in this area too, so I'll look at this..
+> 
+> Basically we want ->setattr with ATTR_SIZE, execept that we already
+> have i_sem and possibly other per-inode locks.  Take a look at
+> 
+> 	http://oss.sgi.com/archives/xfs/2008-04/msg00542.html
+> 
+> and
+> 
+> 	http://oss.sgi.com/archives/xfs/2009-03/msg00214.html
+
+OK thanks.
+
