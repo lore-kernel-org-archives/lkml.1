@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZGBNuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZGBNuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZGBNuy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZGBNsy
+	id S1755921AbZGBNuM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbZGBNsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:48:54 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53248 "EHLO
+	Thu, 2 Jul 2009 09:48:50 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53253 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754452AbZGBNsn (ORCPT
+	with ESMTP id S1754484AbZGBNsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 09:48:43 -0400
 X-Cam-AntiVirus: no malware found
@@ -18,1840 +18,713 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 01/14] IIO: core support for device registration and management
-Date: Thu,  2 Jul 2009 13:47:31 +0000
-Message-Id: <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 09/14] IIO: Ring buffer: Initial pass at rarely locked ring buffer
+Date: Thu,  2 Jul 2009 13:47:39 +0000
+Message-Id: <1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-7-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-8-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
+Please note this ring buffer implementation is very much a
+work in progress (and hence RFC).  In it's current form
+it is stable and reasonably efficient.  There are a couple
+of unlikely cases that will lead to more data being lost
+that is strictly necessary. The target was for the case
+of requiring regular sampling even during user space reads.
+
+All comments welcome.
+
+The intention is to make this only one of several
+implementations with run time selection.  For now there
+is only one, so it is hard coded into the drivers using it.
 ---
-Changes since V2.
+ drivers/iio/Kconfig         |    9 +
+ drivers/iio/Makefile        |    2 +
+ drivers/iio/ring_sw.c       |  431 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/iio/ring_sw.h |  189 +++++++++++++++++++
+ 4 files changed, 631 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/iio/ring_sw.c
+ create mode 100644 include/linux/iio/ring_sw.h
 
-* New structure, much closer to that on input subsystem.
-  An IIO device now has an associated struct device
-  which has the underlying hardware device (i2c, spi
-  etc) as its parent. This in turn has struct devices
-  as children for event interfaces.
-
-* Chrdevs now handled via cdev structures with
-  dynamically allocated major number.
-
-* Ring buffer and trigger functionality made more modular
-  (and hence hardly show up in the core at all).  This
-  results in device drivers having to call a couple more
-  functions but results in a much cleaner core.
-  Also trigger consumer head separated from main trigger
-  header.
-
-* Scan mode selection etc changed to being via access
-  functions to allow for simple change of implementation as
-  apprpriate as device requirements become apparent.
-
-* Numerous clean ups and comment fixes.
----
- drivers/Kconfig                      |    2 +
- drivers/Makefile                     |    1 +
- drivers/iio/Kconfig                  |   11 +
- drivers/iio/Makefile                 |    6 +
- drivers/iio/industrialio-core.c      |  847 ++++++++++++++++++++++++++++++++++
- include/linux/iio/chrdev.h           |  118 +++++
- include/linux/iio/iio.h              |  411 ++++++++++++++++
- include/linux/iio/sysfs.h            |  293 ++++++++++++
- include/linux/iio/trigger_consumer.h |   26 +
- 9 files changed, 1715 insertions(+), 0 deletions(-)
- create mode 100644 drivers/iio/Kconfig
- create mode 100644 drivers/iio/Makefile
- create mode 100644 drivers/iio/industrialio-core.c
- create mode 100644 include/linux/iio/chrdev.h
- create mode 100644 include/linux/iio/iio.h
- create mode 100644 include/linux/iio/sysfs.h
- create mode 100644 include/linux/iio/trigger_consumer.h
-
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 48bbdbe..cbd7978 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -110,6 +110,8 @@ source "drivers/vlynq/Kconfig"
- 
- source "drivers/xen/Kconfig"
- 
-+source "drivers/iio/Kconfig"
-+
- source "drivers/staging/Kconfig"
- 
- source "drivers/platform/Kconfig"
-diff --git a/drivers/Makefile b/drivers/Makefile
-index bc4205d..89d0722 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -107,6 +107,7 @@ obj-$(CONFIG_OF)		+= of/
- obj-$(CONFIG_SSB)		+= ssb/
- obj-$(CONFIG_VIRTIO)		+= virtio/
- obj-$(CONFIG_VLYNQ)		+= vlynq/
-+obj-$(CONFIG_IIO)		+= iio/
- obj-$(CONFIG_STAGING)		+= staging/
- obj-y				+= platform/
- obj-y				+= ieee802154/
 diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
-new file mode 100644
-index 0000000..09e4101
---- /dev/null
+index 3aa2886..936f954 100644
+--- a/drivers/iio/Kconfig
 +++ b/drivers/iio/Kconfig
-@@ -0,0 +1,11 @@
-+#
-+# Industrial I/O subsytem configuration
-+#
+@@ -17,6 +17,15 @@ config IIO_RING_BUFFER
+ 	  Provide core support for various ring buffer based data
+ 	  acquisition methods.
+ 
++config IIO_SW_RING
++	tristate "Industrial I/O lock free software ring"
++	depends on IIO_RING_BUFFER && IIO
++	help
++	example software ring buffer implementation.  The design aim
++	of this particular realization was to minize write locking
++	with the intention that some devices would be able to write
++	in interrupt context.
 +
-+menuconfig IIO
-+	tristate "Industrial I/O support"
-+	---help---
-+	  The industrial I/O subsystem provides a unified framework for
-+	  drivers for many different types of embedded sensors using a
-+	  number of different physical interfaces (i2c, spi etc). See
-+	  Documentation/industrialio for more information.
+ config IIO_TRIGGER
+ 	boolean "Enable triggered sampling support"
+ 	depends on IIO
 diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
-new file mode 100644
-index 0000000..92b462a
---- /dev/null
+index 3271518..dea4536 100644
+--- a/drivers/iio/Makefile
 +++ b/drivers/iio/Makefile
-@@ -0,0 +1,6 @@
-+#
-+# Makefile for the industrial I/O core.
-+#
+@@ -7,6 +7,8 @@ industrialio-y := industrialio-core.o
+ industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
+ industrialio-$(CONFIG_IIO_TRIGGER) += industrialio-trigger.o
+ 
++obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
 +
-+obj-$(CONFIG_IIO) += industrialio.o
-+industrialio-y := industrialio-core.o
-diff --git a/drivers/iio/industrialio-core.c b/drivers/iio/industrialio-core.c
+ obj-y += accel/
+ obj-y += adc/
+ obj-y += light/
+\ No newline at end of file
+diff --git a/drivers/iio/ring_sw.c b/drivers/iio/ring_sw.c
 new file mode 100644
-index 0000000..e80800d
+index 0000000..e39df05
 --- /dev/null
-+++ b/drivers/iio/industrialio-core.c
-@@ -0,0 +1,847 @@
-+/* The industrial I/O core
++++ b/drivers/iio/ring_sw.c
+@@ -0,0 +1,431 @@
++/* The industrial I/O simple minimally locked ring buffer.
 + *
 + * Copyright (c) 2008 Jonathan Cameron
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
 + * the Free Software Foundation.
-+ *
-+ * Based on elements of hwmon and input subsystems.
 + */
 +
 +#include <linux/kernel.h>
++#include <linux/device.h>
 +#include <linux/module.h>
-+#include <linux/idr.h>
-+#include <linux/kdev_t.h>
-+#include <linux/err.h>
 +#include <linux/device.h>
-+#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+#include <linux/poll.h>
-+#include <linux/cdev.h>
-+#include <linux/iio/iio.h>
-+#include <linux/iio/trigger_consumer.h>
++#include <linux/workqueue.h>
++#include <linux/iio/ring_sw.h>
 +
-+#define IIO_ID_PREFIX "device"
-+#define IIO_ID_FORMAT IIO_ID_PREFIX "%d"
-+
-+/* IDR to assign each registered device a unique id*/
-+static DEFINE_IDR(iio_idr);
-+
-+/* IDR for general event identifiers */
-+static DEFINE_IDR(iio_event_idr);
-+/* IDR to allocate character device minor numbers */
-+static DEFINE_IDR(iio_chrdev_idr);
-+/* Lock used to protect both of the above */
-+static DEFINE_SPINLOCK(iio_idr_lock);
-+
-+dev_t iio_devt;
-+EXPORT_SYMBOL(iio_devt);
-+
-+#define IIO_DEV_MAX 256
-+static char *iio_nodename(struct device *dev)
++static inline int __iio_init_sw_ring_buffer(struct iio_sw_ring_buffer *ring,
++					    int bytes_per_datum, int length)
 +{
-+	return kasprintf(GFP_KERNEL, "iio/%s", dev_name(dev));
-+}
-+
-+struct class iio_class = {
-+	.name = "iio",
-+	.nodename = iio_nodename,
-+};
-+EXPORT_SYMBOL(iio_class);
-+
-+void __iio_change_event(struct iio_detected_event_list *ev,
-+			int ev_code,
-+			s64 timestamp)
-+{
-+	ev->ev.id = ev_code;
-+	ev->ev.timestamp = timestamp;
-+}
-+EXPORT_SYMBOL(__iio_change_event);
-+
-+/* Used both in the interrupt line put events and the ring buffer ones */
-+
-+/* Note that in it's current form someone has to be listening before events
-+ * are queued. Hence a client MUST open the chrdev before the ring buffer is
-+ * switched on.
-+ */
-+ int __iio_push_event(struct iio_event_interface *ev_int,
-+		     int ev_code,
-+		     s64 timestamp,
-+		     struct iio_shared_ev_pointer *
-+		     shared_pointer_p)
-+{
-+	struct iio_detected_event_list *ev;
-+	int ret = 0;
-+
-+	/* Does anyone care? */
-+	mutex_lock(&ev_int->event_list_lock);
-+	if (test_bit(IIO_BUSY_BIT_POS, &ev_int->handler.flags)) {
-+		if (ev_int->current_events == ev_int->max_events)
-+			return 0;
-+		ev = kmalloc(sizeof(*ev), GFP_KERNEL);
-+		if (ev == NULL) {
-+			ret = -ENOMEM;
-+			goto error_ret;
-+		}
-+		ev->ev.id = ev_code;
-+		ev->ev.timestamp = timestamp;
-+		ev->shared_pointer = shared_pointer_p;
-+		if (ev->shared_pointer)
-+			shared_pointer_p->ev_p = ev;
-+
-+		list_add_tail(&ev->list, &ev_int->det_events.list);
-+		ev_int->current_events++;
-+		mutex_unlock(&ev_int->event_list_lock);
-+		wake_up_interruptible(&ev_int->wait);
-+	} else
-+		mutex_unlock(&ev_int->event_list_lock);
-+
-+error_ret:
-+	return ret;
-+}
-+EXPORT_SYMBOL(__iio_push_event);
-+
-+int iio_push_event(struct iio_dev *dev_info,
-+		   int ev_line,
-+		   int ev_code,
-+		   s64 timestamp)
-+{
-+	return __iio_push_event(&dev_info->event_interfaces[ev_line],
-+				ev_code, timestamp, NULL);
-+}
-+EXPORT_SYMBOL(iio_push_event);
-+
-+/* Generic interrupt line interrupt handler */
-+irqreturn_t iio_interrupt_handler(int irq, void *_int_info)
-+{
-+	struct iio_interrupt *int_info = _int_info;
-+	struct iio_dev *dev_info = int_info->dev_info;
-+	struct iio_event_handler_list *p;
-+	s64 time_ns;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&int_info->ev_list_lock, flags);
-+	if (list_empty(&int_info->ev_list)) {
-+		spin_unlock_irqrestore(&int_info->ev_list_lock, flags);
-+		return IRQ_NONE;
-+	}
-+
-+	time_ns = iio_get_time_ns();
-+	/* detect single element list*/
-+	if (list_is_singular(&int_info->ev_list)) {
-+		disable_irq_nosync(irq);
-+		p = list_first_entry(&int_info->ev_list,
-+				     struct iio_event_handler_list,
-+				     list);
-+		/* single event handler - maybe shared */
-+		p->handler(dev_info, 1, time_ns, !(p->refcount > 1));
-+	} else
-+		list_for_each_entry(p, &int_info->ev_list, list) {
-+			disable_irq_nosync(irq);
-+			p->handler(dev_info, 1, time_ns, 0);
-+		}
-+	spin_unlock_irqrestore(&int_info->ev_list_lock, flags);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static struct iio_interrupt *iio_allocate_interrupt(void)
-+{
-+	struct iio_interrupt *i = kmalloc(sizeof *i, GFP_KERNEL);
-+	if (i) {
-+		spin_lock_init(&i->ev_list_lock);
-+		INIT_LIST_HEAD(&i->ev_list);
-+	}
-+	return i;
-+}
-+
-+/* Confirming the validity of supplied irq is left to drivers.*/
-+int iio_register_interrupt_line(unsigned int irq,
-+				struct iio_dev *dev_info,
-+				int line_number,
-+				unsigned long type,
-+				const char *name)
-+{
-+	int ret;
-+
-+	dev_info->interrupts[line_number] = iio_allocate_interrupt();
-+	if (dev_info->interrupts[line_number] == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+	dev_info->interrupts[line_number]->line_number = line_number;
-+	dev_info->interrupts[line_number]->irq = irq;
-+	dev_info->interrupts[line_number]->dev_info = dev_info;
-+
-+	/* Possibly only request on demand?
-+	 * Can see this may complicate the handling of interrupts.
-+	 * However, with this approach we might end up handling lots of
-+	 * events no-one cares about.*/
-+	ret = request_irq(irq,
-+			  &iio_interrupt_handler,
-+			  type,
-+			  name,
-+			  dev_info->interrupts[line_number]);
-+
-+error_ret:
-+	return ret;
-+}
-+EXPORT_SYMBOL(iio_register_interrupt_line);
-+
-+/* This turns up an awful lot */
-+ssize_t iio_read_const_attr(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *buf)
-+{
-+	return sprintf(buf, "%s\n", to_iio_const_attr(attr)->string);
-+}
-+EXPORT_SYMBOL(iio_read_const_attr);
-+
-+/* Before this runs the interrupt generator must have been disabled */
-+void iio_unregister_interrupt_line(struct iio_dev *dev_info, int line_number)
-+{
-+	/* make sure the interrupt handlers are all done */
-+	flush_scheduled_work();
-+	free_irq(dev_info->interrupts[line_number]->irq,
-+		 dev_info->interrupts[line_number]);
-+	kfree(dev_info->interrupts[line_number]);
-+}
-+EXPORT_SYMBOL(iio_unregister_interrupt_line);
-+
-+/* Reference counted add and remove */
-+void iio_add_event_to_list(struct iio_event_handler_list *el,
-+			  struct list_head *head)
-+{
-+	unsigned long flags;
-+	struct iio_interrupt *inter = to_iio_interrupt(head);
-+
-+	/* take mutex to protect this element */
-+	mutex_lock(&el->exist_lock);
-+	if (el->refcount == 0) {
-+		/* Take the event list spin lock */
-+		spin_lock_irqsave(&inter->ev_list_lock, flags);
-+		list_add(&el->list, head);
-+		spin_unlock_irqrestore(&inter->ev_list_lock, flags);
-+	}
-+	el->refcount++;
-+	mutex_unlock(&el->exist_lock);
-+}
-+EXPORT_SYMBOL(iio_add_event_to_list);
-+
-+void iio_remove_event_from_list(struct iio_event_handler_list *el,
-+			       struct list_head *head)
-+{
-+	unsigned long flags;
-+	struct iio_interrupt *inter = to_iio_interrupt(head);
-+
-+	mutex_lock(&el->exist_lock);
-+	el->refcount--;
-+	if (el->refcount == 0) {
-+		/* Take the event list spin lock */
-+		spin_lock_irqsave(&inter->ev_list_lock, flags);
-+		list_del_init(&el->list);
-+		spin_unlock_irqrestore(&inter->ev_list_lock, flags);
-+	}
-+	mutex_unlock(&el->exist_lock);
-+}
-+EXPORT_SYMBOL(iio_remove_event_from_list);
-+
-+ssize_t iio_event_chrdev_read(struct file *filep,
-+			      char *buf,
-+			      size_t count,
-+			      loff_t *f_ps)
-+{
-+	struct iio_event_interface *ev_int = filep->private_data;
-+	struct iio_detected_event_list *el;
-+	int ret;
-+	size_t len;
-+
-+	mutex_lock(&ev_int->event_list_lock);
-+	if (list_empty(&ev_int->det_events.list)) {
-+		if (filep->f_flags & O_NONBLOCK) {
-+			ret = -EAGAIN;
-+			goto error_mutex_unlock;
-+		}
-+		mutex_unlock(&ev_int->event_list_lock);
-+		/* Blocking on device; waiting for something to be there */
-+		ret = wait_event_interruptible(ev_int->wait,
-+					       !list_empty(&ev_int
-+							   ->det_events.list));
-+		if (ret)
-+			goto error_ret;
-+		/* Single access device so noone else can get the data */
-+		mutex_lock(&ev_int->event_list_lock);
-+	}
-+
-+	el = list_first_entry(&ev_int->det_events.list,
-+			      struct iio_detected_event_list,
-+			      list);
-+	len = sizeof el->ev;
-+	if (copy_to_user(buf, &(el->ev), len)) {
-+		ret = -EFAULT;
-+		goto error_mutex_unlock;
-+	}
-+	list_del(&el->list);
-+	ev_int->current_events--;
-+	mutex_unlock(&ev_int->event_list_lock);
-+	/*
-+	 * Possible concurency issue if an update of this event is on its way
-+	 * through. May lead to new even being removed whilst the reported event
-+	 * was the unescalated event. In typical use case this is not a problem
-+	 * as userspace will say read half the buffer due to a 50% full event
-+	 * which would make the correct 100% full incorrect anyway.
-+	 */
-+	spin_lock(&el->shared_pointer->lock);
-+	if (el->shared_pointer)
-+		(el->shared_pointer->ev_p) = NULL;
-+	spin_unlock(&el->shared_pointer->lock);
-+
-+	kfree(el);
-+
-+	return len;
-+
-+error_mutex_unlock:
-+	mutex_unlock(&ev_int->event_list_lock);
-+error_ret:
-+
-+	return ret;
-+}
-+
-+int iio_event_chrdev_release(struct inode *inode, struct file *filep)
-+{
-+	struct iio_handler *hand = iio_cdev_to_handler(inode->i_cdev);
-+	struct iio_event_interface *ev_int = hand->private;
-+	struct iio_detected_event_list *el;
-+
-+	mutex_lock(&ev_int->event_list_lock);
-+	clear_bit(IIO_BUSY_BIT_POS, &ev_int->handler.flags);
-+	/*
-+	 * In order to maintain a clean state for reopening,
-+	 * clear out any awaiting events. The mask will prevent
-+	 * any new __iio_push_event calls running.
-+	 */
-+	list_for_each_entry(el, &ev_int->det_events.list, list) {
-+		list_del(&el->list);
-+		kfree(el);
-+	}
-+	mutex_unlock(&ev_int->event_list_lock);
-+
-+	return 0;
-+}
-+
-+int iio_event_chrdev_open(struct inode *inode, struct file *filep)
-+{
-+	struct iio_handler *hand = iio_cdev_to_handler(inode->i_cdev);
-+
-+	if (test_and_set_bit(IIO_BUSY_BIT_POS, &hand->flags)) {
-+		fops_put(filep->f_op);
-+		return -EBUSY;
-+	}
-+	filep->private_data = hand->private;
-+
-+	return 0;
-+}
-+
-+static const struct file_operations iio_event_chrdev_fileops = {
-+	.read =  iio_event_chrdev_read,
-+	.release = iio_event_chrdev_release,
-+	.open = iio_event_chrdev_open,
-+	.owner = THIS_MODULE,
-+};
-+
-+static void iio_event_dev_release(struct device *dev)
-+{
-+	struct iio_event_interface *ev_int
-+		= container_of(dev, struct iio_event_interface, dev);
-+	cdev_del(&ev_int->handler.chrdev);
-+	iio_device_free_chrdev_minor(MINOR(dev->devt));
-+};
-+
-+static struct device_type iio_event_type = {
-+	.release = iio_event_dev_release,
-+};
-+
-+int iio_device_get_chrdev_minor(void)
-+{
-+	int ret, val;
-+
-+idr_again:
-+	if (unlikely(idr_pre_get(&iio_chrdev_idr, GFP_KERNEL) == 0))
-+		return -ENOMEM;
-+	spin_lock(&iio_idr_lock);
-+	ret = idr_get_new(&iio_chrdev_idr, NULL, &val);
-+	spin_unlock(&iio_idr_lock);
-+	if (unlikely(ret == -EAGAIN))
-+		goto idr_again;
-+	else if (unlikely(ret))
-+		return ret;
-+	if (val > IIO_DEV_MAX)
-+		return -ENOMEM;
-+	return val;
-+}
-+
-+void iio_device_free_chrdev_minor(int val)
-+{
-+	spin_lock(&iio_idr_lock);
-+	idr_remove(&iio_chrdev_idr, val);
-+	spin_unlock(&iio_idr_lock);
-+}
-+
-+int iio_setup_ev_int(struct iio_event_interface *ev_int,
-+		     const char *name,
-+		     struct module *owner,
-+		     struct device *dev)
-+{
-+	int ret, minor;
-+
-+	ev_int->dev.class = &iio_class;
-+	ev_int->dev.parent = dev;
-+	ev_int->dev.type = &iio_event_type;
-+	device_initialize(&ev_int->dev);
-+
-+	minor = iio_device_get_chrdev_minor();
-+	if (minor < 0) {
-+		ret = minor;
-+		goto error_device_put;
-+	}
-+	ev_int->dev.devt = MKDEV(MAJOR(iio_devt), minor);
-+	dev_set_name(&ev_int->dev, "%s", name);
-+
-+	ret = device_add(&ev_int->dev);
-+	if (ret)
-+		goto error_free_minor;
-+
-+	cdev_init(&ev_int->handler.chrdev, &iio_event_chrdev_fileops);
-+	ev_int->handler.chrdev.owner = owner;
-+
-+	mutex_init(&ev_int->event_list_lock);
-+	/* discussion point - make this variable? */
-+	ev_int->max_events = 10;
-+	ev_int->current_events = 0;
-+	INIT_LIST_HEAD(&ev_int->det_events.list);
-+	init_waitqueue_head(&ev_int->wait);
-+	ev_int->handler.private = ev_int;
-+	ev_int->handler.flags = 0;
-+
-+	ret = cdev_add(&ev_int->handler.chrdev, ev_int->dev.devt, 1);
-+	if (ret)
-+		goto error_unreg_device;
-+
-+	return 0;
-+
-+error_unreg_device:
-+	device_unregister(&ev_int->dev);
-+error_free_minor:
-+	iio_device_free_chrdev_minor(minor);
-+error_device_put:
-+	put_device(&ev_int->dev);
-+
-+	return ret;
-+}
-+
-+void iio_free_ev_int(struct iio_event_interface *ev_int)
-+{
-+	device_unregister(&ev_int->dev);
-+	put_device(&ev_int->dev);
-+}
-+
-+static int __init iio_dev_init(void)
-+{
-+	int err;
-+
-+	err = alloc_chrdev_region(&iio_devt, 0, IIO_DEV_MAX, "iio");
-+	if (err < 0)
-+		printk(KERN_ERR "%s: failed to allocate char dev region\n",
-+		       __FILE__);
-+
-+	return err;
-+}
-+
-+static void __exit iio_dev_exit(void)
-+{
-+	if (iio_devt)
-+		unregister_chrdev_region(iio_devt, IIO_DEV_MAX);
-+}
-+
-+static int __init iio_init(void)
-+{
-+	int ret;
-+
-+	/* Create sysfs class */
-+	ret  = class_register(&iio_class);
-+	if (ret < 0) {
-+		printk(KERN_ERR
-+		       "%s could not create sysfs class\n",
-+			__FILE__);
-+		goto error_nothing;
-+	}
-+
-+	ret = iio_dev_init();
-+	if (ret < 0)
-+		goto error_unregister_class;
-+
-+	return 0;
-+
-+error_unregister_class:
-+	class_unregister(&iio_class);
-+error_nothing:
-+	return ret;
-+}
-+
-+static void __exit iio_exit(void)
-+{
-+	iio_dev_exit();
-+	class_unregister(&iio_class);
-+}
-+
-+static int iio_device_register_sysfs(struct iio_dev *dev_info)
-+{
-+	int ret = 0;
-+
-+	ret = sysfs_create_group(&dev_info->dev.kobj, dev_info->attrs);
-+	if (ret) {
-+		dev_err(dev_info->dev.parent,
-+			"Failed to register sysfs hooks\n");
-+		goto error_ret;
-+	}
-+
-+	if (dev_info->scan_el_attrs) {
-+		ret = sysfs_create_group(&dev_info->dev.kobj,
-+					 dev_info->scan_el_attrs);
-+		if (ret)
-+			dev_err(&dev_info->dev,
-+				"Failed to add sysfs scan els\n");
-+	}
-+
-+error_ret:
-+	return ret;
-+}
-+
-+static void iio_device_unregister_sysfs(struct iio_dev *dev_info)
-+{
-+	if (dev_info->scan_el_attrs)
-+		sysfs_remove_group(&dev_info->dev.kobj,
-+				   dev_info->scan_el_attrs);
-+
-+	sysfs_remove_group(&dev_info->dev.kobj, dev_info->attrs);
-+}
-+
-+int iio_get_new_idr_val(struct idr *this_idr)
-+{
-+	int ret;
-+	int val;
-+
-+idr_again:
-+	if (unlikely(idr_pre_get(this_idr, GFP_KERNEL) == 0))
-+		return -ENOMEM;
-+
-+	spin_lock(&iio_idr_lock);
-+	ret = idr_get_new(this_idr, NULL, &val);
-+	spin_unlock(&iio_idr_lock);
-+	if (unlikely(ret == -EAGAIN))
-+		goto idr_again;
-+	else if (unlikely(ret))
-+		return ret;
-+
-+	return val;
-+}
-+EXPORT_SYMBOL(iio_get_new_idr_val);
-+
-+void iio_free_idr_val(struct idr *this_idr, int id)
-+{
-+	spin_lock(&iio_idr_lock);
-+	idr_remove(this_idr, id);
-+	spin_unlock(&iio_idr_lock);
-+}
-+EXPORT_SYMBOL(iio_free_idr_val);
-+
-+static int iio_device_register_id(struct iio_dev *dev_info,
-+				  struct idr *this_idr)
-+{
-+
-+	dev_info->id = iio_get_new_idr_val(&iio_idr);
-+	if (dev_info->id < 0)
-+		return dev_info->id;
-+	return 0;
-+}
-+
-+static void iio_device_unregister_id(struct iio_dev *dev_info)
-+{
-+	iio_free_idr_val(&iio_idr, dev_info->id);
-+}
-+
-+static inline int __iio_add_event_config_attrs(struct iio_dev *dev_info, int i)
-+{
-+	int ret;
-+	/*p for adding, q for removing */
-+	struct attribute **attrp, **attrq;
-+
-+	if (dev_info->event_conf_attrs && dev_info->event_conf_attrs[i].attrs) {
-+		attrp = dev_info->event_conf_attrs[i].attrs;
-+		while (*attrp) {
-+			ret =  sysfs_add_file_to_group(&dev_info->dev.kobj,
-+						       *attrp,
-+						       dev_info
-+						       ->event_attrs[i].name);
-+			if (ret)
-+				goto error_ret;
-+			attrp++;
-+		}
-+	}
-+	return 0;
-+
-+error_ret:
-+	attrq = dev_info->event_conf_attrs[i].attrs;
-+	while (attrq != attrp) {
-+			sysfs_remove_file_from_group(&dev_info->dev.kobj,
-+					     *attrq,
-+					     dev_info->event_attrs[i].name);
-+		attrq++;
-+	}
-+
-+	return ret;
-+}
-+
-+static inline int __iio_remove_event_config_attrs(struct iio_dev *dev_info,
-+						  int i)
-+{
-+	struct attribute **attrq;
-+
-+	if (dev_info->event_conf_attrs
-+		&& dev_info->event_conf_attrs[i].attrs) {
-+		attrq = dev_info->event_conf_attrs[i].attrs;
-+		while (*attrq) {
-+			sysfs_remove_file_from_group(&dev_info->dev.kobj,
-+						     *attrq,
-+						     dev_info
-+						     ->event_attrs[i].name);
-+			attrq++;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int iio_device_register_eventset(struct iio_dev *dev_info)
-+{
-+	int ret = 0, i, j;
-+
-+	if (dev_info->num_interrupt_lines == 0)
-+		return 0;
-+
-+	dev_info->event_interfaces =
-+		kzalloc(sizeof(struct iio_event_interface)
-+			*dev_info->num_interrupt_lines,
-+			GFP_KERNEL);
-+	if (dev_info->event_interfaces == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+
-+	dev_info->interrupts = kzalloc(sizeof(struct iio_interrupt *)
-+				       *dev_info->num_interrupt_lines,
-+				       GFP_KERNEL);
-+	if (dev_info->interrupts == NULL) {
-+		ret = -ENOMEM;
-+		goto error_free_event_interfaces;
-+	}
-+
-+	for (i = 0; i < dev_info->num_interrupt_lines; i++) {
-+		dev_info->event_interfaces[i].owner = dev_info->driver_module;
-+		ret = iio_get_new_idr_val(&iio_event_idr);
-+		if (ret)
-+			goto error_free_setup_ev_ints;
-+		else
-+			dev_info->event_interfaces[i].id = ret;
-+
-+		snprintf(dev_info->event_interfaces[i]._name, 20,
-+			 "event_line%d",
-+			dev_info->event_interfaces[i].id);
-+
-+		ret = iio_setup_ev_int(&dev_info->event_interfaces[i],
-+				       (const char *)(dev_info
-+						      ->event_interfaces[i]
-+						      ._name),
-+				       dev_info->driver_module,
-+				       &dev_info->dev);
-+		if (ret) {
-+			dev_err(&dev_info->dev,
-+				"Could not get chrdev interface\n");
-+			iio_free_idr_val(&iio_event_idr,
-+					 dev_info->event_interfaces[i].id);
-+			goto error_free_setup_ev_ints;
-+		}
-+	}
-+
-+	for (i = 0; i < dev_info->num_interrupt_lines; i++) {
-+		snprintf(dev_info->event_interfaces[i]._attrname, 20,
-+			"event_line%d_sources", i);
-+		dev_info->event_attrs[i].name
-+			= (const char *)
-+			(dev_info->event_interfaces[i]._attrname);
-+		ret = sysfs_create_group(&dev_info->dev.kobj,
-+					 &dev_info->event_attrs[i]);
-+		if (ret) {
-+			dev_err(&dev_info->dev,
-+				"Failed to register sysfs for event attrs");
-+			goto error_remove_sysfs_interfaces;
-+		}
-+	}
-+
-+	for (i = 0; i < dev_info->num_interrupt_lines; i++) {
-+		ret = __iio_add_event_config_attrs(dev_info, i);
-+		if (ret)
-+			goto error_unregister_config_attrs;
-+	}
-+
-+	return 0;
-+
-+error_unregister_config_attrs:
-+	for (j = 0; j < i; j++)
-+		__iio_remove_event_config_attrs(dev_info, i);
-+	i = dev_info->num_interrupt_lines - 1;
-+error_remove_sysfs_interfaces:
-+	for (j = 0; j < i; j++)
-+		sysfs_remove_group(&dev_info->dev.kobj,
-+				   &dev_info->event_attrs[j]);
-+	i = dev_info->num_interrupt_lines - 1;
-+error_free_setup_ev_ints:
-+	for (j = 0; j < i; j++) {
-+		iio_free_idr_val(&iio_event_idr,
-+				 dev_info->event_interfaces[i].id);
-+		iio_free_ev_int(&dev_info->event_interfaces[j]);
-+	}
-+	kfree(dev_info->interrupts);
-+error_free_event_interfaces:
-+	kfree(dev_info->event_interfaces);
-+error_ret:
-+
-+	return ret;
-+}
-+
-+static void iio_device_unregister_eventset(struct iio_dev *dev_info)
-+{
-+	int i;
-+
-+	if (dev_info->num_interrupt_lines == 0)
-+		return;
-+	for (i = 0; i < dev_info->num_interrupt_lines; i++)
-+		sysfs_remove_group(&dev_info->dev.kobj,
-+				   &dev_info->event_attrs[i]);
-+
-+	for (i = 0; i < dev_info->num_interrupt_lines; i++) {
-+		iio_free_idr_val(&iio_event_idr,
-+				 dev_info->event_interfaces[i].id);
-+		iio_free_ev_int(&dev_info->event_interfaces[i]);
-+	}
-+	kfree(dev_info->interrupts);
-+	kfree(dev_info->event_interfaces);
-+}
-+
-+static void iio_dev_release(struct device *device)
-+{
-+	struct iio_dev *dev = to_iio_dev(device);
-+
-+	iio_put();
-+	kfree(dev);
-+}
-+
-+static struct device_type iio_dev_type = {
-+	.name = "iio_device",
-+	.release = iio_dev_release,
-+};
-+
-+struct iio_dev *iio_allocate_device(void)
-+{
-+	struct iio_dev *dev = kzalloc(sizeof *dev, GFP_KERNEL);
-+
-+	if (dev) {
-+		dev->dev.type = &iio_dev_type;
-+		dev->dev.class = &iio_class;
-+		device_initialize(&dev->dev);
-+		dev_set_drvdata(&dev->dev, (void *)dev);
-+		mutex_init(&dev->mlock);
-+		iio_get();
-+	}
-+
-+	return dev;
-+}
-+EXPORT_SYMBOL(iio_allocate_device);
-+
-+void iio_free_device(struct iio_dev *dev)
-+{
-+	if (dev)
-+		iio_put_device(dev);
-+}
-+EXPORT_SYMBOL(iio_free_device);
-+
-+int iio_device_register(struct iio_dev *dev_info)
-+{
-+	int ret;
-+
-+	ret = iio_device_register_id(dev_info, &iio_idr);
-+	if (ret) {
-+		dev_err(&dev_info->dev, "Failed to get id\n");
-+		goto error_ret;
-+	}
-+	dev_set_name(&dev_info->dev, "device%d", dev_info->id);
-+
-+	ret = device_add(&dev_info->dev);
-+	if (ret)
-+		goto error_free_idr;
-+	ret = iio_device_register_sysfs(dev_info);
-+	if (ret) {
-+		dev_err(dev_info->dev.parent,
-+			"Failed to register sysfs interfaces\n");
-+		goto error_del_device;
-+	}
-+	ret = iio_device_register_eventset(dev_info);
-+	if (ret) {
-+		dev_err(dev_info->dev.parent,
-+			"Failed to register event set \n");
-+		goto error_free_sysfs;
-+	}
-+	if (dev_info->modes & INDIO_RING_TRIGGERED)
-+		iio_device_register_trigger_consumer(dev_info);
-+
-+	return 0;
-+
-+error_free_sysfs:
-+	iio_device_unregister_sysfs(dev_info);
-+error_del_device:
-+	device_del(&dev_info->dev);
-+error_free_idr:
-+	iio_device_unregister_id(dev_info);
-+error_ret:
-+	return ret;
-+}
-+EXPORT_SYMBOL(iio_device_register);
-+
-+void iio_device_unregister(struct iio_dev *dev_info)
-+{
-+	if (dev_info->modes & INDIO_RING_TRIGGERED)
-+		iio_device_unregister_trigger_consumer(dev_info);
-+	iio_device_unregister_eventset(dev_info);
-+	iio_device_unregister_sysfs(dev_info);
-+	device_unregister(&dev_info->dev);
-+	iio_device_unregister_id(dev_info);
-+}
-+EXPORT_SYMBOL(iio_device_unregister);
-+
-+void iio_put(void)
-+{
-+	module_put(THIS_MODULE);
-+}
-+
-+void iio_get(void)
-+{
-+	__module_get(THIS_MODULE);
-+}
-+
-+subsys_initcall(iio_init);
-+module_exit(iio_exit);
-+
-+MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-+MODULE_DESCRIPTION("Industrial I/O core");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/iio/chrdev.h b/include/linux/iio/chrdev.h
-new file mode 100644
-index 0000000..8bc64bf
---- /dev/null
-+++ b/include/linux/iio/chrdev.h
-@@ -0,0 +1,118 @@
-+/* The industrial I/O core - character device related
-+ *
-+ * Copyright (c) 2008 Jonathan Cameron
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#ifndef _IIO_CHRDEV_H_
-+#define _IIO_CHRDEV_H_
-+struct iio_dev;
-+
-+/**
-+ * struct iio_handler - Structure used to specify file operations
-+ *			for a particular chrdev
-+ * @chrdev:	character device structure
-+ * @id:		the location in the handler table - used for deallocation.
-+ * @flags:	file operations related flags including busy flag.
-+ * @private:	handler specific data used by the fileops registered with
-+ *		the chrdev.
-+ */
-+struct iio_handler {
-+	struct cdev	chrdev;
-+	int		id;
-+	unsigned long	flags;
-+	void		*private;
-+};
-+
-+#define iio_cdev_to_handler(cd)				\
-+	container_of(cd, struct iio_handler, chrdev)
-+
-+/**
-+ * struct iio_event_data - The actual event being pushed to userspace
-+ * @id:		event identifier
-+ * @timestamp:	best estimate of time of event occurance (often from
-+ *		the interrupt handler)
-+ */
-+struct iio_event_data {
-+	int	id;
-+	s64	timestamp;
-+};
-+
-+/**
-+ * struct iio_detected_event_list - list element for events that have occured
-+ * @list:		linked list header
-+ * @ev:			the event itself
-+ * @shared_pointer:	used when the event is shared - i.e. can be escallated
-+ *			on demand (eg ring buffer 50%->100% full)
-+ */
-+struct iio_detected_event_list {
-+	struct list_head		list;
-+	struct iio_event_data		ev;
-+	struct iio_shared_ev_pointer	*shared_pointer;
-+};
-+/**
-+ * struct iio_shared_ev_pointer - allows shared events to identify if currently
-+ *				in the detected event list
-+ * @ev_p:	pointer to detected event list element (null if not in list)
-+ * @lock:	protect this element to prevent simultaneous edit and remove
-+ */
-+struct iio_shared_ev_pointer {
-+	struct iio_detected_event_list	*ev_p;
-+	spinlock_t			lock;
-+};
-+
-+/**
-+ * struct iio_event_interface - chrdev interface for an event line
-+ * @dev:		device assocated with event interface
-+ * @handler:		fileoperations and related control for the chrdev
-+ * @wait:		wait queue to allow blocking reads of events
-+ * @event_list_lock:	mutex to protect the list of detected events
-+ * @det_events:		list of detected events
-+ * @max_events:		maximum number of events before new ones are dropped
-+ * @current_events:	number of events in detected list
-+ * @id:			indentifier to allow the event interface to know which
-+ *			physical line it corresponds to
-+ * @owner:		ensure the driver module owns the file, not iio
-+ * @private:		driver specific data
-+ * @_name:		used internally to store the sysfs name for minor id
-+ *			attribute
-+ */
-+struct iio_event_interface {
-+	struct device				dev;
-+	struct iio_handler			handler;
-+	wait_queue_head_t			wait;
-+	struct mutex				event_list_lock;
-+	struct iio_detected_event_list		det_events;
-+	int					max_events;
-+	int					current_events;
-+	int					id;
-+	struct iio_chrdev_minor_attr		attr;
-+	struct module				*owner;
-+	void					*private;
-+	char					_name[20];
-+	char					_attrname[20];
-+};
-+
-+/**
-+ * struct iio_event_handler_list - element in list of handlers for events
-+ * @list:		list header
-+ * @refcount:		as the handler may be shared between multiple device
-+ *			side events, reference counting ensures clean removal
-+ * @exist_lock:		prevents race conditions related to refcount useage.
-+ * @handler:		event handler function - called on event if this
-+ *			event_handler is enabled.
-+ *
-+ * Each device has one list of these per interrupt line
-+ **/
-+struct iio_event_handler_list {
-+	struct list_head	list;
-+	int			refcount;
-+	struct mutex		exist_lock;
-+	int (*handler)(struct iio_dev *dev_info, int index, s64 timestamp,
-+		       int no_test);
-+};
-+
-+#endif
-diff --git a/include/linux/iio/iio.h b/include/linux/iio/iio.h
-new file mode 100644
-index 0000000..2eaf8f6
---- /dev/null
-+++ b/include/linux/iio/iio.h
-@@ -0,0 +1,411 @@
-+/* The industrial I/O core
-+ *
-+ * Copyright (c) 2008 Jonathan Cameron
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+
-+#ifndef _INDUSTRIAL_IO_H_
-+#define _INDUSTRIAL_IO_H_
-+
-+#include <linux/device.h>
-+#include <linux/cdev.h>
-+#include <linux/iio/sysfs.h>
-+#include <linux/iio/chrdev.h>
-+
-+/* IIO TODO LIST */
-+/* Static device specific elements (conversion factors etc)
-+ * should be exported via sysfs
-+ *
-+ * Provide means of adjusting timer accuracy.
-+ * Currently assumes nano seconds.
-+ */
-+
-+/* Event interface flags */
-+#define IIO_BUSY_BIT_POS 1
-+
-+struct iio_dev;
-+
-+/**
-+ * iio_get_time_ns() - utility function to get a time stamp for events etc
-+ **/
-+static inline s64 iio_get_time_ns(void)
-+{
-+	struct timespec ts;
-+	/*
-+	 * calls getnstimeofday.
-+	 * If hrtimers then up to ns accurate, if not microsecond.
-+	 */
-+	ktime_get_real_ts(&ts);
-+
-+	return timespec_to_ns(&ts);
-+}
-+
-+/**
-+ * iio_add_event_to_list() - Wraps adding to event lists
-+ * @el:		the list element of the event to be handled.
-+ * @head:	the list associated with the event handler being used.
-+ *
-+ * Does reference counting to allow shared handlers.
-+ **/
-+void iio_add_event_to_list(struct iio_event_handler_list *el,
-+			   struct list_head *head);
-+
-+/**
-+ * iio_remove_event_from_list() - Wraps removing from event list
-+ * @el:		element to be removed
-+ * @head:	associate list head for the interrupt handler.
-+ *
-+ * Does reference counting to allow shared handlers.
-+ **/
-+void iio_remove_event_from_list(struct iio_event_handler_list *el,
-+				struct list_head *head);
-+
-+/* Device operating modes */
-+#define INDIO_DIRECT_MODE		0x01
-+#define INDIO_RING_TRIGGERED		0x02
-+#define INDIO_RING_HARDWARE_BUFFER	0x08
-+
-+#define INDIO_ALL_RING_MODES (INDIO_RING_TRIGGERED | INDIO_RING_HARDWARE_BUFFER)
-+
-+/* Vast majority of this is set by the industrialio subsystem on a
-+ * call to iio_device_register. */
-+
-+/**
-+ * struct iio_dev - industrial I/O device
-+ * @id:			[INTERN] used to identify device internally
-+ * @dev_data:		[DRIVER] device specific data
-+ * @modes:		[DRIVER] operating modes supported by device
-+ * @currentmode:	[DRIVER] current operating mode
-+ * @dev:		[DRIVER] device structure, should be assigned a parent
-+ *			and owner
-+ * @attrs:		[DRIVER] general purpose device attributes
-+ * @driver_module:	[DRIVER] module structure used to ensure correct
-+ *			ownership of chrdevs etc
-+ * @num_interrupt_lines:[DRIVER] number of physical interrupt lines from device
-+ * @interrupts:		[INTERN] interrupt line specific event lists etc
-+ * @event_attrs:	[DRIVER] event control attributes
-+ * @event_conf_attrs:	[DRIVER] event configuration attributes
-+ * @event_interfaces:	[INTERN] event chrdevs associated with interrupt lines
-+ * @ring:		[DRIVER] any ring buffer present
-+ * @mlock:		[INTERN] lock used to prevent simultaneous device state
-+ *			changes
-+ * @scan_el_attrs:	[DRIVER] control of scan elements if that scan mode
-+ *			control method is used
-+ * @scan_count:	[INTERN] the number of elements in the current scan mode
-+ * @scan_mask:		[INTERN] bitmask used in masking scan mode elements
-+ * @scan_timestamp:	[INTERN] does the scan mode include a timestamp
-+ * @trig:		[INTERN] current device trigger (ring buffer modes)
-+ * @pollfunc:		[DRIVER] function run on trigger being recieved
-+ **/
-+struct iio_dev {
-+	int				id;
-+	void				*dev_data;
-+	int				modes;
-+	int				currentmode;
-+	struct device			dev;
-+	const struct attribute_group	*attrs;
-+	struct module			*driver_module;
-+
-+	int				num_interrupt_lines;
-+	struct iio_interrupt		**interrupts;
-+	struct attribute_group		*event_attrs;
-+	struct attribute_group		*event_conf_attrs;
-+
-+	struct iio_event_interface	*event_interfaces;
-+
-+	struct iio_ring_buffer		*ring;
-+	struct mutex			mlock;
-+
-+	struct attribute_group		*scan_el_attrs;
-+	int				scan_count;
-+
-+	u16				scan_mask;
-+	bool				scan_timestamp;
-+	struct iio_trigger		*trig;
-+	struct iio_poll_func		*pollfunc;
-+};
-+
-+/*
-+ * These are mainly provided to allow for a change of implementation if a device
-+ * has a large number of scan elements
-+ */
-+#define IIO_MAX_SCAN_LENGTH 15
-+
-+static inline int iio_scan_mask_query(struct iio_dev *dev_info, int bit)
-+{
-+	if (bit > IIO_MAX_SCAN_LENGTH)
++	if ((length == 0) || (bytes_per_datum == 0))
 +		return -EINVAL;
++
++	__iio_init_ring_buffer(&ring->buf, bytes_per_datum, length);
++	ring->use_lock = __SPIN_LOCK_UNLOCKED((ring)->use_lock);
++	ring->data = kmalloc(length*ring->buf.bpd, GFP_KERNEL);
++	ring->read_p = 0;
++	ring->write_p = 0;
++	ring->last_written_p = 0;
++	ring->half_p = 0;
++	return ring->data ? 0 : -ENOMEM;
++}
++
++static inline void __iio_free_sw_ring_buffer(struct iio_sw_ring_buffer *ring)
++{
++	kfree(ring->data);
++}
++
++void iio_mark_sw_rb_in_use(struct iio_ring_buffer *r)
++{
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	spin_lock(&ring->use_lock);
++	ring->use_count++;
++	spin_unlock(&ring->use_lock);
++}
++EXPORT_SYMBOL(iio_mark_sw_rb_in_use);
++
++void iio_unmark_sw_rb_in_use(struct iio_ring_buffer *r)
++{
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	spin_lock(&ring->use_lock);
++	ring->use_count--;
++	spin_unlock(&ring->use_lock);
++}
++EXPORT_SYMBOL(iio_unmark_sw_rb_in_use);
++
++
++/* Ring buffer related functionality */
++/* Store to ring is typically called in the bh of a data ready interrupt handler
++ * in the device driver */
++/* Lock always held if their is a chance this may be called */
++/* Only one of these per ring may run concurrently - enforced by drivers */
++int iio_store_to_sw_ring(struct iio_sw_ring_buffer *ring,
++			 unsigned char *data,
++			 s64 timestamp)
++{
++	int ret = 0;
++	int code;
++	unsigned char *temp_ptr, *change_test_ptr;
++
++	/* initial store */
++	if (unlikely(ring->write_p == 0)) {
++		ring->write_p = ring->data;
++		/* Doesn't actually matter if this is out of the set
++		 * as long as the read pointer is valid before this
++		 * passes it - guaranteed as set later in this function.
++		 */
++		ring->half_p = ring->data - ring->buf.length*ring->buf.bpd/2;
++	}
++	/* Copy data to where ever the current write pointer says */
++	memcpy(ring->write_p, data, ring->buf.bpd);
++	barrier();
++	/* Update the pointer used to get most recent value.
++	 * Always valid as either points to latest or second latest value.
++	 * Before this runs it is null and read attempts fail with -EAGAIN.
++	 */
++	ring->last_written_p = ring->write_p;
++	barrier();
++	/* temp_ptr used to ensure we never have an invalid pointer
++	 * it may be slightly lagging, but never invalid
++	 */
++	temp_ptr = ring->write_p + ring->buf.bpd;
++	/* End of ring, back to the beginning */
++	if (temp_ptr == ring->data + ring->buf.length*ring->buf.bpd)
++		temp_ptr = ring->data;
++	/* Update the write pointer
++	 * always valid as long as this is the only function able to write.
++	 * Care needed with smp systems to ensure more than one ring fill
++	 * is never scheduled.
++	 */
++	ring->write_p = temp_ptr;
++
++	if (ring->read_p == 0)
++		ring->read_p = ring->data;
++	/* Buffer full - move the read pointer and create / escalate
++	 * ring event */
++	/* Tricky case - if the read pointer moves before we adjust it.
++	 * Handle by not pushing if it has moved - may result in occasional
++	 * unnecessary buffer full events when it wasn't quite true.
++	 */
++	else if (ring->write_p == ring->read_p) {
++		change_test_ptr = ring->read_p;
++		temp_ptr = change_test_ptr + ring->buf.bpd;
++		if (temp_ptr
++		    == ring->data + ring->buf.length*ring->buf.bpd) {
++			temp_ptr = ring->data;
++		}
++		/* We are moving pointer on one because the ring is full.  Any
++		 * change to the read pointer will be this or greater.
++		 */
++		if (change_test_ptr == ring->read_p)
++			ring->read_p = temp_ptr;
++
++		spin_lock(&ring->buf.shared_ev_pointer.lock);
++
++		ret = iio_push_or_escallate_ring_event(&ring->buf,
++						       IIO_EVENT_CODE_RING_100_FULL,
++						       timestamp);
++		spin_unlock(&ring->buf.shared_ev_pointer.lock);
++		if (ret)
++			goto error_ret;
++	}
++	/* investigate if our event barrier has been passed */
++	/* There are definite 'issues' with this and chances of
++	 * simultaneous read */
++	/* Also need to use loop count to ensure this only happens once */
++	ring->half_p += ring->buf.bpd;
++	if (ring->half_p == ring->data + ring->buf.length*ring->buf.bpd)
++		ring->half_p = ring->data;
++	if (ring->half_p == ring->read_p) {
++		spin_lock(&ring->buf.shared_ev_pointer.lock);
++		code = IIO_EVENT_CODE_RING_50_FULL;
++		ret = __iio_push_event(&ring->buf.ev_int,
++				       code,
++				       timestamp,
++				       &ring->buf.shared_ev_pointer);
++		spin_unlock(&ring->buf.shared_ev_pointer.lock);
++	}
++error_ret:
++	return ret;
++}
++
++int iio_rip_sw_rb(struct iio_ring_buffer *r,
++		  size_t count, u8 **data, int *dead_offset)
++{
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++
++	u8 *initial_read_p, *initial_write_p, *current_read_p, *end_read_p;
++	int ret, max_copied;
++	int bytes_to_rip;
++
++	/* A userspace program has probably made an error if it tries to
++	 *  read something that is not a whole number of bpds.
++	 * Return an error.
++	 */
++	if (count % ring->buf.bpd) {
++		ret = -EINVAL;
++		printk(KERN_INFO "Ring buffer read request not whole number of"
++		       "samples: Request bytes %d, Current bpd %d\n",
++		       count, ring->buf.bpd);
++		goto error_ret;
++	}
++	/* Limit size to whole of ring buffer */
++	bytes_to_rip = min((size_t)(ring->buf.bpd*ring->buf.length), count);
++
++	*data = kmalloc(bytes_to_rip, GFP_KERNEL);
++	if (*data == NULL) {
++		ret = -ENOMEM;
++		goto error_ret;
++	}
++
++	/* build local copy */
++	initial_read_p = ring->read_p;
++	if (unlikely(initial_read_p == 0)) { /* No data here as yet */
++		ret = 0;
++		goto error_free_data_cpy;
++	}
++
++	initial_write_p = ring->write_p;
++
++	/* Need a consistent pair */
++	while ((initial_read_p != ring->read_p)
++	       || (initial_write_p != ring->write_p)) {
++		initial_read_p = ring->read_p;
++		initial_write_p = ring->write_p;
++	}
++	if (initial_write_p == initial_read_p) {
++		/* No new data available.*/
++		ret = 0;
++		goto error_free_data_cpy;
++	}
++
++	if (initial_write_p >= initial_read_p + bytes_to_rip) {
++		/* write_p is greater than necessary, all is easy */
++		max_copied = bytes_to_rip;
++		memcpy(*data, initial_read_p, max_copied);
++		end_read_p = initial_read_p + max_copied;
++	} else if (initial_write_p > initial_read_p) {
++		/*not enough data to cpy */
++		max_copied = initial_write_p - initial_read_p;
++		memcpy(*data, initial_read_p, max_copied);
++		end_read_p = initial_write_p;
++	} else {
++		/* going through 'end' of ring buffer */
++		max_copied = ring->data
++			+ ring->buf.length*ring->buf.bpd - initial_read_p;
++		memcpy(*data, initial_read_p, max_copied);
++		/* possible we are done if we align precisely with end */
++		if (max_copied == bytes_to_rip)
++			end_read_p = ring->data;
++		else if (initial_write_p
++			 > ring->data + bytes_to_rip - max_copied) {
++			/* enough data to finish */
++			memcpy(*data + max_copied, ring->data,
++			       bytes_to_rip - max_copied);
++			max_copied = bytes_to_rip;
++			end_read_p = ring->data + (bytes_to_rip - max_copied);
++		} else {  /* not enough data */
++			memcpy(*data + max_copied, ring->data,
++			       initial_write_p - ring->data);
++			max_copied += initial_write_p - ring->data;
++			end_read_p = initial_write_p;
++		}
++	}
++	/* Now to verify which section was cleanly copied - i.e. how far
++	 * read pointer has been pushed */
++	current_read_p = ring->read_p;
++
++	if (initial_read_p <= current_read_p)
++		*dead_offset = current_read_p - initial_read_p;
 +	else
-+		return !!(dev_info->scan_mask & (1 << bit));
-+};
++		*dead_offset = ring->buf.length*ring->buf.bpd
++			- (initial_read_p - current_read_p);
 +
-+static inline int iio_scan_mask_set(struct iio_dev *dev_info, int bit)
-+{
-+	if (bit > IIO_MAX_SCAN_LENGTH)
-+		return -EINVAL;
-+	dev_info->scan_mask |= (1 << bit);
-+	dev_info->scan_count++;
-+	return 0;
-+};
-+
-+static inline int iio_scan_mask_clear(struct iio_dev *dev_info, int bit)
-+{
-+	if (bit > IIO_MAX_SCAN_LENGTH)
-+		return -EINVAL;
-+	dev_info->scan_mask &= ~(1 << bit);
-+	dev_info->scan_count--;
-+	return 0;
-+};
-+
-+/**
-+ * iio_scan_mask_count_to_right() - how many scan elements occur before here
-+ * @dev_info: the iio_device whose scan mode we are querying
-+ * @bit: which number scan element is this
-+ **/
-+static inline int iio_scan_mask_count_to_right(struct iio_dev *dev_info,
-+int bit)
-+{
-+	int count = 0;
-+	int mask = (1 << bit);
-+	if (bit > IIO_MAX_SCAN_LENGTH)
-+		return -EINVAL;
-+	while (mask) {
-+		mask >>= 1;
-+		if (mask & dev_info->scan_mask)
-+			count++;
++	/* possible issue if the initial write has been lapped or indeed
++	 * the point we were reading to has been passed */
++	/* No valid data read.
++	 * In this case the read pointer is already correct having been
++	 * pushed further than we would look. */
++	if (max_copied - *dead_offset < 0) {
++		ret = 0;
++		goto error_free_data_cpy;
 +	}
 +
-+	return count;
++	/* setup the next read position */
++	/* Beware, this may fail due to concurrency fun and games.
++	 *  Possible that sufficient fill commands have run to push the read
++	 * pointer past where we would be after the rip. If this occurs, leave
++	 * it be.
++	 */
++	/* Tricky - deal with loops */
++
++	while (ring->read_p != end_read_p)
++		ring->read_p = end_read_p;
++
++	return max_copied - *dead_offset;
++
++error_free_data_cpy:
++	kfree(*data);
++error_ret:
++	return ret;
++}
++EXPORT_SYMBOL(iio_rip_sw_rb);
++
++int iio_store_to_sw_rb(struct iio_ring_buffer *r, u8 *data, s64 timestamp)
++{
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	return iio_store_to_sw_ring(ring, data, timestamp);
++}
++EXPORT_SYMBOL(iio_store_to_sw_rb);
++
++int iio_read_last_from_sw_ring(struct iio_sw_ring_buffer *ring,
++			       unsigned char *data)
++{
++	unsigned char *last_written_p_copy;
++
++	iio_mark_sw_rb_in_use(&ring->buf);
++again:
++	barrier();
++	last_written_p_copy = ring->last_written_p;
++	barrier(); /*unnessecary? */
++	/* Check there is anything here */
++	if (last_written_p_copy == 0)
++		return -EAGAIN;
++	memcpy(data, last_written_p_copy, ring->buf.bpd);
++
++	if (unlikely(ring->last_written_p >= last_written_p_copy))
++		goto again;
++
++	iio_unmark_sw_rb_in_use(&ring->buf);
++	return 0;
 +}
 +
-+/**
-+ * iio_device_register() - register a device with the IIO subsystem
-+ * @dev_info:		Device structure filled by the device driver
-+ **/
-+int iio_device_register(struct iio_dev *dev_info);
-+
-+/**
-+ * iio_device_unregister() - unregister a device from the IIO subsystem
-+ * @dev_info:		Device structure representing the device.
-+ **/
-+void iio_device_unregister(struct iio_dev *dev_info);
-+
-+/**
-+ * struct iio_interrupt - wrapper used to allow easy handling of multiple
-+ *			physical interrupt lines
-+ * @dev_info:		the iio device for which the is an interrupt line
-+ * @line_number:	associated line number
-+ * @id:			idr allocated unique id number
-+ * @irq:		associate interrupt number
-+ * @ev_list:		event handler list for associated events
-+ * @ev_list_lock:	ensure only one access to list at a time
-+ **/
-+struct iio_interrupt {
-+	struct iio_dev			*dev_info;
-+	int				line_number;
-+	int				id;
-+	int				irq;
-+	struct list_head		ev_list;
-+	spinlock_t			ev_list_lock;
-+};
-+
-+#define to_iio_interrupt(i) container_of(i, struct iio_interrupt, ev_list)
-+
-+/**
-+ * iio_register_interrupt_line() - Tell IIO about interrupt lines
-+ *
-+ * @irq:		Typically provided via platform data
-+ * @dev_info:		IIO device info structure for device
-+ * @line_number:	Which interrupt line of the device is this?
-+ * @type:		Interrupt type (e.g. edge triggered etc)
-+ * @name:		Identifying name.
-+ **/
-+int iio_register_interrupt_line(unsigned int			irq,
-+				struct iio_dev			*dev_info,
-+				int				line_number,
-+				unsigned long			type,
-+				const char			*name);
-+
-+void iio_unregister_interrupt_line(struct iio_dev *dev_info,
-+				   int line_number);
-+
-+
-+
-+/**
-+ * iio_push_event() - try to add event to the list for userspace reading
-+ * @dev_info:		IIO device structure
-+ * @ev_line:		Which event line (hardware interrupt)
-+ * @ev_code:		What event
-+ * @timestamp:		When the event occured
-+ **/
-+int iio_push_event(struct iio_dev *dev_info,
-+		  int ev_line,
-+		  int ev_code,
-+		  s64 timestamp);
-+
-+/**
-+ * struct iio_work_cont - container for when singleton handler case matters
-+ * @ws:			[DEVICE]work_struct when not only possible event
-+ * @ws_nocheck:		[DEVICE]work_struct when only possible event
-+ * @address:		[DEVICE]associated register address
-+ * @mask:		[DEVICE]associated mask for identifying event source
-+ * @st:			[DEVICE]device specific state information
-+ **/
-+struct iio_work_cont {
-+	struct work_struct	ws;
-+	struct work_struct	ws_nocheck;
-+	int			address;
-+	int			mask;
-+	void			*st;
-+};
-+
-+#define to_iio_work_cont_check(_ws)			\
-+	container_of(_ws, struct iio_work_cont, ws)
-+
-+#define to_iio_work_cont_no_check(_ws)				\
-+	container_of(_ws, struct iio_work_cont, ws_nocheck)
-+
-+/**
-+ * iio_init_work_cont() - intiialize the elements of a work container
-+ * @cont: the work container
-+ * @_checkfunc: function called when there are multiple possible int sources
-+ * @_nocheckfunc: function for when there is only one int source
-+ * @_add: driver dependant, typically a register address
-+ * @_mask: driver dependant, typically a bit mask for a register
-+ * @_st: driver dependant, typically pointer to a device state structure
-+ **/
-+static inline void
-+iio_init_work_cont(struct iio_work_cont *cont,
-+		   void (*_checkfunc)(struct work_struct *),
-+		   void (*_nocheckfunc)(struct work_struct *),
-+		   int _add, int _mask, void *_st)
++int iio_read_last_from_sw_rb(struct iio_ring_buffer *r,
++			     unsigned char *data)
 +{
-+	INIT_WORK(&(cont)->ws, _checkfunc);
-+	INIT_WORK(&(cont)->ws_nocheck, _nocheckfunc);
-+	cont->address = _add;
-+	cont->mask = _mask;
-+	cont->st = _st;
++	return iio_read_last_from_sw_ring(iio_to_sw_ring(r), data);
 +}
-+/**
-+ * __iio_push_event() tries to add an event to the list associated with a chrdev
-+ * @ev_int:		the event interface to which we are pushing the event
-+ * @ev_code:		the outgoing event code
-+ * @timestamp:		timestamp of the event
-+ * @shared_pointer_p:	the shared event pointer
-+ **/
-+int __iio_push_event(struct iio_event_interface *ev_int,
-+		    int ev_code,
-+		    s64 timestamp,
-+		    struct iio_shared_ev_pointer*
-+		    shared_pointer_p);
-+/**
-+ * __iio_change_event() change an event code in case of event escallation
-+ * @ev:			the evnet to be changed
-+ * @ev_code:		new event code
-+ * @timestamp:		new timestamp
-+ **/
-+void __iio_change_event(struct iio_detected_event_list *ev,
-+			int ev_code,
-+			s64 timestamp);
++EXPORT_SYMBOL(iio_read_last_from_sw_rb);
 +
-+/**
-+ * iio_setup_ev_int() Configure an event interface (chrdev)
-+ * @name:		name used for resulting sysfs directory etc.
-+ * @ev_int:		interface we are configuring
-+ * @owner:		module that is responsible for registering this ev_int
-+ * @dev:		device whose ev_int this is
-+ **/
-+int iio_setup_ev_int(struct iio_event_interface *ev_int,
-+		     const char *name,
-+		     struct module *owner,
-+		     struct device *dev);
-+
-+void iio_free_ev_int(struct iio_event_interface *ev_int);
-+
-+/**
-+ * iio_allocate_chrdev() - Allocate a chrdev
-+ * @handler:	struct that contains relevant file handling for chrdev
-+ * @dev_info:	iio_dev for which chrdev is being created
-+ **/
-+int iio_allocate_chrdev(struct iio_handler *handler, struct iio_dev *dev_info);
-+void iio_deallocate_chrdev(struct iio_handler *handler);
-+
-+/* Used to distinguish between bipolar and unipolar scan elemenents.
-+ * Whilst this may seem obvious, we may well want to change the representation
-+ * in the future!*/
-+#define IIO_SIGNED(a) -(a)
-+#define IIO_UNSIGNED(a) (a)
-+
-+extern dev_t iio_devt;
-+extern struct class iio_class;
-+
-+/**
-+ * iio_put_device() - reference counted deallocated of struct device
-+ * @dev: the iio_device containing the device
-+ **/
-+static inline void iio_put_device(struct iio_dev *dev)
++int iio_request_update_sw_rb(struct iio_ring_buffer *r)
 +{
-+	if (dev)
-+		put_device(&dev->dev);
-+};
++	int ret;
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
 +
-+/**
-+ * to_iio_dev() - get iio_dev for which we have have the struct device
-+ * @d: the struct device
-+ **/
-+static inline struct iio_dev *to_iio_dev(struct device *d)
-+{
-+	return container_of(d, struct iio_dev, dev);
-+};
++	spin_lock(&ring->use_lock);
++	if (ring->use_count || !ring->update_needed) {
++		ret = -EAGAIN;
++		goto error_ret;
++	}
++	__iio_free_sw_ring_buffer(ring);
++	ret = __iio_init_sw_ring_buffer(ring, ring->buf.bpd, ring->buf.length);
++error_ret:
++	spin_unlock(&ring->use_lock);
++	return ret;
++}
++EXPORT_SYMBOL(iio_request_update_sw_rb);
 +
-+/**
-+ * iio_dev_get_devdata() - helper function gets device specific data
-+ * @d: the iio_dev associated with the device
-+ **/
-+static inline void *iio_dev_get_devdata(struct iio_dev *d)
++int iio_get_bpd_sw_rb(struct iio_ring_buffer *r)
 +{
-+	return d->dev_data;
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	return ring->buf.bpd;
++}
++EXPORT_SYMBOL(iio_get_bpd_sw_rb);
++
++int iio_set_bpd_sw_rb(struct iio_ring_buffer *r, size_t bpd)
++{
++	if (r->bpd != bpd) {
++		r->bpd = bpd;
++		if (r->access.mark_param_change)
++			r->access.mark_param_change(r);
++	}
++	return 0;
++}
++EXPORT_SYMBOL(iio_set_bpd_sw_rb);
++
++int iio_get_length_sw_rb(struct iio_ring_buffer *r)
++{
++	return r->length;
++}
++EXPORT_SYMBOL(iio_get_length_sw_rb);
++
++int iio_set_length_sw_rb(struct iio_ring_buffer *r, int length)
++{
++	if (r->length != length) {
++		r->length = length;
++		if (r->access.mark_param_change)
++			r->access.mark_param_change(r);
++	}
++	return 0;
++}
++EXPORT_SYMBOL(iio_set_length_sw_rb);
++
++int iio_mark_update_needed_sw_rb(struct iio_ring_buffer *r)
++{
++	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	ring->update_needed = true;
++	return 0;
++}
++EXPORT_SYMBOL(iio_mark_update_needed_sw_rb);
++
++static void iio_sw_rb_release(struct device *dev)
++{
++	struct iio_ring_buffer *r = to_iio_ring_buffer(dev);
++	kfree(iio_to_sw_ring(r));
 +}
 +
-+/**
-+ * iio_allocate_device() - allocate an iio_dev from a driver
-+ **/
-+struct iio_dev *iio_allocate_device(void);
++static IIO_RING_ENABLE_ATTR;
++static IIO_RING_BPS_ATTR;
++static IIO_RING_LENGTH_ATTR;
 +
-+/**
-+ * iio_free_device() - free an iio_dev from a driver
-+ **/
-+void iio_free_device(struct iio_dev *dev);
-+
-+/**
-+ * iio_put() - internal module reference count reduce
-+ **/
-+void iio_put(void);
-+
-+/**
-+ * iio_get() - internal module reference count increase
-+ **/
-+void iio_get(void);
-+
-+/* Ring buffer related */
-+int iio_device_get_chrdev_minor(void);
-+void iio_device_free_chrdev_minor(int val);
-+
-+/**
-+ * iio_ring_enabled() helper function to test if any form of ring enabled
-+ **/
-+static inline bool iio_ring_enabled(struct iio_dev *dev_info)
-+{
-+	return dev_info->currentmode
-+		& (INDIO_RING_TRIGGERED
-+		   | INDIO_RING_HARDWARE_BUFFER);
++/* Standard set of ring buffer attributes */
++static struct attribute *iio_ring_attributes[] = {
++	&dev_attr_length.attr,
++	&dev_attr_bps.attr,
++	&dev_attr_ring_enable.attr,
++	NULL,
 +};
 +
-+struct idr;
++static struct attribute_group iio_ring_attribute_group = {
++	.attrs = iio_ring_attributes,
++};
 +
-+int iio_get_new_idr_val(struct idr *this_idr);
-+void iio_free_idr_val(struct idr *this_idr, int id);
-+#endif /* _INDUSTRIAL_IO_H_ */
-diff --git a/include/linux/iio/sysfs.h b/include/linux/iio/sysfs.h
++static struct attribute_group *iio_ring_attribute_groups[] = {
++	&iio_ring_attribute_group,
++	NULL
++};
++
++static struct device_type iio_sw_ring_type = {
++	.release = iio_sw_rb_release,
++	.groups = iio_ring_attribute_groups,
++};
++
++struct iio_ring_buffer *iio_sw_rb_allocate(struct iio_dev *indio_dev)
++{
++	struct iio_ring_buffer *buf;
++	struct iio_sw_ring_buffer *ring;
++
++	ring = kzalloc(sizeof *ring, GFP_KERNEL);
++	if (!ring)
++		return 0;
++	buf = &ring->buf;
++
++	iio_ring_buffer_init(buf, indio_dev);
++	buf->dev.type = &iio_sw_ring_type;
++	device_initialize(&buf->dev);
++	buf->dev.parent = &indio_dev->dev;
++	buf->dev.class = &iio_class;
++	dev_set_drvdata(&buf->dev, (void *)buf);
++
++	return buf;
++}
++EXPORT_SYMBOL(iio_sw_rb_allocate);
++
++void iio_sw_rb_free(struct iio_ring_buffer *r)
++{
++	if (r)
++		iio_put_ring_buffer(r);
++}
++EXPORT_SYMBOL(iio_sw_rb_free);
++MODULE_DESCRIPTION("Industrialio I/O software ring buffer");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/iio/ring_sw.h b/include/linux/iio/ring_sw.h
 new file mode 100644
-index 0000000..d003d36
+index 0000000..6365d5a
 --- /dev/null
-+++ b/include/linux/iio/sysfs.h
-@@ -0,0 +1,293 @@
-+/* The industrial I/O core
-+ *
-+ *Copyright (c) 2008 Jonathan Cameron
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * General attributes
-+ */
-+
-+#ifndef _INDUSTRIAL_IO_SYSFS_H_
-+#define _INDUSTRIAL_IO_SYSFS_H_
-+
-+#include <linux/iio/iio.h>
-+
-+/**
-+ * struct iio_event_attribute - event control attribute
-+ * @dev_attr:	underlying device attribute
-+ * @mask:	mask for the event when detecting
-+ * @listel:	list header to allow addition to list of event handlers
-+*/
-+struct iio_event_attr {
-+	struct device_attribute dev_attr;
-+	int mask;
-+	struct iio_event_handler_list *listel;
-+};
-+
-+#define to_iio_event_attr(_dev_attr) \
-+	container_of(_dev_attr, struct iio_event_attr, dev_attr)
-+
-+/**
-+ * struct iio_chrdev_minor_attr - simple attribute to allow reading of chrdev
-+ *				minor number
-+ * @dev_attr:	underlying device attribute
-+ * @minor:	the minor number
-+ */
-+struct iio_chrdev_minor_attr {
-+	struct device_attribute dev_attr;
-+	int minor;
-+};
-+
-+void
-+__init_iio_chrdev_minor_attr(struct iio_chrdev_minor_attr *minor_attr,
-+			   const char *name,
-+			   struct module *owner,
-+			   int id);
-+
-+
-+#define to_iio_chrdev_minor_attr(_dev_attr) \
-+	container_of(_dev_attr, struct iio_chrdev_minor_attr, dev_attr);
-+
-+/**
-+ * struct iio_dev_attr - iio specific device attribute
-+ * @dev_attr:	underlying device attribute
-+ * @address:	associated register address
-+ */
-+struct iio_dev_attr {
-+	struct device_attribute dev_attr;
-+	int address;
-+	int val2;
-+};
-+
-+#define to_iio_dev_attr(_dev_attr)				\
-+	container_of(_dev_attr, struct iio_dev_attr, dev_attr)
-+
-+ssize_t iio_read_const_attr(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *len);
-+
-+/**
-+ * struct iio_const_attr - constant device specific attribute
-+ *                         often used for things like available modes
-+ */
-+struct iio_const_attr {
-+	const char *string;
-+	struct device_attribute dev_attr;
-+};
-+
-+#define to_iio_const_attr(_dev_attr) \
-+	container_of(_dev_attr, struct iio_const_attr, dev_attr)
-+
-+/* Some attributes will be hard coded (device dependant) and not require an
-+   address, in these cases pass a negative */
-+#define IIO_ATTR(_name, _mode, _show, _store, _addr)		\
-+	{ .dev_attr = __ATTR(_name, _mode, _show, _store),	\
-+	  .address = _addr }
-+
-+#define IIO_ATTR_2(_name, _mode, _show, _store, _addr, _val2)	\
-+	{ .dev_attr = __ATTR(_name, _mode, _show, _store),	\
-+			.address = _addr,			\
-+			.val2 = _val2 }
-+
-+#define IIO_DEVICE_ATTR(_name, _mode, _show, _store, _addr)	\
-+	struct iio_dev_attr iio_dev_attr_##_name		\
-+	= IIO_ATTR(_name, _mode, _show, _store, _addr)
-+
-+
-+#define IIO_DEVICE_ATTR_2(_name, _mode, _show, _store, _addr, _val2)	\
-+	struct iio_dev_attr iio_dev_attr_##_name			\
-+	= IIO_ATTR_2(_name, _mode, _show, _store, _addr, _val2)
-+
-+#define IIO_CONST_ATTR(_name, _string)					\
-+	struct iio_const_attr iio_const_attr_##_name			\
-+	= { .string = _string,						\
-+	    .dev_attr = __ATTR(_name, S_IRUGO, iio_read_const_attr, NULL)}
-+
-+/* Generic attributes of onetype or another */
-+
-+/**
-+ * IIO_DEV_ATTR_REG: revision number for the device
-+ *
-+ * Very much device dependent.
-+ **/
-+#define IIO_DEV_ATTR_REV(_show)			\
-+	IIO_DEVICE_ATTR(revision, S_IRUGO, _show, NULL, 0)
-+/**
-+ * IIO_DEV_ATTR_NAME: chip type dependant identifier
-+ **/
-+#define IIO_DEV_ATTR_NAME(_show)				\
-+	IIO_DEVICE_ATTR(name, S_IRUGO, _show, NULL, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_SAMP_FREQ: sets any internal clock frequency
-+ **/
-+#define IIO_DEV_ATTR_SAMP_FREQ(_mode, _show, _store)			\
-+	IIO_DEVICE_ATTR(sampling_frequency, _mode, _show, _store, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_AVAIL_SAMP_FREQ: list available sampling frequencies.
-+ *
-+ * May be mode dependant on some devices
-+ **/
-+#define IIO_DEV_ATTR_AVAIL_SAMP_FREQ(_show)				\
-+	IIO_DEVICE_ATTR(available_sampling_frequency, S_IRUGO, _show, NULL, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_CONST_AVAIL_SAMP_FREQ: list available sampling frequencies.
-+ *
-+ * Constant version
-+ **/
-+#define IIO_CONST_ATTR_AVAIL_SAMP_FREQ(_string)	\
-+	IIO_CONST_ATTR(available_sampling_frequency, _string)
-+/**
-+ * IIO_DEV_ATTR_SCAN_MODE: select a scan mode
-+ *
-+ * This is used when only certain combinations of inputs may be read in one
-+ * scan.
-+ **/
-+#define IIO_DEV_ATTR_SCAN_MODE(_mode, _show, _store)		\
-+	IIO_DEVICE_ATTR(scan_mode, _mode, _show, _store, 0)
-+/**
-+ * IIO_DEV_ATTR_AVAIL_SCAN_MODES: list available scan modes
-+ **/
-+#define IIO_DEV_ATTR_AVAIL_SCAN_MODES(_show)				\
-+	IIO_DEVICE_ATTR(available_scan_modes, S_IRUGO, _show, NULL, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_SCAN: result of scan of multiple channels
-+ **/
-+#define IIO_DEV_ATTR_SCAN(_show)		\
-+	IIO_DEVICE_ATTR(scan, S_IRUGO, _show, NULL, 0);
-+
-+/**
-+ * IIO_DEV_ATTR_INPUT: direct read of a single input channel
-+ **/
-+#define IIO_DEV_ATTR_INPUT(_number, _show)				\
-+	IIO_DEVICE_ATTR(in##_number, S_IRUGO, _show, NULL, _number)
-+
-+
-+/**
-+ * IIO_DEV_ATTR_SW_RING_ENABLE: enable software ring buffer
-+ *
-+ * Success may be dependant on attachment of trigger previously
-+ **/
-+#define IIO_DEV_ATTR_SW_RING_ENABLE(_show, _store)			\
-+	IIO_DEVICE_ATTR(sw_ring_enable, S_IRUGO | S_IWUSR, _show, _store, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_HW_RING_ENABLE: enable hardware ring buffer
-+ *
-+ * This is a different attribute from the software one as one can invision
-+ * schemes where a combination of the two may be used.
-+ **/
-+#define IIO_DEV_ATTR_HW_RING_ENABLE(_show, _store)			\
-+	IIO_DEVICE_ATTR(hw_ring_enable, S_IRUGO | S_IWUSR, _show, _store, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_BPSE: set number of bits per scan element
-+ **/
-+#define IIO_DEV_ATTR_BPSE(_mode, _show, _store)		\
-+	IIO_DEVICE_ATTR(bpse, _mode, _show, _store, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_BPSE_AVAILABLE: no of bits per scan element supported
-+ **/
-+#define IIO_DEV_ATTR_BPSE_AVAILABLE(_show)				\
-+	IIO_DEVICE_ATTR(bpse_available, S_IRUGO, _show, NULL, 0)
-+
-+/**
-+ * IIO_DEV_ATTR_TEMP: many sensors have auxiliary temperature sensors
-+ **/
-+#define IIO_DEV_ATTR_TEMP(_show)			\
-+	IIO_DEVICE_ATTR(temp, S_IRUGO, _show, NULL, 0)
-+/**
-+ * IIO_EVENT_SH: generic shared event handler
-+ *
-+ * This is used in cases where more than one event may result from a single
-+ * handler.  Often the case that some alarm register must be read and multiple
-+ * alarms may have been triggered.
-+ **/
-+#define IIO_EVENT_SH(_name, _handler)					\
-+	static struct iio_event_handler_list				\
-+	iio_event_##_name = {						\
-+		.handler = _handler,					\
-+		.refcount = 0,						\
-+		.exist_lock = __MUTEX_INITIALIZER(iio_event_##_name	\
-+						  .exist_lock),		\
-+		.list = {						\
-+			.next = &iio_event_##_name.list,		\
-+			.prev = &iio_event_##_name.list,		\
-+		},							\
-+	};
-+/**
-+ * IIO_EVENT_ATTR_SH: generic shared event attribute
-+ *
-+ * An attribute with an associated IIO_EVENT_SH
-+ **/
-+#define IIO_EVENT_ATTR_SH(_name, _ev_list, _show, _store, _mask)	\
-+	static struct iio_event_attr					\
-+	iio_event_attr_##_name						\
-+	= { .dev_attr = __ATTR(_name, S_IRUGO | S_IWUSR,		\
-+			       _show, _store),				\
-+	    .mask = _mask,						\
-+	    .listel = &_ev_list };
-+
-+/**
-+ * IIO_EVENT_ATTR: non shared event attribute
-+ **/
-+#define IIO_EVENT_ATTR(_name, _show, _store, _mask, _handler)		\
-+	static struct iio_event_handler_list				\
-+	iio_event_##_name = {						\
-+		.handler = _handler,					\
-+	};								\
-+	static struct							\
-+	iio_event_attr							\
-+	iio_event_attr_##_name						\
-+	= { .dev_attr = __ATTR(_name, S_IRUGO | S_IWUSR,		\
-+			       _show, _store),				\
-+	    .mask = _mask,						\
-+	    .listel = &iio_event_##_name };				\
-+
-+/**
-+ * IIO_EVENT_ATTR_DATA_RDY: event driven by data ready signal
-+ *
-+ * Not typically implemented in devices where full triggering support
-+ * has been implemented
-+ **/
-+#define IIO_EVENT_ATTR_DATA_RDY(_show, _store, _mask, _handler) \
-+	IIO_EVENT_ATTR(data_rdy, _show, _store, _mask, _handler)
-+
-+#define IIO_EVENT_CODE_DATA_RDY		100
-+#define IIO_EVENT_CODE_RING_BASE	200
-+#define IIO_EVENT_CODE_ACCEL_BASE	300
-+#define IIO_EVENT_CODE_GYRO_BASE	400
-+#define IIO_EVENT_CODE_ADC_BASE		500
-+#define IIO_EVENT_CODE_MISC_BASE	600
-+
-+#define IIO_EVENT_CODE_DEVICE_SPECIFIC	1000
-+
-+/**
-+ * IIO_EVENT_ATTR_RING_50_FULL: ring buffer event to indicate 50% full
-+ **/
-+#define IIO_EVENT_ATTR_RING_50_FULL(_show, _store, _mask, _handler)	\
-+	IIO_EVENT_ATTR(ring_50_full, _show, _store, _mask, _handler)
-+
-+/**
-+ * IIO_EVENT_ATTR_RING_50_FULL_SH: shared ring event to indicate 50% full
-+ **/
-+#define IIO_EVENT_ATTR_RING_50_FULL_SH(_evlist, _show, _store, _mask)	\
-+	IIO_EVENT_ATTR_SH(ring_50_full, _evlist, _show, _store, _mask)
-+
-+/**
-+ * IIO_EVENT_ATTR_RING_75_FULL_SH: shared ring event to indicate 75% full
-+ **/
-+#define IIO_EVENT_ATTR_RING_75_FULL_SH(_evlist, _show, _store, _mask)	\
-+	IIO_EVENT_ATTR_SH(ring_75_full, _evlist, _show, _store, _mask)
-+
-+#define IIO_EVENT_CODE_RING_50_FULL	IIO_EVENT_CODE_RING_BASE
-+#define IIO_EVENT_CODE_RING_75_FULL	(IIO_EVENT_CODE_RING_BASE + 1)
-+#define IIO_EVENT_CODE_RING_100_FULL	(IIO_EVENT_CODE_RING_BASE + 2)
-+
-+#endif /* _INDUSTRIAL_IO_SYSFS_H_ */
-diff --git a/include/linux/iio/trigger_consumer.h b/include/linux/iio/trigger_consumer.h
-new file mode 100644
-index 0000000..a605389
---- /dev/null
-+++ b/include/linux/iio/trigger_consumer.h
-@@ -0,0 +1,26 @@
-+
-+/* The industrial I/O core, trigger consumer handling functions
++++ b/include/linux/iio/ring_sw.h
+@@ -0,0 +1,189 @@
++/* The industrial I/O simple minimally locked ring buffer.
 + *
 + * Copyright (c) 2008 Jonathan Cameron
 + *
 + * This program is free software; you can redistribute it and/or modify it
 + * under the terms of the GNU General Public License version 2 as published by
 + * the Free Software Foundation.
++ *
++ * This code is deliberately kept separate from the main industrialio I/O core
++ * as it is intended that in the future a number of different software ring
++ * buffer implementations will exist with different characteristics to suit
++ * different applications.
++ *
++ * This particular one was designed for a data capture application where it was
++ * particularly important that no userspace reads would interrupt the capture
++ * process. To this end the ring is not locked during a read.
++ *
++ * Comments on this buffer design welcomed. It's far from efficient and some of
++ * my understanding of the effects of scheduling on this are somewhat limited.
++ * Frankly, to my mind, this is the current weak point in the industrial I/O
++ * patch set.
 + */
 +
++#ifndef _IIO_RING_SW_H_
++#define _IIO_RING_SW_H_
++/* NEEDS COMMENTS */
++/* The intention is that this should be a separate module from the iio core.
++ * This is a bit like supporting algorithms dependent on what the device
++ * driver requests - some may support multiple options */
++
++
++#include <linux/autoconf.h>
++#include <linux/iio/iio.h>
++#include <linux/iio/ring_generic.h>
++
++#if defined CONFIG_IIO_SW_RING || defined CONFIG_IIO_SW_RING_MODULE
++
 +/**
-+ * iio_device_register_trigger_consumer() - set up an iio_dev to use triggers.
-+ * @dev_info: iio_dev associated with the device that will consume the trigger
++ * iio_create_sw_rb() software ring buffer allocation
++ * @r:		pointer to ring buffer pointer
 + **/
-+int iio_device_register_trigger_consumer(struct iio_dev *dev_info)
-+{
-+	return 0;
-+};
++int iio_create_sw_rb(struct iio_ring_buffer **r);
++
 +/**
-+ * iio_device_unregister_trigger_consumer() - reverse the registration process
-+. * @dev_info: iio_dev associated with the device that consumed the trigger
++ * iio_init_sw_rb() initialize the software ring buffer
++ * @r:		pointer to a software ring buffer created by an
++ *		iio_create_sw_rb call.
 + **/
-+int iio_device_unregister_trigger_consumer(struct iio_dev *dev_info)
++int iio_init_sw_rb(struct iio_ring_buffer *r, struct iio_dev *indio_dev);
++/**
++ * iio_exit_sw_rb() reverse what was done in iio_init_sw_rb
++ **/
++void iio_exit_sw_rb(struct iio_ring_buffer *r);
++
++/**
++ * iio_free_sw_rb() free memory occupied by the core ring buffer struct
++ **/
++void iio_free_sw_rb(struct iio_ring_buffer *r);
++
++/**
++ * iio_mark_sw_rb_in_use() reference counting to prevent incorrect chances
++ **/
++void iio_mark_sw_rb_in_use(struct iio_ring_buffer *r);
++
++/**
++ *  iio_unmark_sw_rb_in_use() notify the ring buffer that we don't care anymore
++ **/
++void iio_unmark_sw_rb_in_use(struct iio_ring_buffer *r);
++
++/**
++ * iio_read_last_from_sw_rb() attempt to read the last stored datum from the rb
++ **/
++int iio_read_last_from_sw_rb(struct iio_ring_buffer *r, u8 *data);
++
++/**
++ * iio_store_to_sw_rb() store a new datum to the ring buffer
++ * @rb:	pointer to ring buffer instance
++ * @data:	the datum to be stored including timestamp if relevant.
++ * @timestamp:	timestamp which will be attached to buffer events if relevant.
++ **/
++int iio_store_to_sw_rb(struct iio_ring_buffer *r, u8 *data, s64 timestamp);
++
++/**
++ * iio_rip_sw_rb() attempt to read data from the ring buffer
++ * @r:			ring buffer instance
++ * @count:		number of datum's to try and read
++ * @data:		where the data will be stored.
++ * @dead_offset:	how much of the stored data was possibly invalidated by
++ *			the end of the copy.
++ **/
++int iio_rip_sw_rb(struct iio_ring_buffer *r,
++		  size_t count,
++		  u8 **data,
++		  int *dead_offset);
++
++/**
++ * iio_request_update_sw_rb() update params if update needed
++ **/
++int iio_request_update_sw_rb(struct iio_ring_buffer *r);
++
++/**
++ * iio_mark_update_needed_sw_rb() tell the ring buffer it needs a param update
++ **/
++int iio_mark_update_needed_sw_rb(struct iio_ring_buffer *r);
++
++
++/**
++ * iio_get_bpd_sw_rb() get the datum size in bytes
++ **/
++int iio_get_bpd_sw_rb(struct iio_ring_buffer *r);
++
++/**
++ * iio_set_bpd_sw_rb() set the datum size in bytes
++ **/
++int iio_set_bpd_sw_rb(struct iio_ring_buffer *r, size_t bpd);
++
++/**
++ * iio_get_length_sw_rb() get how many datums the rb may contain
++ **/
++int iio_get_length_sw_rb(struct iio_ring_buffer *r);
++
++/**
++ * iio_set_length_sw_rb() set how many datums the rb may contain
++ **/
++int iio_set_length_sw_rb(struct iio_ring_buffer *r, int length);
++
++/**
++ * iio_ring_sw_register_funcs() helper function to set up rb access
++ **/
++static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
 +{
-+	return 0;
++	ra->mark_in_use = &iio_mark_sw_rb_in_use;
++	ra->unmark_in_use = &iio_unmark_sw_rb_in_use;
++
++	ra->store_to = &iio_store_to_sw_rb;
++	ra->read_last = &iio_read_last_from_sw_rb;
++	ra->rip_lots = &iio_rip_sw_rb;
++
++	ra->mark_param_change = &iio_mark_update_needed_sw_rb;
++	ra->request_update = &iio_request_update_sw_rb;
++
++	ra->get_bpd = &iio_get_bpd_sw_rb;
++	ra->set_bpd = &iio_set_bpd_sw_rb;
++
++	ra->get_length = &iio_get_length_sw_rb;
++	ra->set_length = &iio_set_length_sw_rb;
 +};
++
++/**
++ * struct iio_sw_ring_buffer - software ring buffer
++ * @buf:		generic ring buffer elements
++ * @data:		the ring buffer memory
++ * @read_p:		read pointer (oldest available)
++ * @write_p:		write pointer
++ * @last_written_p:	read pointer (newest available)
++ * @half_p:		half buffer length behind write_p (event generation)
++ * @use_count:		reference count to prevent resizing when in use
++ * @update_needed:	flag to indicated change in size requested
++ * @use_lock:		lock to prevent change in size when in use
++ *
++ * Note that the first element of all ring buffers must be a
++ * struct iio_ring_buffer.
++**/
++
++struct iio_sw_ring_buffer {
++	struct iio_ring_buffer  buf;
++	unsigned char		*data;
++	unsigned char		*read_p;
++	unsigned char		*write_p;
++	unsigned char		*last_written_p;
++	/* used to act as a point at which to signal an event */
++	unsigned char		*half_p;
++	int			use_count;
++	int			update_needed;
++	spinlock_t		use_lock;
++};
++
++#define iio_to_sw_ring(r) container_of(r, struct iio_sw_ring_buffer, buf)
++
++struct iio_ring_buffer *iio_sw_rb_allocate(struct iio_dev *indio_dev);
++void iio_sw_rb_free(struct iio_ring_buffer *ring);
++
++
++
++#else /* CONFIG_IIO_RING_BUFFER*/
++static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
++{};
++#endif /* !CONFIG_IIO_RING_BUFFER */
++#endif /* _IIO_RING_SW_H_ */
 -- 
 1.6.2
 
