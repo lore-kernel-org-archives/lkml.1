@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZGBNv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbZGBNw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756567AbZGBNv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZGBNuh
+	id S1756741AbZGBNw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755033AbZGBNvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:50:37 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:42994 "EHLO
+	Thu, 2 Jul 2009 09:51:16 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:43386 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756027AbZGBNue (ORCPT
+	with ESMTP id S1756167AbZGBNvN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 09:50:34 -0400
+	Thu, 2 Jul 2009 09:51:13 -0400
 X-Cam-AntiVirus: no malware found
 X-Cam-SpamDetails: not scanned
 X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
@@ -18,11 +18,11 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 12/14] IIO: Periodic timer based trigger
-Date: Thu,  2 Jul 2009 13:47:42 +0000
-Message-Id: <1246542464-6974-13-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 14/14] IIO: Initial documentation
+Date: Thu,  2 Jul 2009 13:47:44 +0000
+Message-Id: <1246542464-6974-15-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-14-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
@@ -35,93 +35,264 @@ References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-11-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-13-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-14-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-The original posting of this driver led to a discussion in
-which it was commented that a better system was needed
-for dealing with the many possible periodic interrupt
-sources available on some SoCs.  Unfortunately that is
-a big task and as far as I know, no-one has taken it
-on as yet.  So in the meantime this driver is still
-in here.
+This needs considerably more work, all comments / suggestions
+welcomed.
 ---
- drivers/iio/Kconfig                         |    2 +
- drivers/iio/Makefile                        |    4 +-
- drivers/iio/trigger/Kconfig                 |   12 ++
- drivers/iio/trigger/Makefile                |    5 +
- drivers/iio/trigger/iio-trig-periodic-rtc.c |  230 +++++++++++++++++++++++++++
- include/linux/iio/prtc_trigger.h            |    7 +
- 6 files changed, 259 insertions(+), 1 deletions(-)
- create mode 100644 drivers/iio/trigger/Kconfig
- create mode 100644 drivers/iio/trigger/Makefile
- create mode 100644 drivers/iio/trigger/iio-trig-periodic-rtc.c
- create mode 100644 include/linux/iio/prtc_trigger.h
+ Documentation/iio/device.txt              |   49 ++++++++
+ Documentation/iio/iio_utils.h             |  163 +++++++++++++++++++++++++++
+ Documentation/iio/lis3l02dqbuffersimple.c |  172 +++++++++++++++++++++++++++++
+ Documentation/iio/overview.txt            |   62 ++++++++++
+ Documentation/iio/ring.txt                |   62 ++++++++++
+ Documentation/iio/trigger.txt             |   38 +++++++
+ Documentation/iio/userspace.txt           |   60 ++++++++++
+ 7 files changed, 606 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/iio/device.txt
+ create mode 100644 Documentation/iio/iio_utils.h
+ create mode 100644 Documentation/iio/lis3l02dqbuffersimple.c
+ create mode 100644 Documentation/iio/overview.txt
+ create mode 100644 Documentation/iio/ring.txt
+ create mode 100644 Documentation/iio/trigger.txt
+ create mode 100644 Documentation/iio/userspace.txt
 
-diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
-index 936f954..3586984 100644
---- a/drivers/iio/Kconfig
-+++ b/drivers/iio/Kconfig
-@@ -38,3 +38,5 @@ config IIO_TRIGGER
- source drivers/iio/accel/Kconfig
- source drivers/iio/adc/Kconfig
- source drivers/iio/light/Kconfig
-+
-+source drivers/iio/trigger/Kconfig
-\ No newline at end of file
-diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
-index dea4536..7ec0218 100644
---- a/drivers/iio/Makefile
-+++ b/drivers/iio/Makefile
-@@ -11,4 +11,6 @@ obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
- 
- obj-y += accel/
- obj-y += adc/
--obj-y += light/
-\ No newline at end of file
-+obj-y += light/
-+
-+obj-y += trigger/
-\ No newline at end of file
-diff --git a/drivers/iio/trigger/Kconfig b/drivers/iio/trigger/Kconfig
+diff --git a/Documentation/iio/device.txt b/Documentation/iio/device.txt
 new file mode 100644
-index 0000000..0c73ccc
+index 0000000..6916cd3
 --- /dev/null
-+++ b/drivers/iio/trigger/Kconfig
-@@ -0,0 +1,12 @@
-+#
-+# Industrial I/O standalone triggers
-+#
-+comment "Triggers - standalone"
-+	depends on IIO
++++ b/Documentation/iio/device.txt
+@@ -0,0 +1,49 @@
++IIO Device drivers
 +
-+config IIO_PERIODIC_RTC_TRIGGER
-+	tristate "Periodic RTC triggers"
-+	depends on IIO && IIO_TRIGGER && RTC_CLASS
-+	help
-+	    Provides support for using periodic capable real time
-+	    clocks as IIO triggers.
-diff --git a/drivers/iio/trigger/Makefile b/drivers/iio/trigger/Makefile
-new file mode 100644
-index 0000000..4ae55b9
---- /dev/null
-+++ b/drivers/iio/trigger/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for triggers not associated with iio-devices
-+#
-+obj-$(CONFIG_IIO_PERIODIC_RTC_TRIGGER) += iio-trig-periodic-rtc.o
++This is not intended to provide a comprehensive guide to writing an
++IIO device driver.  For further information see the drivers within the
++subsystem.
 +
-diff --git a/drivers/iio/trigger/iio-trig-periodic-rtc.c b/drivers/iio/trigger/iio-trig-periodic-rtc.c
++The crucial structure for device drivers in iio is iio_dev.
++
++First allocate one using:
++
++struct iio_dev *indio_dev = iio_allocate_device();
++
++The fill in the following.
++
++indio_dev->dev.parent
++  the struct device associated with the underlying hardware.
++
++indio_dev->num_interrupt_lines
++   number of event triggering hardware lines the device has.
++
++indio_dev->event_attrs
++   attributes used to enable / disable hardware events - note the
++   attributes are embedded in iio_event_attr structures with an
++   associated iio_event_handler which may or may note be shared.
++   If num_interrupt_lines = 0, then no need to fill this in.
++
++indio_dev->attrs
++   general attributes such as polled access to device channels.
++
++indio_dev->dev_data
++   private device specific data.
++
++indio_dev->driver_module
++   typically set to THIS_MODULE. Used to specify ownership of some
++   iio created resources.
++
++indio_dev->modes
++   whether direct access and / or ring buffer access is supported.
++
++Once these are set up, a call to iio_device_register(indio_dev),
++will register the device with the iio core.
++
++Worth noting here is that, if a ring buffer is to be used, it can be
++allocated prior to registering the device with the iio-core, but must
++be registered afterwards (otherwise the whole parentage of devices
++gets confused)
++
++On remove iio_device_unregister(indio_dev) will remove the device from
++the core, and iio_free_device will clean up.
+diff --git a/Documentation/iio/iio_utils.h b/Documentation/iio/iio_utils.h
 new file mode 100644
-index 0000000..feac4f3
+index 0000000..2801f86
 --- /dev/null
-+++ b/drivers/iio/trigger/iio-trig-periodic-rtc.c
-@@ -0,0 +1,230 @@
-+/* The industrial I/O periodic RTC trigger driver
++++ b/Documentation/iio/iio_utils.h
+@@ -0,0 +1,163 @@
++/* IIO - useful set of util functionality
++ *
++ * Copyright (c) 2008 Jonathan Cameron
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#define IIO_EVENT_CODE_RING_50_FULL 200
++#define IIO_EVENT_CODE_RING_75_FULL 201
++#define IIO_EVENT_CODE_RING_100_FULL 202
++
++struct iio_event_data {
++	int id;
++	__s64 timestamp;
++};
++
++
++inline char *find_ring_subelement(const char *directory, const char *subelement)
++{
++	DIR *dp;
++	const struct dirent *ent;
++	int pos;
++	char temp[100];
++	char *returnstring;
++	dp = opendir(directory);
++	if (dp ==NULL) {
++		printf("could not directory: %s\n", directory);
++		return NULL;
++	}
++	while (ent = readdir(dp), ent != NULL) {
++		if (strcmp(ent->d_name,".") != 0 &&
++		    strcmp(ent->d_name,"..") != 0)  {
++			if (strncmp(ent->d_name, subelement, strlen(subelement)) == 0) {
++				int length = sprintf(temp,"%s%s%s", directory, ent->d_name, "/");
++				returnstring = malloc(length+1);
++				strncpy(returnstring, temp, length+1);
++				return returnstring;
++
++			}
++		}
++	}
++	return 0;
++}
++
++
++char *find_type_by_name(const char *name, const char *type)
++{
++	const char *iio_dir = "/sys/class/iio/";
++	const struct dirent *ent;
++	int cnt, pos, pos2;
++
++	FILE *nameFile;
++	DIR *dp;
++	char thisname[100];
++	char temp[100];
++
++	char *returnstring = NULL;
++	struct stat Stat;
++	pos = sprintf(temp,"%s", iio_dir);
++	dp = opendir(iio_dir);
++	if(dp == NULL) {
++		printf("No industrialio devices available");
++		return NULL;
++	}
++	while (ent = readdir(dp), ent != NULL) {
++		cnt++;
++		/*reject . and .. */
++		if (strcmp(ent->d_name,".") != 0 &&
++		    strcmp(ent->d_name,"..") != 0)  {
++			/*make sure it isn't a trigger!*/
++			if(strncmp(ent->d_name,type,strlen(type)) == 0) {
++				/* build full path to new file */
++				pos2 = pos + sprintf(temp+pos,"%s/", ent->d_name);
++				sprintf(temp+pos2, "name");
++				printf("search location %s\n", temp);
++				nameFile = fopen(temp, "r");
++				if (!nameFile) {
++					sprintf(temp + pos2,"modalias", ent->d_name);
++					nameFile = fopen(temp, "r");
++					if(!nameFile) {
++						printf("Failed to find a name for device\n");
++						return NULL;
++					}
++				}
++				fscanf(nameFile, "%s", thisname);
++				if (strcmp(name, thisname) ==0) {
++					returnstring = malloc(strlen(temp) + 1);
++					sprintf(temp + pos2,"");
++					strcpy(returnstring, temp);
++					return returnstring;
++				}
++				fclose(nameFile);
++
++			}
++		}
++	}
++}
++
++int write_sysfs_int(char *filename, char *basedir, int val)
++{
++	int ret;
++	FILE  *sysfsfp;
++	char temp[100];
++	sprintf(temp, "%s%s", basedir, filename);
++	sysfsfp = fopen(temp, "w");
++	if (sysfsfp == NULL) {
++		return -1;
++	}
++	fprintf(sysfsfp, "%d", val);
++	fclose(sysfsfp);
++	return 0;
++}
++
++/**
++ * write_sysfs_string_and_verify() - string write, readback and verify
++ * @filename: name of file to write to
++ * @basedir: the sysfs directory in which the file is to be found
++ * @val: the string to write
++ **/
++int write_sysfs_string_and_verify(char *filename, char *basedir, char *val)
++{
++	int ret;
++	FILE  *sysfsfp;
++	char temp[100];
++	sprintf(temp, "%s%s", basedir, filename);
++	sysfsfp = fopen(temp, "w");
++	if (sysfsfp == NULL) {
++		return -1;
++	}
++	fprintf(sysfsfp, "%s", val);
++	fclose(sysfsfp);
++
++	sysfsfp = fopen(temp, "r");
++	if (sysfsfp == NULL) {
++	  return -1;
++	}
++	fscanf(sysfsfp, "%s", temp);
++	if (strcmp(temp, val) != 0) {
++		printf("Possible failure in string write %s to %s%s \n",
++		       val,
++		       basedir,
++		       filename);
++		return -1;
++	}
++	return 0;
++}
++
++int read_sysfs_posint(char *filename, char *basedir)
++{
++	int ret;
++	FILE  *sysfsfp;
++	char temp[100];
++	sprintf(temp, "%s%s", basedir, filename);
++	sysfsfp = fopen(temp, "r");
++	if (sysfsfp == NULL) {
++		return -1;
++	}
++	fscanf(sysfsfp, "%d\n", &ret);
++	fclose(sysfsfp);
++	return ret;
++}
+diff --git a/Documentation/iio/lis3l02dqbuffersimple.c b/Documentation/iio/lis3l02dqbuffersimple.c
+new file mode 100644
+index 0000000..4f129dd
+--- /dev/null
++++ b/Documentation/iio/lis3l02dqbuffersimple.c
+@@ -0,0 +1,172 @@
++/* Industrialio test ring buffer with a lis3l02dq acceleromter
 + *
 + * Copyright (c) 2008 Jonathan Cameron
 + *
@@ -129,241 +300,416 @@ index 0000000..feac4f3
 + * under the terms of the GNU General Public License version 2 as published by
 + * the Free Software Foundation.
 + *
-+ * This is a heavily rewritten version of the periodic timer system in
-+ * earlier version of industrialio.  It supplies the same functionality
-+ * but via a trigger rather than a specific periodic timer system.
++ * Assumes suitable udev rules are used to create the dev nodes as named here.
 + */
 +
-+#include <linux/platform_device.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/rtc.h>
-+#include <linux/iio/iio.h>
-+#include <linux/iio/trigger.h>
-+#include <linux/iio/prtc_trigger.h>
++#include <dirent.h>
++#include <fcntl.h>
++#include <stdio.h>
++#include <errno.h>
++#include <stdint.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <sys/dir.h>
 +
-+LIST_HEAD(iio_prtc_trigger_list);
-+DEFINE_MUTEX(iio_prtc_trigger_list_lock);
++#include <linux/types.h>
++#include <dirent.h>
++#include "iio_util.h"
 +
-+struct iio_prtc_trigger_info {
-+	struct rtc_device *rtc;
-+	int frequency;
-+	char *name;
-+	struct rtc_task task;
-+};
++static const char *ring_access = "/dev/iio/lis3l02dq_ring_access";
++static const char *ring_event = "/dev/iio/lis3l02dq_ring_event";
++static const char *device_name = "lis3l02dq";
++static const char *trigger_name = "lis3l02dq-dev0";
++static int NumVals = 3;
++static int scan_ts = 1;
++static int RingLength = 128;
 +
-+static int iio_trig_periodic_rtc_set_state(struct iio_trigger *trig, bool state)
++/*
++ * Could get this from ring bps, but only after starting the ring
++ * which is a bit late for it to be useful
++ */
++int size_from_scanmode(int numVals, int timestamp)
 +{
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	if (trig_info->frequency == 0)
-+		return -EINVAL;
-+	printk(KERN_INFO "trigger frequency is %d\n", trig_info->frequency);
-+	return rtc_irq_set_state(trig_info->rtc, &trig_info->task, state);
++	if (numVals && timestamp)
++		return 16;
++	else if (timestamp)
++		return 8;
++	else
++		return numVals*2;
 +}
 +
-+static ssize_t iio_trig_periodic_read_freq(struct device *dev,
-+					   struct device_attribute *attr,
-+					   char *buf)
++int main(int argc, char **argv)
 +{
-+	struct iio_trigger *trig = dev_get_drvdata(dev);
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	return sprintf(buf, "%u\n", trig_info->frequency);
-+}
++	int i, j, k, toread;
++	FILE *fp_ev;
++	int fp;
++	char *data;
++	size_t read_size;
++	struct iio_event_data dat;
 +
-+static ssize_t iio_trig_periodic_write_freq(struct device *dev,
-+					    struct device_attribute *attr,
-+					    const char *buf,
-+					    size_t len)
-+{
-+	struct iio_trigger *trig = dev_get_drvdata(dev);
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	unsigned long val;
-+	int ret;
++	char	*BaseDirectoryName,
++		*TriggerDirectoryName,
++		*RingBufferDirectoryName;
 +
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret)
-+		goto error_ret;
-+
-+	ret = rtc_irq_set_freq(trig_info->rtc, &trig_info->task, val);
-+	if (ret)
-+		goto error_ret;
-+
-+	trig_info->frequency = val;
-+
-+	return len;
-+
-+error_ret:
-+	return ret;
-+}
-+
-+static ssize_t iio_trig_periodic_read_name(struct device *dev,
-+					   struct device_attribute *attr,
-+					   char *buf)
-+{
-+	struct iio_trigger *trig = dev_get_drvdata(dev);
-+	struct iio_prtc_trigger_info *trig_info = trig->private_data;
-+	return sprintf(buf, "%s\n", trig_info->name);
-+}
-+
-+DEVICE_ATTR(name, S_IRUGO,
-+	    iio_trig_periodic_read_name,
-+	    NULL);
-+DEVICE_ATTR(frequency, S_IRUGO | S_IWUSR,
-+	    iio_trig_periodic_read_freq,
-+	    iio_trig_periodic_write_freq);
-+
-+static struct attribute *iio_trig_prtc_attrs[] = {
-+	&dev_attr_frequency.attr,
-+	&dev_attr_name.attr,
-+	NULL,
-+};
-+static const struct attribute_group iio_trig_prtc_attr_group = {
-+	.attrs = iio_trig_prtc_attrs,
-+};
-+
-+static void iio_prtc_trigger_poll(void *private_data)
-+{
-+	iio_trigger_poll(private_data);
-+}
-+
-+
-+
-+static int iio_trig_periodic_rtc_probe(struct platform_device *dev)
-+{
-+	struct iio_prtc_trigger_group *pdata = dev->dev.platform_data;
-+	struct iio_prtc_trigger_info *trig_info;
-+	struct iio_trigger *trig, *trig2;
-+
-+	int i, ret;
-+	for (i = 0; i < pdata->num_triggers; i++) {
-+		trig = iio_allocate_trigger();
-+		if (!trig) {
-+			ret = -ENOMEM;
-+			goto error_free_completed_registrations;
-+		}
-+		list_add(&trig->alloc_list, &iio_prtc_trigger_list);
-+
-+		trig_info = kzalloc(sizeof(*trig_info), GFP_KERNEL);
-+		if (!trig_info) {
-+			ret = -ENOMEM;
-+			goto error_put_trigger_and_remove_from_list;
-+		}
-+		trig->private_data = trig_info;
-+		trig->owner = THIS_MODULE;
-+		trig->set_trigger_state = &iio_trig_periodic_rtc_set_state;
-+		trig->name = kmalloc(IIO_TRIGGER_NAME_LENGTH, GFP_KERNEL);
-+		if (trig->name == NULL) {
-+			ret = -ENOMEM;
-+			goto error_free_trig_info;
-+		}
-+		snprintf((char *)trig->name,
-+			 IIO_TRIGGER_NAME_LENGTH,
-+			 "periodic%s",
-+			 pdata->triggers[i].name);
-+		trig_info->name = (char *)trig->name;
-+		/* RTC access */
-+		trig_info->rtc
-+			= rtc_class_open((char *)(pdata->triggers[i].name));
-+		if (trig_info->rtc == NULL) {
-+			ret = -EINVAL;
-+			goto error_free_name;
-+		}
-+		trig_info->task.func = iio_prtc_trigger_poll;
-+		trig_info->task.private_data = trig;
-+		ret = rtc_irq_register(trig_info->rtc, &trig_info->task);
-+		if (ret)
-+			goto error_close_rtc;
-+		trig->control_attrs = &iio_trig_prtc_attr_group;
-+		ret = iio_trigger_register(trig);
-+		if (ret)
-+			goto error_unregister_rtc_irq;
++	BaseDirectoryName = find_type_by_name(device_name, "device");
++	if (BaseDirectoryName == NULL) {
++		printf("Failed to find the %s \n", device_name);
++		return -1;
 +	}
-+	return 0;
-+error_unregister_rtc_irq:
-+	rtc_irq_unregister(trig_info->rtc, &trig_info->task);
-+error_close_rtc:
-+	rtc_class_close(trig_info->rtc);
-+error_free_name:
-+	kfree(trig->name);
-+error_free_trig_info:
-+	kfree(trig_info);
-+error_put_trigger_and_remove_from_list:
-+	list_del(&trig->alloc_list);
-+	iio_put_trigger(trig);
-+error_free_completed_registrations:
-+	list_for_each_entry_safe(trig,
-+				 trig2,
-+				 &iio_prtc_trigger_list,
-+				 alloc_list) {
-+		trig_info = trig->private_data;
-+		iio_trigger_unregister(trig);
-+		rtc_irq_unregister(trig_info->rtc, &trig_info->task);
-+		rtc_class_close(trig_info->rtc);
-+		kfree(trig->name);
-+		kfree(trig_info);
-+		iio_put_trigger(trig);
++	TriggerDirectoryName = find_type_by_name(trigger_name, "trigger");
++	if (TriggerDirectoryName == NULL) {
++		printf("Failed to find the %s\n", trigger_name);
++		return -1;
 +	}
-+	return ret;
-+}
++	RingBufferDirectoryName = find_ring_subelement(BaseDirectoryName,
++						       "ring_buffer");
++	if (RingBufferDirectoryName == NULL) {
++		printf("Failed to find ring buffer\n");
++		return -1;
++	}
 +
-+static int iio_trig_periodic_rtc_remove(struct platform_device *dev)
-+{
-+	struct iio_trigger *trig, *trig2;
-+	struct iio_prtc_trigger_info *trig_info;
-+	mutex_lock(&iio_prtc_trigger_list_lock);
-+	list_for_each_entry_safe(trig,
-+				 trig2,
-+				 &iio_prtc_trigger_list,
-+				 alloc_list) {
-+		trig_info = trig->private_data;
-+		iio_trigger_unregister(trig);
-+		rtc_irq_unregister(trig_info->rtc, &trig_info->task);
-+		rtc_class_close(trig_info->rtc);
-+		kfree(trig->name);
-+		kfree(trig_info);
-+		iio_put_trigger(trig);
++	if (write_sysfs_string_and_verify("trigger/current_trigger",
++					  BaseDirectoryName,
++					  (char *)trigger_name) < 0) {
++		printf("Failed to write current_trigger file \n");
++		return -1;
 +	}
-+	mutex_unlock(&iio_prtc_trigger_list_lock);
++
++	/* Setup ring buffer parameters */
++	if (write_sysfs_int("length", RingBufferDirectoryName,
++			    RingLength) < 0) {
++		printf("Failed to open the ring buffer length file \n");
++		return -1;
++	}
++
++	/* Enable the ring buffer */
++	if (write_sysfs_int("ring_enable", RingBufferDirectoryName, 1) < 0) {
++		printf("Failed to open the ring buffer control file \n");
++		return -1;
++	};
++
++	data = malloc(size_from_scanmode(NumVals, scan_ts)*RingLength);
++	if (!data) {
++		printf("Could not allocate space for usespace data store\n");
++		return -1;
++	}
++
++	/* Attempt to open non blocking the access dev */
++	fp = open(ring_access, O_RDONLY | O_NONBLOCK);
++	if (fp == -1) { /*If it isn't there make the node */
++		printf("Failed to open %s\n", ring_access);
++		return -1;
++	}
++	/* Attempt to open the event access dev (blocking this time) */
++	fp_ev = fopen(ring_event, "rb");
++	if (fp_ev == NULL) {
++		printf("Failed to open %s\n", ring_event);
++		return -1;
++	}
++
++	/* Wait for events 10 times */
++	for(j = 0; j < 10; j++)
++	{
++		read_size = fread(&dat, 1, sizeof(struct iio_event_data),
++				  fp_ev);
++		switch(dat.id) {
++		case IIO_EVENT_CODE_RING_100_FULL:
++			toread = RingLength;
++			break;
++		case IIO_EVENT_CODE_RING_75_FULL:
++			toread = RingLength*3/4;
++			break;
++		case IIO_EVENT_CODE_RING_50_FULL:
++			toread = RingLength/2;
++			break;
++		default:
++			printf("Unexpecteded event code\n");
++			continue;
++		}
++		read_size = read(fp,
++				 data,
++				 toread*size_from_scanmode(NumVals, scan_ts));
++		if (read_size == -EAGAIN) {
++			printf("nothing available \n");
++			continue;
++		}
++
++		for (i = 0;
++		     i < read_size/size_from_scanmode(NumVals, scan_ts);
++		     i++) {
++			for (k = 0; k < NumVals; k++) {
++				__s16 val = *(__s16 *)(&data[i*size_from_scanmode(NumVals, scan_ts)
++							     + (k)*2]);
++				printf("%05d ", val);
++			}
++			printf(" %lld\n",
++			       *(__s64 *)(&data[(i+1)*size_from_scanmode(NumVals,scan_ts)
++						- sizeof(__s64)]));
++		}
++	}
++
++	/* Stop the ring buffer */
++	if (write_sysfs_int("ring_enable", RingBufferDirectoryName, 0) < 0) {
++		printf("Failed to open the ring buffer control file \n");
++		return -1;
++	};
++
++	/* Disconnect from the trigger - writing something that doesn't exist.*/
++	write_sysfs_string_and_verify("trigger/current_trigger",
++				      BaseDirectoryName, "NULL");
++	free(BaseDirectoryName);
++	free(TriggerDirectoryName);
++	free(RingBufferDirectoryName);
++	free(data);
++
 +	return 0;
 +}
-+
-+static struct platform_driver iio_trig_periodic_rtc_driver = {
-+	.probe = iio_trig_periodic_rtc_probe,
-+	.remove = iio_trig_periodic_rtc_remove,
-+	.driver = {
-+		.name = "iio_prtc_trigger",
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init iio_trig_periodic_rtc_init(void)
-+{
-+	return platform_driver_register(&iio_trig_periodic_rtc_driver);
-+}
-+
-+static void __exit iio_trig_periodic_rtc_exit(void)
-+{
-+	return platform_driver_unregister(&iio_trig_periodic_rtc_driver);
-+}
-+
-+module_init(iio_trig_periodic_rtc_init);
-+module_exit(iio_trig_periodic_rtc_exit);
-+MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-+MODULE_DESCRIPTION("Periodic realtime clock  trigger for the iio subsystem");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/iio/prtc_trigger.h b/include/linux/iio/prtc_trigger.h
+diff --git a/Documentation/iio/overview.txt b/Documentation/iio/overview.txt
 new file mode 100644
-index 0000000..9dabc19
+index 0000000..6c77945
 --- /dev/null
-+++ b/include/linux/iio/prtc_trigger.h
-@@ -0,0 +1,7 @@
-+struct iio_prtc_trigger {
-+	const char *name;
-+};
-+struct iio_prtc_trigger_group {
-+	int num_triggers;
-+	struct iio_prtc_trigger *triggers;
-+};
++++ b/Documentation/iio/overview.txt
+@@ -0,0 +1,62 @@
++Overview of IIO
++
++The Industrial I/O subsytem is intended to provide support for devices
++that in some sense are analog to digital convertors (ADCs). As many
++actual devices combine some ADCs with digital to analog convertors
++(DACs) the intention is to add that functionality at a future date
++(hence the name).
++
++The aim is to fill the gap between the somewhat similar hwmon and
++input subsystems.  Hwmon is very much directed at low sample rate
++sensors used in applications such as fan speed control and temperature
++measurement.  Input is, as it's name suggests focused on input
++devices. In some cases there is considerable overlap between these and
++IIO.
++
++A typical device falling into this category would be connected via SPI
++or I2C.
++
++Functionality of IIO
++
++* Basic device registration and handling. This is very similar to
++hwmon with simple polled access to device channels via sysfs.
++
++* Event chrdevs.  These are similar to input in that they provide a
++route to user space for hardware triggered events. Such events include
++threshold detectors, free-fall detectors and more complex action
++detection.  They events themselves are currently very simple with
++merely an event code and a timestamp.  Any data associated with the
++event must be accessed via polling. Note a given device may have one
++or more event channel.  These events are turned on or off (if possible)
++via sysfs interfaces.
++
++* Hardware ring buffer support.  Some recent sensors have included
++fifo / ring buffers on the sensor chip.  These greatly reduce the load
++on the host CPU by buffering relatively large numbers of data samples
++based on an internal sampling clock. Examples include VTI SCA3000
++series and Analog Device ADXL345 accelerometers.  Each ring buffer
++typically has an event chrdev (similar to the more general ones above)
++to pass on events such as buffer 50% full and an access chrdev via
++which the raw data it self may be read back.
++
++* Trigger and software ring buffer support. In many data analysis
++applications it it useful to be able to capture data based on some
++external signal (trigger).  These triggers might be a data ready
++signal, a gpio line connected to some external system or an on
++processor periodic interrupt.  A single trigger many initialize data
++capture or reading from a number of sensors.  These triggers are
++used in iio to fill software ring buffers acting in a very similar
++fashion to the hardware buffers described above.
++
++Other documentation:
++
++userspace.txt - overview of ring buffer reading form userspace
++
++device.txt - elemennts of a typical device driver.
++
++trigger.txt - elements of a typical trigger driver.
++
++ring.txt - additional elements required for ring buffer support
++
++
++
+diff --git a/Documentation/iio/ring.txt b/Documentation/iio/ring.txt
+new file mode 100644
+index 0000000..7e03b3c
+--- /dev/null
++++ b/Documentation/iio/ring.txt
+@@ -0,0 +1,62 @@
++Ring buffer support within IIO
++
++This document is intended as a general overview of the functionality
++a ring buffer may supply and how it is specified within IIO.  For more
++specific information on a given ring buffer implementation, see the
++comments in the source code.  Note that the intention is to allow
++some drivers to specify ring buffers choice at probe or runtime, but
++for now the selection is hard coded within a given driver.
++
++A given ring buffer implementation typically embedded a struct
++iio_ring_buffer and it is a pointer to this that is provided to the
++IIO core. Access to the embedding structure is typically done via
++container_of functions.
++
++struct iio_ring_buffer contains 4 function pointers
++(preenable, postenable, predisable, postdisable).
++These are used to perform implementation specific steps on either side
++of the core changing it's current mode to indicate that the ring buffer
++is enabled or disabled (along with enabling triggering etc as appropriate).
++
++Also in struct iio_ring_buffer is a struct iio_ring_access_funcs.
++The function pointers within here are used to allow the core to handle
++as much ring buffer functionality as possible. Note almost all of these
++are optional.
++
++mark_in_use, unmark_in_use
++  Basically indicate that not changes should be made to the ring
++  buffer state that will effect the form of the data being captures
++  (e.g. scan elements or length)
++
++store_to
++  If possible, push data to ring buffer.
++
++read_last
++  If possible get the most recent entry from the buffer (without removal).
++  This provides polling like functionality whilst the ring buffering is in
++  use without a separate read from the device.
++
++rip_lots
++  The primary ring buffer reading function. Note that it may well not return
++  as much data as requested.  The deadoffset is used to indicate that some
++  initial data in the data array is not guaranteed to be valid.
++
++mark_param_changed
++  Used to indicate that something has changed. Used in conjunction with
++request_update
++  If parameters have changed that require reinitialization or configuration of
++  the ring buffer this will trigger it.
++
++get_bpd, set_bpd
++  Get/set the number of bytes for a given reading (single element, not sample set)
++  The value of bps (bytes per set) is created from a combination of this and the
++  enabled scan elements.
++
++get_length / set_length
++  Get/set the number of sample sets that may be held by the buffer.
++
++is_enabled
++  Query if ring buffer is in use
++enable
++  Start the ring buffer.
++ 
+diff --git a/Documentation/iio/trigger.txt b/Documentation/iio/trigger.txt
+new file mode 100644
+index 0000000..650157f
+--- /dev/null
++++ b/Documentation/iio/trigger.txt
+@@ -0,0 +1,38 @@
++IIO trigger drivers.
++
++Many triggers are provided by hardware that will also be registered as
++an IIO device.  Whilst this can create device specific complexities
++such triggers are registered with the core in the same way as
++stand-alone triggers.
++
++struct iio_trig *trig = iio_allocate_trigger();
++
++allocates a trigger structure.  The key elements to then fill in within
++a driver are:
++
++trig->control_attrs
++	Any sysfs attributes needed to control parameters of the trigger
++
++trig->private_data
++	Device specific private data.
++
++trig->owner
++	Typically set to THIS_MODULE. Used to ensure correct
++	ownership of core allocated resources.
++
++trig->name
++	A unique name for the trigger.
++
++When these have been set call:
++
++iio_trigger_register(trig);
++
++to register the trigger with the core, making it available to trigger
++consumers.
++
++
++Trigger Consumers
++
++Currently triggers are only used for the filling of software ring
++buffers and as such any device supporting INDIO_RING_TRIGGERED has the
++consumer interface automatically created.
+diff --git a/Documentation/iio/userspace.txt b/Documentation/iio/userspace.txt
+new file mode 100644
+index 0000000..2d3f264
+--- /dev/null
++++ b/Documentation/iio/userspace.txt
+@@ -0,0 +1,60 @@
++Userspace access to IIO
++
++Example, ST Microelectronics LIS3L02DQ accelerometer.
++
++Typical sysfs entries (pruned for clarity)
++
++/sys/class/iio
++  device0 - iio_dev related elements
++    name - driver specific identifier (here lis3l02dq)
++    accel_x - polled (or from ring) raw readout of acceleration
++    accel_x_gain - hardware gain (calibration)
++    accel_x_offset - hardware offset (calibration)
++    available_sampling_frequency
++
++    available_sampling_frequency - what options are there
++    sampling_frequency - control of internal sampling frequency
++    scan_elements - controls which channels will be stored in the ring buffer
++      scan_en_accel_x
++      scan_en_accel_y
++      scan_en_timestamp
++    device - link to underlying hardware device
++    uevent - udev related element
++
++    thresh - unified threshold used for detection on all axis
++    event_line0_sources - which events are enabled 
++      accel_x_high - enable x axis high threshold event
++      accel_x_low - enable x axis low threshold event
++
++    event_line0 - event interface
++      dev - major:minor for the chrdev (note major allocation dynamic)
++    trigger - consumer attachement
++      current_trigger - name based association with a trigger      
++    ring_buffer0 - ring buffer interface 
++      bps - byptes per sample (read only), dependant on scan element selection
++      length - (rw) specificy length fo software ring buffer (typically ro in hw case)
++      ring_enable - turn the ring on. If its the first to be enabled attached to this
++                    trigger will also enable the trigger.
++      ring_access0
++        dev - major:minor for ring buffer access chrdev
++      ring_event_line0
++        dev - major:minor for ring buffer event chrdev
++
++  trigger0 - data ready trigger elements
++    name - unqiue name of trigger
++
++Udev will create the following entries under /dev by default:
++        
++ring_access0 - ring access chrdev
++ring_event0 - ring event chrdev
++event_line0 - general event chrdev.
++
++For the example code we assume the following rules have been used to ensure
++unique and consistent naming of these for the lis3l02dq in question:
++
++KERNEL="ring_event_line*", ID="spi1.0", DRIVER="lis3l02dq", NAME="iio/lis3l02dq_ring_event"
++KERNEL="event_line*", ID="spi1.0", DRIVER="lis3l02dq", NAME="iio/lis3l02dq_event"
++KERNEL="ring_access*", ID="spi1.0", DRIVER="lis3l02dq", NAME="iio/lis3l02dq_ring_access"
++
++The files, lis3l02dqbuffersimple.c and iio_util.h in this directory provide an example
++of how to use the ring buffer and event interfaces.
 -- 
 1.6.2
 
