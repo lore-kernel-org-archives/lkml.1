@@ -1,299 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZGBBgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZGBBnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbZGBBgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbZGBBgk
+	id S1755296AbZGBBnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZGBBnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:36:40 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:17198 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754911AbZGBBgi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=n2VjOHWOBVUSYdnnwzWSg253DG6/2ELF9cZYRtXF1xDxWcpg6Uxct+h8IJUDfJrrw
-	/rvtSE3DwMXdG87mADfSQ==
+	Wed, 1 Jul 2009 21:43:04 -0400
+Received: from mail.samba.org ([66.70.73.150]:52140 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752452AbZGBBnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 21:43:03 -0400
 MIME-Version: 1.0
-In-Reply-To: <4A4C0C60.4050106@cn.fujitsu.com>
-References: <4A4C0C60.4050106@cn.fujitsu.com>
-Date: Wed, 1 Jul 2009 18:36:36 -0700
-Message-ID: <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-From: Paul Menage <menage@google.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19020.4239.587690.363822@samba.org>
+Date: Thu, 2 Jul 2009 11:42:39 +1000
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <20090701151727.38928bd9@lxorguk.ukuu.org.uk>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<20090701151727.38928bd9@lxorguk.ukuu.org.uk>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Li - but as I said to Serge in the email when I brought this up
-originally, I already had a patch in mind for this; I've had an intern
-(Ben) at Google working on it. His patch (pretty much ready, and being
-sent out tomorrow I hope) is pretty similar to yours, but his is on
-top of another patch that provides a (currently read-only)
-"cgroup.procs" file in each cgroup dir that lists the unique tgids in
-the cgroup. So the key in the list of pid arrays is actually a pid_ns
-and a file type (indicating procs or tasks) rather than just a pid_ns.
+Hi Alan,
 
-So I think it makes more sense to not use this patch, but to use the
-pair of patches that Ben's written, since they provide more overal
-functionality.
+ > > There really was no such thing as "vfat" anyway.  VFAT in the Windows
+ > 
+ > In the eyes of the end user there is such a thing as vfat. This is about
+ > expectations not technical issues.
 
-Paul
+Do you have an example of an end user device that would be affected by
+this change, and which is never distributed in any of the countries
+where a varient of this patent exists?
 
-On Wed, Jul 1, 2009 at 6:24 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
-> The bug was introduced by commit cc31edceee04a7b87f2be48f9489ebb72d264844
-> ("cgroups: convert tasks file to use a seq_file with shared pid array").
->
-> We cache a pid array for all threads that are opening the same "tasks"
-> file, but the pids in the array are always from the namespace of the
-> last process that opened the file, so all other threads will read pids
-> from that namespace instead of their own namespaces.
->
-> To fix it, we maintain a list of pid arrays, which is keyed by pid_ns.
-> The list will be of length 1 at most time.
->
-> Reported-by: Paul Menage <menage@google.com>
-> Idea-by: Paul Menage <menage@google.com>
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  include/linux/cgroup.h |   11 ++----
->  kernel/cgroup.c        |   94 +++++++++++++++++++++++++++++++++++------------
->  2 files changed, 74 insertions(+), 31 deletions(-)
->
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index 665fa70..20411d2 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -179,14 +179,11 @@ struct cgroup {
->         */
->        struct list_head release_list;
->
-> -       /* pids_mutex protects the fields below */
-> +       /* pids_mutex protects pids_list and cached pid arrays. */
->        struct rw_semaphore pids_mutex;
-> -       /* Array of process ids in the cgroup */
-> -       pid_t *tasks_pids;
-> -       /* How many files are using the current tasks_pids array */
-> -       int pids_use_count;
-> -       /* Length of the current tasks_pids array */
-> -       int pids_length;
-> +
-> +       /* Linked list of struct cgroup_pids */
-> +       struct list_head pids_list;
->
->        /* For RCU-protected deletion */
->        struct rcu_head rcu_head;
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 3737a68..13dddb4 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -47,6 +47,7 @@
->  #include <linux/hash.h>
->  #include <linux/namei.h>
->  #include <linux/smp_lock.h>
-> +#include <linux/pid_namespace.h>
->
->  #include <asm/atomic.h>
->
-> @@ -960,6 +961,7 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
->        INIT_LIST_HEAD(&cgrp->children);
->        INIT_LIST_HEAD(&cgrp->css_sets);
->        INIT_LIST_HEAD(&cgrp->release_list);
-> +       INIT_LIST_HEAD(&cgrp->pids_list);
->        init_rwsem(&cgrp->pids_mutex);
->  }
->  static void init_cgroup_root(struct cgroupfs_root *root)
-> @@ -2201,12 +2203,30 @@ err:
->        return ret;
->  }
->
-> +/*
-> + * Cache pids for all threads in the same pid namespace that are
-> + * opening the same "tasks" file.
-> + */
-> +struct cgroup_pids {
-> +       /* The node in cgrp->pids_list */
-> +       struct list_head list;
-> +       /* The cgroup those pids belong to */
-> +       struct cgroup *cgrp;
-> +       /* The namepsace those pids belong to */
-> +       struct pid_namespace *pid_ns;
-> +       /* Array of process ids in the cgroup */
-> +       pid_t *tasks_pids;
-> +       /* How many files are using the this tasks_pids array */
-> +       int pids_use_count;
-> +       /* Length of the current tasks_pids array */
-> +       int pids_length;
-> +};
-> +
->  static int cmppid(const void *a, const void *b)
->  {
->        return *(pid_t *)a - *(pid_t *)b;
->  }
->
-> -
->  /*
->  * seq_file methods for the "tasks" file. The seq_file position is the
->  * next pid to display; the seq_file iterator is a pointer to the pid
-> @@ -2221,45 +2241,47 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
->         * after a seek to the start). Use a binary-search to find the
->         * next pid to display, if any
->         */
-> -       struct cgroup *cgrp = s->private;
-> +       struct cgroup_pids *cp = s->private;
-> +       struct cgroup *cgrp = cp->cgrp;
->        int index = 0, pid = *pos;
->        int *iter;
->
->        down_read(&cgrp->pids_mutex);
->        if (pid) {
-> -               int end = cgrp->pids_length;
-> +               int end = cp->pids_length;
->
->                while (index < end) {
->                        int mid = (index + end) / 2;
-> -                       if (cgrp->tasks_pids[mid] == pid) {
-> +                       if (cp->tasks_pids[mid] == pid) {
->                                index = mid;
->                                break;
-> -                       } else if (cgrp->tasks_pids[mid] <= pid)
-> +                       } else if (cp->tasks_pids[mid] <= pid)
->                                index = mid + 1;
->                        else
->                                end = mid;
->                }
->        }
->        /* If we're off the end of the array, we're done */
-> -       if (index >= cgrp->pids_length)
-> +       if (index >= cp->pids_length)
->                return NULL;
->        /* Update the abstract position to be the actual pid that we found */
-> -       iter = cgrp->tasks_pids + index;
-> +       iter = cp->tasks_pids + index;
->        *pos = *iter;
->        return iter;
->  }
->
->  static void cgroup_tasks_stop(struct seq_file *s, void *v)
->  {
-> -       struct cgroup *cgrp = s->private;
-> +       struct cgroup_pids *cp = s->private;
-> +       struct cgroup *cgrp = cp->cgrp;
->        up_read(&cgrp->pids_mutex);
->  }
->
->  static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
->  {
-> -       struct cgroup *cgrp = s->private;
-> +       struct cgroup_pids *cp = s->private;
->        int *p = v;
-> -       int *end = cgrp->tasks_pids + cgrp->pids_length;
-> +       int *end = cp->tasks_pids + cp->pids_length;
->
->        /*
->         * Advance to the next pid in the array. If this goes off the
-> @@ -2286,26 +2308,32 @@ static struct seq_operations cgroup_tasks_seq_operations = {
->        .show = cgroup_tasks_show,
->  };
->
-> -static void release_cgroup_pid_array(struct cgroup *cgrp)
-> +static void release_cgroup_pid_array(struct cgroup_pids *cp)
->  {
-> +       struct cgroup *cgrp = cp->cgrp;
-> +
->        down_write(&cgrp->pids_mutex);
-> -       BUG_ON(!cgrp->pids_use_count);
-> -       if (!--cgrp->pids_use_count) {
-> -               kfree(cgrp->tasks_pids);
-> -               cgrp->tasks_pids = NULL;
-> -               cgrp->pids_length = 0;
-> +       BUG_ON(!cp->pids_use_count);
-> +       if (!--cp->pids_use_count) {
-> +               list_del(&cp->list);
-> +               kfree(cp->tasks_pids);
-> +               kfree(cp);
->        }
->        up_write(&cgrp->pids_mutex);
->  }
->
->  static int cgroup_tasks_release(struct inode *inode, struct file *file)
->  {
-> -       struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-> +       struct seq_file *seq;
-> +       struct cgroup_pids *cp;
->
->        if (!(file->f_mode & FMODE_READ))
->                return 0;
->
-> -       release_cgroup_pid_array(cgrp);
-> +       seq = file->private_data;
-> +       cp = seq->private;
-> +
-> +       release_cgroup_pid_array(cp);
->        return seq_release(inode, file);
->  }
->
-> @@ -2324,6 +2352,8 @@ static struct file_operations cgroup_tasks_operations = {
->  static int cgroup_tasks_open(struct inode *unused, struct file *file)
->  {
->        struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-> +       struct pid_namespace *pid_ns = task_active_pid_ns(current);
-> +       struct cgroup_pids *cp;
->        pid_t *pidarray;
->        int npids;
->        int retval;
-> @@ -2350,20 +2380,36 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
->         * array if necessary
->         */
->        down_write(&cgrp->pids_mutex);
-> -       kfree(cgrp->tasks_pids);
-> -       cgrp->tasks_pids = pidarray;
-> -       cgrp->pids_length = npids;
-> -       cgrp->pids_use_count++;
-> +
-> +       list_for_each_entry(cp, &cgrp->pids_list, list) {
-> +               if (pid_ns == cp->pid_ns)
-> +                       goto found;
-> +       }
-> +
-> +       cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-> +       if (!cp) {
-> +               up_write(&cgrp->pids_mutex);
-> +               kfree(pidarray);
-> +               return -ENOMEM;
-> +       }
-> +       cp->cgrp = cgrp;
-> +       cp->pid_ns = pid_ns;
-> +       list_add(&cp->list, &cgrp->pids_list);
-> +found:
-> +       kfree(cp->tasks_pids);
-> +       cp->tasks_pids = pidarray;
-> +       cp->pids_length = npids;
-> +       cp->pids_use_count++;
->        up_write(&cgrp->pids_mutex);
->
->        file->f_op = &cgroup_tasks_operations;
->
->        retval = seq_open(file, &cgroup_tasks_seq_operations);
->        if (retval) {
-> -               release_cgroup_pid_array(cgrp);
-> +               release_cgroup_pid_array(cp);
->                return retval;
->        }
-> -       ((struct seq_file *)file->private_data)->private = cgrp;
-> +       ((struct seq_file *)file->private_data)->private = cp;
->        return 0;
->  }
->
-> --
-> 1.5.4.rc3
->
+ > From the funnies we've had in the past with FAT my gut impression is
+ > there are only a few implementations out there. Psion seems to have their
+ > own but most of the rest behave remarkably similarly which makes me
+ > suspect they all licensed a tiny number of implementations (DRDOS one
+ > perhaps ?).
+
+Do you happen to have a Psion and/or DRDOS based device in your
+collection of toys so you can test with the proposed patch and see if
+there are any problems?
+
+Apart from Windows varients and MacOSX I have also tested on the
+following mobile phones (via a microSD card):
+
+  Samsumg SGH-E250
+  Nokia 6120
+
+They both worked fine with long filename images saved on a Linux
+system with this patch. I don't know what OSes these phones are based
+on.
+
+Maybe you could test on the various devices with removable media you
+have and see how it goes?
+
+Cheers, Tridge
