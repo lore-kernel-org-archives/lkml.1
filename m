@@ -1,48 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZGBBok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZGBBrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbZGBBok (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZGBBoT
+	id S1753864AbZGBBrH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:47:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZGBBqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:44:19 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62986 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbZGBBoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:44:12 -0400
-Message-ID: <4A4C1120.2090905@cn.fujitsu.com>
-Date: Thu, 02 Jul 2009 09:45:04 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-References: <4A4C0C60.4050106@cn.fujitsu.com> <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
-In-Reply-To: <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Jul 2009 21:46:55 -0400
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:40135 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbZGBBqx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 21:46:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=kIaT/0C+6AQV96irABsQ9Sd/c//0NXNTXCxRyJsAi7FykGCoiIX0lJ96yfIg88588H
+         xpeBaM9ZJUw1favt8ojXcYE7EfpQCmQh3HLSJUAZ+FbeRIcvULtHdweuTEhuQItC/3XL
+         oBY9C98wxWF43V30ydArQcDVXke2wAxO8vV2Q=
+Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
+       Etienne Basset <etienne.basset@numericable.fr>,
+       David Miller <davem@davemloft.net>, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <200907011829.16850.bzolnier@gmail.com>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
+	 <1246459661.9660.40.camel@falcon> <200907011821.26091.bzolnier@gmail.com>
+	 <200907011829.16850.bzolnier@gmail.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Thu, 02 Jul 2009 09:46:43 +0800
+Message-Id: <1246499203.9660.52.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Thanks Li - but as I said to Serge in the email when I brought this up
-> originally, I already had a patch in mind for this; I've had an intern
-> (Ben) at Google working on it. His patch (pretty much ready, and being
-> sent out tomorrow I hope) is pretty similar to yours, but his is on
-> top of another patch that provides a (currently read-only)
-> "cgroup.procs" file in each cgroup dir that lists the unique tgids in
-> the cgroup. So the key in the list of pid arrays is actually a pid_ns
-> and a file type (indicating procs or tasks) rather than just a pid_ns.
+On Wed, 2009-07-01 at 18:29 +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Wednesday 01 July 2009 18:21:25 Bartlomiej Zolnierkiewicz wrote:
+> > On Wednesday 01 July 2009 16:47:41 Wu Zhangjin wrote:
+> > > On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
+> > > > On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
+> > > > 
+> > > > > I just tried, and it "seems" to work. Will try a few more cycles.
+> > > > 
+> > > > STD/STR survived quite a few cycles now. Patch seems to be doing the
+> > > > right thing.
+> > > > 
+> > > > On Mon, Jun 29, 2009 at 11:51 PM, Etienne
+> > > > Basset<etienne.basset@numericable.fr> wrote:
+> > > > 
+> > > > > To have STR/resume work with current git, I have to :
+> > > > 
+> > > > > 1) apply Bart's patch
+> > > > 
+> > > > This is not yet in Linus's tree. And much needed to really fix the problem.
+> > > > 
+> > > > > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+> > > > 
+> > > 
+> > > Yes, This commit must be reverted, otherwise, STD/Hibernation will not
+> > > work either. I have tested it on two different loongson-based machines:
+> > > fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
+> > 
+> > Since it seems like Dave is taking his sweet time with doing the revert
+> > I stared at the code a bit more and I think that I finally found the bug
+> > (thanks to your debugging work for giving me the right hint!).
+> > 
+> > The patch needs to take into the account a new code introduced by the recent
+> > block layer changes (commit 8f6205cd572fece673da0255d74843680f67f879):
+> > 
+> > @@ -555,8 +560,11 @@ repeat:
+> >                 startstop = start_request(drive, rq);
+> >                 spin_lock_irq(&hwif->lock);
+> >  
+> > -               if (startstop == ide_stopped)
+> > +               if (startstop == ide_stopped) {
+> > +                       rq = hwif->rq;
+> > +                       hwif->rq = NULL;
+> >                         goto repeat;
+> > +               }
+> >         } else
+> >                 goto plug_device;
+> >  out:
+> > 
+> > and not zero hwif->rq if the device is blocked. 
+> > 
+> > Could you try the attached patch and see if it fixes the issue?
 > 
-> So I think it makes more sense to not use this patch, but to use the
-> pair of patches that Ben's written, since they provide more overal
-> functionality.
+> Here is the more complete version, also taking into the account changes
+> in ide_intr() and ide_timer_expiry():
 > 
 
-It's fine for me. I waited for your fix for a week or so but didn't see
-it, so I thought you were stuck in other business and I did this fix.
+Sorry, I can not apply this patch directly, which original version did
+you use? I used the one in the master branch of linux-mips development
+git repository.
+
+commit 5a4f13fad1ab5bd08dea78fc55321e429d83cddf
+Merge: ec9c45d e18ed14
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Mon Jun 29 20:07:43 2009 -0700
+
+    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6
+    
+    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6:
+      ide: memory overrun in ide_get_identity_ioctl() on big endian
+machines using ioctl HDIO_OBSOLETE_IDENTITY
+      ide: fix resume for CONFIG_BLK_DEV_IDEACPI=y
+      ide-cd: handle fragmented packet commands gracefully
+      ide: always kill the whole request on error
+      ide: fix ide_kill_rq() for special ide-{floppy,tape} driver
+requests
+
+it this too old? should i merge another git repository?
+
+I have tried to apply it manually, but unfortunately, also not work. any
+other patch needed?
+
+Thanks!
+Wu Zhangjin
+> ---
+>  drivers/ide/ide-io.c |   15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
+> 
+> Index: b/drivers/ide/ide-io.c
+> ===================================================================
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -532,7 +532,8 @@ repeat:
+>  
+>  		if (startstop == ide_stopped) {
+>  			rq = hwif->rq;
+> -			hwif->rq = NULL;
+> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
+> +				hwif->rq = NULL;
+>  			goto repeat;
+>  		}
+>  	} else
+> @@ -679,8 +680,10 @@ void ide_timer_expiry (unsigned long dat
+>  		spin_lock_irq(&hwif->lock);
+>  		enable_irq(hwif->irq);
+>  		if (startstop == ide_stopped && hwif->polling == 0) {
+> -			rq_in_flight = hwif->rq;
+> -			hwif->rq = NULL;
+> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
+> +				rq_in_flight = hwif->rq;
+> +				hwif->rq = NULL;
+> +			}
+>  			ide_unlock_port(hwif);
+>  			plug_device = 1;
+>  		}
+> @@ -856,8 +859,10 @@ irqreturn_t ide_intr (int irq, void *dev
+>  	 */
+>  	if (startstop == ide_stopped && hwif->polling == 0) {
+>  		BUG_ON(hwif->handler);
+> -		rq_in_flight = hwif->rq;
+> -		hwif->rq = NULL;
+> +		if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
+> +			rq_in_flight = hwif->rq;
+> +			hwif->rq = NULL;
+> +		}
+>  		ide_unlock_port(hwif);
+>  		plug_device = 1;
+>  	}
 
