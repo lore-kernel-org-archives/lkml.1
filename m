@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZGBMja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZGBMnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753414AbZGBMja (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 08:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZGBMjX
+	id S1753576AbZGBMnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 08:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZGBMnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 08:39:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42693 "EHLO mx2.redhat.com"
+	Thu, 2 Jul 2009 08:43:32 -0400
+Received: from mail.samba.org ([66.70.73.150]:50045 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751370AbZGBMjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 08:39:23 -0400
-Date: Thu, 2 Jul 2009 14:36:26 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] Disable CLONE_PARENT for init
-Message-ID: <20090702123626.GC3552@redhat.com>
-References: <20090701073140.GA14284@us.ibm.com> <20090701074654.A6C6321D57@magilla.sf.frob.com> <20090701082452.GA3297@redhat.com> <20090701214805.GA25734@us.ibm.com> <20090701215833.876DA404FD@magilla.sf.frob.com> <20090702003520.GA26247@us.ibm.com> <20090702075833.GA14620@redhat.com>
+	id S1751928AbZGBMnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 08:43:31 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090702075833.GA14620@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19020.43882.457869.346115@samba.org>
+Date: Thu, 2 Jul 2009 22:43:22 +1000
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>, Rusty Russell <rusty@rustcorp.com.au>,
+       Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <20090702113351.41037d87@lxorguk.ukuu.org.uk>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<20090701151727.38928bd9@lxorguk.ukuu.org.uk>
+	<19020.4239.587690.363822@samba.org>
+	<20090702113351.41037d87@lxorguk.ukuu.org.uk>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Oleg Nesterov wrote:
->
-> On 07/01, Sukadev Bhattiprolu wrote:
-> >
-> > --- linux-mmotm.orig/kernel/fork.c	2009-06-30 23:01:06.000000000 -0700
-> > +++ linux-mmotm/kernel/fork.c	2009-07-01 17:29:09.000000000 -0700
-> > @@ -974,6 +974,16 @@ static struct task_struct *copy_process(
-> >  	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
-> >  		return ERR_PTR(-EINVAL);
-> >
-> > +	/*
-> > +	 * Siblings of global init remain as zombies on exit since they are
-> > +	 * not reaped by their parent (swapper). To solve this and to avoid
-> > +	 * multi-rooted process trees, prevent global and container-inits
-> > +	 * from creating siblings.
-> > +	 */
-> > +	if ((clone_flags & CLONE_PARENT) &&
-> > +				current->signal->flags & SIGNAL_UNKILLABLE)
-> > +		return ERR_PTR(-EINVAL);
->
-> Acked-by: Oleg Nesterov <oleg@redhat.com>
+Hi Alan,
 
-Thinking more, perhaps it makes sense to disallow CLONE_VM too.
+ > You gave one: Microsoft Windows XP. Risk of very rare system crashes.
+ > 
+ > Thats enough in a high reliability environment to require the file system
+ > in question is banned from use site wide at may locations. Can't have a
+ > flash card bringing down a windows dependant US destroyer can they.
 
-If init forks CLONE_VM task, this task can be killed by
-sig_kernel_coredump signal. In that case init will be killed too
-and the kernel will crash.
+I think it could indeed be very wise not to insert FAT removable media
+into 'high reliability' WindowsXP machines, but not because of the
+patch I've proposed. A prudent IT manager might take a look at how
+many fastfat.sys crashes are being reported on WindowsXP and realise
+that viewing ones holiday photos on your heart bypass machine isn't a
+great idea :-)
 
-But this is minor, we can trust the global init.
-
-Oleg.
-
+Cheers, Tridge
