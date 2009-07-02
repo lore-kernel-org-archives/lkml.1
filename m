@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZGBNJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZGBNU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753724AbZGBNJG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZGBNIz
+	id S1753546AbZGBNU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZGBNUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:08:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60308 "EHLO mx2.redhat.com"
+	Thu, 2 Jul 2009 09:20:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44840 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890AbZGBNIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 09:08:54 -0400
-Date: Thu, 2 Jul 2009 09:05:00 -0400
-From: Josef Bacik <josef@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: npiggin@suse.de, stable@kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH] mm: mark page accessed before we write_end
-Message-ID: <20090702130500.GF16713@dhcp231-156.rdu.redhat.com>
+	id S1752393AbZGBNUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 09:20:18 -0400
+Message-ID: <4A4CB442.6010007@redhat.com>
+Date: Thu, 02 Jul 2009 16:21:06 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Greg KH <gregkh@suse.de>
+CC: Greg KH <greg@kroah.com>, Andi Kleen <ak@linux.intel.com>,
+       Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, ying.huang@intel.com,
+       stable@kernel.org
+Subject: Re: [stable] patch kvm-add-vt-x-machine-check-support.patch added
+ to 2.6.30-stable tree
+References: <87d48kiliq.fsf@basil.nowhere.org> <4A4B67A2.9090300@redhat.com> <20090701141845.GW6760@one.firstfloor.org> <4A4B76F3.6070604@redhat.com> <20090701145836.GA8480@suse.de> <4A4B7AF4.4070205@redhat.com> <20090701172717.GC15542@kroah.com> <4A4BA881.8020908@redhat.com> <20090701184231.GB14128@suse.de> <4A4BB143.9080605@redhat.com> <20090701193118.GA14703@suse.de>
+In-Reply-To: <20090701193118.GA14703@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 07/01/2009 10:31 PM, Greg KH wrote:
+> Sure, it's a git tree full of quilt patches:
+> 	http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> apply the queue-2.6.30 patches to a clean 2.6.30 tree and you will
+> generate the tree.
+>    
 
-In testing a backport of the write_begin/write_end AOPs, a 10% re-read
-regression was noticed when running iozone.  This regression was introduced
-because the old AOPs would always do a mark_page_accessed(page) after the
-commit_write, but when the new AOPs where introduced, the only place this was
-kept was in pagecache_write_end().  This patch does the same thing in the
-generic case as what is done in pagecache_write_end(), which is just to mark
-the page accessed before we do write_end().  Thank you,
+Thanks.  My tests pronounced the tree good.
 
-Signed-off-by: Josef Bacik <jbacik@redhat.com>
----
- mm/filemap.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 2239671..ccea3b6 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2272,6 +2272,7 @@ again:
- 		pagefault_enable();
- 		flush_dcache_page(page);
- 
-+		mark_page_accessed(page);
- 		status = a_ops->write_end(file, mapping, pos, bytes, copied,
- 						page, fsdata);
- 		if (unlikely(status < 0))
 -- 
-1.5.4.3
+error compiling committee.c: too many arguments to function
 
