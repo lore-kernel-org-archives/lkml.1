@@ -1,120 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZGBAik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbZGBAjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZGBAik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 20:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZGBAid
+	id S1754537AbZGBAjV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 20:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZGBAjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 20:38:33 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:59850 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZGBAic (ORCPT
+	Wed, 1 Jul 2009 20:39:14 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37767 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751579AbZGBAjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 20:38:32 -0400
-X-IronPort-AV: E=Sophos;i="4.42,329,1243814400"; 
-   d="scan'208";a="335868003"
-From: Roland Dreier <rdreier@cisco.com>
-To: tyhicks@linux.vnet.ibm.com, kirkland@canonical.com,
-       ecryptfs-devel@lists.launchpad.net, viro@zeniv.linux.org.uk,
-       a.p.zijlstra@chello.nl, mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Another lockdep issue reported with ecryptfs
-Date: Wed, 01 Jul 2009 17:31:05 -0700
-References: <adahbxwgwo6.fsf@cisco.com> <ada1vp0dmsf.fsf@cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Message-ID: <adatz1v2a2c.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 1 Jul 2009 20:39:13 -0400
+Date: Wed, 1 Jul 2009 17:35:20 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Disable CLONE_PARENT for init
+Message-ID: <20090702003520.GA26247@us.ibm.com>
+References: <20090701073140.GA14284@us.ibm.com> <20090701074654.A6C6321D57@magilla.sf.frob.com> <20090701082452.GA3297@redhat.com> <20090701214805.GA25734@us.ibm.com> <20090701215833.876DA404FD@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Jul 2009 00:38:35.0428 (UTC) FILETIME=[6EF00640:01C9FAAD]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <20090701215833.876DA404FD@magilla.sf.frob.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland McGrath [roland@redhat.com] wrote:
+| Yeah, that's fine.  Since Oleg's pointed out that there is indeed no way to
+| avoid the leak in some global-init uses, it is fine to have a comment that
+| says that global init problems are part of the reason to outlaw this usage.
+| I just objected to a change that was really for container init but said it
+| was only to fix something different.
 
- >  =============================================
- >  [ INFO: possible recursive locking detected ]
- >  2.6.31-2-generic #14~rbd3
- >  ---------------------------------------------
- >  firefox-3.5/4162 is trying to acquire lock:
- >   (&s->s_vfs_rename_mutex){+.+.+.}, at: [<ffffffff81139d31>] lock_rename+0x41/0xf0
- >  
- >  but task is already holding lock:
- >   (&s->s_vfs_rename_mutex){+.+.+.}, at: [<ffffffff81139d31>] lock_rename+0x41/0xf0
- >  
- >  other info that might help us debug this:
- >  3 locks held by firefox-3.5/4162:
- >   #0:  (&s->s_vfs_rename_mutex){+.+.+.}, at: [<ffffffff81139d31>] lock_rename+0x41/0xf0
- >   #1:  (&sb->s_type->i_mutex_key#11/1){+.+.+.}, at: [<ffffffff81139d5a>] lock_rename+0x6a/0xf0
- >   #2:  (&sb->s_type->i_mutex_key#11/2){+.+.+.}, at: [<ffffffff81139d6f>] lock_rename+0x7f/0xf0
- >  
- >  stack backtrace:
- >  Pid: 4162, comm: firefox-3.5 Tainted: G         C 2.6.31-2-generic #14~rbd3
- >  Call Trace:
- >   [<ffffffff8108ae74>] print_deadlock_bug+0xf4/0x100
- >   [<ffffffff8108ce26>] validate_chain+0x4c6/0x750
- >   [<ffffffff8108d2e7>] __lock_acquire+0x237/0x430
- >   [<ffffffff8108d585>] lock_acquire+0xa5/0x150
- >   [<ffffffff81139d31>] ? lock_rename+0x41/0xf0
- >   [<ffffffff815526ad>] __mutex_lock_common+0x4d/0x3d0
- >   [<ffffffff81139d31>] ? lock_rename+0x41/0xf0
- >   [<ffffffff81139d31>] ? lock_rename+0x41/0xf0
- >   [<ffffffff8120eaf9>] ? ecryptfs_rename+0x99/0x170
- >   [<ffffffff81552b36>] mutex_lock_nested+0x46/0x60
- >   [<ffffffff81139d31>] lock_rename+0x41/0xf0
- >   [<ffffffff8120eb2a>] ecryptfs_rename+0xca/0x170
- >   [<ffffffff81139a9e>] vfs_rename_dir+0x13e/0x160
- >   [<ffffffff8113ac7e>] vfs_rename+0xee/0x290
- >   [<ffffffff8113c212>] ? __lookup_hash+0x102/0x160
- >   [<ffffffff8113d512>] sys_renameat+0x252/0x280
- >   [<ffffffff81133eb4>] ? cp_new_stat+0xe4/0x100
- >   [<ffffffff8101316a>] ? sysret_check+0x2e/0x69
- >   [<ffffffff8108c34d>] ? trace_hardirqs_on_caller+0x14d/0x190
- >   [<ffffffff8113d55b>] sys_rename+0x1b/0x20
- >   [<ffffffff81013132>] system_call_fastpath+0x16/0x1b
+Ok. How about this comment:
 
-The trace above is totally reproducible by doing a cross-directory
-rename on an ecryptfs directory.
+---
 
-The issue seems to be that sys_renameat() does lock_rename() then calls
-into the filesystem; if the filesystem is ecryptfs, then
-ecryptfs_rename() again does lock_rename() on the lower filesystem, and
-lockdep can't tell that the two s_vfs_rename_mutexes are different.  It
-seems an annotation like the following is sufficient to fix this (it
-does get rid of the lockdep trace in my simple tests); however I would
-like to make sure I'm not misunderstanding the locking, hence the CC
-list...
+Disable CLONE_PARENT for init.
 
-Thanks,
-  Roland
+When global or container-init processes use CLONE_PARENT, they create a
+multi-rooted process tree. Besides siblings of global init remain as
+zombies on exit since they are not reaped by their parent (swapper). So
+prevent global and container-inits from creating siblings.
 
+Changelog[v3]:
+	- [Roland, Oleg] Simplify comment describing the change
+Changelog[v2]:
+	- Simplify patch description based on comments from Eric Biederman
+	  and Oleg Nesterov.
+	- [Oleg Nesterov] Use SIGNAL_UNKILLABLE instead of is_global_init()
 
- fs/super.c         |    1 +
- include/linux/fs.h |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+---
+ kernel/fork.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/fs/super.c b/fs/super.c
-index 2761d3e..0a45b5a 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -98,6 +98,7 @@ static struct super_block *alloc_super(struct file_system_type *type)
- 		s->s_count = S_BIAS;
- 		atomic_set(&s->s_active, 1);
- 		mutex_init(&s->s_vfs_rename_mutex);
-+		lockdep_set_class(&s->s_vfs_rename_mutex, &type->s_vfs_rename_key);
- 		mutex_init(&s->s_dquot.dqio_mutex);
- 		mutex_init(&s->s_dquot.dqonoff_mutex);
- 		init_rwsem(&s->s_dquot.dqptr_sem);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 0872372..feaf9e0 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1750,6 +1750,7 @@ struct file_system_type {
+Index: linux-mmotm/kernel/fork.c
+===================================================================
+--- linux-mmotm.orig/kernel/fork.c	2009-06-30 23:01:06.000000000 -0700
++++ linux-mmotm/kernel/fork.c	2009-07-01 17:29:09.000000000 -0700
+@@ -974,6 +974,16 @@ static struct task_struct *copy_process(
+ 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
+ 		return ERR_PTR(-EINVAL);
  
- 	struct lock_class_key s_lock_key;
- 	struct lock_class_key s_umount_key;
-+	struct lock_class_key s_vfs_rename_key;
- 
- 	struct lock_class_key i_lock_key;
- 	struct lock_class_key i_mutex_key;
++	/*
++	 * Siblings of global init remain as zombies on exit since they are
++	 * not reaped by their parent (swapper). To solve this and to avoid
++	 * multi-rooted process trees, prevent global and container-inits
++	 * from creating siblings.
++	 */
++	if ((clone_flags & CLONE_PARENT) &&
++				current->signal->flags & SIGNAL_UNKILLABLE)
++		return ERR_PTR(-EINVAL);
++
+ 	retval = security_task_create(clone_flags);
+ 	if (retval)
+ 		goto fork_out;
