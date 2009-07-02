@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZGBXJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGBXKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZGBXJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZGBXJH
+	id S1754843AbZGBXKH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZGBXJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:09:07 -0400
-Received: from mga01.intel.com ([192.55.52.88]:46919 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751158AbZGBXJG convert rfc822-to-8bit (ORCPT
+	Thu, 2 Jul 2009 19:09:57 -0400
+Received: from 174-143-236-118.static.slicehost.net ([174.143.236.118]:52048
+	"EHLO fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZGBXJ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:09:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,337,1243839600"; 
-   d="scan'208";a="471640405"
-From: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@linux.intel.com>
-Date: Thu, 2 Jul 2009 16:09:09 -0700
-Subject: RE: [PATCH 2/9] x86: introduce a set of platform feature flags
-Thread-Topic: [PATCH 2/9] x86: introduce a set of platform feature flags
-Thread-Index: Acn6Knv4XHqeI486RqmNZq950/cs2gBPsvAw
-Message-ID: <43F901BD926A4E43B106BF17856F07556428B555@orsmsx508.amr.corp.intel.com>
-References: <43F901BD926A4E43B106BF17856F07556412B7E1@orsmsx508.amr.corp.intel.com>
- <20090630063230.GD1351@ucw.cz>
-In-Reply-To: <20090630063230.GD1351@ucw.cz>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Jul 2009 19:09:56 -0400
+Date: Thu, 2 Jul 2009 19:09:55 -0400
+To: David Howells <dhowells@redhat.com>
+Cc: steved@redhat.com, rasmus@msconsult.dk, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] NFSD: Don't hold unrefcounted creds over call to
+	nfsd_setuser()
+Message-ID: <20090702230955.GB12376@fieldses.org>
+References: <20090702203937.GA10504@fieldses.org> <20090702133532.28297.89635.stgit@warthog.procyon.org.uk> <575.1246570293@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <575.1246570293@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> +#define platform_has(bit) \
->> +	test_bit(bit, (unsigned long *)platform_feature)
->
->test_bit and friends imply synchronization you probably  don't want or
->need...
->
-[[JPAN]] could you explain a little more? The disassembly shows the test_bit
-ends up as a testb instruction and a jump. Why there is synchronization
- involved?
-Perhaps on some architectures?
+On Thu, Jul 02, 2009 at 10:31:33PM +0100, David Howells wrote:
+> J. Bruce Fields <bfields@fieldses.org> wrote:
+> 
+> > Got it, thanks.  How easy is it to hit this case?  (Just wondering
+> > whether to submit for stable.)
+> 
+> Actually, one of the problems with it is that the file is opened using the old
+> creds, cached across the call to nfsd_setuser().
+
+Oops, got it.  That answers that question....
+
+--b.
