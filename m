@@ -1,74 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZGBSFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZGBSKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZGBSFv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZGBSFl
+	id S1754190AbZGBSKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZGBSKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:05:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50491 "EHLO hera.kernel.org"
+	Thu, 2 Jul 2009 14:10:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35780 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbZGBSFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:05:41 -0400
-Message-ID: <4A4CF6BF.2090409@kernel.org>
-Date: Thu, 02 Jul 2009 11:04:47 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751145AbZGBSKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:10:31 -0400
+Date: Thu, 2 Jul 2009 20:10:31 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.16-rc2
+Message-ID: <20090702181031.GB4122@nb.net.home>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-CC: alex.shi@intel.com, Andrew Morton <akpm@linux-foundation.org>,
-       Mel Gorman <mel@csn.ul.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       yanmin.zhang@intel.com, tim.c.chen@intel.com
-Subject: [PATCH] x86: don't clear nodes_states[N_NORMAL_MEMORY] when numa
- is not compiled in -v2
-References: <bug-13690-10286@http.bugzilla.kernel.org/>  <20090701183452.8660c8a9.akpm@linux-foundation.org>  <4A4C17FD.3080404@kernel.org> <1246517111.15721.5.camel@alexs-hp> <4A4C74D8.30809@kernel.org> <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
-In-Reply-To: <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Alex found:
-for x86_64 machine the specjbb2005 still can not run with hugepage
+The second util-linux-ng 2.16 release candidate is available at
 
-only happens when numa is not compiled in
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
 
-the root cause: node_set_state will not set it back for us in that case
+Feedback and bug reports, as always, are welcomed.
 
-so don't clear that when numa is not select in config
+	Karel
 
-v2: use node_clear_state instead
 
-Reported-and-Tested-by: Alex Shi <alex.shi@intel.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Util-linux-ng 2.16 Release Notes
+================================
 
----
- arch/x86/mm/init_64.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Release highlights
+------------------
 
-Index: linux-2.6/arch/x86/mm/init_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/init_64.c
-+++ linux-2.6/arch/x86/mm/init_64.c
-@@ -598,8 +598,15 @@ void __init paging_init(void)
- 
- 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
- 	sparse_init();
--	/* clear the default setting with node 0 */
--	nodes_clear(node_states[N_NORMAL_MEMORY]);
-+
-+	/*
-+	 * clear the default setting with node 0
-+	 * note: don't use nodes_clear here, that is really clearing when
-+	 *	 numa support is not compiled in, and later node_set_state
-+	 *	 will not set it back.
-+	 */
-+	node_clear_state(0, N_NORMAL_MEMORY);
-+
- 	free_area_init_nodes(max_zone_pfns);
- }
- 
+libuuid, uuidgen(1) and uuidd(8):
+  - the libuuid library has been moved from e2fsprogs to util-linux-ng
+
+switch_root:
+  - this NEW COMMAND allows to switch to another filesystem as the root
+    of the mount tree.
+
+mount, umount, fsck:
+  - DOES NOT SUPPORT linking against obsolete libvolume_id (from udev)
+
+
+Stable maintenance releases between v2.15 and v2.16
+---------------------------------------------------
+
+util-linux-ng 2.15.1 [10-Jun-2009]
+
+ * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ReleaseNotes
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ChangeLog
+
+
+ChangeLog between v2.15 and v2.16
+---------------------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+
+
+build-sys:
+   - add --disable-libblkid, remove volume_id support  [Karel Zak]
+   - add --disable-switch_root  [Karel Zak]
+   - add --disable-tls  [Karel Zak]
+   - add --disable-uuidd  [Karel Zak]
+   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
+   - check for openat() and linux for switch_root  [Karel Zak]
+   - cleanup libuuid stuff  [Karel Zak]
+   - complete /libs to /shlibs rename  [Karel Zak]
+   - enable fsck by default  [Karel Zak]
+   - fix "make -C" bug  [Karel Zak]
+   - fix --disable-uuidd  [Karel Zak]
+   - fix blkid.h include for old e2fsprogs  [Karel Zak]
+   - fix headers in mkswap and libblkid  [Karel Zak]
+   - fix libuuid Makefile.am  [Karel Zak]
+   - release++ (v2.16-rc1)  [Karel Zak]
+   - rename /libs to /shlibs  [Karel Zak]
+buildsys:
+   - move $usr{bin,sbin,lib}execdir definition to ./configure  [Karel Zak]
+cal:
+   - Highlight today even when month or year specified  [Rajeev V. Pillai]
+   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
+chrt:
+   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
+docs:
+   - add missing commands/projects to AUTHORS file  [Karel Zak]
+   - add v2.16 ReleaseNotes  [Karel Zak]
+   - refresh TODO list  [Karel Zak]
+   - remove example.files/rc[.local]  [Karel Zak]
+   - remove obsolete information from fstab example  [Karel Zak]
+   - update AUTHORS file  [Karel Zak]
+   - update v2.16-ReleaseNotes  [Karel Zak]
+fdisk:
+   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
+   - add simple test for doslabel stuff  [Zdenek Behan]
+hwclock:
+   - fix mismatched popen/fclose.  [John Keeping]
+include:
+   - clean up _PATH_DEV_* macros  [Karel Zak]
+   - fix _PATH_DEV  [Karel Zak]
+ionice:
+   - Allow setting the none class  [Jakob Unterwurzacher]
+ldattach:
+   - add N_PPS support  [Tilman Schmidt]
+libblkid:
+   - add device-mapper snapshot cow device probe  [Milan Broz]
+   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
+   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
+   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
+   - don't require udev symlinks verification for non-root users  [Karel Zak]
+   - fix "hangs forever with partition type mdraid"  [Karel Zak]
+   - fix #ifdefs readability  [Karel Zak]
+   - fix $libdir in blkid.pc  [Karel Zak]
+   - fix LVM1 probe  [Milan Broz]
+   - fix reiserfs name  [Karel Zak]
+   - make libuuid optional  [Karel Zak]
+   - move to misc-utils/ directory  [Karel Zak]
+   - update man page  [Karel Zak]
+libuuid:
+   - Don't run uuidd if it would fail due to permission problems  [Theodore Ts'o]
+   - Make sure fd's 0, 1, and 2 are valid before exec'ing uuidd  [Theodore Ts'o]
+   - add --disable-libuuid and LIBUUID_VERSION  [Karel Zak]
+   - add .gitignore  [Karel Zak]
+   - add info about u-l-ng to man pages  [Karel Zak]
+   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
+   - fix $libdir in uuid.pc  [Karel Zak]
+   - import UUID library from e2fsprogs  [Karel Zak]
+libuuid, uuidd:
+   - Avoid infinite loop while reading from the socket fd  [Theodore Ts'o]
+losetup:
+   - add --set-capacity  [Karel Zak]
+   - fix return codes of functions arounf is_associated()  [Karel Zak]
+   - handle symlinks in /dev/loop/  [Mike Frysinger]
+   - suggest to use modprobe rather than insmod in losetup.8  [Karel Zak]
+lscpu:
+   - fix cpuid code on x86/PIC  [Mike Frysinger]
+mount:
+   - (and fsck) remove libvolume_id support  [Karel Zak]
+   - a little clean up info about loopdevs in man page  [Karel Zak]
+   - add ext4 to mount.8  [Karel Zak]
+   - add ext4 to the list of filesystems in mount.8  [Karel Zak]
+   - add info about obsolete vfat options to mount.8  [Karel Zak]
+   - allow loop suid umount  [Kay Sievers]
+   - cleanup notes about -l option in mount.8  [Karel Zak]
+   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
+   - move MS_{PROPAGATION,BIND,MOVE} detection  [Karel Zak]
+   - use "none" fstype for MS_PROPAGATION mounts  [Karel Zak]
+   - use TAG parsing function from libblkid  [Karel Zak]
+po:
+   - fix typo in French translation  [Olivier Blin]
+   - merge changes  [Karel Zak]
+   - refresh POTFILES.in  [Karel Zak]
+   - update vi.po (from translationproject.org)  [Clytie Siddall]
+raw:
+   - Use the RAW_SETBIND ioctl without stat'ing the raw# file  [Jeff Mahoney]
+   - undeprecate raw  [Karel Zak]
+switch_root:
+   - add man page  [Karel Zak]
+   - clean up argv[] usage, add -h and -V  [Karel Zak]
+   - do recursiveRemove after our root is moved to avoid races.  [Peter Jones]
+   - fix coding style  [Karel Zak]
+   - fork before cleaning up the filesystem.  [Peter Jones]
+   - new command  [Karel Zak]
+   - rewrite to use fstatat() and unlinkat()  [Karel Zak]
+   - use err.h, clean up return codes  [Karel Zak]
+   - use file descriptor instead of path for recursiveRemove()  [Peter Jones]
+   - use snprintf() rather tan str{cpy,cat}()  [Karel Zak]
+tests:
+   - add functions for work withdisk images  [Karel Zak]
+   - add mdraid libblkid test  [Karel Zak]
+   - don't run some mount tests for non-root users  [Karel Zak]
+   - fix 'delete extended partition' checksum  [Karel Zak]
+   - fix reiserfs test  [Karel Zak]
+   - fix script that creates lscpu dumps  [Karel Zak]
+   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
+   - remove broken Xen dumps for lscpu  [Karel Zak]
+umount:
+   - clean up help output  [Karel Zak]
+uuidd:
+   - Avoid closing the server socket when calling create_daemon()  [Theodore Ts'o]
+   - fix $PIDFILE in uuidd.rc  [Karel Zak]
+   - init /var/run/uuidd, add option for on-demand mode to .rc file  [Karel Zak]
+   - move uuidd files from /var/lib/libuuid to /var/run/uuidd  [Karel Zak]
+   - move uuidd.rc to misc-utils directory  [Karel Zak]
+   - new command (UUID daemon from e2fsprogs)  [Karel Zak]
+uuidgen:
+   - new command (from e2fsprogs)  [Karel Zak]
+
+-- 
+ Karel Zak  <kzak@redhat.com>
