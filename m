@@ -1,115 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZGBOFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755755AbZGBOG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbZGBOFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 10:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZGBOFU
+	id S1755755AbZGBOG3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 10:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZGBOGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 10:05:20 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:60325 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbZGBOFT (ORCPT
+	Thu, 2 Jul 2009 10:06:22 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:31761 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbZGBOGV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 10:05:19 -0400
-Message-ID: <4A4CBE7D.2060603@gmail.com>
-Date: Thu, 02 Jul 2009 16:04:45 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 2 Jul 2009 10:06:21 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: [GIT]: Networking
-References: <20090630.213927.180401151.davem@davemloft.net> <20090702075724.GA10608@elte.hu> <4A4C9125.8020705@gmail.com>
-In-Reply-To: <4A4C9125.8020705@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Jul 2009 16:04:46 +0200 (CEST)
+Message-ID: <87cb4d6e-dbfe-497b-b651-9b912dc3fbc8@default>
+Date: Thu, 2 Jul 2009 07:03:46 -0700 (PDT)
+From: Dan Magenheimer <dan.magenheimer@oracle.com>
+To: Pavel Machek <pavel@ucw.cz>, Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       npiggin@suse.de, chris.mason@oracle.com, kurt.hackel@oracle.com,
+       dave.mccracken@oracle.com, Avi Kivity <avi@redhat.com>,
+       Rik van Riel <riel@redhat.com>, alan@lxorguk.ukuu.org.uk,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, tmem-devel@oss.oracle.com,
+       sunil.mushran@oracle.com, linux-mm@kvack.org,
+       Himanshu Raj <rhim@microsoft.com>,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: RE: [RFC] transcendent memory for Linux
+In-Reply-To: <20090702063813.GA18157@elf.ucw.cz>
+X-Priority: 3
+X-Mailer: Oracle Beehive Extensions for Outlook 1.5.1.2  (306040) [OL
+ 9.0.0.6627]
+Content-Type: text/plain; charset=Windows-1252
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A4CBE61.0005:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Ingo Molnar a écrit :
->>> The following changes since commit 52989765629e7d182b4f146050ebba0abf2cb0b7:
->>>   Linus Torvalds (1):
->>>         Merge git://git.kernel.org/.../davem/net-2.6
->>>
->>> are available in the git repository at:
->>>
->>>   master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
->> Hm, something in this lot quickly wrecked networking here - see the 
->> tx timeout dump below. It starts with:
->>
->> [  351.004596] WARNING: at net/sched/sch_generic.c:246 dev_watchdog+0x10b/0x19c()
->> [  351.011815] Hardware name: System Product Name
->> [  351.016220] NETDEV WATCHDOG: eth0 (forcedeth): transmit queue 0 timed out
->>
->> Config attached. Unfortunately i've got no time to do bisection 
->> today.
-> 
-> 
-> 
-> forcedeth might have a problem, in its netif_wake_queue() logic, but
-> I could not see why a recent patch could make this problem visible now.
-> 
-> CPU0/1: AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
-> is not a new cpu either :)
-> 
-> forcedeth uses an internal tx_stop without appropriate barrier.
-> 
-> Could you try following patch ?
-> 
-> (random guess as I dont have much time right now)
+OK, OK, I give up.  I will ensure all code for shared pools
+is removed from the next version of the patch.
 
-Oh well this patch was soooo stupid, sorry Ingo.
+Though for future reference, I am interested in what
+problems it has other than "just" security (offlist
+if you want).
 
-
-We might have a race in napi_schedule(), leaving interrupts disabled forever.
-I cannot test this patch, I dont have the hardware...
-
-Thanks
-
-diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
-index 1094d29..3b4e076 100644
---- a/drivers/net/forcedeth.c
-+++ b/drivers/net/forcedeth.c
-@@ -3514,11 +3514,13 @@ static irqreturn_t nv_nic_irq(int foo, void *data)
- 	nv_msi_workaround(np);
- 
- #ifdef CONFIG_FORCEDETH_NAPI
--	napi_schedule(&np->napi);
--
--	/* Disable furthur irq's
--	   (msix not enabled with napi) */
--	writel(0, base + NvRegIrqMask);
-+	if (napi_schedule_prep(&np->napi)) {
-+		/*
-+		 * Disable further irq's (msix not enabled with napi)
-+		 */
-+		writel(0, base + NvRegIrqMask);
-+		__napi_schedule(&np->napi);
-+	}
- 
- #else
- 	do
-@@ -3615,12 +3617,13 @@ static irqreturn_t nv_nic_irq_optimized(int foo, void *data)
- 	nv_msi_workaround(np);
- 
- #ifdef CONFIG_FORCEDETH_NAPI
--	napi_schedule(&np->napi);
--
--	/* Disable furthur irq's
--	   (msix not enabled with napi) */
--	writel(0, base + NvRegIrqMask);
--
-+	if (napi_schedule_prep(&np->napi)) {
-+		/*
-+		 * Disable further irq's (msix not enabled with napi)
-+		 */
-+		writel(0, base + NvRegIrqMask);
-+		__napi_schedule(&np->napi);
-+	}
- #else
- 	do
- 	{
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> 
+> > > Yeah, a shared namespace of accessible objects is an entirely 
+> > > new thing
+> > > in the Xen universe.  I would also drop Xen support until 
+> > > there's a good
+> > > security story about how they can be used.
+> > 
+> > While I agree that the security is not bulletproof, I wonder
+> > if this position might be a bit extreme.  Certainly, the NSA
+> > should not turn on tmem in a cluster, but that doesn't mean that
+> > nobody should be allowed to.  I really suspect that there are
+> 
+> This has more problems than "just" security, and yes, security should
+> be really solved at design time...
+> 								
+> 			Pavel
