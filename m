@@ -1,125 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZGBWJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZGBWQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbZGBWJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZGBWJA
+	id S1756753AbZGBWQW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZGBWQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:09:00 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:51559 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbZGBWJA (ORCPT
+	Thu, 2 Jul 2009 18:16:15 -0400
+Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:31519 "HELO
+	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752006AbZGBWQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:09:00 -0400
-Message-ID: <4A4D2FDA.3000509@gmail.com>
-Date: Fri, 03 Jul 2009 00:08:26 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 2 Jul 2009 18:16:14 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xC7tTgQAUmgZLHzK8ER9XuCu5HHfjw/CBiEn1b174MxfhCzBN7ITuvZGRleMXtZZ7q4tD73TiVgZW1korOhHizVxUH56+cpBirjRKmmWzuS50/BwVzGR/PsNBC+XFC7zD7YU91tL0WQlR6hMCIkP028s+/SUJehIqhoZBfUjw/c=  ;
+X-YMail-OSG: MORG6DUVM1nljZqHsTfjgGpo1LtYMVahIv5vOizVNMCk89kohwtD_13okvEzuRZcfOnC3sTsGGhBTdTQmz4dKsWi4ATeVl_4MxqQusFnQVeWKiTUUvQmDYx8mY07XhCoggO0rCgrE4Nq1MYo49v9MPdvA3rIHM4TziNID_y34YldpCz5zI5Rm4T2XcK0OegilE_LqMpeKX9AeWtroqvDcd6vn2ZwS6KyIDCPe1odldNEqYfNG1suV9zU5lUvrz3bBUBjspWGPrY_wVaa
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jani Nikula <ext-jani.1.nikula@nokia.com>
+Subject: Re: [PATCH v2] gpiolib: allow poll(2) on gpio value
+Date: Thu, 2 Jul 2009 15:16:17 -0700
+User-Agent: KMail/1.9.10
+Cc: Daniel =?iso-8859-1?q?Gl=F6ckner?= <dg@emlix.com>,
+       Ben Nizette <bn@niasdigital.com>, linux-kernel@vger.kernel.org
+References: <1244212590-15620-1-git-send-email-dg@emlix.com> <200907021157.33250.david-b@pacbell.net> <359ed6810907021437m4417d4bfhc3d49b19387dbf96@mail.gmail.com>
+In-Reply-To: <359ed6810907021437m4417d4bfhc3d49b19387dbf96@mail.gmail.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, mingo@elte.hu,
-       akpm@linux-foundation.org, paulus@samba.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: atomic64_t should be 8 bytes aligned
-References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 03 Jul 2009 00:08:28 +0200 (CEST)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907021516.17510.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds a écrit :
-> 
-> On Thu, 2 Jul 2009, Eric Dumazet wrote:
->> Using a fixed initial value (instead of __atomic64_read()) is even faster, 
->> it apparently permits cpu to use an appropriate bus transaction.
-> 
-> Yeah, I guess it does a "read-for-write-ownership" and allows the thing to 
-> be done as a single cache transaction.
-> 
-> If we read it first, it will first get the cacheline for shared-read, and 
-> then the cmpxchg8b will need to turn it from shared to exclusive.
-> 
-> Of course, the _optimal_ situation would be if the cmpxchg8b didn't 
-> actually do the write at all when the value matches (and all cores could 
-> just keep it shared), but I guess that's not going to happen.
-> 
-> Too bad there is no pure 8-byte read op. Using MMX has too many downsides.
-> 
-> Btw, your numbers imply that for the atomic64_add_return(), we really 
-> would be much better off not reading the original value at all. Again, in 
-> that case, we really do want the "read-for-write-ownership" cache 
-> transaction, not a read.
-> 
+On Thursday 02 July 2009, Jani Nikula wrote:
+> I'm trying to say that if you call gpio_export() to create a sysfs
+> node, a subsequent poll() in user space won't work because there is no
+> irq set up, and sysfs_notify_dirent() won't be called. The patch
+> doesn't provide an interface for setting that up from kernel after
+> gpio_export() call - it's only possible to set up edge triggering and
+> sysfs notify by writing to the "edge" node from user space.
 
-I forgot to mention that if atomic64_t uses to cache lines, my test
-program is 10x slower.
+OK, now I understand.  :)
 
-So we probably need an __attribute__((aligned(8)) on atomic64_t definition
-as well, since alignof(atomic64_t) is 4, not 8 (!!!)
-
-#include <stdio.h>
-
-typedef struct {
-        unsigned long long counter;
-} atomic64_t;
-
-typedef struct {
-        unsigned long long __attribute__((aligned(8))) counter;
-} atomic64_ta;
-
-struct {
-        int a;
-        atomic64_t counter;
-} s __attribute__((aligned(64)));
-
-struct {
-        int a;
-        atomic64_ta counter;
-} sa __attribute__((aligned(64)));
-
-int main()
-{
-        printf("alignof(atomic64_t)=%d\n", __alignof__(atomic64_t));
-        printf("alignof(atomic64_ta)=%d\n", __alignof__(atomic64_t));
-        printf("alignof(unsigned long long)=%d\n", __alignof__(unsigned long long));
-        printf("&s.counter=%p\n", &s.counter);
-        printf("&sa.counter=%p\n", &sa.counter);
-        return 0;
-}
-
-$ gcc -O2 -o test test.c ; ./test
-alignof(atomic64_t)=4
-alignof(atomic64_ta)=4
-alignof(unsigned long long)=8
-&s.counter=0x80496c4
-&sa.counter=0x8049708
-$ gcc -v
-Using built-in specs.
-Target: i686-pc-linux-gnu
-Configured with: ../gcc-4.3.3/configure --enable-languages=c,c++ --prefix=/usr
-Thread model: posix
-gcc version 4.3.3 (GCC)
-
-
-[PATCH] x86: atomic64_t should be 8 bytes aligned
-
-LOCKED instructions on two cache lines are painful.
-Make sure an atomic64_t is 8bytes aligned.
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index 2503d4e..1927a56 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -250,7 +250,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
- /* An 64bit atomic type */
- 
- typedef struct {
--	unsigned long long counter;
-+	unsigned long long __attribute__((__aligned__(8))) counter;
- } atomic64_t;
- 
- #define ATOMIC64_INIT(val)	{ (val) }
+Yeah, that seems fixable in followups.
