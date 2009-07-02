@@ -1,98 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZGBCuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZGBCu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754592AbZGBCuE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 22:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZGBCtz
+	id S1755057AbZGBCu1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 22:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZGBCuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 22:49:55 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:24412 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753094AbZGBCtz convert rfc822-to-8bit (ORCPT
+	Wed, 1 Jul 2009 22:50:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51975 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbZGBCuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 22:49:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ugvGJv2dX8aYkc7XW/sFRhNrje5K+MYCg0lnAJSjpnWB5tIiwny43oImbCPhXQLaD
-	VRwaMpQrD3qjQxIOP1HXQ==
-MIME-Version: 1.0
-In-Reply-To: <20090702112814.ddf0c280.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com>
-	 <20090702021057.14469.37548.stgit@menage.mtv.corp.google.com>
-	 <20090702112814.ddf0c280.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 1 Jul 2009 19:49:48 -0700
-Message-ID: <6599ad830907011949h13598e36m45b85ae76900b90a@mail.gmail.com>
-Subject: Re: [PATCH 1/9] [RFC] Support named cgroups hierarchies
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 1 Jul 2009 22:50:12 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 2 Jul 2009 11:48:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
 Cc: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        containers@lists.linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Subject: Re: [PATCH 8/9] [RFC] Example multi-bindable subsystem: a
+ per-cgroup notes field
+Message-Id: <20090702114829.df04c885.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
+References: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com>
+	<20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 1, 2009 at 7:28 PM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> Open issues:
->>
->> - should the specification be via a name= option as in this patch, or
->>   should we simply use the "device name" as passed to the mount()
->>   system call?  Using the device name is more conceptually clean and
->>   consistent with the filesystem API; however, given that the device
->>   name is currently ignored by cgroups, this would lead to a
->>   user-visible behaviour change.
->>
->
-> IMHO, name= option is good because people think device name for pseudo file
-> system has no meanings. I think just leaving it as "no meaning" is better.
->
+On Wed, 01 Jul 2009 19:11:34 -0700
+Paul Menage <menage@google.com> wrote:
 
-Yes, I guess that makes sense. That was Li Zefan's opinion too.
+> [RFC] Example multi-bindable subsystem: a per-cgroup notes field
+> 
+> As an example of a multiply-bindable subsystem, this patch introduces
+> the "info" subsystem, which provides a single file, "info.notes", in
+> which user-space middleware can store an arbitrary (by default up to
+> one page) binary string representing configuration data about that
+> cgroup.  This reduces the need to keep additional state outside the
+> cgroup filesystem.  The maximum notes size for a hierarchy can be set
+> by updating the "info.size" file in the root cgroup.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
->>
->> +#define MAX_CGROUP_ROOT_NAMELEN 64
->> +
->
-> I don't like long names but....isn't this too short ? How about NAME_MAX ?
->
+Hmm, do we need to this "info" file as subsys ? How about making this as
+default file set ? (if there are users.)
+
+Thanks,
+-Kame
 
 
->
->>  /*
->>   * A cgroupfs_root represents the root of a cgroup hierarchy,
->>   * and may be associated with a superblock to form an active
->> @@ -93,6 +95,9 @@ struct cgroupfs_root {
->>
->>       /* The path to use for release notifications. */
->>       char release_agent_path[PATH_MAX];
->> +
->> +     /* The name for this hierarchy - may be empty */
->> +     char name[MAX_CGROUP_ROOT_NAMELEN];
->>  };
->>
-> If you don't want to make cgroupfs_root bigger,
->
->        cgroupfs_root {
->                ......
->                /* this must be the bottom of struct */
->                char name[0];
->        }
->
-> Is a choice.
+> ---
+> 
+>  include/linux/cgroup_subsys.h |    6 ++
+>  init/Kconfig                  |    9 +++
+>  kernel/Makefile               |    1 
+>  kernel/info_cgroup.c          |  133 +++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 149 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/info_cgroup.c
+> 
+> diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+> index f78605e..5dfea38 100644
+> --- a/include/linux/cgroup_subsys.h
+> +++ b/include/linux/cgroup_subsys.h
+> @@ -60,3 +60,9 @@ SUBSYS(net_cls)
+>  #endif
+>  
+>  /* */
+> +
+> +#ifdef CONFIG_CGROUP_INFO
+> +MULTI_SUBSYS(info)
+> +#endif
+> +
+> +/* */
+> diff --git a/init/Kconfig b/init/Kconfig
+> index d904d6c..3bd4685 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -604,6 +604,15 @@ config CGROUP_MEM_RES_CTLR_SWAP
+>  	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
+>  	  size is 4096bytes, 512k per 1Gbytes of swap.
+>  
+> +config CGROUP_INFO
+> +	bool "Simple application-specific info cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  Provides a simple cgroups subsystem with an "info.notes"
+> +	  field, which can be used by middleware to store
+> +	  application-specific configuration data about a cgroup. Can
+> +	  be mounted on multiple hierarchies at once.
+> +
+>  endif # CGROUPS
+>  
+>  config MM_OWNER
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 7ffdc16..e713a67 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
+>  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+>  obj-$(CONFIG_CPUSETS) += cpuset.o
+>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+> +obj-$(CONFIG_CGROUP_INFO) += info_cgroup.o
+>  obj-$(CONFIG_UTS_NS) += utsname.o
+>  obj-$(CONFIG_USER_NS) += user_namespace.o
+>  obj-$(CONFIG_PID_NS) += pid_namespace.o
+> diff --git a/kernel/info_cgroup.c b/kernel/info_cgroup.c
+> new file mode 100644
+> index 0000000..34cfdb8
+> --- /dev/null
+> +++ b/kernel/info_cgroup.c
+> @@ -0,0 +1,133 @@
+> +/*
+> + * info_cgroup.c - simple cgroup providing a "notes" field
+> + */
+> +
+> +#include "linux/cgroup.h"
+> +#include "linux/err.h"
+> +#include "linux/seq_file.h"
+> +
+> +struct info_cgroup {
+> +	struct cgroup_subsys_state css;
+> +	/* notes string for this cgroup */
+> +	const char *notes;
+> +	size_t len;
+> +	/*
+> +	 * size limit for notes in this hierarchy. Only relevant for
+> +	 * the root cgroup. Not synchronized since it's a single word
+> +	 * value and writes to it never depend on previously read
+> +	 * values.
+> +	 */
+> +	size_t max_len;
+> +	spinlock_t lock;
+> +};
+> +
+> +static inline struct info_cgroup *cg_info(struct cgroup *cg)
+> +{
+> +	return container_of(cgroup_subsys_state(cg, info_subsys_id),
+> +			    struct info_cgroup, css);
+> +}
+> +
+> +static struct cgroup_subsys_state *info_create(struct cgroup_subsys *ss,
+> +					       struct cgroup *cg)
+> +{
+> +	struct info_cgroup *info = kzalloc(sizeof(*info), GFP_KERNEL);
+> +	if (!info)
+> +		return ERR_PTR(-ENOMEM);
+> +	spin_lock_init(&info->lock);
+> +	if (!cg->parent)
+> +		info->max_len = PAGE_SIZE;
+> +	return &info->css;
+> +}
+> +
+> +static void info_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	kfree(css->notes);
+> +	kfree(css);
+> +}
+> +
+> +
+> +static int info_read(struct cgroup *cont,
+> +		     struct cftype *cft,
+> +		     struct seq_file *seq)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	spin_lock(&css->lock);
+> +	if (css->notes)
+> +		seq_write(seq, css->notes, css->len);
+> +	spin_unlock(&css->lock);
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Use a custom write function so that we can handle binary data
+> + */
+> +
+> +static ssize_t info_write(struct cgroup *cgrp, struct cftype *cft,
+> +			  struct file *file,
+> +			  const char __user *userbuf,
+> +			  size_t nbytes, loff_t *unused_ppos) {
+> +	struct info_cgroup *css = cg_info(cgrp);
+> +	char *notes = NULL;
+> +	if (nbytes > cg_info(cgrp->top_cgroup)->max_len)
+> +		return -E2BIG;
+> +	if (nbytes) {
+> +		notes = kmalloc(nbytes, GFP_USER);
+> +		if (!notes)
+> +			return -ENOMEM;
+> +		if (copy_from_user(notes, userbuf, nbytes))
+> +			return -EFAULT;
+> +	}
+> +
+> +	spin_lock(&css->lock);
+> +	kfree(css->notes);
+> +	css->notes = notes;
+> +	css->len = nbytes;
+> +	spin_unlock(&css->lock);
+> +	return nbytes;
+> +}
+> +
+> +static u64 notes_size_read(struct cgroup *cont, struct cftype *cft)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	return css->max_len;
+> +}
+> +
+> +static int notes_size_write(struct cgroup *cont, struct cftype *cft, u64 val)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	css->max_len = val;
+> +	return 0;
+> +}
+> +
+> +static struct cftype info_files[] =  {
+> +	{
+> +		.name = "notes",
+> +		.read_seq_string = info_read,
+> +		.write = info_write,
+> +	},
+> +};
+> +
+> +static struct cftype info_root_files[] = {
+> +	{
+> +		.name = "size",
+> +		.read_u64 = notes_size_read,
+> +		.write_u64 = notes_size_write,
+> +	},
+> +};
+> +
+> +static int info_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+> +{
+> +	if (!cont->parent)
+> +		cgroup_add_files(cont, ss, info_root_files,
+> +				 ARRAY_SIZE(info_root_files));
+> +	return cgroup_add_files(cont, ss, info_files, ARRAY_SIZE(info_files));
+> +}
+> +
+> +struct cgroup_subsys info_subsys = {
+> +	.name = "info",
+> +	.create = info_create,
+> +	.destroy = info_destroy,
+> +	.populate = info_populate,
+> +	.subsys_id = info_subsys_id,
+> +};
+> 
+> 
 
-I'd rather avoid something like that since I think it's less readable
-- I'd probably just make the name into a pointer in that case.
-
->
-> BTW, reading a patch, any kind of charactors are allowed ?
-
-Yes, other than \000 of course. I guess maybe I should use
-seq_escape() to print the name to avoid confusion in the event that
-people put whitespace in there, or else just ban whitespace (or maybe
-all non-alphanumeric chars).
-
-Paul
