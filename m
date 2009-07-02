@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZGBHIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZGBHIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbZGBHIB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZGBHHi
+	id S1756219AbZGBHIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZGBHHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:07:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54565 "EHLO hera.kernel.org"
+	Thu, 2 Jul 2009 03:07:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54564 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbZGBHHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755712AbZGBHHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 03:07:36 -0400
-Date: Thu, 2 Jul 2009 07:07:10 GMT
+Date: Thu, 2 Jul 2009 07:06:57 GMT
 From: tip-bot for Mike Galbraith <efault@gmx.de>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -18,225 +18,378 @@ Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1246514986.13293.48.camel@marge.simson.net>
-References: <1246514986.13293.48.camel@marge.simson.net>
-Subject: [tip:perfcounters/urgent] perf_counter tools: Enable kernel module symbol loading in tools
-Message-ID: <tip-429764873cf3fc3e73142872a674bb27cda589c1@git.kernel.org>
-Git-Commit-ID: 429764873cf3fc3e73142872a674bb27cda589c1
+In-Reply-To: <1246514916.13293.46.camel@marge.simson.net>
+References: <1246514916.13293.46.camel@marge.simson.net>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Connect module support infrastructure to symbol loading infrastructure
+Message-ID: <tip-6cfcc53ed4f3ecb9319e73a03f34f1eddcb644dd@git.kernel.org>
+Git-Commit-ID: 6cfcc53ed4f3ecb9319e73a03f34f1eddcb644dd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 07:07:11 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 07:06:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  429764873cf3fc3e73142872a674bb27cda589c1
-Gitweb:     http://git.kernel.org/tip/429764873cf3fc3e73142872a674bb27cda589c1
+Commit-ID:  6cfcc53ed4f3ecb9319e73a03f34f1eddcb644dd
+Gitweb:     http://git.kernel.org/tip/6cfcc53ed4f3ecb9319e73a03f34f1eddcb644dd
 Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Thu, 2 Jul 2009 08:09:46 +0200
+AuthorDate: Thu, 2 Jul 2009 08:08:36 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Thu, 2 Jul 2009 08:42:21 +0200
 
-perf_counter tools: Enable kernel module symbol loading in tools
-
-Add the -m/--modules option to perf report and perf annotate,
-which enables live module symbol/image loading. To be used
-with -k/--vmlinux.
-
-(Also give perf annotate a -P/--full-paths option.)
+perf_counter tools: Connect module support infrastructure to symbol loading infrastructure
 
 Signed-off-by: Mike Galbraith <efault@gmx.de>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1246514986.13293.48.camel@marge.simson.net>
+LKML-Reference: <1246514916.13293.46.camel@marge.simson.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-annotate.c |   25 ++++++++++++++++++++-----
- tools/perf/builtin-report.c   |    9 ++++++++-
- tools/perf/builtin-top.c      |   12 ++++++++++--
- 3 files changed, 38 insertions(+), 8 deletions(-)
+ tools/perf/builtin-annotate.c |    2 +-
+ tools/perf/builtin-report.c   |    2 +-
+ tools/perf/builtin-top.c      |    2 +-
+ tools/perf/util/symbol.c      |  159 ++++++++++++++++++++++++++++++++++++++---
+ tools/perf/util/symbol.h      |    5 +-
+ 5 files changed, 156 insertions(+), 14 deletions(-)
 
 diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 8820568..08ea6c5 100644
+index 3becc8a..8820568 100644
 --- a/tools/perf/builtin-annotate.c
 +++ b/tools/perf/builtin-annotate.c
-@@ -43,6 +43,10 @@ static int		dump_trace = 0;
- 
- static int		verbose;
- 
-+static int		modules;
-+
-+static int		full_paths;
-+
- static int		print_line;
- 
- static unsigned long	page_size;
-@@ -171,7 +175,7 @@ static int load_kernel(void)
+@@ -171,7 +171,7 @@ static int load_kernel(void)
  	if (!kernel_dso)
  		return -1;
  
--	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, 0);
-+	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+-	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose);
++	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, 0);
  	if (err <= 0) {
  		dso__delete(kernel_dso);
  		kernel_dso = NULL;
-@@ -1268,19 +1272,25 @@ static void print_summary(char *filename)
- 
- static void annotate_sym(struct dso *dso, struct symbol *sym)
- {
--	char *filename = dso->name;
-+	char *filename = dso->name, *d_filename;
- 	u64 start, end, len;
- 	char command[PATH_MAX*2];
- 	FILE *file;
- 
- 	if (!filename)
- 		return;
--	if (dso == kernel_dso)
-+	if (sym->module)
-+		filename = sym->module->path;
-+	else if (dso == kernel_dso)
- 		filename = vmlinux;
- 
- 	start = sym->obj_start;
- 	if (!start)
- 		start = sym->start;
-+	if (full_paths)
-+		d_filename = filename;
-+	else
-+		d_filename = basename(filename);
- 
- 	end = start + sym->end - sym->start + 1;
- 	len = sym->end - sym->start;
-@@ -1291,13 +1301,14 @@ static void annotate_sym(struct dso *dso, struct symbol *sym)
- 	}
- 
- 	printf("\n\n------------------------------------------------\n");
--	printf(" Percent |	Source code & Disassembly of %s\n", filename);
-+	printf(" Percent |	Source code & Disassembly of %s\n", d_filename);
- 	printf("------------------------------------------------\n");
- 
- 	if (verbose >= 2)
- 		printf("annotating [%p] %30s : [%p] %30s\n", dso, dso->name, sym, sym->name);
- 
--	sprintf(command, "objdump --start-address=0x%016Lx --stop-address=0x%016Lx -dS %s", (u64)start, (u64)end, filename);
-+	sprintf(command, "objdump --start-address=0x%016Lx --stop-address=0x%016Lx -dS %s|grep -v %s",
-+			(u64)start, (u64)end, filename, filename);
- 
- 	if (verbose >= 3)
- 		printf("doing: %s\n", command);
-@@ -1472,8 +1483,12 @@ static const struct option options[] = {
- 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
- 		    "dump raw trace in ASCII"),
- 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
-+	OPT_BOOLEAN('m', "modules", &modules,
-+		    "load module symbols - WARNING: use only with -k and LIVE kernel"),
- 	OPT_BOOLEAN('l', "print-line", &print_line,
- 		    "print matching source lines (may be slow)"),
-+	OPT_BOOLEAN('P', "full-paths", &full_paths,
-+		    "Don't shorten the displayed pathnames"),
- 	OPT_END()
- };
- 
 diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 38d136f..b44476c 100644
+index 58d1612..38d136f 100644
 --- a/tools/perf/builtin-report.c
 +++ b/tools/perf/builtin-report.c
-@@ -46,6 +46,8 @@ static int		dump_trace = 0;
- static int		verbose;
- #define eprintf(x...)	do { if (verbose) fprintf(stderr, x); } while (0)
- 
-+static int		modules;
-+
- static int		full_paths;
- 
- static unsigned long	page_size;
-@@ -188,7 +190,7 @@ static int load_kernel(void)
+@@ -188,7 +188,7 @@ static int load_kernel(void)
  	if (!kernel_dso)
  		return -1;
  
--	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, 0);
-+	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, modules);
+-	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose);
++	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose, 0);
  	if (err <= 0) {
  		dso__delete(kernel_dso);
  		kernel_dso = NULL;
-@@ -648,6 +650,9 @@ sort__sym_print(FILE *fp, struct hist_entry *self)
- 		ret += fprintf(fp, "[%c] %s",
- 			self->dso == kernel_dso ? 'k' :
- 			self->dso == hypervisor_dso ? 'h' : '.', self->sym->name);
-+
-+		if (self->sym->module)
-+			ret += fprintf(fp, "\t[%s]", self->sym->module->name);
- 	} else {
- 		ret += fprintf(fp, "%#016llx", (u64)self->ip);
- 	}
-@@ -1710,6 +1715,8 @@ static const struct option options[] = {
- 	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
- 		    "dump raw trace in ASCII"),
- 	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
-+	OPT_BOOLEAN('m', "modules", &modules,
-+		    "load module symbols - WARNING: use only with -k and LIVE kernel"),
- 	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
- 		   "sort by key(s): pid, comm, dso, symbol, parent"),
- 	OPT_BOOLEAN('P', "full-paths", &full_paths,
 diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index 9bb25fc..aa044ea 100644
+index 97fde1d..9bb25fc 100644
 --- a/tools/perf/builtin-top.c
 +++ b/tools/perf/builtin-top.c
-@@ -66,6 +66,7 @@ static unsigned int		page_size;
- static unsigned int		mmap_pages			= 16;
- static int			freq				=  0;
- static int			verbose				=  0;
-+static char			*vmlinux			=  NULL;
- 
- static char			*sym_filter;
- static unsigned long		filter_start;
-@@ -265,7 +266,10 @@ static void print_sym_table(void)
- 			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
- 
- 		color_fprintf(stdout, color, "%4.1f%%", pcnt);
--		printf(" - %016llx : %s\n", sym->start, sym->name);
-+		printf(" - %016llx : %s", sym->start, sym->name);
-+		if (sym->module)
-+			printf("\t[%s]", sym->module->name);
-+		printf("\n");
- 	}
- }
- 
-@@ -359,12 +363,13 @@ static int parse_symbols(void)
- {
- 	struct rb_node *node;
- 	struct symbol  *sym;
-+	int modules = vmlinux ? 1 : 0;
- 
- 	kernel_dso = dso__new("[kernel]", sizeof(struct sym_entry));
+@@ -364,7 +364,7 @@ static int parse_symbols(void)
  	if (kernel_dso == NULL)
  		return -1;
  
--	if (dso__load_kernel(kernel_dso, NULL, symbol_filter, 1, 0) <= 0)
-+	if (dso__load_kernel(kernel_dso, vmlinux, symbol_filter, verbose, modules) <= 0)
+-	if (dso__load_kernel(kernel_dso, NULL, symbol_filter, 1) <= 0)
++	if (dso__load_kernel(kernel_dso, NULL, symbol_filter, 1, 0) <= 0)
  		goto out_delete_dso;
  
  	node = rb_first(&kernel_dso->syms);
-@@ -680,6 +685,7 @@ static const struct option options[] = {
- 			    "system-wide collection from all CPUs"),
- 	OPT_INTEGER('C', "CPU", &profile_cpu,
- 		    "CPU to profile on"),
-+	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
- 	OPT_INTEGER('m', "mmap-pages", &mmap_pages,
- 		    "number of mmap data pages"),
- 	OPT_INTEGER('r', "realtime", &realtime_prio,
-@@ -709,6 +715,8 @@ int cmd_top(int argc, const char **argv, const char *prefix __used)
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index c077b6a..98a1311 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -35,7 +35,7 @@ static struct symbol *symbol__new(u64 start, u64 len,
+ 		self = ((void *)self) + priv_size;
+ 	}
+ 	self->start = start;
+-	self->end   = start + len - 1;
++	self->end   = len ? start + len - 1 : start;
+ 	memcpy(self->name, name, namelen);
+ 
+ 	return self;
+@@ -48,8 +48,12 @@ static void symbol__delete(struct symbol *self, unsigned int priv_size)
+ 
+ static size_t symbol__fprintf(struct symbol *self, FILE *fp)
  {
- 	int counter;
+-	return fprintf(fp, " %llx-%llx %s\n",
++	if (!self->module)
++		return fprintf(fp, " %llx-%llx %s\n",
+ 		       self->start, self->end, self->name);
++	else
++		return fprintf(fp, " %llx-%llx %s \t[%s]\n",
++		       self->start, self->end, self->name, self->module->name);
+ }
  
-+	symbol__init();
+ struct dso *dso__new(const char *name, unsigned int sym_priv_size)
+@@ -310,6 +314,26 @@ static inline int elf_sym__is_function(const GElf_Sym *sym)
+ 	       sym->st_size != 0;
+ }
+ 
++static inline int elf_sym__is_label(const GElf_Sym *sym)
++{
++	return elf_sym__type(sym) == STT_NOTYPE &&
++		sym->st_name != 0 &&
++		sym->st_shndx != SHN_UNDEF &&
++		sym->st_shndx != SHN_ABS;
++}
 +
- 	page_size = sysconf(_SC_PAGE_SIZE);
++static inline const char *elf_sec__name(const GElf_Shdr *shdr,
++					const Elf_Data *secstrs)
++{
++	return secstrs->d_buf + shdr->sh_name;
++}
++
++static inline int elf_sec__is_text(const GElf_Shdr *shdr,
++					const Elf_Data *secstrs)
++{
++	return strstr(elf_sec__name(shdr, secstrs), "text") != NULL;
++}
++
+ static inline const char *elf_sym__name(const GElf_Sym *sym,
+ 					const Elf_Data *symstrs)
+ {
+@@ -451,9 +475,9 @@ static int dso__synthesize_plt_symbols(struct  dso *self, Elf *elf,
+ }
  
- 	argc = parse_options(argc, argv, options, top_usage, 0);
+ static int dso__load_sym(struct dso *self, int fd, const char *name,
+-			 symbol_filter_t filter, int verbose)
++			 symbol_filter_t filter, int verbose, struct module *mod)
+ {
+-	Elf_Data *symstrs;
++	Elf_Data *symstrs, *secstrs;
+ 	uint32_t nr_syms;
+ 	int err = -1;
+ 	uint32_t index;
+@@ -461,7 +485,7 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 	GElf_Shdr shdr;
+ 	Elf_Data *syms;
+ 	GElf_Sym sym;
+-	Elf_Scn *sec, *sec_dynsym;
++	Elf_Scn *sec, *sec_dynsym, *sec_strndx;
+ 	Elf *elf;
+ 	size_t dynsym_idx;
+ 	int nr = 0;
+@@ -520,6 +544,14 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 	if (symstrs == NULL)
+ 		goto out_elf_end;
+ 
++	sec_strndx = elf_getscn(elf, ehdr.e_shstrndx);
++	if (sec_strndx == NULL)
++		goto out_elf_end;
++
++	secstrs = elf_getdata(sec_strndx, NULL);
++	if (symstrs == NULL)
++		goto out_elf_end;
++
+ 	nr_syms = shdr.sh_size / shdr.sh_entsize;
+ 
+ 	memset(&sym, 0, sizeof(sym));
+@@ -529,8 +561,11 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 	elf_symtab__for_each_symbol(syms, nr_syms, index, sym) {
+ 		struct symbol *f;
+ 		u64 obj_start;
++		struct section *section = NULL;
++		int is_label = elf_sym__is_label(&sym);
++		const char *section_name;
+ 
+-		if (!elf_sym__is_function(&sym))
++		if (!is_label && !elf_sym__is_function(&sym))
+ 			continue;
+ 
+ 		sec = elf_getscn(elf, sym.st_shndx);
+@@ -538,6 +573,11 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 			goto out_elf_end;
+ 
+ 		gelf_getshdr(sec, &shdr);
++
++		if (is_label && !elf_sec__is_text(&shdr, secstrs))
++			continue;
++
++		section_name = elf_sec__name(&shdr, secstrs);
+ 		obj_start = sym.st_value;
+ 
+ 		if (self->prelinked) {
+@@ -548,6 +588,17 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 			sym.st_value -= shdr.sh_addr - shdr.sh_offset;
+ 		}
+ 
++		if (mod) {
++			section = mod->sections->find_section(mod->sections, section_name);
++			if (section)
++				sym.st_value += section->vma;
++			else {
++				fprintf(stderr, "dso__load_sym() module %s lookup of %s failed\n",
++					mod->name, section_name);
++				goto out_elf_end;
++			}
++		}
++
+ 		f = symbol__new(sym.st_value, sym.st_size,
+ 				elf_sym__name(&sym, symstrs),
+ 				self->sym_priv_size, obj_start, verbose);
+@@ -557,6 +608,7 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
+ 		if (filter && filter(self, f))
+ 			symbol__delete(f, self->sym_priv_size);
+ 		else {
++			f->module = mod;
+ 			dso__insert_symbol(self, f);
+ 			nr++;
+ 		}
+@@ -606,7 +658,7 @@ more:
+ 		fd = open(name, O_RDONLY);
+ 	} while (fd < 0);
+ 
+-	ret = dso__load_sym(self, fd, name, filter, verbose);
++	ret = dso__load_sym(self, fd, name, filter, verbose, NULL);
+ 	close(fd);
+ 
+ 	/*
+@@ -620,6 +672,86 @@ out:
+ 	return ret;
+ }
+ 
++static int dso__load_module(struct dso *self, struct mod_dso *mods, const char *name,
++			     symbol_filter_t filter, int verbose)
++{
++	struct module *mod = mod_dso__find_module(mods, name);
++	int err = 0, fd;
++
++	if (mod == NULL || !mod->active)
++		return err;
++
++	fd = open(mod->path, O_RDONLY);
++
++	if (fd < 0)
++		return err;
++
++	err = dso__load_sym(self, fd, name, filter, verbose, mod);
++	close(fd);
++
++	return err;
++}
++
++int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose)
++{
++	struct mod_dso *mods = mod_dso__new_dso("modules");
++	struct module *pos;
++	struct rb_node *next;
++	int err;
++
++	err = mod_dso__load_modules(mods);
++
++	if (err <= 0)
++		return err;
++
++	/*
++	 * Iterate over modules, and load active symbols.
++	 */
++	next = rb_first(&mods->mods);
++	while (next) {
++		pos = rb_entry(next, struct module, rb_node);
++		err = dso__load_module(self, mods, pos->name, filter, verbose);
++
++		if (err < 0)
++			break;
++
++		next = rb_next(&pos->rb_node);
++	}
++
++	if (err < 0) {
++		mod_dso__delete_modules(mods);
++		mod_dso__delete_self(mods);
++	}
++
++	return err;
++}
++
++static inline void dso__fill_symbol_holes(struct dso *self)
++{
++	struct symbol *prev = NULL;
++	struct rb_node *nd;
++
++	for (nd = rb_last(&self->syms); nd; nd = rb_prev(nd)) {
++		struct symbol *pos = rb_entry(nd, struct symbol, rb_node);
++
++		if (prev) {
++			u64 hole = 0;
++			int alias = pos->start == prev->start;
++
++			if (!alias)
++				hole = prev->start - pos->end - 1;
++
++			if (hole || alias) {
++				if (alias)
++					pos->end = prev->end;
++				else if (hole)
++					pos->end = prev->start - 1;
++			}
++		}
++		prev = pos;
++	}
++}
++
+ static int dso__load_vmlinux(struct dso *self, const char *vmlinux,
+ 			     symbol_filter_t filter, int verbose)
+ {
+@@ -628,19 +760,26 @@ static int dso__load_vmlinux(struct dso *self, const char *vmlinux,
+ 	if (fd < 0)
+ 		return -1;
+ 
+-	err = dso__load_sym(self, fd, vmlinux, filter, verbose);
++	err = dso__load_sym(self, fd, vmlinux, filter, verbose, NULL);
++
++	if (err > 0)
++		dso__fill_symbol_holes(self);
++
+ 	close(fd);
+ 
+ 	return err;
+ }
+ 
+ int dso__load_kernel(struct dso *self, const char *vmlinux,
+-		     symbol_filter_t filter, int verbose)
++		     symbol_filter_t filter, int verbose, int modules)
+ {
+ 	int err = -1;
+ 
+-	if (vmlinux)
++	if (vmlinux) {
+ 		err = dso__load_vmlinux(self, vmlinux, filter, verbose);
++		if (err > 0 && modules)
++			err = dso__load_modules(self, filter, verbose);
++	}
+ 
+ 	if (err <= 0)
+ 		err = dso__load_kallsyms(self, filter, verbose);
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 65a8449..4e141a3 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -5,6 +5,7 @@
+ #include "types.h"
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
++#include "module.h"
+ 
+ struct symbol {
+ 	struct rb_node	rb_node;
+@@ -13,6 +14,7 @@ struct symbol {
+ 	u64		obj_start;
+ 	u64		hist_sum;
+ 	u64		*hist;
++	struct module	*module;
+ 	void		*priv;
+ 	char		name[0];
+ };
+@@ -41,7 +43,8 @@ static inline void *dso__sym_priv(struct dso *self, struct symbol *sym)
+ struct symbol *dso__find_symbol(struct dso *self, u64 ip);
+ 
+ int dso__load_kernel(struct dso *self, const char *vmlinux,
+-		     symbol_filter_t filter, int verbose);
++		     symbol_filter_t filter, int verbose, int modules);
++int dso__load_modules(struct dso *self, symbol_filter_t filter, int verbose);
+ int dso__load(struct dso *self, symbol_filter_t filter, int verbose);
+ 
+ size_t dso__fprintf(struct dso *self, FILE *fp);
