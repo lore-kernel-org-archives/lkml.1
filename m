@@ -1,111 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZGBOOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZGBOOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbZGBOOS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 10:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZGBOOH
+	id S1754413AbZGBOOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 10:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZGBOOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 10:14:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:16134 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZGBOOG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 10:14:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,334,1243839600"; 
-   d="scan'208";a="529692387"
-From: "Shi, Alex" <alex.shi@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-CC: "bugzilla-daemon@bugzilla.kernel.org" 
-	<bugzilla-daemon@bugzilla.kernel.org>,
-       "bugme-daemon@bugzilla.kernel.org" <bugme-daemon@bugzilla.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Chen, Tim C" <tim.c.chen@intel.com>
-Date: Thu, 2 Jul 2009 22:12:09 +0800
-Subject: RE: [Bugme-new] [Bug 13690] New: nodes_clear cause hugepage
- unusable on non-NUMA machine
-Thread-Topic: [Bugme-new] [Bug 13690] New: nodes_clear cause hugepage
- unusable on non-NUMA machine
-Thread-Index: Acn68lp4gNRHtLyNThysNat7/+Gd6QALJVog
-Message-ID: <F7C8A4D3A9905B45A80E4C194793FA6502C8404B2A@PDSMSX501.ccr.corp.intel.com>
-References: <bug-13690-10286@http.bugzilla.kernel.org/>
-	 <20090701183452.8660c8a9.akpm@linux-foundation.org>
-	 <4A4C17FD.3080404@kernel.org> <1246517111.15721.5.camel@alexs-hp>
- <4A4C74D8.30809@kernel.org>
-In-Reply-To: <4A4C74D8.30809@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+	Thu, 2 Jul 2009 10:14:16 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:53032 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754584AbZGBOOO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 10:14:14 -0400
+Subject: Re: Exiting with locks still held (was Re: [PATCH] kmemleak: Fix 
+	scheduling-while-atomic bug)
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       git-commits-head@vger.kernel.org
+In-Reply-To: <84144f020907020554n1b098e28o8b4a4a58a08728e3@mail.gmail.com>
+References: <200907010300.n6130rRf026194@hera.kernel.org>
+	 <20090701075332.GA17252@elte.hu>
+	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
+	 <20090701093015.GA6862@elte.hu>
+	 <1246441592.8492.38.camel@pc1117.cambridge.arm.com>
+	 <20090701110438.GA15958@elte.hu>
+	 <1246538899.13320.86.camel@pc1117.cambridge.arm.com>
+	 <84144f020907020554n1b098e28o8b4a4a58a08728e3@mail.gmail.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 02 Jul 2009 15:13:44 +0100
+Message-Id: <1246544024.13320.95.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jul 2009 14:13:45.0146 (UTC) FILETIME=[4F66B9A0:01C9FB1F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n62EEPoU012989
 
-Yes, the patch fixes this bug! 
+On Thu, 2009-07-02 at 15:54 +0300, Pekka Enberg wrote:
+> On Thu, Jul 2, 2009 at 3:48 PM, Catalin Marinas<catalin.marinas@arm.com> wrote:
+> > For example, the badly written code below opens kmemleak and acquires
+> > the scan_mutex in the parent task but releases it in the child (it needs
+> > a few tries to trigger it). With waitpid() in parent everything is fine.
+[...]
+> Well, you are not supposed to hold on to locks when returning from a
+> system call ("sys_open") anyway.
 
-Alex 
+There's a fix to this. I'll test it a bit more before pushing upstream:
 
->-----Original Message-----
->From: Yinghai Lu [mailto:yinghai@kernel.org]
->Sent: 2009ƒÍ7‘¬2»’ 16:51
->To: Shi, Alex; Andrew Morton; Ingo Molnar
->Cc: bugzilla-daemon@bugzilla.kernel.org; bugme-daemon@bugzilla.kernel.org;
->Christoph Lameter; Mel Gorman; linux-kernel@vger.kernel.org; Zhang, Yanmin;
->Chen, Tim C
->Subject: Re: [Bugme-new] [Bug 13690] New: nodes_clear cause hugepage unusable
->on non-NUMA machine
->
->Alex Shi wrote:
->> The new patch works for my stoakley i386 machine. But for x86_64 machine
->> the specjbb2005 still can not run with hugepage. The specjbb2005 use the
->> same java setting as i386 system. After apply your patch, the iomem of
->> x86_64 is:
->
->please check
->
->[PATCH] x86: don't clear nodes_states[N_NORMAL_MEMORY] when numa is not
->compiled in
->
->Alex found:
->for x86_64 machine the specjbb2005 still can not run with hugepage
->
->only happens when numa is not compiled in
->
->the root cause: node_set_state will not set it back for us in that case
->
->so don't clear that when numa is not select in config
->
->Reported-by: Alex Shi <alex.shi@intel.com>
->Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->
->---
-> arch/x86/mm/init_64.c |    8 +++++++-
-> 1 file changed, 7 insertions(+), 1 deletion(-)
->
->Index: linux-2.6/arch/x86/mm/init_64.c
->===================================================================
->--- linux-2.6.orig/arch/x86/mm/init_64.c
->+++ linux-2.6/arch/x86/mm/init_64.c
->@@ -598,8 +598,14 @@ void __init paging_init(void)
->
-> 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
-> 	sparse_init();
->-	/* clear the default setting with node 0 */
->+#if MAX_NUMNODES > 1
->+	/*
->+	 * clear the default setting with node 0
->+	 * note: don't clear it, node_set_state will do nothing
->+	 *	 (aka set it back) when numa support is not compiled in
->+	 */
-> 	nodes_clear(node_states[N_NORMAL_MEMORY]);
->+#endif
-> 	free_area_init_nodes(max_zone_pfns);
-> }
->
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
+
+kmemleak: Do not acquire scan_mutex in kmemleak_open()
+
+From: Catalin Marinas <catalin.marinas@arm.com>
+
+Initially, the scan_mutex was acquired in kmemleak_open() and released
+in kmemleak_release() (corresponding to /sys/kernel/debug/kmemleak
+operations). This was causing some lockdep reports when the file was
+closed from a different task than the one opening it. This patch moves
+the scan_mutex acquiring in kmemleak_write() or kmemleak_seq_show().
+
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
+ mm/kmemleak.c |   58 +++++++++++++++++++++++++++------------------------------
+ 1 files changed, 27 insertions(+), 31 deletions(-)
+
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 958b462..678baad 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -1157,11 +1157,22 @@ static int kmemleak_seq_show(struct seq_file *seq, void *v)
+ {
+ 	struct kmemleak_object *object = v;
+ 	unsigned long flags;
++	int ret;
++
++	/*
++	 * scan_mutex needs to be acquired here since unreferenced_object() is
++	 * not reliable during memory scanning.
++	 */
++	ret = mutex_lock_interruptible(&scan_mutex);
++	if (ret < 0)
++		return ret;
+ 
+ 	spin_lock_irqsave(&object->lock, flags);
+ 	if ((object->flags & OBJECT_REPORTED) && unreferenced_object(object))
+ 		print_unreferenced(seq, object);
+ 	spin_unlock_irqrestore(&object->lock, flags);
++
++	mutex_unlock(&scan_mutex);
+ 	return 0;
+ }
+ 
+@@ -1174,36 +1185,15 @@ static const struct seq_operations kmemleak_seq_ops = {
+ 
+ static int kmemleak_open(struct inode *inode, struct file *file)
+ {
+-	int ret = 0;
+-
+ 	if (!atomic_read(&kmemleak_enabled))
+ 		return -EBUSY;
+ 
+-	ret = mutex_lock_interruptible(&scan_mutex);
+-	if (ret < 0)
+-		goto out;
+-	if (file->f_mode & FMODE_READ) {
+-		ret = seq_open(file, &kmemleak_seq_ops);
+-		if (ret < 0)
+-			goto scan_unlock;
+-	}
+-	return ret;
+-
+-scan_unlock:
+-	mutex_unlock(&scan_mutex);
+-out:
+-	return ret;
++	return seq_open(file, &kmemleak_seq_ops);
+ }
+ 
+ static int kmemleak_release(struct inode *inode, struct file *file)
+ {
+-	int ret = 0;
+-
+-	if (file->f_mode & FMODE_READ)
+-		seq_release(inode, file);
+-	mutex_unlock(&scan_mutex);
+-
+-	return ret;
++	return seq_release(inode, file);
+ }
+ 
+ /*
+@@ -1223,15 +1213,17 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ {
+ 	char buf[64];
+ 	int buf_size;
+-
+-	if (!atomic_read(&kmemleak_enabled))
+-		return -EBUSY;
++	int ret;
+ 
+ 	buf_size = min(size, (sizeof(buf) - 1));
+ 	if (strncpy_from_user(buf, user_buf, buf_size) < 0)
+ 		return -EFAULT;
+ 	buf[buf_size] = 0;
+ 
++	ret = mutex_lock_interruptible(&scan_mutex);
++	if (ret < 0)
++		return ret;
++
+ 	if (strncmp(buf, "off", 3) == 0)
+ 		kmemleak_disable();
+ 	else if (strncmp(buf, "stack=on", 8) == 0)
+@@ -1244,11 +1236,10 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ 		stop_scan_thread();
+ 	else if (strncmp(buf, "scan=", 5) == 0) {
+ 		unsigned long secs;
+-		int err;
+ 
+-		err = strict_strtoul(buf + 5, 0, &secs);
+-		if (err < 0)
+-			return err;
++		ret = strict_strtoul(buf + 5, 0, &secs);
++		if (ret < 0)
++			goto out;
+ 		stop_scan_thread();
+ 		if (secs) {
+ 			jiffies_scan_wait = msecs_to_jiffies(secs * 1000);
+@@ -1257,7 +1248,12 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ 	} else if (strncmp(buf, "scan", 4) == 0)
+ 		kmemleak_scan();
+ 	else
+-		return -EINVAL;
++		ret = -EINVAL;
++
++out:
++	mutex_unlock(&scan_mutex);
++	if (ret < 0)
++		return ret;
+ 
+ 	/* ignore the rest of the buffer, only one command at a time */
+ 	*ppos += size;
+
+
+-- 
+Catalin
+
