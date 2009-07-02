@@ -1,173 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZGBBrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbZGBB67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZGBBrH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZGBBqz
+	id S1754368AbZGBB67 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZGBB6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:46:55 -0400
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:40135 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbZGBBqx (ORCPT
+	Wed, 1 Jul 2009 21:58:51 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49779 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513AbZGBB6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:46:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=kIaT/0C+6AQV96irABsQ9Sd/c//0NXNTXCxRyJsAi7FykGCoiIX0lJ96yfIg88588H
-         xpeBaM9ZJUw1favt8ojXcYE7EfpQCmQh3HLSJUAZ+FbeRIcvULtHdweuTEhuQItC/3XL
-         oBY9C98wxWF43V30ydArQcDVXke2wAxO8vV2Q=
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <200907011829.16850.bzolnier@gmail.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <1246459661.9660.40.camel@falcon> <200907011821.26091.bzolnier@gmail.com>
-	 <200907011829.16850.bzolnier@gmail.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Thu, 02 Jul 2009 09:46:43 +0800
-Message-Id: <1246499203.9660.52.camel@falcon>
+	Wed, 1 Jul 2009 21:58:50 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 2 Jul 2009 10:57:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
+Message-Id: <20090702105707.8b2135d9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+References: <4A4C0C60.4050106@cn.fujitsu.com>
+	<6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 18:29 +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 01 July 2009 18:21:25 Bartlomiej Zolnierkiewicz wrote:
-> > On Wednesday 01 July 2009 16:47:41 Wu Zhangjin wrote:
-> > > On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
-> > > > On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
-> > > > 
-> > > > > I just tried, and it "seems" to work. Will try a few more cycles.
-> > > > 
-> > > > STD/STR survived quite a few cycles now. Patch seems to be doing the
-> > > > right thing.
-> > > > 
-> > > > On Mon, Jun 29, 2009 at 11:51 PM, Etienne
-> > > > Basset<etienne.basset@numericable.fr> wrote:
-> > > > 
-> > > > > To have STR/resume work with current git, I have to :
-> > > > 
-> > > > > 1) apply Bart's patch
-> > > > 
-> > > > This is not yet in Linus's tree. And much needed to really fix the problem.
-> > > > 
-> > > > > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-> > > > 
-> > > 
-> > > Yes, This commit must be reverted, otherwise, STD/Hibernation will not
-> > > work either. I have tested it on two different loongson-based machines:
-> > > fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
-> > 
-> > Since it seems like Dave is taking his sweet time with doing the revert
-> > I stared at the code a bit more and I think that I finally found the bug
-> > (thanks to your debugging work for giving me the right hint!).
-> > 
-> > The patch needs to take into the account a new code introduced by the recent
-> > block layer changes (commit 8f6205cd572fece673da0255d74843680f67f879):
-> > 
-> > @@ -555,8 +560,11 @@ repeat:
-> >                 startstop = start_request(drive, rq);
-> >                 spin_lock_irq(&hwif->lock);
-> >  
-> > -               if (startstop == ide_stopped)
-> > +               if (startstop == ide_stopped) {
-> > +                       rq = hwif->rq;
-> > +                       hwif->rq = NULL;
-> >                         goto repeat;
-> > +               }
-> >         } else
-> >                 goto plug_device;
-> >  out:
-> > 
-> > and not zero hwif->rq if the device is blocked. 
-> > 
-> > Could you try the attached patch and see if it fixes the issue?
+On Wed, 1 Jul 2009 18:36:36 -0700
+Paul Menage <menage@google.com> wrote:
+
+> Thanks Li - but as I said to Serge in the email when I brought this up
+> originally, I already had a patch in mind for this; I've had an intern
+> (Ben) at Google working on it. His patch (pretty much ready, and being
+> sent out tomorrow I hope) is pretty similar to yours, but his is on
+> top of another patch that provides a (currently read-only)
+> "cgroup.procs" file in each cgroup dir that lists the unique tgids in
+> the cgroup. So the key in the list of pid arrays is actually a pid_ns
+> and a file type (indicating procs or tasks) rather than just a pid_ns.
 > 
-> Here is the more complete version, also taking into the account changes
-> in ide_intr() and ide_timer_expiry():
+Wow, I welcome "procs" file :)
+
+Off-topic:
+Is there relationship betweem mm->owner and tgid ?
+If no, is it difficult to synchronize tgid and mm->owner ?
+
+THanks,
+-Kame
+
+
+> So I think it makes more sense to not use this patch, but to use the
+> pair of patches that Ben's written, since they provide more overal
+> functionality.
 > 
-
-Sorry, I can not apply this patch directly, which original version did
-you use? I used the one in the master branch of linux-mips development
-git repository.
-
-commit 5a4f13fad1ab5bd08dea78fc55321e429d83cddf
-Merge: ec9c45d e18ed14
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon Jun 29 20:07:43 2009 -0700
-
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6
-    
-    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6:
-      ide: memory overrun in ide_get_identity_ioctl() on big endian
-machines using ioctl HDIO_OBSOLETE_IDENTITY
-      ide: fix resume for CONFIG_BLK_DEV_IDEACPI=y
-      ide-cd: handle fragmented packet commands gracefully
-      ide: always kill the whole request on error
-      ide: fix ide_kill_rq() for special ide-{floppy,tape} driver
-requests
-
-it this too old? should i merge another git repository?
-
-I have tried to apply it manually, but unfortunately, also not work. any
-other patch needed?
-
-Thanks!
-Wu Zhangjin
-> ---
->  drivers/ide/ide-io.c |   15 ++++++++++-----
->  1 file changed, 10 insertions(+), 5 deletions(-)
+> Paul
 > 
-> Index: b/drivers/ide/ide-io.c
-> ===================================================================
-> --- a/drivers/ide/ide-io.c
-> +++ b/drivers/ide/ide-io.c
-> @@ -532,7 +532,8 @@ repeat:
->  
->  		if (startstop == ide_stopped) {
->  			rq = hwif->rq;
-> -			hwif->rq = NULL;
-> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
-> +				hwif->rq = NULL;
->  			goto repeat;
->  		}
->  	} else
-> @@ -679,8 +680,10 @@ void ide_timer_expiry (unsigned long dat
->  		spin_lock_irq(&hwif->lock);
->  		enable_irq(hwif->irq);
->  		if (startstop == ide_stopped && hwif->polling == 0) {
-> -			rq_in_flight = hwif->rq;
-> -			hwif->rq = NULL;
-> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-> +				rq_in_flight = hwif->rq;
-> +				hwif->rq = NULL;
-> +			}
->  			ide_unlock_port(hwif);
->  			plug_device = 1;
->  		}
-> @@ -856,8 +859,10 @@ irqreturn_t ide_intr (int irq, void *dev
->  	 */
->  	if (startstop == ide_stopped && hwif->polling == 0) {
->  		BUG_ON(hwif->handler);
-> -		rq_in_flight = hwif->rq;
-> -		hwif->rq = NULL;
-> +		if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-> +			rq_in_flight = hwif->rq;
-> +			hwif->rq = NULL;
-> +		}
->  		ide_unlock_port(hwif);
->  		plug_device = 1;
->  	}
+> On Wed, Jul 1, 2009 at 6:24 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+> > The bug was introduced by commit cc31edceee04a7b87f2be48f9489ebb72d264844
+> > ("cgroups: convert tasks file to use a seq_file with shared pid array").
+> >
+> > We cache a pid array for all threads that are opening the same "tasks"
+> > file, but the pids in the array are always from the namespace of the
+> > last process that opened the file, so all other threads will read pids
+> > from that namespace instead of their own namespaces.
+> >
+> > To fix it, we maintain a list of pid arrays, which is keyed by pid_ns.
+> > The list will be of length 1 at most time.
+> >
+> > Reported-by: Paul Menage <menage@google.com>
+> > Idea-by: Paul Menage <menage@google.com>
+> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > ---
+> >  include/linux/cgroup.h |   11 ++----
+> >  kernel/cgroup.c        |   94 +++++++++++++++++++++++++++++++++++------------
+> >  2 files changed, 74 insertions(+), 31 deletions(-)
+> >
+> > diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> > index 665fa70..20411d2 100644
+> > --- a/include/linux/cgroup.h
+> > +++ b/include/linux/cgroup.h
+> > @@ -179,14 +179,11 @@ struct cgroup {
+> >         */
+> >        struct list_head release_list;
+> >
+> > -       /* pids_mutex protects the fields below */
+> > +       /* pids_mutex protects pids_list and cached pid arrays. */
+> >        struct rw_semaphore pids_mutex;
+> > -       /* Array of process ids in the cgroup */
+> > -       pid_t *tasks_pids;
+> > -       /* How many files are using the current tasks_pids array */
+> > -       int pids_use_count;
+> > -       /* Length of the current tasks_pids array */
+> > -       int pids_length;
+> > +
+> > +       /* Linked list of struct cgroup_pids */
+> > +       struct list_head pids_list;
+> >
+> >        /* For RCU-protected deletion */
+> >        struct rcu_head rcu_head;
+> > diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> > index 3737a68..13dddb4 100644
+> > --- a/kernel/cgroup.c
+> > +++ b/kernel/cgroup.c
+> > @@ -47,6 +47,7 @@
+> >  #include <linux/hash.h>
+> >  #include <linux/namei.h>
+> >  #include <linux/smp_lock.h>
+> > +#include <linux/pid_namespace.h>
+> >
+> >  #include <asm/atomic.h>
+> >
+> > @@ -960,6 +961,7 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+> >        INIT_LIST_HEAD(&cgrp->children);
+> >        INIT_LIST_HEAD(&cgrp->css_sets);
+> >        INIT_LIST_HEAD(&cgrp->release_list);
+> > +       INIT_LIST_HEAD(&cgrp->pids_list);
+> >        init_rwsem(&cgrp->pids_mutex);
+> >  }
+> >  static void init_cgroup_root(struct cgroupfs_root *root)
+> > @@ -2201,12 +2203,30 @@ err:
+> >        return ret;
+> >  }
+> >
+> > +/*
+> > + * Cache pids for all threads in the same pid namespace that are
+> > + * opening the same "tasks" file.
+> > + */
+> > +struct cgroup_pids {
+> > +       /* The node in cgrp->pids_list */
+> > +       struct list_head list;
+> > +       /* The cgroup those pids belong to */
+> > +       struct cgroup *cgrp;
+> > +       /* The namepsace those pids belong to */
+> > +       struct pid_namespace *pid_ns;
+> > +       /* Array of process ids in the cgroup */
+> > +       pid_t *tasks_pids;
+> > +       /* How many files are using the this tasks_pids array */
+> > +       int pids_use_count;
+> > +       /* Length of the current tasks_pids array */
+> > +       int pids_length;
+> > +};
+> > +
+> >  static int cmppid(const void *a, const void *b)
+> >  {
+> >        return *(pid_t *)a - *(pid_t *)b;
+> >  }
+> >
+> > -
+> >  /*
+> >  * seq_file methods for the "tasks" file. The seq_file position is the
+> >  * next pid to display; the seq_file iterator is a pointer to the pid
+> > @@ -2221,45 +2241,47 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
+> >         * after a seek to the start). Use a binary-search to find the
+> >         * next pid to display, if any
+> >         */
+> > -       struct cgroup *cgrp = s->private;
+> > +       struct cgroup_pids *cp = s->private;
+> > +       struct cgroup *cgrp = cp->cgrp;
+> >        int index = 0, pid = *pos;
+> >        int *iter;
+> >
+> >        down_read(&cgrp->pids_mutex);
+> >        if (pid) {
+> > -               int end = cgrp->pids_length;
+> > +               int end = cp->pids_length;
+> >
+> >                while (index < end) {
+> >                        int mid = (index + end) / 2;
+> > -                       if (cgrp->tasks_pids[mid] == pid) {
+> > +                       if (cp->tasks_pids[mid] == pid) {
+> >                                index = mid;
+> >                                break;
+> > -                       } else if (cgrp->tasks_pids[mid] <= pid)
+> > +                       } else if (cp->tasks_pids[mid] <= pid)
+> >                                index = mid + 1;
+> >                        else
+> >                                end = mid;
+> >                }
+> >        }
+> >        /* If we're off the end of the array, we're done */
+> > -       if (index >= cgrp->pids_length)
+> > +       if (index >= cp->pids_length)
+> >                return NULL;
+> >        /* Update the abstract position to be the actual pid that we found */
+> > -       iter = cgrp->tasks_pids + index;
+> > +       iter = cp->tasks_pids + index;
+> >        *pos = *iter;
+> >        return iter;
+> >  }
+> >
+> >  static void cgroup_tasks_stop(struct seq_file *s, void *v)
+> >  {
+> > -       struct cgroup *cgrp = s->private;
+> > +       struct cgroup_pids *cp = s->private;
+> > +       struct cgroup *cgrp = cp->cgrp;
+> >        up_read(&cgrp->pids_mutex);
+> >  }
+> >
+> >  static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
+> >  {
+> > -       struct cgroup *cgrp = s->private;
+> > +       struct cgroup_pids *cp = s->private;
+> >        int *p = v;
+> > -       int *end = cgrp->tasks_pids + cgrp->pids_length;
+> > +       int *end = cp->tasks_pids + cp->pids_length;
+> >
+> >        /*
+> >         * Advance to the next pid in the array. If this goes off the
+> > @@ -2286,26 +2308,32 @@ static struct seq_operations cgroup_tasks_seq_operations = {
+> >        .show = cgroup_tasks_show,
+> >  };
+> >
+> > -static void release_cgroup_pid_array(struct cgroup *cgrp)
+> > +static void release_cgroup_pid_array(struct cgroup_pids *cp)
+> >  {
+> > +       struct cgroup *cgrp = cp->cgrp;
+> > +
+> >        down_write(&cgrp->pids_mutex);
+> > -       BUG_ON(!cgrp->pids_use_count);
+> > -       if (!--cgrp->pids_use_count) {
+> > -               kfree(cgrp->tasks_pids);
+> > -               cgrp->tasks_pids = NULL;
+> > -               cgrp->pids_length = 0;
+> > +       BUG_ON(!cp->pids_use_count);
+> > +       if (!--cp->pids_use_count) {
+> > +               list_del(&cp->list);
+> > +               kfree(cp->tasks_pids);
+> > +               kfree(cp);
+> >        }
+> >        up_write(&cgrp->pids_mutex);
+> >  }
+> >
+> >  static int cgroup_tasks_release(struct inode *inode, struct file *file)
+> >  {
+> > -       struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+> > +       struct seq_file *seq;
+> > +       struct cgroup_pids *cp;
+> >
+> >        if (!(file->f_mode & FMODE_READ))
+> >                return 0;
+> >
+> > -       release_cgroup_pid_array(cgrp);
+> > +       seq = file->private_data;
+> > +       cp = seq->private;
+> > +
+> > +       release_cgroup_pid_array(cp);
+> >        return seq_release(inode, file);
+> >  }
+> >
+> > @@ -2324,6 +2352,8 @@ static struct file_operations cgroup_tasks_operations = {
+> >  static int cgroup_tasks_open(struct inode *unused, struct file *file)
+> >  {
+> >        struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+> > +       struct pid_namespace *pid_ns = task_active_pid_ns(current);
+> > +       struct cgroup_pids *cp;
+> >        pid_t *pidarray;
+> >        int npids;
+> >        int retval;
+> > @@ -2350,20 +2380,36 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+> >         * array if necessary
+> >         */
+> >        down_write(&cgrp->pids_mutex);
+> > -       kfree(cgrp->tasks_pids);
+> > -       cgrp->tasks_pids = pidarray;
+> > -       cgrp->pids_length = npids;
+> > -       cgrp->pids_use_count++;
+> > +
+> > +       list_for_each_entry(cp, &cgrp->pids_list, list) {
+> > +               if (pid_ns == cp->pid_ns)
+> > +                       goto found;
+> > +       }
+> > +
+> > +       cp = kzalloc(sizeof(*cp), GFP_KERNEL);
+> > +       if (!cp) {
+> > +               up_write(&cgrp->pids_mutex);
+> > +               kfree(pidarray);
+> > +               return -ENOMEM;
+> > +       }
+> > +       cp->cgrp = cgrp;
+> > +       cp->pid_ns = pid_ns;
+> > +       list_add(&cp->list, &cgrp->pids_list);
+> > +found:
+> > +       kfree(cp->tasks_pids);
+> > +       cp->tasks_pids = pidarray;
+> > +       cp->pids_length = npids;
+> > +       cp->pids_use_count++;
+> >        up_write(&cgrp->pids_mutex);
+> >
+> >        file->f_op = &cgroup_tasks_operations;
+> >
+> >        retval = seq_open(file, &cgroup_tasks_seq_operations);
+> >        if (retval) {
+> > -               release_cgroup_pid_array(cgrp);
+> > +               release_cgroup_pid_array(cp);
+> >                return retval;
+> >        }
+> > -       ((struct seq_file *)file->private_data)->private = cgrp;
+> > +       ((struct seq_file *)file->private_data)->private = cp;
+> >        return 0;
+> >  }
+> >
+> > --
+> > 1.5.4.rc3
+> >
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
 
