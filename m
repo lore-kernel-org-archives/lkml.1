@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbZGAX6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbZGBAEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbZGAX6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 19:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZGAX6F
+	id S1753120AbZGBAEA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 20:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZGBADw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 19:58:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:59394 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbZGAX6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 19:58:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,328,1243839600"; 
-   d="scan'208";a="426991860"
-From: "Du, Alek" <alek.du@intel.com>
-To: David Brownell <david-b@pacbell.net>
-CC: lkml <linux-kernel@vger.kernel.org>
-Date: Thu, 2 Jul 2009 07:56:13 +0800
-Subject: RE: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio
- driver
-Thread-Topic: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio
- driver
-Thread-Index: Acn6o57Xmj/ils0uR525xX7zlxXEHAAAoPyA
-Message-ID: <EADF0A36011179459010BDF5142A457501C9F4603D@pdsmsx502.ccr.corp.intel.com>
-References: <EADF0A36011179459010BDF5142A457501C9F46019@pdsmsx502.ccr.corp.intel.com>
- <200907011628.08799.david-b@pacbell.net>
-In-Reply-To: <200907011628.08799.david-b@pacbell.net>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-CN, en-US
-Content-Type: text/plain; charset="gb2312"
+	Wed, 1 Jul 2009 20:03:52 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:55473 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZGBADv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 20:03:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=gJH7UEFyfRQ3i4F6r0WCkvPP+Mi/I/5TTNx3ONUGlf/0uiPelyM+Qe0QorUGONRlYz
+         8hR1WCq7ECb1r0krrAqqHsKE78rQiNxRu3cTSU7XE11/7peWRb7n5JICdlHViVQk+JRM
+         uHU0t4EStodIMFGcWVA8nvZ08tBA1P229QZE8=
+Message-ID: <4A4BF968.3060505@gmail.com>
+Date: Wed, 01 Jul 2009 21:03:52 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090626)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Possible problem with perf tool
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n61NwNoU003697
 
-David,
->-----Original Message-----
->From: David Brownell [mailto:david-b@pacbell.net]
->Sent: 2009Äê7ÔÂ2ÈÕ 7:28
->To: Du, Alek
->Cc: lkml
->Subject: Re: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio
->driver
->> Subject: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio driver
->>
->> The Langwell chip has a 64-pin gpio block, which is exposed as a PCI device.
->
->Is this a dedicated GPIO-only device?  Or is it like e.g. ICH8
->which shares that device with other functions?
 
-Yes, the GPIO block is just one function of Langwell chip, the Langwell chip is an IOH (IO hub) for the whole system. But the devices on the chip are all exposed as PCI devices.
+I was playing with perf to get an idea of what it can do, so I started with a basic test:
 
->
->
->So if LNG is Liquid Natural Gass, then LNW is ... Liquid Natural Water??
->
->Spell it out please.  And use the same name in the driver.name too.
+$ perf stat ls
+CREDITS        PERF-BUILD-OPTIONS  builtin-annotate.c  builtin-help.o  builtin-record.c  builtin-report.o  builtin-top.c  command-list.txt  libperf.a  perf.h
+Documentation  PERF-CFLAGS	   builtin-annotate.o  builtin-list.c  builtin-record.o  builtin-stat.c    builtin-top.o  common-cmds.h     perf       perf.o
+Makefile       PERF-VERSION-FILE   builtin-help.c      builtin-list.o  builtin-report.c  builtin-stat.o    builtin.h	  design.txt	    perf.c     util
 
-:-), interesting.
+ Performance counter stats for 'ls':
 
->
->You're sure this isn't like a trimmed-down PXA part?
->I think I know some of the history of that register
->model ...  :)
+       1.675774  task-clock-msecs         #      0.772 CPUs 
+             13  context-switches         #      0.008 M/sec
+              0  CPU-migrations           #      0.000 M/sec
+            212  page-faults              #      0.127 M/sec
+        2925124  cycles                   #   1745.536 M/sec
+        1048640  instructions             #      0.358 IPC  
+         547552  cache-references         #    326.746 M/sec
+           8455  cache-misses             #      5.045 M/sec
 
-Yeah, I guess it is just like the PXA gpio style, but now the device is PCI style and for i386 arch.
+    0.002170123  seconds time elapsed
 
->> +struct lnw_driver_data {
->> +	unsigned	gpio_base;
->> +	unsigned	gpio_nr;
->> +} lnw_driver_datas[] __devinitdata = {
->> +	{ .gpio_base = 0, .gpio_nr = 64 },
->
->Hmm, passing gpio_base here is kind of ugly.
->
->But I guess you're working with platforms that don't
->really have good ways to pass platform-specific data
->through device->platform_data, so you're stuck with
->being ugly...
 
-Yes, for this PCI device, I know it is the only way to pass platform specific data as this.
 
-Thanks for reviewing it. I will submit version 2 according to your comments.
 
-Thanks,
-Alek
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Looks good, so I tried:
+
+$ perf stat ls -l
+  Error: unknown switch `l'
+
+
+
+
+So I tried instead:
+
+$ perf stat 'ls -l'
+ls -l: No such file or directory
+
+ Performance counter stats for 'ls -l':
+
+  <not counted>  task-clock-msecs        
+  <not counted>  context-switches        
+  <not counted>  CPU-migrations          
+  <not counted>  page-faults             
+  <not counted>  cycles                  
+  <not counted>  instructions            
+  <not counted>  cache-references        
+  <not counted>  cache-misses            
+
+    0.000594919  seconds time elapsed
+
+
+
+
+
+Am I doing something wrong here?  Or perhaps perf should be taught the difference between command-line switches before or after the perf command (e.g. stat) being invoked?
+
+-- 
+Kevin Winchester
+
+
