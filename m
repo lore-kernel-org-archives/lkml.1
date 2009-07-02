@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZGBI2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZGBIc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbZGBI2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 04:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZGBI2D
+	id S1753526AbZGBIc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 04:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbZGBIcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 04:28:03 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58335 "EHLO kernel.dk"
+	Thu, 2 Jul 2009 04:32:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59123 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755177AbZGBI2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 04:28:01 -0400
-Date: Thu, 2 Jul 2009 10:28:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hannes Reinecke <hare@suse.de>
-Cc: scameron@beardog.cca.cpqcorp.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cciss: Ignore stale commands after reboot
-Message-ID: <20090702082804.GP23611@kernel.dk>
-References: <20090702082313.F3754D340B@pentland.suse.de>
+	id S1750946AbZGBIco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 04:32:44 -0400
+Date: Thu, 2 Jul 2009 10:29:14 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, akpm@linux-foundation.org, earl_chew@agilent.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 3/3] exec: Allow do_coredump to wait for user space
+	pipe readers to complete (v6)
+Message-ID: <20090702082854.GA15003@redhat.com>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org> <20090701182834.GC31414@hmsreliant.think-freely.org> <20090701183707.GF31414@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090702082313.F3754D340B@pentland.suse.de>
+In-Reply-To: <20090701183707.GF31414@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 02 2009, Hannes Reinecke wrote:
-> 
-> When doing an unexpected shutdown like kexec the cciss
-> firmware might still have some commands in flight, which
-> it is trying to complete.
-> The driver is doing it's best on resetting the HBA,
-> but sadly there's a firmware issue causing the firmware
-> _not_ to abort or drop old commands.
-> So the firmware will send us commands which we haven't
-> accounted for, causing the driver to panic.
-> 
-> With this patch we're just ignoring these commands as
-> there is nothing we could be doing with them anyway.
-> 
-> Signed-off-by: Hannes Reinecke <hare@suse.de>
-> ---
->  drivers/block/cciss.c     |   14 ++++++++++++--
->  drivers/block/cciss_cmd.h |    1 +
->  2 files changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index c7a527c..8dd4c0d 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -226,7 +226,16 @@ static inline void addQ(struct hlist_head *list, CommandList_struct *c)
->  
->  static inline void removeQ(CommandList_struct *c)
->  {
-> -	if (WARN_ON(hlist_unhashed(&c->list)))
-> +	/*
-> +	 * After kexec/dump some commands might still
-> +	 * be in flight, which the firmware will try
-> +	 * to complete. Resetting the firmware doesn't work
-> +	 * with old fw revisions, so we have to mark
-> +	 * them off as 'stale' to prevent the driver from
-> +	 * falling over.
-> +	 */
-> +	if (unlikely(hlist_unhashed(&c->list))) {
-> +		c->cmd_type = CMD_MSG_STALE;
->  		return;
+(add Roland)
+
+Neil, I guess we both are tired of this thread, but I still have questions ;)
+
+On 07/01, Neil Horman wrote:
 >
->       hlist_del_init(&c->list);
+> +static void wait_for_dump_helpers(struct file *file)
+> +{
+> +	struct pipe_inode_info *pipe;
+> +
+> +	pipe = file->f_path.dentry->d_inode->i_pipe;
+> +
+> +	pipe_lock(pipe);
+> +	pipe->readers++;
+> +	pipe->writers--;
+> +
+> +	while (pipe->readers > 1) {
+> +		wake_up_interruptible_sync(&pipe->wait);
+> +		kill_fasync(&pipe->fasync_readers, SIGIO, POLL_IN);
+> +		pipe_wait(pipe);
+> +	}
+> +
+> +	pipe->readers--;
+> +	pipe->writers++;
+> +	pipe_unlock(pipe);
+> +
+> +}
 
-Ehm, that looks rather dangerous. What's the level of testing this patch
-received?
+OK, I think this is simple enough and should work.
 
--- 
-Jens Axboe
+This is not exactly correct wrt signals, if we get TIF_SIGPENDING this
+becomes a busy-wait loop.
+
+I'd suggest to do while (->readers && !signal_pending()), this is not
+exactly right too because we have other problems with signals, but
+this is another story.
+
+>  void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  {
+>  	struct core_state core_state;
+> @@ -1862,6 +1886,8 @@ void do_coredump(long signr, int exit_code, struct pt_regs *regs)
+>  		current->signal->group_exit_code |= 0x80;
+>
+>  close_fail:
+> +	if (ispipe && core_pipe_limit)
+> +		wait_for_dump_helpers(file);
+
+Oh. I thought I misread the first version, but now I see I got it right.
+And now I confused again.
+
+So, we only wait if core_pipe_limit != 0. Why?
+
+The previous version, v4, called wait_for_dump_helpers() unconditionally.
+And this looks more right to me. Once again, even without wait_for_dump()
+the coredumping process can't be reaped until core_pattern app reads all
+data from the pipe.
+
+I won't insist. However, anybody else please take a look?
+
+core_pipe_limit != 0 limits the number of coredump-via-pipe in flight, OK.
+
+But, should wait_for_dump_helpers() depend on core_limit_pipe != 0?
+
+Oleg.
 
