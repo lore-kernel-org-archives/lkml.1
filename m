@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZGBIBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752350AbZGBICW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbZGBIBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 04:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZGBIA5
+	id S1752350AbZGBICW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 04:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZGBICB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 04:00:57 -0400
-Received: from mga05.intel.com ([192.55.52.89]:26795 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751878AbZGBIA4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 04:00:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,331,1243839600"; 
-   d="scan'208";a="704430823"
-Subject: fio mmap sequential read 30% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Levshin <lpk@581.spb.su>, wli@movementarian.org,
-       Nick Piggin <npiggin@suse.de>, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 02 Jul 2009 16:01:22 +0800
-Message-Id: <1246521682.2560.490.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 2 Jul 2009 04:02:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54567 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751183AbZGBICB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 04:02:01 -0400
+Date: Thu, 2 Jul 2009 09:58:33 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] Disable CLONE_PARENT for init
+Message-ID: <20090702075833.GA14620@redhat.com>
+References: <20090701073140.GA14284@us.ibm.com> <20090701074654.A6C6321D57@magilla.sf.frob.com> <20090701082452.GA3297@redhat.com> <20090701214805.GA25734@us.ibm.com> <20090701215833.876DA404FD@magilla.sf.frob.com> <20090702003520.GA26247@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090702003520.GA26247@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comapring with 2.6.30's result, fio mmap sequtial read has
-about 30% regression on one of my stoakley machine with 1
-JBOD (7 SAS disks) with kernel 2.6.31-rc1.
+On 07/01, Sukadev Bhattiprolu wrote:
+>
+> --- linux-mmotm.orig/kernel/fork.c	2009-06-30 23:01:06.000000000 -0700
+> +++ linux-mmotm/kernel/fork.c	2009-07-01 17:29:09.000000000 -0700
+> @@ -974,6 +974,16 @@ static struct task_struct *copy_process(
+>  	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
+>  		return ERR_PTR(-EINVAL);
+>
+> +	/*
+> +	 * Siblings of global init remain as zombies on exit since they are
+> +	 * not reaped by their parent (swapper). To solve this and to avoid
+> +	 * multi-rooted process trees, prevent global and container-inits
+> +	 * from creating siblings.
+> +	 */
+> +	if ((clone_flags & CLONE_PARENT) &&
+> +				current->signal->flags & SIGNAL_UNKILLABLE)
+> +		return ERR_PTR(-EINVAL);
 
-﻿Every disk has 2 partitions and 4 1-GB files per partition. Start
-10 processes per disk to do mmap read sequentinally.
-
-Bisect down to below patch.
-
-ef00e08e26dd5d84271ef706262506b82195e752 is first bad commit
-commit ef00e08e26dd5d84271ef706262506b82195e752
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Tue Jun 16 15:31:25 2009 -0700
-
-    readahead: clean up and simplify the code for filemap page fault readahead
-    
-    This shouldn't really change behavior all that much, but the single rather
-    complex function with read-ahead inside a loop etc is broken up into more
-    manageable pieces.
-    
-    The behaviour is also less subtle, with the read-ahead being done up-front
-    rather than inside some subtle loop and thus avoiding the now unnecessary
-    extra state variables (ie "did_readaround" is gone).
-    
-    Fengguang: the code split in fact fixed a bug reported by Pavel Levshin:
-    the PGMAJFAULT accounting used to be bypassed when MADV_RANDOM is set, in
-    which case the original code will directly jump to no_cached_page reading.
-
-
-The bisect is stable.
-
-Yanmin
-
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
