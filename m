@@ -1,116 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZGBQFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZGBQF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbZGBQFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 12:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZGBQFC
+	id S1754928AbZGBQF5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 12:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZGBQFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 12:05:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35678 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750726AbZGBQFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 12:05:01 -0400
-Date: Thu, 2 Jul 2009 18:02:00 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Deleting timers
-Message-ID: <20090702160200.GA16184@redhat.com>
-References: <20090701222234.ee049bc0.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0907021029420.3291-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0907021029420.3291-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Jul 2009 12:05:50 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:40507 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbZGBQFt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 12:05:49 -0400
+X-Greylist: delayed 447 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 12:05:48 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=njvDJMuou8XAg/XPG+IUd2KQusr6tlfPGhQM+628bEVPsgbWPQnUTRf2iNclZcIFUN
+         /boxez2FjgNh250Dp6yFL1r1h40wBePf1CCJbhHx0dI12YCmUfkegxY5IdnRVo2bJH9J
+         v5bslWwkAkHeMPX7ixsNhiM3/c/y8CP6/CQOg=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/3] perfcounter: create new chain_for_each_child() iterator
+Date: Thu,  2 Jul 2009 17:58:19 +0200
+Message-Id: <1246550301-8954-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02, Alan Stern wrote:
-> On Wed, 1 Jul 2009, Andrew Morton wrote:
->
-> > On Fri, 26 Jun 2009 15:50:54 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
-> >
-> > > Thomas:
-> >
-> > I'm not Thomas, but I play one on TV.
-> >
-> > > The major difference -- in fact, almost the only difference -- between
-> > > del_timer() and try_to_del_timer_sync() is that try_to_del_timer_sync
-> > > returns a special code (-1) if the timer couldn't be deleted because it
-> > > is currently running, whereas del_timer doesn't check this.
-> >
-> > And del_timer() is heaps faster against a not-pending timer.  I have a
-> > vague memory that there are some callsites which do this quite a lot.
-> >
-> > And try_to_del_timer_sync() forgot to do timer_stats_timer_clear_start_info().
-> >
-> > > Furthermore, the "_sync" in the name suggests that
-> > > try_to_del_timer_sync will wait until a running timer has finished,
-> > > which it clearly does not do.
-> >
-> > yup.
+Iterating through children of a node in the callchain tree shows
+something that may be quite confusing at a first glance. The head
+is the children field of the parent and the list nodes are in the
+brothers field of the children.
 
-Yes, try_to_del_timer_sync() never waits exactly because it fails if the
-timer is running.
+This is because the childs are linked to the parent as a list of
+"brothers" using the "children" list of the parent as a head:
 
-> > > Despite these facts, the kerneldoc for try_to_del_timer_sync states
-> > > that it must not be called in interrupt context.  Why not?  Isn't that
-> > > advice simply wrong?
-> >
-> > : commit fd450b7318b75343fd76b3d95416853e34e72c95
-> > : Author:     Oleg Nesterov <oleg@tv-sign.ru>
-> > : AuthorDate: Thu Jun 23 00:08:59 2005 -0700
-> > : Commit:     Linus Torvalds <torvalds@ppc970.osdl.org>
-> > : CommitDate: Thu Jun 23 09:45:16 2005 -0700
-> > :
-> > :     [PATCH] timers: introduce try_to_del_timer_sync()
-> > :
-> > :     This patch splits del_timer_sync() into 2 functions.  The new one,
-> > :     try_to_del_timer_sync(), returns -1 when it hits executing timer.
-> > :
-> > :     It can be used in interrupt context, or when the caller hold locks which
-> > :     can prevent completion of the timer's handler.
-> > :
-> > :     NOTE.  Currently it can't be used in interrupt context in UP case, because
-> > :     ->running_timer is used only with CONFIG_SMP.
-> > :
-> > :     Should the need arise, it is possible to kill #ifdef CONFIG_SMP in
-> > :     set_running_timer(), it is cheap.
-> > :
-> >
-> > The changelog is somewhat vodka-fogged, but there is a bit of a problem
-> > there.
+ ---------------
+| Parent (head) |-------------------------------------
+ ---------------                                      |
+    |                                                 |
+ children                                             |
+    |                                                 |
+ -----------               -----------                |
+| 1st child |---brother---| 2nd child |---brother-----
+ -----------               -----------
 
-Yeah. try_to_del_timer_sync() should not be used in interrupt context
-because in UP case it is equal to del_timer(), this is not what we want.
+This makes the following strange pattern often occuring:
 
-But with CONFIG_SMP it can work from any context.
+list_for_each_entry(child, &parent->children, brothers) {
+       // do something with children
+}
 
-> Okay, thanks.  That makes sense.
->
-> > > With this in mind, would there be any objection if I renamed it to
-> > > try_to_del_timer(),
+Abstract it to chain_for_each_child() to factorize and simplify
+this pattern.
 
-Not sure I understand why try_to_del_timer is better...
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ tools/perf/util/callchain.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
 
-try_to_del_timer_sync() means: try to del_timer_sync(), that is why
-"_sync" ;)
-
-But I don't really care.
-
-> removed the comment forbidding it to be used in
-> > > interrupt context, and made it available even on non-SMP builds?
-> >
-> > Sounds sane to me, if the set_running_timer() change is also made.
-
-Yes, set_running_timer() should be changed, and
-
-	# define try_to_del_timer_sync(t)       del_timer(t)
-
-in timer.h should be killed. I think this makes sense.
-
-Oleg.
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index 3dceabd..3c4a91f 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -16,6 +16,9 @@
+ 
+ #include "callchain.h"
+ 
++#define chain_for_each_child(child, parent)	\
++	list_for_each_entry(child, &parent->children, brothers)
++
+ 
+ static void
+ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain)
+@@ -46,7 +49,7 @@ void sort_chain_to_rbtree(struct rb_root *rb_root, struct callchain_node *node)
+ {
+ 	struct callchain_node *child;
+ 
+-	list_for_each_entry(child, &node->children, brothers)
++	chain_for_each_child(child, node)
+ 		sort_chain_to_rbtree(rb_root, child);
+ 
+ 	if (node->hit)
+@@ -77,7 +80,7 @@ create_child(struct callchain_node *parent, bool inherit_children)
+ 		list_splice(&parent->children, &new->children);
+ 		INIT_LIST_HEAD(&parent->children);
+ 
+-		list_for_each_entry(next, &new->children, brothers)
++		chain_for_each_child(next, new)
+ 			next->parent = new;
+ 	}
+ 	list_add_tail(&new->brothers, &parent->children);
+@@ -173,7 +176,7 @@ __append_chain_children(struct callchain_node *root, struct ip_callchain *chain,
+ 	struct callchain_node *rnode;
+ 
+ 	/* lookup in childrens */
+-	list_for_each_entry(rnode, &root->children, brothers) {
++	chain_for_each_child(rnode, root) {
+ 		unsigned int ret = __append_chain(rnode, chain, start, syms);
+ 
+ 		if (!ret)
+-- 
+1.6.2.3
 
