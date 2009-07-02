@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZGBKMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752089AbZGBKTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZGBKMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 06:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZGBKMk
+	id S1752089AbZGBKTh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 06:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZGBKT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 06:12:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57546 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742AbZGBKMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 06:12:39 -0400
-Message-ID: <4A4C887F.2050508@redhat.com>
-Date: Thu, 02 Jul 2009 18:14:23 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Thu, 2 Jul 2009 06:19:29 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:51769 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbZGBKT2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 06:19:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=b5Lm4k4w7NBC/OiY1hnDxILqSounMamfPMYcbhXyfVV08sWzrF2E95G50dRrgvWcaT
+         hGm32stpmqmz7nenLIILq8ew1NADBXEJgWDJAhuJJ5TAsF87Vbp3NRV0YeK+Rp/yakjn
+         DsfdjOn7+5t27BksUwUV/Dh8zBDtwl2SQjG3w=
+Date: Thu, 2 Jul 2009 18:21:38 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+Message-ID: <20090702102138.GF6372@cr0.nay.redhat.com>
+References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com> <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com> <20090702094620.GE6372@cr0.nay.redhat.com> <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com>
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: Eric Sandeen <sandeen@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Eugene Teo <eteo@redhat.com>,
-       viro@zeniv.linux.org.uk
-Subject: Re: [Patch] allow file truncations when both suid and write  permissions
- set
-References: <20090625090146.6616.9720.sendpatchset@localhost.localdomain>	 <4A4BA6F8.7090905@redhat.com> <4A4BB898.10909@redhat.com>	 <7e0fb38c0907011229h328c8c48i55df5e234b7d367d@mail.gmail.com> <1246479341.22562.71.camel@dhcp235-23.rdu.redhat.com>
-In-Reply-To: <1246479341.22562.71.camel@dhcp235-23.rdu.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> So NAK on both Amerigo's and Eric's patch.  ATTR_FORCE is wrong.
-> ATTR_FORCE here is going to force the security system to accept ALL of
-> the attr changes, not just the ATTR_KILL_SUID and/or ATTR_KILL_SGID you
-> |= in from should_remove_suid.
-> You need to follow esandeen's recommendation, change file_remove_suid()
-> to dentry_remove_suid() and then use dentry_remove_suid() in do_truncate
-> instead of what you are currently trying to do (and I think that's
-> supposed to be done under the i_mutex right?)
->   
-But file_remove_suid() actually adds ATTR_FORCE too, in __remove_suid()...
+On Thu, Jul 02, 2009 at 06:04:02PM +0800, Changli Gao wrote:
+>On Thu, Jul 2, 2009 at 5:46 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>>>Are you familiar with splice() and tee()? They both use pipes as kernel buffers.
+>>
+>> You are not answering the question, obviously.
+>When you use pipes as kernel buffer handlers, two fd isn't necessary.
+>Using one will save half of fd resources. Is it obviously?
 
+Not really.. I can't see any reason why you use this method to save
+fd's... pick read(2)/write(2).
+
+>
+>>
+>> And you snipped too much, how can you return that fd? Using the return value?
+>one RW file descriptor is returned. I have answered this in the first post.
+
+No, you never say *how* it is returned.
+
+>
+>> Ah! This will probably break the user-space program...
+>>
+>I don't think so. As a skillful programmer, who will trasfter pipe() a
+>NULL pointer? In any way, it is break sth, but not very seriously, and
+>won't affact any right and robust program.
+
+Huh? Isn't the code sample below too common?
+
+if (pipe(...))
+   perror("pipe");
+
+Currently pipe(2) can make sure this is robust.
+
+You are trying to break it...
