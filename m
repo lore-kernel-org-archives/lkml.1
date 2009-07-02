@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZGBOhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZGBOj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZGBOhX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 10:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZGBOhM
+	id S1754846AbZGBOj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 10:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZGBOjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 10:37:12 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53248 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753127AbZGBOhM (ORCPT
+	Thu, 2 Jul 2009 10:39:18 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:38875 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753855AbZGBOjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 10:37:12 -0400
-Date: Thu, 2 Jul 2009 10:37:14 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Deleting timers
-In-Reply-To: <20090701222234.ee049bc0.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0907021029420.3291-100000@iolanthe.rowland.org>
+	Thu, 2 Jul 2009 10:39:18 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 2 Jul 2009 07:39:04 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: Jiri Olsa <jolsa@redhat.com>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       fbl@redhat.com, nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com
+Subject: Re: [PATCHv4 2/2] memory barrier: adding smp_mb__after_lock
+In-Reply-To: <4A4C5983.7000501@gmail.com>
+Message-ID: <alpine.DEB.1.10.0907020738020.5194@makko.or.mcafeemobile.com>
+References: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com> <20090702063624.GC3429@jolsa.lab.eng.brq.redhat.com> <4A4C5983.7000501@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-761880546-1246545545=:5194"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009, Andrew Morton wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Fri, 26 Jun 2009 15:50:54 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> > Thomas:
-> 
-> I'm not Thomas, but I play one on TV.
-> 
-> > The major difference -- in fact, almost the only difference -- between
-> > del_timer() and try_to_del_timer_sync() is that try_to_del_timer_sync
-> > returns a special code (-1) if the timer couldn't be deleted because it
-> > is currently running, whereas del_timer doesn't check this.
-> 
-> And del_timer() is heaps faster against a not-pending timer.  I have a
-> vague memory that there are some callsites which do this quite a lot.
-> 
-> And try_to_del_timer_sync() forgot to do timer_stats_timer_clear_start_info().
-> 
-> > Furthermore, the "_sync" in the name suggests that 
-> > try_to_del_timer_sync will wait until a running timer has finished, 
-> > which it clearly does not do.
-> 
-> yup.
-> 
-> > Despite these facts, the kerneldoc for try_to_del_timer_sync states 
-> > that it must not be called in interrupt context.  Why not?  Isn't that
-> > advice simply wrong?
-> 
-> : commit fd450b7318b75343fd76b3d95416853e34e72c95
-> : Author:     Oleg Nesterov <oleg@tv-sign.ru>
-> : AuthorDate: Thu Jun 23 00:08:59 2005 -0700
-> : Commit:     Linus Torvalds <torvalds@ppc970.osdl.org>
-> : CommitDate: Thu Jun 23 09:45:16 2005 -0700
-> : 
-> :     [PATCH] timers: introduce try_to_del_timer_sync()
-> :     
-> :     This patch splits del_timer_sync() into 2 functions.  The new one,
-> :     try_to_del_timer_sync(), returns -1 when it hits executing timer.
-> :     
-> :     It can be used in interrupt context, or when the caller hold locks which
-> :     can prevent completion of the timer's handler.
-> :     
-> :     NOTE.  Currently it can't be used in interrupt context in UP case, because
-> :     ->running_timer is used only with CONFIG_SMP.
-> :     
-> :     Should the need arise, it is possible to kill #ifdef CONFIG_SMP in
-> :     set_running_timer(), it is cheap.
-> : 
-> 
-> The changelog is somewhat vodka-fogged, but there is a bit of a problem
-> there.
+--8323329-761880546-1246545545=:5194
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-Okay, thanks.  That makes sense.
+On Thu, 2 Jul 2009, Eric Dumazet wrote:
 
-> > With this in mind, would there be any objection if I renamed it to 
-> > try_to_del_timer(), removed the comment forbidding it to be used in 
-> > interrupt context, and made it available even on non-SMP builds?
+> Jiri Olsa a écrit :
+> > Adding smp_mb__after_lock define to be used as a smp_mb call after
+> > a lock.  
+> > 
+> > Making it nop for x86, since {read|write|spin}_lock() on x86 are 
+> > full memory barriers.
+> > 
+> > wbr,
+> > jirka
+> > 
+> > 
+> > Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 > 
-> Sounds sane to me, if the set_running_timer() change is also made.
+> 
+> Maybe we should remind that sk_has_helper() is always called
+> right after a call to read_lock() as in :
+> 
+> 	read_lock(&sk->sk_callback_lock);
+> 	if (sk_has_sleeper(sk))
+> 		wake_up_interruptible_all(sk->sk_sleep);
 
-It turns out I probably don't need the enhanced functionality after 
-all.  So never mind for now...
+Agreed, that'd be to have it in the source code comment.
 
-Alan Stern
 
+- Davide
+
+
+--8323329-761880546-1246545545=:5194--
