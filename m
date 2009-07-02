@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZGBPCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbZGBPOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZGBPCx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbZGBPCp
+	id S1752813AbZGBPOj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZGBPOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:02:45 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40181 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZGBPCp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:02:45 -0400
-Date: Thu, 2 Jul 2009 17:02:46 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Eric Paris <eparis@redhat.com>
-cc: linux-kernel@vger.kernel.org, malware-list@dmesg.printk.net
-Subject: Re: fanotify: the fscking all notification system
-In-Reply-To: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com>
-Message-ID: <alpine.LSU.2.00.0907021654360.26791@fbirervta.pbzchgretzou.qr>
-References: <1246306125.754.300.camel@dhcp235-23.rdu.redhat.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Jul 2009 11:14:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:52110 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZGBPOb (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 11:14:31 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-06-30-12-50 uploaded
+In-Reply-To: Your message of "Tue, 30 Jun 2009 13:38:16 PDT."
+             <20090630133816.f62b0cb4.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org> <54770.1246392952@turing-police.cc.vt.edu> <56465.1246393621@turing-police.cc.vt.edu>
+            <20090630133816.f62b0cb4.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1246542687_46508P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 02 Jul 2009 09:51:27 -0400
+Message-ID: <65196.1246542687@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1246542687_46508P
+Content-Type: text/plain; charset=us-ascii
 
-On Monday 2009-06-29 22:08, Eric Paris wrote:
->
->struct fanotify_event_metadata {
->        __u32 event_len;
->        __s32 fd;
->        __u32 mask;
->        __u32 f_flags;
->        pid_t pid;
->        pid_t tgid;
->        __u64 cookie;
->}  __attribute__((packed));
+On Tue, 30 Jun 2009 13:38:16 PDT, Andrew Morton said:
+> On Tue, 30 Jun 2009 16:27:01 -0400
+> Valdis.Kletnieks@vt.edu wrote:
+> 
+> > Not sure why that line did it.  Repeated truncate-and-try shows that if the
+> > line contained just the 4 chars '0804', it applied fine, but '0804a' dies.
+> 
+> That's patch(1) thinking it's a regular diff:
+> 
+> akpm:/usr/src/25> diff Makefile Makefile~linux-next
+> 4c4
+...
+> So the "0804a" means "at line 804, start appending stuff", or something
+> like that.
+> 
+> Use -u.
 
-Why pid_t and not s32 like the other fields are?
+Yep, that was it, thanks.  Added to .quiltrc.
 
->3) call getsockattr on the socket to get back data about events that
->took place and to get fd's opened in your context
->[..].
->This provides information about the event including the type, the
->location of the new fd that was opened pointing to the object in
->question, and it provides information about the process which triggered
->the event.
+--==_Exmh_1246542687_46508P
+Content-Type: application/pgp-signature
 
-Now the question would be whether getsockattr (meant getsockopt?)
-returns data about one event or multiple events.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-Why is not read() used? Sure, it is not as easy, but if you require
-the size argument to read() being at least sizeof(event_metadata),
-things should fit, should not they?
-Using getsockopt feels like an ioctl - and they for one are
-more or less discouraged in light of netlink for example.
+iD8DBQFKTLtfcC3lWbTT17ARAoVZAKCBP0d9kZkFoxu6NP7IW+Ish8fDkwCg7Aha
+SpYYoofqBM5lGzBNz9pg5Dk=
+=D0Uz
+-----END PGP SIGNATURE-----
 
->fanotify has two basic 'modes' directed and global.  fanotify directed
->works much like inotify in that userspace marks inodes it is interested
->in and gets events from those inodes.  fanotify global instead indicates
->that it wants everything on the system and then individually marks
->inodes that it doesn't care about.
-
-So indexers and such only need a single fd for getting notifications
-about touched files? Sounds great.
+--==_Exmh_1246542687_46508P--
