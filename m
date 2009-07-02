@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZGBNuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZGBNvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbZGBNuM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbZGBNsu
+	id S1756220AbZGBNvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZGBNs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:48:50 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53253 "EHLO
+	Thu, 2 Jul 2009 09:48:56 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53245 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754484AbZGBNsn (ORCPT
+	with ESMTP id S1754413AbZGBNsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 09:48:43 -0400
 X-Cam-AntiVirus: no malware found
@@ -18,713 +18,1416 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 09/14] IIO: Ring buffer: Initial pass at rarely locked ring buffer
-Date: Thu,  2 Jul 2009 13:47:39 +0000
-Message-Id: <1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 04/14] IIO: lis3l02dq accelerometer core support
+Date: Thu,  2 Jul 2009 13:47:34 +0000
+Message-Id: <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
- <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
- <1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
- <1246542464-6974-7-git-send-email-jic23@cam.ac.uk>
- <1246542464-6974-8-git-send-email-jic23@cam.ac.uk>
- <1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-Please note this ring buffer implementation is very much a
-work in progress (and hence RFC).  In it's current form
-it is stable and reasonably efficient.  There are a couple
-of unlikely cases that will lead to more data being lost
-that is strictly necessary. The target was for the case
-of requiring regular sampling even during user space reads.
+A later patch in the series will add data ready triggering
+and ring buffer support.
 
-All comments welcome.
-
-The intention is to make this only one of several
-implementations with run time selection.  For now there
-is only one, so it is hard coded into the drivers using it.
+This core patch provides an event interface and sysfs
+based reading of values.
 ---
- drivers/iio/Kconfig         |    9 +
- drivers/iio/Makefile        |    2 +
- drivers/iio/ring_sw.c       |  431 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/iio/ring_sw.h |  189 +++++++++++++++++++
- 4 files changed, 631 insertions(+), 0 deletions(-)
- create mode 100644 drivers/iio/ring_sw.c
- create mode 100644 include/linux/iio/ring_sw.h
+ drivers/iio/Kconfig                |    1 +
+ drivers/iio/Makefile               |    1 +
+ drivers/iio/accel/Kconfig          |   13 +
+ drivers/iio/accel/Makefile         |    5 +
+ drivers/iio/accel/lis3l02dq.h      |  212 ++++++++
+ drivers/iio/accel/lis3l02dq_core.c |  925 ++++++++++++++++++++++++++++++++++++
+ include/linux/iio/accel.h          |  167 +++++++
+ 7 files changed, 1324 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/iio/accel/Kconfig
+ create mode 100644 drivers/iio/accel/Makefile
+ create mode 100644 drivers/iio/accel/lis3l02dq.h
+ create mode 100644 drivers/iio/accel/lis3l02dq_core.c
+ create mode 100644 include/linux/iio/accel.h
 
 diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
-index 3aa2886..936f954 100644
+index d37859d..f3545c8 100644
 --- a/drivers/iio/Kconfig
 +++ b/drivers/iio/Kconfig
-@@ -17,6 +17,15 @@ config IIO_RING_BUFFER
- 	  Provide core support for various ring buffer based data
- 	  acquisition methods.
+@@ -10,5 +10,6 @@ menuconfig IIO
+ 	  number of different physical interfaces (i2c, spi etc). See
+ 	  Documentation/industrialio for more information.
  
-+config IIO_SW_RING
-+	tristate "Industrial I/O lock free software ring"
-+	depends on IIO_RING_BUFFER && IIO
-+	help
-+	example software ring buffer implementation.  The design aim
-+	of this particular realization was to minize write locking
-+	with the intention that some devices would be able to write
-+	in interrupt context.
-+
- config IIO_TRIGGER
- 	boolean "Enable triggered sampling support"
- 	depends on IIO
++source drivers/iio/accel/Kconfig
+ source drivers/iio/adc/Kconfig
+ source drivers/iio/light/Kconfig
 diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
-index 3271518..dea4536 100644
+index 4e78f98..14c661b 100644
 --- a/drivers/iio/Makefile
 +++ b/drivers/iio/Makefile
-@@ -7,6 +7,8 @@ industrialio-y := industrialio-core.o
- industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
- industrialio-$(CONFIG_IIO_TRIGGER) += industrialio-trigger.o
+@@ -5,5 +5,6 @@
+ obj-$(CONFIG_IIO) += industrialio.o
+ industrialio-y := industrialio-core.o
  
-+obj-$(CONFIG_IIO_SW_RING) += ring_sw.o
-+
- obj-y += accel/
++obj-y += accel/
  obj-y += adc/
  obj-y += light/
 \ No newline at end of file
-diff --git a/drivers/iio/ring_sw.c b/drivers/iio/ring_sw.c
+diff --git a/drivers/iio/accel/Kconfig b/drivers/iio/accel/Kconfig
 new file mode 100644
-index 0000000..e39df05
+index 0000000..a3abffc
 --- /dev/null
-+++ b/drivers/iio/ring_sw.c
-@@ -0,0 +1,431 @@
-+/* The industrial I/O simple minimally locked ring buffer.
++++ b/drivers/iio/accel/Kconfig
+@@ -0,0 +1,13 @@
++#
++# Accelerometer drivers
++#
++comment "Accelerometers"
++	depends on IIO
++
++config LIS3L02DQ
++	tristate "ST Microelectronics LIS3L02DQ Accelerometer Driver"
++	depends on IIO && SPI
++	help
++	  Say yes here to build SPI support for the ST microelectronics
++	  accelerometer. The driver supplies direct access via sysfs files
++	  and an event interface via a character device.
+diff --git a/drivers/iio/accel/Makefile b/drivers/iio/accel/Makefile
+new file mode 100644
+index 0000000..5a7ef9d
+--- /dev/null
++++ b/drivers/iio/accel/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for industrial I/O accelerometer drivers
++#
++lis3l02dq-y		:= lis3l02dq_core.o
++obj-$(CONFIG_LIS3L02DQ)	+= lis3l02dq.o
+diff --git a/drivers/iio/accel/lis3l02dq.h b/drivers/iio/accel/lis3l02dq.h
+new file mode 100644
+index 0000000..18cb49c
+--- /dev/null
++++ b/drivers/iio/accel/lis3l02dq.h
+@@ -0,0 +1,212 @@
++/*
++ * LISL02DQ.h -- support STMicroelectronics LISD02DQ
++ *               3d 2g Linear Accelerometers via SPI
 + *
-+ * Copyright (c) 2008 Jonathan Cameron
++ * Copyright (c) 2007 Jonathan Cameron <jic23@cam.ac.uk>
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
++ * Loosely based upon tle62x0.c
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/workqueue.h>
-+#include <linux/iio/ring_sw.h>
++#ifndef SPI_LIS3L02DQ_H_
++#define SPI_LIS3L02DQ_H_
++#define LIS3L02DQ_READ_REG(a) ((a) | 0x80)
++#define LIS3L02DQ_WRITE_REG(a) a
 +
-+static inline int __iio_init_sw_ring_buffer(struct iio_sw_ring_buffer *ring,
-+					    int bytes_per_datum, int length)
++/* Calibration parameters */
++#define LIS3L02DQ_REG_OFFSET_X_ADDR		0x16
++#define LIS3L02DQ_REG_OFFSET_Y_ADDR		0x17
++#define LIS3L02DQ_REG_OFFSET_Z_ADDR		0x18
++
++#define LIS3L02DQ_REG_GAIN_X_ADDR		0x19
++#define LIS3L02DQ_REG_GAIN_Y_ADDR		0x1A
++#define LIS3L02DQ_REG_GAIN_Z_ADDR		0x1B
++
++/* Control Register (1 of 2) */
++#define LIS3L02DQ_REG_CTRL_1_ADDR		0x20
++/* Power ctrl - either bit set corresponds to on*/
++#define LIS3L02DQ_REG_CTRL_1_PD_ON	0xC0
++
++/* Decimation Factor  */
++#define LIS3L02DQ_DEC_MASK			0x30
++#define LIS3L02DQ_REG_CTRL_1_DF_128		0x00
++#define LIS3L02DQ_REG_CTRL_1_DF_64		0x10
++#define LIS3L02DQ_REG_CTRL_1_DF_32		0x20
++#define LIS3L02DQ_REG_CTRL_1_DF_8		(0x10 | 0x20)
++
++/* Self Test Enable */
++#define LIS3L02DQ_REG_CTRL_1_SELF_TEST_ON	0x08
++
++/* Axes enable ctrls */
++#define LIS3L02DQ_REG_CTRL_1_AXES_Z_ENABLE	0x04
++#define LIS3L02DQ_REG_CTRL_1_AXES_Y_ENABLE	0x02
++#define LIS3L02DQ_REG_CTRL_1_AXES_X_ENABLE	0x01
++
++/* Control Register (2 of 2) */
++#define LIS3L02DQ_REG_CTRL_2_ADDR		0x21
++
++/* Block Data Update only after MSB and LSB read */
++#define LIS3L02DQ_REG_CTRL_2_BLOCK_UPDATE	0x40
++
++/* Set to big endian output */
++#define LIS3L02DQ_REG_CTRL_2_BIG_ENDIAN		0x20
++
++/* Reboot memory content */
++#define LIS3L02DQ_REG_CTRL_2_REBOOT_MEMORY	0x10
++
++/* Interupt Enable - applies data ready to the RDY pad */
++#define LIS3L02DQ_REG_CTRL_2_ENABLE_INTERRUPT	0x08
++
++/* Enable Data Ready Generation - relationship with previous unclear in docs */
++#define LIS3L02DQ_REG_CTRL_2_ENABLE_DATA_READY_GENERATION 0x04
++
++/* SPI 3 wire mode */
++#define LIS3L02DQ_REG_CTRL_2_THREE_WIRE_SPI_MODE	0x02
++
++/* Data alignment, default is 12 bit right justified
++ * - option for 16 bit left justified */
++#define LIS3L02DQ_REG_CTRL_2_DATA_ALIGNMENT_16_BIT_LEFT_JUSTIFIED	0x01
++
++/* Interupt related stuff */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_ADDR			0x23
++
++/* Switch from or combination fo conditions to and */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_BOOLEAN_AND		0x80
++
++/* Latch interupt request,
++ * if on ack must be given by reading the ack register */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_LATCH_SRC		0x40
++
++/* Z Interupt on High (above threshold)*/
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Z_HIGH	0x20
++/* Z Interupt on Low */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Z_LOW	0x10
++/* Y Interupt on High */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Y_HIGH	0x08
++/* Y Interupt on Low */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Y_LOW	0x04
++/* X Interupt on High */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_X_HIGH	0x02
++/* X Interupt on Low */
++#define LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_X_LOW 0x01
++
++/* Register that gives description of what caused interupt
++ * - latched if set in CFG_ADDRES */
++#define LIS3L02DQ_REG_WAKE_UP_SRC_ADDR			0x24
++/* top bit ignored */
++/* Interupt Active */
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_ACTIVATED	0x40
++/* Interupts that have been triggered */
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Z_HIGH	0x20
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Z_LOW	0x10
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Y_HIGH	0x08
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Y_LOW	0x04
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_X_HIGH	0x02
++#define LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_X_LOW	0x01
++
++#define LIS3L02DQ_REG_WAKE_UP_ACK_ADDR			0x25
++
++/* Status register */
++#define LIS3L02DQ_REG_STATUS_ADDR			0x27
++/* XYZ axis data overrun - first is all overrun? */
++#define LIS3L02DQ_REG_STATUS_XYZ_OVERRUN		0x80
++#define LIS3L02DQ_REG_STATUS_Z_OVERRUN			0x40
++#define LIS3L02DQ_REG_STATUS_Y_OVERRUN			0x20
++#define LIS3L02DQ_REG_STATUS_X_OVERRUN			0x10
++/* XYZ new data available - first is all 3 available? */
++#define LIS3L02DQ_REG_STATUS_XYZ_NEW_DATA 0x08
++#define LIS3L02DQ_REG_STATUS_Z_NEW_DATA			0x04
++#define LIS3L02DQ_REG_STATUS_Y_NEW_DATA			0x02
++#define LIS3L02DQ_REG_STATUS_X_NEW_DATA			0x01
++
++/* The accelerometer readings - low and high bytes.
++Form of high byte dependant on justification set in ctrl reg */
++#define LIS3L02DQ_REG_OUT_X_L_ADDR			0x28
++#define LIS3L02DQ_REG_OUT_X_H_ADDR			0x29
++#define LIS3L02DQ_REG_OUT_Y_L_ADDR			0x2A
++#define LIS3L02DQ_REG_OUT_Y_H_ADDR			0x2B
++#define LIS3L02DQ_REG_OUT_Z_L_ADDR			0x2C
++#define LIS3L02DQ_REG_OUT_Z_H_ADDR			0x2D
++
++/* Threshold values for all axes and both above and below thresholds
++ * - i.e. there is only one value */
++#define LIS3L02DQ_REG_THS_L_ADDR			0x2E
++#define LIS3L02DQ_REG_THS_H_ADDR			0x2F
++
++#define LIS3L02DQ_DEFAULT_CTRL1 (LIS3L02DQ_REG_CTRL_1_PD_ON	      \
++				 | LIS3L02DQ_REG_CTRL_1_AXES_Z_ENABLE \
++				 | LIS3L02DQ_REG_CTRL_1_AXES_Y_ENABLE \
++				 | LIS3L02DQ_REG_CTRL_1_AXES_X_ENABLE \
++				 | LIS3L02DQ_REG_CTRL_1_DF_128)
++
++#define LIS3L02DQ_DEFAULT_CTRL2	0
++
++#define LIS3L02DQ_MAX_TX 12
++#define LIS3L02DQ_MAX_RX 12
++/**
++ * struct lis3l02dq_state - device instance specific data
++ * @us:			actual spi_device
++ * @work_trigger_to_ring: bh for triggered event handling
++ * @work_cont_thresh: CLEAN
++ * @inter:		used to check if new interrupt has been triggered
++ * @last_timestamp:	passing timestamp from th to bh of interrupt handler
++ * @indio_dev:		industrial I/O device structure
++ * @trig:		data ready trigger registered with iio
++ * @tx:			transmit buffer
++ * @rx:			recieve buffer
++ * @buf_lock:		mutex to protect tx and rx
++ **/
++struct lis3l02dq_state {
++	struct spi_device		*us;
++	struct work_struct		work_trigger_to_ring;
++	struct iio_work_cont		work_cont_thresh;
++	bool				inter;
++	s64				last_timestamp;
++	struct iio_dev			*indio_dev;
++	struct iio_trigger		*trig;
++	u8				*tx;
++	u8				*rx;
++	struct mutex			buf_lock;
++};
++
++int lis3l02dq_spi_read_reg_8(struct device *dev,
++			     u8 reg_address,
++			     u8 *val);
++
++int lis3l02dq_spi_write_reg_8(struct device *dev,
++			      u8 reg_address,
++			      u8 *val);
++#define LIS3L02DQ_SCAN_ACC_X 0
++#define LIS3L02DQ_SCAN_ACC_Y 1
++#define LIS3L02DQ_SCAN_ACC_Z 2
++
++static inline void lis3l02dq_remove_trigger(struct iio_dev *indio_dev) {};
++static inline int lis3l02dq_probe_trigger(struct iio_dev *indio_dev)
 +{
-+	if ((length == 0) || (bytes_per_datum == 0))
-+		return -EINVAL;
-+
-+	__iio_init_ring_buffer(&ring->buf, bytes_per_datum, length);
-+	ring->use_lock = __SPIN_LOCK_UNLOCKED((ring)->use_lock);
-+	ring->data = kmalloc(length*ring->buf.bpd, GFP_KERNEL);
-+	ring->read_p = 0;
-+	ring->write_p = 0;
-+	ring->last_written_p = 0;
-+	ring->half_p = 0;
-+	return ring->data ? 0 : -ENOMEM;
-+}
-+
-+static inline void __iio_free_sw_ring_buffer(struct iio_sw_ring_buffer *ring)
-+{
-+	kfree(ring->data);
-+}
-+
-+void iio_mark_sw_rb_in_use(struct iio_ring_buffer *r)
-+{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+	spin_lock(&ring->use_lock);
-+	ring->use_count++;
-+	spin_unlock(&ring->use_lock);
-+}
-+EXPORT_SYMBOL(iio_mark_sw_rb_in_use);
-+
-+void iio_unmark_sw_rb_in_use(struct iio_ring_buffer *r)
-+{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+	spin_lock(&ring->use_lock);
-+	ring->use_count--;
-+	spin_unlock(&ring->use_lock);
-+}
-+EXPORT_SYMBOL(iio_unmark_sw_rb_in_use);
-+
-+
-+/* Ring buffer related functionality */
-+/* Store to ring is typically called in the bh of a data ready interrupt handler
-+ * in the device driver */
-+/* Lock always held if their is a chance this may be called */
-+/* Only one of these per ring may run concurrently - enforced by drivers */
-+int iio_store_to_sw_ring(struct iio_sw_ring_buffer *ring,
-+			 unsigned char *data,
-+			 s64 timestamp)
-+{
-+	int ret = 0;
-+	int code;
-+	unsigned char *temp_ptr, *change_test_ptr;
-+
-+	/* initial store */
-+	if (unlikely(ring->write_p == 0)) {
-+		ring->write_p = ring->data;
-+		/* Doesn't actually matter if this is out of the set
-+		 * as long as the read pointer is valid before this
-+		 * passes it - guaranteed as set later in this function.
-+		 */
-+		ring->half_p = ring->data - ring->buf.length*ring->buf.bpd/2;
-+	}
-+	/* Copy data to where ever the current write pointer says */
-+	memcpy(ring->write_p, data, ring->buf.bpd);
-+	barrier();
-+	/* Update the pointer used to get most recent value.
-+	 * Always valid as either points to latest or second latest value.
-+	 * Before this runs it is null and read attempts fail with -EAGAIN.
-+	 */
-+	ring->last_written_p = ring->write_p;
-+	barrier();
-+	/* temp_ptr used to ensure we never have an invalid pointer
-+	 * it may be slightly lagging, but never invalid
-+	 */
-+	temp_ptr = ring->write_p + ring->buf.bpd;
-+	/* End of ring, back to the beginning */
-+	if (temp_ptr == ring->data + ring->buf.length*ring->buf.bpd)
-+		temp_ptr = ring->data;
-+	/* Update the write pointer
-+	 * always valid as long as this is the only function able to write.
-+	 * Care needed with smp systems to ensure more than one ring fill
-+	 * is never scheduled.
-+	 */
-+	ring->write_p = temp_ptr;
-+
-+	if (ring->read_p == 0)
-+		ring->read_p = ring->data;
-+	/* Buffer full - move the read pointer and create / escalate
-+	 * ring event */
-+	/* Tricky case - if the read pointer moves before we adjust it.
-+	 * Handle by not pushing if it has moved - may result in occasional
-+	 * unnecessary buffer full events when it wasn't quite true.
-+	 */
-+	else if (ring->write_p == ring->read_p) {
-+		change_test_ptr = ring->read_p;
-+		temp_ptr = change_test_ptr + ring->buf.bpd;
-+		if (temp_ptr
-+		    == ring->data + ring->buf.length*ring->buf.bpd) {
-+			temp_ptr = ring->data;
-+		}
-+		/* We are moving pointer on one because the ring is full.  Any
-+		 * change to the read pointer will be this or greater.
-+		 */
-+		if (change_test_ptr == ring->read_p)
-+			ring->read_p = temp_ptr;
-+
-+		spin_lock(&ring->buf.shared_ev_pointer.lock);
-+
-+		ret = iio_push_or_escallate_ring_event(&ring->buf,
-+						       IIO_EVENT_CODE_RING_100_FULL,
-+						       timestamp);
-+		spin_unlock(&ring->buf.shared_ev_pointer.lock);
-+		if (ret)
-+			goto error_ret;
-+	}
-+	/* investigate if our event barrier has been passed */
-+	/* There are definite 'issues' with this and chances of
-+	 * simultaneous read */
-+	/* Also need to use loop count to ensure this only happens once */
-+	ring->half_p += ring->buf.bpd;
-+	if (ring->half_p == ring->data + ring->buf.length*ring->buf.bpd)
-+		ring->half_p = ring->data;
-+	if (ring->half_p == ring->read_p) {
-+		spin_lock(&ring->buf.shared_ev_pointer.lock);
-+		code = IIO_EVENT_CODE_RING_50_FULL;
-+		ret = __iio_push_event(&ring->buf.ev_int,
-+				       code,
-+				       timestamp,
-+				       &ring->buf.shared_ev_pointer);
-+		spin_unlock(&ring->buf.shared_ev_pointer.lock);
-+	}
-+error_ret:
-+	return ret;
-+}
-+
-+int iio_rip_sw_rb(struct iio_ring_buffer *r,
-+		  size_t count, u8 **data, int *dead_offset)
-+{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+
-+	u8 *initial_read_p, *initial_write_p, *current_read_p, *end_read_p;
-+	int ret, max_copied;
-+	int bytes_to_rip;
-+
-+	/* A userspace program has probably made an error if it tries to
-+	 *  read something that is not a whole number of bpds.
-+	 * Return an error.
-+	 */
-+	if (count % ring->buf.bpd) {
-+		ret = -EINVAL;
-+		printk(KERN_INFO "Ring buffer read request not whole number of"
-+		       "samples: Request bytes %d, Current bpd %d\n",
-+		       count, ring->buf.bpd);
-+		goto error_ret;
-+	}
-+	/* Limit size to whole of ring buffer */
-+	bytes_to_rip = min((size_t)(ring->buf.bpd*ring->buf.length), count);
-+
-+	*data = kmalloc(bytes_to_rip, GFP_KERNEL);
-+	if (*data == NULL) {
-+		ret = -ENOMEM;
-+		goto error_ret;
-+	}
-+
-+	/* build local copy */
-+	initial_read_p = ring->read_p;
-+	if (unlikely(initial_read_p == 0)) { /* No data here as yet */
-+		ret = 0;
-+		goto error_free_data_cpy;
-+	}
-+
-+	initial_write_p = ring->write_p;
-+
-+	/* Need a consistent pair */
-+	while ((initial_read_p != ring->read_p)
-+	       || (initial_write_p != ring->write_p)) {
-+		initial_read_p = ring->read_p;
-+		initial_write_p = ring->write_p;
-+	}
-+	if (initial_write_p == initial_read_p) {
-+		/* No new data available.*/
-+		ret = 0;
-+		goto error_free_data_cpy;
-+	}
-+
-+	if (initial_write_p >= initial_read_p + bytes_to_rip) {
-+		/* write_p is greater than necessary, all is easy */
-+		max_copied = bytes_to_rip;
-+		memcpy(*data, initial_read_p, max_copied);
-+		end_read_p = initial_read_p + max_copied;
-+	} else if (initial_write_p > initial_read_p) {
-+		/*not enough data to cpy */
-+		max_copied = initial_write_p - initial_read_p;
-+		memcpy(*data, initial_read_p, max_copied);
-+		end_read_p = initial_write_p;
-+	} else {
-+		/* going through 'end' of ring buffer */
-+		max_copied = ring->data
-+			+ ring->buf.length*ring->buf.bpd - initial_read_p;
-+		memcpy(*data, initial_read_p, max_copied);
-+		/* possible we are done if we align precisely with end */
-+		if (max_copied == bytes_to_rip)
-+			end_read_p = ring->data;
-+		else if (initial_write_p
-+			 > ring->data + bytes_to_rip - max_copied) {
-+			/* enough data to finish */
-+			memcpy(*data + max_copied, ring->data,
-+			       bytes_to_rip - max_copied);
-+			max_copied = bytes_to_rip;
-+			end_read_p = ring->data + (bytes_to_rip - max_copied);
-+		} else {  /* not enough data */
-+			memcpy(*data + max_copied, ring->data,
-+			       initial_write_p - ring->data);
-+			max_copied += initial_write_p - ring->data;
-+			end_read_p = initial_write_p;
-+		}
-+	}
-+	/* Now to verify which section was cleanly copied - i.e. how far
-+	 * read pointer has been pushed */
-+	current_read_p = ring->read_p;
-+
-+	if (initial_read_p <= current_read_p)
-+		*dead_offset = current_read_p - initial_read_p;
-+	else
-+		*dead_offset = ring->buf.length*ring->buf.bpd
-+			- (initial_read_p - current_read_p);
-+
-+	/* possible issue if the initial write has been lapped or indeed
-+	 * the point we were reading to has been passed */
-+	/* No valid data read.
-+	 * In this case the read pointer is already correct having been
-+	 * pushed further than we would look. */
-+	if (max_copied - *dead_offset < 0) {
-+		ret = 0;
-+		goto error_free_data_cpy;
-+	}
-+
-+	/* setup the next read position */
-+	/* Beware, this may fail due to concurrency fun and games.
-+	 *  Possible that sufficient fill commands have run to push the read
-+	 * pointer past where we would be after the rip. If this occurs, leave
-+	 * it be.
-+	 */
-+	/* Tricky - deal with loops */
-+
-+	while (ring->read_p != end_read_p)
-+		ring->read_p = end_read_p;
-+
-+	return max_copied - *dead_offset;
-+
-+error_free_data_cpy:
-+	kfree(*data);
-+error_ret:
-+	return ret;
-+}
-+EXPORT_SYMBOL(iio_rip_sw_rb);
-+
-+int iio_store_to_sw_rb(struct iio_ring_buffer *r, u8 *data, s64 timestamp)
-+{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+	return iio_store_to_sw_ring(ring, data, timestamp);
-+}
-+EXPORT_SYMBOL(iio_store_to_sw_rb);
-+
-+int iio_read_last_from_sw_ring(struct iio_sw_ring_buffer *ring,
-+			       unsigned char *data)
-+{
-+	unsigned char *last_written_p_copy;
-+
-+	iio_mark_sw_rb_in_use(&ring->buf);
-+again:
-+	barrier();
-+	last_written_p_copy = ring->last_written_p;
-+	barrier(); /*unnessecary? */
-+	/* Check there is anything here */
-+	if (last_written_p_copy == 0)
-+		return -EAGAIN;
-+	memcpy(data, last_written_p_copy, ring->buf.bpd);
-+
-+	if (unlikely(ring->last_written_p >= last_written_p_copy))
-+		goto again;
-+
-+	iio_unmark_sw_rb_in_use(&ring->buf);
 +	return 0;
-+}
++};
 +
-+int iio_read_last_from_sw_rb(struct iio_ring_buffer *r,
-+			     unsigned char *data)
++static inline ssize_t
++lis3l02dq_read_accel_from_ring(struct device *dev,
++			       struct device_attribute *attr,
++			       char *buf)
 +{
-+	return iio_read_last_from_sw_ring(iio_to_sw_ring(r), data);
-+}
-+EXPORT_SYMBOL(iio_read_last_from_sw_rb);
++	return 0;
++};
 +
-+int iio_request_update_sw_rb(struct iio_ring_buffer *r)
++static int lis3l02dq_configure_ring(struct iio_dev *indio_dev)
++{
++	return 0;
++};
++static inline void lis3l02dq_unconfigure_ring(struct iio_dev *indio_dev)
++{};
++static inline int lis3l02dq_initialize_ring(struct iio_ring_buffer *ring)
++{
++	return 0;
++};
++static inline void lis3l02dq_uninitialize_ring(struct iio_ring_buffer *ring) {};
++
++#endif /* SPI_LIS3L02DQ_H_ */
+diff --git a/drivers/iio/accel/lis3l02dq_core.c b/drivers/iio/accel/lis3l02dq_core.c
+new file mode 100644
+index 0000000..503d6ed
+--- /dev/null
++++ b/drivers/iio/accel/lis3l02dq_core.c
+@@ -0,0 +1,925 @@
++/*
++ * lis3l02dq.c	support STMicroelectronics LISD02DQ
++ *		3d 2g Linear Accelerometers via SPI
++ *
++ * Copyright (c) 2007 Jonathan Cameron <jic23@cam.ac.uk>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Settings:
++ * 16 bit left justified mode used.
++ */
++
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/gpio.h>
++#include <linux/workqueue.h>
++#include <linux/mutex.h>
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/spi/spi.h>
++
++#include <linux/sysfs.h>
++#include <linux/list.h>
++
++#include <linux/iio/iio.h>
++#include <linux/iio/sysfs.h>
++#include <linux/iio/accel.h>
++
++#include "lis3l02dq.h"
++
++/* At the moment the spi framework doesn't allow global setting of cs_change.
++ * It's in the likely to be added comment at the top of spi.h.
++ * This means that use cannot be made of spi_write etc.
++ */
++
++/**
++ * lis3l02dq_spi_read_reg_8() - read single byte from a single register
++ * @dev: device asosciated with child of actual device (iio_dev or iio_trig)
++ * @reg_address: the address of the register to be read
++ * @val: pass back the resulting value
++ **/
++int lis3l02dq_spi_read_reg_8(struct device *dev, u8 reg_address, u8 *val)
 +{
 +	int ret;
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
++	struct spi_message msg;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct lis3l02dq_state *st = iio_dev_get_devdata(indio_dev);
++	struct spi_transfer xfer = {
++		.tx_buf = st->tx,
++		.rx_buf = st->rx,
++		.bits_per_word = 8,
++		.len = 2,
++		.cs_change = 1,
++	};
 +
-+	spin_lock(&ring->use_lock);
-+	if (ring->use_count || !ring->update_needed) {
-+		ret = -EAGAIN;
-+		goto error_ret;
-+	}
-+	__iio_free_sw_ring_buffer(ring);
-+	ret = __iio_init_sw_ring_buffer(ring, ring->buf.bpd, ring->buf.length);
-+error_ret:
-+	spin_unlock(&ring->use_lock);
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = LIS3L02DQ_READ_REG(reg_address);
++	st->tx[1] = 0;
++
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfer, &msg);
++	ret = spi_sync(st->us, &msg);
++	*val = st->rx[1];
++	mutex_unlock(&st->buf_lock);
++
 +	return ret;
 +}
-+EXPORT_SYMBOL(iio_request_update_sw_rb);
 +
-+int iio_get_bpd_sw_rb(struct iio_ring_buffer *r)
++/**
++ * lis3l02dq_spi_write_reg_8() - write single byte to a register
++ * @dev: device associated with child of actual device (iio_dev or iio_trig)
++ * @reg_address: the address of the register to be writen
++ * @val: the value to write
++ **/
++int lis3l02dq_spi_write_reg_8(struct device *dev,
++			      u8 reg_address,
++			      u8 *val)
 +{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+	return ring->buf.bpd;
++	int ret;
++	struct spi_message msg;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct lis3l02dq_state *st = iio_dev_get_devdata(indio_dev);
++	struct spi_transfer xfer = {
++		.tx_buf = st->tx,
++		.bits_per_word = 8,
++		.len = 2,
++		.cs_change = 1,
++	};
++
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = LIS3L02DQ_WRITE_REG(reg_address);
++	st->tx[1] = *val;
++
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfer, &msg);
++	ret =  spi_sync(st->us, &msg);
++	mutex_unlock(&st->buf_lock);
++
++	return ret;
 +}
-+EXPORT_SYMBOL(iio_get_bpd_sw_rb);
 +
-+int iio_set_bpd_sw_rb(struct iio_ring_buffer *r, size_t bpd)
++/**
++ * lisl302dq_spi_write_reg_s16() - write 2 bytes to a pair of registers
++ * @dev: device associated with child of actual device (iio_dev or iio_trig)
++ * @reg_address: the address of the lower of the two registers. Second register
++ *               is assumed to have address one greater.
++ * @val: value to be written
++ **/
++static int lis3l02dq_spi_write_reg_s16(struct device *dev,
++				       u8 lower_reg_address,
++				       s16 value)
 +{
-+	if (r->bpd != bpd) {
-+		r->bpd = bpd;
-+		if (r->access.mark_param_change)
-+			r->access.mark_param_change(r);
++	int ret;
++	struct spi_message msg;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct lis3l02dq_state *st = iio_dev_get_devdata(indio_dev);
++	struct spi_transfer xfers[] = { {
++			.tx_buf = st->tx,
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++		}, {
++			.tx_buf = st->tx + 2,
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++		},
++	};
++
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = LIS3L02DQ_WRITE_REG(lower_reg_address);
++	st->tx[1] = value & 0xFF;
++	st->tx[2] = LIS3L02DQ_WRITE_REG(lower_reg_address + 1);
++	st->tx[3] = (value >> 8) & 0xFF;
++
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[0], &msg);
++	spi_message_add_tail(&xfers[1], &msg);
++	ret = spi_sync(st->us, &msg);
++	mutex_unlock(&st->buf_lock);
++
++	return ret;
++}
++
++/**
++ * lisl302dq_spi_read_reg_s16() - write 2 bytes to a pair of registers
++ * @dev: device associated with child of actual device (iio_dev or iio_trig)
++ * @reg_address: the address of the lower of the two registers. Second register
++ *               is assumed to have address one greater.
++ * @val: somewhere to pass back the value read
++ **/
++static int lis3l02dq_spi_read_reg_s16(struct device *dev,
++				      u8 lower_reg_address,
++				      s16 *val)
++{
++	struct spi_message msg;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct lis3l02dq_state *st = iio_dev_get_devdata(indio_dev);
++	int ret;
++	struct spi_transfer xfers[] = { {
++			.tx_buf = st->tx,
++			.rx_buf = st->rx,
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++		}, {
++			.tx_buf = st->tx + 2,
++			.rx_buf = st->rx + 2,
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++
++		},
++	};
++
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = LIS3L02DQ_READ_REG(lower_reg_address);
++	st->tx[1] = 0;
++	st->tx[2] = LIS3L02DQ_READ_REG(lower_reg_address+1);
++	st->tx[3] = 0;
++
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[0], &msg);
++	spi_message_add_tail(&xfers[1], &msg);
++	ret = spi_sync(st->us, &msg);
++	if (ret) {
++		dev_err(&st->us->dev, "problem when reading 16 bit register");
++		goto error_ret;
 +	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(iio_set_bpd_sw_rb);
++	*val = (s16)(st->rx[1]) | ((s16)(st->rx[3]) << 8);
 +
-+int iio_get_length_sw_rb(struct iio_ring_buffer *r)
-+{
-+	return r->length;
++error_ret:
++	mutex_unlock(&st->buf_lock);
++	return ret;
 +}
-+EXPORT_SYMBOL(iio_get_length_sw_rb);
 +
-+int iio_set_length_sw_rb(struct iio_ring_buffer *r, int length)
++/**
++ * lis3l02dq_read_signed() - attribute function used for 8 bit signed values
++ * @dev: the child device associated with the iio_dev or iio_trigger
++ * @attr: the attribute being processed
++ * @buf: buffer into which put the output string
++ **/
++static ssize_t lis3l02dq_read_signed(struct device *dev,
++				     struct device_attribute *attr,
++				     char *buf)
 +{
-+	if (r->length != length) {
-+		r->length = length;
-+		if (r->access.mark_param_change)
-+			r->access.mark_param_change(r);
++	int ret;
++	s8 val;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++
++	ret = lis3l02dq_spi_read_reg_8(dev, this_attr->address, (u8 *)&val);
++
++	return ret ? ret : sprintf(buf, "%d\n", val);
++}
++
++static ssize_t lis3l02dq_read_unsigned(struct device *dev,
++				       struct device_attribute *attr,
++				       char *buf)
++{
++	int ret;
++	u8 val;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++
++	ret = lis3l02dq_spi_read_reg_8(dev, this_attr->address, &val);
++
++	return ret ? ret : sprintf(buf, "%d\n", val);
++}
++
++static ssize_t lis3l02dq_write_signed(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t len)
++{
++	long valin;
++	s8 val;
++	int ret;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++
++	ret = strict_strtol(buf, 10, &valin);
++	if (ret)
++		goto error_ret;
++	val = valin;
++	ret = lis3l02dq_spi_write_reg_8(dev, this_attr->address, (u8 *)&val);
++
++error_ret:
++	return ret ? ret : len;
++}
++
++static ssize_t lis3l02dq_write_unsigned(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf,
++					size_t len)
++{
++	int ret;
++	ulong valin;
++	u8 val;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++
++	ret = strict_strtoul(buf, 10, &valin);
++	if (ret)
++		goto err_ret;
++	val = valin;
++	ret = lis3l02dq_spi_write_reg_8(dev, this_attr->address, &val);
++
++err_ret:
++	return ret ? ret : len;
++}
++
++static ssize_t lis3l02dq_read_16bit_signed(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
++{
++	int ret;
++	s16 val = 0;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++
++	ret = lis3l02dq_spi_read_reg_s16(dev, this_attr->address, &val);
++
++	if (ret)
++		return ret;
++
++	return sprintf(buf, "%d\n", val);
++}
++
++static ssize_t lis3l02dq_read_accel(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
++{
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	ssize_t ret;
++
++	/* Take the iio_dev status lock */
++	mutex_lock(&indio_dev->mlock);
++	if (indio_dev->currentmode == INDIO_RING_TRIGGERED)
++		ret = lis3l02dq_read_accel_from_ring(dev, attr, buf);
++	else
++		ret =  lis3l02dq_read_16bit_signed(dev, attr, buf);
++	mutex_unlock(&indio_dev->mlock);
++
++	return ret;
++}
++
++static ssize_t lis3l02dq_write_16bit_signed(struct device *dev,
++					    struct device_attribute *attr,
++					    const char *buf,
++					    size_t len)
++{
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++	int ret;
++	long val;
++
++	ret = strict_strtol(buf, 10, &val);
++	if (ret)
++		goto error_ret;
++	ret = lis3l02dq_spi_write_reg_s16(dev, this_attr->address, val);
++
++error_ret:
++	return ret ? ret : len;
++}
++
++static ssize_t lis3l02dq_read_frequency(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	int ret, len = 0;
++	s8 t;
++	ret = lis3l02dq_spi_read_reg_8(dev,
++				       LIS3L02DQ_REG_CTRL_1_ADDR,
++				       (u8 *)&t);
++	if (ret)
++		return ret;
++	t &= LIS3L02DQ_DEC_MASK;
++	switch (t) {
++	case LIS3L02DQ_REG_CTRL_1_DF_128:
++		len = sprintf(buf, "280\n");
++		break;
++	case LIS3L02DQ_REG_CTRL_1_DF_64:
++		len = sprintf(buf, "560\n");
++		break;
++	case LIS3L02DQ_REG_CTRL_1_DF_32:
++		len = sprintf(buf, "1120\n");
++		break;
++	case LIS3L02DQ_REG_CTRL_1_DF_8:
++		len = sprintf(buf, "4480\n");
++		break;
 +	}
++	return len;
++}
++
++static ssize_t lis3l02dq_write_frequency(struct device *dev,
++					 struct device_attribute *attr,
++					 const char *buf,
++					 size_t len)
++{
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	long val;
++	int ret;
++	u8 t;
++
++	ret = strict_strtol(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	mutex_lock(&indio_dev->mlock);
++	ret = lis3l02dq_spi_read_reg_8(dev,
++				       LIS3L02DQ_REG_CTRL_1_ADDR,
++				       &t);
++	if (ret)
++		goto error_ret_mutex;
++	/* Wipe the bits clean */
++	t &= ~LIS3L02DQ_DEC_MASK;
++	switch (val) {
++	case 280:
++		t |= LIS3L02DQ_REG_CTRL_1_DF_128;
++		break;
++	case 560:
++		t |= LIS3L02DQ_REG_CTRL_1_DF_64;
++		break;
++	case 1120:
++		t |= LIS3L02DQ_REG_CTRL_1_DF_32;
++		break;
++	case 4480:
++		t |= LIS3L02DQ_REG_CTRL_1_DF_8;
++		break;
++	default:
++		ret = -EINVAL;
++		goto error_ret_mutex;
++	};
++
++	ret = lis3l02dq_spi_write_reg_8(dev,
++					LIS3L02DQ_REG_CTRL_1_ADDR,
++					&t);
++
++error_ret_mutex:
++	mutex_unlock(&indio_dev->mlock);
++
++	return ret ? ret : len;
++}
++
++static int lis3l02dq_initial_setup(struct lis3l02dq_state *st)
++{
++	int ret;
++	u8 val, valtest;
++
++	st->us->mode = SPI_MODE_3;
++
++	spi_setup(st->us);
++
++	val = LIS3L02DQ_DEFAULT_CTRL1;
++	/* Write suitable defaults to ctrl1 */
++	ret = lis3l02dq_spi_write_reg_8(&st->indio_dev->dev,
++					LIS3L02DQ_REG_CTRL_1_ADDR,
++					&val);
++	if (ret) {
++		dev_err(&st->us->dev, "problem with setup control register 1");
++		goto err_ret;
++	}
++	/* Repeat as sometimes doesn't work first time?*/
++	ret = lis3l02dq_spi_write_reg_8(&st->indio_dev->dev,
++					LIS3L02DQ_REG_CTRL_1_ADDR,
++					&val);
++	if (ret) {
++		dev_err(&st->us->dev, "problem with setup control register 1");
++		goto err_ret;
++	}
++
++	/* Read back to check this has worked acts as loose test of correct
++	 * chip */
++	ret = lis3l02dq_spi_read_reg_8(&st->indio_dev->dev,
++				       LIS3L02DQ_REG_CTRL_1_ADDR,
++				       &valtest);
++	if (ret || (valtest != val)) {
++		dev_err(&st->indio_dev->dev, "device not playing ball");
++		ret = -EINVAL;
++		goto err_ret;
++	}
++
++	val = LIS3L02DQ_DEFAULT_CTRL2;
++	ret = lis3l02dq_spi_write_reg_8(&st->indio_dev->dev,
++					LIS3L02DQ_REG_CTRL_2_ADDR,
++					&val);
++	if (ret) {
++		dev_err(&st->us->dev, "problem with setup control register 2");
++		goto err_ret;
++	}
++
++	val = LIS3L02DQ_REG_WAKE_UP_CFG_LATCH_SRC;
++	ret = lis3l02dq_spi_write_reg_8(&st->indio_dev->dev,
++					LIS3L02DQ_REG_WAKE_UP_CFG_ADDR,
++					&val);
++	if (ret)
++		dev_err(&st->us->dev, "problem with interrupt cfg register");
++err_ret:
++
++	return ret;
++}
++
++static IIO_DEV_ATTR_ACCEL_X_OFFSET(S_IWUSR | S_IRUGO,
++				   lis3l02dq_read_signed,
++				   lis3l02dq_write_signed,
++				   LIS3L02DQ_REG_OFFSET_X_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Y_OFFSET(S_IWUSR | S_IRUGO,
++				   lis3l02dq_read_signed,
++				   lis3l02dq_write_signed,
++				   LIS3L02DQ_REG_OFFSET_Y_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Z_OFFSET(S_IWUSR | S_IRUGO,
++				   lis3l02dq_read_signed,
++				   lis3l02dq_write_signed,
++				   LIS3L02DQ_REG_OFFSET_Z_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_X_GAIN(S_IWUSR | S_IRUGO,
++				 lis3l02dq_read_unsigned,
++				 lis3l02dq_write_unsigned,
++				 LIS3L02DQ_REG_GAIN_X_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Y_GAIN(S_IWUSR | S_IRUGO,
++				 lis3l02dq_read_unsigned,
++				 lis3l02dq_write_unsigned,
++				 LIS3L02DQ_REG_GAIN_Y_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Z_GAIN(S_IWUSR | S_IRUGO,
++				 lis3l02dq_read_unsigned,
++				 lis3l02dq_write_unsigned,
++				 LIS3L02DQ_REG_GAIN_Z_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_THRESH(S_IWUSR | S_IRUGO,
++				 lis3l02dq_read_16bit_signed,
++				 lis3l02dq_write_16bit_signed,
++				 LIS3L02DQ_REG_THS_L_ADDR);
++
++/* RFC The reading method for these will change depending on whether
++ * ring buffer capture is in use. Is it worth making these take two
++ * functions and let the core handle which to call, or leave as in this
++ * driver where it is the drivers problem to manage this?
++ */
++
++static IIO_DEV_ATTR_ACCEL_X(lis3l02dq_read_accel,
++			    LIS3L02DQ_REG_OUT_X_L_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Y(lis3l02dq_read_accel,
++			    LIS3L02DQ_REG_OUT_Y_L_ADDR);
++
++static IIO_DEV_ATTR_ACCEL_Z(lis3l02dq_read_accel,
++			    LIS3L02DQ_REG_OUT_Z_L_ADDR);
++
++static IIO_DEV_ATTR_SAMP_FREQ(S_IWUSR | S_IRUGO,
++			      lis3l02dq_read_frequency,
++			      lis3l02dq_write_frequency);
++
++static IIO_CONST_ATTR_AVAIL_SAMP_FREQ("280 560 1120 4480");
++
++static ssize_t lis3l02dq_read_interrupt_config(struct device *dev,
++					       struct device_attribute *attr,
++					       char *buf)
++{
++	int ret;
++	s8 val;
++	struct iio_event_attr *this_attr = to_iio_event_attr(attr);
++
++	ret = lis3l02dq_spi_read_reg_8(dev,
++				       LIS3L02DQ_REG_WAKE_UP_CFG_ADDR,
++				       (u8 *)&val);
++
++	return ret ? ret : sprintf(buf, "%d\n",
++				   (val & this_attr->mask) ? 1 : 0);;
++}
++
++static ssize_t lis3l02dq_write_interrupt_config(struct device *dev,
++						struct device_attribute *attr,
++						const char *buf,
++						size_t len)
++{
++	struct iio_event_attr *this_attr = to_iio_event_attr(attr);
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	int ret, currentlyset, changed = 0;
++	u8 valold, controlold;
++	bool val;
++
++	val = !(buf[0] == '0');
++
++	mutex_lock(&indio_dev->mlock);
++	/* read current value */
++	ret = lis3l02dq_spi_read_reg_8(dev,
++				       LIS3L02DQ_REG_WAKE_UP_CFG_ADDR,
++				       &valold);
++	if (ret)
++		goto error_mutex_unlock;
++
++	/* read current control */
++	ret = lis3l02dq_spi_read_reg_8(dev,
++				       LIS3L02DQ_REG_CTRL_2_ADDR,
++				       &controlold);
++	if (ret)
++		goto error_mutex_unlock;
++	currentlyset = !!(valold & this_attr->mask);
++	if (val == false && currentlyset) {
++		valold &= ~this_attr->mask;
++		changed = 1;
++		iio_remove_event_from_list(this_attr->listel,
++						 &indio_dev->interrupts[0]
++						 ->ev_list);
++	} else if (val == true && !currentlyset) {
++		changed = 1;
++		valold |= this_attr->mask;
++		iio_add_event_to_list(this_attr->listel,
++					    &indio_dev->interrupts[0]->ev_list);
++	}
++
++	if (changed) {
++		ret = lis3l02dq_spi_write_reg_8(dev,
++						LIS3L02DQ_REG_WAKE_UP_CFG_ADDR,
++						&valold);
++		if (ret)
++			goto error_mutex_unlock;
++		/* This always enables the interrupt, even if we've remove the
++		 * last thing using it. For this device we can use the reference
++		 * count on the handler to tell us if anyone wants the interrupt
++		 */
++		controlold = this_attr->listel->refcount ?
++			(controlold | LIS3L02DQ_REG_CTRL_2_ENABLE_INTERRUPT) :
++			(controlold & ~LIS3L02DQ_REG_CTRL_2_ENABLE_INTERRUPT);
++		ret = lis3l02dq_spi_write_reg_8(dev,
++						LIS3L02DQ_REG_CTRL_2_ADDR,
++						&controlold);
++		if (ret)
++			goto error_mutex_unlock;
++	}
++error_mutex_unlock:
++	mutex_unlock(&indio_dev->mlock);
++
++	return ret ? ret : len;
++}
++
++
++static int lis3l02dq_thresh_handler_th(struct iio_dev *dev_info,
++				       int index,
++				       s64 timestamp,
++				       int no_test)
++{
++	struct lis3l02dq_state *st = dev_info->dev_data;
++
++	/* Stash the timestamp somewhere convenient for the bh */
++	st->last_timestamp = timestamp;
++	schedule_work(&st->work_cont_thresh.ws);
++
 +	return 0;
 +}
-+EXPORT_SYMBOL(iio_set_length_sw_rb);
 +
-+int iio_mark_update_needed_sw_rb(struct iio_ring_buffer *r)
++
++/* Unforunately it appears the interrupt won't clear unless you read from the
++ * src register.
++ */
++static void lis3l02dq_thresh_handler_bh_no_check(struct work_struct *work_s)
 +{
-+	struct iio_sw_ring_buffer *ring = iio_to_sw_ring(r);
-+	ring->update_needed = true;
-+	return 0;
++	struct iio_work_cont *wc
++		= container_of(work_s, struct iio_work_cont, ws_nocheck);
++	struct lis3l02dq_state *st = wc->st;
++	u8 t;
++
++	lis3l02dq_spi_read_reg_8(&st->indio_dev->dev,
++				 LIS3L02DQ_REG_WAKE_UP_SRC_ADDR,
++				 &t);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Z_HIGH)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_Z_HIGH,
++			       st->last_timestamp);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Z_LOW)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_Z_LOW,
++			       st->last_timestamp);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Y_HIGH)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_Y_HIGH,
++			       st->last_timestamp);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_Y_LOW)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_Y_LOW,
++			       st->last_timestamp);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_X_HIGH)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_X_HIGH,
++			       st->last_timestamp);
++
++	if (t & LIS3L02DQ_REG_WAKE_UP_SRC_INTERRUPT_X_LOW)
++		iio_push_event(st->indio_dev, 0,
++			       IIO_EVENT_CODE_ACCEL_X_LOW,
++			       st->last_timestamp);
++	/* reenable the irq */
++	enable_irq(st->us->irq);
++	/* Ack and allow for new interrupts */
++	lis3l02dq_spi_read_reg_8(&st->indio_dev->dev,
++				 LIS3L02DQ_REG_WAKE_UP_ACK_ADDR,
++				 &t);
++
++	return;
 +}
-+EXPORT_SYMBOL(iio_mark_update_needed_sw_rb);
 +
-+static void iio_sw_rb_release(struct device *dev)
-+{
-+	struct iio_ring_buffer *r = to_iio_ring_buffer(dev);
-+	kfree(iio_to_sw_ring(r));
-+}
++/* A shared handler for a number of threshold types */
++IIO_EVENT_SH(threshold, &lis3l02dq_thresh_handler_th);
 +
-+static IIO_RING_ENABLE_ATTR;
-+static IIO_RING_BPS_ATTR;
-+static IIO_RING_LENGTH_ATTR;
++IIO_EVENT_ATTR_ACCEL_X_HIGH_SH(iio_event_threshold,
++			       lis3l02dq_read_interrupt_config,
++			       lis3l02dq_write_interrupt_config,
++			       LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_X_HIGH);
 +
-+/* Standard set of ring buffer attributes */
-+static struct attribute *iio_ring_attributes[] = {
-+	&dev_attr_length.attr,
-+	&dev_attr_bps.attr,
-+	&dev_attr_ring_enable.attr,
-+	NULL,
-+};
++IIO_EVENT_ATTR_ACCEL_Y_HIGH_SH(iio_event_threshold,
++			       lis3l02dq_read_interrupt_config,
++			       lis3l02dq_write_interrupt_config,
++			       LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Y_HIGH);
 +
-+static struct attribute_group iio_ring_attribute_group = {
-+	.attrs = iio_ring_attributes,
-+};
++IIO_EVENT_ATTR_ACCEL_Z_HIGH_SH(iio_event_threshold,
++			       lis3l02dq_read_interrupt_config,
++			       lis3l02dq_write_interrupt_config,
++			       LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Z_HIGH);
 +
-+static struct attribute_group *iio_ring_attribute_groups[] = {
-+	&iio_ring_attribute_group,
++IIO_EVENT_ATTR_ACCEL_X_LOW_SH(iio_event_threshold,
++			      lis3l02dq_read_interrupt_config,
++			      lis3l02dq_write_interrupt_config,
++			      LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_X_LOW);
++
++IIO_EVENT_ATTR_ACCEL_Y_LOW_SH(iio_event_threshold,
++			      lis3l02dq_read_interrupt_config,
++			      lis3l02dq_write_interrupt_config,
++			      LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Y_LOW);
++
++IIO_EVENT_ATTR_ACCEL_Z_LOW_SH(iio_event_threshold,
++			      lis3l02dq_read_interrupt_config,
++			      lis3l02dq_write_interrupt_config,
++			      LIS3L02DQ_REG_WAKE_UP_CFG_INTERRUPT_Z_LOW);
++
++static struct attribute *lis3l02dq_event_attributes[] = {
++	&iio_event_attr_accel_x_high.dev_attr.attr,
++	&iio_event_attr_accel_y_high.dev_attr.attr,
++	&iio_event_attr_accel_z_high.dev_attr.attr,
++	&iio_event_attr_accel_x_low.dev_attr.attr,
++	&iio_event_attr_accel_y_low.dev_attr.attr,
++	&iio_event_attr_accel_z_low.dev_attr.attr,
 +	NULL
 +};
 +
-+static struct device_type iio_sw_ring_type = {
-+	.release = iio_sw_rb_release,
-+	.groups = iio_ring_attribute_groups,
++static struct attribute_group lis3l02dq_event_attribute_group = {
++	.attrs = lis3l02dq_event_attributes,
 +};
 +
-+struct iio_ring_buffer *iio_sw_rb_allocate(struct iio_dev *indio_dev)
++static IIO_CONST_ATTR(name, "lis3l02dq");
++
++static struct attribute *lis3l02dq_attributes[] = {
++	&iio_dev_attr_accel_x_offset.dev_attr.attr,
++	&iio_dev_attr_accel_y_offset.dev_attr.attr,
++	&iio_dev_attr_accel_z_offset.dev_attr.attr,
++	&iio_dev_attr_accel_x_gain.dev_attr.attr,
++	&iio_dev_attr_accel_y_gain.dev_attr.attr,
++	&iio_dev_attr_accel_z_gain.dev_attr.attr,
++	&iio_dev_attr_thresh.dev_attr.attr,
++	&iio_dev_attr_accel_x.dev_attr.attr,
++	&iio_dev_attr_accel_y.dev_attr.attr,
++	&iio_dev_attr_accel_z.dev_attr.attr,
++	&iio_dev_attr_sampling_frequency.dev_attr.attr,
++	&iio_const_attr_available_sampling_frequency.dev_attr.attr,
++	&iio_const_attr_name.dev_attr.attr,
++	NULL
++};
++
++static const struct attribute_group lis3l02dq_attribute_group = {
++	.attrs = lis3l02dq_attributes,
++};
++
++static int __devinit lis3l02dq_probe(struct spi_device *spi)
 +{
-+	struct iio_ring_buffer *buf;
-+	struct iio_sw_ring_buffer *ring;
++	int ret;
++	struct lis3l02dq_state *st = kzalloc(sizeof *st, GFP_KERNEL);
++	if (!st) {
++		ret =  -ENOMEM;
++		goto error_ret;
++	}
++	/* this is only used tor removal purposes */
++	spi_set_drvdata(spi, st);
 +
-+	ring = kzalloc(sizeof *ring, GFP_KERNEL);
-+	if (!ring)
-+		return 0;
-+	buf = &ring->buf;
++	/* Allocate the comms buffers */
++	st->rx = kzalloc(sizeof(*st->rx)*LIS3L02DQ_MAX_RX, GFP_KERNEL);
++	if (st->rx == NULL) {
++		ret = -ENOMEM;
++		goto error_free_st;
++	}
++	st->tx = kzalloc(sizeof(*st->tx)*LIS3L02DQ_MAX_TX, GFP_KERNEL);
++	if (st->tx == NULL) {
++		ret = -ENOMEM;
++		goto error_free_rx;
++	}
++	st->us = spi;
++	mutex_init(&st->buf_lock);
++	/* setup the industrialio driver allocated elements */
++	st->indio_dev = iio_allocate_device();
++	if (st->indio_dev == NULL) {
++		ret = -ENOMEM;
++		goto error_free_tx;
++	}
 +
-+	iio_ring_buffer_init(buf, indio_dev);
-+	buf->dev.type = &iio_sw_ring_type;
-+	device_initialize(&buf->dev);
-+	buf->dev.parent = &indio_dev->dev;
-+	buf->dev.class = &iio_class;
-+	dev_set_drvdata(&buf->dev, (void *)buf);
++	st->indio_dev->dev.parent = &spi->dev;
++	st->indio_dev->num_interrupt_lines = 1;
++	st->indio_dev->event_attrs = &lis3l02dq_event_attribute_group;
++	st->indio_dev->attrs = &lis3l02dq_attribute_group;
++	st->indio_dev->dev_data = (void *)(st);
++	st->indio_dev->driver_module = THIS_MODULE;
++	st->indio_dev->modes = INDIO_DIRECT_MODE;
 +
-+	return buf;
++	ret = lis3l02dq_configure_ring(st->indio_dev);
++	if (ret)
++		goto error_free_dev;
++
++	ret = iio_device_register(st->indio_dev);
++	if (ret)
++		goto error_unreg_ring_funcs;
++
++	ret = lis3l02dq_initialize_ring(st->indio_dev->ring);
++	if (ret) {
++		printk(KERN_ERR "failed to initialize the ring\n");
++		goto error_unregister_dev;
++	}
++
++	if (spi->irq && gpio_is_valid(irq_to_gpio(spi->irq)) > 0) {
++		/* This is a little unusual, in that the device seems
++		   to need a full read of the interrupt source reg before
++		   the interrupt will reset.
++		   Hence the two handlers are the same */
++		iio_init_work_cont(&st->work_cont_thresh,
++				   lis3l02dq_thresh_handler_bh_no_check,
++				   lis3l02dq_thresh_handler_bh_no_check,
++				   LIS3L02DQ_REG_WAKE_UP_SRC_ADDR,
++				   0,
++				   st);
++		st->inter = 0;
++		ret = iio_register_interrupt_line(spi->irq,
++						  st->indio_dev,
++						  0,
++						  IRQF_TRIGGER_RISING,
++						  "lis3l02dq");
++		if (ret)
++			goto error_unregister_dev;
++
++	}
++
++	ret = lis3l02dq_probe_trigger(st->indio_dev);
++	if (ret)
++		goto error_unregister_line;
++
++	/* Get the device into a sane initial state */
++	ret = lis3l02dq_initial_setup(st);
++	if (ret)
++		goto error_remove_trigger;
++	return 0;
++
++error_remove_trigger:
++	lis3l02dq_remove_trigger(st->indio_dev);
++error_unregister_line:
++	if (st->indio_dev->modes & INDIO_RING_TRIGGERED)
++		iio_unregister_interrupt_line(st->indio_dev, 0);
++error_unregister_dev:
++	iio_device_unregister(st->indio_dev);
++error_unreg_ring_funcs:
++	lis3l02dq_unconfigure_ring(st->indio_dev);
++error_free_dev:
++	iio_free_device(st->indio_dev);
++error_free_tx:
++	kfree(st->tx);
++error_free_rx:
++	kfree(st->rx);
++error_free_st:
++	kfree(st);
++error_ret:
++	return ret;
 +}
-+EXPORT_SYMBOL(iio_sw_rb_allocate);
 +
-+void iio_sw_rb_free(struct iio_ring_buffer *r)
++/* Power down the device */
++static int lis3l02dq_stop_device(struct iio_dev *indio_dev)
 +{
-+	if (r)
-+		iio_put_ring_buffer(r);
++	int ret;
++	struct lis3l02dq_state *st = indio_dev->dev_data;
++	u8 val = 0;
++
++	mutex_lock(&indio_dev->mlock);
++	ret = lis3l02dq_spi_write_reg_8(&indio_dev->dev,
++					LIS3L02DQ_REG_CTRL_1_ADDR,
++					&val);
++	if (ret) {
++		dev_err(&st->us->dev, "problem with turning device off: ctrl1");
++		goto err_ret;
++	}
++
++	ret = lis3l02dq_spi_write_reg_8(&indio_dev->dev,
++					LIS3L02DQ_REG_CTRL_2_ADDR,
++					&val);
++	if (ret)
++		dev_err(&st->us->dev, "problem with turning device off: ctrl2");
++err_ret:
++	mutex_unlock(&indio_dev->mlock);
++	return ret;
 +}
-+EXPORT_SYMBOL(iio_sw_rb_free);
-+MODULE_DESCRIPTION("Industrialio I/O software ring buffer");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/iio/ring_sw.h b/include/linux/iio/ring_sw.h
++
++/* fixme, confirm ordering in this function */
++static int lis3l02dq_remove(struct spi_device *spi)
++{
++	int ret;
++	struct lis3l02dq_state *st = spi_get_drvdata(spi);
++	struct iio_dev *indio_dev = st->indio_dev;
++
++	ret = lis3l02dq_stop_device(indio_dev);
++	if (ret)
++		goto err_ret;
++
++	flush_scheduled_work();
++
++	lis3l02dq_remove_trigger(indio_dev);
++	if (spi->irq && gpio_is_valid(irq_to_gpio(spi->irq)) > 0)
++		iio_unregister_interrupt_line(indio_dev, 0);
++
++	lis3l02dq_uninitialize_ring(indio_dev->ring);
++
++	iio_device_unregister(indio_dev);
++
++	lis3l02dq_unconfigure_ring(indio_dev);
++
++	iio_free_device(indio_dev);
++	kfree(st->tx);
++	kfree(st->rx);
++	kfree(st);
++	return 0;
++
++err_ret:
++	return ret;
++}
++
++static struct spi_driver lis3l02dq_driver = {
++	.driver = {
++		.name = "lis3l02dq",
++		.owner = THIS_MODULE,
++	},
++	.probe = lis3l02dq_probe,
++	.remove = __devexit_p(lis3l02dq_remove),
++};
++
++static __init int lis3l02dq_init(void)
++{
++	return spi_register_driver(&lis3l02dq_driver);
++}
++module_init(lis3l02dq_init);
++
++static __exit void lis3l02dq_exit(void)
++{
++	spi_unregister_driver(&lis3l02dq_driver);
++}
++module_exit(lis3l02dq_exit);
++
++MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
++MODULE_DESCRIPTION("ST LIS3L02DQ Accelerometer SPI driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/iio/accel.h b/include/linux/iio/accel.h
 new file mode 100644
-index 0000000..6365d5a
+index 0000000..c66df20
 --- /dev/null
-+++ b/include/linux/iio/ring_sw.h
-@@ -0,0 +1,189 @@
-+/* The industrial I/O simple minimally locked ring buffer.
++++ b/include/linux/iio/accel.h
+@@ -0,0 +1,167 @@
++
++#include <linux/iio/sysfs.h>
++
++/* Accelerometer types of attribute */
++
++#define IIO_DEV_ATTR_ACCEL_X_OFFSET(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(accel_x_offset, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Y_OFFSET(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(accel_y_offset, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Z_OFFSET(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(accel_z_offset, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_X_GAIN(_mode, _show, _store, _addr)		\
++	IIO_DEVICE_ATTR(accel_x_gain, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Y_GAIN(_mode, _show, _store, _addr)		\
++	IIO_DEVICE_ATTR(accel_y_gain, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Z_GAIN(_mode, _show, _store, _addr)		\
++	IIO_DEVICE_ATTR(accel_z_gain, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_X(_show, _addr)			\
++	IIO_DEVICE_ATTR(accel_x, S_IRUGO, _show, NULL, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Y(_show, _addr)			\
++	IIO_DEVICE_ATTR(accel_y, S_IRUGO, _show, NULL, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_Z(_show, _addr)			\
++	IIO_DEVICE_ATTR(accel_z, S_IRUGO, _show, NULL, _addr)
++
++/* Thresholds are somewhat chip dependent - may need quite a few defs here */
++/* For unified thesholds (shared across all directions */
++
++/**
++ * IIO_DEV_ATTR_ACCEL_THRESH: unified threshold
++ * @_mode: read/write
++ * @_show: read detector threshold value
++ * @_store: write detector theshold value
++ * @_addr: driver specific data, typically a register address
 + *
-+ * Copyright (c) 2008 Jonathan Cameron
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ * This code is deliberately kept separate from the main industrialio I/O core
-+ * as it is intended that in the future a number of different software ring
-+ * buffer implementations will exist with different characteristics to suit
-+ * different applications.
-+ *
-+ * This particular one was designed for a data capture application where it was
-+ * particularly important that no userspace reads would interrupt the capture
-+ * process. To this end the ring is not locked during a read.
-+ *
-+ * Comments on this buffer design welcomed. It's far from efficient and some of
-+ * my understanding of the effects of scheduling on this are somewhat limited.
-+ * Frankly, to my mind, this is the current weak point in the industrial I/O
-+ * patch set.
-+ */
-+
-+#ifndef _IIO_RING_SW_H_
-+#define _IIO_RING_SW_H_
-+/* NEEDS COMMENTS */
-+/* The intention is that this should be a separate module from the iio core.
-+ * This is a bit like supporting algorithms dependent on what the device
-+ * driver requests - some may support multiple options */
-+
-+
-+#include <linux/autoconf.h>
-+#include <linux/iio/iio.h>
-+#include <linux/iio/ring_generic.h>
-+
-+#if defined CONFIG_IIO_SW_RING || defined CONFIG_IIO_SW_RING_MODULE
-+
-+/**
-+ * iio_create_sw_rb() software ring buffer allocation
-+ * @r:		pointer to ring buffer pointer
++ * This one is for cases where as single threshold covers all directions
 + **/
-+int iio_create_sw_rb(struct iio_ring_buffer **r);
++#define IIO_DEV_ATTR_ACCEL_THRESH(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(thresh, _mode, _show, _store, _addr)
 +
 +/**
-+ * iio_init_sw_rb() initialize the software ring buffer
-+ * @r:		pointer to a software ring buffer created by an
-+ *		iio_create_sw_rb call.
++ * IIO_DEV_ATTR_ACCEL_THRESH_X: independant direction threshold, x axis
++ * @_mode: readable / writable
++ * @_show: read x axis detector theshold value
++ * @_store: write x axis detector threshold value
++ * @_addr: device driver dependant, typically a register address
 + **/
-+int iio_init_sw_rb(struct iio_ring_buffer *r, struct iio_dev *indio_dev);
++#define IIO_DEV_ATTR_ACCEL_THRESH_X(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(thresh_accel_x, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_THRESH_Y(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(thresh_accel_y, _mode, _show, _store, _addr)
++
++#define IIO_DEV_ATTR_ACCEL_THRESH_Z(_mode, _show, _store, _addr)	\
++	IIO_DEVICE_ATTR(thresh_accel_z, _mode, _show, _store, _addr)
++
++
 +/**
-+ * iio_exit_sw_rb() reverse what was done in iio_init_sw_rb
++ * IIO_EVENT_ATTR_ACCEL_X_HIGH: threshold event, x acceleration
++ * @_show: read x acceleration high threshold
++ * @_store: write x acceleration high threshold
++ * @_mask: device dependant, typically a bit mask
++ * @_handler: the iio_handler associated with this attribute
 + **/
-+void iio_exit_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_X_HIGH(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(accel_x_high, _show, _store, _mask, _handler)
 +
 +/**
-+ * iio_free_sw_rb() free memory occupied by the core ring buffer struct
++ * IIO_EVENT_ATTR_ACCEL_X_HIGH_SH: threshold event, x accel high, shared handler
++ * @_evlist: event list used to share the handler
++ * @_show: attribute read
++ * @_store: attribute write
++ * @_mask: driver specific data, typically a bit mask
 + **/
-+void iio_free_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_X_HIGH_SH(_evlist, _show, _store, _mask)	\
++	IIO_EVENT_ATTR_SH(accel_x_high, _evlist, _show, _store, _mask)
 +
 +/**
-+ * iio_mark_sw_rb_in_use() reference counting to prevent incorrect chances
++ * IIO_EVENT_CODE_ACCEL_X_HIGH - event code for x axis high accel threshold
 + **/
-+void iio_mark_sw_rb_in_use(struct iio_ring_buffer *r);
++#define IIO_EVENT_CODE_ACCEL_X_HIGH IIO_EVENT_CODE_ACCEL_BASE
 +
-+/**
-+ *  iio_unmark_sw_rb_in_use() notify the ring buffer that we don't care anymore
-+ **/
-+void iio_unmark_sw_rb_in_use(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_Y_HIGH(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(accel_y_high, _show, _store, _mask, _handler)
 +
-+/**
-+ * iio_read_last_from_sw_rb() attempt to read the last stored datum from the rb
-+ **/
-+int iio_read_last_from_sw_rb(struct iio_ring_buffer *r, u8 *data);
++#define IIO_EVENT_ATTR_ACCEL_Y_HIGH_SH(_evlist, _show, _store, _mask)	\
++	IIO_EVENT_ATTR_SH(accel_y_high, _evlist, _show, _store, _mask)
 +
-+/**
-+ * iio_store_to_sw_rb() store a new datum to the ring buffer
-+ * @rb:	pointer to ring buffer instance
-+ * @data:	the datum to be stored including timestamp if relevant.
-+ * @timestamp:	timestamp which will be attached to buffer events if relevant.
-+ **/
-+int iio_store_to_sw_rb(struct iio_ring_buffer *r, u8 *data, s64 timestamp);
++#define IIO_EVENT_CODE_ACCEL_Y_HIGH (IIO_EVENT_CODE_ACCEL_BASE + 1)
 +
-+/**
-+ * iio_rip_sw_rb() attempt to read data from the ring buffer
-+ * @r:			ring buffer instance
-+ * @count:		number of datum's to try and read
-+ * @data:		where the data will be stored.
-+ * @dead_offset:	how much of the stored data was possibly invalidated by
-+ *			the end of the copy.
-+ **/
-+int iio_rip_sw_rb(struct iio_ring_buffer *r,
-+		  size_t count,
-+		  u8 **data,
-+		  int *dead_offset);
++#define IIO_EVENT_ATTR_ACCEL_Z_HIGH(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(accel_z_high, _show, _store, _mask, _handler)
 +
-+/**
-+ * iio_request_update_sw_rb() update params if update needed
-+ **/
-+int iio_request_update_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_Z_HIGH_SH(_evlist, _show, _store, _mask)	\
++	IIO_EVENT_ATTR_SH(accel_z_high, _evlist, _show, _store, _mask)
 +
-+/**
-+ * iio_mark_update_needed_sw_rb() tell the ring buffer it needs a param update
-+ **/
-+int iio_mark_update_needed_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_CODE_ACCEL_Z_HIGH (IIO_EVENT_CODE_ACCEL_BASE + 2)
 +
++#define IIO_EVENT_ATTR_ACCEL_X_LOW(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(accel_x_low, _show, _store, _mask, _handler)
 +
-+/**
-+ * iio_get_bpd_sw_rb() get the datum size in bytes
-+ **/
-+int iio_get_bpd_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_X_LOW_SH(_evlist, _show, _store, _mask)	\
++	IIO_EVENT_ATTR_SH(accel_x_low, _evlist, _show, _store, _mask)
 +
-+/**
-+ * iio_set_bpd_sw_rb() set the datum size in bytes
-+ **/
-+int iio_set_bpd_sw_rb(struct iio_ring_buffer *r, size_t bpd);
++#define IIO_EVENT_CODE_ACCEL_X_LOW (IIO_EVENT_CODE_ACCEL_BASE + 3)
 +
-+/**
-+ * iio_get_length_sw_rb() get how many datums the rb may contain
-+ **/
-+int iio_get_length_sw_rb(struct iio_ring_buffer *r);
++#define IIO_EVENT_ATTR_ACCEL_Y_LOW(_show, _store, _mask, _handler) \
++	IIO_EVENT_ATTR(accel_y_low, _show, _store, _mask, _handler)
 +
-+/**
-+ * iio_set_length_sw_rb() set how many datums the rb may contain
-+ **/
-+int iio_set_length_sw_rb(struct iio_ring_buffer *r, int length);
++#define IIO_EVENT_ATTR_ACCEL_Y_LOW_SH(_evlist, _show, _store, _mask)\
++	IIO_EVENT_ATTR_SH(accel_y_low, _evlist, _show, _store, _mask)
 +
-+/**
-+ * iio_ring_sw_register_funcs() helper function to set up rb access
-+ **/
-+static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
-+{
-+	ra->mark_in_use = &iio_mark_sw_rb_in_use;
-+	ra->unmark_in_use = &iio_unmark_sw_rb_in_use;
++#define IIO_EVENT_CODE_ACCEL_Y_LOW (IIO_EVENT_CODE_ACCEL_BASE + 4)
 +
-+	ra->store_to = &iio_store_to_sw_rb;
-+	ra->read_last = &iio_read_last_from_sw_rb;
-+	ra->rip_lots = &iio_rip_sw_rb;
++#define IIO_EVENT_ATTR_ACCEL_Z_LOW(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(accel_z_low, _show, _store, _mask, _handler)
 +
-+	ra->mark_param_change = &iio_mark_update_needed_sw_rb;
-+	ra->request_update = &iio_request_update_sw_rb;
++#define IIO_EVENT_ATTR_ACCEL_Z_LOW_SH(_evlist, _show, _store, _mask)	\
++	IIO_EVENT_ATTR_SH(accel_z_low, _evlist, _show, _store, _mask)
 +
-+	ra->get_bpd = &iio_get_bpd_sw_rb;
-+	ra->set_bpd = &iio_set_bpd_sw_rb;
++#define IIO_EVENT_CODE_ACCEL_Z_LOW (IIO_EVENT_CODE_ACCEL_BASE + 5)
 +
-+	ra->get_length = &iio_get_length_sw_rb;
-+	ra->set_length = &iio_set_length_sw_rb;
-+};
++#define IIO_EVENT_ATTR_FREE_FALL_DETECT(_show, _store, _mask, _handler)	\
++	IIO_EVENT_ATTR(free_fall, _show, _store, _mask, _handler)
 +
-+/**
-+ * struct iio_sw_ring_buffer - software ring buffer
-+ * @buf:		generic ring buffer elements
-+ * @data:		the ring buffer memory
-+ * @read_p:		read pointer (oldest available)
-+ * @write_p:		write pointer
-+ * @last_written_p:	read pointer (newest available)
-+ * @half_p:		half buffer length behind write_p (event generation)
-+ * @use_count:		reference count to prevent resizing when in use
-+ * @update_needed:	flag to indicated change in size requested
-+ * @use_lock:		lock to prevent change in size when in use
-+ *
-+ * Note that the first element of all ring buffers must be a
-+ * struct iio_ring_buffer.
-+**/
++#define IIO_EVENT_ATTR_FREE_FALL_DETECT_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(free_fall, _evlist, _show, _store, _mask)
 +
-+struct iio_sw_ring_buffer {
-+	struct iio_ring_buffer  buf;
-+	unsigned char		*data;
-+	unsigned char		*read_p;
-+	unsigned char		*write_p;
-+	unsigned char		*last_written_p;
-+	/* used to act as a point at which to signal an event */
-+	unsigned char		*half_p;
-+	int			use_count;
-+	int			update_needed;
-+	spinlock_t		use_lock;
-+};
-+
-+#define iio_to_sw_ring(r) container_of(r, struct iio_sw_ring_buffer, buf)
-+
-+struct iio_ring_buffer *iio_sw_rb_allocate(struct iio_dev *indio_dev);
-+void iio_sw_rb_free(struct iio_ring_buffer *ring);
++#define IIO_EVENT_CODE_FREE_FALL (IIO_EVENT_CODE_ACCEL_BASE + 6)
 +
 +
++#define IIO_EVENT_ATTR_ACCEL_X_ROC_HIGH_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_x_roc_high, _evlist, _show, _store, _mask)
 +
-+#else /* CONFIG_IIO_RING_BUFFER*/
-+static inline void iio_ring_sw_register_funcs(struct iio_ring_access_funcs *ra)
-+{};
-+#endif /* !CONFIG_IIO_RING_BUFFER */
-+#endif /* _IIO_RING_SW_H_ */
++#define IIO_EVENT_CODE_ACCEL_X_ROC_HIGH (IIO_EVENT_CODE_ACCEL_BASE + 10)
++
++#define IIO_EVENT_ATTR_ACCEL_X_ROC_LOW_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_x_roc_low, _evlist, _show, _store, _mask)
++
++#define IIO_EVENT_CODE_ACCEL_X_ROC_LOW (IIO_EVENT_CODE_ACCEL_BASE + 11)
++
++#define IIO_EVENT_ATTR_ACCEL_Y_ROC_HIGH_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_y_roc_high, _evlist, _show, _store, _mask)
++
++#define IIO_EVENT_CODE_ACCEL_Y_ROC_HIGH (IIO_EVENT_CODE_ACCEL_BASE + 12)
++
++#define IIO_EVENT_ATTR_ACCEL_Y_ROC_LOW_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_y_roc_low, _evlist, _show, _store, _mask)
++
++#define IIO_EVENT_CODE_ACCEL_Y_ROC_LOW (IIO_EVENT_CODE_ACCEL_BASE + 13)
++
++#define IIO_EVENT_ATTR_ACCEL_Z_ROC_HIGH_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_z_roc_high, _evlist, _show, _store, _mask)
++
++#define IIO_EVENT_CODE_ACCEL_Z_ROC_HIGH (IIO_EVENT_CODE_ACCEL_BASE + 14)
++
++#define IIO_EVENT_ATTR_ACCEL_Z_ROC_LOW_SH(_evlist, _show, _store, _mask) \
++	IIO_EVENT_ATTR_SH(accel_z_roc_low, _evlist, _show, _store, _mask)
++
++#define IIO_EVENT_CODE_ACCEL_Z_ROC_LOW (IIO_EVENT_CODE_ACCEL_BASE + 15)
 -- 
 1.6.2
 
