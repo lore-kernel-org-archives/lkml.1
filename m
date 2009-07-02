@@ -1,72 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZGBXv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZGBXyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZGBXv0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZGBXvS
+	id S1755927AbZGBXyQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZGBXyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:51:18 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48240 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbZGBXvR (ORCPT
+	Thu, 2 Jul 2009 19:54:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58770 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752521AbZGBXyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:51:17 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jeff Arnold <jbarnold@ksplice.com>
-Subject: Re: Ksplice updates for Ubuntu 9.04 Jaunty
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       tabbott@ksplice.com, wdaher@ksplice.com, andersk@ksplice.com,
-       nelhage@ksplice.com, price@ksplice.com, geofft@ksplice.com
-In-Reply-To: <alpine.DEB.1.10.0906250451210.22588@vinegar-pot.mit.edu>
-References: <alpine.DEB.1.10.0906250451210.22588@vinegar-pot.mit.edu>
-Message-Id: <20090703084359.08E3.A69D9226@jp.fujitsu.com>
+	Thu, 2 Jul 2009 19:54:01 -0400
+Date: Thu, 2 Jul 2009 16:53:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: David Howells <dhowells@redhat.com>, mingo@elte.hu,
+       akpm@linux-foundation.org, paulus@samba.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: atomic64_t should be 8 bytes aligned
+In-Reply-To: <4A4D2FDA.3000509@gmail.com>
+Message-ID: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
+References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
+ <4A4D2FDA.3000509@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  3 Jul 2009 08:51:18 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello,
+
+
+On Fri, 3 Jul 2009, Eric Dumazet wrote:
 > 
-> The Ksplice team [1] is now providing rebootless kernel updates for Ubuntu 
-> 9.04 Jaunty to anyone who configures their machine to receive them [2].  
-> In short, users can click a few buttons and start getting all of the 
-> Ubuntu kernel security updates applied to their system without rebooting.  
-> No initial kernel changes are needed.
+> So we probably need an __attribute__((aligned(8)) on atomic64_t definition
+> as well, since alignof(atomic64_t) is 4, not 8 (!!!)
 
-Great.
+Ack. Ingo, Peter, I'm hoping you're collecting these things?
 
-> 
-> [1] http://www.ksplice.com
-> [2] http://www.ksplice.com/uptrack
-> 
-> I first mentioned Ksplice to the LKML in April 2008 [3], and since then 
-> we've submitted several rounds of Ksplice patches [4,5,6].  So far we've 
-> gotten various improvements related to Ksplice merged into mainline.
-> 
-> [3] http://lkml.org/lkml/2008/4/23/330
-> [4] http://lkml.org/lkml/2008/9/13/6
-> [5] http://lkml.org/lkml/2008/11/21/484
-> [6] http://lkml.org/lkml/2008/12/5/330
-> 
-> Ksplice applies traditional source code patches to unmodified Linux 
-> kernels.  It can be used to apply all of the Linux security patches over 
-> multiple years [7], and it can also apply reliability patches and other 
-> bug fixes, such as from the Linux stable tree.
-
-Afaik, Solaris and some other Unix like OS have similar rebootless
-security update mechanism.
-
-Yes, I like linux has such feature too.
-
-
-> 
-> [7] http://www.ksplice.com/paper
-> 
-> - Jeff
-
-
-
+		Linus
