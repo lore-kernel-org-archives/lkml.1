@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZGBQrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbZGBQsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbZGBQrA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 12:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbZGBQqx
+	id S1754778AbZGBQsY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 12:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZGBQsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 12:46:53 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5598 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752297AbZGBQqw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 12:46:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=PNBylN3QPr20m6bIl6zo0pWCIIZvXa3DyNazWlFOKH7XN9x1LOW3fxDyEW1VYAdDy
-	YhVOzNleJYi4Bi4Iy/Y2Q==
-MIME-Version: 1.0
-In-Reply-To: <20090702163731.GA14267@us.ibm.com>
-References: <4A4C0C60.4050106@cn.fujitsu.com>
-	 <6599ad830907020926t6305bec9t44a50cc165f6fc28@mail.gmail.com>
-	 <20090702163731.GA14267@us.ibm.com>
-Date: Thu, 2 Jul 2009 09:46:51 -0700
-Message-ID: <6599ad830907020946r42735c9es642bddf37af755ed@mail.gmail.com>
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-From: Paul Menage <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Thu, 2 Jul 2009 12:48:17 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58790 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752126AbZGBQsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 12:48:16 -0400
+Message-Id: <D77CBB49-A340-4282-9ACF-2172D1BB9E43@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: good example of a tty driver
+Date: Thu, 2 Jul 2009 11:48:09 -0500
+Cc: Linux-Kernel List <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 2, 2009 at 9:37 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
->
->        1. the only way it won't outlive the open file is if the
->                task opens the file, hands the open fd over a
->                unix socket, then exits as the last task of its
->                pidns
+Alan,
 
-Right.
+Can you point me at any good drivers to use as an example of using the  
+tty layer.  I'm trying to get an out of tree driver brought up to date  
+for the Avocent ESP-16 MI Serial Hubs (serial over ethernet):
 
->        2. We don't dereference the pid_ns, so there is no actual
->                safety issue.  So it would become a problem only
->                if a new pidns gets created at that same address
+http://www.connectivity.avocent.com/products/network-based/esp_16.asp
 
-Which is fairly likely given that pid_namespace is allocated from a
-specific cache.
+Thankfully the have a GPL driver but it was last updated against 2.6.23:
 
-Paul
+http://www.connectivity.avocent.com/drivers/esp_serial_hubs/dd64e069.asp
+
+However I've never worked on any tty drivers so its a bit black magic  
+at this point.  I was hoping that an example would at least get me  
+able to bring the driver up to a point that we can get it into the  
+staging tree.
+
+thanks
+
+- k
