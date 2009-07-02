@@ -1,81 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbZGBWHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZGBWJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756111AbZGBWHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZGBWHH
+	id S1756614AbZGBWJJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZGBWJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:07:07 -0400
-Received: from mail.samba.org ([66.70.73.150]:40162 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752993AbZGBWHG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:07:06 -0400
+	Thu, 2 Jul 2009 18:09:00 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:51559 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328AbZGBWJA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 18:09:00 -0400
+Message-ID: <4A4D2FDA.3000509@gmail.com>
+Date: Fri, 03 Jul 2009 00:08:26 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19021.12158.915384.574218@samba.org>
-Date: Fri, 3 Jul 2009 08:06:54 +1000
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090702214646.GD1485@ucw.cz>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090702214646.GD1485@ucw.cz>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Howells <dhowells@redhat.com>, mingo@elte.hu,
+       akpm@linux-foundation.org, paulus@samba.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: atomic64_t should be 8 bytes aligned
+References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 03 Jul 2009 00:08:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+Linus Torvalds a écrit :
+> 
+> On Thu, 2 Jul 2009, Eric Dumazet wrote:
+>> Using a fixed initial value (instead of __atomic64_read()) is even faster, 
+>> it apparently permits cpu to use an appropriate bus transaction.
+> 
+> Yeah, I guess it does a "read-for-write-ownership" and allows the thing to 
+> be done as a single cache transaction.
+> 
+> If we read it first, it will first get the cacheline for shared-read, and 
+> then the cmpxchg8b will need to turn it from shared to exclusive.
+> 
+> Of course, the _optimal_ situation would be if the cmpxchg8b didn't 
+> actually do the write at all when the value matches (and all cores could 
+> just keep it shared), but I guess that's not going to happen.
+> 
+> Too bad there is no pure 8-byte read op. Using MMX has too many downsides.
+> 
+> Btw, your numbers imply that for the atomic64_add_return(), we really 
+> would be much better off not reading the original value at all. Again, in 
+> that case, we really do want the "read-for-write-ownership" cache 
+> transaction, not a read.
+> 
 
- > > I disagree with this: given there's been testing with no known issues, it's 
- > > not a back compat question.
- > 
- > The testing uncovered some pretty serious issues. ('Causes XP to
- > bluescreen').
+I forgot to mention that if atomic64_t uses to cache lines, my test
+program is 10x slower.
 
-no, that's not quite correct. I have never been able to produce a
-bluescreen with the patch I have posted.
+So we probably need an __attribute__((aligned(8)) on atomic64_t definition
+as well, since alignof(atomic64_t) is 4, not 8 (!!!)
 
-I did manage to produce a bluescreen with a different patch that
-deliberately lowers the number of bits of randomness used (ie. just
-change the mask to random32() in vfat_build_dummy_83_buffer()). Even
-then, producing a bluescreen is not trivial, though it is definately
-possible.
+#include <stdio.h>
 
-As I explained in a previous posting, the WindowsXP bug doesn't happen
-just because two 8.3 entries have the same 11 bytes. There are
-additional strong constraints on the access patterns by the WindowsXP
-kernel before the bluescreen happens. I reproduced it by running 4
-processes in parallel doing massive numbers of random file operations,
-with a controlling script transferring control of the USB key between
-the WindowsXP box and a Linux host every minute (so both are doing
-random file operations).
+typedef struct {
+        unsigned long long counter;
+} atomic64_t;
 
-Even with that, if I had even a few bits of randomness then it took a
-lot of testing (often hours) to produce the bluescreen. I wouldn't
-have even known the problem was possible if I hadn't been
-experimenting with patch varients where all the bytes are always the
-same (such as the 11 spaces varient I mentioned). With those varients
-(where there is no randomness at all), you can produce a bluescreen
-with a bit of effort on the DOS command line.
+typedef struct {
+        unsigned long long __attribute__((aligned(8))) counter;
+} atomic64_ta;
 
-So I hope you can see why I don't think this is a particularly large
-problem, especially given that the WindowsXP FAT driver is notoriously
-prone to crashing, as a quick google search will show you.
+struct {
+        int a;
+        atomic64_t counter;
+} s __attribute__((aligned(64)));
 
-If someone can actually demonstrate the bluescreen with the patch I've
-posted in some access pattern that is at all likely to be made by a
-WindowsXP user then I would be more concerned. As it is, I don't think
-we should hold off on this patch for what amounts to a theoretical
-issue.
+struct {
+        int a;
+        atomic64_ta counter;
+} sa __attribute__((aligned(64)));
 
-Cheers, Tridge
+int main()
+{
+        printf("alignof(atomic64_t)=%d\n", __alignof__(atomic64_t));
+        printf("alignof(atomic64_ta)=%d\n", __alignof__(atomic64_t));
+        printf("alignof(unsigned long long)=%d\n", __alignof__(unsigned long long));
+        printf("&s.counter=%p\n", &s.counter);
+        printf("&sa.counter=%p\n", &sa.counter);
+        return 0;
+}
+
+$ gcc -O2 -o test test.c ; ./test
+alignof(atomic64_t)=4
+alignof(atomic64_ta)=4
+alignof(unsigned long long)=8
+&s.counter=0x80496c4
+&sa.counter=0x8049708
+$ gcc -v
+Using built-in specs.
+Target: i686-pc-linux-gnu
+Configured with: ../gcc-4.3.3/configure --enable-languages=c,c++ --prefix=/usr
+Thread model: posix
+gcc version 4.3.3 (GCC)
+
+
+[PATCH] x86: atomic64_t should be 8 bytes aligned
+
+LOCKED instructions on two cache lines are painful.
+Make sure an atomic64_t is 8bytes aligned.
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 2503d4e..1927a56 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -250,7 +250,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ /* An 64bit atomic type */
+ 
+ typedef struct {
+-	unsigned long long counter;
++	unsigned long long __attribute__((__aligned__(8))) counter;
+ } atomic64_t;
+ 
+ #define ATOMIC64_INIT(val)	{ (val) }
