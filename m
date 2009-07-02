@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZGBVaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZGBVag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbZGBVaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 17:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZGBVaA
+	id S1756363AbZGBVag (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 17:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbZGBVa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 17:30:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57948 "EHLO
+	Thu, 2 Jul 2009 17:30:28 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57999 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbZGBVaA (ORCPT
+	with ESMTP id S1754729AbZGBVa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 17:30:00 -0400
-Date: Thu, 2 Jul 2009 23:29:56 +0200
+	Thu, 2 Jul 2009 17:30:27 -0400
+Date: Thu, 2 Jul 2009 23:30:23 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Joseph Cihula <joseph.cihula@intel.com>
 Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
        hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
        jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC v6][PATCH 3/4] intel_txt: Intel(R) TXT Sx shutdown support
-Message-ID: <20090702212955.GB1419@ucw.cz>
-References: <4A4ACA6B.4050705@intel.com>
+       gang.wei@intel.com, shane.wang@intel.com
+Subject: Re: [RFC v6][PATCH 4/4] intel_txt: force IOMMU on for Intel(R) TXT
+	launch
+Message-ID: <20090702213013.GC1419@ucw.cz>
+References: <4A4ACA6E.6080702@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4ACA6B.4050705@intel.com>
+In-Reply-To: <4A4ACA6E.6080702@intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-06-30 19:31:07, Joseph Cihula wrote:
-> Support for graceful handling of sleep states (S3/S4/S5) after an Intel(R) TXT launch.
+
+On Tue 2009-06-30 19:31:10, Joseph Cihula wrote:
+> The tboot module will DMA protect all of memory in order to ensure the that
+> kernel will be able to initialize without compromise (from DMA).  Consequently,
+> the kernel must enable Intel(R) Virtualization Technology for Directed I/O
+> (VT-d or Intel IOMMU) in order to replace this broad protection with the
+> appropriate page-granular protection.  Otherwise DMA devices will be unable
+> to read or write from memory and the kernel will eventually panic.
 > 
-> Without this patch, attempting to place the system in one of the ACPI sleep
-> states (S3/S4/S5) will cause the TXT hardware to treat this as an attack and
-> will cause a system reset, with memory locked.  Not only may the subsequent
-> memory scrub take some time, but the platform will be unable to enter the
-> requested power state.
-
-I believe I asked for Documentation how s3 works with txt before. As a
-suspend maintainer, I believe I deserve to know. Now you are
-resubmitting the patch without ccing me and without that explanation.
-
+> Because runtime IOMMU support is configurable by command line options, this
+> patch will force it to be enabled regardless of the options specified, and will
+> log a message if it was required to force it on.
+> 
+> 
+>  dmar.c        |    7 +++++++
+>  intel-iommu.c |   17 +++++++++++++++--
+>  2 files changed, 22 insertions(+), 2 deletions(-)
+> 
 > Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
 > Signed-off-by: Shane Wang <shane.wang@intel.com>
 
-NAK.
-								Pavel
+NAK. Breaks user expectations, misses  docs updates. 
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
