@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755635AbZGBGgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZGBGhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755635AbZGBGgk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 02:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbZGBGga
+	id S1755899AbZGBGhd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 02:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZGBGhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 02:36:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53715 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753546AbZGBGg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 02:36:29 -0400
-Date: Thu, 2 Jul 2009 08:36:24 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org, eric.dumazet@gmail.com
-Subject: [PATCHv4 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090702063624.GC3429@jolsa.lab.eng.brq.redhat.com>
-References: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 2 Jul 2009 02:37:25 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34350 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbZGBGhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 02:37:25 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 2 Jul 2009 15:35:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [PATCH] memcg: fix cgroup rmdir hang v4
+Message-Id: <20090702153545.15d313d6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090702063002.GO11273@balbir.in.ibm.com>
+References: <20090630180109.f137c10e.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090701104747.afdcc6c7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090702063002.GO11273@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding smp_mb__after_lock define to be used as a smp_mb call after
-a lock.  
+On Thu, 2 Jul 2009 12:00:05 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Making it nop for x86, since {read|write|spin}_lock() on x86 are 
-full memory barriers.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-07-01 10:47:47]:
 
-wbr,
-jirka
+> > -static void cgroup_wakeup_rmdir_waiters(const struct cgroup *cgrp)
+> > +static void cgroup_wakeup_rmdir_waiter(struct cgroup *cgrp)
+> 
+> Should the function explictly mention rmdir?
+For now, yes. this is only for rmdir.
+
+> Also something like
+> release_rmdir should be called release_and_wakeup to make the action
+> clearer.
+> 
+Hm, I don't think this name is too bad. Comment is enough and if we have to
+change the behavior of cgroup-internal work, we have to rename this again.
+This name is not too much explaining but showing enough information.
 
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> Looks good to me otherwise and clean.
+> 
+Thank you.
 
----
- arch/x86/include/asm/spinlock.h |    3 +++
- include/linux/spinlock.h        |    5 +++++
- include/net/sock.h              |    2 +-
- 3 files changed, 9 insertions(+), 1 deletions(-)
+Regards,
+-Kame
 
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index b7e5db8..39ecc5f 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-+#define smp_mb__after_lock() do { } while (0)
-+
- #endif /* _ASM_X86_SPINLOCK_H */
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 252b245..ae053bd 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -132,6 +132,11 @@ do {								\
- #endif /*__raw_spin_is_contended*/
- #endif
- 
-+/* The lock does not imply full memory barrier. */
-+#ifndef smp_mb__after_lock
-+#define smp_mb__after_lock() smp_mb()
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 4eb8409..b3e96a4 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1280,7 +1280,7 @@ static inline int sk_has_sleeper(struct sock *sk)
- 	 *
- 	 * This memory barrier is paired in the sock_poll_wait.
- 	 */
--	smp_mb();
-+	smp_mb__after_lock();
- 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
- }
- 
