@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZGBVwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZGBWAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbZGBVwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 17:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZGBVwZ
+	id S1756177AbZGBWAX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZGBWAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 17:52:25 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56944 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752912AbZGBVwZ (ORCPT
+	Thu, 2 Jul 2009 18:00:10 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38069 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964AbZGBWAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 17:52:25 -0400
-Date: Thu, 2 Jul 2009 22:53:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Alan Cox <alan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: Now honours baud rate lower bounds
-Message-ID: <20090702225312.02f78ec4@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090702213624.GA23193@oksana.dev.rtsoft.ru>
-References: <20090702213624.GA23193@oksana.dev.rtsoft.ru>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 18:00:08 -0400
+Date: Fri, 3 Jul 2009 00:00:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: tridge@samba.org
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090702220004.GF1485@ucw.cz>
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19019.16217.291678.588673@samba.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Jul 2009 01:36:24 +0400
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+Hi!
 
-> A platform clock drives 8250 ports in most SOC systems, the clock
-> might run at high frequencies, and so it's not always possible to
-> downscale uart clock to a desired value.
+>  > Defaults should be back-compatible.
+> 
+> I would usually agree, but I think we have an unusual situation here,
+> in some ways similar to a demonstrated security hole. The previous
+> behaviour exposed a lot of Linux vendors to the possibility of an
+> expensive legal fight.
 
-> This patch fixes the issue by passing minimum baud rate to the
-> uart_get_baud_rate() call, the call should take care of all bounds,
-> so userspace should now report:
+I'd actually like to see all-out software patent war in the U.S. It
+would make sure that software patents do not spread to the rest of
+world. Bad for U.S.? Yes. Good for world? Yes!
 
-We ought to be able to deduce the minimum baud rate from the divisor
-being bigger than the chip supports - or do some of these devices not
-support the full hw divisor range of the real chip which is what I assume
-from your patch ?
+>  > Users considering disabling this should understand that filesystem
+>  > they write to will not be valid vfat filesystems, and may trigger bugs
+>  > in some devices.
+> 
+> If we find any devices that exhibit any problems with this patch while
+> it is in linux-next (and maybe linux-mm?) then this warning would
+> indeed be appropriate. It no such devices are known then I think the
+> warning is going a bit far. 
 
-> +static unsigned int _serial_dl_max(struct uart_8250_port *up)
-> +{
-> +	return 0xffff;
-> +}
-> +
+You already know that it breaks XP and older linuxes. So... what are
+you arguing about?! Chkdsk marks it as invalid filesystem... not a
+vfat.
 
-We have far too many magic ifdef routines for this sort of stuff already.
-Is there any reason we can't put info on the true divisor or at least the
-baud rate range into the uart_8250_port structure so that we get rid of
-all of 
+If mickey$oft intentionally modified windows 8 to intentionally corrupt
+ext3 filesystems so that linux oopses on accessing them, how'd you
+like that?
 
-> +static unsigned int serial_dl_max(struct uart_8250_port *up)
-> +{
-> +	if (up->port.iotype == UPIO_AU)
-> +		return 0xffffffff;
-> +	else
-> +		return _serial_dl_max(up);
-> +}
->  #elif defined(CONFIG_SERIAL_8250_RM9K)
->  static int serial_dl_read(struct uart_8250_port *up)
->  {
-> @@ -602,9 +615,15 @@ static void serial_dl_write(struct uart_8250_port *up, int value)
->  		_serial_dl_write(up, value);
->  	}
->  }
-> +
-> +static unsigned int serial_dl_max(struct uart_8250_port *up)
-> +{
-> +	return _serial_dl_max(up);
-> +}
->  #else
->  #define serial_dl_read(up) _serial_dl_read(up)
->  #define serial_dl_write(up, value) _serial_dl_write(up, value)
-> +#define serial_dl_max(up) _serial_dl_max(up)
->  #endif
->  
->  /*
-> @@ -2272,7 +2291,9 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
->  	/*
->  	 * Ask the core to calculate the divisor for us.
->  	 */
-> -	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
-> +	baud = uart_get_baud_rate(port, termios, old,
-> +				  port->uartclk / 16 / serial_dl_max(up),
-> +				  port->uartclk / 16);
->  	quot = serial8250_get_divisor(port, baud);
+>  > Why not use something like position in directory instead of random
+>  > number?
+> 
+> We did of course consider that, and the changes to the patch to
+> implement collision avoidance are relatively simple. We didn't do it
+> as it would weaken the legal basis behind the patch. I'll leave it to
 
-in favour of
+Consider it again. Or put fair 'this makes XP crash' warning in
+kconfig.
 
-		uart_get_baud_rate(port, termios, old, port->uartclk / 16,
-				port->uartclk / 16 / port->uartdivider)
-
-Alan
+								Pavel
+PS: I find it bad that original patch description did not contain XP
+crashing / chkdsk explanation.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
