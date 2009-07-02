@@ -1,117 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbZGBAlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZGBAnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754125AbZGBAlR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 20:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZGBAlF
+	id S1753671AbZGBAnp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 20:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZGBAnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 20:41:05 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:52597 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbZGBAlD (ORCPT
+	Wed, 1 Jul 2009 20:43:37 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38811 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751921AbZGBAng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 20:41:03 -0400
-X-IronPort-AV: E=Sophos;i="4.42,329,1243814400"; 
-   d="scan'208";a="335869323"
-From: Roland Dreier <rdreier@cisco.com>
-To: tyhicks@linux.vnet.ibm.com, kirkland@canonical.com,
-       ecryptfs-devel@lists.launchpad.net
-Cc: linux-kernel@vger.kernel.org
-Subject: Yet another lockdep issue reported with ecryptfs
-References: <adahbxwgwo6.fsf@cisco.com> <ada1vp0dmsf.fsf@cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 01 Jul 2009 17:41:06 -0700
-In-Reply-To: <ada1vp0dmsf.fsf@cisco.com> (Roland Dreier's message of "Wed, 01
-	Jul 2009 16:08:16 -0700")
-Message-ID: <adaprcj29y5.fsf_-_@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Jul 2009 00:41:07.0190 (UTC) FILETIME=[C9651160:01C9FAAD]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Wed, 1 Jul 2009 20:43:36 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 2 Jul 2009 09:41:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ebiederm@xmission.com (Eric W. Biederman),
+       Amerigo Wang <xiyou.wangcong@gmail.com>, tao.ma@oracle.com,
+       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
+       mtk.manpages@gmail.com, Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [RESEND Patch] kcore: remove its pointless size
+Message-Id: <20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090701171249.004968e8.akpm@linux-foundation.org>
+References: <m11vpqvozl.fsf@fess.ebiederm.org>
+	<20090613040958.GA2959@cr0>
+	<m17hzdhkr8.fsf@fess.ebiederm.org>
+	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
+	<m1my88568n.fsf@fess.ebiederm.org>
+	<20090618030051.GA6133@cr0.nay.redhat.com>
+	<m1tz2ei54r.fsf@fess.ebiederm.org>
+	<20090618044055.GB6133@cr0.nay.redhat.com>
+	<m1prd2rtdf.fsf@fess.ebiederm.org>
+	<20090622085405.GA6499@cr0.nay.redhat.com>
+	<20090630100850.GD5873@cr0.nay.redhat.com>
+	<20090701144742.6ce3535b.akpm@linux-foundation.org>
+	<m14otwq94e.fsf@fess.ebiederm.org>
+	<20090701171249.004968e8.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And yet another lockdep report from ecryptfs, related to lower_file_mutex:
+On Wed, 1 Jul 2009 17:12:49 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.31-2-generic #14~rbd3
----------------------------------
-inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-kswapd0/323 [HC0[0]:SC0[0]:HE1:SE1] takes:
- (&inode_info->lower_file_mutex){+.+.?.}, at: [<ffffffff81210d34>] ecryptfs_destroy_inode+0x34/0x100
-{RECLAIM_FS-ON-W} state was registered at:
-  [<ffffffff8108c02c>] mark_held_locks+0x6c/0xa0
-  [<ffffffff8108c10f>] lockdep_trace_alloc+0xaf/0xe0
-  [<ffffffff81125a51>] kmem_cache_alloc+0x41/0x1a0
-  [<ffffffff8113117a>] get_empty_filp+0x7a/0x1a0
-  [<ffffffff8112dd46>] dentry_open+0x36/0xc0
-  [<ffffffff8121a36c>] ecryptfs_privileged_open+0x5c/0x2e0
-  [<ffffffff81210283>] ecryptfs_init_persistent_file+0xa3/0xe0
-  [<ffffffff8120e838>] ecryptfs_lookup_and_interpose_lower+0x278/0x380
-  [<ffffffff8120f97a>] ecryptfs_lookup+0x12a/0x250
-  [<ffffffff8113930a>] real_lookup+0xea/0x160
-  [<ffffffff8113afc8>] do_lookup+0xb8/0xf0
-  [<ffffffff8113b518>] __link_path_walk+0x518/0x870
-  [<ffffffff8113bd9c>] path_walk+0x5c/0xc0
-  [<ffffffff8113be5b>] do_path_lookup+0x5b/0xa0
-  [<ffffffff8113bfe7>] user_path_at+0x57/0xa0
-  [<ffffffff811340dc>] vfs_fstatat+0x3c/0x80
-  [<ffffffff8113424b>] vfs_stat+0x1b/0x20
-  [<ffffffff81134274>] sys_newstat+0x24/0x50
-  [<ffffffff81013132>] system_call_fastpath+0x16/0x1b
-  [<ffffffffffffffff>] 0xffffffffffffffff
-irq event stamp: 7811
-hardirqs last  enabled at (7811): [<ffffffff810c037f>] call_rcu+0x5f/0x90
-hardirqs last disabled at (7810): [<ffffffff810c0353>] call_rcu+0x33/0x90
-softirqs last  enabled at (3764): [<ffffffff810631da>] __do_softirq+0x14a/0x220
-softirqs last disabled at (3751): [<ffffffff8101440c>] call_softirq+0x1c/0x30
+> On Wed, 01 Jul 2009 16:25:05 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
+> > Which is better than showing a random number of dubious relationship
+> > to the size we normally show.  That code is just a maintenance problem.
+> 
+> Well it's not just that st_size is wrong before the first read.  It's
+> also wrong after memory hot-add, up until the next read.
+> 
+And I found kclist_add() is not called at memory hotplug...
 
-other info that might help us debug this:
-2 locks held by kswapd0/323:
- #0:  (shrinker_rwsem){++++..}, at: [<ffffffff810f67ed>] shrink_slab+0x3d/0x190
- #1:  (&type->s_umount_key#35){.+.+..}, at: [<ffffffff811429a1>] prune_dcache+0xd1/0x1b0
 
-stack backtrace:
-Pid: 323, comm: kswapd0 Tainted: G         C 2.6.31-2-generic #14~rbd3
-Call Trace:
- [<ffffffff8108ad6c>] print_usage_bug+0x18c/0x1a0
- [<ffffffff8108aff0>] ? check_usage_forwards+0x0/0xc0
- [<ffffffff8108bac2>] mark_lock_irq+0xf2/0x280
- [<ffffffff8108bd87>] mark_lock+0x137/0x1d0
- [<ffffffff81164710>] ? fsnotify_clear_marks_by_inode+0x30/0xf0
- [<ffffffff8108bee6>] mark_irqflags+0xc6/0x1a0
- [<ffffffff8108d337>] __lock_acquire+0x287/0x430
- [<ffffffff8108d585>] lock_acquire+0xa5/0x150
- [<ffffffff81210d34>] ? ecryptfs_destroy_inode+0x34/0x100
- [<ffffffff8108d2e7>] ? __lock_acquire+0x237/0x430
- [<ffffffff815526ad>] __mutex_lock_common+0x4d/0x3d0
- [<ffffffff81210d34>] ? ecryptfs_destroy_inode+0x34/0x100
- [<ffffffff81164710>] ? fsnotify_clear_marks_by_inode+0x30/0xf0
- [<ffffffff81210d34>] ? ecryptfs_destroy_inode+0x34/0x100
- [<ffffffff8129a91e>] ? _raw_spin_unlock+0x5e/0xb0
- [<ffffffff81552b36>] mutex_lock_nested+0x46/0x60
- [<ffffffff81210d34>] ecryptfs_destroy_inode+0x34/0x100
- [<ffffffff81145d27>] destroy_inode+0x87/0xd0
- [<ffffffff81146b4c>] generic_delete_inode+0x12c/0x1a0
- [<ffffffff81145832>] iput+0x62/0x70
- [<ffffffff811423c8>] dentry_iput+0x98/0x110
- [<ffffffff81142550>] d_kill+0x50/0x80
- [<ffffffff81142623>] prune_one_dentry+0xa3/0xc0
- [<ffffffff811428b1>] __shrink_dcache_sb+0x271/0x290
- [<ffffffff811429d9>] prune_dcache+0x109/0x1b0
- [<ffffffff81142abf>] shrink_dcache_memory+0x3f/0x50
- [<ffffffff810f68dd>] shrink_slab+0x12d/0x190
- [<ffffffff810f9377>] balance_pgdat+0x4d7/0x640
- [<ffffffff8104c4c0>] ? finish_task_switch+0x40/0x150
- [<ffffffff810f63c0>] ? isolate_pages_global+0x0/0x60
- [<ffffffff810f95f7>] kswapd+0x117/0x170
- [<ffffffff810777a0>] ? autoremove_wake_function+0x0/0x40
- [<ffffffff810f94e0>] ? kswapd+0x0/0x170
- [<ffffffff810773be>] kthread+0x9e/0xb0
- [<ffffffff8101430a>] child_rip+0xa/0x20
- [<ffffffff81013c90>] ? restore_args+0x0/0x30
- [<ffffffff81077320>] ? kthread+0x0/0xb0
- [<ffffffff81014300>] ? child_rip+0x0/0x20
+> > > If so, should we run get_kcore_size() in proc_kcore_init(), perhaps?
+> > >
+> > > In fact, do we need to run get_kcore_size() more than once per boot? 
+> > >
+> > > AFAICT we only run kclist_add() during bootup, so if proc_kcore_init()
+> > > is called at the appropriate time, we can permanently cache its result?
+> > >
+> > > In which case get_kcore_size() and kclist_add() can be marked __init.
+> > >
+> > > Maybe that's all wrong - I didn't look terribly closely.
+> > 
+> > Memory hot add I expect is the excuse.  There is more that could be
+> > done.  But this patch is an obvious bit of chipping away nonsense
+> > code.
+> 
+> We have the infrastructure to get this right, I think:
+> 
+> - run
+> 
+> 	proc_root_kcore->size = get_kcore_size(...)
+> 
+>   within proc_kcore_init()
+> 
+yes, seems sane.
+
+
+> - register a memory-hotplug notifier and each time memory goes online
+>   or offline, rerun
+> 
+> 	proc_root_kcore->size = get_kcore_size(...)
+> 
+yes. and we need kclist_add() under memory hotplug.
+
+
+> - stop running get_kcore_size() within read_kcore().
+> 
+> I suspect that read_kcore() will not behave well if a memory hotplug
+> operation happens concurrently.  But that's a separate problem.
+> 
+> (hopefully cc's some memory-hotplug people)
+> 
+Maybe no problem. I don't think people does memory hotplug while he reads
+/proc/kcore. (It sounds like modify coredump while investigating it.)
+
+Thanks,
+-Kame
+
+
+> 
+> Or we just leave /proc/kcore's st_size at zero.  It's a pretty hopeless
+> exercise trying to get this "right", as nobody can safely _use_ that
+> size - it can be wrong as soon as the caller has read from it.
+> 
+> 
+
