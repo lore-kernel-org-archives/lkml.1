@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZGBI2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZGBI2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438AbZGBI2D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 04:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZGBI1r
+	id S1755603AbZGBI2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 04:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZGBI2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 04:27:47 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:51055 "EHLO h5.dl5rb.org.uk"
+	Thu, 2 Jul 2009 04:28:03 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58335 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751692AbZGBI1q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 04:27:46 -0400
-Date: Thu, 2 Jul 2009 09:26:54 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kevin Cernekee <cernekee@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix virt_to_phys() warnings
-Message-ID: <20090702082654.GA14804@linux-mips.org>
-References: <910ba280decc9ee53d9971ba04f73fab@localhost> <20090701224627.0b2704df.akpm@linux-foundation.org> <87bpo3bm0t.fsf@basil.nowhere.org>
+	id S1755177AbZGBI2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 04:28:01 -0400
+Date: Thu, 2 Jul 2009 10:28:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Hannes Reinecke <hare@suse.de>
+Cc: scameron@beardog.cca.cpqcorp.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cciss: Ignore stale commands after reboot
+Message-ID: <20090702082804.GP23611@kernel.dk>
+References: <20090702082313.F3754D340B@pentland.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87bpo3bm0t.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090702082313.F3754D340B@pentland.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 02, 2009 at 09:07:46AM +0200, Andi Kleen wrote:
-> From: Andi Kleen <andi@firstfloor.org>
-> Date: Thu, 02 Jul 2009 09:07:46 +0200
-> To: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Kevin Cernekee <cernekee@gmail.com>, linux-kernel@vger.kernel.org,
-> 	Ralf Baechle <ralf@linux-mips.org>
-> Subject: Re: [PATCH] Fix virt_to_phys() warnings
-> Content-Type: text/plain; charset=us-ascii
+On Thu, Jul 02 2009, Hannes Reinecke wrote:
 > 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> >
-> > #define virt_to_page(kaddr)        pfn_to_page(PFN_DOWN(virt_to_phys(kaddr)))
-> >
-> > thereby passing an `unsigned long' where a void* was expected.
-> >
-> >
-> > So perhaps something along these lines:
+> When doing an unexpected shutdown like kexec the cciss
+> firmware might still have some commands in flight, which
+> it is trying to complete.
+> The driver is doing it's best on resetting the HBA,
+> but sadly there's a firmware issue causing the firmware
+> _not_ to abort or drop old commands.
+> So the firmware will send us commands which we haven't
+> accounted for, causing the driver to panic.
 > 
-> I'm not quite sure it's the case on MIPS, but I remember on x86 one of
-> the reasons this was done as a macro was to avoid a include dependency
-> loop with struct page.
+> With this patch we're just ignoring these commands as
+> there is nothing we could be doing with them anyway.
+> 
+> Signed-off-by: Hannes Reinecke <hare@suse.de>
+> ---
+>  drivers/block/cciss.c     |   14 ++++++++++++--
+>  drivers/block/cciss_cmd.h |    1 +
+>  2 files changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+> index c7a527c..8dd4c0d 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -226,7 +226,16 @@ static inline void addQ(struct hlist_head *list, CommandList_struct *c)
+>  
+>  static inline void removeQ(CommandList_struct *c)
+>  {
+> -	if (WARN_ON(hlist_unhashed(&c->list)))
+> +	/*
+> +	 * After kexec/dump some commands might still
+> +	 * be in flight, which the firmware will try
+> +	 * to complete. Resetting the firmware doesn't work
+> +	 * with old fw revisions, so we have to mark
+> +	 * them off as 'stale' to prevent the driver from
+> +	 * falling over.
+> +	 */
+> +	if (unlikely(hlist_unhashed(&c->list))) {
+> +		c->cmd_type = CMD_MSG_STALE;
+>  		return;
+>
+>       hlist_del_init(&c->list);
 
-The MIPS <asm/page.h> uses a forward declaration for the same reason since
-a very long time.  These days struct page is defined in <linux/mm_types.h>
-but that file needs pgprot_t (which is defined in <asm/page.h> ...) to be
-defined first so can't be included from the to of page.h.
+Ehm, that looks rather dangerous. What's the level of testing this patch
+received?
 
-  Ralf
+-- 
+Jens Axboe
+
