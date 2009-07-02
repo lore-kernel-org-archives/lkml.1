@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbZGBHS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZGBHWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756170AbZGBHS1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZGBHSO
+	id S1755457AbZGBHWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbZGBHWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:18:14 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:59071 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbZGBHSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:18:13 -0400
-Date: Thu, 2 Jul 2009 09:18:08 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: s.hauer@pengutronix.de, linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel <kernel@avr32linux.org>, Ben Nizette <bn@niasdigital.com>
-Subject: Re: [PATCH] MMC Core: Drop initialization frequency floor to 50kHz
-Message-ID: <20090702091808.6108d0a9@mjolnir.ossman.eu>
-In-Reply-To: <1246492196.2980.17.camel@linux-51e8.site>
-References: <1246492196.2980.17.camel@linux-51e8.site>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-18386-1246519094-0001-2"
+	Thu, 2 Jul 2009 03:22:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:20708 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbZGBHWC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 03:22:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=urzjYvTYUwF+EfSocKrCHnEA1GcDpShMTIpC5Zv3QabzP+X20lJ2TuYaRIVCXgonA+
+         Y04TMJ7FjeDrXuSi5vJYE+Cl9+QyVk9EKiV4TxQKg41debT1xf44aQDwYU1xKWd7SXQL
+         4Ho9WNS6V22qJXYMrocKPoc+7BL69UdOusSxo=
+Message-ID: <4A4C6013.9090509@gmail.com>
+Date: Thu, 02 Jul 2009 15:21:55 +0800
+From: Changli Gao <xiaosuo@gmail.com>
+Reply-To: xiaosuo@gmail.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090505)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: xiaosuo <xiaosuo@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: PATCH: fd leak if pipe() is called with an invalid address.
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+fd leak if pipe() is called with an invalid address.
 
---=_freyr.ossman.eu-18386-1246519094-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Though -EFAULT is returned, the file descriptors opened by pipe() call
+are left open.
 
-On Thu, 02 Jul 2009 09:49:56 +1000
-Ben Nizette <bn@niasdigital.com> wrote:
+Signed-off-by: Changli Gao <xiaosuo@gmail.com>
+----
 
-> Patch
->=20
-> commit 8dfd0374be84793360db7fff2e635d2cd3bbcb21
-> Author: Sascha Hauer <s.hauer@pengutronix.de>
-> Date:   Thu Apr 9 08:32:02 2009 +0200
->=20
->     MMC core: limit minimum initialization frequency to 400kHz
->=20
-> Was recently merged.  This is too fast for at least one setup
-> permutation - the one on my desk which through trial and error won't
-> initialise at anything above ~350kHz (older Sandisk 256MB SD on
-> atmel-mci).
->=20
-> To avoid a string of "just found card X which requires clock
-> (current_clock - epsilon)" this patch drops the floor right down to
-> 50kHz.  This is about the slowest rate before which the discovery
-> process takes a noticeable slowdown.
->=20
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
-> ---
+ x86/ia32/sys_ia32.c     |    5 ++++-
+ xtensa/kernel/syscall.c |    5 ++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-50 kHz seems very low. I'd be more comfortable if we deviate from
-specified behaviour as little as possible, say 300 kHz. Has anyone
-checked what USB readers use?
 
-And have you confirmed that the card is actually getting 350 kHz when
-it fails? Perhaps there is a bug that is causing it to actually run at
-a higher frequency.
+--- arch/x86/ia32/sys_ia32.c.orig	2009-07-02 15:08:39.000000000 +0800
++++ arch/x86/ia32/sys_ia32.c	2009-07-02 15:09:49.000000000 +0800
+@@ -197,8 +197,11 @@
+ 	retval = do_pipe_flags(fds, 0);
+ 	if (retval)
+ 		goto out;
+-	if (copy_to_user(fd, fds, sizeof(fds)))
++	if (copy_to_user(fd, fds, sizeof(fds))) {
++		sys_close(fd[0]);
++		sys_close(fd[1]);
+ 		retval = -EFAULT;
++	}
+ out:
+ 	return retval;
+ }
+--- arch/xtensa/kernel/syscall.c.orig	2009-07-02 15:09:01.000000000 +0800
++++ arch/xtensa/kernel/syscall.c	2009-07-02 15:10:15.000000000 +0800
+@@ -51,8 +51,11 @@
+ 
+ 	error = do_pipe_flags(fd, 0);
+ 	if (!error) {
+-		if (copy_to_user(userfds, fd, 2 * sizeof(int)))
++		if (copy_to_user(userfds, fd, 2 * sizeof(int))) {
++			sys_close(fd[0]);
++			sys_close(fd[1]);
+ 			error = -EFAULT;
++		}
+ 	}
+ 	return error;
+ }
 
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index d84c880..6ee1931 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -708,12 +708,13 @@ static void mmc_power_up(struct mmc_host *host)
->  	 */
->  	mmc_delay(10);
-> =20
-> -	if (host->f_min > 400000) {
-> -		pr_warning("%s: Minimum clock frequency too high for "
-> -				"identification mode\n", mmc_hostname(host));
-> -		host->ios.clock =3D host->f_min;
-> -	} else
-> -		host->ios.clock =3D 400000;
-> +	/*
-> +	 * Card discovery is typically done at the controller's minimum
-> +	 * allowable frequency but for some controllers this is minimum
-> +	 * is unreasonably slow.  In that case we limit slow clock rate
-> +	 * to 50KHz.
-> +	 */
-> +	host->ios.clock =3D max(host->f_min, 50000);
-> =20
-
-I like getting that warning for too fast controllers. It makes it
-easier to spot possible problems.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-18386-1246519094-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpMXzUACgkQ7b8eESbyJLhERwCdF5YW2Duhzjd6L48IFnEPOa6B
-0K4AnRpdp4mUoczL1/COvJqqRsM6ErAe
-=LUPf
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-18386-1246519094-0001-2--
