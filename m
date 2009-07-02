@@ -1,75 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZGBXRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbZGBXUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZGBXRp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZGBXRg
+	id S1756368AbZGBXUg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZGBXU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:17:36 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51112 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbZGBXRg (ORCPT
+	Thu, 2 Jul 2009 19:20:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34819 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751158AbZGBXU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:17:36 -0400
-Date: Fri, 3 Jul 2009 01:17:38 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Theodore Tso <tytso@mit.edu>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rusty Russell <rusty@rustcorp.com.au>,
-       Pavel Machek <pavel@ucw.cz>, tridge@samba.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
-In-Reply-To: <20090701140503.GA21185@mit.edu>
-Message-ID: <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Jul 2009 19:20:28 -0400
+Date: Thu, 2 Jul 2009 16:20:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: serue@us.ibm.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
+Message-Id: <20090702162019.f34f12d6.akpm@linux-foundation.org>
+In-Reply-To: <6599ad830907020927x44a88a6dgb229fb2ad6ef5481@mail.gmail.com>
+References: <4A4C0C60.4050106@cn.fujitsu.com>
+	<6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+	<4A4C18D5.7020806@cn.fujitsu.com>
+	<6599ad830907011920r44df4022p53808b574da4a886@mail.gmail.com>
+	<4A4C1B33.2030002@cn.fujitsu.com>
+	<20090702132659.GA8051@us.ibm.com>
+	<6599ad830907020843l7ce75abfq3e78b8f67a407ab9@mail.gmail.com>
+	<20090702161548.GA13383@us.ibm.com>
+	<6599ad830907020927x44a88a6dgb229fb2ad6ef5481@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2 Jul 2009 09:27:20 -0700
+Paul Menage <menage@google.com> wrote:
 
-On Wednesday 2009-07-01 16:05, Theodore Tso wrote:
->On Wed, Jul 01, 2009 at 12:25:58PM +0100, Alan Cox wrote:
->
->> (most *FAT using products don't use Microsofts
->> implementation). Testing it versus Windows and saying it works is
->> not really adequate. Thats what ACPI and BIOS people do that *we*
->> moan about all the time.
->
->[...]
->The other big user I can think of are digital cameras, but (a)
->normally most users read from them and then delete the pictures, and
->rarely write to media meant for a digital camera, and (b) the DCIM
->standard for digital cameras explicitly only supports 8.3 filenames
->and so digital camera manufacturers explicitly don't need to deal with
->Long File Names at all.  (Hmm.... I wonder why....)
->[...]
->Ultimately, though, requiring that every single possible device be
->tested is probably not reasonable, so the best way to do this testing
->is the way do most of our testing; we do basic due diligence, but then
->we merge it into mainline and let our huge user community try it out.
+> On Thu, Jul 2, 2009 at 9:15 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
+> >>
+> >> Well, pid namespaces are marked as experimental, as are user
+> >> namespaces (and were described as "very incomplete" a few months
+> >
+> > incomplete (due to signaling issues which have mostly been resolved)
+> > but stable and usable.
+> >
+> > user namespace are a completely different story :)
+> 
+> Sorry, that wasn't clear - the "very incomplete" referred to user namespaces.
+> 
+
+I do think we should lean toward fixing it.  After all, it used to work
+OK and now it doesn't.
+
+It is a three-minute matter of patch-wrangling to take the fix out
+again within a more comprehensive 2.6.32 patch series, so that's not an
+issue.
+
+So are there any strong (enough) objections to putting this into 2.6.31?
 
 
-Yes, here is your precedent case. The DUALNAMES patch breaks the
-operation on my Fujifilm Finepix A210 digital camera.
 
-Here, dscf4159.jpg is a preexisting file created by the camera itself 
-(and subsequently, Finepix's FAT code) as a result of taking a picture. 
-Then I just copied that file with two different kernels in succession.
 
- * 2.6.31-rc1 + dualnames=n
-   # mount /dev/sdc1 /mnt
-   # cd /mnt/dcim/100_fuji/; cp dscf4159.jpg dscf3000.jpg
-   # umount /mnt
+From: Li Zefan <lizf@cn.fujitsu.com>
 
- * 2.6.29.5 w/o patch
-   # same procedure
-   cp dscf4159.jpg dscf3001.jpg
+The bug was introduced by commit cc31edceee04a7b87f2be48f9489ebb72d264844
+("cgroups: convert tasks file to use a seq_file with shared pid array").
 
-End result is that picture ID 3000 is not selectable in the camera's
-built-in menu (OSD), as if the file did not exist. 3001 was shown,
-however.
+We cache a pid array for all threads that are opening the same "tasks"
+file, but the pids in the array are always from the namespace of the
+last process that opened the file, so all other threads will read pids
+from that namespace instead of their own namespaces.
+
+To fix it, we maintain a list of pid arrays, which is keyed by pid_ns.
+The list will be of length 1 at most time.
+
+Reported-by: Paul Menage <menage@google.com>
+Idea-by: Paul Menage <menage@google.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Reviewed-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/linux/cgroup.h |   11 +---
+ kernel/cgroup.c        |   94 +++++++++++++++++++++++++++++----------
+ 2 files changed, 74 insertions(+), 31 deletions(-)
+
+diff -puN include/linux/cgroup.h~cgroups-fix-pid-namespace-bug include/linux/cgroup.h
+--- a/include/linux/cgroup.h~cgroups-fix-pid-namespace-bug
++++ a/include/linux/cgroup.h
+@@ -179,14 +179,11 @@ struct cgroup {
+ 	 */
+ 	struct list_head release_list;
+ 
+-	/* pids_mutex protects the fields below */
++	/* pids_mutex protects pids_list and cached pid arrays. */
+ 	struct rw_semaphore pids_mutex;
+-	/* Array of process ids in the cgroup */
+-	pid_t *tasks_pids;
+-	/* How many files are using the current tasks_pids array */
+-	int pids_use_count;
+-	/* Length of the current tasks_pids array */
+-	int pids_length;
++
++	/* Linked list of struct cgroup_pids */
++	struct list_head pids_list;
+ 
+ 	/* For RCU-protected deletion */
+ 	struct rcu_head rcu_head;
+diff -puN kernel/cgroup.c~cgroups-fix-pid-namespace-bug kernel/cgroup.c
+--- a/kernel/cgroup.c~cgroups-fix-pid-namespace-bug
++++ a/kernel/cgroup.c
+@@ -47,6 +47,7 @@
+ #include <linux/hash.h>
+ #include <linux/namei.h>
+ #include <linux/smp_lock.h>
++#include <linux/pid_namespace.h>
+ 
+ #include <asm/atomic.h>
+ 
+@@ -961,6 +962,7 @@ static void init_cgroup_housekeeping(str
+ 	INIT_LIST_HEAD(&cgrp->children);
+ 	INIT_LIST_HEAD(&cgrp->css_sets);
+ 	INIT_LIST_HEAD(&cgrp->release_list);
++	INIT_LIST_HEAD(&cgrp->pids_list);
+ 	init_rwsem(&cgrp->pids_mutex);
+ }
+ static void init_cgroup_root(struct cgroupfs_root *root)
+@@ -2202,12 +2204,30 @@ err:
+ 	return ret;
+ }
+ 
++/*
++ * Cache pids for all threads in the same pid namespace that are
++ * opening the same "tasks" file.
++ */
++struct cgroup_pids {
++	/* The node in cgrp->pids_list */
++	struct list_head list;
++	/* The cgroup those pids belong to */
++	struct cgroup *cgrp;
++	/* The namepsace those pids belong to */
++	struct pid_namespace *pid_ns;
++	/* Array of process ids in the cgroup */
++	pid_t *tasks_pids;
++	/* How many files are using the this tasks_pids array */
++	int pids_use_count;
++	/* Length of the current tasks_pids array */
++	int pids_length;
++};
++
+ static int cmppid(const void *a, const void *b)
+ {
+ 	return *(pid_t *)a - *(pid_t *)b;
+ }
+ 
+-
+ /*
+  * seq_file methods for the "tasks" file. The seq_file position is the
+  * next pid to display; the seq_file iterator is a pointer to the pid
+@@ -2222,45 +2242,47 @@ static void *cgroup_tasks_start(struct s
+ 	 * after a seek to the start). Use a binary-search to find the
+ 	 * next pid to display, if any
+ 	 */
+-	struct cgroup *cgrp = s->private;
++	struct cgroup_pids *cp = s->private;
++	struct cgroup *cgrp = cp->cgrp;
+ 	int index = 0, pid = *pos;
+ 	int *iter;
+ 
+ 	down_read(&cgrp->pids_mutex);
+ 	if (pid) {
+-		int end = cgrp->pids_length;
++		int end = cp->pids_length;
+ 
+ 		while (index < end) {
+ 			int mid = (index + end) / 2;
+-			if (cgrp->tasks_pids[mid] == pid) {
++			if (cp->tasks_pids[mid] == pid) {
+ 				index = mid;
+ 				break;
+-			} else if (cgrp->tasks_pids[mid] <= pid)
++			} else if (cp->tasks_pids[mid] <= pid)
+ 				index = mid + 1;
+ 			else
+ 				end = mid;
+ 		}
+ 	}
+ 	/* If we're off the end of the array, we're done */
+-	if (index >= cgrp->pids_length)
++	if (index >= cp->pids_length)
+ 		return NULL;
+ 	/* Update the abstract position to be the actual pid that we found */
+-	iter = cgrp->tasks_pids + index;
++	iter = cp->tasks_pids + index;
+ 	*pos = *iter;
+ 	return iter;
+ }
+ 
+ static void cgroup_tasks_stop(struct seq_file *s, void *v)
+ {
+-	struct cgroup *cgrp = s->private;
++	struct cgroup_pids *cp = s->private;
++	struct cgroup *cgrp = cp->cgrp;
+ 	up_read(&cgrp->pids_mutex);
+ }
+ 
+ static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
+ {
+-	struct cgroup *cgrp = s->private;
++	struct cgroup_pids *cp = s->private;
+ 	int *p = v;
+-	int *end = cgrp->tasks_pids + cgrp->pids_length;
++	int *end = cp->tasks_pids + cp->pids_length;
+ 
+ 	/*
+ 	 * Advance to the next pid in the array. If this goes off the
+@@ -2287,26 +2309,32 @@ static struct seq_operations cgroup_task
+ 	.show = cgroup_tasks_show,
+ };
+ 
+-static void release_cgroup_pid_array(struct cgroup *cgrp)
++static void release_cgroup_pid_array(struct cgroup_pids *cp)
+ {
++	struct cgroup *cgrp = cp->cgrp;
++
+ 	down_write(&cgrp->pids_mutex);
+-	BUG_ON(!cgrp->pids_use_count);
+-	if (!--cgrp->pids_use_count) {
+-		kfree(cgrp->tasks_pids);
+-		cgrp->tasks_pids = NULL;
+-		cgrp->pids_length = 0;
++	BUG_ON(!cp->pids_use_count);
++	if (!--cp->pids_use_count) {
++		list_del(&cp->list);
++		kfree(cp->tasks_pids);
++		kfree(cp);
+ 	}
+ 	up_write(&cgrp->pids_mutex);
+ }
+ 
+ static int cgroup_tasks_release(struct inode *inode, struct file *file)
+ {
+-	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
++	struct seq_file *seq;
++	struct cgroup_pids *cp;
+ 
+ 	if (!(file->f_mode & FMODE_READ))
+ 		return 0;
+ 
+-	release_cgroup_pid_array(cgrp);
++	seq = file->private_data;
++	cp = seq->private;
++
++	release_cgroup_pid_array(cp);
+ 	return seq_release(inode, file);
+ }
+ 
+@@ -2325,6 +2353,8 @@ static struct file_operations cgroup_tas
+ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+ {
+ 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
++	struct pid_namespace *pid_ns = task_active_pid_ns(current);
++	struct cgroup_pids *cp;
+ 	pid_t *pidarray;
+ 	int npids;
+ 	int retval;
+@@ -2351,20 +2381,36 @@ static int cgroup_tasks_open(struct inod
+ 	 * array if necessary
+ 	 */
+ 	down_write(&cgrp->pids_mutex);
+-	kfree(cgrp->tasks_pids);
+-	cgrp->tasks_pids = pidarray;
+-	cgrp->pids_length = npids;
+-	cgrp->pids_use_count++;
++
++	list_for_each_entry(cp, &cgrp->pids_list, list) {
++		if (pid_ns == cp->pid_ns)
++			goto found;
++	}
++
++	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
++	if (!cp) {
++		up_write(&cgrp->pids_mutex);
++		kfree(pidarray);
++		return -ENOMEM;
++	}
++	cp->cgrp = cgrp;
++	cp->pid_ns = pid_ns;
++	list_add(&cp->list, &cgrp->pids_list);
++found:
++	kfree(cp->tasks_pids);
++	cp->tasks_pids = pidarray;
++	cp->pids_length = npids;
++	cp->pids_use_count++;
+ 	up_write(&cgrp->pids_mutex);
+ 
+ 	file->f_op = &cgroup_tasks_operations;
+ 
+ 	retval = seq_open(file, &cgroup_tasks_seq_operations);
+ 	if (retval) {
+-		release_cgroup_pid_array(cgrp);
++		release_cgroup_pid_array(cp);
+ 		return retval;
+ 	}
+-	((struct seq_file *)file->private_data)->private = cgrp;
++	((struct seq_file *)file->private_data)->private = cp;
+ 	return 0;
+ }
+ 
+_
+
