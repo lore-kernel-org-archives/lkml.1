@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZGBXZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbZGBX0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbZGBXZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZGBXZg
+	id S1755595AbZGBX0a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZGBX0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:25:36 -0400
-Received: from mga07.intel.com ([143.182.124.22]:59200 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752684AbZGBXZf (ORCPT
+	Thu, 2 Jul 2009 19:26:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:60091 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbZGBX0W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:25:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,337,1243839600"; 
-   d="scan'208";a="161105819"
-Message-ID: <4A4D41F2.8070507@linux.intel.com>
-Date: Thu, 02 Jul 2009 16:25:38 -0700
-From: "H. Peter Anvin" <hpa@linux.intel.com>
-Organization: Intel Open Source Technology Center
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 2 Jul 2009 19:26:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=Q7adP3UAiHwZZAJo0LJY7ozNeDo+vr4iN5CivQ+7jtgf34YvWR4brefIw8+cvZLUi
+	jd8oOt/P6CVCjp9IqPSBw==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH 0/2] CGroups: cgroup member list enhancement/fix
+To: lizf@cn.fujitzu.com, serue@us.ibm.com, akpm@linux-foundation.org
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       bblum@google.com
+Date: Thu, 02 Jul 2009 16:26:15 -0700
+Message-ID: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-CC: Pavel Machek <pavel@ucw.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/9] x86: introduce a set of platform feature flags
-References: <43F901BD926A4E43B106BF17856F07556412B7E1@orsmsx508.amr.corp.intel.com> <20090630063230.GD1351@ucw.cz> <43F901BD926A4E43B106BF17856F07556428B555@orsmsx508.amr.corp.intel.com>
-In-Reply-To: <43F901BD926A4E43B106BF17856F07556428B555@orsmsx508.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pan, Jacob jun wrote:
->>> +#define platform_has(bit) \
->>> +	test_bit(bit, (unsigned long *)platform_feature)
->> test_bit and friends imply synchronization you probably  don't want or
->> need...
->>
-> [[JPAN]] could you explain a little more? The disassembly shows the test_bit
-> ends up as a testb instruction and a jump. Why there is synchronization
->  involved?
-> Perhaps on some architectures?
+The following series (written by Ben Blum) adds a "cgroup.procs" file
+to each cgroup that reports unique tgids rather than pids, and fixes a
+pid namespace bug in the existing "tasks" file that could cause
+readers in different namespaces to interfere with one another.
 
-test_bit() doesn't imply synchronization; set_bit() and clear_bit() do
-(but not __set_bit() and __clear_bit(), just to really be confusing.)
+The patches as a pair provide similar functionality to Li Zefan's
+patch posted yesterday, with the addition on the "cgroup.procs" file;
+if it's decided that Li's patch needs to be fast-tracked to 2.6.31,
+then these patches can be rebased as a small extension of Li's patch;
+if Li'z patch doesn't need to go to 2.6.31 then it makes more sense to
+take this pair since they provide more overall functionality.
 
-	-hpa
+---
+
+Ben Blum (2):
+      Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+      Ensures correct concurrent opening/reading of pidlists across pid namespaces
+
+
+ include/linux/cgroup.h |   46 +++++-
+ kernel/cgroup.c        |  355 +++++++++++++++++++++++++++++++++---------------
+ 2 files changed, 285 insertions(+), 116 deletions(-)
+
