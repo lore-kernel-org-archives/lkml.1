@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403AbZGBW5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZGBW5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403AbZGBW5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbZGBW5X
+	id S1756647AbZGBW5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbZGBW5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:57:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59362 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753069AbZGBW5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:57:23 -0400
-Subject: [GIT PULL] notification tree - inotify does not decrement use count
-From: Eric Paris <eparis@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 18:57:16 -0400
-Message-Id: <1246575436.2855.15.camel@dhcp235-23.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 18:57:25 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:51522 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755720AbZGBW5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 18:57:25 -0400
+Date: Thu, 2 Jul 2009 18:57:14 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, andi@firstfloor.org,
+       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
+       nhorman@tuxdriver.com
+Subject: Re: [PATCH 0/3] exec: Make do_coredump more robust and safer when
+	using pipes in core_pattern (v7)
+Message-ID: <20090702225714.GA11447@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622172818.GB14673@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus please consider pulling from the notification tree.  There is one
-patch in the tree which should fix an issue in which the inotify device
-use count is not decremented when a user closes the inotify file
-descriptor and thus normal inotify use could improperly hit the per user
-limits on inotify devices.
 
--Eric
+Patch V7, adjusting wait loop for signal handling.
 
-The following changes since commit d960eea974f5e500c0dcb95a934239cc1f481cfd:
-  Randy Dunlap (1):
-        kernel-doc: move ignoring kmemcheck
 
-are available in the git repository at:
+This patcset provides improvements to the core_pattern infrastructure:
 
-  git://git.infradead.org/users/eparis/notify.git for-linus
+1) Make detection of recurseive core dumps more robust and accurate
 
-Keith Packard (1):
-      fs/notify/inotify: decrement user inotify count on close
+2) Provide a sysctl to limit the number of parallel coredumps in flight when
+using pipes
 
- fs/notify/inotify/inotify_user.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+3) Allows for the kernel to wait for the completion of user space core dump
+processing
+
+Neil
 
