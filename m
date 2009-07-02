@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZGBPnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZGBPoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbZGBPnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbZGBPnI
+	id S1756826AbZGBPoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbZGBPoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:43:08 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48191 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756649AbZGBPnH (ORCPT
+	Thu, 2 Jul 2009 11:44:01 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52229 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbZGBPoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:43:07 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] MAINTAINERS: Add entry for Wolfson PMIC drivers
-Date: Thu,  2 Jul 2009 16:43:08 +0100
-Message-Id: <1246549388-29007-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 2 Jul 2009 11:44:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=E9vcVct5OeDgOEi5UaOkyv+g4VfcCwe0/4CJlTA/b64GjLYseTGTFalUWLJII9GrY
+	Muegw0jn5u+MpJYkv7nfA==
+MIME-Version: 1.0
+In-Reply-To: <20090702132659.GA8051@us.ibm.com>
+References: <4A4C0C60.4050106@cn.fujitsu.com>
+	 <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+	 <4A4C18D5.7020806@cn.fujitsu.com>
+	 <6599ad830907011920r44df4022p53808b574da4a886@mail.gmail.com>
+	 <4A4C1B33.2030002@cn.fujitsu.com> <20090702132659.GA8051@us.ibm.com>
+Date: Thu, 2 Jul 2009 08:43:57 -0700
+Message-ID: <6599ad830907020843l7ce75abfq3e78b8f67a407ab9@mail.gmail.com>
+Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
+From: Paul Menage <menage@google.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- MAINTAINERS |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+On Thu, Jul 2, 2009 at 6:26 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
+> Quoting Li Zefan (lizf@cn.fujitsu.com):
+>> Paul Menage wrote:
+>> > On Wed, Jul 1, 2009 at 7:17 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>> >> But I guess we are going to fix the bug for 2.6.31? So is it ok to
+>> >> merge a new feature 'cgroup.procs' together into 2.6.31?
+>> >>
+>> >
+>> > Does this bug really need to be fixed for 2.6.31? I didn't think that
+>> > the namespace support in mainline was robust enough yet for people to
+>> > use them for virtual servers in production environments.
+>
+> I don't know where the bar is for 'production environments', but I'd
+> have to claim that pid namespaces are there...
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index cf4abdd..b9a1e2d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6278,6 +6278,24 @@ S:	Supported
- F:	drivers/input/touchscreen/*wm97*
- F:	include/linux/wm97xx.h
- 
-+WOLFSON MICROELECTRONICS PMIC DRIVERS
-+P:	Mark Brown
-+M:	broonie@opensource.wolfsonmicro.com
-+L:	linux-kernel@vger.kernel.org
-+T:	git git://opensource.wolfsonmicro.com/linux-2.6-audioplus
-+W:	http://opensource.wolfsonmicro.com/node/8
-+S:	Supported
-+F:	drivers/leds/leds-wm83*.c
-+F:	drivers/mfd/wm8*.c
-+F:	drivers/power/wm83*.c
-+F:	drivers/rtc/rtc-wm83*.c
-+F:	drivers/regulator/wm8*.c
-+F:	drivers/watchdog/wm83*_wdt.c
-+F:	include/linux/mfd/wm8350/
-+F:	include/linux/mfd/wm8400/
-+F:	sound/soc/codecs/wm8350.c
-+F:	sound/soc/codecs/wm8400.c
-+
- X.25 NETWORK LAYER
- P:	Henner Eisen
- M:	eis@baty.hanse.de
--- 
-1.6.3.3
+Well, pid namespaces are marked as experimental, as are user
+namespaces (and were described as "very incomplete" a few months
+back). Pid namespaces are useful for process migration (which is still
+under development) or virtual servers (for which user namespaces are
+pretty much essential). So I'm not sure quite what you'd use pid
+namespaces for yet.
 
+Paul
