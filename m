@@ -1,71 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZGBULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757908AbZGBULo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbZGBULa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 16:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbZGBUIT
+	id S1757908AbZGBULo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 16:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbZGBUJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 16:08:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43829 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756534AbZGBUIR (ORCPT
+	Thu, 2 Jul 2009 16:09:29 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:29803 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757205AbZGBUJ1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 16:08:17 -0400
-Date: Thu, 2 Jul 2009 13:07:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.31-rc1-git9 Cannot Recognize Empty DVD Media
-Message-Id: <20090702130728.22af524c.akpm@linux-foundation.org>
-In-Reply-To: <4A4CB4B4.5010307@turknet.net.tr>
-References: <4A4CB4B4.5010307@turknet.net.tr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 16:09:27 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=qPL4i39M83MTPYTaU4iVEmkcO6Oc58SEOkwd+RaZ/EO+EzR279uIy5weXT/YeyE9G
+	bxf/PkXue4pJC8MuGiU/w==
+MIME-Version: 1.0
+In-Reply-To: <1246564917-19603-14-git-send-email-vgoyal@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
+	 <1246564917-19603-14-git-send-email-vgoyal@redhat.com>
+Date: Thu, 2 Jul 2009 13:09:14 -0700
+Message-ID: <e98e18940907021309u1f784b3at409b55ba46ed108c@mail.gmail.com>
+Subject: Re: [PATCH 13/25] io-controller: Wait for requests to complete from 
+	last queue before new queue is scheduled
+From: Nauman Rafique <nauman@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-scsi)
+On Thu, Jul 2, 2009 at 1:01 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+> o Currently one can dispatch requests from multiple queues to the disk. This
+>  is true for hardware which supports queuing. So if a disk support queue
+>  depth of 31 it is possible that 20 requests are dispatched from queue 1
+>  and then next queue is scheduled in which dispatches more requests.
+>
+> o This multiple queue dispatch introduces issues for accurate accounting of
+>  disk time consumed by a particular queue. For example, if one async queue
+>  is scheduled in, it can dispatch 31 requests to the disk and then it will
+>  be expired and a new sync queue might get scheduled in. These 31 requests
+>  might take a long time to finish but this time is never accounted to the
+>  async queue which dispatched these requests.
+>
+> o This patch introduces the functionality where we wait for all the requests
+>  to finish from previous queue before next queue is scheduled in. That way
+>  a queue is more accurately accounted for disk time it has consumed. Note
+>  this still does not take care of errors introduced by disk write caching.
+>
+> o Because above behavior can result in reduced throughput, this behavior will
+>  be enabled only if user sets "fairness" tunable to 2 or higher.
 
-On Thu, 02 Jul 2009 16:23:00 +0300
-Tarkan Erimer <tarkan.erimer@turknet.net.tr> wrote:
+Vivek,
+Did you collect any numbers for the impact on throughput from this
+patch? It seems like with this change, we can even support NCQ.
 
-> Hi,
-> 
-> I just compiled 2.6.31-rc1-git9 to give it a try. The problem I 
-> encountered with this release is that it cannot recognize empty DVD 
-> (probably CD will be the same. But, I didn't try it.) media with K3b. 
-> I'm having the below error messages in dmesg. Also, I tried with several 
-> new empty DVD medias. So, I'm sure that it's not a faulty DVD media. The 
-> same media burns fine with K3b under <= 2.6.31-rc1-git6.
-> 
-> 
-> [ 4526.724245] cdrom: This disc doesn't have any tracks I recognize!
-> [ 4526.748278] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK 
-> driverbyte=DRIVER_SENSE
-> [ 4526.748285] sr 0:0:0:0: [sr0] Sense Key : Illegal Request [current]
-> [ 4526.748292] sr 0:0:0:0: [sr0] Add. Sense: Illegal mode for this track
-> [ 4526.748300] end_request: I/O error, dev sr0, sector 0
-> [ 4526.748307] Buffer I/O error on device sr0, logical block 0
-> [ 4526.750295] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK 
-> driverbyte=DRIVER_SENSE
-> [ 4526.750302] sr 0:0:0:0: [sr0] Sense Key : Illegal Request [current]
-> [ 4526.750308] sr 0:0:0:0: [sr0] Add. Sense: Illegal mode for this track
-> [ 4526.750316] end_request: I/O error, dev sr0, sector 0
-> [ 4526.750321] Buffer I/O error on device sr0, logical block 0
-> [ 4586.738212] cdrom: This disc doesn't have any tracks I recognize!
-> [ 4586.753644] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK 
-> driverbyte=DRIVER_SENSE
-> [ 4586.753652] sr 0:0:0:0: [sr0] Sense Key : Illegal Request [current]
-> [ 4586.753659] sr 0:0:0:0: [sr0] Add. Sense: Illegal mode for this track
-> [ 4586.753668] end_request: I/O error, dev sr0, sector 0
-> [ 4586.753673] Buffer I/O error on device sr0, logical block 0
-> [ 4586.757373] sr 0:0:0:0: [sr0] Result: hostbyte=DID_OK 
-> driverbyte=DRIVER_SENSE
-> [ 4586.757379] sr 0:0:0:0: [sr0] Sense Key : Illegal Request [current]
-> [ 4586.757384] sr 0:0:0:0: [sr0] Add. Sense: Illegal mode for this track
-> [ 4586.757391] end_request: I/O error, dev sr0, sector 0
-> [ 4586.757395] Buffer I/O error on device sr0, logical block 0
-
-There are no recent changes to cdrom.c.  Maybe it's due to a scsi change?
+>
+> o This patch helps in achieving more isolation between reads and buffered
+>  writes in different cgroups. buffered writes typically utilize full queue
+>  depth and then expire the queue. On the contarary, sequential reads
+>  typicaly driver queue depth of 1. So despite the fact that writes are
+>  using more disk time it is never accounted to write queue because we don't
+>  wait for requests to finish after dispatching these. This patch helps
+>  do more accurate accounting of disk time, especially for buffered writes
+>  hence providing better fairness hence better isolation between two cgroups
+>  running read and write workloads.
+>
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/elevator-fq.c |   31 ++++++++++++++++++++++++++++++-
+>  1 files changed, 30 insertions(+), 1 deletions(-)
+>
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 68be1dc..7609579 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -2038,7 +2038,7 @@ STORE_FUNCTION(elv_slice_sync_store, &efqd->elv_slice[1], 1, UINT_MAX, 1);
+>  EXPORT_SYMBOL(elv_slice_sync_store);
+>  STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
+>  EXPORT_SYMBOL(elv_slice_async_store);
+> -STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
+> +STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 2, 0);
+>  EXPORT_SYMBOL(elv_fairness_store);
+>  #undef STORE_FUNCTION
+>
+> @@ -2952,6 +2952,24 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+>        }
+>
+>  expire:
+> +       if (efqd->fairness >= 2 && !force && ioq && ioq->dispatched) {
+> +               /*
+> +                * If there are request dispatched from this queue, don't
+> +                * dispatch requests from new queue till all the requests from
+> +                * this queue have completed.
+> +                *
+> +                * This helps in attributing right amount of disk time consumed
+> +                * by a particular queue when hardware allows queuing.
+> +                *
+> +                * Set ioq = NULL so that no more requests are dispatched from
+> +                * this queue.
+> +                */
+> +               elv_log_ioq(efqd, ioq, "select: wait for requests to finish"
+> +                               " disp=%lu", ioq->dispatched);
+> +               ioq = NULL;
+> +               goto keep_queue;
+> +       }
+> +
+>        elv_ioq_slice_expired(q);
+>  new_queue:
+>        ioq = elv_set_active_ioq(q, new_ioq);
+> @@ -3109,6 +3127,17 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+>                                 */
+>                                elv_ioq_arm_slice_timer(q, 1);
+>                        } else {
+> +                               /* If fairness >=2 and there are requests
+> +                                * dispatched from this queue, don't dispatch
+> +                                * new requests from a different queue till
+> +                                * all requests from this queue have finished.
+> +                                * This helps in attributing right disk time
+> +                                * to a queue when hardware supports queuing.
+> +                                */
+> +
+> +                               if (efqd->fairness >= 2 && ioq->dispatched)
+> +                                       goto done;
+> +
+>                                /* Expire the queue */
+>                                elv_ioq_slice_expired(q);
+>                        }
+> --
+> 1.6.0.6
+>
+>
