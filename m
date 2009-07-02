@@ -1,152 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757002AbZGBUT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZGBUUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757002AbZGBUT5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 16:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZGBUTu
+	id S1756976AbZGBUUW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 16:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZGBUUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 16:19:50 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45680 "EHLO kernel.dk"
+	Thu, 2 Jul 2009 16:20:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36506 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754975AbZGBUTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 16:19:49 -0400
-Date: Thu, 2 Jul 2009 22:19:52 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RFT] cfq-iosched: drain device before switching to a sync
-	queue
-Message-ID: <20090702201952.GG23611@kernel.dk>
+	id S1754630AbZGBUUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 16:20:07 -0400
+Date: Thu, 2 Jul 2009 16:17:30 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 13/25] io-controller: Wait for requests to complete
+	from last queue before new queue is scheduled
+Message-ID: <20090702201730.GB3712@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-14-git-send-email-vgoyal@redhat.com> <e98e18940907021309u1f784b3at409b55ba46ed108c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e98e18940907021309u1f784b3at409b55ba46ed108c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Jul 02, 2009 at 01:09:14PM -0700, Nauman Rafique wrote:
+> On Thu, Jul 2, 2009 at 1:01 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+> > o Currently one can dispatch requests from multiple queues to the disk. This
+> >  is true for hardware which supports queuing. So if a disk support queue
+> >  depth of 31 it is possible that 20 requests are dispatched from queue 1
+> >  and then next queue is scheduled in which dispatches more requests.
+> >
+> > o This multiple queue dispatch introduces issues for accurate accounting of
+> >  disk time consumed by a particular queue. For example, if one async queue
+> >  is scheduled in, it can dispatch 31 requests to the disk and then it will
+> >  be expired and a new sync queue might get scheduled in. These 31 requests
+> >  might take a long time to finish but this time is never accounted to the
+> >  async queue which dispatched these requests.
+> >
+> > o This patch introduces the functionality where we wait for all the requests
+> >  to finish from previous queue before next queue is scheduled in. That way
+> >  a queue is more accurately accounted for disk time it has consumed. Note
+> >  this still does not take care of errors introduced by disk write caching.
+> >
+> > o Because above behavior can result in reduced throughput, this behavior will
+> >  be enabled only if user sets "fairness" tunable to 2 or higher.
+> 
+> Vivek,
+> Did you collect any numbers for the impact on throughput from this
+> patch? It seems like with this change, we can even support NCQ.
+> 
 
-CFQ used to do something to this effect earlier and it should help sync
-IO make quicker progress in the presence of async writeout. IOW, it
-should make your desktop and apps more responsive while writeout is
-happening. Now I have improved the patch to only care about the case
-where we have async IO in flight and start to process sync IO.
+Hi Nauman,
 
-I'd like for people to give this a test spin. Both to see if it makes
-everything more snappy, but also on the benchmark side to see if it
-hurts any known test cases. Essentially it'll disable NCQ/TCQ across
-queues sync vs async queues.
+Not yet. I will try to do some impact analysis of this change and post the
+results.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 87276eb..57ed6fc 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -140,7 +140,7 @@ struct cfq_data {
- 	 */
- 	unsigned int busy_rt_queues;
- 
--	int rq_in_driver;
-+	int rq_in_driver[2];
- 	int sync_flight;
- 
- 	/*
-@@ -239,6 +239,11 @@ static struct cfq_queue *cfq_get_queue(struct cfq_data *, int,
- static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
- 						struct io_context *);
- 
-+static inline int rq_in_driver(struct cfq_data *cfqd)
-+{
-+	return cfqd->rq_in_driver[0] + cfqd->rq_in_driver[1];
-+}
-+
- static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
- 					    int is_sync)
- {
-@@ -760,9 +765,9 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
- 
--	cfqd->rq_in_driver++;
-+	cfqd->rq_in_driver[rq_is_sync(rq)]++;
- 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "activate rq, drv=%d",
--						cfqd->rq_in_driver);
-+						rq_in_driver(cfqd));
- 
- 	cfqd->last_position = blk_rq_pos(rq) + blk_rq_sectors(rq);
- }
-@@ -770,11 +775,12 @@ static void cfq_activate_request(struct request_queue *q, struct request *rq)
- static void cfq_deactivate_request(struct request_queue *q, struct request *rq)
- {
- 	struct cfq_data *cfqd = q->elevator->elevator_data;
-+	const int sync = rq_is_sync(rq);
- 
--	WARN_ON(!cfqd->rq_in_driver);
--	cfqd->rq_in_driver--;
-+	WARN_ON(!cfqd->rq_in_driver[sync]);
-+	cfqd->rq_in_driver[sync]--;
- 	cfq_log_cfqq(cfqd, RQ_CFQQ(rq), "deactivate rq, drv=%d",
--						cfqd->rq_in_driver);
-+						rq_in_driver(cfqd));
- }
- 
- static void cfq_remove_request(struct request *rq)
-@@ -1080,7 +1086,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	/*
- 	 * still requests with the driver, don't idle
- 	 */
--	if (cfqd->rq_in_driver)
-+	if (rq_in_driver(cfqd))
- 		return;
- 
- 	/*
-@@ -1312,6 +1318,12 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
- 		return 0;
- 
- 	/*
-+	 * Drain async requests before we start sync IO
-+	 */
-+	if (cfq_cfqq_idle_window(cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
-+		return 0;
-+
-+	/*
- 	 * If this is an async queue and we have sync IO in flight, let it wait
- 	 */
- 	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-@@ -2130,11 +2142,11 @@ static void cfq_insert_request(struct request_queue *q, struct request *rq)
-  */
- static void cfq_update_hw_tag(struct cfq_data *cfqd)
- {
--	if (cfqd->rq_in_driver > cfqd->rq_in_driver_peak)
--		cfqd->rq_in_driver_peak = cfqd->rq_in_driver;
-+	if (rq_in_driver(cfqd) > cfqd->rq_in_driver_peak)
-+		cfqd->rq_in_driver_peak = rq_in_driver(cfqd);
- 
- 	if (cfqd->rq_queued <= CFQ_HW_QUEUE_MIN &&
--	    cfqd->rq_in_driver <= CFQ_HW_QUEUE_MIN)
-+	    rq_in_driver(cfqd) <= CFQ_HW_QUEUE_MIN)
- 		return;
- 
- 	if (cfqd->hw_tag_samples++ < 50)
-@@ -2161,9 +2173,9 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 
- 	cfq_update_hw_tag(cfqd);
- 
--	WARN_ON(!cfqd->rq_in_driver);
-+	WARN_ON(!cfqd->rq_in_driver[sync]);
- 	WARN_ON(!cfqq->dispatched);
--	cfqd->rq_in_driver--;
-+	cfqd->rq_in_driver[sync]--;
- 	cfqq->dispatched--;
- 
- 	if (cfq_cfqq_sync(cfqq))
-@@ -2197,7 +2209,7 @@ static void cfq_completed_request(struct request_queue *q, struct request *rq)
- 			cfq_arm_slice_timer(cfqd);
- 	}
- 
--	if (!cfqd->rq_in_driver)
-+	if (!rq_in_driver(cfqd))
- 		cfq_schedule_dispatch(cfqd);
- }
- 
+Thanks
+Vivek
 
--- 
-Jens Axboe
-
+> >
+> > o This patch helps in achieving more isolation between reads and buffered
+> >  writes in different cgroups. buffered writes typically utilize full queue
+> >  depth and then expire the queue. On the contarary, sequential reads
+> >  typicaly driver queue depth of 1. So despite the fact that writes are
+> >  using more disk time it is never accounted to write queue because we don't
+> >  wait for requests to finish after dispatching these. This patch helps
+> >  do more accurate accounting of disk time, especially for buffered writes
+> >  hence providing better fairness hence better isolation between two cgroups
+> >  running read and write workloads.
+> >
+> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> > ---
+> >  block/elevator-fq.c |   31 ++++++++++++++++++++++++++++++-
+> >  1 files changed, 30 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> > index 68be1dc..7609579 100644
+> > --- a/block/elevator-fq.c
+> > +++ b/block/elevator-fq.c
+> > @@ -2038,7 +2038,7 @@ STORE_FUNCTION(elv_slice_sync_store, &efqd->elv_slice[1], 1, UINT_MAX, 1);
+> >  EXPORT_SYMBOL(elv_slice_sync_store);
+> >  STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
+> >  EXPORT_SYMBOL(elv_slice_async_store);
+> > -STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
+> > +STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 2, 0);
+> >  EXPORT_SYMBOL(elv_fairness_store);
+> >  #undef STORE_FUNCTION
+> >
+> > @@ -2952,6 +2952,24 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+> >        }
+> >
+> >  expire:
+> > +       if (efqd->fairness >= 2 && !force && ioq && ioq->dispatched) {
+> > +               /*
+> > +                * If there are request dispatched from this queue, don't
+> > +                * dispatch requests from new queue till all the requests from
+> > +                * this queue have completed.
+> > +                *
+> > +                * This helps in attributing right amount of disk time consumed
+> > +                * by a particular queue when hardware allows queuing.
+> > +                *
+> > +                * Set ioq = NULL so that no more requests are dispatched from
+> > +                * this queue.
+> > +                */
+> > +               elv_log_ioq(efqd, ioq, "select: wait for requests to finish"
+> > +                               " disp=%lu", ioq->dispatched);
+> > +               ioq = NULL;
+> > +               goto keep_queue;
+> > +       }
+> > +
+> >        elv_ioq_slice_expired(q);
+> >  new_queue:
+> >        ioq = elv_set_active_ioq(q, new_ioq);
+> > @@ -3109,6 +3127,17 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+> >                                 */
+> >                                elv_ioq_arm_slice_timer(q, 1);
+> >                        } else {
+> > +                               /* If fairness >=2 and there are requests
+> > +                                * dispatched from this queue, don't dispatch
+> > +                                * new requests from a different queue till
+> > +                                * all requests from this queue have finished.
+> > +                                * This helps in attributing right disk time
+> > +                                * to a queue when hardware supports queuing.
+> > +                                */
+> > +
+> > +                               if (efqd->fairness >= 2 && ioq->dispatched)
+> > +                                       goto done;
+> > +
+> >                                /* Expire the queue */
+> >                                elv_ioq_slice_expired(q);
+> >                        }
+> > --
+> > 1.6.0.6
+> >
+> >
