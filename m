@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZGBMSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753724AbZGBM3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZGBMSl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 08:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751928AbZGBMSe
+	id S1753724AbZGBM3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 08:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZGBM3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 08:18:34 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:13408
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751054AbZGBMSd (ORCPT
+	Thu, 2 Jul 2009 08:29:25 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:45259 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbZGBM3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 08:18:33 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvkBAN9BTEp8qMex/2dsb2JhbAAIzzWEEQWBOg
-X-IronPort-AV: E=Sophos;i="4.42,333,1243785600"; 
-   d="scan'208";a="545668119"
-Subject: Re: [PATCH] MMC Core: Drop initialization frequency floor to 50kHz
-From: Ben Nizette <bn@niasdigital.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: pierre@ossman.eu, s.hauer@pengutronix.de, kernel <kernel@avr32linux.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090702135849.21370282@hskinnemoen-d830>
-References: <1246492196.2980.17.camel@linux-51e8.site>
-	 <20090702135849.21370282@hskinnemoen-d830>
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 22:17:36 +1000
-Message-Id: <1246537056.2980.60.camel@linux-51e8.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Thu, 2 Jul 2009 08:29:25 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Joe Perches <joe@perches.com>
+Subject: Re: printk regression?
+Date: Thu, 2 Jul 2009 07:29:21 -0500
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <4A4C3410.8080704@kernel.org> <alpine.LFD.2.01.0907012119370.3380@localhost.localdomain> <1246513356.28915.62.camel@Joe-Laptop.home>
+In-Reply-To: <1246513356.28915.62.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907020729.23976.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-02 at 13:58 +0200, Haavard Skinnemoen wrote:
-> Ben Nizette wrote:
-> > Was recently merged.  This is too fast for at least one setup
-> > permutation - the one on my desk which through trial and error won't
-> > initialise at anything above ~350kHz (older Sandisk 256MB SD on
-> > atmel-mci).
+On Thu July 2 2009, Joe Perches wrote:
+> On Wed, 2009-07-01 at 21:23 -0700, Linus Torvalds wrote:
+> > 
+> > On Wed, 1 Jul 2009, Yinghai Lu wrote:
+> > >
+> > > [   75.690022] <7>printing local APIC contents on CPU#0/0:
+> > 
+> > Yes. This is because the io_apic code should be fixed.
+> > 
+> > It does:
+> > 
+> > 	printk("\n" KERN_DEBUG "printing local APIC
+> > 
+> > and that "\n" at the beginning should just be deleted. The log-level 
+> > should be at the beginning of the printk, not in the middle.
 > 
-> What kind of board is this? It sounds a bit like the CMD or DATA0
-> pull-up is too weak...
-
-It is a custom board (you'll see the board support soon) but those
-pullups are 47k same as NGW100 and STK1000.
-
-'scope confirms all the waveforms are crisp and correct.
-
+> There's at least 72 of them:
 > 
-> Haavard
+> $ grep -Pr --include=*.[ch] "\bprintk.*\\\n.*KERN_" *
+> 
+
+That should qualify it as a documented feature.  ;)
+"To convert the log level marker into visible garbage, do..."
+
+Mike
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
 
