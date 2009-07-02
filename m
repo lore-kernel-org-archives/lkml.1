@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZGBEgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbZGBFEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbZGBEgv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 00:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751098AbZGBEgm
+	id S1752957AbZGBFEK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 01:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZGBFD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 00:36:42 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:44922 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750850AbZGBEgl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 00:36:41 -0400
-Message-ID: <4A4C395A.3010607@snapgear.com>
-Date: Thu, 02 Jul 2009 14:36:42 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Steven King <sfking@fdwdc.com>
-CC: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH 00/13] revised Coldfire generic GPIO (mk68nommu)
-References: <1245460272-4329-1-git-send-email-sfking@fdwdc.com> <4A41C04F.6050909@snapgear.com> <200906241209.26199.sfking@fdwdc.com>
-In-Reply-To: <200906241209.26199.sfking@fdwdc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 01:03:58 -0400
+Received: from home.keithp.com ([63.227.221.253]:59945 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751210AbZGBFD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 01:03:57 -0400
+X-Greylist: delayed 420 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 01:03:57 EDT
+From: Keith Packard <keithp@keithp.com>
+To: linux-kernel@vger.kernel.org
+Cc: john@johnmccutchan.com, rlove@rlove.org, eparis@parisplace.org,
+       Keith Packard <keithp@keithp.com>
+Subject: [PATCH] fs/notify/inotify: decrement user inotify count on close
+Date: Wed,  1 Jul 2009 21:56:38 -0700
+Message-Id: <1246510598-6136-1-git-send-email-keithp@keithp.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+The per-user inotify_devs value is incremented each time a new file is
+allocated, but never decremented. This led to inotify_init failing after a
+limited number of calls.
 
-Steven King wrote:
-> On Tuesday 23 June 2009 10:57:35 Greg Ungerer wrote:
->> Hi Steven,
->>
->> This looks pretty good to me.
->> Do you want me to apply the the m68knommu git tree?
->> (Ideally I'll push it to Linus in the 2.6.32 merge window).
-> 
-> That would be great.  There are some things I'd like to add to this (support for 
-> pinmux, etc.) but that would be in the form of patches ontop of this.
+Signed-off-by: Keith Packard <keithp@keithp.com>
+---
+ fs/notify/inotify/inotify_user.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-I have pushed those patches into:
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index ff231ad..ff27a29 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -296,12 +296,15 @@ static int inotify_fasync(int fd, struct file *file, int on)
+ static int inotify_release(struct inode *ignored, struct file *file)
+ {
+ 	struct fsnotify_group *group = file->private_data;
++	struct user_struct *user = group->inotify_data.user;
+ 
+ 	fsnotify_clear_marks_by_group(group);
+ 
+ 	/* free this group, matching get was inotify_init->fsnotify_obtain_group */
+ 	fsnotify_put_group(group);
+ 
++	atomic_dec(&user->inotify_devs);
++
+ 	return 0;
+ }
+ 
+-- 
+1.6.3.1
 
-git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
-
-(and they are also in the "for-next" branch too).
-
-Regards
-Greg
-
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
