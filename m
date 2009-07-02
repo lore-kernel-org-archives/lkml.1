@@ -1,61 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZGBSqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZGBSwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZGBSqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZGBSpo
+	id S1753177AbZGBSwz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbZGBSwo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:45:44 -0400
-Received: from kroah.org ([198.145.64.141]:38300 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751532AbZGBSpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:45:43 -0400
-Date: Thu, 2 Jul 2009 11:31:49 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       Linux-Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: good example of a tty driver
-Message-ID: <20090702183149.GA11720@kroah.com>
-References: <D77CBB49-A340-4282-9ACF-2172D1BB9E43@kernel.crashing.org>
- <20090702192744.029620ae@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090702192744.029620ae@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 2 Jul 2009 14:52:44 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:58032 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbZGBSwn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:52:43 -0400
+X-Greylist: delayed 470 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 14:52:42 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=OKUoQEscrPzNFeUgL1/ZnBlM8xN+VDzc8slzsRJFCCpGWahpuq6MGAYedvPRi35N6A
+         lYdYRCF3ntnCQQyW1jBapusOVi5HLbnw2n5XEYNUveO8iRv8///HHxA72z24XoMucyu1
+         B4KqMSlOGUVT1LXkdQ18iEkBcEk2XUU38oiyY=
+From: David Kilroy <kilroyd@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, David Kilroy <kilroyd@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] check spinlock_t/rwlock_t argument type on non-SMP builds
+Date: Thu,  2 Jul 2009 19:44:51 +0100
+Message-Id: <1246560291-8104-1-git-send-email-kilroyd@googlemail.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 02, 2009 at 07:27:44PM +0100, Alan Cox wrote:
-> On Thu, 2 Jul 2009 11:48:09 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
-> 
-> > Alan,
-> > 
-> > Can you point me at any good drivers to use as an example of using the  
-> > tty layer.  I'm trying to get an out of tree driver brought up to date  
-> > for the Avocent ESP-16 MI Serial Hubs (serial over ethernet):
-> 
-> Its very much in flux with the drivers getting kref support, helper
-> functions and the like in the current releases.
-> 
-> > 
-> > http://www.connectivity.avocent.com/products/network-based/esp_16.asp
-> > 
-> > Thankfully the have a GPL driver but it was last updated against 2.6.23:
-> > 
-> > http://www.connectivity.avocent.com/drivers/esp_serial_hubs/dd64e069.asp
-> > 
-> > However I've never worked on any tty drivers so its a bit black magic  
-> > at this point.  I was hoping that an example would at least get me  
-> > able to bring the driver up to a point that we can get it into the  
-> > staging tree.
-> 
-> I would make it build, chuck it in the staging tree and go from there
+When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy to get
+the first argument to the spinlock/rwlock functions wrong. This is
+because the parameter is not actually used in this configuration.
 
-That sounds good to me as well.  Kumar, feel free to send me a patch :)
+Typically you will only find out it's wrong
+ * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
+ * after you've submitted your beautiful patch series.
 
-thanks,
+The first means a long wait, and the latter is a bit late.
 
-greg k-h
+Add typechecking on the first argument of these macro functions. Note
+that since the typecheck now references the variable, the explicit read
+is redundant and can be removed.
+
+This change causes compiler warnings in net/ipv4/route.c, as this passes
+NULL as the first argument in the UP configuration. Simply cast this.
+
+Signed-off-by: David Kilroy <kilroyd@googlemail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+
+I've checked the assembly and object output resulting from this change
+for x86. As far as I can tell there are only differences in the
+debugging symbols used to refer to some variables. The stripped objects
+which I checked are identical.
+
+I've also done an allyesconfig build (with various lock debugging
+options off to keep CONFIG_DEBUG_SPINLOCK off), and there are no extra
+compiler warnings (except those addressed in route.c).
+
+---
+ include/linux/spinlock_api_up.h |   90 +++++++++++++++++++-------------------
+ net/ipv4/route.c                |    2 +-
+ 2 files changed, 46 insertions(+), 46 deletions(-)
+
+diff --git a/include/linux/spinlock_api_up.h b/include/linux/spinlock_api_up.h
+index 04e1d31..7780138 100644
+--- a/include/linux/spinlock_api_up.h
++++ b/include/linux/spinlock_api_up.h
+@@ -24,58 +24,58 @@
+  * flags straight, to suppress compiler warnings of unused lock
+  * variables, and to add the proper checker annotations:
+  */
+-#define __LOCK(lock) \
+-  do { preempt_disable(); __acquire(lock); (void)(lock); } while (0)
++#define __LOCK(type, lock) \
++  do { typecheck(type*, lock); preempt_disable(); __acquire(lock); } while (0)
+ 
+-#define __LOCK_BH(lock) \
+-  do { local_bh_disable(); __LOCK(lock); } while (0)
++#define __LOCK_BH(type, lock) \
++  do { local_bh_disable(); __LOCK(type, lock); } while (0)
+ 
+-#define __LOCK_IRQ(lock) \
+-  do { local_irq_disable(); __LOCK(lock); } while (0)
++#define __LOCK_IRQ(type, lock) \
++  do { local_irq_disable(); __LOCK(type, lock); } while (0)
+ 
+-#define __LOCK_IRQSAVE(lock, flags) \
+-  do { local_irq_save(flags); __LOCK(lock); } while (0)
++#define __LOCK_IRQSAVE(type, lock, flags) \
++  do { local_irq_save(flags); __LOCK(type, lock); } while (0)
+ 
+-#define __UNLOCK(lock) \
+-  do { preempt_enable(); __release(lock); (void)(lock); } while (0)
++#define __UNLOCK(type, lock) \
++  do { typecheck(type*, lock); preempt_enable(); __release(lock); } while (0)
+ 
+-#define __UNLOCK_BH(lock) \
+-  do { preempt_enable_no_resched(); local_bh_enable(); __release(lock); (void)(lock); } while (0)
++#define __UNLOCK_BH(type, lock) \
++  do { typecheck(type*, lock); preempt_enable_no_resched(); local_bh_enable(); __release(lock); } while (0)
+ 
+-#define __UNLOCK_IRQ(lock) \
+-  do { local_irq_enable(); __UNLOCK(lock); } while (0)
++#define __UNLOCK_IRQ(type, lock) \
++  do { local_irq_enable(); __UNLOCK(type, lock); } while (0)
+ 
+-#define __UNLOCK_IRQRESTORE(lock, flags) \
+-  do { local_irq_restore(flags); __UNLOCK(lock); } while (0)
++#define __UNLOCK_IRQRESTORE(type, lock, flags) \
++  do { local_irq_restore(flags); __UNLOCK(type, lock); } while (0)
+ 
+-#define _spin_lock(lock)			__LOCK(lock)
+-#define _spin_lock_nested(lock, subclass)	__LOCK(lock)
+-#define _read_lock(lock)			__LOCK(lock)
+-#define _write_lock(lock)			__LOCK(lock)
+-#define _spin_lock_bh(lock)			__LOCK_BH(lock)
+-#define _read_lock_bh(lock)			__LOCK_BH(lock)
+-#define _write_lock_bh(lock)			__LOCK_BH(lock)
+-#define _spin_lock_irq(lock)			__LOCK_IRQ(lock)
+-#define _read_lock_irq(lock)			__LOCK_IRQ(lock)
+-#define _write_lock_irq(lock)			__LOCK_IRQ(lock)
+-#define _spin_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
+-#define _read_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
+-#define _write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
+-#define _spin_trylock(lock)			({ __LOCK(lock); 1; })
+-#define _read_trylock(lock)			({ __LOCK(lock); 1; })
+-#define _write_trylock(lock)			({ __LOCK(lock); 1; })
+-#define _spin_trylock_bh(lock)			({ __LOCK_BH(lock); 1; })
+-#define _spin_unlock(lock)			__UNLOCK(lock)
+-#define _read_unlock(lock)			__UNLOCK(lock)
+-#define _write_unlock(lock)			__UNLOCK(lock)
+-#define _spin_unlock_bh(lock)			__UNLOCK_BH(lock)
+-#define _write_unlock_bh(lock)			__UNLOCK_BH(lock)
+-#define _read_unlock_bh(lock)			__UNLOCK_BH(lock)
+-#define _spin_unlock_irq(lock)			__UNLOCK_IRQ(lock)
+-#define _read_unlock_irq(lock)			__UNLOCK_IRQ(lock)
+-#define _write_unlock_irq(lock)			__UNLOCK_IRQ(lock)
+-#define _spin_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
+-#define _read_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
+-#define _write_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
++#define _spin_lock(lock)			__LOCK(spinlock_t, lock)
++#define _spin_lock_nested(lock, subclass)	__LOCK(spinlock_t, lock)
++#define _read_lock(lock)			__LOCK(rwlock_t, lock)
++#define _write_lock(lock)			__LOCK(rwlock_t, lock)
++#define _spin_lock_bh(lock)			__LOCK_BH(spinlock_t, lock)
++#define _read_lock_bh(lock)			__LOCK_BH(rwlock_t, lock)
++#define _write_lock_bh(lock)			__LOCK_BH(rwlock_t, lock)
++#define _spin_lock_irq(lock)			__LOCK_IRQ(spinlock_t, lock)
++#define _read_lock_irq(lock)			__LOCK_IRQ(rwlock_t, lock)
++#define _write_lock_irq(lock)			__LOCK_IRQ(rwlock_t, lock)
++#define _spin_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(spinlock_t, lock, flags)
++#define _read_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(rwlock_t, lock, flags)
++#define _write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(rwlock_t, lock, flags)
++#define _spin_trylock(lock)			({ __LOCK(spinlock_t, lock); 1; })
++#define _read_trylock(lock)			({ __LOCK(rwlock_t, lock); 1; })
++#define _write_trylock(lock)			({ __LOCK(rwlock_t, lock); 1; })
++#define _spin_trylock_bh(lock)			({ __LOCK_BH(spinlock_t, lock); 1; })
++#define _spin_unlock(lock)			__UNLOCK(spinlock_t, lock)
++#define _read_unlock(lock)			__UNLOCK(rwlock_t, lock)
++#define _write_unlock(lock)			__UNLOCK(rwlock_t, lock)
++#define _spin_unlock_bh(lock)			__UNLOCK_BH(spinlock_t, lock)
++#define _write_unlock_bh(lock)			__UNLOCK_BH(rwlock_t, lock)
++#define _read_unlock_bh(lock)			__UNLOCK_BH(rwlock_t, lock)
++#define _spin_unlock_irq(lock)			__UNLOCK_IRQ(spinlock_t, lock)
++#define _read_unlock_irq(lock)			__UNLOCK_IRQ(rwlock_t, lock)
++#define _write_unlock_irq(lock)			__UNLOCK_IRQ(rwlock_t, lock)
++#define _spin_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(spinlock_t, lock, flags)
++#define _read_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(rwlock_t, lock, flags)
++#define _write_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(rwlock_t, lock, flags)
+ 
+ #endif /* __LINUX_SPINLOCK_API_UP_H */
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 28205e5..8edfffd 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -242,7 +242,7 @@ static __init void rt_hash_lock_init(void)
+ 		spin_lock_init(&rt_hash_locks[i]);
+ }
+ #else
+-# define rt_hash_lock_addr(slot) NULL
++# define rt_hash_lock_addr(slot) ((spinlock_t *) NULL)
+ 
+ static inline void rt_hash_lock_init(void)
+ {
+-- 
+1.6.0.6
+
