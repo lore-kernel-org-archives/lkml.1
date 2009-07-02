@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZGBKEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZGBKMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756043AbZGBKEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 06:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbZGBKD7
+	id S1754018AbZGBKMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 06:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZGBKML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 06:03:59 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:45700 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbZGBKD7 (ORCPT
+	Thu, 2 Jul 2009 06:12:11 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62648 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbZGBKMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 06:03:59 -0400
+	Thu, 2 Jul 2009 06:12:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GWui6hrWMLBH8VsR9jkQMhjNtNY4qupdObozhE1nuSGoOzkKfbvNc4loohb7FfxqY+
-         LJpATarBS9pLSKfB/nPxyb9A9dzkUrAEomwBBPuwDxwqhMRGRYlGMflsCq7IHipqNVnS
-         niRvbi2XxYNbc3Wz58Q+y+806NbBmagLLfOaI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YtTqiqDW7j6VMdMkwD3bxx0LsiXNgbYdCT3tq9eAitk4GwyCdV2l8CFdg8QXWP6T3r
+         beBBiWhfx2THq8u9KMXVnbXthPeWjw7URmUfjT0yotF3+OHwbPCf2N1nc5cOVHD3vEqU
+         O1jzoyNk/DzPL/1dbQWK0aIvQv0HzoCxC2Fy4=
+Date: Thu, 2 Jul 2009 10:12:07 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Patrick McHardy <kaber@trash.net>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (possibly
+	caused by netem)
+Message-ID: <20090702101207.GA7056@ff.dom.local>
+References: <4A4A9DD6.8060800@anarazel.de> <4A4BAD5F.7050908@gmail.com> <4A4BD384.3090407@anarazel.de> <4A4C0144.5070203@anarazel.de> <20090702093031.GC4954@ff.dom.local>
 MIME-Version: 1.0
-In-Reply-To: <20090702094620.GE6372@cr0.nay.redhat.com>
-References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com>
-	 <20090702091309.GB6372@cr0.nay.redhat.com>
-	 <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com>
-	 <20090702094620.GE6372@cr0.nay.redhat.com>
-Date: Thu, 2 Jul 2009 18:04:02 +0800
-Message-ID: <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-From: Changli Gao <xiaosuo@gmail.com>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090702093031.GC4954@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 2, 2009 at 5:46 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>Are you familiar with splice() and tee()? They both use pipes as kernel buffers.
->
-> You are not answering the question, obviously.
-When you use pipes as kernel buffer handlers, two fd isn't necessary.
-Using one will save half of fd resources. Is it obviously?
+On Thu, Jul 02, 2009 at 09:30:31AM +0000, Jarek Poplawski wrote:
+> On Thu, Jul 02, 2009 at 02:37:24AM +0200, Andres Freund wrote:
+> ...
+> > So I tried - and I did not catch any lockdep output before the crash.  
+> > Unfortunately I do not have another machine on the same local network to  
+> > catch any messages after the crash... So I could be missing some warning  
+> > (I did synchronous logging though).
+> > Will check with netconsole tomorrow.
+> 
+> Could you try if this patch changes anything?
 
->
-> And you snipped too much, how can you return that fd? Using the return value?
-one RW file descriptor is returned. I have answered this in the first post.
+...and maybe CONFIG_PACKET_MMAP turned off.
 
-> Ah! This will probably break the user-space program...
->
-I don't think so. As a skillful programmer, who will trasfter pipe() a
-NULL pointer? In any way, it is break sth, but not very seriously, and
-won't affact any right and robust program.
-
-
--- 
-Regards，
-Changli Gao(xiaosuo@gmail.com)
+Jarek P.
