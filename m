@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZGBHWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZGBHWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbZGBHWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbZGBHWD
+	id S1753414AbZGBHWc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZGBHWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 2 Jul 2009 03:22:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50100 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900AbZGBHWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 03:22:03 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:20708 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbZGBHWC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:22:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=urzjYvTYUwF+EfSocKrCHnEA1GcDpShMTIpC5Zv3QabzP+X20lJ2TuYaRIVCXgonA+
-         Y04TMJ7FjeDrXuSi5vJYE+Cl9+QyVk9EKiV4TxQKg41debT1xf44aQDwYU1xKWd7SXQL
-         4Ho9WNS6V22qJXYMrocKPoc+7BL69UdOusSxo=
-Message-ID: <4A4C6013.9090509@gmail.com>
-Date: Thu, 02 Jul 2009 15:21:55 +0800
-From: Changli Gao <xiaosuo@gmail.com>
-Reply-To: xiaosuo@gmail.com
-User-Agent: Thunderbird 2.0.0.21 (X11/20090505)
+Date: Thu, 2 Jul 2009 09:21:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       akpm@linux-foundation.org, arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Code atomic(64)_read and atomic(64)_set in C not
+	CPP [was Re: FRV: Implement atomic64_t]
+Message-ID: <20090702072157.GA11596@elte.hu>
+References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: xiaosuo <xiaosuo@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: PATCH: fd leak if pipe() is called with an invalid address.
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19019.59848.918621.635117@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fd leak if pipe() is called with an invalid address.
 
-Though -EFAULT is returned, the file descriptors opened by pipe() call
-are left open.
+* Paul Mackerras <paulus@samba.org> wrote:
 
-Signed-off-by: Changli Gao <xiaosuo@gmail.com>
-----
+> Occasionally we get bugs where atomic_read or atomic_set are used 
+> on atomic64_t variables or vice versa.  These bugs don't generate 
+> warnings on x86 because atomic_read and atomic_set are coded as 
+> macros rather than C functions, so we don't get any type-checking 
+> on their arguments; similarly for atomic64_read and atomic64_set 
+> in 64-bit kernels.
+> 
+> This converts them to C functions so that the arguments are 
+> type-checked and bugs like this will get caught more easily. It 
+> also converts atomic_cmpxchg and atomic_xchg, and atomic64_cmpxchg 
+> and atomic64_xchg on 64-bit, so we get type-checking on their 
+> arguments too.
+> 
+> Compiling a typical 64-bit x86 config, this generates no new 
+> warnings, and the vmlinux text is 86 bytes smaller.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
 
- x86/ia32/sys_ia32.c     |    5 ++++-
- xtensa/kernel/syscall.c |    5 ++++-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+Thanks Paul!
 
+> ---
+> Linus Torvalds writes:
+> 
+> > Btw, Ingo: I looked at the x86-32 versions to be sure, and noticed a 
+> > couple of buglets:
+> > 
+> >  - atomic64_xchg uses "atomic_read()". Sure, it happens to work, since 
+> >    the "atomic_read()" is not type-safe, and gets a non-atomic 64-bit 
+> >    read, but that looks really really bogus.
+> > 
+> >    It _should_ use __atomic64_read(), and the 64-bit versions should use a 
+> >    different counter name ("counter64"?) or we should use an inline 
+> >    function for atomic_read(), so that the type safety issue gets fixed.
+> 
+> I did this patch a few weeks ago (before the merge window) and 
+> sent it to Ingo, Thomas & Peter, but it seems to have got lost.
 
---- arch/x86/ia32/sys_ia32.c.orig	2009-07-02 15:08:39.000000000 +0800
-+++ arch/x86/ia32/sys_ia32.c	2009-07-02 15:09:49.000000000 +0800
-@@ -197,8 +197,11 @@
- 	retval = do_pipe_flags(fds, 0);
- 	if (retval)
- 		goto out;
--	if (copy_to_user(fd, fds, sizeof(fds)))
-+	if (copy_to_user(fd, fds, sizeof(fds))) {
-+		sys_close(fd[0]);
-+		sys_close(fd[1]);
- 		retval = -EFAULT;
-+	}
- out:
- 	return retval;
- }
---- arch/xtensa/kernel/syscall.c.orig	2009-07-02 15:09:01.000000000 +0800
-+++ arch/xtensa/kernel/syscall.c	2009-07-02 15:10:15.000000000 +0800
-@@ -51,8 +51,11 @@
- 
- 	error = do_pipe_flags(fd, 0);
- 	if (!error) {
--		if (copy_to_user(userfds, fd, 2 * sizeof(int)))
-+		if (copy_to_user(userfds, fd, 2 * sizeof(int))) {
-+			sys_close(fd[0]);
-+			sys_close(fd[1]);
- 			error = -EFAULT;
-+		}
- 	}
- 	return error;
- }
+Yeah, as i noted back then off-list i didnt take it due to it 
+causing a criss-cross merge:
 
+| > Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+|
+| Nice - could someone please remind us later in the merge window to 
+| have a look at this again? Right now this needs to go into 
+| perfcounters/core - but i'd like to avoid having to do too many 
+| cross-changes there.
+
+Linus reminded us ;-)
+
+        Ingo
