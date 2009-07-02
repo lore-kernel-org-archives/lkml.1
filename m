@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZGBUIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757030AbZGBUHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZGBUIb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 16:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945AbZGBUDu
+	id S1757030AbZGBUHI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 16:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755946AbZGBUDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 16:03:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53066 "EHLO mx2.redhat.com"
+	Thu, 2 Jul 2009 16:03:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53050 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755626AbZGBUDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 16:03:25 -0400
+	id S1755361AbZGBUDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 16:03:18 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -20,968 +20,962 @@ To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
 Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 02/25] io-controller: Core of the B-WF2Q+ scheduler
-Date: Thu,  2 Jul 2009 16:01:34 -0400
-Message-Id: <1246564917-19603-3-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 19/25] blkio_cgroup patches from Ryo to track async bios.
+Date: Thu,  2 Jul 2009 16:01:51 -0400
+Message-Id: <1246564917-19603-20-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
 References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is core of the BFQ(B-WF2Q+) scheduler originally implemented by Paolo and
-Fabio in BFQ patches. Since then I have taken relevant pieces from BFQ and
-continued the work on IO controller. It is not the full patch. Just pulled out
-the some bits to show how core scheduler looks like and it becomes easier to
-review.
+o blkio_cgroup patches from Ryo to track async bios.
 
-Originally BFQ code was hierarchical. This patch only shows non-hierarchical
-bits. Hierarhical code comes in later patches.
+o Fernando is also working on another IO tracking mechanism. We are not
+  particular about any IO tracking mechanism. This patchset can make use
+  of any mechanism which makes it to upstream. For the time being making
+  use of Ryo's posting.
 
-This code is the building base of introducing fair queuing logic in common
-elevator layer so that it can be used by all the four IO schedulers. In
-later patches, CFQ's weighted round robin scheduler will be replaced with
-B-WF2Q+ scheduler.
-
-Also note that BFQ originally provided fairness in-terms of number of
-sectors of IO done by the queue. It has been modified to provide fairness
-in terms of disk time (like CFQ allocate disk time slices proportionate to
-prio/weight).
-
-B-WF2Q+ is based on WF2Q+, that is described in [2], together with
-H-WF2Q+, while the augmented tree used to implement B-WF2Q+ with O(log N)
-complexity derives from the one introduced with EEVDF in [3].
-
-[1] P. Valente and F. Checconi, ``High Throughput Disk Scheduling
-    with Deterministic Guarantees on Bandwidth Distribution,'' to be
-    published.
-
-    http://algo.ing.unimo.it/people/paolo/disk_sched/bfq.pdf
-
-[2] Jon C.R. Bennett and H. Zhang, ``Hierarchical Packet Fair Queueing
-    Algorithms,'' IEEE/ACM Transactions on Networking, 5(5):675-689,
-    Oct 1997.
-
-    http://www.cs.cmu.edu/~hzhang/papers/TON-97-Oct.ps.gz
-
-[3] I. Stoica and H. Abdel-Wahab, ``Earliest Eligible Virtual Deadline
-    First: A Flexible and Accurate Mechanism for Proportional Share
-    Resource Allocation,'' technical report.
-
-    http://www.cs.berkeley.edu/~istoica/papers/eevdf-tr-95.pdf
-
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+Based on 2.6.30-rc3-git3
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 ---
- block/elevator-fq.c |  717 +++++++++++++++++++++++++++++++++++++++++++++++++++
- block/elevator-fq.h |  172 ++++++++++++
- 2 files changed, 889 insertions(+), 0 deletions(-)
- create mode 100644 block/elevator-fq.c
- create mode 100644 block/elevator-fq.h
+ block/blk-ioc.c               |   36 +++--
+ fs/buffer.c                   |    2 +
+ fs/direct-io.c                |    2 +
+ include/linux/biotrack.h      |  103 +++++++++++++
+ include/linux/cgroup_subsys.h |    6 +
+ include/linux/iocontext.h     |    1 +
+ include/linux/memcontrol.h    |    6 +
+ include/linux/mmzone.h        |    4 +-
+ include/linux/page_cgroup.h   |   31 ++++-
+ init/Kconfig                  |   15 ++
+ mm/Makefile                   |    4 +-
+ mm/biotrack.c                 |  321 +++++++++++++++++++++++++++++++++++++++++
+ mm/bounce.c                   |    2 +
+ mm/filemap.c                  |    2 +
+ mm/memcontrol.c               |    6 +
+ mm/memory.c                   |    5 +
+ mm/page-writeback.c           |    2 +
+ mm/page_cgroup.c              |   17 ++-
+ mm/swap_state.c               |    2 +
+ 19 files changed, 537 insertions(+), 30 deletions(-)
+ create mode 100644 include/linux/biotrack.h
+ create mode 100644 mm/biotrack.c
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index 0d56336..890d475 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -84,27 +84,31 @@ void exit_io_context(void)
+ 	}
+ }
+ 
++void init_io_context(struct io_context *ioc)
++{
++	atomic_long_set(&ioc->refcount, 1);
++	atomic_set(&ioc->nr_tasks, 1);
++	spin_lock_init(&ioc->lock);
++	ioc->ioprio_changed = 0;
++	ioc->ioprio = 0;
++#ifdef CONFIG_GROUP_IOSCHED
++	ioc->cgroup_changed = 0;
++#endif
++	ioc->last_waited = jiffies; /* doesn't matter... */
++	ioc->nr_batch_requests = 0; /* because this is 0 */
++	ioc->aic = NULL;
++	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
++	INIT_HLIST_HEAD(&ioc->cic_list);
++	ioc->ioc_data = NULL;
++}
++
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ {
+ 	struct io_context *ret;
+ 
+ 	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+-	if (ret) {
+-		atomic_long_set(&ret->refcount, 1);
+-		atomic_set(&ret->nr_tasks, 1);
+-		spin_lock_init(&ret->lock);
+-		ret->ioprio_changed = 0;
+-		ret->ioprio = 0;
+-#ifdef CONFIG_GROUP_IOSCHED
+-		ret->cgroup_changed = 0;
+-#endif
+-		ret->last_waited = jiffies; /* doesn't matter... */
+-		ret->nr_batch_requests = 0; /* because this is 0 */
+-		ret->aic = NULL;
+-		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+-		INIT_HLIST_HEAD(&ret->cic_list);
+-		ret->ioc_data = NULL;
+-	}
++	if (ret)
++		init_io_context(ret);
+ 
+ 	return ret;
+ }
+diff --git a/fs/buffer.c b/fs/buffer.c
+index a3ef091..cb68608 100644
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -36,6 +36,7 @@
+ #include <linux/buffer_head.h>
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/bio.h>
++#include <linux/biotrack.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/bitops.h>
+@@ -668,6 +669,7 @@ static void __set_page_dirty(struct page *page,
+ 	if (page->mapping) {	/* Race with truncate? */
+ 		WARN_ON_ONCE(warn && !PageUptodate(page));
+ 		account_page_dirtied(page, mapping);
++		blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 		radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 	}
+diff --git a/fs/direct-io.c b/fs/direct-io.c
+index 8b10b87..185ba0a 100644
+--- a/fs/direct-io.c
++++ b/fs/direct-io.c
+@@ -33,6 +33,7 @@
+ #include <linux/err.h>
+ #include <linux/blkdev.h>
+ #include <linux/buffer_head.h>
++#include <linux/biotrack.h>
+ #include <linux/rwsem.h>
+ #include <linux/uio.h>
+ #include <asm/atomic.h>
+@@ -797,6 +798,7 @@ static int do_direct_IO(struct dio *dio)
+ 			ret = PTR_ERR(page);
+ 			goto out;
+ 		}
++		blkio_cgroup_reset_owner(page, current->mm);
+ 
+ 		while (block_in_page < blocks_per_page) {
+ 			unsigned offset_in_page = block_in_page << blkbits;
+diff --git a/include/linux/biotrack.h b/include/linux/biotrack.h
 new file mode 100644
-index 0000000..a58efdc
+index 0000000..0b4491a
 --- /dev/null
-+++ b/block/elevator-fq.c
-@@ -0,0 +1,717 @@
++++ b/include/linux/biotrack.h
+@@ -0,0 +1,103 @@
++#include <linux/cgroup.h>
++#include <linux/mm.h>
++#include <linux/page_cgroup.h>
++
++#ifndef _LINUX_BIOTRACK_H
++#define _LINUX_BIOTRACK_H
++
++#ifdef	CONFIG_CGROUP_BLKIO
++
++struct io_context;
++struct block_device;
++
++struct blkio_cgroup {
++	struct cgroup_subsys_state css;
++	struct io_context *io_context;	/* default io_context */
++/*	struct radix_tree_root io_context_root; per device io_context */
++};
++
++/**
++ * __init_blkio_page_cgroup() - initialize a blkio_page_cgroup
++ * @pc:		page_cgroup of the page
++ *
++ * Reset the owner ID of a page.
++ */
++static inline void __init_blkio_page_cgroup(struct page_cgroup *pc)
++{
++	lock_page_cgroup(pc);
++	page_cgroup_set_id(pc, 0);
++	unlock_page_cgroup(pc);
++}
++
++/**
++ * blkio_cgroup_disabled - check whether blkio_cgroup is disabled
++ *
++ * Returns true if disabled, false if not.
++ */
++static inline bool blkio_cgroup_disabled(void)
++{
++	if (blkio_cgroup_subsys.disabled)
++		return true;
++	return false;
++}
++
++extern void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm);
++extern void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm);
++extern void blkio_cgroup_reset_owner_pagedirty(struct page *page,
++						 struct mm_struct *mm);
++extern void blkio_cgroup_copy_owner(struct page *page, struct page *opage);
++
++extern struct io_context *get_blkio_cgroup_iocontext(struct bio *bio);
++extern unsigned long get_blkio_cgroup_id(struct bio *bio);
++extern unsigned long get_blkio_cgroup_id_page(struct page *page);
++extern struct cgroup *blkio_cgroup_lookup(int id);
++
++#else	/* CONFIG_CGROUP_BIO */
++
++struct blkio_cgroup;
++
++static inline void __init_blkio_page_cgroup(struct page_cgroup *pc)
++{
++}
++
++static inline bool blkio_cgroup_disabled(void)
++{
++	return true;
++}
++
++static inline void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
++{
++}
++
++static inline void blkio_cgroup_reset_owner(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void blkio_cgroup_reset_owner_pagedirty(struct page *page,
++						struct mm_struct *mm)
++{
++}
++
++static inline void blkio_cgroup_copy_owner(struct page *page, struct page *opage)
++{
++}
++
++static inline struct io_context *get_blkio_cgroup_iocontext(struct bio *bio)
++{
++	return NULL;
++}
++
++static inline unsigned long get_blkio_cgroup_id(struct bio *bio)
++{
++	return 0;
++}
++
++static inline unsigned long get_blkio_cgroup_id_page(struct page *page)
++{
++	return 0;
++}
++
++#endif	/* CONFIG_CGROUP_BLKIO */
++
++#endif /* _LINUX_BIOTRACK_H */
+diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+index baf544f..78504f3 100644
+--- a/include/linux/cgroup_subsys.h
++++ b/include/linux/cgroup_subsys.h
+@@ -43,6 +43,12 @@ SUBSYS(mem_cgroup)
+ 
+ /* */
+ 
++#ifdef CONFIG_CGROUP_BLKIO
++SUBSYS(blkio_cgroup)
++#endif
++
++/* */
++
+ #ifdef CONFIG_CGROUP_DEVICE
+ SUBSYS(devices)
+ #endif
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index ccecf53..c595842 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -104,6 +104,7 @@ int put_io_context(struct io_context *ioc);
+ void exit_io_context(void);
+ struct io_context *get_io_context(gfp_t gfp_flags, int node);
+ struct io_context *alloc_io_context(gfp_t gfp_flags, int node);
++void init_io_context(struct io_context *ioc);
+ void copy_io_context(struct io_context **pdst, struct io_context **psrc);
+ #else
+ static inline void exit_io_context(void)
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index e46a073..eb45fe9 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -37,6 +37,8 @@ struct mm_struct;
+  * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
+  */
+ 
++extern void __init_mem_page_cgroup(struct page_cgroup *pc);
++
+ extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ /* for swap handling */
+@@ -121,6 +123,10 @@ void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
++static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++}
++
+ static inline int mem_cgroup_newpage_charge(struct page *page,
+ 					struct mm_struct *mm, gfp_t gfp_mask)
+ {
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 8895985..c9d1ed4 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -605,7 +605,7 @@ typedef struct pglist_data {
+ 	int nr_zones;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+ 	struct page *node_mem_map;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	struct page_cgroup *node_page_cgroup;
+ #endif
+ #endif
+@@ -956,7 +956,7 @@ struct mem_section {
+ 
+ 	/* See declaration of similar field in struct zone */
+ 	unsigned long *pageblock_flags;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	/*
+ 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+ 	 * section. (see memcontrol.h/page_cgroup.h about this.)
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 13f126c..f470fd2 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -1,7 +1,7 @@
+ #ifndef __LINUX_PAGE_CGROUP_H
+ #define __LINUX_PAGE_CGROUP_H
+ 
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ #include <linux/bit_spinlock.h>
+ /*
+  * Page Cgroup can be considered as an extended mem_map.
+@@ -12,9 +12,11 @@
+  */
+ struct page_cgroup {
+ 	unsigned long flags;
+-	struct mem_cgroup *mem_cgroup;
+ 	struct page *page;
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++	struct mem_cgroup *mem_cgroup;
+ 	struct list_head lru;		/* per cgroup LRU list */
++#endif
+ };
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat);
+@@ -83,7 +85,7 @@ static inline void unlock_page_cgroup(struct page_cgroup *pc)
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
+-#else /* CONFIG_CGROUP_MEM_RES_CTLR */
++#else /* CONFIG_CGROUP_PAGE */
+ struct page_cgroup;
+ 
+ static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+@@ -138,4 +140,27 @@ static inline void swap_cgroup_swapoff(int type)
+ }
+ 
+ #endif
++
++#ifdef CONFIG_CGROUP_BLKIO
 +/*
-+ * elevator fair queuing Layer. Uses B-WF2Q+ hierarchical scheduler for
-+ * fair queuing.
++ * use lower 16 bits for flags and reserve the rest for the page tracking id
++ */
++#define PCG_TRACKING_ID_SHIFT	(16)
++#define PCG_TRACKING_ID_BITS \
++	(8 * sizeof(unsigned long) - PCG_TRACKING_ID_SHIFT)
++
++/* NOTE: must be called with page_cgroup() held */
++static inline unsigned long page_cgroup_get_id(struct page_cgroup *pc)
++{
++	return pc->flags >> PCG_TRACKING_ID_SHIFT;
++}
++
++/* NOTE: must be called with page_cgroup() held */
++static inline void page_cgroup_set_id(struct page_cgroup *pc, unsigned long id)
++{
++	WARN_ON(id >= (1UL << PCG_TRACKING_ID_BITS));
++	pc->flags &= (1UL << PCG_TRACKING_ID_SHIFT) - 1;
++	pc->flags |= (unsigned long)(id << PCG_TRACKING_ID_SHIFT);
++}
++#endif
+ #endif
+diff --git a/init/Kconfig b/init/Kconfig
+index eaa44db..1241018 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -622,6 +622,21 @@ config GROUP_IOSCHED
+ 
+ endif # CGROUPS
+ 
++config CGROUP_BLKIO
++	bool "Block I/O cgroup subsystem"
++	depends on CGROUPS && BLOCK
++	select MM_OWNER
++	help
++	  Provides a Resource Controller which enables to track the onwner
++	  of every Block I/O requests.
++	  The information this subsystem provides can be used from any
++	  kind of module such as dm-ioband device mapper modules or
++	  the cfq-scheduler.
++
++config CGROUP_PAGE
++	def_bool y
++	depends on CGROUP_MEM_RES_CTLR || CGROUP_BLKIO
++
+ config MM_OWNER
+ 	bool
+ 
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..6208744 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -39,6 +39,8 @@ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+-obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
++obj-$(CONFIG_CGROUP_BLKIO) += biotrack.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
+diff --git a/mm/biotrack.c b/mm/biotrack.c
+new file mode 100644
+index 0000000..320f511
+--- /dev/null
++++ b/mm/biotrack.c
+@@ -0,0 +1,321 @@
++/* biotrack.c - Block I/O Tracking
 + *
-+ * Based on ideas and code from CFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
++ * Copyright (C) VA Linux Systems Japan, 2008-2009
++ * Developed by Hirokazu Takahashi <taka@valinux.co.jp>
 + *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
++ * Copyright (C) 2008 Andrea Righi <righi.andrea@gmail.com>
++ * Use part of page_cgroup->flags to store blkio-cgroup ID.
 + *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
 +
++#include <linux/module.h>
++#include <linux/smp.h>
++#include <linux/bit_spinlock.h>
 +#include <linux/blkdev.h>
-+#include "elevator-fq.h"
-+
-+#define IO_SERVICE_TREE_INIT   ((struct io_service_tree)		\
-+				{ RB_ROOT, RB_ROOT, NULL, NULL, 0, 0 })
-+
-+/* Mainly the BFQ scheduling code Follows */
++#include <linux/biotrack.h>
++#include <linux/mm_inline.h>
 +
 +/*
-+ * Shift for timestamp calculations.  This actually limits the maximum
-+ * service allowed in one timestamp delta (small shift values increase it),
-+ * the maximum total weight that can be used for the queues in the system
-+ * (big shift values increase it), and the period of virtual time wraparounds.
++ * The block I/O tracking mechanism is implemented on the cgroup memory
++ * controller framework. It helps to find the the owner of an I/O request
++ * because every I/O request has a target page and the owner of the page
++ * can be easily determined on the framework.
 + */
-+#define WFQ_SERVICE_SHIFT	22
++
++/* Return the blkio_cgroup that associates with a cgroup. */
++static inline struct blkio_cgroup *cgroup_blkio(struct cgroup *cgrp)
++{
++	return container_of(cgroup_subsys_state(cgrp, blkio_cgroup_subsys_id),
++					struct blkio_cgroup, css);
++}
++
++/* Return the blkio_cgroup that associates with a process. */
++static inline struct blkio_cgroup *blkio_cgroup_from_task(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, blkio_cgroup_subsys_id),
++					struct blkio_cgroup, css);
++}
++
++static struct io_context default_blkio_io_context;
++static struct blkio_cgroup default_blkio_cgroup = {
++	.io_context	= &default_blkio_io_context,
++};
 +
 +/**
-+ * bfq_gt - compare two timestamps.
-+ * @a: first ts.
-+ * @b: second ts.
++ * blkio_cgroup_set_owner() - set the owner ID of a page.
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
 + *
-+ * Return @a > @b, dealing with wrapping correctly.
++ * Make a given page have the blkio-cgroup ID of the owner of this page.
 + */
-+static inline int bfq_gt(u64 a, u64 b)
++void blkio_cgroup_set_owner(struct page *page, struct mm_struct *mm)
 +{
-+	return (s64)(a - b) > 0;
-+}
++	struct blkio_cgroup *biog;
++	struct page_cgroup *pc;
++	unsigned long id;
 +
-+/**
-+ * bfq_delta - map service into the virtual time domain.
-+ * @service: amount of service.
-+ * @weight: scale factor.
-+ */
-+static inline u64 bfq_delta(unsigned long service, unsigned int weight)
-+{
-+	u64 d = (u64)service << WFQ_SERVICE_SHIFT;
-+
-+	do_div(d, weight);
-+	return d;
-+}
-+
-+/**
-+ * bfq_calc_finish - assign the finish time to an entity.
-+ * @entity: the entity to act upon.
-+ * @service: the service to be charged to the entity.
-+ */
-+static inline void bfq_calc_finish(struct io_entity *entity,
-+					unsigned long service)
-+{
-+	BUG_ON(entity->weight == 0);
-+
-+	entity->finish = entity->start + bfq_delta(service, entity->weight);
-+}
-+
-+static inline struct io_queue *io_entity_to_ioq(struct io_entity *entity)
-+{
-+	struct io_queue *ioq = NULL;
-+
-+	BUG_ON(entity == NULL);
-+	if (entity->my_sched_data == NULL)
-+		ioq = container_of(entity, struct io_queue, entity);
-+	return ioq;
-+}
-+
-+/**
-+ * io_entity_of - get an entity from a node.
-+ * @node: the node field of the entity.
-+ *
-+ * Convert a node pointer to the relative entity.  This is used only
-+ * to simplify the logic of some functions and not as the generic
-+ * conversion mechanism because, e.g., in the tree walking functions,
-+ * the check for a %NULL value would be redundant.
-+ */
-+static inline struct io_entity *io_entity_of(struct rb_node *node)
-+{
-+	struct io_entity *entity = NULL;
-+
-+	if (node != NULL)
-+		entity = rb_entry(node, struct io_entity, rb_node);
-+
-+	return entity;
-+}
-+
-+/**
-+ * bfq_remove - remove an entity from a tree.
-+ * @root: the tree root.
-+ * @entity: the entity to remove.
-+ */
-+static inline void bfq_remove(struct rb_root *root, struct io_entity *entity)
-+{
-+	BUG_ON(entity->tree != root);
-+
-+	entity->tree = NULL;
-+	rb_erase(&entity->rb_node, root);
-+}
-+
-+/**
-+ * bfq_idle_remove - remove an entity from the idle tree.
-+ * @st: the service tree of the owning @entity.
-+ * @entity: the entity being removed.
-+ */
-+static void bfq_idle_remove(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct rb_node *next;
-+
-+	BUG_ON(entity->tree != &st->idle);
-+
-+	if (entity == st->first_idle) {
-+		next = rb_next(&entity->rb_node);
-+		st->first_idle = io_entity_of(next);
-+	}
-+
-+	if (entity == st->last_idle) {
-+		next = rb_prev(&entity->rb_node);
-+		st->last_idle = io_entity_of(next);
-+	}
-+
-+	bfq_remove(&st->idle, entity);
-+}
-+
-+/**
-+ * bfq_insert - generic tree insertion.
-+ * @root: tree root.
-+ * @entity: entity to insert.
-+ *
-+ * This is used for the idle and the active tree, since they are both
-+ * ordered by finish time.
-+ */
-+static void bfq_insert(struct rb_root *root, struct io_entity *entity)
-+{
-+	struct io_entity *entry;
-+	struct rb_node **node = &root->rb_node;
-+	struct rb_node *parent = NULL;
-+
-+	BUG_ON(entity->tree != NULL);
-+
-+	while (*node != NULL) {
-+		parent = *node;
-+		entry = rb_entry(parent, struct io_entity, rb_node);
-+
-+		if (bfq_gt(entry->finish, entity->finish))
-+			node = &parent->rb_left;
-+		else
-+			node = &parent->rb_right;
-+	}
-+
-+	rb_link_node(&entity->rb_node, parent, node);
-+	rb_insert_color(&entity->rb_node, root);
-+
-+	entity->tree = root;
-+}
-+
-+/**
-+ * bfq_update_min - update the min_start field of a entity.
-+ * @entity: the entity to update.
-+ * @node: one of its children.
-+ *
-+ * This function is called when @entity may store an invalid value for
-+ * min_start due to updates to the active tree.  The function  assumes
-+ * that the subtree rooted at @node (which may be its left or its right
-+ * child) has a valid min_start value.
-+ */
-+static inline void bfq_update_min(struct io_entity *entity,
-+					struct rb_node *node)
-+{
-+	struct io_entity *child;
-+
-+	if (node != NULL) {
-+		child = rb_entry(node, struct io_entity, rb_node);
-+		if (bfq_gt(entity->min_start, child->min_start))
-+			entity->min_start = child->min_start;
-+	}
-+}
-+
-+/**
-+ * bfq_update_active_node - recalculate min_start.
-+ * @node: the node to update.
-+ *
-+ * @node may have changed position or one of its children may have moved,
-+ * this function updates its min_start value.  The left and right subtrees
-+ * are assumed to hold a correct min_start value.
-+ */
-+static inline void bfq_update_active_node(struct rb_node *node)
-+{
-+	struct io_entity *entity = rb_entry(node, struct io_entity, rb_node);
-+
-+	entity->min_start = entity->start;
-+	bfq_update_min(entity, node->rb_right);
-+	bfq_update_min(entity, node->rb_left);
-+}
-+
-+/**
-+ * bfq_update_active_tree - update min_start for the whole active tree.
-+ * @node: the starting node.
-+ *
-+ * @node must be the deepest modified node after an update.  This function
-+ * updates its min_start using the values held by its children, assuming
-+ * that they did not change, and then updates all the nodes that may have
-+ * changed in the path to the root.  The only nodes that may have changed
-+ * are the ones in the path or their siblings.
-+ */
-+static void bfq_update_active_tree(struct rb_node *node)
-+{
-+	struct rb_node *parent;
-+
-+up:
-+	bfq_update_active_node(node);
-+
-+	parent = rb_parent(node);
-+	if (parent == NULL)
++	if (blkio_cgroup_disabled())
++		return;
++	pc = lookup_page_cgroup(page);
++	if (unlikely(!pc))
 +		return;
 +
-+	if (node == parent->rb_left && parent->rb_right != NULL)
-+		bfq_update_active_node(parent->rb_right);
-+	else if (parent->rb_left != NULL)
-+		bfq_update_active_node(parent->rb_left);
-+
-+	node = parent;
-+	goto up;
-+}
-+
-+/**
-+ * bfq_active_insert - insert an entity in the active tree of its group/device.
-+ * @st: the service tree of the entity.
-+ * @entity: the entity being inserted.
-+ *
-+ * The active tree is ordered by finish time, but an extra key is kept
-+ * per each node, containing the minimum value for the start times of
-+ * its children (and the node itself), so it's possible to search for
-+ * the eligible node with the lowest finish time in logarithmic time.
-+ */
-+static void bfq_active_insert(struct io_service_tree *st,
-+					struct io_entity *entity)
-+{
-+	struct rb_node *node = &entity->rb_node;
-+
-+	bfq_insert(&st->active, entity);
-+
-+	if (node->rb_left != NULL)
-+		node = node->rb_left;
-+	else if (node->rb_right != NULL)
-+		node = node->rb_right;
-+
-+	bfq_update_active_tree(node);
-+}
-+
-+static void bfq_get_entity(struct io_entity *entity)
-+{
-+	struct io_queue *ioq = io_entity_to_ioq(entity);
-+
-+	if (ioq)
-+		elv_get_ioq(ioq);
-+}
-+
-+static void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
-+{
-+	entity->ioprio = entity->new_ioprio;
-+	entity->ioprio_class = entity->new_ioprio_class;
-+	entity->sched_data = &iog->sched_data;
-+}
-+
-+/**
-+ * bfq_find_deepest - find the deepest node that an extraction can modify.
-+ * @node: the node being removed.
-+ *
-+ * Do the first step of an extraction in an rb tree, looking for the
-+ * node that will replace @node, and returning the deepest node that
-+ * the following modifications to the tree can touch.  If @node is the
-+ * last node in the tree return %NULL.
-+ */
-+static struct rb_node *bfq_find_deepest(struct rb_node *node)
-+{
-+	struct rb_node *deepest;
-+
-+	if (node->rb_right == NULL && node->rb_left == NULL)
-+		deepest = rb_parent(node);
-+	else if (node->rb_right == NULL)
-+		deepest = node->rb_left;
-+	else if (node->rb_left == NULL)
-+		deepest = node->rb_right;
-+	else {
-+		deepest = rb_next(node);
-+		if (deepest->rb_right != NULL)
-+			deepest = deepest->rb_right;
-+		else if (rb_parent(deepest) != node)
-+			deepest = rb_parent(deepest);
-+	}
-+
-+	return deepest;
-+}
-+
-+/**
-+ * bfq_active_remove - remove an entity from the active tree.
-+ * @st: the service_tree containing the tree.
-+ * @entity: the entity being removed.
-+ */
-+static void bfq_active_remove(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct rb_node *node;
-+
-+	node = bfq_find_deepest(&entity->rb_node);
-+	bfq_remove(&st->active, entity);
-+
-+	if (node != NULL)
-+		bfq_update_active_tree(node);
-+}
-+
-+/**
-+ * bfq_idle_insert - insert an entity into the idle tree.
-+ * @st: the service tree containing the tree.
-+ * @entity: the entity to insert.
-+ */
-+static void bfq_idle_insert(struct io_service_tree *st,
-+					struct io_entity *entity)
-+{
-+	struct io_entity *first_idle = st->first_idle;
-+	struct io_entity *last_idle = st->last_idle;
-+
-+	if (first_idle == NULL || bfq_gt(first_idle->finish, entity->finish))
-+		st->first_idle = entity;
-+	if (last_idle == NULL || bfq_gt(entity->finish, last_idle->finish))
-+		st->last_idle = entity;
-+
-+	bfq_insert(&st->idle, entity);
-+}
-+
-+/**
-+ * bfq_forget_entity - remove an entity from the wfq trees.
-+ * @st: the service tree.
-+ * @entity: the entity being removed.
-+ *
-+ * Update the device status and forget everything about @entity, putting
-+ * the device reference to it, if it is a queue.  Entities belonging to
-+ * groups are not refcounted.
-+ */
-+static void bfq_forget_entity(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct io_queue *ioq = NULL;
-+
-+	BUG_ON(!entity->on_st);
-+	entity->on_st = 0;
-+	st->wsum -= entity->weight;
-+	ioq = io_entity_to_ioq(entity);
-+	if (!ioq)
++	lock_page_cgroup(pc);
++	page_cgroup_set_id(pc, 0);	/* 0: default blkio_cgroup id */
++	unlock_page_cgroup(pc);
++	if (!mm)
 +		return;
-+	elv_put_ioq(ioq);
++
++	rcu_read_lock();
++	biog = blkio_cgroup_from_task(rcu_dereference(mm->owner));
++	if (unlikely(!biog)) {
++		rcu_read_unlock();
++		return;
++	}
++	/*
++	 * css_get(&bio->css) isn't called to increment the reference
++	 * count of this blkio_cgroup "biog" so the css_id might turn
++	 * invalid even if this page is still active.
++	 * This approach is chosen to minimize the overhead.
++	 */
++	id = css_id(&biog->css);
++	rcu_read_unlock();
++	lock_page_cgroup(pc);
++	page_cgroup_set_id(pc, id);
++	unlock_page_cgroup(pc);
 +}
 +
 +/**
-+ * bfq_put_idle_entity - release the idle tree ref of an entity.
-+ * @st: service tree for the entity.
-+ * @entity: the entity being released.
-+ */
-+static void bfq_put_idle_entity(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	bfq_idle_remove(st, entity);
-+	bfq_forget_entity(st, entity);
-+}
-+
-+/**
-+ * bfq_forget_idle - update the idle tree if necessary.
-+ * @st: the service tree to act upon.
++ * blkio_cgroup_reset_owner() - reset the owner ID of a page
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
 + *
-+ * To preserve the global O(log N) complexity we only remove one entry here;
-+ * as the idle tree will not grow indefinitely this can be done safely.
++ * Change the owner of a given page if necessary.
 + */
-+static void bfq_forget_idle(struct io_service_tree *st)
++void blkio_cgroup_reset_owner(struct page *page, struct mm_struct *mm)
 +{
-+	struct io_entity *first_idle = st->first_idle;
-+	struct io_entity *last_idle = st->last_idle;
++	blkio_cgroup_set_owner(page, mm);
++}
 +
-+	if (RB_EMPTY_ROOT(&st->active) && last_idle != NULL &&
-+	    !bfq_gt(last_idle->finish, st->vtime)) {
-+		/*
-+		 * Active tree is empty. Pull back vtime to finish time of
-+		 * last idle entity on idle tree.
-+		 * Rational seems to be that it reduces the possibility of
-+		 * vtime wraparound (bfq_gt(V-F) < 0).
-+		 */
-+		st->vtime = last_idle->finish;
++/**
++ * blkio_cgroup_reset_owner_pagedirty() - reset the owner ID of a pagecache page
++ * @page:	the page we want to tag
++ * @mm:		the mm_struct of a page owner
++ *
++ * Change the owner of a given page if the page is in the pagecache.
++ */
++void blkio_cgroup_reset_owner_pagedirty(struct page *page, struct mm_struct *mm)
++{
++	if (!page_is_file_cache(page))
++		return;
++	if (current->flags & PF_MEMALLOC)
++		return;
++
++	blkio_cgroup_reset_owner(page, mm);
++}
++
++/**
++ * blkio_cgroup_copy_owner() - copy the owner ID of a page into another page
++ * @npage:	the page where we want to copy the owner
++ * @opage:	the page from which we want to copy the ID
++ *
++ * Copy the owner ID of @opage into @npage.
++ */
++void blkio_cgroup_copy_owner(struct page *npage, struct page *opage)
++{
++	struct page_cgroup *npc, *opc;
++	unsigned long id;
++
++	if (blkio_cgroup_disabled())
++		return;
++	npc = lookup_page_cgroup(npage);
++	if (unlikely(!npc))
++		return;
++	opc = lookup_page_cgroup(opage);
++	if (unlikely(!opc))
++		return;
++
++	lock_page_cgroup(opc);
++	lock_page_cgroup(npc);
++	id = page_cgroup_get_id(opc);
++	page_cgroup_set_id(npc, id);
++	unlock_page_cgroup(npc);
++	unlock_page_cgroup(opc);
++}
++
++/* Create a new blkio-cgroup. */
++static struct cgroup_subsys_state *
++blkio_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct blkio_cgroup *biog;
++	struct io_context *ioc;
++
++	if (!cgrp->parent) {
++		biog = &default_blkio_cgroup;
++		init_io_context(biog->io_context);
++		/* Increment the referrence count not to be released ever. */
++		atomic_long_inc(&biog->io_context->refcount);
++		return &biog->css;
 +	}
 +
-+	if (first_idle != NULL && !bfq_gt(first_idle->finish, st->vtime))
-+		bfq_put_idle_entity(st, first_idle);
++	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
++	if (!biog)
++		return ERR_PTR(-ENOMEM);
++	ioc = alloc_io_context(GFP_KERNEL, -1);
++	if (!ioc) {
++		kfree(biog);
++		return ERR_PTR(-ENOMEM);
++	}
++	biog->io_context = ioc;
++	return &biog->css;
 +}
 +
-+
-+static struct io_service_tree *
-+__bfq_entity_update_prio(struct io_service_tree *old_st,
-+				struct io_entity *entity)
++/* Delete the blkio-cgroup. */
++static void blkio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
 +{
-+	struct io_service_tree *new_st = old_st;
-+	struct io_queue *ioq = io_entity_to_ioq(entity);
++	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
 +
-+	if (entity->ioprio_changed) {
-+		old_st->wsum -= entity->weight;
-+		entity->ioprio = entity->new_ioprio;
-+		entity->ioprio_class = entity->new_ioprio_class;
-+		entity->weight = entity->new_weight;
-+		entity->ioprio_changed = 0;
-+
-+		/*
-+		 * Also update the scaled budget for ioq. Group will get the
-+		 * updated budget once ioq is selected to run next.
-+		 */
-+		if (ioq) {
-+			struct elv_fq_data *efqd = ioq->efqd;
-+			/*
-+			 * elv_prio_to_slice() is defined in later patches
-+			 * where a slice length is calculated from the
-+			 * ioprio of the queue.
-+			 */
-+			entity->budget = elv_prio_to_slice(efqd, ioq);
-+		}
-+
-+		/*
-+		 * NOTE: here we may be changing the weight too early,
-+		 * this will cause unfairness.  The correct approach
-+		 * would have required additional complexity to defer
-+		 * weight changes to the proper time instants (i.e.,
-+		 * when entity->finish <= old_st->vtime).
-+		 */
-+		new_st = io_entity_service_tree(entity);
-+		new_st->wsum += entity->weight;
-+
-+		if (new_st != old_st)
-+			entity->start = new_st->vtime;
-+	}
-+
-+	return new_st;
++	put_io_context(biog->io_context);
++	free_css_id(&blkio_cgroup_subsys, &biog->css);
++	kfree(biog);
 +}
 +
 +/**
-+ * bfq_update_vtime - update vtime if necessary.
-+ * @st: the service tree to act upon.
++ * get_blkio_cgroup_id() - determine the blkio-cgroup ID
++ * @bio:	the &struct bio which describes the I/O
 + *
-+ * If necessary update the service tree vtime to have at least one
-+ * eligible entity, skipping to its start time.  Assumes that the
-+ * active tree of the device is not empty.
-+ *
-+ * NOTE: this hierarchical implementation updates vtimes quite often,
-+ * we may end up with reactivated tasks getting timestamps after a
-+ * vtime skip done because we needed a ->first_active entity on some
-+ * intermediate node.
++ * Returns the blkio-cgroup ID of a given bio. A return value zero
++ * means that the page associated with the bio belongs to default_blkio_cgroup.
 + */
-+static void bfq_update_vtime(struct io_service_tree *st)
++unsigned long get_blkio_cgroup_id(struct bio *bio)
 +{
-+	struct io_entity *entry;
-+	struct rb_node *node = st->active.rb_node;
++	struct page_cgroup *pc;
++	struct page *page = bio_iovec_idx(bio, 0)->bv_page;
++	unsigned long id = 0;
 +
-+	entry = rb_entry(node, struct io_entity, rb_node);
-+	if (bfq_gt(entry->min_start, st->vtime)) {
-+		st->vtime = entry->min_start;
-+		bfq_forget_idle(st);
++	pc = lookup_page_cgroup(page);
++	if (pc) {
++		lock_page_cgroup(pc);
++		id = page_cgroup_get_id(pc);
++		unlock_page_cgroup(pc);
 +	}
++	return id;
 +}
 +
 +/**
-+ * bfq_first_active - find the eligible entity with the smallest finish time
-+ * @st: the service tree to select from.
++ * get_blkio_cgroup_id_page() - determine the blkio-cgroup ID
++ * @page:	the &struct page which describes the I/O
 + *
-+ * This function searches the first schedulable entity, starting from the
-+ * root of the tree and going on the left every time on this side there is
-+ * a subtree with at least one eligible (start <= vtime) entity.  The path
-+ * on the right is followed only if a) the left subtree contains no eligible
-+ * entities and b) no eligible entity has been found yet.
++ * Returns the blkio-cgroup ID of a given page. A return value zero
++ * means that the page associated with the IO belongs to default_blkio_cgroup.
 + */
-+static struct io_entity *bfq_first_active_entity(struct io_service_tree *st)
++unsigned long get_blkio_cgroup_id_page(struct page *page)
 +{
-+	struct io_entity *entry, *first = NULL;
-+	struct rb_node *node = st->active.rb_node;
++	struct page_cgroup *pc;
++	unsigned long id = 0;
 +
-+	while (node != NULL) {
-+		entry = rb_entry(node, struct io_entity, rb_node);
-+left:
-+		if (!bfq_gt(entry->start, st->vtime))
-+			first = entry;
-+
-+		BUG_ON(bfq_gt(entry->min_start, st->vtime));
-+
-+		if (node->rb_left != NULL) {
-+			entry = rb_entry(node->rb_left,
-+					 struct io_entity, rb_node);
-+			if (!bfq_gt(entry->min_start, st->vtime)) {
-+				node = node->rb_left;
-+				goto left;
-+			}
-+		}
-+		if (first != NULL)
-+			break;
-+		node = node->rb_right;
++	pc = lookup_page_cgroup(page);
++	if (pc) {
++		lock_page_cgroup(pc);
++		id = page_cgroup_get_id(pc);
++		unlock_page_cgroup(pc);
 +	}
-+
-+	BUG_ON(first == NULL && !RB_EMPTY_ROOT(&st->active));
-+	return first;
++	return id;
 +}
 +
 +/**
-+ * __bfq_lookup_next_entity - return the first eligible entity in @st.
-+ * @st: the service tree.
++ * get_blkio_cgroup_iocontext() - determine the blkio-cgroup iocontext
++ * @bio:	the &struct bio which describe the I/O
 + *
-+ * Update the virtual time in @st and return the first eligible entity
-+ * it contains.
++ * Returns the iocontext of blkio-cgroup that issued a given bio.
 + */
-+static struct io_entity *__bfq_lookup_next_entity(struct io_service_tree *st)
++struct io_context *get_blkio_cgroup_iocontext(struct bio *bio)
 +{
-+	struct io_entity *entity;
++	struct cgroup_subsys_state *css;
++	struct blkio_cgroup *biog;
++	struct io_context *ioc;
++	unsigned long id;
 +
-+	if (RB_EMPTY_ROOT(&st->active))
++	id = get_blkio_cgroup_id(bio);
++	rcu_read_lock();
++	css = css_lookup(&blkio_cgroup_subsys, id);
++	if (css)
++		biog = container_of(css, struct blkio_cgroup, css);
++	else
++		biog = &default_blkio_cgroup;
++	ioc = biog->io_context;	/* default io_context for this cgroup */
++	atomic_long_inc(&ioc->refcount);
++	rcu_read_unlock();
++	return ioc;
++}
++
++/**
++ * blkio_cgroup_lookup() - lookup a cgroup by blkio-cgroup ID
++ * @id:		blkio-cgroup ID
++ *
++ * Returns the cgroup associated with the specified ID, or NULL if lookup
++ * fails.
++ *
++ * Note:
++ * This function should be called under rcu_read_lock().
++ */
++struct cgroup *blkio_cgroup_lookup(int id)
++{
++	struct cgroup *cgrp;
++	struct cgroup_subsys_state *css;
++
++	if (blkio_cgroup_disabled())
 +		return NULL;
 +
-+	bfq_update_vtime(st);
-+	entity = bfq_first_active_entity(st);
-+	BUG_ON(bfq_gt(entity->start, st->vtime));
-+
-+	return entity;
++	css = css_lookup(&blkio_cgroup_subsys, id);
++	if (!css)
++		return NULL;
++	cgrp = css->cgroup;
++	return cgrp;
 +}
++EXPORT_SYMBOL(get_blkio_cgroup_iocontext);
++EXPORT_SYMBOL(get_blkio_cgroup_id);
++EXPORT_SYMBOL(blkio_cgroup_lookup);
 +
-+/**
-+ * bfq_lookup_next_entity - return the first eligible entity in @sd.
-+ * @sd: the sched_data.
-+ * @extract: if true the returned entity will be also extracted from @sd.
-+ *
-+ * NOTE: since we cache the next_active entity at each level of the
-+ * hierarchy, the complexity of the lookup can be decreased with
-+ * absolutely no effort just returning the cached next_active value;
-+ * we prefer to do full lookups to test the consistency of * the data
-+ * structures.
-+ */
-+static struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
-+						 int extract)
++static u64 blkio_id_read(struct cgroup *cgrp, struct cftype *cft)
 +{
-+	struct io_service_tree *st = sd->service_tree;
-+	struct io_entity *entity;
-+	int i;
++	struct blkio_cgroup *biog = cgroup_blkio(cgrp);
++	unsigned long id;
 +
-+	/*
-+	 * We should not call lookup when an entity is active, as doing lookup
-+	 * can result in an erroneous vtime jump.
-+	 */
-+	BUG_ON(sd->active_entity != NULL);
-+
-+	for (i = 0; i < IO_IOPRIO_CLASSES; i++, st++) {
-+		entity = __bfq_lookup_next_entity(st);
-+		if (entity != NULL) {
-+			if (extract) {
-+				bfq_active_remove(st, entity);
-+				sd->active_entity = entity;
-+			}
-+			break;
-+		}
-+	}
-+
-+	return entity;
++	rcu_read_lock();
++	id = css_id(&biog->css);
++	rcu_read_unlock();
++	return (u64)id;
 +}
 +
-+/**
-+ * __bfq_activate_entity - activate an entity.
-+ * @entity: the entity being activated.
-+ *
-+ * Called whenever an entity is activated, i.e., it is not active and one
-+ * of its children receives a new request, or has to be reactivated due to
-+ * budget exhaustion.  It uses the current budget of the entity (and the
-+ * service received if @entity is active) of the queue to calculate its
-+ * timestamps.
-+ */
-+static void __bfq_activate_entity(struct io_entity *entity)
-+{
-+	struct io_sched_data *sd = entity->sched_data;
-+	struct io_service_tree *st = io_entity_service_tree(entity);
 +
-+	if (entity == sd->active_entity) {
-+		BUG_ON(entity->tree != NULL);
-+		/*
-+		 * If we are requeueing the current entity we have
-+		 * to take care of not charging to it service it has
-+		 * not received.
-+		 */
-+		bfq_calc_finish(entity, entity->service);
-+		entity->start = entity->finish;
-+		sd->active_entity = NULL;
-+	} else if (entity->tree == &st->active) {
-+		/*
-+		 * Requeueing an entity due to a change of some
-+		 * next_active entity below it.  We reuse the old
-+		 * start time.
-+		 */
-+		bfq_active_remove(st, entity);
-+	} else if (entity->tree == &st->idle) {
-+		/*
-+		 * Must be on the idle tree, bfq_idle_remove() will
-+		 * check for that.
-+		 */
-+		bfq_idle_remove(st, entity);
-+		entity->start = bfq_gt(st->vtime, entity->finish) ?
-+				       st->vtime : entity->finish;
-+	} else {
-+		/*
-+		 * The finish time of the entity may be invalid, and
-+		 * it is in the past for sure, otherwise the queue
-+		 * would have been on the idle tree.
-+		 */
-+		entity->start = st->vtime;
-+		st->wsum += entity->weight;
-+		bfq_get_entity(entity);
-+
-+		BUG_ON(entity->on_st);
-+		entity->on_st = 1;
-+	}
-+
-+	st = __bfq_entity_update_prio(st, entity);
-+	bfq_calc_finish(entity, entity->budget);
-+	bfq_active_insert(st, entity);
-+}
-+
-+/**
-+ * bfq_activate_entity - activate an entity.
-+ * @entity: the entity to activate.
-+ */
-+static void bfq_activate_entity(struct io_entity *entity)
-+{
-+	__bfq_activate_entity(entity);
-+}
-+
-+/**
-+ * __bfq_deactivate_entity - deactivate an entity from its service tree.
-+ * @entity: the entity to deactivate.
-+ * @requeue: if false, the entity will not be put into the idle tree.
-+ *
-+ * Deactivate an entity, independently from its previous state.  If the
-+ * entity was not on a service tree just return, otherwise if it is on
-+ * any scheduler tree, extract it from that tree, and if necessary
-+ * and if the caller did not specify @requeue, put it on the idle tree.
-+ *
-+ */
-+static int __bfq_deactivate_entity(struct io_entity *entity, int requeue)
-+{
-+	struct io_sched_data *sd = entity->sched_data;
-+	struct io_service_tree *st = io_entity_service_tree(entity);
-+	int was_active = entity == sd->active_entity;
-+	int ret = 0;
-+
-+	if (!entity->on_st)
-+		return 0;
-+
-+	BUG_ON(was_active && entity->tree != NULL);
-+
-+	if (was_active) {
-+		bfq_calc_finish(entity, entity->service);
-+		sd->active_entity = NULL;
-+	} else if (entity->tree == &st->active)
-+		bfq_active_remove(st, entity);
-+	else if (entity->tree == &st->idle)
-+		bfq_idle_remove(st, entity);
-+	else if (entity->tree != NULL)
-+		BUG();
-+
-+	if (!requeue || !bfq_gt(entity->finish, st->vtime))
-+		bfq_forget_entity(st, entity);
-+	else
-+		bfq_idle_insert(st, entity);
-+
-+	BUG_ON(sd->active_entity == entity);
-+
-+	return ret;
-+}
-+
-+/**
-+ * bfq_deactivate_entity - deactivate an entity.
-+ * @entity: the entity to deactivate.
-+ * @requeue: true if the entity can be put on the idle tree
-+ */
-+static void bfq_deactivate_entity(struct io_entity *entity, int requeue)
-+{
-+	__bfq_deactivate_entity(entity, requeue);
-+}
-+
-+static void entity_served(struct io_entity *entity, unsigned long served)
-+{
-+	struct io_service_tree *st;
-+
-+	st = io_entity_service_tree(entity);
-+	entity->service += served;
-+	BUG_ON(st->wsum == 0);
-+	st->vtime += bfq_delta(served, st->wsum);
-+	bfq_forget_idle(st);
-+}
-+
-+/**
-+ * io_flush_idle_tree - deactivate any entity on the idle tree of @st.
-+ * @st: the service tree being flushed.
-+ */
-+static void io_flush_idle_tree(struct io_service_tree *st)
-+{
-+	struct io_entity *entity = st->first_idle;
-+
-+	for (; entity != NULL; entity = st->first_idle)
-+		__bfq_deactivate_entity(entity, 0);
-+}
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-new file mode 100644
-index 0000000..4554d7f
---- /dev/null
-+++ b/block/elevator-fq.h
-@@ -0,0 +1,172 @@
-+/*
-+ * elevator fair queuing Layer. Uses B-WF2Q+ hierarchical scheduler for
-+ * fair queuing. Data structures and common functions prototypes.
-+ *
-+ * Based on ideas and code from CFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
-+
-+#include <linux/blkdev.h>
-+
-+#ifndef _BFQ_SCHED_H
-+#define _BFQ_SCHED_H
-+
-+#define IO_IOPRIO_CLASSES	3
-+
-+struct io_entity;
-+struct io_queue;
-+
-+/**
-+ * struct io_service_tree - per ioprio_class service tree.
-+ * @active: tree for active entities (i.e., those backlogged).
-+ * @idle: tree for idle entities (i.e., those not backlogged, with V <= F_i).
-+ * @first_idle: idle entity with minimum F_i.
-+ * @last_idle: idle entity with maximum F_i.
-+ * @vtime: scheduler virtual time.
-+ * @wsum: scheduler weight sum; active and idle entities contribute to it.
-+ *
-+ * Each service tree represents a B-WF2Q+ scheduler on its own.  Each
-+ * ioprio_class has its own independent scheduler, and so its own
-+ * io_service_tree.  All the fields are protected by the queue lock
-+ * of the containing efqd.
-+ */
-+struct io_service_tree {
-+	struct rb_root active;
-+	struct rb_root idle;
-+
-+	struct io_entity *first_idle;
-+	struct io_entity *last_idle;
-+
-+	u64 vtime;
-+	unsigned int wsum;
++static struct cftype blkio_files[] = {
++	{
++		.name = "id",
++		.read_u64 = blkio_id_read,
++	},
 +};
 +
-+/**
-+ * struct io_sched_data - multi-class scheduler.
-+ * @active_entity: entity under service.
-+ * @next_active: head-of-the-line entity in the scheduler.
-+ * @service_tree: array of service trees, one per ioprio_class.
-+ *
-+ * io_sched_data is the basic scheduler queue.  It supports three
-+ * ioprio_classes, and can be used either as a toplevel queue or as
-+ * an intermediate queue on a hierarchical setup.
-+ * @next_active points to the active entity of the sched_data service
-+ * trees that will be scheduled next.
-+ *
-+ * The supported ioprio_classes are the same as in CFQ, in descending
-+ * priority order, IOPRIO_CLASS_RT, IOPRIO_CLASS_BE, IOPRIO_CLASS_IDLE.
-+ * Requests from higher priority queues are served before all the
-+ * requests from lower priority queues; among requests of the same
-+ * queue requests are served according to B-WF2Q+.
-+ * All the fields are protected by the queue lock of the containing efqd.
-+ */
-+struct io_sched_data {
-+	struct io_entity *active_entity;
-+	struct io_service_tree service_tree[IO_IOPRIO_CLASSES];
-+};
-+
-+/**
-+ * struct io_entity - schedulable entity.
-+ * @rb_node: service_tree member.
-+ * @on_st: flag, true if the entity is on a tree (either the active or
-+ *         the idle one of its service_tree).
-+ * @finish: B-WF2Q+ finish timestamp (aka F_i).
-+ * @start: B-WF2Q+ start timestamp (aka S_i).
-+ * @tree: tree the entity is enqueued into; %NULL if not on a tree.
-+ * @min_start: minimum start time of the (active) subtree rooted at
-+ *             this entity; used for O(log N) lookups into active trees.
-+ * @service: service received during the last round of service.
-+ * @budget: budget used to calculate F_i; F_i = S_i + @budget / @weight.
-+ * @weight: weight of the queue, calculated as IOPRIO_BE_NR - @ioprio.
-+ * @new_weight: when a weight change is requested, the new weight value
-+ * @parent: parent entity, for hierarchical scheduling.
-+ * @my_sched_data: for non-leaf nodes in the cgroup hierarchy, the
-+ *                 associated scheduler queue, %NULL on leaf nodes.
-+ * @sched_data: the scheduler queue this entity belongs to.
-+ * @ioprio: the ioprio in use.
-+ * @new_ioprio: when an ioprio change is requested, the new ioprio value
-+ * @ioprio_class: the ioprio_class in use.
-+ * @new_ioprio_class: when an ioprio_class change is requested, the new
-+ *                    ioprio_class value.
-+ * @ioprio_changed: flag, true when the user requested an ioprio or
-+ *                  ioprio_class change.
-+ *
-+ * A io_entity is used to represent either a io_queue (leaf node in the
-+ * cgroup hierarchy) or a io_group into the upper level scheduler.  Each
-+ * entity belongs to the sched_data of the parent group in the cgroup
-+ * hierarchy.  Non-leaf entities have also their own sched_data, stored
-+ * in @my_sched_data.
-+ *
-+ * Each entity stores independently its priority values; this would allow
-+ * different weights on different devices, but this functionality is not
-+ * exported to userspace by now.  Priorities are updated lazily, first
-+ * storing the new values into the new_* fields, then setting the
-+ * @ioprio_changed flag.  As soon as there is a transition in the entity
-+ * state that allows the priority update to take place the effective and
-+ * the requested priority values are synchronized.
-+ *
-+ * The weight value is calculated from the ioprio to export the same
-+ * interface as CFQ.
-+ *
-+ * All the fields are protected by the queue lock of the containing efqd.
-+ */
-+struct io_entity {
-+	struct rb_node rb_node;
-+
-+	int on_st;
-+
-+	u64 finish;
-+	u64 start;
-+
-+	struct rb_root *tree;
-+
-+	u64 min_start;
-+
-+	unsigned long service, budget;
-+	unsigned int weight, new_weight;
-+
-+	struct io_entity *parent;
-+
-+	struct io_sched_data *my_sched_data;
-+	struct io_sched_data *sched_data;
-+
-+	unsigned short ioprio, new_ioprio;
-+	unsigned short ioprio_class, new_ioprio_class;
-+
-+	int ioprio_changed;
-+};
-+
-+/*
-+ * A common structure representing the io queue where requests are actually
-+ * queued.
-+ */
-+struct io_queue {
-+	struct io_entity entity;
-+	atomic_t ref;
-+
-+	/* Pointer to generic elevator fair queuing data structure */
-+	struct elv_fq_data *efqd;
-+};
-+
-+struct io_group {
-+	struct io_sched_data sched_data;
-+};
-+
-+static inline struct io_service_tree *
-+io_entity_service_tree(struct io_entity *entity)
++static int blkio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
 +{
-+	struct io_sched_data *sched_data = entity->sched_data;
-+	unsigned int idx = entity->ioprio_class - 1;
-+
-+	BUG_ON(idx >= IO_IOPRIO_CLASSES);
-+	BUG_ON(sched_data == NULL);
-+
-+	return sched_data->service_tree + idx;
++	return cgroup_add_files(cgrp, ss, blkio_files,
++					ARRAY_SIZE(blkio_files));
 +}
-+#endif /* _BFQ_SCHED_H */
++
++struct cgroup_subsys blkio_cgroup_subsys = {
++	.name		= "blkio",
++	.create		= blkio_cgroup_create,
++	.destroy	= blkio_cgroup_destroy,
++	.populate	= blkio_cgroup_populate,
++	.subsys_id	= blkio_cgroup_subsys_id,
++	.use_id		= 1,
++};
+diff --git a/mm/bounce.c b/mm/bounce.c
+index a2b76a5..422d89c 100644
+--- a/mm/bounce.c
++++ b/mm/bounce.c
+@@ -14,6 +14,7 @@
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+ #include <asm/tlbflush.h>
++#include <linux/biotrack.h>
+ 
+ #include <trace/events/block.h>
+ 
+@@ -210,6 +211,7 @@ static void __blk_queue_bounce(struct request_queue *q, struct bio **bio_orig,
+ 		to->bv_len = from->bv_len;
+ 		to->bv_offset = from->bv_offset;
+ 		inc_zone_page_state(to->bv_page, NR_BOUNCE);
++		blkio_cgroup_copy_owner(to->bv_page, page);
+ 
+ 		if (rw == WRITE) {
+ 			char *vto, *vfrom;
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 2239671..c2356cd 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -33,6 +33,7 @@
+ #include <linux/cpuset.h>
+ #include <linux/hardirq.h> /* for BUG_ON(!in_atomic()) only */
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mm_inline.h> /* for page_is_file_cache() */
+ #include "internal.h"
+ 
+@@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 					gfp_mask & GFP_RECLAIM_MASK);
+ 	if (error)
+ 		goto out;
++	blkio_cgroup_set_owner(page, current->mm);
+ 
+ 	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+ 	if (error == 0) {
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index e2fa20d..41896f6 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -129,6 +129,12 @@ struct mem_cgroup_lru_info {
+ 	struct mem_cgroup_per_node *nodeinfo[MAX_NUMNODES];
+ };
+ 
++void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++	pc->mem_cgroup = NULL;
++	INIT_LIST_HEAD(&pc->lru);
++}
++
+ /*
+  * The memory controller data structure. The memory controller controls both
+  * page cache and RSS per cgroup. We would eventually like to provide
+diff --git a/mm/memory.c b/mm/memory.c
+index f46ac18..f1451d6 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -51,6 +51,7 @@
+ #include <linux/init.h>
+ #include <linux/writeback.h>
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/kallsyms.h>
+ #include <linux/swapops.h>
+@@ -2117,6 +2118,7 @@ gotten:
+ 		 */
+ 		ptep_clear_flush_notify(vma, address, page_table);
+ 		page_add_new_anon_rmap(new_page, vma, address);
++		blkio_cgroup_set_owner(new_page, mm);
+ 		set_pte_at(mm, address, page_table, entry);
+ 		update_mmu_cache(vma, address, entry);
+ 		if (old_page) {
+@@ -2582,6 +2584,7 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	flush_icache_page(vma, page);
+ 	set_pte_at(mm, address, page_table, pte);
+ 	page_add_anon_rmap(page, vma, address);
++	blkio_cgroup_reset_owner(page, mm);
+ 	/* It's better to call commit-charge after rmap is established */
+ 	mem_cgroup_commit_charge_swapin(page, ptr);
+ 
+@@ -2646,6 +2649,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		goto release;
+ 	inc_mm_counter(mm, anon_rss);
+ 	page_add_new_anon_rmap(page, vma, address);
++	blkio_cgroup_set_owner(page, mm);
+ 	set_pte_at(mm, address, page_table, entry);
+ 
+ 	/* No need to invalidate - it was non-present before */
+@@ -2793,6 +2797,7 @@ static int __do_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		if (anon) {
+ 			inc_mm_counter(mm, anon_rss);
+ 			page_add_new_anon_rmap(page, vma, address);
++			blkio_cgroup_set_owner(page, mm);
+ 		} else {
+ 			inc_mm_counter(mm, file_rss);
+ 			page_add_file_rmap(page);
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 7b0dcea..31d3675 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -23,6 +23,7 @@
+ #include <linux/init.h>
+ #include <linux/backing-dev.h>
+ #include <linux/task_io_accounting_ops.h>
++#include <linux/biotrack.h>
+ #include <linux/blkdev.h>
+ #include <linux/mpage.h>
+ #include <linux/rmap.h>
+@@ -1244,6 +1245,7 @@ int __set_page_dirty_nobuffers(struct page *page)
+ 			BUG_ON(mapping2 != mapping);
+ 			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+ 			account_page_dirtied(page, mapping);
++			blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+ 			radix_tree_tag_set(&mapping->page_tree,
+ 				page_index(page), PAGECACHE_TAG_DIRTY);
+ 		}
+diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
+index f22b4eb..2883bb7 100644
+--- a/mm/page_cgroup.c
++++ b/mm/page_cgroup.c
+@@ -9,14 +9,15 @@
+ #include <linux/vmalloc.h>
+ #include <linux/cgroup.h>
+ #include <linux/swapops.h>
++#include <linux/biotrack.h>
+ 
+ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+ {
+ 	pc->flags = 0;
+-	pc->mem_cgroup = NULL;
+ 	pc->page = pfn_to_page(pfn);
+-	INIT_LIST_HEAD(&pc->lru);
++	__init_mem_page_cgroup(pc);
++	__init_blkio_page_cgroup(pc);
+ }
+ static unsigned long total_usage;
+ 
+@@ -74,7 +75,7 @@ void __init page_cgroup_init_flatmem(void)
+ 
+ 	int nid, fail;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && blkio_cgroup_disabled())
+ 		return;
+ 
+ 	for_each_online_node(nid)  {
+@@ -83,12 +84,12 @@ void __init page_cgroup_init_flatmem(void)
+ 			goto fail;
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you"
++	printk(KERN_INFO "please try cgroup_disable=memory,blkio option if you"
+ 	" don't want memory cgroups\n");
+ 	return;
+ fail:
+ 	printk(KERN_CRIT "allocation of page_cgroup failed.\n");
+-	printk(KERN_CRIT "please try 'cgroup_disable=memory' boot option\n");
++	printk(KERN_CRIT "please try cgroup_disable=memory,blkio boot options\n");
+ 	panic("Out of memory");
+ }
+ 
+@@ -245,7 +246,7 @@ void __init page_cgroup_init(void)
+ 	unsigned long pfn;
+ 	int fail = 0;
+ 
+-	if (mem_cgroup_disabled())
++	if (mem_cgroup_disabled() && blkio_cgroup_disabled())
+ 		return;
+ 
+ 	for (pfn = 0; !fail && pfn < max_pfn; pfn += PAGES_PER_SECTION) {
+@@ -260,8 +261,8 @@ void __init page_cgroup_init(void)
+ 		hotplug_memory_notifier(page_cgroup_callback, 0);
+ 	}
+ 	printk(KERN_INFO "allocated %ld bytes of page_cgroup\n", total_usage);
+-	printk(KERN_INFO "please try 'cgroup_disable=memory' option if you don't"
+-	" want memory cgroups\n");
++	printk(KERN_INFO "please try cgroup_disable=memory,blkio option"
++	" if you don't want memory and io cgroups\n");
+ }
+ 
+ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 42cd38e..6eb96f1 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -18,6 +18,7 @@
+ #include <linux/pagevec.h>
+ #include <linux/migrate.h>
+ #include <linux/page_cgroup.h>
++#include <linux/biotrack.h>
+ 
+ #include <asm/pgtable.h>
+ 
+@@ -307,6 +308,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ 		 */
+ 		__set_page_locked(new_page);
+ 		SetPageSwapBacked(new_page);
++		blkio_cgroup_set_owner(new_page, current->mm);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
+ 			/*
 -- 
 1.6.0.6
 
