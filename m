@@ -1,89 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbZGBThj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZGBTnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752757AbZGBThj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 15:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZGBTha
+	id S1754497AbZGBTnX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 15:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZGBTnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 15:37:30 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:44561 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751285AbZGBTh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 15:37:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=MGkizpTyeUkd9Q6tPdTgOGSV6ezsWV4qMKCUlJQcTvO51oXDhNgtuN8eCyJbR5Lb/4
-         hzpSkTk5zaoWF5NkUn3ESkGfHBOnIRqR4Vqgckbf56NitAdG8QYBr8pyZ57fngCLXJQZ
-         Kja9cjHfgzS7PqBaJlnwE34Hb8IL582uIPwEw=
-From: Alberto Gonzalez <alberto6674@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Kernel 2.6.30 and udevd problem
-Date: Thu, 2 Jul 2009 21:37:27 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.29-ARCH; KDE/4.2.4; x86_64; ; )
-Cc: Alberto Gonzalez <alberto6674@gmail.com>, Dave Airlie <airlied@linux.ie>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       linux-hotplug@vger.kernel.org
-References: <200906280821.58631.info@gnebu.es> <200907020818.58541.info@gnebu.es> <20090702093547.7ca95116@jbarnes-g45>
-In-Reply-To: <20090702093547.7ca95116@jbarnes-g45>
+	Thu, 2 Jul 2009 15:43:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46452 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752757AbZGBTnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 15:43:11 -0400
+Date: Thu, 2 Jul 2009 19:42:31 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, anton@samba.org,
+       paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, anton@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1246558475-10624-1-git-send-email-fweisbec@gmail.com>
+References: <1246558475-10624-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Set the minimum percent for callchains to be displayed
+Message-ID: <tip-c20ab37ef30f4a874cf27e84c12c73e584e6f5cc@git.kernel.org>
+Git-Commit-ID: c20ab37ef30f4a874cf27e84c12c73e584e6f5cc
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200907022137.27847.info@gnebu.es>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 19:42:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 July 2009 18:35:47 Jesse Barnes wrote:
-> On Thu, 2 Jul 2009 08:18:58 +0200
->
-> Alberto Gonzalez <alberto6674@gmail.com> wrote:
-> > Thanks, the patch applied to 2.6.30 and when the problem stars I get
-> > these two lines repeated all the time in dmesg:
-> >
-> > [drm:i915_driver_irq_handler] *ERROR* hotplug event received, stat
-> > 0x10200300 [drm:i915_driver_irq_handler] *ERROR* hotplug event
-> > received, stat 0x18200300
-> >
-> > Is this enough or should I provide something else?
->
-> Interesting.  That hotplug status shouldn't end up generating any
-> uevents.  Can you try this patch to see what's going on?
+Commit-ID:  c20ab37ef30f4a874cf27e84c12c73e584e6f5cc
+Gitweb:     http://git.kernel.org/tip/c20ab37ef30f4a874cf27e84c12c73e584e6f5cc
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Thu, 2 Jul 2009 20:14:33 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 2 Jul 2009 21:38:37 +0200
 
-This is what I get with the patch applied (repeated again and again):
+perf_counter tools: Set the minimum percent for callchains to be displayed
 
-------------[ cut here ]------------
-WARNING: at drivers/gpu/drm/drm_sysfs.c:452 drm_sysfs_hotplug_event+0x3e/0x90 
-[drm]()
-Hardware name: Studio 540
-hotplug uevent
-Modules linked in: ipv6 usbhid hid ext4 jbd2 crc16 usb_storage snd_seq_dummy 
-snd_hda_codec_intelhdmi snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device 
-snd_hda_codec_realtek snd_pcm_oss snd_mixer_oss psmouse ohci1394 snd_hda_intel 
-ieee1394 i2c_i801 uhci_hcd serio_raw sg dcdbas iTCO_wdt iTCO_vendor_support 
-snd_hda_codec snd_hwdep snd_pcm snd_timer snd soundcore snd_page_alloc r8169 
-mii ehci_hcd usbcore evdev thermal fan button battery ac cpufreq_ondemand 
-acpi_cpufreq freq_table processor rtc_cmos rtc_core rtc_lib ext3 jbd mbcache 
-sd_mod sr_mod cdrom pata_acpi ata_generic ata_piix libata scsi_mod i915 
-i2c_algo_bit video output drm i2c_core intel_agp agpgart
-Pid: 9, comm: events/0 Tainted: G        W  2.6.30-ARCH #1
-Call Trace:
- [<c013b17a>] ? warn_slowpath_common+0x7a/0xc0
- [<f82be0fe>] ? drm_sysfs_hotplug_event+0x3e/0x90 [drm]
- [<f83bb410>] ? i915_hotplug_work_func+0x0/0x30 [i915]
- [<c013b237>] ? warn_slowpath_fmt+0x37/0x60
- [<f82be0fe>] ? drm_sysfs_hotplug_event+0x3e/0x90 [drm]
- [<c014f61f>] ? worker_thread+0x11f/0x280
- [<c0154900>] ? autoremove_wake_function+0x0/0x60
- [<c014f500>] ? worker_thread+0x0/0x280
- [<c0154452>] ? kthread+0x52/0x90
- [<c0154400>] ? kthread+0x0/0x90
- [<c01047c7>] ? kernel_thread_helper+0x7/0x10
----[ end trace a39351f6aee6be08 ]---
+Callchains output may become a burden on a trace because even
+rarely hit site are exposed. This can be too much information.
 
-Thanks,
-Alberto.
+Let the user set a threshold as a minimum percent of hits using
+the new pattern for the -c option:
+
+    -c mode,min_percent
+
+Example:
+
+$ perf report -s sym -c flat,4
+
+     8.25%  [k] copy_user_generic_string
+             4.19%
+                copy_user_generic_string
+                generic_file_aio_read
+                do_sync_read
+                vfs_read
+                sys_pread64
+                system_call_fastpath
+                pread64
+
+     5.39%  [k] search_by_key
+     4.63%  0x00000000009e0a
+     2.36%  [k] memcpy_c
+[...]
+
+$ perf report -s sym -c graph,2
+
+     8.25%  [k] copy_user_generic_string
+                |
+                |--4.31%-- generic_file_aio_read
+                |          do_sync_read
+                |          vfs_read
+                |          |
+                |           --4.19%-- sys_pread64
+                |                     system_call_fastpath
+                |                     pread64
+                |
+                 --3.24%-- generic_file_buffered_write
+                           __generic_file_aio_write_nolock
+                           generic_file_aio_write
+                           do_sync_write
+                           reiserfs_file_write
+                           vfs_write
+                           |
+                            --3.14%-- sys_pwrite64
+                                      system_call_fastpath
+                                      __pwrite64
+
+     5.39%  [k] search_by_key
+                |
+                 --2.23%-- reiserfs_update_sd_size
+
+     4.63%  0x00000000009e0a
+
+     2.36%  [k] memcpy_c
+[...]
+
+You can also omit it and it will default to 0.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1246558475-10624-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-report.c |   45 ++++++++++++++++++++++++++++++++----------
+ tools/perf/util/callchain.c |   19 ++++++++++-------
+ tools/perf/util/callchain.h |    6 +++-
+ 3 files changed, 49 insertions(+), 21 deletions(-)
+
+diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+index 0ca4638..e8c9817 100644
+--- a/tools/perf/builtin-report.c
++++ b/tools/perf/builtin-report.c
+@@ -60,6 +60,7 @@ static regex_t		parent_regex;
+ static int		exclude_other = 1;
+ static int		callchain;
+ static enum chain_mode	callchain_mode;
++static double		callchain_min_percent = 0.0;
+ 
+ static u64		sample_type;
+ 
+@@ -1224,7 +1225,7 @@ static void collapse__resort(void)
+ 
+ static struct rb_root output_hists;
+ 
+-static void output__insert_entry(struct hist_entry *he)
++static void output__insert_entry(struct hist_entry *he, u64 min_callchain_hits)
+ {
+ 	struct rb_node **p = &output_hists.rb_node;
+ 	struct rb_node *parent = NULL;
+@@ -1232,9 +1233,11 @@ static void output__insert_entry(struct hist_entry *he)
+ 
+ 	if (callchain) {
+ 		if (callchain_mode == FLAT)
+-			sort_chain_flat(&he->sorted_chain, &he->callchain);
++			sort_chain_flat(&he->sorted_chain, &he->callchain,
++					min_callchain_hits);
+ 		else if (callchain_mode == GRAPH)
+-			sort_chain_graph(&he->sorted_chain, &he->callchain);
++			sort_chain_graph(&he->sorted_chain, &he->callchain,
++					 min_callchain_hits);
+ 	}
+ 
+ 	while (*p != NULL) {
+@@ -1251,11 +1254,14 @@ static void output__insert_entry(struct hist_entry *he)
+ 	rb_insert_color(&he->rb_node, &output_hists);
+ }
+ 
+-static void output__resort(void)
++static void output__resort(u64 total_samples)
+ {
+ 	struct rb_node *next;
+ 	struct hist_entry *n;
+ 	struct rb_root *tree = &hist;
++	u64 min_callchain_hits;
++
++	min_callchain_hits = total_samples * (callchain_min_percent / 100);
+ 
+ 	if (sort__need_collapse)
+ 		tree = &collapse_hists;
+@@ -1267,7 +1273,7 @@ static void output__resort(void)
+ 		next = rb_next(&n->rb_node);
+ 
+ 		rb_erase(&n->rb_node, tree);
+-		output__insert_entry(n);
++		output__insert_entry(n, min_callchain_hits);
+ 	}
+ }
+ 
+@@ -1801,7 +1807,7 @@ done:
+ 		dsos__fprintf(stdout);
+ 
+ 	collapse__resort();
+-	output__resort();
++	output__resort(total);
+ 	output__fprintf(stdout, total);
+ 
+ 	return rc;
+@@ -1811,19 +1817,36 @@ static int
+ parse_callchain_opt(const struct option *opt __used, const char *arg,
+ 		    int unset __used)
+ {
++	char *tok;
++	char *endptr;
++
+ 	callchain = 1;
+ 
+ 	if (!arg)
+ 		return 0;
+ 
+-	if (!strncmp(arg, "graph", strlen(arg)))
++	tok = strtok((char *)arg, ",");
++	if (!tok)
++		return -1;
++
++	/* get the output mode */
++	if (!strncmp(tok, "graph", strlen(arg)))
+ 		callchain_mode = GRAPH;
+ 
+-	else if (!strncmp(arg, "flat", strlen(arg)))
++	else if (!strncmp(tok, "flat", strlen(arg)))
+ 		callchain_mode = FLAT;
+ 	else
+ 		return -1;
+ 
++	/* get the min percentage */
++	tok = strtok(NULL, ",");
++	if (!tok)
++		return 0;
++
++	callchain_min_percent = strtod(tok, &endptr);
++	if (tok == endptr)
++		return -1;
++
+ 	return 0;
+ }
+ 
+@@ -1850,9 +1873,9 @@ static const struct option options[] = {
+ 		   "regex filter to identify parent, see: '--sort parent'"),
+ 	OPT_BOOLEAN('x', "exclude-other", &exclude_other,
+ 		    "Only display entries with parent-match"),
+-	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type",
+-		     "Display callchains with output_type: flat, graph. "
+-		     "Default to flat", &parse_callchain_opt, "flat"),
++	OPT_CALLBACK_DEFAULT('c', "callchain", NULL, "output_type,min_percent",
++		     "Display callchains using output_type and min percent threshold. "
++		     "Default: flat,0", &parse_callchain_opt, "flat,100"),
+ 	OPT_STRING('d', "dsos", &dso_list_str, "dso[,dso...]",
+ 		   "only consider symbols in these dsos"),
+ 	OPT_STRING('C', "comms", &comm_list_str, "comm[,comm...]",
+diff --git a/tools/perf/util/callchain.c b/tools/perf/util/callchain.c
+index a9873aa..c9900fe 100644
+--- a/tools/perf/util/callchain.c
++++ b/tools/perf/util/callchain.c
+@@ -57,18 +57,19 @@ rb_insert_callchain(struct rb_root *root, struct callchain_node *chain,
+  * Once we get every callchains from the stream, we can now
+  * sort them by hit
+  */
+-void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node)
++void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node,
++		     u64 min_hit)
+ {
+ 	struct callchain_node *child;
+ 
+ 	chain_for_each_child(child, node)
+-		sort_chain_flat(rb_root, child);
++		sort_chain_flat(rb_root, child, min_hit);
+ 
+-	if (node->hit)
++	if (node->hit && node->hit >= min_hit)
+ 		rb_insert_callchain(rb_root, node, FLAT);
+ }
+ 
+-static void __sort_chain_graph(struct callchain_node *node)
++static void __sort_chain_graph(struct callchain_node *node, u64 min_hit)
+ {
+ 	struct callchain_node *child;
+ 
+@@ -76,16 +77,18 @@ static void __sort_chain_graph(struct callchain_node *node)
+ 	node->cumul_hit = node->hit;
+ 
+ 	chain_for_each_child(child, node) {
+-		__sort_chain_graph(child);
+-		rb_insert_callchain(&node->rb_root, child, GRAPH);
++		__sort_chain_graph(child, min_hit);
++		if (child->cumul_hit >= min_hit)
++			rb_insert_callchain(&node->rb_root, child, GRAPH);
+ 		node->cumul_hit += child->cumul_hit;
+ 	}
+ }
+ 
+ void
+-sort_chain_graph(struct rb_root *rb_root, struct callchain_node *chain_root)
++sort_chain_graph(struct rb_root *rb_root, struct callchain_node *chain_root,
++		 u64 min_hit)
+ {
+-	__sort_chain_graph(chain_root);
++	__sort_chain_graph(chain_root, min_hit);
+ 	rb_root->rb_node = chain_root->rb_root.rb_node;
+ }
+ 
+diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
+index dfa5600..f3e4776 100644
+--- a/tools/perf/util/callchain.h
++++ b/tools/perf/util/callchain.h
+@@ -38,6 +38,8 @@ static inline void callchain_init(struct callchain_node *node)
+ 
+ void append_chain(struct callchain_node *root, struct ip_callchain *chain,
+ 		  struct symbol **syms);
+-void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node);
+-void sort_chain_graph(struct rb_root *rb_root, struct callchain_node *node);
++void sort_chain_flat(struct rb_root *rb_root, struct callchain_node *node,
++		     u64 min_hit);
++void sort_chain_graph(struct rb_root *rb_root, struct callchain_node *node,
++		      u64 min_hit);
+ #endif
