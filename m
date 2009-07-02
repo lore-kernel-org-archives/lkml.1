@@ -1,89 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZGBSLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbZGBSLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbZGBSLa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZGBSLW
+	id S1754218AbZGBSLm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZGBSLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:11:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44415 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752206AbZGBSLV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:11:21 -0400
-Date: Thu, 2 Jul 2009 19:12:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: tridge@samba.org, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Message-ID: <20090702191232.5c066790@lxorguk.ukuu.org.uk>
-In-Reply-To: <1246546567.4055.27.camel@mulgrave.site>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-	<20090701123141.402c17d2@lxorguk.ukuu.org.uk>
-	<19019.25035.244941.352337@samba.org>
-	<20090701143844.07728fdf@lxorguk.ukuu.org.uk>
-	<19019.27736.647500.497114@samba.org>
-	<20090701154151.7f45abad@lxorguk.ukuu.org.uk>
-	<19020.12748.348370.708306@samba.org>
-	<20090702113200.39a15f21@lxorguk.ukuu.org.uk>
-	<1246546567.4055.27.camel@mulgrave.site>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Jul 2009 14:11:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50902 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753951AbZGBSLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:11:31 -0400
+Message-ID: <4A4CF830.6000206@kernel.org>
+Date: Thu, 02 Jul 2009 11:10:56 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, alex.shi@intel.com,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH] x86: add boundary check for 32bit res before expand e820
+ resource to alignment -v2
+References: <200906261559.n5QFxJH8027336@pilspetsen.it.uu.se> <4A484A8A.9020704@zytor.com> <19016.41349.636663.515540@pilspetsen.it.uu.se> <20090629112155.GJ5480@parisc-linux.org> <19016.44061.600652.676183@pilspetsen.it.uu.se> <4A490804.3040609@zytor.com> <4A494478.7020304@kernel.org> <4A494E3C.70304@kernel.org> <4A495C0D.2020807@zytor.com> <4A4966EF.6010809@kernel.org> <alpine.LFD.2.01.0906291820060.3605@localhost.localdomain> <4A496D4B.3040608@kernel.org> <19017.53428.834539.389495@pilspetsen.it.uu.se> <4A4A25B1.5010102@zytor.com> <4A4A6888.30001@kernel.org> <4A4A6B1C.7030405@zytor.com> <4A4A701F.3050700@kernel.org> <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org> <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain> <alpine.LFD.2.01.0906301603280.3605@localhost.localdomain> <4A4A9C2F.80808@kernel.org> <4A4A9D8E.5080500@zytor.com> <4A4BB9C2.8020304@kernel.org>
+In-Reply-To: <4A4BB9C2.8020304@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As a linux maintainer, you know we try very hard to encourage vendors
-> not to carry long lived out of tree patches because of the complexity it
-> causes for everyone.
 
-For the non kernel cases with patent questions this isn't the pattern you
-see. And for good reasons. A US patent compliant version of mplayer is
-probably a jpeg viewer. It would be very harmful to the rest of the world
-to gut the main package in that case.
+fix hang with HIGHMEM_64G and 32bit resource.
+according to hpa and Linus, use (resource_size_t)-1 to fend off big ranges.
+analyized by hpa
 
-For the kernel case the reality is this
+Alex found:
+for i386 machine the specjbb2005 still can not run with hugepage
 
-If we include no patch the people concerned will remove the code from
-their distributed source tarball
+-v2: it also fix hugepage problem
 
-If we include a config option, the people concerned will *STILL* remove
-the code from their distributed source tarball.
+Reported-and-tested-by: Mikael Pettersson <mikpe@it.uu.se>
+Reported-and-Tested-by: Alex Shi <alex.shi@intel.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-so the debate about out of tree patches is not as relevant as might at
-first seem obvious. The simple problem is that the GPL says if you give
-me the binaries I can ask for the sources which produced them. If those
-sources contain the source to an algorithm where there are claims of
-possible patent problems then the lawyers will prefer to play as safe as
-possible and pull the sources that concern them before they even permit
-anyone to type "make". A quick look at some packages from big US
-based vendors will show you that is happening all the time to pull out
-stuff as varied as mp3 playing and the openssh decss crypto mode.
+---
+ arch/x86/include/asm/proto.h |    3 ---
+ arch/x86/kernel/e820.c       |   20 ++++++++++++--------
+ include/linux/kernel.h       |    5 +++++
+ 3 files changed, 17 insertions(+), 11 deletions(-)
 
-[Other bits cut, conspiracy case point noted and its why you should not
-post to linux-kernel with a fever temperature ;) ]
-
-> > There is a clear end user expectation that vfat means "microsoft fat with
-> > extended names". By all means add support for "not vfat" but don't call
-> > it "vfat" as that is misleading an interface breakage.
-> 
-> The Microsoft FAT32 standard only says files with long names *may* be
-> visible on 8.3 FAT systems, it doesn't say *shall*.  Therefore, my
-> reading is that this patch is fully compliant with the FAT32 standard,
-> and thus *is* definitely what we call vfat in Linux.  Or are you
-> claiming that we've somehow extended the definition of vfat to mean
-> complies with FAT32 + makes 8.3 names available as well?
-
-I'm simply of the viewpoint that users expect certain behaviours and
-compatibilities and that therefore it would be best if the new filesystem
-variant had a new name. I'm not saying cp -r fs/foo fs/bar, just a new
-mount name.
-
+Index: linux-2.6/arch/x86/kernel/e820.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/e820.c
++++ linux-2.6/arch/x86/kernel/e820.c
+@@ -1367,9 +1367,9 @@ void __init e820_reserve_resources(void)
+ }
+ 
+ /* How much should we pad RAM ending depending on where it is? */
+-static unsigned long ram_alignment(resource_size_t pos)
++static u64 ram_alignment(u64 pos)
+ {
+-	unsigned long mb = pos >> 20;
++	u64 mb = pos >> 20;
+ 
+ 	/* To 64kB in the first megabyte */
+ 	if (!mb)
+@@ -1383,6 +1383,8 @@ static unsigned long ram_alignment(resou
+ 	return 32*1024*1024;
+ }
+ 
++#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
++
+ void __init e820_reserve_resources_late(void)
+ {
+ 	int i;
+@@ -1400,17 +1402,19 @@ void __init e820_reserve_resources_late(
+ 	 * avoid stolen RAM:
+ 	 */
+ 	for (i = 0; i < e820.nr_map; i++) {
+-		struct e820entry *entry = &e820_saved.map[i];
+-		resource_size_t start, end;
++		struct e820entry *entry = &e820.map[i];
++		u64 start, end;
+ 
+ 		if (entry->type != E820_RAM)
+ 			continue;
+ 		start = entry->addr + entry->size;
+-		end = round_up(start, ram_alignment(start));
+-		if (start == end)
++		end = round_up(start, ram_alignment(start)) - 1;
++		if (end > MAX_RESOURCE_SIZE)
++			end = MAX_RESOURCE_SIZE;
++		if (start > end)
+ 			continue;
+-		reserve_region_with_split(&iomem_resource, start,
+-						  end - 1, "RAM buffer");
++		reserve_region_with_split(&iomem_resource, start, end,
++					  "RAM buffer");
+ 	}
+ }
+ 
