@@ -1,45 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZGBPsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZGBPyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007AbZGBPsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZGBPsH
+	id S1754928AbZGBPyr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZGBPyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:48:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46348 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZGBPsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:48:05 -0400
-Message-ID: <4A4CD729.6050300@redhat.com>
-Date: Thu, 02 Jul 2009 18:50:01 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mst@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v9 0/5] irqfd fixes and enhancements
-References: <20090702153454.20186.99191.stgit@dev.haskins.net>
-In-Reply-To: <20090702153454.20186.99191.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 11:54:40 -0400
+Received: from ffwww.filmfestivals.com ([82.138.79.148]:58219 "EHLO
+	ffc.filmfestivals.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751890AbZGBPyj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 11:54:39 -0400
+X-Greylist: delayed 1550 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 11:54:38 EDT
+From: johnlouie98@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Read this on www.Filmfestivals.com
+Message-Id: <20090702144017.0C15E1125D8@ffc.filmfestivals.com>
+Date: Thu,  2 Jul 2009 16:40:17 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/02/2009 06:37 PM, Gregory Haskins wrote:
-> (Applies to kvm.git/master:1f9050fd)
->
-> The following is the latest attempt to fix the races in irqfd/eventfd, as
-> well as restore DEASSIGN support.  For more details, please read the patch
-> headers.
->
-> As always, this series has been tested against the kvm-eventfd unit test
-> and everything appears to be functioning properly. You can download this
-> test here:
->    
+Respected Friends,
 
-Applied, thanks.
+Imagine for a moment the  Reality of logging on to your email account and receiving cash from all over the world. Can you imagine your excitement when you see $6, $12, $24 or  even $36 - $60 payments of cash being paid direct to you via your email  DAILY for the rest of your life!?
 
--- 
-error compiling committee.c: too many arguments to function
+Well! Don't imagine it because YOU can do it starting right this minute!!!
+
+JUST VISIT THIS SITE!!!
+http://hosturl.com/ds 
+
+John Louie
+
+to unsubscribe reply REMOVE
+
+Thank you for visiting my site! 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Your friend, John Louie would like to share a Film Festivals site with you
+ <http://ff_jsc/servlet/JSCRun?obj=Fiche&CfgPath=ffs&id=4206>
+ 
+ The Film Festivals server http://www.FilmFestivals.com
 
