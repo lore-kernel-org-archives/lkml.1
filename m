@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753044AbZGBKm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZGBKqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753044AbZGBKm6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 06:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbZGBKmu
+	id S1754080AbZGBKqI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 06:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZGBKp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 06:42:50 -0400
-Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:11732 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751054AbZGBKmt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 06:42:49 -0400
-X-SpamScore: -17
-X-BigFish: VPS-17(zz1432R98dN1805Mzz1202hzzz32i6bh6di43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KM5HQM-01-4CR-01
-Date: Thu, 2 Jul 2009 12:41:11 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Maciej W. Rozycki" <macro@linux-mips.org>, Greg KH <gregkh@suse.de>,
-       x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Doug Thompson <norsk5@yahoo.com>, Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
-Message-ID: <20090702104111.GA24940@aftab>
-References: <20090624213211.GA11291@kroah.com>
- <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org>
- <20090630223040.GA3802@suse.de>
- <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org>
- <20090701111003.GC15958@elte.hu>
- <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org>
- <20090702075305.GC19187@elte.hu>
+	Thu, 2 Jul 2009 06:45:58 -0400
+Received: from mail-bw0-f225.google.com ([209.85.218.225]:63408 "EHLO
+	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbZGBKp5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 06:45:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=H9zY+z6dfLY8K3ijZrtwpiVPOo45eGIgcwDn2vElDcJTImLCtzmEVUz3AVR/Cn8QIv
+         1qDc6uCvvotSINqR+qn4Zic5mbUutoJZ5ShtG2oDWaOojcrXs7xKLBEbo5sU7gtcHMVU
+         8zBNit90qhJje8gUXYYCHmz1AND2tZfCbiEXs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090702075305.GC19187@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 02 Jul 2009 10:41:10.0687 (UTC) FILETIME=[9D26BAF0:01C9FB01]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1246530720.4752.12.camel@laptop>
+References: <a5d9929e0906270807s4c0ef74ap2296dce4c790ea9a@mail.gmail.com> 
+	<2375c9f90906281908k7aa089a3v932dd368d572194b@mail.gmail.com> 
+	<a5d9929e0906290153g305427c6j37f96db060cb4738@mail.gmail.com> 
+	<20090629091508.GA6308@cr0.nay.redhat.com> <a5d9929e0906290330s704d5848nb36ce2d37dc9124b@mail.gmail.com> 
+	<20090630091640.GB5873@cr0.nay.redhat.com> <a5d9929e0907011330u3b5f45a4l667b27e5cd22e22f@mail.gmail.com> 
+	<20090702093120.GD6372@cr0.nay.redhat.com> <1246530720.4752.12.camel@laptop>
+From: Joao Correia <joaomiguelcorreia@gmail.com>
+Date: Thu, 2 Jul 2009 11:45:39 +0100
+Message-ID: <a5d9929e0907020345o4e57897n597bedb2fd1fcf2a@mail.gmail.com>
+Subject: Re: lockdep max numbers (was Re: Crashes during boot on 2.6.30 / 
+	2.6.31-rc, random programs)
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 02, 2009 at 09:53:05AM +0200, Ingo Molnar wrote:
-> > That shouldn't be a problem if we were about to panic().  For a 
-> > more sophisticated attempt of recovery -- yes, that would have to 
-> > be addressed.
-> 
-> We are only panic-ing if the sysctl is set. The diagnostics would be 
-> useful anyway. The proper approach would be to defer it a bit in the 
-> non-panic case an read it out from some friendlier context - such as 
-> the EDAC core.
+Every boot, different programs, on a fedora 11 box. If i dont touch
+any of the limits mentioned, it happens every boot.
 
-Quickly skimming through code shows some functionality is there:
-drivers/edac/edac_pci{,_sysfs}.c but doesn't seem to be NMI safe. CCing
-some more people.
+Changing the two values mentioned, a third complain appears, althouh
+more infrequently. I have had  MAX_LOCKDEP_CHAINS pop up regarding
+qemu-kvm, and once again on unrar, during regular box usage.
 
--- 
-Regards/Gruss,
-Boris.
+(quad core phenom 9600, asus m3a-h/hdmi board with 4gb ram).
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Thank you very much for your time,
+Joao Correia
+Centro de Informatica
+Universidade da Beira Interior
+Portugal
 
+On Thu, Jul 2, 2009 at 11:32 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> On Thu, 2009-07-02 at 17:31 +0800, Amerigo Wang wrote:
+>> On Wed, Jul 01, 2009 at 09:30:23PM +0100, Joao Correia wrote:
+>> >Hello again
+>> >
+>> >Looks like this just opened the lid on some other limits. I just hit
+>> >another thing, which hadn't shown up before i made the changes, but
+>> >looks like its just another limit thats too low. This one is harder to
+>> >reproduce tho.
+>> >
+>> >Jun 30 21:35:03 hightech kernel: BUG: MAX_LOCKDEP_CHAINS too low!
+>> >Jun 30 21:35:03 hightech kernel: turning off the locking correctness validator.
+>> >Jun 30 21:35:03 hightech kernel: Pid: 9379, comm: qemu-kvm Not tainted
+>>
+>>
+>> Similar problem...
+>>
+>> Peter? Would like to increase these numbers?
+>
+>> >2.6.30-wl #3
+>
+>> >Jun 30 21:35:03 hightech kernel: [<c05d0c66>] debug_dma_map_sg+0xe1/0x147
+>
+> We recently fixed the dma debug stuff to require less lockdep resources,
+> Joerg might know if that made it into .30.
+>
+>> >>>So i dug a little on the source and changed
+>> >>>
+>> >>>include/linux/sched.h
+>> >>>
+>> >>># define MAX_LOCK_DEPTH 48UL
+>> >>>
+>> >>>to
+>> >>>
+>> >>># define MAX_LOCK_DEPTH 96UL
+>
+>> >> Let's Cc: Peter to see if he would like to change this number...
+>> >>
+>> >> Peter?
+>
+> I really don't think we want to raise this, I mean, holding more that 48
+> locks at the same time is somewhat pushing it, don't you think?
+>
+> Where do you run into this limit?
+>
+>
