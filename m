@@ -1,217 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbZGBP1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZGBP2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbZGBP1c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZGBP1H
+	id S1756385AbZGBP2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZGBP1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:27:07 -0400
-Received: from ey-out-1920.google.com ([74.125.78.147]:9730 "EHLO
-	ey-out-1920.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbZGBP1E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:27:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=DnFlmkfXsd43rLMvP4rS6Uo6kvLl6G7MrOc7kjxJDL8XHDYBxx2gDdimUICkoArODU
-         QF1lBum7wf45rRahYA0+KiYdykEDB4vPxBvg2ze3uK69z5pJnG003nrtMV7U78+YuV03
-         Evy46WjLhirv5MJWkxppMPQszwty5UTzCcuag=
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       ralf@linux-mips.org, Jason Wessel <jason.wessel@windriver.com>
-Cc: Wu Zhangjin <wuzj@lemote.com>, Yan Hua <yanh@lemote.com>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>,
-       loongson-dev <loongson-dev@googlegroups.com>,
-       Liu Junliang <liujl@lemote.com>, Erwan Lerale <erwan@thiscow.com>,
-       Arnaud Patard <apatard@mandriva.com>
-Subject: [PATCH v4 02/16] [loongson] kgdb: Remove out-of-date board-specific source code
-Date: Thu,  2 Jul 2009 23:19:33 +0800
-Message-Id: <0e211b21ed263c482b3717e8feb9bd84e1a11839.1246546684.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <cover.1246546684.git.wuzhangjin@gmail.com>
-References: <cover.1246546684.git.wuzhangjin@gmail.com>
+	Thu, 2 Jul 2009 11:27:45 -0400
+Received: from THUNK.ORG ([69.25.196.29]:57254 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756084AbZGBP1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 11:27:43 -0400
+Date: Thu, 2 Jul 2009 11:27:27 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, tridge@samba.org,
+       Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090702152727.GB30665@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, tridge@samba.org,
+	Pavel Machek <pavel@ucw.cz>,
+	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+	Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+	Paul McKenney <paulmck@linux.vnet.ibm.com>
+References: <20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org> <20090701123141.402c17d2@lxorguk.ukuu.org.uk> <19019.25035.244941.352337@samba.org> <20090701143844.07728fdf@lxorguk.ukuu.org.uk> <19019.27736.647500.497114@samba.org> <20090701154151.7f45abad@lxorguk.ukuu.org.uk> <19020.12748.348370.708306@samba.org> <20090702113200.39a15f21@lxorguk.ukuu.org.uk> <1246546567.4055.27.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246546567.4055.27.camel@mulgrave.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzj@lemote.com>
+On Thu, Jul 02, 2009 at 02:56:07PM +0000, James Bottomley wrote:
+>      3. For this patch, since there are legal issues which could harm
+>         the defence of any company to be discussed openly, the LF is
+>         paying the retainer for John Lanza to be available to any member
+>         of the community on a one on one basis, so that the discussions
+>         they engage in would be protected by client privilege (i.e. not
+>         subject to discovery).
 
-as the commit: 8854700115ecf8aa6f087aa915b7b6cf18090d39 shows, the new
-mips-specific kgdb implementation not need this board-specific source
-code, just remove it.
+I believe what has been made available is that people who have some
+detailed legal questions can contact John Lanza who can either respond
+off-line via e-mail, schedule time for a phone call, and if really
+necessary, it _can_ be possible to establish a formal client/attorney
+privilege with John.  These different options are listed in order of
+increasing cost to the Linux Foundation.  
 
-Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
----
- arch/mips/lemote/lm2e/Makefile |    2 +-
- arch/mips/lemote/lm2e/dbg_io.c |  146 ----------------------------------------
- 2 files changed, 1 insertions(+), 147 deletions(-)
- delete mode 100644 arch/mips/lemote/lm2e/dbg_io.c
+Which option gets chosen will depend on the specific question and who
+is asking the question; which is to say, setting up a formal
+client/attorney privilege might be more appropriate for Hirofumi or
+Linus, but obviously the LF can't afford to set up relationships where
+client privilege would apply for any random LKML reader who is
+randomly curious about the way things work.
 
-diff --git a/arch/mips/lemote/lm2e/Makefile b/arch/mips/lemote/lm2e/Makefile
-index d34671d..b0c0339 100644
---- a/arch/mips/lemote/lm2e/Makefile
-+++ b/arch/mips/lemote/lm2e/Makefile
-@@ -2,6 +2,6 @@
- # Makefile for Lemote Fulong mini-PC board.
- #
- 
--obj-y += setup.o prom.o reset.o irq.o pci.o bonito-irq.o dbg_io.o mem.o
-+obj-y += setup.o prom.o reset.o irq.o pci.o bonito-irq.o mem.o
- 
- EXTRA_CFLAGS += -Werror
-diff --git a/arch/mips/lemote/lm2e/dbg_io.c b/arch/mips/lemote/lm2e/dbg_io.c
-deleted file mode 100644
-index 6c95da3..0000000
---- a/arch/mips/lemote/lm2e/dbg_io.c
-+++ /dev/null
-@@ -1,146 +0,0 @@
--/*
-- * Copyright 2001 MontaVista Software Inc.
-- * Author: Jun Sun, jsun@mvista.com or jsun@junsun.net
-- * Copyright (C) 2000, 2001 Ralf Baechle (ralf@gnu.org)
-- *
-- * Copyright (C) 2007 Lemote Inc. & Insititute of Computing Technology
-- * Author: Fuxin Zhang, zhangfx@lemote.com
-- *
-- *  This program is free software; you can redistribute  it and/or modify it
-- *  under  the terms of  the GNU General  Public License as published by the
-- *  Free Software Foundation;  either version 2 of the  License, or (at your
-- *  option) any later version.
-- *
-- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
-- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
-- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
-- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
-- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
-- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
-- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- *
-- *  You should have received a copy of the  GNU General Public License along
-- *  with this program; if not, write  to the Free Software Foundation, Inc.,
-- *  675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- */
--
--#include <linux/io.h>
--#include <linux/init.h>
--#include <linux/types.h>
--
--#include <asm/serial.h>
--
--#define         UART16550_BAUD_2400             2400
--#define         UART16550_BAUD_4800             4800
--#define         UART16550_BAUD_9600             9600
--#define         UART16550_BAUD_19200            19200
--#define         UART16550_BAUD_38400            38400
--#define         UART16550_BAUD_57600            57600
--#define         UART16550_BAUD_115200           115200
--
--#define         UART16550_PARITY_NONE           0
--#define         UART16550_PARITY_ODD            0x08
--#define         UART16550_PARITY_EVEN           0x18
--#define         UART16550_PARITY_MARK           0x28
--#define         UART16550_PARITY_SPACE          0x38
--
--#define         UART16550_DATA_5BIT             0x0
--#define         UART16550_DATA_6BIT             0x1
--#define         UART16550_DATA_7BIT             0x2
--#define         UART16550_DATA_8BIT             0x3
--
--#define         UART16550_STOP_1BIT             0x0
--#define         UART16550_STOP_2BIT             0x4
--
--/* ----------------------------------------------------- */
--
--/* === CONFIG === */
--#ifdef CONFIG_64BIT
--#define         BASE                    (0xffffffffbfd003f8)
--#else
--#define         BASE                    (0xbfd003f8)
--#endif
--
--#define         MAX_BAUD                BASE_BAUD
--/* === END OF CONFIG === */
--
--#define         REG_OFFSET              1
--
--/* register offset */
--#define         OFS_RCV_BUFFER          0
--#define         OFS_TRANS_HOLD          0
--#define         OFS_SEND_BUFFER         0
--#define         OFS_INTR_ENABLE         (1*REG_OFFSET)
--#define         OFS_INTR_ID             (2*REG_OFFSET)
--#define         OFS_DATA_FORMAT         (3*REG_OFFSET)
--#define         OFS_LINE_CONTROL        (3*REG_OFFSET)
--#define         OFS_MODEM_CONTROL       (4*REG_OFFSET)
--#define         OFS_RS232_OUTPUT        (4*REG_OFFSET)
--#define         OFS_LINE_STATUS         (5*REG_OFFSET)
--#define         OFS_MODEM_STATUS        (6*REG_OFFSET)
--#define         OFS_RS232_INPUT         (6*REG_OFFSET)
--#define         OFS_SCRATCH_PAD         (7*REG_OFFSET)
--
--#define         OFS_DIVISOR_LSB         (0*REG_OFFSET)
--#define         OFS_DIVISOR_MSB         (1*REG_OFFSET)
--
--/* memory-mapped read/write of the port */
--#define         UART16550_READ(y)	readb((char *)BASE + (y))
--#define         UART16550_WRITE(y, z)	writeb(z, (char *)BASE + (y))
--
--void debugInit(u32 baud, u8 data, u8 parity, u8 stop)
--{
--	u32 divisor;
--
--	/* disable interrupts */
--	UART16550_WRITE(OFS_INTR_ENABLE, 0);
--
--	/* set up buad rate */
--	/* set DIAB bit */
--	UART16550_WRITE(OFS_LINE_CONTROL, 0x80);
--
--	/* set divisor */
--	divisor = MAX_BAUD / baud;
--	UART16550_WRITE(OFS_DIVISOR_LSB, divisor & 0xff);
--	UART16550_WRITE(OFS_DIVISOR_MSB, (divisor & 0xff00) >> 8);
--
--	/* clear DIAB bit */
--	UART16550_WRITE(OFS_LINE_CONTROL, 0x0);
--
--	/* set data format */
--	UART16550_WRITE(OFS_DATA_FORMAT, data | parity | stop);
--}
--
--static int remoteDebugInitialized;
--
--u8 getDebugChar(void)
--{
--	if (!remoteDebugInitialized) {
--		remoteDebugInitialized = 1;
--		debugInit(UART16550_BAUD_115200,
--			  UART16550_DATA_8BIT,
--			  UART16550_PARITY_NONE, UART16550_STOP_1BIT);
--	}
--
--	while ((UART16550_READ(OFS_LINE_STATUS) & 0x1) == 0) ;
--	return UART16550_READ(OFS_RCV_BUFFER);
--}
--
--int putDebugChar(u8 byte)
--{
--	if (!remoteDebugInitialized) {
--		remoteDebugInitialized = 1;
--		/*
--		   debugInit(UART16550_BAUD_115200,
--		   UART16550_DATA_8BIT,
--		   UART16550_PARITY_NONE, UART16550_STOP_1BIT); */
--	}
--
--	while ((UART16550_READ(OFS_LINE_STATUS) & 0x20) == 0) ;
--	UART16550_WRITE(OFS_SEND_BUFFER, byte);
--	return 1;
--}
--- 
-1.6.2.1
+So just to make it clear, with respect to expectations, simply sending
+e-mail to John doesn't automatically set up a client relationship that
+which protects the discussion under client/attorney privilege.
+Setting that up *does* cost LF real money, so I would ask folks to be
+considerate about the LF's resources!
 
+BTW, Tridge has offered to be available for phone conversations, since
+he's probably asked the various lawyers that have been consulted most
+of the questions that people might have; so that's another option for
+people who have legal questions that would be kinder and gentler to
+the LF's budget.
+
+And of course, keep in mind that this offer is really only for people
+who want to clarification of any background legal issues, not to
+debate the issue of whether or not the patch should go in.  That
+policy discussion should happen openly, like any other proposed patch,
+and ultimately it's Hirofumi-san's and/or Linus's call.
+
+						- Ted
