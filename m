@@ -1,125 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbZGBQ00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZGBQ0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbZGBQ00 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 12:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZGBQ0R
+	id S1755270AbZGBQ0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 12:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZGBQ0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 12:26:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34180 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751098AbZGBQ0Q (ORCPT
+	Thu, 2 Jul 2009 12:26:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2002 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbZGBQ0k convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 12:26:16 -0400
-Date: Thu, 2 Jul 2009 09:25:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Kevin Cernekee <cernekee@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix virt_to_phys() warnings
-Message-Id: <20090702092536.b0f6a3da.akpm@linux-foundation.org>
-In-Reply-To: <20090702104027.GB14804@linux-mips.org>
-References: <910ba280decc9ee53d9971ba04f73fab@localhost>
-	<20090701224627.0b2704df.akpm@linux-foundation.org>
-	<20090702104027.GB14804@linux-mips.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 12:26:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=YSBwq62TQZphGJUbzWvJffrqqbYbb9C4jXe1Bn3/mz+wnaBiOn0LO1yIc1N7iN4tz
+	WcqYcebL7MIHQZx+VBfpw==
+MIME-Version: 1.0
+In-Reply-To: <4A4C0C60.4050106@cn.fujitsu.com>
+References: <4A4C0C60.4050106@cn.fujitsu.com>
+Date: Thu, 2 Jul 2009 09:26:38 -0700
+Message-ID: <6599ad830907020926t6305bec9t44a50cc165f6fc28@mail.gmail.com>
+Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Jul 2009 11:40:27 +0100 Ralf Baechle <ralf@linux-mips.org> wrote:
+On Wed, Jul 1, 2009 at 6:24 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+> The bug was introduced by commit cc31edceee04a7b87f2be48f9489ebb72d264844
+> ("cgroups: convert tasks file to use a seq_file with shared pid array").
+>
+> We cache a pid array for all threads that are opening the same "tasks"
+> file, but the pids in the array are always from the namespace of the
+> last process that opened the file, so all other threads will read pids
+> from that namespace instead of their own namespaces.
+>
+> To fix it, we maintain a list of pid arrays, which is keyed by pid_ns.
+> The list will be of length 1 at most time.
+>
+> Reported-by: Paul Menage <menage@google.com>
+> Idea-by: Paul Menage <menage@google.com>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  include/linux/cgroup.h |   11 ++----
+>  kernel/cgroup.c        |   94 +++++++++++++++++++++++++++++++++++------------
+>  2 files changed, 74 insertions(+), 31 deletions(-)
+>
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 665fa70..20411d2 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
+> @@ -179,14 +179,11 @@ struct cgroup {
+>         */
+>        struct list_head release_list;
+>
+> -       /* pids_mutex protects the fields below */
+> +       /* pids_mutex protects pids_list and cached pid arrays. */
+>        struct rw_semaphore pids_mutex;
+> -       /* Array of process ids in the cgroup */
+> -       pid_t *tasks_pids;
+> -       /* How many files are using the current tasks_pids array */
+> -       int pids_use_count;
+> -       /* Length of the current tasks_pids array */
+> -       int pids_length;
+> +
+> +       /* Linked list of struct cgroup_pids */
+> +       struct list_head pids_list;
+>
+>        /* For RCU-protected deletion */
+>        struct rcu_head rcu_head;
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 3737a68..13dddb4 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -47,6 +47,7 @@
+>  #include <linux/hash.h>
+>  #include <linux/namei.h>
+>  #include <linux/smp_lock.h>
+> +#include <linux/pid_namespace.h>
+>
+>  #include <asm/atomic.h>
+>
+> @@ -960,6 +961,7 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+>        INIT_LIST_HEAD(&cgrp->children);
+>        INIT_LIST_HEAD(&cgrp->css_sets);
+>        INIT_LIST_HEAD(&cgrp->release_list);
+> +       INIT_LIST_HEAD(&cgrp->pids_list);
+>        init_rwsem(&cgrp->pids_mutex);
+>  }
+>  static void init_cgroup_root(struct cgroupfs_root *root)
+> @@ -2201,12 +2203,30 @@ err:
+>        return ret;
+>  }
+>
+> +/*
+> + * Cache pids for all threads in the same pid namespace that are
+> + * opening the same "tasks" file.
+> + */
+> +struct cgroup_pids {
+> +       /* The node in cgrp->pids_list */
+> +       struct list_head list;
+> +       /* The cgroup those pids belong to */
+> +       struct cgroup *cgrp;
+> +       /* The namepsace those pids belong to */
+> +       struct pid_namespace *pid_ns;
+> +       /* Array of process ids in the cgroup */
+> +       pid_t *tasks_pids;
+> +       /* How many files are using the this tasks_pids array */
+> +       int pids_use_count;
+> +       /* Length of the current tasks_pids array */
+> +       int pids_length;
+> +};
 
-> On Wed, Jul 01, 2009 at 10:46:27PM -0700, Andrew Morton wrote:
-> 
-> > > mm/page_alloc.c: In function 'alloc_pages_exact':
-> > > mm/page_alloc.c:1986: warning: passing argument 1 of 'virt_to_phys' makes pointer from integer without a cast
-> > > 
-> > > drivers/usb/mon/mon_bin.c: In function 'mon_alloc_buff':
-> > > drivers/usb/mon/mon_bin.c:1264: warning: passing argument 1 of 'virt_to_phys' makes pointer from integer without a cast
-> > > 
-> > > Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
-> > > ---
-> > > diff --git a/drivers/usb/mon/mon_bin.c b/drivers/usb/mon/mon_bin.c
-> > > index f8d9045..0f7a30b 100644
-> > > --- a/drivers/usb/mon/mon_bin.c
-> > > +++ b/drivers/usb/mon/mon_bin.c
-> > > @@ -1261,7 +1261,7 @@ static int mon_alloc_buff(struct mon_pgmap *map, int npages)
-> > >  			return -ENOMEM;
-> > >  		}
-> > >  		map[n].ptr = (unsigned char *) vaddr;
-> > > -		map[n].pg = virt_to_page(vaddr);
-> > > +		map[n].pg = virt_to_page((void *) vaddr);
-> > >  	}
-> > >  	return 0;
-> > >  }
-> > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > > index 5d714f8..f6180db 100644
-> > > --- a/mm/page_alloc.c
-> > > +++ b/mm/page_alloc.c
-> > > @@ -1983,7 +1983,7 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
-> > >  		unsigned long alloc_end = addr + (PAGE_SIZE << order);
-> > >  		unsigned long used = addr + PAGE_ALIGN(size);
-> > >  
-> > > -		split_page(virt_to_page(addr), order);
-> > > +		split_page(virt_to_page((void *)addr), order);
-> > >  		while (used < alloc_end) {
-> > >  			free_page(used);
-> > >  			used += PAGE_SIZE;
-> > 
-> > The virt_to_foo() functions were written back in the Linux dark ages and
-> > they're horrid.  A byzantine mixture of macros and typecasts which make
-> > it really hard to work out what type their argument actually should be.
-> 
-> No disagreement there.
-> 
-> > virt_to_page() takes an argument of type `unsigned long'.  (except for
-> > the include/asm-generic/page.h version which takes any damn type at
-> > all).
-> 
-> You meant it takes a pointer argument, for example:
-> 
-> mm/page_alloc.c:
-> 	__free_pages(virt_to_page((void *)addr), order);
-> mm/slob.c:
-> static inline struct slob_page *slob_page(const void *addr)
-> {
->         return (struct slob_page *)virt_to_page(addr);
-> }
-> 
-
-lol.  I think you're right.  What a crock.
-
-looky, they're popping up everywhere:
-
-: static void perf_mmap_free_page(unsigned long addr)
-: {
-: 	struct page *page = virt_to_page(addr);
-: 
-
-And mm/nommu.c:
-
-: int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-: 		     unsigned long start, int nr_pages, int flags,
-:		     struct page **pages, struct vm_area_struct **vmas)
-: {
-: 	...
-:                       pages[i] = virt_to_page(start);
-
-
-: static void free_page_series(unsigned long from, unsigned long to)
-: {
-: 	for (; from < to; from += PAGE_SIZE) {
-: 		struct page *page = virt_to_page(from);
-
-Heaven knows how many more there are.  I guess we should drag x86's
-virt_to_page()/virt_to_phys() into the 1980's by doing some
-compile-time arg checking?
+Maybe lose the unnecessary "pids" suffices and prefixes in this structure?
 
 >
-> ...
-> 
-> Anyway, since virt_to_page and virt_to_phys (imho :-) take the same
-> argument times I'm in favor of Kevin's patch.
+> @@ -2324,6 +2352,8 @@ static struct file_operations cgroup_tasks_operations = {
+>  static int cgroup_tasks_open(struct inode *unused, struct file *file)
+>  {
+>        struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+> +       struct pid_namespace *pid_ns = task_active_pid_ns(current);
+> +       struct cgroup_pids *cp;
+>        pid_t *pidarray;
+>        int npids;
+>        int retval;
+> @@ -2350,20 +2380,36 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+>         * array if necessary
+>         */
+>        down_write(&cgrp->pids_mutex);
+> -       kfree(cgrp->tasks_pids);
+> -       cgrp->tasks_pids = pidarray;
+> -       cgrp->pids_length = npids;
+> -       cgrp->pids_use_count++;
+> +
+> +       list_for_each_entry(cp, &cgrp->pids_list, list) {
+> +               if (pid_ns == cp->pid_ns)
+> +                       goto found;
+> +       }
+> +
+> +       cp = kzalloc(sizeof(*cp), GFP_KERNEL);
+> +       if (!cp) {
+> +               up_write(&cgrp->pids_mutex);
+> +               kfree(pidarray);
+> +               return -ENOMEM;
+> +       }
+> +       cp->cgrp = cgrp;
+> +       cp->pid_ns = pid_ns;
 
-yup, I'll queue it.
+You're storing an uncounted reference to the pid ns here - there's no
+guarantee that the pid_ns will outlive the open file.
+
+Paul
