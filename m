@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZGBA7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZGBBDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbZGBA7x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 20:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZGBA7q
+	id S1754189AbZGBBDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZGBBDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 20:59:46 -0400
-Received: from mga12.intel.com ([143.182.124.36]:11588 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751579AbZGBA7p (ORCPT
+	Wed, 1 Jul 2009 21:03:13 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:47896 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZGBBDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 20:59:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,329,1243839600"; 
-   d="asc'?scan'208";a="160716458"
-Date: Thu, 2 Jul 2009 08:59:46 +0800
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andy Whitcroft <apw@canonical.com>, Dave Airlie <airlied@linux.ie>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] i915: fix up a raw 64bit divide
-Message-ID: <20090702005946.GB6705@zhen-devel.sh.intel.com>
-Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
-Mail-Followup-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Andy Whitcroft <apw@canonical.com>, Dave Airlie <airlied@linux.ie>,
-	dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <1246458059-15965-1-git-send-email-apw@canonical.com>
- <20090701091255.363f9d4d@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="NDin8bjvE/0mNLFQ"
-Content-Disposition: inline
-In-Reply-To: <20090701091255.363f9d4d@jbarnes-g45>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 1 Jul 2009 21:03:12 -0400
+Subject: Re: X server hung, kernel said "task blocked for >120 secs"
+ (2.6.30)
+From: Eric Anholt <eric@anholt.net>
+To: Sanjoy Mahajan <sanjoy@MIT.EDU>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <E1MM2yf-0002dX-Lg@approx.mit.edu>
+References: <E1MM2yf-0002dX-Lg@approx.mit.edu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-lYg+CWomkDZh4fL3wukq"
+Date: Wed, 01 Jul 2009 18:03:15 -0700
+Message-Id: <1246496595.16527.3.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---NDin8bjvE/0mNLFQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-lYg+CWomkDZh4fL3wukq
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On 2009.07.01 09:12:55 -0700, Jesse Barnes wrote:
-> On Wed,  1 Jul 2009 15:20:59 +0100
-> Andy Whitcroft <apw@canonical.com> wrote:
+On Wed, 2009-07-01 at 12:48 -0400, Sanjoy Mahajan wrote:
+> [Have been away for 10 days and just saw the message]
 >=20
-> > We are seeing compilation failures on i386 in some environments due
-> > to an undefined reference as below:
-> >=20
-> >     ERROR: "__udivdi3" [drivers/gpu/drm/i915/i915.ko] undefined!
-> >=20
-> > This is generated due to a raw 64 bit divide in the i915 driver.  Fix
-> > up this raw divide.
-> >=20
-> > Signed-off-by: Andy Whitcroft <apw@canonical.com>
+> > I assume this is a regression?  Since 2.6.29?
 >=20
-> I think building with newer GCCs will prevent this error, but the fix
-> looks fine.
+> I never saw it before using 2.6.30 and haven't been able to reproduce
+> it even running 2.6.30. =20
 >=20
-> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->=20
+> So it could be a regression.  Or it could be a recurring problem (I had
+> a few X lockups with earlier kernels) now exposed by a blocked-task
+> timer (the "INFO: task events/0:9 blocked for more than 120 seconds"
+> message) -- if that notification code is new in 2.6.30?
 
-yeah, sorry I didn't catch that.
-
-Acked-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+This message appears when the GPU is hung but somebody is still trying
+to use it.  The problem is that the GPU is hung, not the presence of the
+message (so you can't use the message to indicate any particular bug,
+and the bug is almost always in userland).
 
 --=20
-Open Source Technology Center, Intel ltd.
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
-$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
 
---NDin8bjvE/0mNLFQ
+
+--=-lYg+CWomkDZh4fL3wukq
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkpMBoIACgkQsQQaM014GCdqugCdF00FHZ2Zx4CTdDnzztj1pCYs
-v+wAn0LLedM/ppakgoH+Wa1CJpKDhlkR
-=f+Q8
+iEUEABECAAYFAkpMB1MACgkQHUdvYGzw6vd1+gCdGe5ZIzOxypjEsejRT/GVgFCM
+l+kAmMgj6dcuCdKDKaNvLeOFDfITXOs=
+=wuJT
 -----END PGP SIGNATURE-----
 
---NDin8bjvE/0mNLFQ--
+--=-lYg+CWomkDZh4fL3wukq--
+
