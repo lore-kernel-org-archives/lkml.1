@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZGBVNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZGBVQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZGBVNx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 17:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZGBVNp
+	id S1754928AbZGBVQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 17:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZGBVQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 17:13:45 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:51813 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509AbZGBVNp (ORCPT
+	Thu, 2 Jul 2009 17:16:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753456AbZGBVQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 17:13:45 -0400
-Message-ID: <4A4D2306.2000208@nortel.com>
-Date: Thu, 02 Jul 2009 17:13:42 -0400
-From: "Doug Graham" <dgraham@nortel.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20081216)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: V3 minixfs bug
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 2 Jul 2009 17:16:30 -0400
+Date: Thu, 2 Jul 2009 14:15:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+Cc: linux-kernel@vger.kernel.org, davej@redhat.com, cpufreq@vger.kernel.org
+Subject: Re: [PATCH][cpufreq][Powernow-k8] support family 0xf with 2 low
+ p-states
+Message-Id: <20090702141543.e6d8c0cd.akpm@linux-foundation.org>
+In-Reply-To: <200907261055.25501.mark.langsdorf@amd.com>
+References: <200907261055.25501.mark.langsdorf@amd.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Jul 2009 21:13:44.0648 (UTC) FILETIME=[FB799480:01C9FB59]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is anybody interested in bugs in the minixfs V3 support that probably
-only turn up on big-endian machines, or on filesystems with more than
-64K inodes?
+On Sun, 26 Jul 2009 10:55:25 -0500
+Mark Langsdorf <mark.langsdorf@amd.com> wrote:
+>
+> Subject: [PATCH][cpufreq][Powernow-k8] support family 0xf with 2 low p-states
 
-The problem is that that there are a few places (three that I've found)
-where the "inode" field of a minix_dir_entry is used without checking
-first to see if the dirent is really a minix3_dir_entry.  The inode number
-in a V1/V2 dirent is 16 bits, whereas that in a V3 dirent is 32 bits.  
-Accessing
-it as a 16 bit field when it really should be accessed as a 32 bit field
-probably kinda sorta works on a little-endian machine, but leads to some
-rather odd behaviour on big-endian machines.
-
-Here's a patch:
-
---- linux-2.6.29.2/fs/minix/dir.c       2009/07/02 21:05:33     1.1
-+++ linux-2.6.29.2/fs/minix/dir.c       2009/07/02 21:10:31
-@@ -311,14 +311,18 @@
-        struct inode *inode = (struct inode*)mapping->host;
-        char *kaddr = page_address(page);
-        loff_t pos = page_offset(page) + (char*)de - kaddr;
--       unsigned len = minix_sb(inode->i_sb)->s_dirsize;
-+       struct minix_sb_info *sbi = minix_sb(inode->i_sb);
-+       unsigned len = sbi->s_dirsize;
-        int err;
-
-        lock_page(page);
-        err = __minix_write_begin(NULL, mapping, pos, len,
-                                        AOP_FLAG_UNINTERRUPTIBLE, &page, 
-NULL);
-        if (err == 0) {
--               de->inode = 0;
-+               if (sbi->s_version == MINIX_V3)
-+                       ((minix3_dirent *) de)->inode = 0;
-+               else
-+                       de->inode = 0;
-                err = dir_commit_chunk(page, pos, len);
-        } else {
-                unlock_page(page);
-@@ -443,7 +447,10 @@
-        err = __minix_write_begin(NULL, mapping, pos, sbi->s_dirsize,
-                                        AOP_FLAG_UNINTERRUPTIBLE, &page, 
-NULL);
-        if (err == 0) {
--               de->inode = inode->i_ino;
-+               if (sbi->s_version == MINIX_V3)
-+                       ((minix3_dirent *) de)->inode = inode->i_ino;
-+               else
-+                       de->inode = inode->i_ino;
-                err = dir_commit_chunk(page, pos, sbi->s_dirsize);
-        } else {
-                unlock_page(page);
-@@ -473,7 +480,14 @@
-        ino_t res = 0;
-
-        if (de) {
--               res = de->inode;
-+               struct address_space *mapping = page->mapping;
-+               struct inode *inode = (struct inode*)mapping->host;
-+               struct minix_sb_info *sbi = minix_sb(inode->i_sb);
-+
-+               if (sbi->s_version == MINIX_V3)
-+                       res = ((minix3_dirent *) de)->inode;
-+               else
-+                       res = de->inode;
-                dir_put_page(page);
-        }
-        return res;
+Please leave the subsystem identification text outside the []. 
+Documentation/SubmittingPatches section 15 has details.
 
 
---Doug
+> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+> @@ -215,7 +215,8 @@ struct pst_s {
+>  
+>  #define dprintk(msg...) cpufreq_debug_printk(CPUFREQ_DEBUG_DRIVER, "powernow-k8", msg)
+>  
+> -static int core_voltage_pre_transition(struct powernow_k8_data *data, u32 reqvid);
+> +static int core_voltage_pre_transition(struct powernow_k8_data *data,
+> +	u32 reqvid, u32 regfid);
+>  static int core_voltage_post_transition(struct powernow_k8_data *data, u32 reqvid);
+>  static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid);
+
+It's fairly dopey to have static function declarations in a header file
+- no other .c fail can _use_ them, so they may as well be tucked away
+inside their .c file.  And that's only needed if the functions indeed
+need to be forward-declared.
+
 
