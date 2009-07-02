@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZGBCKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZGBCLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbZGBCKD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 22:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZGBCJx
+	id S1754098AbZGBCLS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 22:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZGBCLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 22:09:53 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:61814 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZGBCJv (ORCPT
+	Wed, 1 Jul 2009 22:11:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:20655 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752731AbZGBCLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 22:09:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vB0YX826xDiUjFU2tjN7+kAo+4fsDePfooX77XAcyPQBgmlE3l3++E3o4fEX/AMelV
-         lrEBgDWwBup5FyMrV4esEUfHjDE3PdLIw7jrYBYzHzLCfMY7Z7tbin2NZ8nH9Ru6bbta
-         CC/ymDOiLrl1j5TTpb1fv5FwWzrYaxJNAGBp4=
+	Wed, 1 Jul 2009 22:11:05 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=tYR784URNpOxfHZoAER/BJeo9rANqL0ikEBRaqyNo84fsVoNQ1zNWC2kmd6LqsnBG
+	81M6jDcIRFP+Okj6o9DDg==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH 0/9] [RFC] CGroup Hierarchy Extensions
+To: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com
+Date: Wed, 01 Jul 2009 19:10:52 -0700
+Message-ID: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <1246499203.9660.52.camel@falcon>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <1246459661.9660.40.camel@falcon>
-	 <200907011821.26091.bzolnier@gmail.com>
-	 <200907011829.16850.bzolnier@gmail.com>
-	 <1246499203.9660.52.camel@falcon>
-Date: Thu, 2 Jul 2009 10:09:53 +0800
-Message-ID: <b6a2187b0907011909l41b513fen3252ce00f7e4c9c9@mail.gmail.com>
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: wuzhangjin@gmail.com
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 2, 2009 at 9:46 AM, Wu Zhangjin<wuzhangjin@gmail.com> wrote:
-> it this too old? should i merge another git repository?
-> I have tried to apply it manually, but unfortunately, also not work. any
-> other patch needed?
+The following series adds support for:
 
-You need to be undo those two patches below ...
+- named cgroup hierarchies
+- cgroup hierarchies with no bound subsystems
+- cgroup subsystems that can be bound to multiple hierarchies
 
-> On Mon, Jun 29, 2009 at 11:51 PM, Etienne Basset<etienne.basset@numericable.fr>
-> To have STR/resume work with current git, I have to :
-> 1) apply Bart's patch
-> 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
+This allows more flexibility when constructing/mounting cgroups
+hierarchies, and allows functionality that's not tied to specific
+external resources to be made available on multiple cgroups
+hierarchies rather than just one.
 
-or try to pull from Linus's tree and try again. Latest is now ...
+A few simple example cgroups subsystems that are multi-bindable are
+included in the patch series.
 
-commit d960eea974f5e500c0dcb95a934239cc1f481cfd
-Author: Randy Dunlap <randy.dunlap@oracle.com>
-Date:   Mon Jun 29 14:54:11 2009 -0700
+---
 
-    kernel-doc: move ignoring kmemcheck
+Paul Menage (9):
+      [RFC] Support named cgroups hierarchies
+      [RFC] Move the cgroup debug subsys into cgroup.c to access internal state
+      [RFC] Add a back-pointer from struct cg_cgroup_link to struct cgroup
+      [RFC] Allow cgroup hierarchies to be created with no bound subsystems
+      [RFC] Remove cgroup_subsys.root pointer
+      [RFC] Remove the cgroup_subsys.bind callback
+      [RFC] Support multiply-bindable cgroup subsystems
+      [RFC] Example multi-bindable subsystem: a per-cgroup notes field
+      [RFC] Example multi-bindable subsystem: a max-depth controller
 
 
+ Documentation/cgroups/cgroups.txt |    8 
+ include/linux/cgroup.h            |   55 ++
+ include/linux/cgroup_subsys.h     |   14 +
+ init/Kconfig                      |   17 +
+ kernel/Makefile                   |    3 
+ kernel/cgroup.c                   |  905 +++++++++++++++++++++++++++----------
+ kernel/cgroup_debug.c             |  105 ----
+ kernel/info_cgroup.c              |  133 +++++
+ kernel/maxdepth_cgroup.c          |   80 +++
+ 9 files changed, 938 insertions(+), 382 deletions(-)
+ delete mode 100644 kernel/cgroup_debug.c
+ create mode 100644 kernel/info_cgroup.c
+ create mode 100644 kernel/maxdepth_cgroup.c
 
-Jeff.
