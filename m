@@ -1,314 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbZGBXUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZGBXW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbZGBXUg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZGBXU3
+	id S1756083AbZGBXW3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZGBXWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:20:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34819 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751158AbZGBXU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:20:28 -0400
-Date: Thu, 2 Jul 2009 16:20:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Menage <menage@google.com>
-Cc: serue@us.ibm.com, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-Message-Id: <20090702162019.f34f12d6.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830907020927x44a88a6dgb229fb2ad6ef5481@mail.gmail.com>
-References: <4A4C0C60.4050106@cn.fujitsu.com>
-	<6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
-	<4A4C18D5.7020806@cn.fujitsu.com>
-	<6599ad830907011920r44df4022p53808b574da4a886@mail.gmail.com>
-	<4A4C1B33.2030002@cn.fujitsu.com>
-	<20090702132659.GA8051@us.ibm.com>
-	<6599ad830907020843l7ce75abfq3e78b8f67a407ab9@mail.gmail.com>
-	<20090702161548.GA13383@us.ibm.com>
-	<6599ad830907020927x44a88a6dgb229fb2ad6ef5481@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Jul 2009 19:22:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39959 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbZGBXWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 19:22:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Subject: Re: [PATCH] [MIPS] Hibernation: only save pages in system ram
+Date: Fri, 3 Jul 2009 01:22:40 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc1-rjw; KDE/4.2.4; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       Pavel Machek <pavel@ucw.cz>, Ralf Baechle <ralf@linux-mips.org>,
+       Wu Zhangjin <wuzj@lemote.com>
+References: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+In-Reply-To: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907030122.41176.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Jul 2009 09:27:20 -0700
-Paul Menage <menage@google.com> wrote:
-
-> On Thu, Jul 2, 2009 at 9:15 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
-> >>
-> >> Well, pid namespaces are marked as experimental, as are user
-> >> namespaces (and were described as "very incomplete" a few months
-> >
-> > incomplete (due to signaling issues which have mostly been resolved)
-> > but stable and usable.
-> >
-> > user namespace are a completely different story :)
+On Tuesday 30 June 2009, Wu Zhangjin wrote:
+> From: Wu Zhangjin <wuzj@lemote.com>
 > 
-> Sorry, that wasn't clear - the "very incomplete" referred to user namespaces.
+> when using hibernation(STD) with CONFIG_FLATMEM in linux-mips-64bit, it
+> fails for the current mips-specific hibernation implementation save the
+> pages in all of the memory space(except the nosave section) and make
+> there will be not enough memory left to the STD task itself, and then
+> fail. in reality, we only need to save the pages in system rams.
 > 
+> here is the reason why it fail:
+> 
+> kernel/power/snapshot.c:
+> 
+> static void mark_nosave_pages(struct memory_bitmap *bm)
+> {
+> 		...
+> 		if (pfn_valid(pfn)) {
+> 			...
+> 		}
+> }
+> 
+> arch/mips/include/asm/page.h:
+> 
+> 	...
+> 	#ifdef CONFIG_FLATMEM
+> 
+> 	#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> 
+> 	#elif defined(CONFIG_SPARSEMEM)
+> 
+> 	/* pfn_valid is defined in linux/mmzone.h */
+> 	...
+> 
+> we can rewrite pfn_valid(pfn) to fix this problem, but I really do not
+> want to touch such a widely-used macro, so, I used another solution:
+> 
+> static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+> {
+> 	...
+> 	if ( .... pfn_is_nosave(pfn)
+> 		return NULL;
+> 	...
+> }
+> 
+> and pfn_is_nosave is implemented in arch/mips/power/cpu.c, so, hacking
+> this one is better.
 
-I do think we should lean toward fixing it.  After all, it used to work
-OK and now it doesn't.
+Not really.
 
-It is a three-minute matter of patch-wrangling to take the fix out
-again within a more comprehensive 2.6.32 patch series, so that's not an
-issue.
+Could that be handled with the help of register_nosave_region() or
+register_nosave_region_late() instead?
 
-So are there any strong (enough) objections to putting this into 2.6.31?
-
+Best,
+Rafael
 
 
-
-From: Li Zefan <lizf@cn.fujitsu.com>
-
-The bug was introduced by commit cc31edceee04a7b87f2be48f9489ebb72d264844
-("cgroups: convert tasks file to use a seq_file with shared pid array").
-
-We cache a pid array for all threads that are opening the same "tasks"
-file, but the pids in the array are always from the namespace of the
-last process that opened the file, so all other threads will read pids
-from that namespace instead of their own namespaces.
-
-To fix it, we maintain a list of pid arrays, which is keyed by pid_ns.
-The list will be of length 1 at most time.
-
-Reported-by: Paul Menage <menage@google.com>
-Idea-by: Paul Menage <menage@google.com>
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Reviewed-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- include/linux/cgroup.h |   11 +---
- kernel/cgroup.c        |   94 +++++++++++++++++++++++++++++----------
- 2 files changed, 74 insertions(+), 31 deletions(-)
-
-diff -puN include/linux/cgroup.h~cgroups-fix-pid-namespace-bug include/linux/cgroup.h
---- a/include/linux/cgroup.h~cgroups-fix-pid-namespace-bug
-+++ a/include/linux/cgroup.h
-@@ -179,14 +179,11 @@ struct cgroup {
- 	 */
- 	struct list_head release_list;
- 
--	/* pids_mutex protects the fields below */
-+	/* pids_mutex protects pids_list and cached pid arrays. */
- 	struct rw_semaphore pids_mutex;
--	/* Array of process ids in the cgroup */
--	pid_t *tasks_pids;
--	/* How many files are using the current tasks_pids array */
--	int pids_use_count;
--	/* Length of the current tasks_pids array */
--	int pids_length;
-+
-+	/* Linked list of struct cgroup_pids */
-+	struct list_head pids_list;
- 
- 	/* For RCU-protected deletion */
- 	struct rcu_head rcu_head;
-diff -puN kernel/cgroup.c~cgroups-fix-pid-namespace-bug kernel/cgroup.c
---- a/kernel/cgroup.c~cgroups-fix-pid-namespace-bug
-+++ a/kernel/cgroup.c
-@@ -47,6 +47,7 @@
- #include <linux/hash.h>
- #include <linux/namei.h>
- #include <linux/smp_lock.h>
-+#include <linux/pid_namespace.h>
- 
- #include <asm/atomic.h>
- 
-@@ -961,6 +962,7 @@ static void init_cgroup_housekeeping(str
- 	INIT_LIST_HEAD(&cgrp->children);
- 	INIT_LIST_HEAD(&cgrp->css_sets);
- 	INIT_LIST_HEAD(&cgrp->release_list);
-+	INIT_LIST_HEAD(&cgrp->pids_list);
- 	init_rwsem(&cgrp->pids_mutex);
- }
- static void init_cgroup_root(struct cgroupfs_root *root)
-@@ -2202,12 +2204,30 @@ err:
- 	return ret;
- }
- 
-+/*
-+ * Cache pids for all threads in the same pid namespace that are
-+ * opening the same "tasks" file.
-+ */
-+struct cgroup_pids {
-+	/* The node in cgrp->pids_list */
-+	struct list_head list;
-+	/* The cgroup those pids belong to */
-+	struct cgroup *cgrp;
-+	/* The namepsace those pids belong to */
-+	struct pid_namespace *pid_ns;
-+	/* Array of process ids in the cgroup */
-+	pid_t *tasks_pids;
-+	/* How many files are using the this tasks_pids array */
-+	int pids_use_count;
-+	/* Length of the current tasks_pids array */
-+	int pids_length;
-+};
-+
- static int cmppid(const void *a, const void *b)
- {
- 	return *(pid_t *)a - *(pid_t *)b;
- }
- 
--
- /*
-  * seq_file methods for the "tasks" file. The seq_file position is the
-  * next pid to display; the seq_file iterator is a pointer to the pid
-@@ -2222,45 +2242,47 @@ static void *cgroup_tasks_start(struct s
- 	 * after a seek to the start). Use a binary-search to find the
- 	 * next pid to display, if any
- 	 */
--	struct cgroup *cgrp = s->private;
-+	struct cgroup_pids *cp = s->private;
-+	struct cgroup *cgrp = cp->cgrp;
- 	int index = 0, pid = *pos;
- 	int *iter;
- 
- 	down_read(&cgrp->pids_mutex);
- 	if (pid) {
--		int end = cgrp->pids_length;
-+		int end = cp->pids_length;
- 
- 		while (index < end) {
- 			int mid = (index + end) / 2;
--			if (cgrp->tasks_pids[mid] == pid) {
-+			if (cp->tasks_pids[mid] == pid) {
- 				index = mid;
- 				break;
--			} else if (cgrp->tasks_pids[mid] <= pid)
-+			} else if (cp->tasks_pids[mid] <= pid)
- 				index = mid + 1;
- 			else
- 				end = mid;
- 		}
- 	}
- 	/* If we're off the end of the array, we're done */
--	if (index >= cgrp->pids_length)
-+	if (index >= cp->pids_length)
- 		return NULL;
- 	/* Update the abstract position to be the actual pid that we found */
--	iter = cgrp->tasks_pids + index;
-+	iter = cp->tasks_pids + index;
- 	*pos = *iter;
- 	return iter;
- }
- 
- static void cgroup_tasks_stop(struct seq_file *s, void *v)
- {
--	struct cgroup *cgrp = s->private;
-+	struct cgroup_pids *cp = s->private;
-+	struct cgroup *cgrp = cp->cgrp;
- 	up_read(&cgrp->pids_mutex);
- }
- 
- static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
- {
--	struct cgroup *cgrp = s->private;
-+	struct cgroup_pids *cp = s->private;
- 	int *p = v;
--	int *end = cgrp->tasks_pids + cgrp->pids_length;
-+	int *end = cp->tasks_pids + cp->pids_length;
- 
- 	/*
- 	 * Advance to the next pid in the array. If this goes off the
-@@ -2287,26 +2309,32 @@ static struct seq_operations cgroup_task
- 	.show = cgroup_tasks_show,
- };
- 
--static void release_cgroup_pid_array(struct cgroup *cgrp)
-+static void release_cgroup_pid_array(struct cgroup_pids *cp)
- {
-+	struct cgroup *cgrp = cp->cgrp;
-+
- 	down_write(&cgrp->pids_mutex);
--	BUG_ON(!cgrp->pids_use_count);
--	if (!--cgrp->pids_use_count) {
--		kfree(cgrp->tasks_pids);
--		cgrp->tasks_pids = NULL;
--		cgrp->pids_length = 0;
-+	BUG_ON(!cp->pids_use_count);
-+	if (!--cp->pids_use_count) {
-+		list_del(&cp->list);
-+		kfree(cp->tasks_pids);
-+		kfree(cp);
- 	}
- 	up_write(&cgrp->pids_mutex);
- }
- 
- static int cgroup_tasks_release(struct inode *inode, struct file *file)
- {
--	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-+	struct seq_file *seq;
-+	struct cgroup_pids *cp;
- 
- 	if (!(file->f_mode & FMODE_READ))
- 		return 0;
- 
--	release_cgroup_pid_array(cgrp);
-+	seq = file->private_data;
-+	cp = seq->private;
-+
-+	release_cgroup_pid_array(cp);
- 	return seq_release(inode, file);
- }
- 
-@@ -2325,6 +2353,8 @@ static struct file_operations cgroup_tas
- static int cgroup_tasks_open(struct inode *unused, struct file *file)
- {
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-+	struct pid_namespace *pid_ns = task_active_pid_ns(current);
-+	struct cgroup_pids *cp;
- 	pid_t *pidarray;
- 	int npids;
- 	int retval;
-@@ -2351,20 +2381,36 @@ static int cgroup_tasks_open(struct inod
- 	 * array if necessary
- 	 */
- 	down_write(&cgrp->pids_mutex);
--	kfree(cgrp->tasks_pids);
--	cgrp->tasks_pids = pidarray;
--	cgrp->pids_length = npids;
--	cgrp->pids_use_count++;
-+
-+	list_for_each_entry(cp, &cgrp->pids_list, list) {
-+		if (pid_ns == cp->pid_ns)
-+			goto found;
-+	}
-+
-+	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-+	if (!cp) {
-+		up_write(&cgrp->pids_mutex);
-+		kfree(pidarray);
-+		return -ENOMEM;
-+	}
-+	cp->cgrp = cgrp;
-+	cp->pid_ns = pid_ns;
-+	list_add(&cp->list, &cgrp->pids_list);
-+found:
-+	kfree(cp->tasks_pids);
-+	cp->tasks_pids = pidarray;
-+	cp->pids_length = npids;
-+	cp->pids_use_count++;
- 	up_write(&cgrp->pids_mutex);
- 
- 	file->f_op = &cgroup_tasks_operations;
- 
- 	retval = seq_open(file, &cgroup_tasks_seq_operations);
- 	if (retval) {
--		release_cgroup_pid_array(cgrp);
-+		release_cgroup_pid_array(cp);
- 		return retval;
- 	}
--	((struct seq_file *)file->private_data)->private = cgrp;
-+	((struct seq_file *)file->private_data)->private = cp;
- 	return 0;
- }
- 
-_
-
+> Signed-off-by: Wu Zhangjin <wuzj@lemote.com>
+> ---
+>  arch/mips/power/cpu.c |   19 ++++++++++++++++++-
+>  1 files changed, 18 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/mips/power/cpu.c b/arch/mips/power/cpu.c
+> index 7995df4..ef472e3 100644
+> --- a/arch/mips/power/cpu.c
+> +++ b/arch/mips/power/cpu.c
+> @@ -10,6 +10,7 @@
+>  #include <asm/suspend.h>
+>  #include <asm/fpu.h>
+>  #include <asm/dsp.h>
+> +#include <asm/bootinfo.h>
+>  
+>  static u32 saved_status;
+>  struct pt_regs saved_regs;
+> @@ -34,10 +35,26 @@ void restore_processor_state(void)
+>  		restore_dsp(current);
+>  }
+>  
+> +int pfn_in_system_ram(unsigned long pfn)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < boot_mem_map.nr_map; i++) {
+> +		if (boot_mem_map.map[i].type == BOOT_MEM_RAM) {
+> +			if ((pfn >= (boot_mem_map.map[i].addr >> PAGE_SHIFT)) &&
+> +				((pfn) < ((boot_mem_map.map[i].addr +
+> +					boot_mem_map.map[i].size) >> PAGE_SHIFT)))
+> +				return 1;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+>  int pfn_is_nosave(unsigned long pfn)
+>  {
+>  	unsigned long nosave_begin_pfn = PFN_DOWN(__pa(&__nosave_begin));
+>  	unsigned long nosave_end_pfn = PFN_UP(__pa(&__nosave_end));
+>  
+> -	return	(pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+> +	return ((pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn))
+> +			|| !pfn_in_system_ram(pfn);
+>  }
