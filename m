@@ -1,97 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbZGBHW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756542AbZGBHXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbZGBHW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 03:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZGBHWZ
+	id S1756542AbZGBHXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 03:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZGBHWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 03:22:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51409 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754147AbZGBHWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 03:22:23 -0400
-Date: Thu, 2 Jul 2009 09:22:25 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 02/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
-Message-ID: <20090702072225.GC2714@wotan.suse.de>
-References: <1245088797-29533-1-git-send-email-jack@suse.cz> <1245088797-29533-3-git-send-email-jack@suse.cz> <20090625161753.GB30755@wotan.suse.de> <20090625174754.GA21957@infradead.org> <20090626084225.GA12201@wotan.suse.de> <20090630173716.GA3150@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090630173716.GA3150@infradead.org>
-User-Agent: Mutt/1.5.9i
+	Thu, 2 Jul 2009 03:22:48 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50374 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753542AbZGBHWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 03:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=e1l0dqOIOzg4xT1Wz8yyjriQN9/aqwC4k09SczWv8ojI/3uRa/5w4XBIbhB2R6AVN
+	H8JSLE0SlMTXd/tekecRQ==
+MIME-Version: 1.0
+In-Reply-To: <6599ad830907011956i33769d5ek5401e93553d75c59@mail.gmail.com>
+References: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com>
+	 <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
+	 <20090702114829.df04c885.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830907011956i33769d5ek5401e93553d75c59@mail.gmail.com>
+Date: Thu, 2 Jul 2009 00:22:43 -0700
+Message-ID: <6599ad830907020022y106a2d8epf78d8ce67ebe7c9a@mail.gmail.com>
+Subject: Re: [PATCH 8/9] [RFC] Example multi-bindable subsystem: a per-cgroup 
+	notes field
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 30, 2009 at 01:37:17PM -0400, Christoph Hellwig wrote:
-> On Fri, Jun 26, 2009 at 10:42:25AM +0200, Nick Piggin wrote:
-> > Yes well we could get rid of ->truncate and have filesystems do it
-> > themselves in setattr, but I figure that moving truncate into
-> > generic setattr is helpful (makes conversions a bit easier too).
-> > Did you see my patch? What do you think of that basic approach?
-> 
-> I was waiting for a patch series for your for this to appear, but
-> noticed that you actually had a small proof of concept patch attached,
-> sorry :)
+On Wed, Jul 1, 2009 at 7:56 PM, Paul Menage<menage@google.com> wrote:
+>> Hmm, do we need to this "info" file as subsys ? How about making this as
+>> default file set ? (if there are users.)
+>>
+>
+> That would certainly be possible, and would be an alternative to
+> having multi-bindable subsystem support.
+>
+> The advantage of adding multi-bindable subsystems is that you can
+> avoid bloating the core cgroups code, by putting individual small
+> cgroups features in their own code modules, and you get to decide at
+> mount time which features are actually mounted; if they were part of
+> the core cgroups files, then there would either need to be special
+> mount options for each separate feature, or else no way to pick which
+> features were mounted on each hierarchy.
 
-No problem. I'm going to send out a patchset, I've just been working
-on exploring different ideas and trying to work out bugs.
+BTW, just to give a balanced argument: I agree that these example
+multi-bindable subsystems are somewhat weak justifications for the new
+feature - they each supply a single control file, they're not
+connected to anything in the kernel outside of the core cgroups
+framework, and they're almost zero overhead if they're not actively
+used, so making them part of the cgroups framework directly wouldn't
+be totally unreasonable.
 
+An example of a less-trivial multi-bindable subsystem could be cpuacct
+- logically there's no reason that you couldn't track CPU usage in
+multiple different hierarchies, keeping totals aggregated in different
+ways for the groupings in different hierarchies, and the overhead
+associated with tracking would mean that you wouldn't want to
+automatically link cpuacct into every hierarchy. The practical problem
+with this would be that finding the cgroup for a process would be
+slower since there wouldn't be a 1:1 mapping from a task to a cpuacct
+cgroup state object.
 
-> Looking at your patch I really like that vmtruncate now really just
-> does what it's name claims to - truncate the VM-information about
-> the file (well, and the file size).   I'm not so happy about
-> still keeping the two level setattr/truncate indirection.
+Instead each task would have multiple such states and to update the
+usage accounting on each of them you'd have to do a list traversal
+rather than a direct lookup (and worse, right now that list traversal
+can only be done while holding cgroup_mutex, which is impossible when
+doing cpuacct charging from the guts of the scheduler). I can see how
+to extend the multi-bindable support to make it cheaper and to require
+less synchronization (i.e. walking an RCU-safe array to find the
+various state objects rather than doing a list traversal).
 
-In my patch series, i_size update eventually is moved out to the
-filesystem too, and vmtruncate just is renamed to truncate_pagecache
-(vmtruncate is not such a bad name, but rename will nicely break
-unconverted modules).
+Although before doing that I guess it would be worth asking whether
+anyone would actually *want* to aggregate CPU usage different ways for
+different hierarchies, even if it makes logical sense to be able to do
+so.
 
- 
-> But instead of folding truncate into setattr I wonder if we should
-> just add a new ->setsize (aka new trunacte) methodas a top-level
-> entry point instead of ->setattr with ATTR_SIZE given that size
-> changes don't have much in common with the reset of ->setattr.
-
-OK that would be possible and makes sense I guess. The new truncate
-which returns error could basically be renamed in-place. Shall we
-continue to give ATTR_SIZE to setattr, or take that out completely?
-I guess truncate can be considered special because it operates on
-data not only metadata.
-
-Looks like ->setsize would need a flag for ATTR_OPEN too? Any others?
-I'll do a bit of an audit when I get around to it...
-
- 
-> The only bit shared is updating c/mtime and even that is conditional.
-> So I'd say take most of your patch, but instead of doing an all at
-> once migration migrate filesystems to the new ->setsize callback
-> incrementally and eventually kill off the old code.  This means
-> we'll need a new name for the new vmtruncate-lite but should otherwise
-> be pretty easy.
-
-Makes sense. I'll try to structure it to allow incremental changeover.
-
- 
-> > >  The only problem is the generic aops calling
-> > > vmtruncate directly.
-> > 
-> > What should be done is require that filesystems trim blocks past
-> > i_size in case of any errors. I actually need to fix up a few
-> > existing bugs in this area too, so I'll look at this..
-> 
-> Basically we want ->setattr with ATTR_SIZE, execept that we already
-> have i_sem and possibly other per-inode locks.  Take a look at
-> 
-> 	http://oss.sgi.com/archives/xfs/2008-04/msg00542.html
-> 
-> and
-> 
-> 	http://oss.sgi.com/archives/xfs/2009-03/msg00214.html
-
-OK thanks.
-
+Paul
