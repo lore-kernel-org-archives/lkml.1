@@ -1,92 +1,398 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZGBG4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755758AbZGBG4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZGBG4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 02:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZGBG4F
+	id S1755758AbZGBG4c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 02:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZGBG4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 02:56:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53535 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751053AbZGBG4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 02:56:04 -0400
-Date: Thu, 2 Jul 2009 06:54:58 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A4B2351.5010300@cn.fujitsu.com>
-References: <4A4B2351.5010300@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing: Fix trace_print_seq()
-Message-ID: <tip-e1af3aec3e2e7d21d4b3054323779d478c19d907@git.kernel.org>
-Git-Commit-ID: e1af3aec3e2e7d21d4b3054323779d478c19d907
-X-Mailer: tip-git-log-daemon
+	Thu, 2 Jul 2009 02:56:15 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:53738 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755698AbZGBG4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 02:56:12 -0400
+Message-ID: <4A4C59FD.6080408@gmail.com>
+Date: Thu, 02 Jul 2009 08:55:57 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 06:54:59 +0000 (UTC)
+To: Jiri Olsa <jolsa@redhat.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv4 1/2] net: adding memory barrier to the poll and receive
+ callbacks
+References: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com> <20090702063509.GB3429@jolsa.lab.eng.brq.redhat.com>
+In-Reply-To: <20090702063509.GB3429@jolsa.lab.eng.brq.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Jul 2009 08:55:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e1af3aec3e2e7d21d4b3054323779d478c19d907
-Gitweb:     http://git.kernel.org/tip/e1af3aec3e2e7d21d4b3054323779d478c19d907
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Wed, 1 Jul 2009 16:50:25 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 2 Jul 2009 08:51:13 +0200
+Jiri Olsa a écrit :
+> Adding memory barrier after the poll_wait function, paired with
+> receive callbacks. Adding fuctions sock_poll_wait and sock_has_sleeper
+> to wrap the memory barrier.
+> 
+> Without the memory barrier, following race can happen.
+> The race fires, when following code paths meet, and the tp->rcv_nxt 
+> and __add_wait_queue updates stay in CPU caches.
+> 
+> 
+> CPU1                         CPU2
+> 
+> sys_select                   receive packet
+>   ...                        ...
+>   __add_wait_queue           update tp->rcv_nxt
+>   ...                        ...
+>   tp->rcv_nxt check          sock_def_readable
+>   ...                        {
+>   schedule                      ...
+>                                 if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+>                                         wake_up_interruptible(sk->sk_sleep)
+>                                 ...
+>                              }
+> 
+> If there was no cache the code would work ok, since the wait_queue and
+> rcv_nxt are opposit to each other.
+> 
+> Meaning that once tp->rcv_nxt is updated by CPU2, the CPU1 either already
+> passed the tp->rcv_nxt check and sleeps, or will get the new value for
+> tp->rcv_nxt and will return with new data mask.
+> In both cases the process (CPU1) is being added to the wait queue, so the
+> waitqueue_active (CPU2) call cannot miss and will wake up CPU1.
+> 
+> The bad case is when the __add_wait_queue changes done by CPU1 stay in its
+> cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1 will then
+> endup calling schedule and sleep forever if there are no more data on the
+> socket.
+> 
+> 
+> Calls to poll_wait in following modules were ommited:
+> 	net/bluetooth/af_bluetooth.c
+> 	net/irda/af_irda.c
+> 	net/irda/irnet/irnet_ppp.c
+> 	net/mac80211/rc80211_pid_debugfs.c
+> 	net/phonet/socket.c
+> 	net/rds/af_rds.c
+> 	net/rfkill/core.c
+> 	net/sunrpc/cache.c
+> 	net/sunrpc/rpc_pipe.c
+> 	net/tipc/socket.c
+> 
+> wbr,
+> jirka
+> 
+> 
+> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 
-tracing: Fix trace_print_seq()
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-We will lose something if trace_seq->buffer[0] is 0, because the copy length
-is calculated by strlen() in seq_puts(), so using seq_write() instead of
-seq_puts().
+Thanks Jiri
+> 
+> ---
+>  include/net/sock.h   |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  net/atm/common.c     |    6 ++--
+>  net/core/datagram.c  |    2 +-
+>  net/core/sock.c      |    8 +++---
+>  net/dccp/output.c    |    2 +-
+>  net/dccp/proto.c     |    2 +-
+>  net/ipv4/tcp.c       |    2 +-
+>  net/iucv/af_iucv.c   |    4 +-
+>  net/rxrpc/af_rxrpc.c |    4 +-
+>  net/unix/af_unix.c   |    8 +++---
+>  10 files changed, 85 insertions(+), 19 deletions(-)
+> 
+> diff --git a/include/net/sock.h b/include/net/sock.h
+> index 352f06b..4eb8409 100644
+> --- a/include/net/sock.h
+> +++ b/include/net/sock.h
+> @@ -54,6 +54,7 @@
+>  
+>  #include <linux/filter.h>
+>  #include <linux/rculist_nulls.h>
+> +#include <linux/poll.h>
+>  
+>  #include <asm/atomic.h>
+>  #include <net/dst.h>
+> @@ -1241,6 +1242,71 @@ static inline int sk_has_allocations(const struct sock *sk)
+>  	return sk_wmem_alloc_get(sk) || sk_rmem_alloc_get(sk);
+>  }
+>  
+> +/**
+> + * sk_has_sleeper - check if there are any waiting processes
+> + * @sk: socket
+> + *
+> + * Returns true if socket has waiting processes
+> + *
+> + * The purpose of the sk_has_sleeper and sock_poll_wait is to wrap the memory
+> + * barrier call. They were added due to the race found within the tcp code.
+> + *
+> + * Consider following tcp code paths:
+> + *
+> + * CPU1                  CPU2
+> + *
+> + * sys_select            receive packet
+> + *   ...                 ...
+> + *   __add_wait_queue    update tp->rcv_nxt
+> + *   ...                 ...
+> + *   tp->rcv_nxt check   sock_def_readable
+> + *   ...                 {
+> + *   schedule               ...
+> + *                          if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> + *                              wake_up_interruptible(sk->sk_sleep)
+> + *                          ...
+> + *                       }
+> + *
+> + * The race for tcp fires when the __add_wait_queue changes done by CPU1 stay
+> + * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+> + * could then endup calling schedule and sleep forever if there are no more
+> + * data on the socket.
+> + */
+> +static inline int sk_has_sleeper(struct sock *sk)
+> +{
+> +	/*
+> +	 * We need to be sure we are in sync with the
+> +	 * add_wait_queue modifications to the wait queue.
+> +	 *
+> +	 * This memory barrier is paired in the sock_poll_wait.
+> +	 */
+> +	smp_mb();
+> +	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+> +}
+> +
+> +/**
+> + * sock_poll_wait - place memory barrier behind the poll_wait call.
+> + * @filp:           file
+> + * @wait_address:   socket wait queue
+> + * @p:              poll_table
+> + *
+> + * See the comments in the sk_has_sleeper function.
+> + */
+> +static inline void sock_poll_wait(struct file *filp,
+> +		wait_queue_head_t *wait_address, poll_table *p)
+> +{
+> +	if (p && wait_address) {
+> +		poll_wait(filp, wait_address, p);
+> +		/*
+> +		 * We need to be sure we are in sync with the
+> +		 * socket flags modification.
+> +		 *
+> +		 * This memory barrier is paired in the sk_has_sleeper.
+> +		*/
+> +		smp_mb();
+> +	}
+> +}
+> +
+>  /*
+>   * 	Queue a received datagram if it will fit. Stream and sequenced
+>   *	protocols can't normally use this as they need to fit buffers in
+> diff --git a/net/atm/common.c b/net/atm/common.c
+> index c1c9793..8c4d843 100644
+> --- a/net/atm/common.c
+> +++ b/net/atm/common.c
+> @@ -92,7 +92,7 @@ static void vcc_sock_destruct(struct sock *sk)
+>  static void vcc_def_wakeup(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up(sk->sk_sleep);
+>  	read_unlock(&sk->sk_callback_lock);
+>  }
+> @@ -110,7 +110,7 @@ static void vcc_write_space(struct sock *sk)
+>  	read_lock(&sk->sk_callback_lock);
+>  
+>  	if (vcc_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible(sk->sk_sleep);
+>  
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+> @@ -594,7 +594,7 @@ unsigned int vcc_poll(struct file *file, struct socket *sock, poll_table *wait)
+>  	struct atm_vcc *vcc;
+>  	unsigned int mask;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	mask = 0;
+>  
+>  	vcc = ATM_SD(sock);
+> diff --git a/net/core/datagram.c b/net/core/datagram.c
+> index 58abee1..b0fe692 100644
+> --- a/net/core/datagram.c
+> +++ b/net/core/datagram.c
+> @@ -712,7 +712,7 @@ unsigned int datagram_poll(struct file *file, struct socket *sock,
+>  	struct sock *sk = sock->sk;
+>  	unsigned int mask;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	mask = 0;
+>  
+>  	/* exceptional events? */
+> diff --git a/net/core/sock.c b/net/core/sock.c
+> index b0ba569..6354863 100644
+> --- a/net/core/sock.c
+> +++ b/net/core/sock.c
+> @@ -1715,7 +1715,7 @@ EXPORT_SYMBOL(sock_no_sendpage);
+>  static void sock_def_wakeup(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_all(sk->sk_sleep);
+>  	read_unlock(&sk->sk_callback_lock);
+>  }
+> @@ -1723,7 +1723,7 @@ static void sock_def_wakeup(struct sock *sk)
+>  static void sock_def_error_report(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_poll(sk->sk_sleep, POLLERR);
+>  	sk_wake_async(sk, SOCK_WAKE_IO, POLL_ERR);
+>  	read_unlock(&sk->sk_callback_lock);
+> @@ -1732,7 +1732,7 @@ static void sock_def_error_report(struct sock *sk)
+>  static void sock_def_readable(struct sock *sk, int len)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_sync_poll(sk->sk_sleep, POLLIN |
+>  						POLLRDNORM | POLLRDBAND);
+>  	sk_wake_async(sk, SOCK_WAKE_WAITD, POLL_IN);
+> @@ -1747,7 +1747,7 @@ static void sock_def_write_space(struct sock *sk)
+>  	 * progress.  --DaveM
+>  	 */
+>  	if ((atomic_read(&sk->sk_wmem_alloc) << 1) <= sk->sk_sndbuf) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible_sync_poll(sk->sk_sleep, POLLOUT |
+>  						POLLWRNORM | POLLWRBAND);
+>  
+> diff --git a/net/dccp/output.c b/net/dccp/output.c
+> index c0e88c1..c96119f 100644
+> --- a/net/dccp/output.c
+> +++ b/net/dccp/output.c
+> @@ -196,7 +196,7 @@ void dccp_write_space(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+>  
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible(sk->sk_sleep);
+>  	/* Should agree with poll, otherwise some programs break */
+>  	if (sock_writeable(sk))
+> diff --git a/net/dccp/proto.c b/net/dccp/proto.c
+> index 314a1b5..94ca8ea 100644
+> --- a/net/dccp/proto.c
+> +++ b/net/dccp/proto.c
+> @@ -311,7 +311,7 @@ unsigned int dccp_poll(struct file *file, struct socket *sock,
+>  	unsigned int mask;
+>  	struct sock *sk = sock->sk;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	if (sk->sk_state == DCCP_LISTEN)
+>  		return inet_csk_listen_poll(sk);
+>  
+> diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
+> index 7870a53..9114524 100644
+> --- a/net/ipv4/tcp.c
+> +++ b/net/ipv4/tcp.c
+> @@ -339,7 +339,7 @@ unsigned int tcp_poll(struct file *file, struct socket *sock, poll_table *wait)
+>  	struct sock *sk = sock->sk;
+>  	struct tcp_sock *tp = tcp_sk(sk);
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	if (sk->sk_state == TCP_LISTEN)
+>  		return inet_csk_listen_poll(sk);
+>  
+> diff --git a/net/iucv/af_iucv.c b/net/iucv/af_iucv.c
+> index 6be5f92..49c15b4 100644
+> --- a/net/iucv/af_iucv.c
+> +++ b/net/iucv/af_iucv.c
+> @@ -306,7 +306,7 @@ static inline int iucv_below_msglim(struct sock *sk)
+>  static void iucv_sock_wake_msglim(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+> -	if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +	if (sk_has_sleeper(sk))
+>  		wake_up_interruptible_all(sk->sk_sleep);
+>  	sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	read_unlock(&sk->sk_callback_lock);
+> @@ -1256,7 +1256,7 @@ unsigned int iucv_sock_poll(struct file *file, struct socket *sock,
+>  	struct sock *sk = sock->sk;
+>  	unsigned int mask = 0;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  
+>  	if (sk->sk_state == IUCV_LISTEN)
+>  		return iucv_accept_poll(sk);
+> diff --git a/net/rxrpc/af_rxrpc.c b/net/rxrpc/af_rxrpc.c
+> index eac5e7b..bfe493e 100644
+> --- a/net/rxrpc/af_rxrpc.c
+> +++ b/net/rxrpc/af_rxrpc.c
+> @@ -63,7 +63,7 @@ static void rxrpc_write_space(struct sock *sk)
+>  	_enter("%p", sk);
+>  	read_lock(&sk->sk_callback_lock);
+>  	if (rxrpc_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible(sk->sk_sleep);
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	}
+> @@ -588,7 +588,7 @@ static unsigned int rxrpc_poll(struct file *file, struct socket *sock,
+>  	unsigned int mask;
+>  	struct sock *sk = sock->sk;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	mask = 0;
+>  
+>  	/* the socket is readable if there are any messages waiting on the Rx
+> diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
+> index 36d4e44..fc3ebb9 100644
+> --- a/net/unix/af_unix.c
+> +++ b/net/unix/af_unix.c
+> @@ -315,7 +315,7 @@ static void unix_write_space(struct sock *sk)
+>  {
+>  	read_lock(&sk->sk_callback_lock);
+>  	if (unix_writable(sk)) {
+> -		if (sk->sk_sleep && waitqueue_active(sk->sk_sleep))
+> +		if (sk_has_sleeper(sk))
+>  			wake_up_interruptible_sync(sk->sk_sleep);
+>  		sk_wake_async(sk, SOCK_WAKE_SPACE, POLL_OUT);
+>  	}
+> @@ -1985,7 +1985,7 @@ static unsigned int unix_poll(struct file *file, struct socket *sock, poll_table
+>  	struct sock *sk = sock->sk;
+>  	unsigned int mask;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	mask = 0;
+>  
+>  	/* exceptional events? */
+> @@ -2022,7 +2022,7 @@ static unsigned int unix_dgram_poll(struct file *file, struct socket *sock,
+>  	struct sock *sk = sock->sk, *other;
+>  	unsigned int mask, writable;
+>  
+> -	poll_wait(file, sk->sk_sleep, wait);
+> +	sock_poll_wait(file, sk->sk_sleep, wait);
+>  	mask = 0;
+>  
+>  	/* exceptional events? */
+> @@ -2053,7 +2053,7 @@ static unsigned int unix_dgram_poll(struct file *file, struct socket *sock,
+>  		other = unix_peer_get(sk);
+>  		if (other) {
+>  			if (unix_peer(other) != sk) {
+> -				poll_wait(file, &unix_sk(other)->peer_wait,
+> +				sock_poll_wait(file, &unix_sk(other)->peer_wait,
+>  					  wait);
+>  				if (unix_recvq_full(other))
+>  					writable = 0;
 
-There have a example:
-after reboot:
-
- # echo kmemtrace > current_tracer
- # echo 0 > options/kmem_minimalistic
- # cat trace
- # tracer: kmemtrace
- #
- #
-
-Nothing is exported, because the first byte of trace_seq->buffer[ ]
-is KMEMTRACE_USER_ALLOC.
-
-( the value of KMEMTRACE_USER_ALLOC is zero, seeing
-  kmemtrace_print_alloc_user() in kernel/trace/kmemtrace.c)
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <4A4B2351.5010300@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/trace_output.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 7938f3a..e0c2545 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -27,8 +27,7 @@ void trace_print_seq(struct seq_file *m, struct trace_seq *s)
- {
- 	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
- 
--	s->buffer[len] = 0;
--	seq_puts(m, s->buffer);
-+	seq_write(m, s->buffer, len);
- 
- 	trace_seq_init(s);
- }
