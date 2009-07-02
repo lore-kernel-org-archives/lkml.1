@@ -1,199 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZGBSKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZGBSLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbZGBSKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZGBSKc
+	id S1753856AbZGBSLa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZGBSLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:10:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35780 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751145AbZGBSKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:10:31 -0400
-Date: Thu, 2 Jul 2009 20:10:31 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.16-rc2
-Message-ID: <20090702181031.GB4122@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 2 Jul 2009 14:11:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44415 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752206AbZGBSLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:11:21 -0400
+Date: Thu, 2 Jul 2009 19:12:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: tridge@samba.org, Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Message-ID: <20090702191232.5c066790@lxorguk.ukuu.org.uk>
+In-Reply-To: <1246546567.4055.27.camel@mulgrave.site>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<19019.16217.291678.588673@samba.org>
+	<20090701123141.402c17d2@lxorguk.ukuu.org.uk>
+	<19019.25035.244941.352337@samba.org>
+	<20090701143844.07728fdf@lxorguk.ukuu.org.uk>
+	<19019.27736.647500.497114@samba.org>
+	<20090701154151.7f45abad@lxorguk.ukuu.org.uk>
+	<19020.12748.348370.708306@samba.org>
+	<20090702113200.39a15f21@lxorguk.ukuu.org.uk>
+	<1246546567.4055.27.camel@mulgrave.site>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> As a linux maintainer, you know we try very hard to encourage vendors
+> not to carry long lived out of tree patches because of the complexity it
+> causes for everyone.
 
+For the non kernel cases with patent questions this isn't the pattern you
+see. And for good reasons. A US patent compliant version of mplayer is
+probably a jpeg viewer. It would be very harmful to the rest of the world
+to gut the main package in that case.
 
-The second util-linux-ng 2.16 release candidate is available at
+For the kernel case the reality is this
 
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+If we include no patch the people concerned will remove the code from
+their distributed source tarball
 
-Feedback and bug reports, as always, are welcomed.
+If we include a config option, the people concerned will *STILL* remove
+the code from their distributed source tarball.
 
-	Karel
+so the debate about out of tree patches is not as relevant as might at
+first seem obvious. The simple problem is that the GPL says if you give
+me the binaries I can ask for the sources which produced them. If those
+sources contain the source to an algorithm where there are claims of
+possible patent problems then the lawyers will prefer to play as safe as
+possible and pull the sources that concern them before they even permit
+anyone to type "make". A quick look at some packages from big US
+based vendors will show you that is happening all the time to pull out
+stuff as varied as mp3 playing and the openssh decss crypto mode.
 
+[Other bits cut, conspiracy case point noted and its why you should not
+post to linux-kernel with a fever temperature ;) ]
 
-Util-linux-ng 2.16 Release Notes
-================================
+> > There is a clear end user expectation that vfat means "microsoft fat with
+> > extended names". By all means add support for "not vfat" but don't call
+> > it "vfat" as that is misleading an interface breakage.
+> 
+> The Microsoft FAT32 standard only says files with long names *may* be
+> visible on 8.3 FAT systems, it doesn't say *shall*.  Therefore, my
+> reading is that this patch is fully compliant with the FAT32 standard,
+> and thus *is* definitely what we call vfat in Linux.  Or are you
+> claiming that we've somehow extended the definition of vfat to mean
+> complies with FAT32 + makes 8.3 names available as well?
 
-Release highlights
-------------------
+I'm simply of the viewpoint that users expect certain behaviours and
+compatibilities and that therefore it would be best if the new filesystem
+variant had a new name. I'm not saying cp -r fs/foo fs/bar, just a new
+mount name.
 
-libuuid, uuidgen(1) and uuidd(8):
-  - the libuuid library has been moved from e2fsprogs to util-linux-ng
-
-switch_root:
-  - this NEW COMMAND allows to switch to another filesystem as the root
-    of the mount tree.
-
-mount, umount, fsck:
-  - DOES NOT SUPPORT linking against obsolete libvolume_id (from udev)
-
-
-Stable maintenance releases between v2.15 and v2.16
----------------------------------------------------
-
-util-linux-ng 2.15.1 [10-Jun-2009]
-
- * ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ReleaseNotes
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/v2.15.1-ChangeLog
-
-
-ChangeLog between v2.15 and v2.16
----------------------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
-
-
-build-sys:
-   - add --disable-libblkid, remove volume_id support  [Karel Zak]
-   - add --disable-switch_root  [Karel Zak]
-   - add --disable-tls  [Karel Zak]
-   - add --disable-uuidd  [Karel Zak]
-   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
-   - check for openat() and linux for switch_root  [Karel Zak]
-   - cleanup libuuid stuff  [Karel Zak]
-   - complete /libs to /shlibs rename  [Karel Zak]
-   - enable fsck by default  [Karel Zak]
-   - fix "make -C" bug  [Karel Zak]
-   - fix --disable-uuidd  [Karel Zak]
-   - fix blkid.h include for old e2fsprogs  [Karel Zak]
-   - fix headers in mkswap and libblkid  [Karel Zak]
-   - fix libuuid Makefile.am  [Karel Zak]
-   - release++ (v2.16-rc1)  [Karel Zak]
-   - rename /libs to /shlibs  [Karel Zak]
-buildsys:
-   - move $usr{bin,sbin,lib}execdir definition to ./configure  [Karel Zak]
-cal:
-   - Highlight today even when month or year specified  [Rajeev V. Pillai]
-   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
-chrt:
-   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
-docs:
-   - add missing commands/projects to AUTHORS file  [Karel Zak]
-   - add v2.16 ReleaseNotes  [Karel Zak]
-   - refresh TODO list  [Karel Zak]
-   - remove example.files/rc[.local]  [Karel Zak]
-   - remove obsolete information from fstab example  [Karel Zak]
-   - update AUTHORS file  [Karel Zak]
-   - update v2.16-ReleaseNotes  [Karel Zak]
-fdisk:
-   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
-   - add simple test for doslabel stuff  [Zdenek Behan]
-hwclock:
-   - fix mismatched popen/fclose.  [John Keeping]
-include:
-   - clean up _PATH_DEV_* macros  [Karel Zak]
-   - fix _PATH_DEV  [Karel Zak]
-ionice:
-   - Allow setting the none class  [Jakob Unterwurzacher]
-ldattach:
-   - add N_PPS support  [Tilman Schmidt]
-libblkid:
-   - add device-mapper snapshot cow device probe  [Milan Broz]
-   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
-   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
-   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
-   - don't require udev symlinks verification for non-root users  [Karel Zak]
-   - fix "hangs forever with partition type mdraid"  [Karel Zak]
-   - fix #ifdefs readability  [Karel Zak]
-   - fix $libdir in blkid.pc  [Karel Zak]
-   - fix LVM1 probe  [Milan Broz]
-   - fix reiserfs name  [Karel Zak]
-   - make libuuid optional  [Karel Zak]
-   - move to misc-utils/ directory  [Karel Zak]
-   - update man page  [Karel Zak]
-libuuid:
-   - Don't run uuidd if it would fail due to permission problems  [Theodore Ts'o]
-   - Make sure fd's 0, 1, and 2 are valid before exec'ing uuidd  [Theodore Ts'o]
-   - add --disable-libuuid and LIBUUID_VERSION  [Karel Zak]
-   - add .gitignore  [Karel Zak]
-   - add info about u-l-ng to man pages  [Karel Zak]
-   - add install-hook for libuuid.[a,so] devel files  [Karel Zak]
-   - fix $libdir in uuid.pc  [Karel Zak]
-   - import UUID library from e2fsprogs  [Karel Zak]
-libuuid, uuidd:
-   - Avoid infinite loop while reading from the socket fd  [Theodore Ts'o]
-losetup:
-   - add --set-capacity  [Karel Zak]
-   - fix return codes of functions arounf is_associated()  [Karel Zak]
-   - handle symlinks in /dev/loop/  [Mike Frysinger]
-   - suggest to use modprobe rather than insmod in losetup.8  [Karel Zak]
-lscpu:
-   - fix cpuid code on x86/PIC  [Mike Frysinger]
-mount:
-   - (and fsck) remove libvolume_id support  [Karel Zak]
-   - a little clean up info about loopdevs in man page  [Karel Zak]
-   - add ext4 to mount.8  [Karel Zak]
-   - add ext4 to the list of filesystems in mount.8  [Karel Zak]
-   - add info about obsolete vfat options to mount.8  [Karel Zak]
-   - allow loop suid umount  [Kay Sievers]
-   - cleanup notes about -l option in mount.8  [Karel Zak]
-   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
-   - move MS_{PROPAGATION,BIND,MOVE} detection  [Karel Zak]
-   - use "none" fstype for MS_PROPAGATION mounts  [Karel Zak]
-   - use TAG parsing function from libblkid  [Karel Zak]
-po:
-   - fix typo in French translation  [Olivier Blin]
-   - merge changes  [Karel Zak]
-   - refresh POTFILES.in  [Karel Zak]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-raw:
-   - Use the RAW_SETBIND ioctl without stat'ing the raw# file  [Jeff Mahoney]
-   - undeprecate raw  [Karel Zak]
-switch_root:
-   - add man page  [Karel Zak]
-   - clean up argv[] usage, add -h and -V  [Karel Zak]
-   - do recursiveRemove after our root is moved to avoid races.  [Peter Jones]
-   - fix coding style  [Karel Zak]
-   - fork before cleaning up the filesystem.  [Peter Jones]
-   - new command  [Karel Zak]
-   - rewrite to use fstatat() and unlinkat()  [Karel Zak]
-   - use err.h, clean up return codes  [Karel Zak]
-   - use file descriptor instead of path for recursiveRemove()  [Peter Jones]
-   - use snprintf() rather tan str{cpy,cat}()  [Karel Zak]
-tests:
-   - add functions for work withdisk images  [Karel Zak]
-   - add mdraid libblkid test  [Karel Zak]
-   - don't run some mount tests for non-root users  [Karel Zak]
-   - fix 'delete extended partition' checksum  [Karel Zak]
-   - fix reiserfs test  [Karel Zak]
-   - fix script that creates lscpu dumps  [Karel Zak]
-   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
-   - remove broken Xen dumps for lscpu  [Karel Zak]
-umount:
-   - clean up help output  [Karel Zak]
-uuidd:
-   - Avoid closing the server socket when calling create_daemon()  [Theodore Ts'o]
-   - fix $PIDFILE in uuidd.rc  [Karel Zak]
-   - init /var/run/uuidd, add option for on-demand mode to .rc file  [Karel Zak]
-   - move uuidd files from /var/lib/libuuid to /var/run/uuidd  [Karel Zak]
-   - move uuidd.rc to misc-utils directory  [Karel Zak]
-   - new command (UUID daemon from e2fsprogs)  [Karel Zak]
-uuidgen:
-   - new command (from e2fsprogs)  [Karel Zak]
-
--- 
- Karel Zak  <kzak@redhat.com>
