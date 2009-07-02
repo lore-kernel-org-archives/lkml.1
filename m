@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZGBBoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZGBBok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZGBBoU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZGBBoE
+	id S1754877AbZGBBok (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbZGBBoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:44:04 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41924 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752452AbZGBBoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:44:03 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 2 Jul 2009 10:42:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daniel Kabs <daniel.kabs@gmx.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: adjusting lowmem_reserve_ratio on an embedded system?
-Message-Id: <20090702104227.1c07e85f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200907011423.52798.daniel.kabs@gmx.de>
-References: <200907011423.52798.daniel.kabs@gmx.de>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Jul 2009 21:44:19 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62986 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754082AbZGBBoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 21:44:12 -0400
+Message-ID: <4A4C1120.2090905@cn.fujitsu.com>
+Date: Thu, 02 Jul 2009 09:45:04 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
+References: <4A4C0C60.4050106@cn.fujitsu.com> <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+In-Reply-To: <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Jul 2009 14:23:52 +0200
-Daniel Kabs <daniel.kabs@gmx.de> wrote:
-
-> Hello,
+Paul Menage wrote:
+> Thanks Li - but as I said to Serge in the email when I brought this up
+> originally, I already had a patch in mind for this; I've had an intern
+> (Ben) at Google working on it. His patch (pretty much ready, and being
+> sent out tomorrow I hope) is pretty similar to yours, but his is on
+> top of another patch that provides a (currently read-only)
+> "cgroup.procs" file in each cgroup dir that lists the unique tgids in
+> the cgroup. So the key in the list of pid arrays is actually a pid_ns
+> and a file type (indicating procs or tasks) rather than just a pid_ns.
 > 
-> in tracing a low on memory situation on an embedded system I came across 
-> the Documentation/sysctl/vm.txt. There it is advised to change the 
-> lowmem_reserve_ratio on systems running without swap.
+> So I think it makes more sense to not use this patch, but to use the
+> pair of patches that Ben's written, since they provide more overal
+> functionality.
 > 
-> I wonder if this applies for an embedded system running with 256MByte RAM 
-> and no swap which is using only one memory zone (ZONE_NORMAL)? I guess 
-> no.
-> 
-> 
-> To understand what the parameter means I read the relevant section from 
-> vm.txt and came across the terms "lowmem zone" and "lower zones" 
-> and "lowmem memory". I feel dumb. I could not find a concept of "lower 
-> zones" (or "upper" zones).  What exactly do they mean?
-> 
-Assume a system with HIGHMEM/NORMAL/DMA
 
-zone fallback list is created as
-
-	HIGHMEM->NORMAL->DMA
-
-HIGHMEM's lower zone is NORMAL+DMA
-NORMAL's lower zone is DMA.
-
-"lowmem" often means NORMAL+DMA (yes, there are HIGHMEM) but it depends on context.
-
-Regards,
--Kame
+It's fine for me. I waited for your fix for a week or so but didn't see
+it, so I thought you were stuck in other business and I did this fix.
 
