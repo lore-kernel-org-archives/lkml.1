@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZGBGb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbZGBGdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZGBGb7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 02:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZGBGbv
+	id S1754910AbZGBGdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 02:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZGBGdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 02:31:51 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:59616 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZGBGbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 02:31:51 -0400
-Subject: Re: [PATCH] kmemtrace: print binary output only if 'bin' option is
- set
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A4C4FEA.6010109@cn.fujitsu.com>
-References: <4A4C4FEA.6010109@cn.fujitsu.com>
-Date: Thu, 02 Jul 2009 09:31:52 +0300
-Message-Id: <1246516313.6461.0.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 2 Jul 2009 02:33:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47623 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750849AbZGBGdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 02:33:05 -0400
+Date: Thu, 2 Jul 2009 08:32:59 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org, eric.dumazet@gmail.com
+Subject: [PATCHv4 0/2] net: fix race in the receive/select
+Message-ID: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Li,
+This patchset fixies the race within the poll_wait call and the receive callbacks,
+by adding memory barrier.
 
-On Thu, 2009-07-02 at 14:12 +0800, Li Zefan wrote:
-> Currently by default the output of kmemtrace is binary format instead
-> of human-readable output.
-> 
-> This patch makes the following changes:
->   - We'll see human-readable output by default
->   - We'll see binary output if 'bin' option is set
-> 
-> Note: you may probably need to explicitly disable context-info binary
->       output:
-> 
-> 	# echo 0 > options/context-info
-> 	# echo 1 > options/bin
-> 	# cat trace_pipe
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+- 1/2 includes the actual fix
+- 2/2 includes optimization for the x86 arch
 
-I'm fine with this. Eduard?
+It is discussed and described in the following discussions:
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+http://lkml.org/lkml/2009/6/18/124
+http://lkml.org/lkml/2009/6/25/188
+http://lkml.org/lkml/2009/6/29/216
 
+Patchset is made on top of Linus'es tree d960eea974f5e500c0dcb95a934239cc1f481cfd .
+
+Booted on x86_64.
+
+wbr,
+jirka
+
+---
+ arch/x86/include/asm/spinlock.h |    3 ++
+ include/linux/spinlock.h        |    5 +++
+ include/net/sock.h              |   66 +++++++++++++++++++++++++++++++++++++++
+ net/atm/common.c                |    6 ++--
+ net/core/datagram.c             |    2 +-
+ net/core/sock.c                 |    8 ++--
+ net/dccp/output.c               |    2 +-
+ net/dccp/proto.c                |    2 +-
+ net/ipv4/tcp.c                  |    2 +-
+ net/iucv/af_iucv.c              |    4 +-
+ net/rxrpc/af_rxrpc.c            |    4 +-
+ net/unix/af_unix.c              |    8 ++--
+ 12 files changed, 93 insertions(+), 19 deletions(-)
