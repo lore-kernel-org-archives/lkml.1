@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZGBPjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbZGBPiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbZGBPjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZGBPiY
+	id S1755116AbZGBPiu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbZGBPiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:38:24 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:50534 "EHLO
+	Thu, 2 Jul 2009 11:38:16 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:36919 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbZGBPiV (ORCPT
+	with ESMTP id S1752712AbZGBPiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:38:21 -0400
+	Thu, 2 Jul 2009 11:38:09 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v9 4/5] KVM: add irqfd DEASSIGN feature
+Subject: [KVM PATCH v9 2/5] eventfd: use locked POLLHUP
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, mst@redhat.com, avi@redhat.com,
        davidel@xmailserver.org
-Date: Thu, 02 Jul 2009 11:38:16 -0400
-Message-ID: <20090702153816.20186.76237.stgit@dev.haskins.net>
+Date: Thu, 02 Jul 2009 11:38:06 -0400
+Message-ID: <20090702153806.20186.76377.stgit@dev.haskins.net>
 In-Reply-To: <20090702153454.20186.99191.stgit@dev.haskins.net>
 References: <20090702153454.20186.99191.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -27,95 +27,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DEASSIGN allows us to optionally disassociate an IRQFD from its underlying
-eventfd without destroying the eventfd in the process.  This is useful
-for conditions like live-migration which may have an eventfd associated
-with a device and an IRQFD.  We need to be able to decouple the guest
-from the event source while not perturbing the event source itself.
+eventfd currently emits a POLLHUP wakeup on f_ops->release() to generate a
+"release" callback. This lets eventfd clients know if the eventfd is about
+to go away and is very useful particularly for in-kernel clients. However,
+as it stands today it is not possible to use this feature of eventfd in a
+race-free way. This patch changes the POLLHUP code to use the locked variant
+to rectify this problem.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-CC: Michael S. Tsirkin <mst@redhat.com>
+CC: Davide Libenzi <davidel@xmailserver.org>
 ---
 
- include/linux/kvm.h |    2 ++
- virt/kvm/eventfd.c  |   46 ++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 46 insertions(+), 2 deletions(-)
+ fs/eventfd.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 69d3d73..76c6408 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -461,6 +461,8 @@ struct kvm_x86_mce {
- };
- #endif
- 
-+#define KVM_IRQFD_FLAG_DEASSIGN (1 << 0)
-+
- struct kvm_irqfd {
- 	__u32 fd;
- 	__u32 gsi;
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 9da9286..4092b8d 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -161,8 +161,8 @@ irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
- 	add_wait_queue(wqh, &irqfd->wait);
- }
- 
--int
--kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
-+static int
-+kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
+diff --git a/fs/eventfd.c b/fs/eventfd.c
+index d9849a1..31d12de 100644
+--- a/fs/eventfd.c
++++ b/fs/eventfd.c
+@@ -105,12 +105,7 @@ static int eventfd_release(struct inode *inode, struct file *file)
  {
- 	struct _irqfd *irqfd;
- 	struct file *file = NULL;
-@@ -241,6 +241,48 @@ kvm_irqfd_init(struct kvm *kvm)
- }
+ 	struct eventfd_ctx *ctx = file->private_data;
  
- /*
-+ * shutdown any irqfd's that match fd+gsi
-+ */
-+static int
-+kvm_irqfd_deassign(struct kvm *kvm, int fd, int gsi)
-+{
-+	struct _irqfd *irqfd, *tmp;
-+	struct eventfd_ctx *eventfd;
-+
-+	eventfd = eventfd_ctx_fdget(fd);
-+	if (IS_ERR(eventfd))
-+		return PTR_ERR(eventfd);
-+
-+	spin_lock_irq(&kvm->irqfds.lock);
-+
-+	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds.items, list) {
-+		if (irqfd->eventfd == eventfd && irqfd->gsi == gsi)
-+			irqfd_deactivate(irqfd);
-+	}
-+
-+	spin_unlock_irq(&kvm->irqfds.lock);
-+	eventfd_ctx_put(eventfd);
-+
-+	/*
-+	 * Block until we know all outstanding shutdown jobs have completed
-+	 * so that we guarantee there will not be any more interrupts on this
-+	 * gsi once this deassign function returns.
-+	 */
-+	flush_workqueue(irqfd_cleanup_wq);
-+
-+	return 0;
-+}
-+
-+int
-+kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
-+{
-+	if (flags & KVM_IRQFD_FLAG_DEASSIGN)
-+		return kvm_irqfd_deassign(kvm, fd, gsi);
-+
-+	return kvm_irqfd_assign(kvm, fd, gsi);
-+}
-+
-+/*
-  * This function is called as the kvm VM fd is being released. Shutdown all
-  * irqfds that still remain open
-  */
+-	/*
+-	 * No need to hold the lock here, since we are on the file cleanup
+-	 * path and the ones still attached to the wait queue will be
+-	 * serialized by wake_up_locked_poll().
+-	 */
+-	wake_up_locked_poll(&ctx->wqh, POLLHUP);
++	wake_up_poll(&ctx->wqh, POLLHUP);
+ 	eventfd_ctx_put(ctx);
+ 	return 0;
+ }
 
