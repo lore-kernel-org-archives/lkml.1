@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZGBWQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZGBWXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZGBWQW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZGBWQP
+	id S1756834AbZGBWXv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZGBWXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:16:15 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:31519 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752006AbZGBWQO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:16:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xC7tTgQAUmgZLHzK8ER9XuCu5HHfjw/CBiEn1b174MxfhCzBN7ITuvZGRleMXtZZ7q4tD73TiVgZW1korOhHizVxUH56+cpBirjRKmmWzuS50/BwVzGR/PsNBC+XFC7zD7YU91tL0WQlR6hMCIkP028s+/SUJehIqhoZBfUjw/c=  ;
-X-YMail-OSG: MORG6DUVM1nljZqHsTfjgGpo1LtYMVahIv5vOizVNMCk89kohwtD_13okvEzuRZcfOnC3sTsGGhBTdTQmz4dKsWi4ATeVl_4MxqQusFnQVeWKiTUUvQmDYx8mY07XhCoggO0rCgrE4Nq1MYo49v9MPdvA3rIHM4TziNID_y34YldpCz5zI5Rm4T2XcK0OegilE_LqMpeKX9AeWtroqvDcd6vn2ZwS6KyIDCPe1odldNEqYfNG1suV9zU5lUvrz3bBUBjspWGPrY_wVaa
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Jani Nikula <ext-jani.1.nikula@nokia.com>
-Subject: Re: [PATCH v2] gpiolib: allow poll(2) on gpio value
-Date: Thu, 2 Jul 2009 15:16:17 -0700
-User-Agent: KMail/1.9.10
-Cc: Daniel =?iso-8859-1?q?Gl=F6ckner?= <dg@emlix.com>,
-       Ben Nizette <bn@niasdigital.com>, linux-kernel@vger.kernel.org
-References: <1244212590-15620-1-git-send-email-dg@emlix.com> <200907021157.33250.david-b@pacbell.net> <359ed6810907021437m4417d4bfhc3d49b19387dbf96@mail.gmail.com>
-In-Reply-To: <359ed6810907021437m4417d4bfhc3d49b19387dbf96@mail.gmail.com>
+	Thu, 2 Jul 2009 18:23:45 -0400
+Received: from mail.samba.org ([66.70.73.150]:41197 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754511AbZGBWXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 18:23:44 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907021516.17510.david-b@pacbell.net>
+Message-ID: <19021.13158.80030.713099@samba.org>
+Date: Fri, 3 Jul 2009 08:23:34 +1000
+To: Pavel Machek <pavel@ucw.cz>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+In-Reply-To: <20090702220004.GF1485@ucw.cz>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<19019.16217.291678.588673@samba.org>
+	<20090702220004.GF1485@ucw.cz>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 July 2009, Jani Nikula wrote:
-> I'm trying to say that if you call gpio_export() to create a sysfs
-> node, a subsequent poll() in user space won't work because there is no
-> irq set up, and sysfs_notify_dirent() won't be called. The patch
-> doesn't provide an interface for setting that up from kernel after
-> gpio_export() call - it's only possible to set up edge triggering and
-> sysfs notify by writing to the "edge" node from user space.
+Hi Pavel,
 
-OK, now I understand.  :)
+ > You already know that it breaks XP and older linuxes. So... what are
+ > you arguing about?! Chkdsk marks it as invalid filesystem... not a
+ > vfat.
 
-Yeah, that seems fixable in followups.
+no, wrong on all 3 counts.
+
+For the "breaks XP", see my previous message where I point out that I
+have never been able to crash XP with this patch, only with other
+varients on the patch that reduce the number of random bits we use.
+
+The "breaks older linuxes" claim is also wrong. The patch I have
+posted works fine with all older versions of the Linux kernel that I
+have tested. If you know of a old version of the Linux kernel that
+doesn't work with a filesystem written when this patch is enabled then
+please let me know. I think you may be getting confused by the
+discussion I had with Eric where I explained about the reasons for the
+change in fat/dir.c. I won't repeat that long discussion again here,
+but please re-read the reply I sent to Eric and if you still have
+questions about it then please ask.
+
+Finally, saying that "chkdsk marks it as an invalid filesystem" is not
+correct. It only complains if there happens (with a very low
+probability!) to be two files with the same 11 bytes in their
+respective 8.3 entries. When it complains it renames one of the two
+files.
+
+That rename would not in itself be a problem at all, as changing the
+8.3 entry would not affect the long filename, except that chkdsk has a
+bug where it doesn't follow the Microsoft FAT specification. When you
+rename a file on a FAT filesystem you are supposed to also update the
+8 bit checksum field in the corresponding long filename entries. If
+you don't do that update then you effectively strip off the long
+filename. Current versions of Microsoft chkdsk neglect to update the
+long filename checksum when renaming after detecting a duplicate 8.3
+entry.
+
+So it is Microsoft's chkdsk, not the patched Linux kernel, that is in
+violation of the FAT spec. Luckily the probability of this bug
+cropping up is quite small in practice.
+
+Cheers, Tridge
