@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbZGBNbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZGBNgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbZGBNbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZGBNbQ
+	id S1754297AbZGBNgq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZGBNgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:31:16 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:43660 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752534AbZGBNbP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 09:31:15 -0400
-Date: Thu, 2 Jul 2009 09:31:04 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-cc: yakui <yakui.zhao@intel.com>, "Li, Shaohua" <shaohua.li@intel.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mel@csn.ul.ie" <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: + memory-hotplug-alloc-page-from-other-node-in-memory-online.patch
- added to -mm tree
-In-Reply-To: <20090702144415.8B21.E1E9C6FF@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0907020929060.32407@gentwo.org>
-References: <1246497073.18688.28.camel@localhost.localdomain> <20090702102208.ff480a2d.kamezawa.hiroyu@jp.fujitsu.com> <20090702144415.8B21.E1E9C6FF@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 2 Jul 2009 09:36:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49769 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751044AbZGBNgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 09:36:37 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] NFSD: Don't hold unrefcounted creds over call to
+	nfsd_setuser()
+To: bfields@fieldses.org, steved@redhat.com, rasmus@msconsult.dk
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Thu, 02 Jul 2009 14:35:32 +0100
+Message-ID: <20090702133532.28297.89635.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Jul 2009, Yasunori Goto wrote:
+nfsd_open() gets an unrefcounted pointer to the current process's effective
+credentials at the top of the function, then calls nfsd_setuser() via
+fh_verify() - which may replace and destroy the current process's effective
+credentials - and then passes the unrefcounted pointer to dentry_open() - but
+the credentials may have been destroyed by this point.
 
-> However, I don't enough time for memory hotplug now,
-> and they are just redundant functions now.
-> If someone create new allocator (and unifying bootmem allocator),
-> I'm very glad. :-)
+Instead, the value from current_cred() should be passed directly to
+dentry_open() as one of its arguments, rather than being cached in a variable.
 
-"Senior"ities all around.... A move like that would require serious
-commitment of time. None of us older developers can take that on it
-seems.
+Possibly fh_verify() should return the creds to use.
 
-Do we need to accept that the zone and page metadata are living on another
-node?
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
+ fs/nfsd/vfs.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 4145083..23341c1 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -678,7 +678,6 @@ __be32
+ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
+ 			int access, struct file **filp)
+ {
+-	const struct cred *cred = current_cred();
+ 	struct dentry	*dentry;
+ 	struct inode	*inode;
+ 	int		flags = O_RDONLY|O_LARGEFILE;
+@@ -733,7 +732,7 @@ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
+ 		vfs_dq_init(inode);
+ 	}
+ 	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_path.mnt),
+-			    flags, cred);
++			    flags, current_cred());
+ 	if (IS_ERR(*filp))
+ 		host_err = PTR_ERR(*filp);
+ 	else
 
