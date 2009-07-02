@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbZGBFqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752298AbZGBFry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbZGBFqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 01:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbZGBFqj
+	id S1752298AbZGBFry (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 01:47:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbZGBFrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 01:46:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53097 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750713AbZGBFqj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 01:46:39 -0400
-Date: Wed, 1 Jul 2009 22:46:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kevin Cernekee <cernekee@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] Fix virt_to_phys() warnings
-Message-Id: <20090701224627.0b2704df.akpm@linux-foundation.org>
-In-Reply-To: <910ba280decc9ee53d9971ba04f73fab@localhost>
-References: <910ba280decc9ee53d9971ba04f73fab@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 01:47:46 -0400
+Received: from deleuze.hcoop.net ([69.90.123.67]:37036 "EHLO deleuze.hcoop.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750726AbZGBFrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 01:47:46 -0400
+From: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+To: U Kuehn <ukuehn@acm.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by encrypting page cache
+References: <87hbxx0wcp.fsf@jeremyms.com> <200907011755.10386.rjw@sisk.pl>
+	<874otw15r6.fsf@jeremyms.com> <200907020041.52198.rjw@sisk.pl>
+	<87r5x0ypev.fsf@jeremyms.com> <4A4C4226.8000302@acm.org>
+X-Habeas-SWE-9: mark in spam to <http://www.habeas.com/report/>.
+X-Habeas-SWE-8: Message (HCM) and not spam. Please report use of this
+X-Habeas-SWE-7: warrant mark warrants that this is a Habeas Compliant
+X-Habeas-SWE-6: email in exchange for a license for this Habeas
+X-Habeas-SWE-5: Sender Warranted Email (SWE) (tm). The sender of this
+X-Habeas-SWE-4: Copyright 2002 Habeas (tm)
+X-Habeas-SWE-3: like Habeas SWE (tm)
+X-Habeas-SWE-2: brightly anticipated
+X-Habeas-SWE-1: winter into spring
+Date: Wed, 01 Jul 2009 22:47:27 -0700
+In-Reply-To: <4A4C4226.8000302@acm.org> (U. Kuehn's message of "Thu, 02 Jul
+	2009 07:14:14 +0200")
+Message-ID: <87ljn7y6ts.fsf@jeremyms.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 26 Jun 2009 17:13:20 -0700 Kevin Cernekee <cernekee@gmail.com> wrote:
+U Kuehn <ukuehn@acm.org> writes:
 
-> These warnings were observed on MIPS32 using 2.6.31-rc1 and gcc-4.2.0:
-> 
-> mm/page_alloc.c: In function 'alloc_pages_exact':
-> mm/page_alloc.c:1986: warning: passing argument 1 of 'virt_to_phys' makes pointer from integer without a cast
-> 
-> drivers/usb/mon/mon_bin.c: In function 'mon_alloc_buff':
-> drivers/usb/mon/mon_bin.c:1264: warning: passing argument 1 of 'virt_to_phys' makes pointer from integer without a cast
-> 
-> Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
-> ---
-> diff --git a/drivers/usb/mon/mon_bin.c b/drivers/usb/mon/mon_bin.c
-> index f8d9045..0f7a30b 100644
-> --- a/drivers/usb/mon/mon_bin.c
-> +++ b/drivers/usb/mon/mon_bin.c
-> @@ -1261,7 +1261,7 @@ static int mon_alloc_buff(struct mon_pgmap *map, int npages)
->  			return -ENOMEM;
->  		}
->  		map[n].ptr = (unsigned char *) vaddr;
-> -		map[n].pg = virt_to_page(vaddr);
-> +		map[n].pg = virt_to_page((void *) vaddr);
->  	}
->  	return 0;
->  }
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 5d714f8..f6180db 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1983,7 +1983,7 @@ void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
->  		unsigned long alloc_end = addr + (PAGE_SIZE << order);
->  		unsigned long used = addr + PAGE_ALIGN(size);
->  
-> -		split_page(virt_to_page(addr), order);
-> +		split_page(virt_to_page((void *)addr), order);
->  		while (used < alloc_end) {
->  			free_page(used);
->  			used += PAGE_SIZE;
+> [snip]
 
-The virt_to_foo() functions were written back in the Linux dark ages and
-they're horrid.  A byzantine mixture of macros and typecasts which make
-it really hard to work out what type their argument actually should be.
+> The approach to encrypt the memory contents during suspend-to-ram seems
+> to be a very fundamental change in the kernel, in order to protect
+> against a very specific attack.
 
-virt_to_page() takes an argument of type `unsigned long'.  (except for
-the include/asm-generic/page.h version which takes any damn type at
-all).
+As I have said, I believe that tuxonice already supports almost
+everything that is needed to implement it, and that the changes would
+not in fact have to be all that intrusive to the rest of the kernel.
 
-virt_to_phys() takes an argument of `const void *' (weird, huh?)
+It is a very specific attack in some sense, but it is also a very
+general attack in that it affects practically every computer out there.
 
-But arch/mips/include/asm/page.h does
+> And unfortunately it helps only against an cold-boot attack that
+> happens during suspend-to-ram. It does not protect against the attack
+> taking place when the machine is just "on".
 
-#define virt_to_page(kaddr)        pfn_to_page(PFN_DOWN(virt_to_phys(kaddr)))
+Naturally the protection is only effective when it is actually engaged.
+However, I think that the cases in which a machine is susceptible to
+being stolen or tampered often correspond to cases in which it makes
+sense to have it suspended.  For a laptop, for instance, the highest
+risk is likely when the machine is left unattended or in transit.  In
+either case, it would likely be reasonable to have the machine
+suspended.  Obviously the protection would not help you if you wish to
+leave the machine unattended while it completes some computational task.
 
-thereby passing an `unsigned long' where a void* was expected.
+Nonetheless, I believe the level of protection offered would still be
+very useful to many people, myself included.
 
-
-So perhaps something along these lines:
-
-
---- a/arch/mips/include/asm/page.h~a
-+++ a/arch/mips/include/asm/page.h
-@@ -184,7 +184,11 @@ typedef struct { unsigned long pgprot; }
- 
- #endif
- 
--#define virt_to_page(kaddr)	pfn_to_page(PFN_DOWN(virt_to_phys(kaddr)))
-+static inline struct page *virt_to_page(unsigned long kaddr)
-+{
-+	return pfn_to_page(PFN_DOWN(virt_to_phys((void *)kaddr)));
-+}
-+
- #define virt_addr_valid(kaddr)	pfn_valid(PFN_DOWN(virt_to_phys(kaddr)))
- 
- #define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | VM_EXEC | \
-_
-
+-- 
+Jeremy Maitin-Shepard
