@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZGBWXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbZGBWZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbZGBWXv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 18:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZGBWXp
+	id S1756664AbZGBWZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 18:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZGBWZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 18:23:45 -0400
-Received: from mail.samba.org ([66.70.73.150]:41197 "EHLO lists.samba.org"
+	Thu, 2 Jul 2009 18:25:31 -0400
+Received: from mga14.intel.com ([143.182.124.37]:4471 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754511AbZGBWXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 18:23:44 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752006AbZGBWZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 18:25:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,337,1243839600"; 
+   d="scan'208";a="161090068"
+Subject: Re: Memory leak in iwlwifi or false positive?
+From: reinette chatre <reinette.chatre@intel.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
+References: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
+Content-Type: text/plain
+Date: Thu, 02 Jul 2009 15:25:33 -0700
+Message-Id: <1246573533.17896.867.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Message-ID: <19021.13158.80030.713099@samba.org>
-Date: Fri, 3 Jul 2009 08:23:34 +1000
-To: Pavel Machek <pavel@ucw.cz>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090702220004.GF1485@ucw.cz>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<19019.16217.291678.588673@samba.org>
-	<20090702220004.GF1485@ucw.cz>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+Hi Catalin,
 
- > You already know that it breaks XP and older linuxes. So... what are
- > you arguing about?! Chkdsk marks it as invalid filesystem... not a
- > vfat.
+On Thu, 2009-07-02 at 14:32 -0700, Catalin Marinas wrote:
+> Hi,
+> 
+> I'm trying to get kmemleak more robust and with the latest patches (not
 
-no, wrong on all 3 counts.
+I just compiled my 2.6.31 kernel with kmemleak but did not yet look into
+how it works ... I do see a lot of messages though. 
 
-For the "breaks XP", see my previous message where I point out that I
-have never been able to crash XP with this patch, only with other
-varients on the patch that reduce the number of random bits we use.
+> pushed yet) it seems to no longer show so many random leaks. However, I
+> get a lot of leaks reported in the iwlwifi code, about 4800 and they do
+> not disappear from any subsequent memory scanning (as is usually the
+> case with false positives). There are a lot of kmalloc's of < 512 bytes
+> and /proc/slabinfo seems to be in line with this:
+> 
+> kmalloc-512         5440   5481
+> 
+> This happens shortly after booting. Note that if an object is freed,
+> kmemleak no longer tracks it and therefore no reporting. But in this
+> case it looks like the iwlwifi code really allocated ~4800 blocks. Is it
+> normal for this code to keep so many blocks allocated? If yes, it is
+> probably kmemleak missing some root object in the references tree.
 
-The "breaks older linuxes" claim is also wrong. The patch I have
-posted works fine with all older versions of the Linux kernel that I
-have tested. If you know of a old version of the Linux kernel that
-doesn't work with a filesystem written when this patch is enabled then
-please let me know. I think you may be getting confused by the
-discussion I had with Eric where I explained about the reasons for the
-change in fat/dir.c. I won't repeat that long discussion again here,
-but please re-read the reply I sent to Eric and if you still have
-questions about it then please ask.
+Yes - this sounds about right. You tested with 5100 hardware which by
+default initializes 20 TX queues. For each of these queues it maintains
+a 256 buffer array of commands with 356 bytes used for each command.
 
-Finally, saying that "chkdsk marks it as an invalid filesystem" is not
-correct. It only complains if there happens (with a very low
-probability!) to be two files with the same 11 bytes in their
-respective 8.3 entries. When it complains it renames one of the two
-files.
+The 20 * 256 gives me 5120 ... would that explain the ~4800?
 
-That rename would not in itself be a problem at all, as changing the
-8.3 entry would not affect the long filename, except that chkdsk has a
-bug where it doesn't follow the Microsoft FAT specification. When you
-rename a file on a FAT filesystem you are supposed to also update the
-8 bit checksum field in the corresponding long filename entries. If
-you don't do that update then you effectively strip off the long
-filename. Current versions of Microsoft chkdsk neglect to update the
-long filename checksum when renaming after detecting a duplicate 8.3
-entry.
+Reinette
 
-So it is Microsoft's chkdsk, not the patched Linux kernel, that is in
-violation of the FAT spec. Luckily the probability of this bug
-cropping up is quite small in practice.
 
-Cheers, Tridge
