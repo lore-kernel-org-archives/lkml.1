@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbZGBXtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZGBXv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497AbZGBXtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZGBXtf
+	id S1755361AbZGBXv0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZGBXvS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:49:35 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:63200 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbZGBXtf (ORCPT
+	Thu, 2 Jul 2009 19:51:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48240 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752314AbZGBXvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:49:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=axl1GlUcmn1sTSd+EUgvjLPSXWGFQlia/0NMI5rehhzR+axDtRNrS0fpeNr3K/acm1
-         7us/+LtS/EdzYYGaYYsvg0pC72SGoaBGoKw96bOWcF1NGHMChz44P2w8N3f62ZJV0m79
-         meoV7YXTAhH4ExbErbJyP0x1UB9hGHYIaedhI=
-Message-ID: <4A4D478F.8090304@gmail.com>
-Date: Thu, 02 Jul 2009 20:49:35 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090626)
+	Thu, 2 Jul 2009 19:51:17 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jeff Arnold <jbarnold@ksplice.com>
+Subject: Re: Ksplice updates for Ubuntu 9.04 Jaunty
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       tabbott@ksplice.com, wdaher@ksplice.com, andersk@ksplice.com,
+       nelhage@ksplice.com, price@ksplice.com, geofft@ksplice.com
+In-Reply-To: <alpine.DEB.1.10.0906250451210.22588@vinegar-pot.mit.edu>
+References: <alpine.DEB.1.10.0906250451210.22588@vinegar-pot.mit.edu>
+Message-Id: <20090703084359.08E3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tools/perf compile error: ignoring return value of 'read', declared
- with attribute warn_unused_result
-References: <4A4BF4A2.8030607@gmail.com> <20090702074419.GB19187@elte.hu>
-In-Reply-To: <20090702074419.GB19187@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  3 Jul 2009 08:51:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Kevin Winchester <kjwinchester@gmail.com> wrote:
+> Hello,
 > 
->>     CC builtin-stat.o
->> cc1: warnings being treated as errors
->> builtin-stat.c: In function 'run_perf_stat':
->> builtin-stat.c:243: error: ignoring return value of 'read', declared with attribute warn_unused_result
->> builtin-stat.c:256: error: ignoring return value of 'read', declared with attribute warn_unused_result
->> make: *** [builtin-stat.o] Error 1
->>
->> Apparently my version of gcc and/or glibc do not agree with -Werror.  Would the fix be as simple as:
->>
->>     if *read(go_pipe[0], &buf, 1) < 0) {
->>             perror("Failed to read go_pipe.");
->>             exit(1);
->>     }
->>
->> ?
-> 
-> Yeah, that's Ubuntu doing some must-check-warnings via headers, 
-> right?
-> 
-> Frederic fixed a bug there yesterday - mind checking the latest 
-> perfcounters code at:
-> 
->   http://people.redhat.com/mingo/tip.git/README
-> 
-> ?
-> 
+> The Ksplice team [1] is now providing rebootless kernel updates for Ubuntu 
+> 9.04 Jaunty to anyone who configures their machine to receive them [2].  
+> In short, users can click a few buttons and start getting all of the 
+> Ubuntu kernel security updates applied to their system without rebooting.  
+> No initial kernel changes are needed.
 
-It's Gentoo, actually, but likely the same issue.  I checked tip/master and it does not show the problem.
+Great.
 
-Thanks for taking the time to look into it,
+> 
+> [1] http://www.ksplice.com
+> [2] http://www.ksplice.com/uptrack
+> 
+> I first mentioned Ksplice to the LKML in April 2008 [3], and since then 
+> we've submitted several rounds of Ksplice patches [4,5,6].  So far we've 
+> gotten various improvements related to Ksplice merged into mainline.
+> 
+> [3] http://lkml.org/lkml/2008/4/23/330
+> [4] http://lkml.org/lkml/2008/9/13/6
+> [5] http://lkml.org/lkml/2008/11/21/484
+> [6] http://lkml.org/lkml/2008/12/5/330
+> 
+> Ksplice applies traditional source code patches to unmodified Linux 
+> kernels.  It can be used to apply all of the Linux security patches over 
+> multiple years [7], and it can also apply reliability patches and other 
+> bug fixes, such as from the Linux stable tree.
 
--- 
-Kevin Winchester
+Afaik, Solaris and some other Unix like OS have similar rebootless
+security update mechanism.
+
+Yes, I like linux has such feature too.
+
+
+> 
+> [7] http://www.ksplice.com/paper
+> 
+> - Jeff
+
+
+
