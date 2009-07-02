@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZGBXz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZGBX5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZGBXz0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:55:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752521AbZGBXzN
+	id S1753241AbZGBX5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbZGBX5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:55:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:37159 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751944AbZGBXzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:55:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-Date: Fri, 3 Jul 2009 09:25:07 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       john.lanza@linux.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-References: <19013.8005.541836.436991@samba.org> <200907012019.53932.rusty@rustcorp.com.au> <20090702214646.GD1485@ucw.cz>
-In-Reply-To: <20090702214646.GD1485@ucw.cz>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 2 Jul 2009 19:57:47 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60133 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZGBX5q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 19:57:46 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 3 Jul 2009 08:55:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, yakui <yakui.zhao@intel.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mel@csn.ul.ie" <mel@csn.ul.ie>
+Subject: Re: +
+ memory-hotplug-alloc-page-from-other-node-in-memory-online.patch added to
+ -mm tree
+Message-Id: <20090703085556.fc711310.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0907020929060.32407@gentwo.org>
+References: <1246497073.18688.28.camel@localhost.localdomain>
+	<20090702102208.ff480a2d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090702144415.8B21.E1E9C6FF@jp.fujitsu.com>
+	<alpine.DEB.1.10.0907020929060.32407@gentwo.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907030925.08100.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Jul 2009 07:16:46 am Pavel Machek wrote:
-> On Wed 2009-07-01 20:19:51, Rusty Russell wrote:
-> > On Tue, 30 Jun 2009 04:01:03 pm Pavel Machek wrote:
-> > > > +config VFAT_FS_DUALNAMES
-> > > > +	bool "VFAT dual names support"
-> > > > +	depends on VFAT_FS
-> > >
-> > > Defaults should be back-compatible.
-> >
-> > Hi Pavel,
-> >
-> > I disagree with this: given there's been testing with no known issues,
-> > it's not a back compat question.
->
-> The testing uncovered some pretty serious issues. ('Causes XP to
-> bluescreen').
+On Thu, 2 Jul 2009 09:31:04 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-No, read more carefully: testing revealed "couldn't cause XP to bluescreen".  
-It took a deliberately hobbled version of the patch to tickle the XP bug, 
-under a day of stress testing.
+> On Thu, 2 Jul 2009, Yasunori Goto wrote:
+> 
+> > However, I don't enough time for memory hotplug now,
+> > and they are just redundant functions now.
+> > If someone create new allocator (and unifying bootmem allocator),
+> > I'm very glad. :-)
+> 
+> "Senior"ities all around.... A move like that would require serious
+> commitment of time. None of us older developers can take that on it
+> seems.
+> 
+> Do we need to accept that the zone and page metadata are living on another
+> node?
+> 
+I don't think so. Someone should do. I just think I can't do it _now_.
+(because I have more things to do for cgroup..)
 
-Cheers,
-Rusty.
+And, if not node-hotplug, memmap is allocated from local memory if possible.
+"We should _never_ allow fallback to other nodes or not" is problem ?
+I think we should allow fallback.
+About pgdat, zones, I hope they will be on-cache...
+
+Maybe followings are necessary for allocating pgdat/zones from local node
+at node-hotplug.
+
+  a) Add new tiny functions to alloacate memory from not-initialized area.
+     allocate pgdat/memmap from here if necessary.
+  b) leave allocated memory from (a) as PG_reserved at onlining.
+  c) There will be "not unpluggable" section after (b). We should show this to
+     users.
+  d) For removal, we have to keep precise trace of PG_reserved pages.
+  e) vmemmap removal, which uses large page for vmemmap, is a problem.
+     edges of section memmap is not aligned to large pages. Then we need
+     some clever trick to handle this.
+
+Allocationg memmap from its own section was an idea (I love this) but
+IBM's 16MB memory section doesn't allow this.
+
+Thanks,
+-Kame
+
+
+
+
+
