@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZGBQQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZGBQUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539AbZGBQQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 12:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGBQPz
+	id S1753140AbZGBQUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 12:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGBQUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 12:15:55 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:54149 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZGBQPz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 12:15:55 -0400
-Date: Thu, 2 Jul 2009 11:15:49 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-Message-ID: <20090702161548.GA13383@us.ibm.com>
-References: <4A4C0C60.4050106@cn.fujitsu.com> <6599ad830907011836x5eccc83eyc896a67295a6486d@mail.gmail.com> <4A4C18D5.7020806@cn.fujitsu.com> <6599ad830907011920r44df4022p53808b574da4a886@mail.gmail.com> <4A4C1B33.2030002@cn.fujitsu.com> <20090702132659.GA8051@us.ibm.com> <6599ad830907020843l7ce75abfq3e78b8f67a407ab9@mail.gmail.com>
+	Thu, 2 Jul 2009 12:20:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56472 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750848AbZGBQUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 12:20:35 -0400
+Date: Thu, 2 Jul 2009 12:20:35 -0400
+From: Dave Jones <davej@redhat.com>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Jun Nakajima <jun.nakajima@intel.com>, cpufreq@vger.kernel.org
+Subject: Re: 2.6.31-rc1-git9: INFO: possible circular locking dependency
+	detected -- (&(&dbs_info->work)->work){+.+...}, at: [<c104292d>]
+	__cancel_work_timer+0x81/0x17f
+Message-ID: <20090702162035.GB21746@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Miles Lane <miles.lane@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Jun Nakajima <jun.nakajima@intel.com>, cpufreq@vger.kernel.org
+References: <a44ae5cd0907020741g146cb2eq2f75a217fc3fad09@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830907020843l7ce75abfq3e78b8f67a407ab9@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <a44ae5cd0907020741g146cb2eq2f75a217fc3fad09@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Thu, Jul 2, 2009 at 6:26 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
-> > Quoting Li Zefan (lizf@cn.fujitsu.com):
-> >> Paul Menage wrote:
-> >> > On Wed, Jul 1, 2009 at 7:17 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
-> >> >> But I guess we are going to fix the bug for 2.6.31? So is it ok to
-> >> >> merge a new feature 'cgroup.procs' together into 2.6.31?
-> >> >>
-> >> >
-> >> > Does this bug really need to be fixed for 2.6.31? I didn't think that
-> >> > the namespace support in mainline was robust enough yet for people to
-> >> > use them for virtual servers in production environments.
-> >
-> > I don't know where the bar is for 'production environments', but I'd
-> > have to claim that pid namespaces are there...
-> 
-> Well, pid namespaces are marked as experimental, as are user
-> namespaces (and were described as "very incomplete" a few months
+On Thu, Jul 02, 2009 at 10:41:23AM -0400, Miles Lane wrote:
+ > [  348.243995] [ INFO: possible circular locking dependency detected ]
+ > [  348.244004] 2.6.31-rc1-git9 #13
+ > [  348.244009] -------------------------------------------------------
+ > [  348.244017] pm-suspend/3134 is trying to acquire lock:
+ > [  348.244023]  (&(&dbs_info->work)->work){+.+...}, at: [<c104292d>]
+ > __cancel_work_timer+0x81/0x17f
+ > [  348.244025]
+ > [  348.244025] but task is already holding lock:
+ > [  348.244025]  (dbs_mutex){+.+.+.}, at: [<f805791c>]
+ > cpufreq_governor_dbs+0x1fd/0x279 [cpufreq_ondemand]
 
-incomplete (due to signaling issues which have mostly been resolved)
-but stable and usable.
+well known by now. Venki is working on a fix, but it's not a simple
+fix, so it's taking time.
 
-user namespace are a completely different story :)
-
-> back). Pid namespaces are useful for process migration (which is still
-> under development) or virtual servers (for which user namespaces are
-> pretty much essential). So I'm not sure quite what you'd use pid
-> namespaces for yet.
-
-You don't need user namespaces to use pid namespaces for virtual
-servers (depending on your use).
-
-Now the fact remains this is a hard to trigger bug which doesn't
-corrupt the kernel, and - to take back what I said earlier - userspace
-can work around it by simply freezing the cgroup before reading its
-tasks file.
-
-So I guess I can go either way...  If Li's patch were more complicated
-I'd definately be for waiting.  But I do object to the general process
-of making a fix of a pretty bad bag depend on an unrelated new feature!
-
--serge
+	Dave
