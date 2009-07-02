@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZGBVcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZGBVg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbZGBVcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 17:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbZGBVcD
+	id S1756477AbZGBVg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 17:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZGBVgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 17:32:03 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47542 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754715AbZGBVcC (ORCPT
+	Thu, 2 Jul 2009 17:36:22 -0400
+Received: from ru.mvista.com ([213.79.90.228]:28902 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754850AbZGBVgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 17:32:02 -0400
-Subject: Memory leak in iwlwifi or false positive?
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: linux-wireless@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Thu, 02 Jul 2009 22:32:03 +0100
-Message-Id: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Jul 2009 21:32:04.0121 (UTC) FILETIME=[8ACFD890:01C9FB5C]
+	Thu, 2 Jul 2009 17:36:21 -0400
+Date: Fri, 3 Jul 2009 01:36:24 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Alan Cox <alan@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] 8250: Now honours baud rate lower bounds
+Message-ID: <20090702213624.GA23193@oksana.dev.rtsoft.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+A platform clock drives 8250 ports in most SOC systems, the clock
+might run at high frequencies, and so it's not always possible to
+downscale uart clock to a desired value.
 
-I'm trying to get kmemleak more robust and with the latest patches (not
-pushed yet) it seems to no longer show so many random leaks. However, I
-get a lot of leaks reported in the iwlwifi code, about 4800 and they do
-not disappear from any subsequent memory scanning (as is usually the
-case with false positives). There are a lot of kmalloc's of < 512 bytes
-and /proc/slabinfo seems to be in line with this:
+Currently the 8250 uart driver accepts not supported baud rates, and
+what is worse, it is doing this silently, and then passes not accepted
+values to a new termios, so userspace has no chance to catch this kind
+of errors (userspace verifies that settings were accepted by reading
+back and comparing the settings).
 
-kmalloc-512         5440   5481
+This patch fixes the issue by passing minimum baud rate to the
+uart_get_baud_rate() call, the call should take care of all bounds,
+so userspace should now report:
 
-This happens shortly after booting. Note that if an object is freed,
-kmemleak no longer tracks it and therefore no reporting. But in this
-case it looks like the iwlwifi code really allocated ~4800 blocks. Is it
-normal for this code to keep so many blocks allocated? If yes, it is
-probably kmemleak missing some root object in the references tree.
+  # stty -F /dev/ttyS0 speed 300
+  115200
+  stty: /dev/ttyS0: unable to perform all requested operations
 
-I'm not familiar with this code so any help is greatly appreciated.
+p.s. uart_get_baud_rate() falls back to 9600, which still might be too
+     low for some 10 GHz platforms, but that's a separate issue, and
+     we can wait with fixing this till we find such a platform.
 
-The majority of kmemleak traces look like this:
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+---
+ drivers/serial/8250.c |   23 ++++++++++++++++++++++-
+ 1 files changed, 22 insertions(+), 1 deletions(-)
 
-unreferenced object 0xc1be3d40 (size 512):
-  comm "iwlagn", pid 1571, jiffies 4294903229
-  backtrace:
-    [<c01e1f0b>] kmemleak_alloc+0x14b/0x290
-    [<c01db2e5>] __kmalloc+0x125/0x1e0
-    [<f95c77ef>] iwl_tx_queue_init+0x3f/0x310 [iwlcore]
-    [<f95c9276>] iwl_txq_ctx_reset+0x206/0x5a0 [iwlcore]
-    [<f95c199a>] iwl_hw_nic_init+0xba/0x110 [iwlcore]
-    [<f9765263>] __iwl_up+0xb3/0x340 [iwlagn]
-    [<f9765d72>] iwl_bg_up+0x32/0x50 [iwlagn]
-    [<c0150d7d>] worker_thread+0x1ad/0x2d0
-    [<c01555dc>] kthread+0x7c/0x90
-    [<c0103cb7>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-
-For a full kmemleak log and dmesg, see:
-
-http://homepage.ntlworld.com/cmarinas/kmemleak-3
-http://homepage.ntlworld.com/cmarinas/dmesg-3
-
-Thanks.
-
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index fb867a9..22d8d4f 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -567,6 +567,11 @@ static inline void _serial_dl_write(struct uart_8250_port *up, int value)
+ 	serial_outp(up, UART_DLM, value >> 8 & 0xff);
+ }
+ 
++static unsigned int _serial_dl_max(struct uart_8250_port *up)
++{
++	return 0xffff;
++}
++
+ #if defined(CONFIG_SERIAL_8250_AU1X00)
+ /* Au1x00 haven't got a standard divisor latch */
+ static int serial_dl_read(struct uart_8250_port *up)
+@@ -584,6 +589,14 @@ static void serial_dl_write(struct uart_8250_port *up, int value)
+ 	else
+ 		_serial_dl_write(up, value);
+ }
++
++static unsigned int serial_dl_max(struct uart_8250_port *up)
++{
++	if (up->port.iotype == UPIO_AU)
++		return 0xffffffff;
++	else
++		return _serial_dl_max(up);
++}
+ #elif defined(CONFIG_SERIAL_8250_RM9K)
+ static int serial_dl_read(struct uart_8250_port *up)
+ {
+@@ -602,9 +615,15 @@ static void serial_dl_write(struct uart_8250_port *up, int value)
+ 		_serial_dl_write(up, value);
+ 	}
+ }
++
++static unsigned int serial_dl_max(struct uart_8250_port *up)
++{
++	return _serial_dl_max(up);
++}
+ #else
+ #define serial_dl_read(up) _serial_dl_read(up)
+ #define serial_dl_write(up, value) _serial_dl_write(up, value)
++#define serial_dl_max(up) _serial_dl_max(up)
+ #endif
+ 
+ /*
+@@ -2272,7 +2291,9 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+ 	/*
+ 	 * Ask the core to calculate the divisor for us.
+ 	 */
+-	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk/16);
++	baud = uart_get_baud_rate(port, termios, old,
++				  port->uartclk / 16 / serial_dl_max(up),
++				  port->uartclk / 16);
+ 	quot = serial8250_get_divisor(port, baud);
+ 
+ 	/*
 -- 
-Catalin
-
+1.6.3.3
