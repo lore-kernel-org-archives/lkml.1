@@ -1,81 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZGBXqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756431AbZGBXrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbZGBXqt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZGBXqg
+	id S1756431AbZGBXrZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 19:47:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZGBXrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:46:36 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:39934 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753247AbZGBXqf (ORCPT
+	Thu, 2 Jul 2009 19:47:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42790 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751731AbZGBXrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:46:35 -0400
-Date: Fri, 3 Jul 2009 01:46:37 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Theodore Tso <tytso@mit.edu>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rusty Russell <rusty@rustcorp.com.au>,
-       Pavel Machek <pavel@ucw.cz>, tridge@samba.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu>
- <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Jul 2009 19:47:16 -0400
+Date: Thu, 2 Jul 2009 16:46:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: lizf@cn.fujitzu.com, serue@us.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       bblum@google.com
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+ that shows only unique tgids
+Message-Id: <20090702164649.303c4952.akpm@linux-foundation.org>
+In-Reply-To: <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	<20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 2009-07-03 01:17, Jan Engelhardt wrote:
+On Thu, 02 Jul 2009 16:26:20 -0700
+Paul Menage <menage@google.com> wrote:
 
+> Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+> 
+> struct cgroup used to have a bunch of fields for keeping track of the pidlist
+> for the tasks file. Those are now separated into a new struct cgroup_pidlist,
+> of which two are had, one for procs and one for tasks. The way the seq_file
+> operations are set up is changed so that just the pidlist struct gets passed
+> around as the private data.
+> 
+> Possible future functionality is making the procs file writable for purposes
+> of adding all threads with the same tgid at once.
+> 
+
+It'd be nice were the changelog to spell out the contents of this file
+(via an example) so we can review the proposed userspace interface
+change.
+
+> ---
+> 
+>  include/linux/cgroup.h |   23 +++-
+>  kernel/cgroup.c        |  287 ++++++++++++++++++++++++++++++------------------
+
+It'd be nice if the proposed userspace interface were documented too.
+
+> 
+> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+> index 665fa70..3b937c3 100644
+> --- a/include/linux/cgroup.h
+> +++ b/include/linux/cgroup.h
 >
->On Wednesday 2009-07-01 16:05, Theodore Tso wrote:
->>On Wed, Jul 01, 2009 at 12:25:58PM +0100, Alan Cox wrote:
->>
->>> (most *FAT using products don't use Microsofts
->>> implementation). Testing it versus Windows and saying it works is
->>> not really adequate. Thats what ACPI and BIOS people do that *we*
->>> moan about all the time.
->>
->>[...]
->>The other big user I can think of are digital cameras, but (a)
->>normally most users read from them and then delete the pictures, and
->>rarely write to media meant for a digital camera, and (b) the DCIM
->>standard for digital cameras explicitly only supports 8.3 filenames
->>and so digital camera manufacturers explicitly don't need to deal with
->>Long File Names at all.  (Hmm.... I wonder why....)
->>[...]
->>Ultimately, though, requiring that every single possible device be
->>tested is probably not reasonable, so the best way to do this testing
->>is the way do most of our testing; we do basic due diligence, but then
->>we merge it into mainline and let our huge user community try it out.
+> ...
 >
+> -/*
+> - * Load into 'pidarray' up to 'npids' of the tasks using cgroup
+> - * 'cgrp'.  Return actual number of pids loaded.  No need to
+> - * task_lock(p) when reading out p->cgroup, since we're in an RCU
+> - * read section, so the css_set can't go away, and is
+> - * immutable after creation.
+> +/**
+> + * pidlist_uniq - given a kmalloc()ed list, strip out all duplicate entries
+> + * returns -ENOMEM if the malloc fails; 0 on success
+> + */
+
+The comment purports to be kerneldoc ("/**") but didn't document the
+function's arguments.
+
+> +/* this implementation relies on the fact that pids will never be -1 */
+> +#define PIDLIST_VALUE_NONE ((pid_t)(-1))
+> +static int pidlist_uniq(pid_t **p, int *length)
+> +{
+> +	int i, j = 0; /* array index */
+> +	int last = 0; /* index of last unique entry */
+> +	int count = 1; /* count of total unique entries */
+> +	pid_t *list, *newlist;
+
+a newline here is conventional.
+
+> +	BUG_ON(p == NULL || *p == NULL || length == NULL);
+
+Unneeded, really.  The kernel will reliably oops if any of these are
+true, which provides us with the same info.
+
+In fact debuggability would be enhanced were this assertion to be
+removed, because if this goes blam then it will be very hard to work
+out which of these three tests went wrong.
+
+> +	list = *p;
+> +	/*
+> +	 * we presume the 0th element is unique, so i starts at 1. trivial
+> +	 * edge cases first; no work needs to be done for either
+> +	 */
+> +	if (*length == 0 || *length == 1)
+> +		return 0;
+> +	for (i = 1; i < *length; i++) {
+> +		BUG_ON(list[i] == PIDLIST_VALUE_NONE);
+> +		if (list[i] == list[last]) {
+> +			list[i] = PIDLIST_VALUE_NONE;
+> +		} else {
+> +			last = i;
+> +			count++;
+> +		}
+> +	}
+> +	newlist = kmalloc(count * sizeof(pid_t), GFP_KERNEL);
+
+What is the maximum possible value of `count' here?
+
+Is there any way in which malicious code can exploit the potential
+multiplicative overflow in this statement?  (kcalloc() checks for
+this).
+
+> +	if (!newlist)
+> +		return -ENOMEM;
+> +	/* copy to new array */
+> +	for (i = 0; i < *length; i++) {
+> +		if (list[i] != PIDLIST_VALUE_NONE) {
+> +			newlist[j] = list[i];
+> +			j++;
+> +		}
+> +	}
+> +	BUG_ON(j != count); /* this would fail on a zero-length array */
+> +	kfree(list);
+> +	*p = newlist;
+> +	*length = count;
+> +	return 0;
+> +}
+> +
+> +static int cmppid(const void *a, const void *b)
+> +{
+> +	return *(pid_t *)a - *(pid_t *)b;
+> +}
+> +
+> +/**
+> + * Load a cgroup's pidarray with either procs' tgids or tasks' pids
+>   */
+
+again, that ain't kerneldoc.
+
+> -static int pid_array_load(pid_t *pidarray, int npids, struct cgroup *cgrp)
+> +static int pidlist_array_load(struct cgroup *cgrp, bool procs)
+>  {
+> -	int n = 0, pid;
+> +	pid_t *array;
+> +	int length;
+> +	int retval;
+> +	int pid, n = 0; /* used for populating the array */
+>  	struct cgroup_iter it;
+>  	struct task_struct *tsk;
+> +	struct cgroup_pidlist *l;
+> +
+> +	/*
+> +	 * If cgroup gets more users after we read count, we won't have
+> +	 * enough space - tough.  This race is indistinguishable to the
+> +	 * caller from the case that the additional cgroup users didn't
+> +	 * show up until sometime later on.
+> +	 */
+> +	length = cgroup_task_count(cgrp);
+> +	array = kmalloc(length * sizeof(pid_t), GFP_KERNEL);
+
+max size?
+
+overflowable?
+
+> +	if (!array)
+> +		return -ENOMEM;
+> +	/* now, populate the array */
+>  	cgroup_iter_start(cgrp, &it);
+>  	while ((tsk = cgroup_iter_next(cgrp, &it))) {
+> -		if (unlikely(n == npids))
+> +		if (unlikely(n == length))
+>  			break;
+> -		pid = task_pid_vnr(tsk);
+> -		if (pid > 0)
+> -			pidarray[n++] = pid;
+> +		/* get tgid or pid for procs or tasks file respectively */
+> +		pid = (procs ? task_tgid_vnr(tsk) : task_pid_vnr(tsk));
+> +		if (pid > 0) /* make sure to only use valid results */
+> +			array[n++] = pid;
+>  	}
+>  	cgroup_iter_end(cgrp, &it);
+> -	return n;
+> +	length = n;
+> +	/* now sort & (if procs) strip out duplicates */
+> +	sort(array, length, sizeof(pid_t), cmppid, NULL);
+> +	if (procs) {
+> +		retval = pidlist_uniq(&array, &length);
+> +		if (retval) { /* the malloc inside uniq can fail */
+> +			kfree(array);
+> +			return retval;
+> +		}
+> +		l = &(cgrp->procs);
+> +	} else {
+> +		l = &(cgrp->tasks);
+> +	}
+> +	/* store array in cgroup, freeing old if necessary */
+> +	down_write(&l->mutex);
+> +	kfree(l->list);
+> +	l->list = array;
+> +	l->length = length;
+> +	l->use_count++;
+> +	up_write(&l->mutex);
+> +	return 0;
+>  }
+>  
+> +
+>  /**
+>   * cgroupstats_build - build and fill cgroupstats
+>   * @stats: cgroupstats to fill information into
 >
->Yes, here is your precedent case. The DUALNAMES patch breaks the
->operation on my Fujifilm Finepix A210 digital camera.
+> ...
+>
+> -static int cgroup_tasks_release(struct inode *inode, struct file *file)
+> +static int cgroup_pidlist_release(struct inode *inode, struct file *file)
+>  {
+> -	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+> -
+> +	struct cgroup_pidlist *l;
+>  	if (!(file->f_mode & FMODE_READ))
+>  		return 0;
+> -
+> -	release_cgroup_pid_array(cgrp);
+> +	/*
+> +	 * the seq_file will only be initialized if the file was opened for
+> +	 * reading; hence we check if it's not null only in that case.
+> +	 */
+> +	BUG_ON(!file->private_data);
 
-Adding to that, I've just run it against every possible USB device I 
-could dig up in my room (i.e. one more for now).
+Unneeded assertion for reasons described above.
 
-It also breaks with the Tekmax T-1000/TMP-1000 (nicknamed 
-"ioneit"/"i-one-it"/"i-want-it") digital audio player. Its built-in 
-directory browser does display the copied file (see below), but does not 
-want to play it nor enqueue it into the playlist.
+> +	l = ((struct seq_file *)file->private_data)->private;
+> +	cgroup_release_pid_array(l);
+>  	return seq_release(inode, file);
+>  }
+>  
+>
+> ...
+>
+> @@ -2389,21 +2457,27 @@ static int cgroup_write_notify_on_release(struct cgroup *cgrp,
+>  /*
+>   * for the common functions, 'private' gives the type of file
+>   */
+> +/* for hysterical reasons, we can't put this on the older files */
 
-Again, a simple copy operation was performed — this time for both 
-8.3 and long names, i.e.:
+"raisins" ;)
 
-  $ cp working.mp3 TEST0000.mp3
-  $ cp working.mp3 TEST12345678.mp3
+> +#define CGROUP_FILE_GENERIC_PREFIX "cgroup."
+>  static struct cftype files[] = {
+>  	{
+>  		.name = "tasks",
+>  		.open = cgroup_tasks_open,
+>  		.write_u64 = cgroup_tasks_write,
+> -		.release = cgroup_tasks_release,
+> -		.private = FILE_TASKLIST,
+> +		.release = cgroup_pidlist_release,
+>  		.mode = S_IRUGO | S_IWUSR,
+>  	},
+> -
+> +	{
+> +		.name = CGROUP_FILE_GENERIC_PREFIX "procs",
+> +		.open = cgroup_procs_open,
+> +		/* .write_u64 = cgroup_procs_write, TODO */
+> +		.release = cgroup_pidlist_release,
+> +		.mode = S_IRUGO,
+> +	},
+>  	{
+>  		.name = "notify_on_release",
+>  		.read_u64 = cgroup_read_notify_on_release,
+>  		.write_u64 = cgroup_write_notify_on_release,
+> -		.private = FILE_NOTIFY_ON_RELEASE,
+>  	},
+>  };
+>  
+>
+> ...
+>
 
-None of the dualnames=n-created files were accepted.
-
-(Combinations that worked: 2.6.29.5-w/o-dualnames-patch, and
-2.6.31-rc1+dualnames=y)
