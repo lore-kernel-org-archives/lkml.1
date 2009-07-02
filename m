@@ -1,101 +1,207 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZGBBS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZGBBX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZGBBS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZGBBSV
+	id S1753671AbZGBBX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZGBBXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:18:21 -0400
-Received: from mail-qy0-f193.google.com ([209.85.221.193]:36777 "EHLO
-	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZGBBSU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:18:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UtgHSr2jWB1+T55PBJP278Xc8EEXr+WMigM16wqkU5Zh10fXB8iEuUQzH91CMcbWdG
-         UtdpPd0fBeKJ4yH0yVP2Za5zGQRbtAq2NUEyvqLWA3cPUZh9s9BR0DUMuGQecLb6M8IA
-         eisgzilKn5dF6nsJc9rt+kRT+KO4wx/N3NzX4=
+	Wed, 1 Jul 2009 21:23:19 -0400
+Received: from mail.windriver.com ([147.11.1.11]:62391 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750907AbZGBBXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 21:23:18 -0400
+Message-ID: <4A4C0C91.2010407@windriver.com>
+Date: Thu, 02 Jul 2009 09:25:37 +0800
+From: Yong Zhang <yong.zhang@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-In-Reply-To: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
-Date: Wed, 1 Jul 2009 18:18:23 -0700
-X-Google-Sender-Auth: e67f6bb88e9503cf
-Message-ID: <e9c3a7c20907011818q6151b7e1gf6d89f52296362f2@mail.gmail.com>
-Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel AHB 
-	DMA Controller
-From: Dan Williams <dan.j.williams@intel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: maciej.sosnowski@intel.com, avictor.za@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: David Daney <ddaney@caviumnetworks.com>
+CC: linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: [PATCH] MIPS: o32 application running on 64bit kernel core dump
+References: <16bd35f2910f585740f4764fa1e80bf31c80d576.1242178813.git.yong.zhang@windriver.com> <4A4BB456.9090404@caviumnetworks.com>
+In-Reply-To: <4A4BB456.9090404@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jul 2009 01:23:08.0790 (UTC) FILETIME=[A862B160:01C9FAB3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 26, 2009 at 3:42 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
-> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
-> at91sam9rl chip. It will be used on other products in the future.
->
-> This first release covers only the memory-to-memory tranfer type. This is the
-> only tranfer type supported by this chip.  On other products, it will be used
-> also for peripheral DMA transfer (slave API support to come).
->
-> I used dmatest client without problem in different configurations to test it.
->
-> Full documentation for this controller can be found in the SAM9RL datasheet:
-> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
->
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> ---
-[..]
 
-A quick review comment:
 
-> +/**
-> + * atc_desc_get - get a unsused descriptor from free_list
-> + * @atchan: channel we want a new descriptor for
-> + */
-> +static struct at_desc *atc_desc_get(struct at_dma_chan *atchan)
-> +{
-> +       struct at_desc *desc, *_desc;
-> +       struct at_desc *ret = NULL;
-> +       unsigned int i = 0;
-> +       LIST_HEAD(tmp_list);
-> +
-> +       spin_lock_bh(&atchan->lock);
-> +       list_for_each_entry_safe(desc, _desc, &atchan->free_list, desc_node) {
-> +               i++;
-> +               if (async_tx_test_ack(&desc->txd)) {
-> +                       list_del(&desc->desc_node);
-> +                       ret = desc;
-> +                       break;
-> +               }
-> +               dev_dbg(chan2dev(&atchan->chan_common),
-> +                               "desc %p not ACKed\n", desc);
-> +       }
-> +       spin_unlock_bh(&atchan->lock);
-> +       dev_vdbg(chan2dev(&atchan->chan_common),
-> +               "scanned %u descriptors on freelist\n", i);
-> +
-> +       /* no more descriptor available in initial pool : create some more */
-> +       if (!ret) {
-> +               for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
-> +                       desc = atc_alloc_descriptor(&atchan->chan_common,
-> +                                                   GFP_KERNEL);
+David Daney wrote:
+> Yong Zhang wrote:
+>> If an o32 application crashes and generates a core dump on
+>> a 64 bit kernel, the core file will not be correctly
+>> recognized. This is because ELF_CORE_COPY_REGS and
+>> ELF_CORE_COPY_TASK_REGS are not correctly defined for o32
+>> and will use the default register set which would
+>> be CONFIG_64BIT in asm/elf.h.
+>>
+>> So we'll switch to use the right register defines in
+>> this situation by checking for WANT_COMPAT_REG_H and
+>> use the right defines of ELF_CORE_COPY_REGS and
+>> ELF_CORE_COPY_TASK_REGS.
+> 
+> This patch looks plausible.  How was it tested?
+> 
+> Can you still obtain good core files with at 32-bit kernel?
 
-This cannot be GFP_KERNEL as ->prep_dma_memcpy may be called from an
-atomic context.  Given that this should only be done in emergency
-situations this allocation should probably happen one descriptor at a
-time, if it must happen at all.  My recommendation is that if you find
-that the driver runs out of descriptors on a regular basis increase
-INIT_NR_DESCS_PER_CHANNEL  and only operate with the descriptors
-allocated from atc_alloc_chan_resources().  As it stands this allows
-the descriptor list to grow without bounds.
+Yeah, I also have tested 32-bit kernel. Actually this doesn't have any
+side effect on that.
 
-Regards,
-Dan
+> 
+> Are usable core files obtained for all three ABIs on 64-bit kernels?
+
+Tested for all three ABIs, and all does the right thing.
+Testing code is below:
+/* test.c */
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <strings.h>
+#include <execinfo.h>
+#include <sys/types.h>
+#include <linux/unistd.h>
+#include <errno.h>
+#include <pthread.h>
+
+#define MAX_THREADS 4
+
+void foo7()
+{
+	int *i=0;
+	char c =*i;
+}
+
+void foo6()
+{
+	int c6=1000;
+	int i=9;
+	while(c6--)
+	{
+		i=i*9+1;
+	}
+	printf("inside foo6\n");
+	foo7();
+}
+
+void foo5()
+{
+	int c5=1000;
+	int i=9;
+	while(c5--)
+	{
+		i=i*9+1;
+	}
+	printf("inside foo5\n");
+	foo6();
+}
+
+void foo4()
+{
+	int c4=1000;
+	int i=9;
+	while(c4--)
+	{
+		i=i*9+1;
+	}
+	printf("inside foo4\n");
+	foo5();
+}
+
+void foo3()
+{
+	int c3=1000;
+	int i=9;
+	while(c3--)
+	{
+		i=i*9+1;
+	}
+	printf("inside foo3\n");
+	foo4();
+}
+
+void foo2()
+{
+	int c2=1000;
+	int i=9;
+	while (c2--)
+	{
+		i=i*9+1;
+	}
+	printf("inside foo2\n");
+	foo3();
+}
+
+void *foo1(void* arg)
+{
+	sleep(10);
+	foo2();
+}
+
+int main()
+{
+	int i=0;
+	pthread_t *threads;
+	pthread_attr_t pthread_attr;
+
+	printf("inside main\n");
+	threads=(pthread_t *)malloc(MAX_THREADS*sizeof(*threads));
+	pthread_attr_init(&pthread_attr);
+
+	for(i=0;i<MAX_THREADS;i++)
+	{
+		pthread_create(&threads[i],&pthread_attr,foo1,NULL);
+	}
+
+	for(i=0;i<MAX_THREADS;i++)
+	{
+		pthread_join(threads[i],NULL);
+	}
+
+	exit(1);
+}
+> 
+> Other than that, I have only the one comment below.
+> 
+> Thanks,
+> David Daney
+> 
+
+<cut here>
+
+>
+>> +#define ELF_CORE_COPY_TASK_REGS(_tsk, _dest)                \
+>> +({                                    \
+>> +    int __res = 1;                            \
+>> +    elf32_core_copy_regs((*_dest), (task_pt_regs(_tsk)));        \
+>> +    __res;                                \
+> 
+> Why does __res exist?  Can't you have that last line just be '1;'?
+
+Sounds good. Just be '1;' is good.
+
+Thanks,
+Yong
+
+> 
+>> +})
+>> +
+>>  #include <linux/module.h>
+>>  #include <linux/elfcore.h>
+>>  #include <linux/compat.h>
+>> @@ -110,9 +127,6 @@ jiffies_to_compat_timeval(unsigned long jiffies,
+>> struct compat_timeval *value)
+>>      value->tv_usec = rem / NSEC_PER_USEC;
+>>  }
+>>  
+>> -#undef ELF_CORE_COPY_REGS
+>> -#define ELF_CORE_COPY_REGS(_dest, _regs) elf32_core_copy_regs(_dest,
+>> _regs);
+>> -
+>>  void elf32_core_copy_regs(elf_gregset_t grp, struct pt_regs *regs)
+>>  {
+>>      int i;
+> 
+> 
