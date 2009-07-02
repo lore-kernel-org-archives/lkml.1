@@ -1,190 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZGBSwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZGBSy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZGBSwz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 14:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751145AbZGBSwo
+	id S1754643AbZGBSy3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 14:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbZGBSyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 14:52:44 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:58032 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbZGBSwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 14:52:43 -0400
-X-Greylist: delayed 470 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Jul 2009 14:52:42 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=OKUoQEscrPzNFeUgL1/ZnBlM8xN+VDzc8slzsRJFCCpGWahpuq6MGAYedvPRi35N6A
-         lYdYRCF3ntnCQQyW1jBapusOVi5HLbnw2n5XEYNUveO8iRv8///HHxA72z24XoMucyu1
-         B4KqMSlOGUVT1LXkdQ18iEkBcEk2XUU38oiyY=
-From: David Kilroy <kilroyd@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Kilroy <kilroyd@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] check spinlock_t/rwlock_t argument type on non-SMP builds
-Date: Thu,  2 Jul 2009 19:44:51 +0100
-Message-Id: <1246560291-8104-1-git-send-email-kilroyd@googlemail.com>
-X-Mailer: git-send-email 1.6.0.6
+	Thu, 2 Jul 2009 14:54:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47273 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751532AbZGBSyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 14:54:22 -0400
+Date: Thu, 2 Jul 2009 20:51:39 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>,
+       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: __ptrace_detach: do __wake_up_parent() if
+	we reap the tracee
+Message-ID: <20090702185139.GA31404@redhat.com>
+References: <20090701192844.GA26624@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090701192844.GA26624@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy to get
-the first argument to the spinlock/rwlock functions wrong. This is
-because the parameter is not actually used in this configuration.
+On 07/01, Oleg Nesterov wrote:
+>
+> --- WAIT/kernel/ptrace.c~PT_DETACH_WAKE_PARENT	2009-07-01 19:59:01.000000000 +0200
+> +++ WAIT/kernel/ptrace.c	2009-07-01 20:52:58.000000000 +0200
+> @@ -266,9 +266,10 @@ static int ignoring_children(struct sigh
+>   * or self-reaping.  Do notification now if it would have happened earlier.
+>   * If it should reap itself, return true.
+>   *
+> - * If it's our own child, there is no notification to do.
+> - * But if our normal children self-reap, then this child
+> - * was prevented by ptrace and we must reap it now.
+> + * If it's our own child, there is no notification to do. But if our normal
+> + * children self-reap, then this child was prevented by ptrace and we must
+> + * reap it now, in that case we must also wake up sub-threads sleeping in
+> + * do_wait().
+>   */
+>  static bool __ptrace_detach(struct task_struct *tracer, struct task_struct *p)
+>  {
+> @@ -278,8 +279,10 @@ static bool __ptrace_detach(struct task_
+>  		if (!task_detached(p) && thread_group_empty(p)) {
+>  			if (!same_thread_group(p->real_parent, tracer))
+>  				do_notify_parent(p, p->exit_signal);
+> -			else if (ignoring_children(tracer->sighand))
+> +			else if (ignoring_children(tracer->sighand)) {
+> +				__wake_up_parent(p, tracer);
+>  				p->exit_signal = -1;
+> +			}
 
-Typically you will only find out it's wrong
- * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
- * after you've submitted your beautiful patch series.
+I wonder if we need more fixes here.
 
-The first means a long wait, and the latter is a bit late.
+ignoring_children() is not exactly right afaics, we assume that
+tracee->exit_signal == SIGCHLD.
 
-Add typechecking on the first argument of these macro functions. Note
-that since the typecheck now references the variable, the explicit read
-is redundant and can be removed.
+But I guess this can be ignored, it falls into "ptracing with SIGCHLD
+ignored asks for trouble" category.
 
-This change causes compiler warnings in net/ipv4/route.c, as this passes
-NULL as the first argument in the UP configuration. Simply cast this.
+But !same_thread_group() doesn't look 100% right too, for the same
+reason. If ->exit_signal != SIGCHLD, we can't assume we already had
+the correct notification. Hopefully this can be ignored too.
 
-Signed-off-by: David Kilroy <kilroyd@googlemail.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
-
-I've checked the assembly and object output resulting from this change
-for x86. As far as I can tell there are only differences in the
-debugging symbols used to refer to some variables. The stripped objects
-which I checked are identical.
-
-I've also done an allyesconfig build (with various lock debugging
-options off to keep CONFIG_DEBUG_SPINLOCK off), and there are no extra
-compiler warnings (except those addressed in route.c).
-
----
- include/linux/spinlock_api_up.h |   90 +++++++++++++++++++-------------------
- net/ipv4/route.c                |    2 +-
- 2 files changed, 46 insertions(+), 46 deletions(-)
-
-diff --git a/include/linux/spinlock_api_up.h b/include/linux/spinlock_api_up.h
-index 04e1d31..7780138 100644
---- a/include/linux/spinlock_api_up.h
-+++ b/include/linux/spinlock_api_up.h
-@@ -24,58 +24,58 @@
-  * flags straight, to suppress compiler warnings of unused lock
-  * variables, and to add the proper checker annotations:
-  */
--#define __LOCK(lock) \
--  do { preempt_disable(); __acquire(lock); (void)(lock); } while (0)
-+#define __LOCK(type, lock) \
-+  do { typecheck(type*, lock); preempt_disable(); __acquire(lock); } while (0)
- 
--#define __LOCK_BH(lock) \
--  do { local_bh_disable(); __LOCK(lock); } while (0)
-+#define __LOCK_BH(type, lock) \
-+  do { local_bh_disable(); __LOCK(type, lock); } while (0)
- 
--#define __LOCK_IRQ(lock) \
--  do { local_irq_disable(); __LOCK(lock); } while (0)
-+#define __LOCK_IRQ(type, lock) \
-+  do { local_irq_disable(); __LOCK(type, lock); } while (0)
- 
--#define __LOCK_IRQSAVE(lock, flags) \
--  do { local_irq_save(flags); __LOCK(lock); } while (0)
-+#define __LOCK_IRQSAVE(type, lock, flags) \
-+  do { local_irq_save(flags); __LOCK(type, lock); } while (0)
- 
--#define __UNLOCK(lock) \
--  do { preempt_enable(); __release(lock); (void)(lock); } while (0)
-+#define __UNLOCK(type, lock) \
-+  do { typecheck(type*, lock); preempt_enable(); __release(lock); } while (0)
- 
--#define __UNLOCK_BH(lock) \
--  do { preempt_enable_no_resched(); local_bh_enable(); __release(lock); (void)(lock); } while (0)
-+#define __UNLOCK_BH(type, lock) \
-+  do { typecheck(type*, lock); preempt_enable_no_resched(); local_bh_enable(); __release(lock); } while (0)
- 
--#define __UNLOCK_IRQ(lock) \
--  do { local_irq_enable(); __UNLOCK(lock); } while (0)
-+#define __UNLOCK_IRQ(type, lock) \
-+  do { local_irq_enable(); __UNLOCK(type, lock); } while (0)
- 
--#define __UNLOCK_IRQRESTORE(lock, flags) \
--  do { local_irq_restore(flags); __UNLOCK(lock); } while (0)
-+#define __UNLOCK_IRQRESTORE(type, lock, flags) \
-+  do { local_irq_restore(flags); __UNLOCK(type, lock); } while (0)
- 
--#define _spin_lock(lock)			__LOCK(lock)
--#define _spin_lock_nested(lock, subclass)	__LOCK(lock)
--#define _read_lock(lock)			__LOCK(lock)
--#define _write_lock(lock)			__LOCK(lock)
--#define _spin_lock_bh(lock)			__LOCK_BH(lock)
--#define _read_lock_bh(lock)			__LOCK_BH(lock)
--#define _write_lock_bh(lock)			__LOCK_BH(lock)
--#define _spin_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _read_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _write_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _spin_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
--#define _read_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
--#define _write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
--#define _spin_trylock(lock)			({ __LOCK(lock); 1; })
--#define _read_trylock(lock)			({ __LOCK(lock); 1; })
--#define _write_trylock(lock)			({ __LOCK(lock); 1; })
--#define _spin_trylock_bh(lock)			({ __LOCK_BH(lock); 1; })
--#define _spin_unlock(lock)			__UNLOCK(lock)
--#define _read_unlock(lock)			__UNLOCK(lock)
--#define _write_unlock(lock)			__UNLOCK(lock)
--#define _spin_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _write_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _read_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _spin_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _read_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _write_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _spin_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
--#define _read_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
--#define _write_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
-+#define _spin_lock(lock)			__LOCK(spinlock_t, lock)
-+#define _spin_lock_nested(lock, subclass)	__LOCK(spinlock_t, lock)
-+#define _read_lock(lock)			__LOCK(rwlock_t, lock)
-+#define _write_lock(lock)			__LOCK(rwlock_t, lock)
-+#define _spin_lock_bh(lock)			__LOCK_BH(spinlock_t, lock)
-+#define _read_lock_bh(lock)			__LOCK_BH(rwlock_t, lock)
-+#define _write_lock_bh(lock)			__LOCK_BH(rwlock_t, lock)
-+#define _spin_lock_irq(lock)			__LOCK_IRQ(spinlock_t, lock)
-+#define _read_lock_irq(lock)			__LOCK_IRQ(rwlock_t, lock)
-+#define _write_lock_irq(lock)			__LOCK_IRQ(rwlock_t, lock)
-+#define _spin_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(spinlock_t, lock, flags)
-+#define _read_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(rwlock_t, lock, flags)
-+#define _write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(rwlock_t, lock, flags)
-+#define _spin_trylock(lock)			({ __LOCK(spinlock_t, lock); 1; })
-+#define _read_trylock(lock)			({ __LOCK(rwlock_t, lock); 1; })
-+#define _write_trylock(lock)			({ __LOCK(rwlock_t, lock); 1; })
-+#define _spin_trylock_bh(lock)			({ __LOCK_BH(spinlock_t, lock); 1; })
-+#define _spin_unlock(lock)			__UNLOCK(spinlock_t, lock)
-+#define _read_unlock(lock)			__UNLOCK(rwlock_t, lock)
-+#define _write_unlock(lock)			__UNLOCK(rwlock_t, lock)
-+#define _spin_unlock_bh(lock)			__UNLOCK_BH(spinlock_t, lock)
-+#define _write_unlock_bh(lock)			__UNLOCK_BH(rwlock_t, lock)
-+#define _read_unlock_bh(lock)			__UNLOCK_BH(rwlock_t, lock)
-+#define _spin_unlock_irq(lock)			__UNLOCK_IRQ(spinlock_t, lock)
-+#define _read_unlock_irq(lock)			__UNLOCK_IRQ(rwlock_t, lock)
-+#define _write_unlock_irq(lock)			__UNLOCK_IRQ(rwlock_t, lock)
-+#define _spin_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(spinlock_t, lock, flags)
-+#define _read_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(rwlock_t, lock, flags)
-+#define _write_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(rwlock_t, lock, flags)
- 
- #endif /* __LINUX_SPINLOCK_API_UP_H */
-diff --git a/net/ipv4/route.c b/net/ipv4/route.c
-index 28205e5..8edfffd 100644
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -242,7 +242,7 @@ static __init void rt_hash_lock_init(void)
- 		spin_lock_init(&rt_hash_locks[i]);
- }
- #else
--# define rt_hash_lock_addr(slot) NULL
-+# define rt_hash_lock_addr(slot) ((spinlock_t *) NULL)
- 
- static inline void rt_hash_lock_init(void)
- {
--- 
-1.6.0.6
+Oleg.
 
