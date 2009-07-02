@@ -1,107 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZGBGzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZGBG4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZGBGzO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 02:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZGBGy7
+	id S1755979AbZGBG4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 02:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZGBG4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 02:54:59 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53732 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbZGBGy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 02:54:58 -0400
-Message-ID: <4A4C5983.7000501@gmail.com>
-Date: Thu, 02 Jul 2009 08:53:55 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Thu, 2 Jul 2009 02:56:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53535 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751053AbZGBG4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 02:56:04 -0400
+Date: Thu, 2 Jul 2009 06:54:58 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A4B2351.5010300@cn.fujitsu.com>
+References: <4A4B2351.5010300@cn.fujitsu.com>
+Subject: [tip:tracing/urgent] tracing: Fix trace_print_seq()
+Message-ID: <tip-e1af3aec3e2e7d21d4b3054323779d478c19d907@git.kernel.org>
+Git-Commit-ID: e1af3aec3e2e7d21d4b3054323779d478c19d907
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jiri Olsa <jolsa@redhat.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org,
-       eric.dumazet@gmail.com
-Subject: Re: [PATCHv4 2/2] memory barrier: adding smp_mb__after_lock
-References: <20090702063259.GA3429@jolsa.lab.eng.brq.redhat.com> <20090702063624.GC3429@jolsa.lab.eng.brq.redhat.com>
-In-Reply-To: <20090702063624.GC3429@jolsa.lab.eng.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Jul 2009 08:53:59 +0200 (CEST)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 02 Jul 2009 06:54:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Olsa a écrit :
-> Adding smp_mb__after_lock define to be used as a smp_mb call after
-> a lock.  
-> 
-> Making it nop for x86, since {read|write|spin}_lock() on x86 are 
-> full memory barriers.
-> 
-> wbr,
-> jirka
-> 
-> 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+Commit-ID:  e1af3aec3e2e7d21d4b3054323779d478c19d907
+Gitweb:     http://git.kernel.org/tip/e1af3aec3e2e7d21d4b3054323779d478c19d907
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Wed, 1 Jul 2009 16:50:25 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 2 Jul 2009 08:51:13 +0200
+
+tracing: Fix trace_print_seq()
+
+We will lose something if trace_seq->buffer[0] is 0, because the copy length
+is calculated by strlen() in seq_puts(), so using seq_write() instead of
+seq_puts().
+
+There have a example:
+after reboot:
+
+ # echo kmemtrace > current_tracer
+ # echo 0 > options/kmem_minimalistic
+ # cat trace
+ # tracer: kmemtrace
+ #
+ #
+
+Nothing is exported, because the first byte of trace_seq->buffer[ ]
+is KMEMTRACE_USER_ALLOC.
+
+( the value of KMEMTRACE_USER_ALLOC is zero, seeing
+  kmemtrace_print_alloc_user() in kernel/trace/kmemtrace.c)
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <4A4B2351.5010300@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Maybe we should remind that sk_has_helper() is always called
-right after a call to read_lock() as in :
+---
+ kernel/trace/trace_output.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-	read_lock(&sk->sk_callback_lock);
-	if (sk_has_sleeper(sk))
-		wake_up_interruptible_all(sk->sk_sleep);
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-
-Thanks Jiri
-
-> 
-> ---
->  arch/x86/include/asm/spinlock.h |    3 +++
->  include/linux/spinlock.h        |    5 +++++
->  include/net/sock.h              |    2 +-
->  3 files changed, 9 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> index b7e5db8..39ecc5f 100644
-> --- a/arch/x86/include/asm/spinlock.h
-> +++ b/arch/x86/include/asm/spinlock.h
-> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
->  #define _raw_read_relax(lock)	cpu_relax()
->  #define _raw_write_relax(lock)	cpu_relax()
->  
-> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> +#define smp_mb__after_lock() do { } while (0)
-> +
->  #endif /* _ASM_X86_SPINLOCK_H */
-> diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-> index 252b245..ae053bd 100644
-> --- a/include/linux/spinlock.h
-> +++ b/include/linux/spinlock.h
-> @@ -132,6 +132,11 @@ do {								\
->  #endif /*__raw_spin_is_contended*/
->  #endif
->  
-> +/* The lock does not imply full memory barrier. */
-> +#ifndef smp_mb__after_lock
-> +#define smp_mb__after_lock() smp_mb()
-> +#endif
-> +
->  /**
->   * spin_unlock_wait - wait until the spinlock gets unlocked
->   * @lock: the spinlock in question.
-> diff --git a/include/net/sock.h b/include/net/sock.h
-> index 4eb8409..b3e96a4 100644
-> --- a/include/net/sock.h
-> +++ b/include/net/sock.h
-> @@ -1280,7 +1280,7 @@ static inline int sk_has_sleeper(struct sock *sk)
->  	 *
->  	 * This memory barrier is paired in the sock_poll_wait.
->  	 */
-> -	smp_mb();
-> +	smp_mb__after_lock();
->  	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
->  }
->  
-> --
-
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 7938f3a..e0c2545 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -27,8 +27,7 @@ void trace_print_seq(struct seq_file *m, struct trace_seq *s)
+ {
+ 	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
+ 
+-	s->buffer[len] = 0;
+-	seq_puts(m, s->buffer);
++	seq_write(m, s->buffer, len);
+ 
+ 	trace_seq_init(s);
+ }
