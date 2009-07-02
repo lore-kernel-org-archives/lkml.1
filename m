@@ -1,168 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZGBPQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbZGBPQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZGBPQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 11:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbZGBPQF
+	id S1754218AbZGBPQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 11:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZGBPQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 11:16:05 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:53592 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZGBPQE (ORCPT
+	Thu, 2 Jul 2009 11:16:14 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:51150 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZGBPQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 11:16:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=QJQdyUkF1QsRuKNJB5lKKjEOytN/xVwmLAUh7okZFm1uXx6ROXglf1EDtqs6HFQV75
-         jqzMLUlmf1Gi05BuJK0fcKP1SpzU1kGV4LuWUxk/j1nNQ+EKTY6o48laBAZNqP6hULLw
-         /gOGjJ7ifRzHOII8LmgOhJFRkQcL21oBzA71g=
-From: Wu <wuzhangjin@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       ralf@linux-mips.org
-Cc: Wu Zhangjin <wuzhangjin@gmail.com>, Yan Hua <yanh@lemote.com>,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Zhang Fuxin <zhangfx@lemote.com>,
-       loongson-dev <loongson-dev@googlegroups.com>,
-       Liu Junliang <liujl@lemote.com>, Erwan Lerale <erwan@thiscow.com>,
-       Arnaud Patard <apatard@mandriva.com>
-Subject: [PATCH v4 00/16] Cleanup Lemote FuLoong2e Support
-Date: Thu,  2 Jul 2009 23:15:52 +0800
-Message-Id: <cover.1246546684.git.wuzhangjin@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
+	Thu, 2 Jul 2009 11:16:12 -0400
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Mack <daniel@caiaq.de>, Artem Bityutskiy <dedekind@infradead.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH] ubifs: allow more than one volume to be mounted
+Date: Thu,  2 Jul 2009 17:15:47 +0200
+Message-Id: <1246547747-13366-1-git-send-email-daniel@caiaq.de>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wu Zhangjin <wuzhangjin@gmail.com>
+UBIFS uses a bdi device per volume, but does not care to hand out unique
+names to each of them. This causes an error when trying to mount more
+than one volumes.
 
-This patch series is the -v4 version of the loongson-PATCH-v3 series, but it
-only include the cleanup for fuloong2e support and necessary preparation for
-future fuloong-2f and yeeloong-2f support.
+[  239.277407] kobject_add_internal failed for ubifs with -EEXIST, don't try to register things with the same name in the same directory.
+[  239.289618] [<c002a45c>] (unwind_backtrace+0x0/0xdc) from [<c0160628>] (kobject_add_internal+0x188/0x1b8)
+[  239.299445] [<c0160628>] (kobject_add_internal+0x188/0x1b8) from [<c01607d8>] (kobject_add+0x48/0x5c)
+[  239.308896] [<c01607d8>] (kobject_add+0x48/0x5c) from [<c019d96c>] (device_add+0xac/0x510)
+[  239.317392] [<c019d96c>] (device_add+0xac/0x510) from [<c019de58>] (device_create_vargs+0x70/0xa4)
+[  239.326589] [<c019de58>] (device_create_vargs+0x70/0xa4) from [<c0073138>] (bdi_register+0x44/0x64)
+[  239.335854] [<c0073138>] (bdi_register+0x44/0x64) from [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc)
+[  239.344769] [<c01249f0>] (ubifs_get_sb+0x3c8/0x10cc) from [<c008b054>] (vfs_kern_mount+0x50/0xa8)
+[  239.353867] [<c008b054>] (vfs_kern_mount+0x50/0xa8) from [<c008b0f0>] (do_kern_mount+0x34/0xd0)
+[  239.362799] [<c008b0f0>] (do_kern_mount+0x34/0xd0) from [<c009f7b4>] (do_mount+0x644/0x6b4)
+[  239.371377] [<c009f7b4>] (do_mount+0x644/0x6b4) from [<c009f8a8>] (sys_mount+0x84/0xcc)
+[  239.379538] [<c009f8a8>] (sys_mount+0x84/0xcc) from [<c0025e80>] (ret_fast_syscall+0x0/0x2c)
 
-The git branch of this patch series is:
+Append the UBI volume and device ID to avoid that.
 
-	git://dev.lemote.com/rt4ls.git linux-loongson/dev/fuloong2e
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: linux-mtd@lists.infradead.org
+---
+ fs/ubifs/super.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-	or
-
-	http://dev.lemote.com/cgit/rt4ls.git/log/?h=linux-loongson/dev/fuloong2e
-
-Wu Zhangjin (16):
-  [loongson] eary_printk: Remove existing implementation
-  [loongson] kgdb: Remove out-of-date board-specific source code
-  [loongson] early_printk: add new implmentation
-  [loongson] pm: Remove redundant source code
-  [loongson] pm: clean up the reboot support
-  [loongson] pci: use existing mips_io_port_base
-  [loongson] split the implementation of prom,setup parts
-  [loongson] clean up the coding style
-  [loongson] pci: clean up pcimap setup
-  [loongson] rtc: enable legacy RTC driver on fulong
-  [loongson] add oprofile support
-  [loongson] change naming methods
-  [loongson] split common loongson source code out
-  [loongson] add a machtype kernel command line argument
-  [loongson] add gcc 4.4 support for Loongson2E
-  [loongson] update the default config file for fuloong2e
-
- Documentation/kernel-parameters.txt                |    4 +
- arch/mips/Kconfig                                  |   52 +-
- arch/mips/Makefile                                 |   15 +-
- arch/mips/configs/fulong_defconfig                 | 1912 --------------------
- arch/mips/configs/fuloong2e_defconfig              | 1819 +++++++++++++++++++
- arch/mips/include/asm/bootinfo.h                   |   12 +
- .../asm/mach-lemote/cpu-feature-overrides.h        |   59 -
- arch/mips/include/asm/mach-lemote/dma-coherence.h  |   68 -
- arch/mips/include/asm/mach-lemote/mc146818rtc.h    |   36 -
- arch/mips/include/asm/mach-lemote/pci.h            |   30 -
- arch/mips/include/asm/mach-lemote/war.h            |   25 -
- .../asm/mach-loongson/cpu-feature-overrides.h      |   59 +
- .../mips/include/asm/mach-loongson/dma-coherence.h |   68 +
- arch/mips/include/asm/mach-loongson/loongson.h     |   67 +
- arch/mips/include/asm/mach-loongson/machine.h      |   22 +
- arch/mips/include/asm/mach-loongson/mc146818rtc.h  |   36 +
- arch/mips/include/asm/mach-loongson/mem.h          |   30 +
- arch/mips/include/asm/mach-loongson/pci.h          |   37 +
- arch/mips/include/asm/mach-loongson/war.h          |   25 +
- arch/mips/include/asm/mips-boards/bonito64.h       |    2 +-
- arch/mips/lemote/lm2e/Makefile                     |    7 -
- arch/mips/lemote/lm2e/bonito-irq.c                 |   74 -
- arch/mips/lemote/lm2e/dbg_io.c                     |  146 --
- arch/mips/lemote/lm2e/irq.c                        |  143 --
- arch/mips/lemote/lm2e/mem.c                        |   23 -
- arch/mips/lemote/lm2e/pci.c                        |   97 -
- arch/mips/lemote/lm2e/prom.c                       |   97 -
- arch/mips/lemote/lm2e/reset.c                      |   41 -
- arch/mips/lemote/lm2e/setup.c                      |  111 --
- arch/mips/loongson/Kconfig                         |   31 +
- arch/mips/loongson/Makefile                        |   11 +
- arch/mips/loongson/common/Makefile                 |   11 +
- arch/mips/loongson/common/bonito-irq.c             |   51 +
- arch/mips/loongson/common/cmdline.c                |   52 +
- arch/mips/loongson/common/early_printk.c           |   38 +
- arch/mips/loongson/common/env.c                    |   58 +
- arch/mips/loongson/common/init.c                   |   30 +
- arch/mips/loongson/common/irq.c                    |   74 +
- arch/mips/loongson/common/machtype.c               |   50 +
- arch/mips/loongson/common/mem.c                    |   35 +
- arch/mips/loongson/common/pci.c                    |   83 +
- arch/mips/loongson/common/reset.c                  |   39 +
- arch/mips/loongson/common/setup.c                  |   60 +
- arch/mips/loongson/common/time.c                   |   27 +
- arch/mips/loongson/fuloong-2e/Makefile             |    7 +
- arch/mips/loongson/fuloong-2e/irq.c                |   71 +
- arch/mips/loongson/fuloong-2e/reset.c              |   24 +
- arch/mips/oprofile/Makefile                        |    1 +
- arch/mips/oprofile/common.c                        |    4 +
- arch/mips/oprofile/op_model_loongson2.c            |  177 ++
- arch/mips/pci/Makefile                             |    2 +-
- arch/mips/pci/fixup-fuloong2e.c                    |  224 +++
- arch/mips/pci/fixup-lm2e.c                         |  242 ---
- arch/mips/pci/ops-bonito64.c                       |    4 +-
- 54 files changed, 3372 insertions(+), 3151 deletions(-)
- delete mode 100644 arch/mips/configs/fulong_defconfig
- create mode 100644 arch/mips/configs/fuloong2e_defconfig
- delete mode 100644 arch/mips/include/asm/mach-lemote/cpu-feature-overrides.h
- delete mode 100644 arch/mips/include/asm/mach-lemote/dma-coherence.h
- delete mode 100644 arch/mips/include/asm/mach-lemote/mc146818rtc.h
- delete mode 100644 arch/mips/include/asm/mach-lemote/pci.h
- delete mode 100644 arch/mips/include/asm/mach-lemote/war.h
- create mode 100644 arch/mips/include/asm/mach-loongson/cpu-feature-overrides.h
- create mode 100644 arch/mips/include/asm/mach-loongson/dma-coherence.h
- create mode 100644 arch/mips/include/asm/mach-loongson/loongson.h
- create mode 100644 arch/mips/include/asm/mach-loongson/machine.h
- create mode 100644 arch/mips/include/asm/mach-loongson/mc146818rtc.h
- create mode 100644 arch/mips/include/asm/mach-loongson/mem.h
- create mode 100644 arch/mips/include/asm/mach-loongson/pci.h
- create mode 100644 arch/mips/include/asm/mach-loongson/war.h
- delete mode 100644 arch/mips/lemote/lm2e/Makefile
- delete mode 100644 arch/mips/lemote/lm2e/bonito-irq.c
- delete mode 100644 arch/mips/lemote/lm2e/dbg_io.c
- delete mode 100644 arch/mips/lemote/lm2e/irq.c
- delete mode 100644 arch/mips/lemote/lm2e/mem.c
- delete mode 100644 arch/mips/lemote/lm2e/pci.c
- delete mode 100644 arch/mips/lemote/lm2e/prom.c
- delete mode 100644 arch/mips/lemote/lm2e/reset.c
- delete mode 100644 arch/mips/lemote/lm2e/setup.c
- create mode 100644 arch/mips/loongson/Kconfig
- create mode 100644 arch/mips/loongson/Makefile
- create mode 100644 arch/mips/loongson/common/Makefile
- create mode 100644 arch/mips/loongson/common/bonito-irq.c
- create mode 100644 arch/mips/loongson/common/cmdline.c
- create mode 100644 arch/mips/loongson/common/early_printk.c
- create mode 100644 arch/mips/loongson/common/env.c
- create mode 100644 arch/mips/loongson/common/init.c
- create mode 100644 arch/mips/loongson/common/irq.c
- create mode 100644 arch/mips/loongson/common/machtype.c
- create mode 100644 arch/mips/loongson/common/mem.c
- create mode 100644 arch/mips/loongson/common/pci.c
- create mode 100644 arch/mips/loongson/common/reset.c
- create mode 100644 arch/mips/loongson/common/setup.c
- create mode 100644 arch/mips/loongson/common/time.c
- create mode 100644 arch/mips/loongson/fuloong-2e/Makefile
- create mode 100644 arch/mips/loongson/fuloong-2e/irq.c
- create mode 100644 arch/mips/loongson/fuloong-2e/reset.c
- create mode 100644 arch/mips/oprofile/op_model_loongson2.c
- create mode 100644 arch/mips/pci/fixup-fuloong2e.c
- delete mode 100644 arch/mips/pci/fixup-lm2e.c
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index 79fad43..fca5ebe 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -1910,6 +1910,7 @@ static struct ubi_volume_desc *open_ubi(const char *name, int mode)
+ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
+ {
+ 	struct ubi_volume_desc *ubi = sb->s_fs_info;
++	struct ubi_volume_info ubi_info;
+ 	struct ubifs_info *c;
+ 	struct inode *root;
+ 	int err;
+@@ -1975,7 +1976,9 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
+ 	err  = bdi_init(&c->bdi);
+ 	if (err)
+ 		goto out_close;
+-	err = bdi_register(&c->bdi, NULL, "ubifs");
++	ubi_get_volume_info(ubi, &ubi_info);
++	err = bdi_register(&c->bdi, NULL, "ubifs_%d_%d",
++					ubi_info.ubi_num, ubi_info.vol_id);
+ 	if (err)
+ 		goto out_bdi;
+ 
+-- 
+1.6.3.1
 
