@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZGBQhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZGBQnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbZGBQhj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 12:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750726AbZGBQhc
+	id S1755299AbZGBQnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 12:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZGBQnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 12:37:32 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:55797 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbZGBQhc (ORCPT
+	Thu, 2 Jul 2009 12:43:24 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:39412 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbZGBQnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 12:37:32 -0400
-Date: Thu, 2 Jul 2009 11:37:31 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH][BUGFIX] cgroups: fix pid namespace bug
-Message-ID: <20090702163731.GA14267@us.ibm.com>
-References: <4A4C0C60.4050106@cn.fujitsu.com> <6599ad830907020926t6305bec9t44a50cc165f6fc28@mail.gmail.com>
+	Thu, 2 Jul 2009 12:43:24 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 2 Jul 2009 09:43:23 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mst@redhat.com, avi@redhat.com
+Subject: Re: [KVM PATCH v9 2/5] eventfd: use locked POLLHUP
+In-Reply-To: <20090702153806.20186.76377.stgit@dev.haskins.net>
+Message-ID: <alpine.DEB.1.10.0907020941110.5905@makko.or.mcafeemobile.com>
+References: <20090702153454.20186.99191.stgit@dev.haskins.net> <20090702153806.20186.76377.stgit@dev.haskins.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6599ad830907020926t6305bec9t44a50cc165f6fc28@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Wed, Jul 1, 2009 at 6:24 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
-> > +       cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-> > +       if (!cp) {
-> > +               up_write(&cgrp->pids_mutex);
-> > +               kfree(pidarray);
-> > +               return -ENOMEM;
-> > +       }
-> > +       cp->cgrp = cgrp;
-> > +       cp->pid_ns = pid_ns;
+On Thu, 2 Jul 2009, Gregory Haskins wrote:
+
+> eventfd currently emits a POLLHUP wakeup on f_ops->release() to generate a
+> "release" callback. This lets eventfd clients know if the eventfd is about
+> to go away and is very useful particularly for in-kernel clients. However,
+> as it stands today it is not possible to use this feature of eventfd in a
+> race-free way. This patch changes the POLLHUP code to use the locked variant
+> to rectify this problem.
 > 
-> You're storing an uncounted reference to the pid ns here - there's no
-> guarantee that the pid_ns will outlive the open file.
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> CC: Davide Libenzi <davidel@xmailserver.org>
+> ---
+> 
+>  fs/eventfd.c |    7 +------
+>  1 files changed, 1 insertions(+), 6 deletions(-)
+> 
+> diff --git a/fs/eventfd.c b/fs/eventfd.c
+> index d9849a1..31d12de 100644
+> --- a/fs/eventfd.c
+> +++ b/fs/eventfd.c
+> @@ -105,12 +105,7 @@ static int eventfd_release(struct inode *inode, struct file *file)
+>  {
+>  	struct eventfd_ctx *ctx = file->private_data;
+>  
+> -	/*
+> -	 * No need to hold the lock here, since we are on the file cleanup
+> -	 * path and the ones still attached to the wait queue will be
+> -	 * serialized by wake_up_locked_poll().
+> -	 */
+> -	wake_up_locked_poll(&ctx->wqh, POLLHUP);
+> +	wake_up_poll(&ctx->wqh, POLLHUP);
+>  	eventfd_ctx_put(ctx);
+>  	return 0;
+>  }
 
-Yeah I was thinking about that, but
+ACK.
+BTW, mainline already has the correct wake_up_poll().
 
-	1. the only way it won't outlive the open file is if the 
-		task opens the file, hands the open fd over a
-		unix socket, then exits as the last task of its
-		pidns
-	2. We don't dereference the pid_ns, so there is no actual
-		safety issue.  So it would become a problem only
-		if a new pidns gets created at that same address
-		*and* a task in the new pidns opens the same
-		tasks file.
 
-Still, it wouldn't hurt to do get_pid_ns/put_pid_ns at the open
-and release :)
+- Davide
 
--serge
+
