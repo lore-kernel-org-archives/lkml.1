@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZGBNtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZGBNtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbZGBNtR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZGBNso
+	id S1755451AbZGBNtb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZGBNsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:48:44 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53255 "EHLO
+	Thu, 2 Jul 2009 09:48:46 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53254 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762AbZGBNsn (ORCPT
+	with ESMTP id S1754650AbZGBNsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 09:48:43 -0400
 X-Cam-AntiVirus: no malware found
@@ -18,397 +18,490 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 03/14] IIO: tsl2561 digital light sensor core support
-Date: Thu,  2 Jul 2009 13:47:33 +0000
-Message-Id: <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 05/14] IIO: kxsd9 accelerometer minimal support
+Date: Thu,  2 Jul 2009 13:47:35 +0000
+Message-Id: <1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-This is a pretty minimalist example of an IIO driver.
+This provides only very minimal support for this device.
+Note that an alternate driver has been posted to the input
+mailing list.
 
+When the original LMKL discussion that led to the descision
+to develop IIO occured, the question on whether the differing
+requirements of IIO and input drivers made it a good idea
+to have unified drivers was left as an open question.
+It still is.  All opinions on this question welcome.
 ---
-Unlike the existing light sensor driver tsl2550 all
-conversion to units is left to userspace.
-This is similar to the isl29003 driver.
+ drivers/iio/accel/Kconfig  |    7 +
+ drivers/iio/accel/Makefile |    2 +
+ drivers/iio/accel/kxsd9.c  |  395 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/iio/adc.h    |   13 ++
+ 4 files changed, 417 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/iio/accel/kxsd9.c
+ create mode 100644 include/linux/iio/adc.h
 
-IIO may in future provide a home for such light sensor
-drivers.
----
- drivers/iio/Kconfig         |    3 +-
- drivers/iio/Makefile        |    3 +-
- drivers/iio/light/Kconfig   |   14 ++
- drivers/iio/light/Makefile  |    5 +
- drivers/iio/light/tsl2561.c |  275 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/iio/light.h   |   12 ++
- 6 files changed, 310 insertions(+), 2 deletions(-)
- create mode 100644 drivers/iio/light/Kconfig
- create mode 100644 drivers/iio/light/Makefile
- create mode 100644 drivers/iio/light/tsl2561.c
- create mode 100644 include/linux/iio/light.h
-
-diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
-index ca54ab3..d37859d 100644
---- a/drivers/iio/Kconfig
-+++ b/drivers/iio/Kconfig
-@@ -10,4 +10,5 @@ menuconfig IIO
- 	  number of different physical interfaces (i2c, spi etc). See
- 	  Documentation/industrialio for more information.
+diff --git a/drivers/iio/accel/Kconfig b/drivers/iio/accel/Kconfig
+index a3abffc..548059f 100644
+--- a/drivers/iio/accel/Kconfig
++++ b/drivers/iio/accel/Kconfig
+@@ -4,6 +4,13 @@
+ comment "Accelerometers"
+ 	depends on IIO
  
--source drivers/iio/adc/Kconfig
-\ No newline at end of file
-+source drivers/iio/adc/Kconfig
-+source drivers/iio/light/Kconfig
-diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
-index 9d11f64..4e78f98 100644
---- a/drivers/iio/Makefile
-+++ b/drivers/iio/Makefile
-@@ -5,4 +5,5 @@
- obj-$(CONFIG_IIO) += industrialio.o
- industrialio-y := industrialio-core.o
- 
--obj-y += adc/
-\ No newline at end of file
-+obj-y += adc/
-+obj-y += light/
-\ No newline at end of file
-diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
-new file mode 100644
-index 0000000..620e249
---- /dev/null
-+++ b/drivers/iio/light/Kconfig
-@@ -0,0 +1,14 @@
-+#
-+# Light sensors
-+#
-+comment "Light sensors"
-+	depends on IIO
++config KXSD9
++	tristate "Kionix KXSD9 Accelerometer Driver"
++	depends on IIO && SPI
++	help
++	  Say yes here to build support for the Kionix KXSD9 accelerometer.
++	  Currently this only supports the device via an SPI interface.
 +
-+config TSL2561
-+       tristate "TAOS TSL2561 light-to-digital convertor"
-+       depends on IIO
-+       help
-+	Say yes bere to build support for the TAOS light to digital
-+	convertor.  This chip has two light sensors. One is broadband
-+	including infrared whilst the other measures only infrared.
-+	Provides direct access via sysfs.
-diff --git a/drivers/iio/light/Makefile b/drivers/iio/light/Makefile
-new file mode 100644
-index 0000000..ccff151
---- /dev/null
-+++ b/drivers/iio/light/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for industrial I/O Light sensors
-+#
+ config LIS3L02DQ
+ 	tristate "ST Microelectronics LIS3L02DQ Accelerometer Driver"
+ 	depends on IIO && SPI
+diff --git a/drivers/iio/accel/Makefile b/drivers/iio/accel/Makefile
+index 5a7ef9d..cbec688 100644
+--- a/drivers/iio/accel/Makefile
++++ b/drivers/iio/accel/Makefile
+@@ -1,5 +1,7 @@
+ #
+ # Makefile for industrial I/O accelerometer drivers
+ #
++obj-$(CONFIG_KXSD9)	+= kxsd9.o
 +
-+obj-$(CONFIG_TSL2561)   += tsl2561.o
-diff --git a/drivers/iio/light/tsl2561.c b/drivers/iio/light/tsl2561.c
+ lis3l02dq-y		:= lis3l02dq_core.o
+ obj-$(CONFIG_LIS3L02DQ)	+= lis3l02dq.o
+diff --git a/drivers/iio/accel/kxsd9.c b/drivers/iio/accel/kxsd9.c
 new file mode 100644
-index 0000000..db1443c
+index 0000000..c213295
 --- /dev/null
-+++ b/drivers/iio/light/tsl2561.c
-@@ -0,0 +1,275 @@
++++ b/drivers/iio/accel/kxsd9.c
+@@ -0,0 +1,395 @@
 +/*
-+ *  tsl2561.c - Linux kernel modules for light to digital convertor
++ * kxsd9.c	simple support for the Kionix KXSD9 3D
++ *		accelerometer.
 + *
-+ *  Copyright (C) 2008-2009 Jonathan Cameron <jic23@cam.ac.uk>
++ * Copyright (c) 2008-2009 Jonathan Cameron <jic23@cam.ac.uk>
 + *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
++ * The i2c interface is very similar, so shouldn't be a problem once
++ * I have a suitable wire made up.
 + *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ *  Some portions based upon the tsl2550 driver.
-+ *
-+ *  This driver could probably be adapted easily to talk to the tsl2560 (smbus)
-+ *
-+ *  Needs some work to support the events this can generate.
-+ *  Todo: Implement interrupt handling.  Currently a hardware bug means
-+ *  this isn't available on my test board.
++ * TODO:	Support the motion detector
++ *		Uses register address incrementing so could have a
++ *		heavily optimized ring buffer access function.
 + */
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/i2c.h>
++#include <linux/interrupt.h>
++#include <linux/gpio.h>
++#include <linux/fs.h>
++#include <linux/device.h>
++#include <linux/kernel.h>
++#include <linux/spi/spi.h>
++#include <linux/sysfs.h>
++#include <linux/rtc.h>
++#include <linux/delay.h>
 +#include <linux/iio/iio.h>
 +#include <linux/iio/sysfs.h>
-+#include <linux/iio/light.h>
++#include <linux/iio/adc.h>
++#include <linux/iio/accel.h>
 +
-+#define TSL2561_CONTROL_REGISTER 0x00
-+#define TSL2561_TIMING_REGISTER 0x01
-+#define TSL2561_THRESHLOW_LOW_REGISTER 0x02
-+#define TSL2561_THRESHLOW_HIGH_REGISTER 0x03
-+#define TSL2561_THRESHHIGH_LOW_REGISTER 0x04
-+#define TSL2561_THRESHHIGH_HIGH_REGISTER 0x05
-+#define TSL2561_INT_CONTROL_REGISTER 0x06
++#define KXSD9_REG_X		0x00
++#define KXSD9_REG_Y		0x02
++#define KXSD9_REG_Z		0x04
++#define KXSD9_REG_AUX		0x06
++#define KXSD9_REG_RESET		0x0a
++#define KXSD9_REG_CTRL_C	0x0c
 +
-+#define TSL2561_INT_REG_INT_OFF 0x00
-+#define TSL2561_INT_REG_INT_LEVEL 0x08
-+#define TSL2561_INT_REG_INT_SMBUS 0x10
-+#define TSL2561_INT_REG_INT_TEST 0x18
++#define KXSD9_FS_8		0x00
++#define KXSD9_FS_6		0x01
++#define KXSD9_FS_4		0x02
++#define KXSD9_FS_2		0x03
++#define KXSD9_FS_MASK		0x03
 +
-+#define TSL2561_ID_REGISTER 0x0A
++#define KXSD9_REG_CTRL_B	0x0d
++#define KXSD9_REG_CTRL_A	0x0e
 +
-+#define TSL2561_DATA_0_LOW 0x0C
-+#define TSL2561_DATA_1_LOW 0x0E
++#define KXSD9_READ(a) (0x80 | (a))
++#define KXSD9_WRITE(a) (a)
 +
-+/* Control Register Values */
-+#define TSL2561_CONT_REG_PWR_ON 0x03
-+#define TSL2561_CONT_REG_PWR_OFF 0x00
++#define IIO_DEV_ATTR_ACCEL_SET_RANGE(_mode, _show, _store)	\
++	IIO_DEVICE_ATTR(accel_range, _mode, _show, _store, 0)
 +
++#define KXSD9_STATE_RX_SIZE 2
++#define KXSD9_STATE_TX_SIZE 4
 +/**
-+ * struct tsl2561_state - device specific state
-+ * @indio_dev:		the industrialio I/O info structure
-+ * @client:		i2c client
-+ * @command_buf:	single command buffer used for all operations
-+ * @command_buf_lock:	ensure unique access to command_buf
-+ */
-+struct tsl2561_state {
-+	struct iio_dev		*indio_dev;
-+	struct i2c_client	*client;
-+	struct tsl2561_command	*command_buf;
-+	struct mutex		command_buf_lock;
++ * struct kxsd9_state - device related storage
++ * @buf_lock:	protect the rx and tx buffers.
++ * @indio_dev:	associated industrial IO device
++ * @us:		spi device
++ * @rx:		single rx buffer storage
++ * @tx:		single tx buffer storage
++ **/
++struct kxsd9_state {
++	struct mutex buf_lock;
++	struct iio_dev *indio_dev;
++	struct spi_device *us;
++	u8 *rx;
++	u8 *tx;
 +};
 +
-+/**
-+ * struct tsl2561_command - command byte for smbus
-+ * @address:	register address
-+ * @block:	is this a block r/w
-+ * @word:	is this a word r/w
-+ * @clear:	set to 1 to clear pending interrupt
-+ * @cmd:	select the command register - always 1.
-+ */
-+struct tsl2561_command {
-+	unsigned int address:4;
-+	unsigned int block:1;
-+	unsigned int word:1;
-+	unsigned int clear:1;
-+	unsigned int cmd:1;
-+};
-+
-+static inline void tsl2561_init_command_buf(struct tsl2561_command *buf)
++/* This may want to move to mili g to allow for non integer ranges */
++static ssize_t kxsd9_read_accel_range(struct device *dev,
++				      struct device_attribute *attr,
++				      char *buf)
 +{
-+	buf->address = 0;
-+	buf->block = 0;
-+	buf->word = 0;
-+	buf->clear = 0;
-+	buf->cmd = 1;
-+}
++	int ret;
++	ssize_t len = 0;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct kxsd9_state *st = indio_dev->dev_data;
++	struct spi_transfer xfer = {
++		.bits_per_word = 8,
++		.len = 2,
++		.cs_change = 1,
++		.tx_buf = st->tx,
++		.rx_buf = st->rx,
++	};
++	struct spi_message msg;
 +
-+static ssize_t tsl2561_read_val(struct device *dev,
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = KXSD9_READ(KXSD9_REG_CTRL_C);
++	st->tx[1] = 0;
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfer, &msg);
++	ret = spi_sync(st->us, &msg);
++	if (ret)
++		goto error_ret;
++
++	switch (st->rx[1] & KXSD9_FS_MASK) {
++	case KXSD9_FS_8:
++		len += sprintf(buf, "8\n");
++		break;
++	case KXSD9_FS_6:
++		len += sprintf(buf, "6\n");
++		break;
++	case KXSD9_FS_4:
++		len += sprintf(buf, "4\n");
++		break;
++	case KXSD9_FS_2:
++		len += sprintf(buf, "2\n");
++		break;
++	}
++
++error_ret:
++	mutex_unlock(&st->buf_lock);
++
++	return ret ? ret : len;
++}
++static ssize_t kxsd9_write_accel_range(struct device *dev,
++				      struct device_attribute *attr,
++				      const char *buf,
++				      size_t len)
++{
++	long readin;
++	struct spi_message msg;
++	int ret;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct kxsd9_state *st = indio_dev->dev_data;
++	u8 val;
++	struct spi_transfer xfers[] = {
++		{
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++			.tx_buf = st->tx,
++			.rx_buf = st->rx,
++		}, {
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++			.tx_buf = st->tx,
++		},
++	};
++
++	ret = strict_strtol(buf, 10, &readin);
++	if (ret)
++		return ret;
++	switch (readin) {
++	case 8:
++		val = KXSD9_FS_8;
++		break;
++	case 6:
++		val = KXSD9_FS_6;
++		break;
++	case 4:
++		val = KXSD9_FS_4;
++		break;
++	case 2:
++		val = KXSD9_FS_2;
++		break;
++	default:
++		return -EINVAL;
++	}
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = KXSD9_READ(KXSD9_REG_CTRL_C);
++	st->tx[1] = 0;
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[0], &msg);
++	ret = spi_sync(st->us, &msg);
++	if (ret)
++		goto error_ret;
++	st->tx[0] = KXSD9_WRITE(KXSD9_REG_CTRL_C);
++	st->tx[1] = (st->rx[1] & ~KXSD9_FS_MASK) | val;
++
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[1], &msg);
++	ret = spi_sync(st->us, &msg);
++error_ret:
++	mutex_unlock(&st->buf_lock);
++	return ret ? ret : len;
++}
++static ssize_t kxsd9_read_accel(struct device *dev,
 +				struct device_attribute *attr,
 +				char *buf)
 +{
-+	int ret = 0, data;
++	struct spi_message msg;
++	int ret;
 +	ssize_t len = 0;
++	u16 val;
 +	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
 +	struct iio_dev *indio_dev = dev_get_drvdata(dev);
-+	struct tsl2561_state *st = indio_dev->dev_data;
++	struct kxsd9_state *st = indio_dev->dev_data;
++	struct spi_transfer xfers[] = {
++		{
++			.bits_per_word = 8,
++			.len = 1,
++			.cs_change = 0,
++			.delay_usecs = 200,
++			.tx_buf = st->tx,
++		}, {
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++			.rx_buf = st->rx,
++		},
++	};
 +
-+	mutex_lock(&st->command_buf_lock);
-+	st->command_buf->cmd = 1;
-+	st->command_buf->word = 1;
-+	st->command_buf->address = this_attr->address;
-+
-+	data = i2c_smbus_read_word_data(st->client, *(char *)(st->command_buf));
-+	if (data < 0) {
-+		ret = data;
++	mutex_lock(&st->buf_lock);
++	st->tx[0] = KXSD9_READ(this_attr->address);
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[0], &msg);
++	spi_message_add_tail(&xfers[1], &msg);
++	ret = spi_sync(st->us, &msg);
++	if (ret)
 +		goto error_ret;
-+	}
-+	len = sprintf(buf, "%u\n", data);
-+
++	val = (((u16)(st->rx[0])) << 8) | (st->rx[1] & 0xF0);
++	len = sprintf(buf, "%d\n", val);
 +error_ret:
-+	mutex_unlock(&st->command_buf_lock);
++	mutex_unlock(&st->buf_lock);
 +
 +	return ret ? ret : len;
 +}
 +
-+static IIO_DEV_ATTR_LIGHT_INFRARED(0, tsl2561_read_val, TSL2561_DATA_0_LOW);
-+static IIO_DEV_ATTR_LIGHT_BROAD(0, tsl2561_read_val, TSL2561_DATA_1_LOW);
++static IIO_DEV_ATTR_ACCEL_X(kxsd9_read_accel, KXSD9_REG_X);
++static IIO_DEV_ATTR_ACCEL_Y(kxsd9_read_accel, KXSD9_REG_Y);
++static IIO_DEV_ATTR_ACCEL_Z(kxsd9_read_accel, KXSD9_REG_Z);
++static IIO_DEV_ATTR_ADC(0, kxsd9_read_accel, KXSD9_REG_AUX);
++static IIO_DEV_ATTR_ACCEL_SET_RANGE(S_IRUGO | S_IWUSR,
++				    kxsd9_read_accel_range,
++				    kxsd9_write_accel_range);
 +
-+static struct attribute *tsl2561_attributes[] = {
-+	&iio_dev_attr_light_infrared0.dev_attr.attr,
-+	&iio_dev_attr_light_broadspectrum0.dev_attr.attr,
++static struct attribute *kxsd9_attributes[] = {
++	&iio_dev_attr_accel_x.dev_attr.attr,
++	&iio_dev_attr_accel_y.dev_attr.attr,
++	&iio_dev_attr_accel_z.dev_attr.attr,
++	&iio_dev_attr_adc_0.dev_attr.attr,
++	&iio_dev_attr_accel_range.dev_attr.attr,
 +	NULL,
 +};
 +
-+static const struct attribute_group tsl2561_attribute_group = {
-+	.attrs = tsl2561_attributes,
++static const struct attribute_group kxsd9_attribute_group = {
++	.attrs = kxsd9_attributes,
 +};
 +
-+static int tsl2561_initialize(struct tsl2561_state *st)
++static int __devinit kxsd9_power_up(struct spi_device *spi)
 +{
-+	int err;
-+
-+	mutex_lock(&st->command_buf_lock);
-+	st->command_buf->word = 0;
-+	st->command_buf->block = 0;
-+	st->command_buf->address = TSL2561_CONTROL_REGISTER;
-+	err = i2c_smbus_write_byte_data(st->client, *(char *)(st->command_buf),
-+					TSL2561_CONT_REG_PWR_ON);
-+	if (err)
-+		goto error_ret;
-+
-+	st->command_buf->address = TSL2561_INT_CONTROL_REGISTER;
-+	err = i2c_smbus_write_byte_data(st->client, *(char *)(st->command_buf),
-+					TSL2561_INT_REG_INT_TEST);
-+
-+error_ret:
-+	mutex_unlock(&st->command_buf_lock);
-+
-+	return err;
-+}
-+
-+static int tsl2561_powerdown(struct i2c_client *client)
-+{
-+	int err;
-+	struct tsl2561_command Command = {
-+		.cmd =  1,
-+		.clear = 0,
-+		.word = 0,
-+		.block = 0,
-+		.address = TSL2561_CONTROL_REGISTER,
++	int ret;
++	struct spi_transfer xfers[2] = {
++		{
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++		}, {
++			.bits_per_word = 8,
++			.len = 2,
++			.cs_change = 1,
++		},
 +	};
++	struct spi_message msg;
++	u8 *tx2;
++	u8 *tx = kmalloc(2, GFP_KERNEL);
 +
-+	err = i2c_smbus_write_byte_data(client, *(char *)(&Command),
-+					TSL2561_CONT_REG_PWR_OFF);
-+	return (err < 0) ? err : 0;
-+}
-+static int __devinit tsl2561_probe(struct i2c_client *client,
-+				   const struct i2c_device_id *id)
++	if (tx == NULL) {
++		ret = -ENOMEM;
++		goto error_ret;
++	}
++	tx2 = kmalloc(2, GFP_KERNEL);
++	if (tx2 == NULL) {
++		ret = -ENOMEM;
++		goto error_free_tx;
++	}
++	tx[0] = 0x0d;
++	tx[1] = 0x40;
++
++	tx2[0] = 0x0c;
++	tx2[1] = 0x9b;
++
++	xfers[0].tx_buf = tx;
++	xfers[1].tx_buf = tx2;
++	spi_message_init(&msg);
++	spi_message_add_tail(&xfers[0], &msg);
++	spi_message_add_tail(&xfers[1], &msg);
++	ret = spi_sync(spi, &msg);
++
++	kfree(tx2);
++error_free_tx:
++	kfree(tx);
++error_ret:
++	return ret;
++
++};
++
++static int __devinit kxsd9_probe(struct spi_device *spi)
 +{
-+	int ret = 0;
-+	struct tsl2561_state *st = kzalloc(sizeof(*st), GFP_KERNEL);
 +
++	struct kxsd9_state *st;
++	int ret = 0;
++
++	st = kzalloc(sizeof(*st), GFP_KERNEL);
 +	if (st == NULL) {
 +		ret = -ENOMEM;
 +		goto error_ret;
 +	}
-+	i2c_set_clientdata(client, st);
-+	st->client = client;
-+	mutex_init(&st->command_buf_lock);
++	spi_set_drvdata(spi, st);
 +
-+	st->command_buf = kmalloc(sizeof(*st->command_buf), GFP_KERNEL);
-+	if (st->command_buf == NULL) {
++	st->rx = kmalloc(sizeof(*st->rx)*KXSD9_STATE_RX_SIZE,
++			 GFP_KERNEL);
++	if (st->rx == NULL) {
 +		ret = -ENOMEM;
-+		goto error_free_state;
++		goto error_free_st;
 +	}
-+	tsl2561_init_command_buf(st->command_buf);
++	st->tx = kmalloc(sizeof(*st->tx)*KXSD9_STATE_TX_SIZE,
++			 GFP_KERNEL);
++	if (st->tx == NULL) {
++		ret = -ENOMEM;
++		goto error_free_rx;
++	}
 +
++	st->us = spi;
++	mutex_init(&st->buf_lock);
 +	st->indio_dev = iio_allocate_device();
 +	if (st->indio_dev == NULL) {
 +		ret = -ENOMEM;
-+		goto error_free_command_buf;
++		goto error_free_tx;
 +	}
-+	st->indio_dev->attrs = &tsl2561_attribute_group;
-+	st->indio_dev->dev.parent = &client->dev;
++	st->indio_dev->dev.parent = &spi->dev;
++	/* for now */
++	st->indio_dev->num_interrupt_lines = 0;
++	st->indio_dev->event_attrs = NULL;
++
++	st->indio_dev->attrs = &kxsd9_attribute_group;
 +	st->indio_dev->dev_data = (void *)(st);
 +	st->indio_dev->driver_module = THIS_MODULE;
 +	st->indio_dev->modes = INDIO_DIRECT_MODE;
++
 +	ret = iio_device_register(st->indio_dev);
 +	if (ret)
-+		goto error_free_iiodev;
++		goto error_free_dev;
 +
-+	/* Intialize the chip */
-+	ret = tsl2561_initialize(st);
-+	if (ret)
-+		goto error_unregister_iiodev;
++	spi->mode = SPI_MODE_0;
++	spi_setup(spi);
++	kxsd9_power_up(spi);
 +
 +	return 0;
-+error_unregister_iiodev:
-+	iio_device_unregister(st->indio_dev);
-+error_free_iiodev:
++
++error_free_dev:
 +	iio_free_device(st->indio_dev);
-+error_free_command_buf:
-+	kfree(st->command_buf);
-+error_free_state:
++error_free_tx:
++	kfree(st->tx);
++error_free_rx:
++	kfree(st->rx);
++error_free_st:
 +	kfree(st);
 +error_ret:
 +	return ret;
-+
 +}
 +
-+static int __devexit tsl2561_remove(struct i2c_client *client)
++static int __devexit kxsd9_remove(struct spi_device *spi)
 +{
-+	struct tsl2561_state *st =  i2c_get_clientdata(client);
++	struct kxsd9_state *st = spi_get_drvdata(spi);
 +
 +	iio_device_unregister(st->indio_dev);
 +	iio_free_device(st->indio_dev);
++	kfree(st->tx);
++	kfree(st->rx);
 +	kfree(st);
 +
-+	return tsl2561_powerdown(client);
++	return 0;
 +}
 +
-+static unsigned short normal_i2c[] = { 0x29, 0x39, 0x49, I2C_CLIENT_END };
-+
-+I2C_CLIENT_INSMOD;
-+
-+static const struct i2c_device_id tsl2561_id[] = {
-+	{ "tsl2561", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, tsl2561_id);
-+
-+
-+static struct i2c_driver tsl2561_driver = {
++static struct spi_driver kxsd9_driver = {
 +	.driver = {
-+		.name = "tsl2561",
++		.name = "kxsd9",
++		.owner = THIS_MODULE,
 +	},
-+	.probe = tsl2561_probe,
-+	.remove = __devexit_p(tsl2561_remove),
-+	.id_table  = tsl2561_id,
++	.probe = kxsd9_probe,
++	.remove = __devexit_p(kxsd9_remove),
 +};
 +
-+static __init int tsl2561_init(void)
++static __init int kxsd9_spi_init(void)
 +{
-+	return i2c_add_driver(&tsl2561_driver);
++	return spi_register_driver(&kxsd9_driver);
 +}
-+module_init(tsl2561_init);
++module_init(kxsd9_spi_init);
 +
-+static __exit void tsl2561_exit(void)
++static __exit void kxsd9_spi_exit(void)
 +{
-+	i2c_del_driver(&tsl2561_driver);
++	spi_unregister_driver(&kxsd9_driver);
 +}
-+module_exit(tsl2561_exit);
++module_exit(kxsd9_spi_exit);
 +
 +MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-+MODULE_DESCRIPTION("TSL2561 light sensor driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/iio/light.h b/include/linux/iio/light.h
++MODULE_DESCRIPTION("Kionix KXSD9 SPI driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/iio/adc.h b/include/linux/iio/adc.h
 new file mode 100644
-index 0000000..60a8640
+index 0000000..d925b2c
 --- /dev/null
-+++ b/include/linux/iio/light.h
-@@ -0,0 +1,12 @@
-+#include <linux/iio/sysfs.h>
++++ b/include/linux/iio/adc.h
+@@ -0,0 +1,13 @@
++/*
++ * adc.h - sysfs attributes associated with ADCs
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * Copyright (c) 2008 Jonathan Cameron <jic23@cam.ac.uk>
++ *
++ */
 +
-+/* Light to digital sensor attributes */
-+
-+#define IIO_DEV_ATTR_LIGHT_INFRARED(_num, _show, _addr)			\
-+	IIO_DEVICE_ATTR(light_infrared##_num, S_IRUGO, _show, NULL, _addr)
-+
-+#define IIO_DEV_ATTR_LIGHT_BROAD(_num, _show, _addr)			\
-+	IIO_DEVICE_ATTR(light_broadspectrum##_num, S_IRUGO, _show, NULL, _addr)
-+
-+#define IIO_DEV_ATTR_LIGHT_VISIBLE(_num, _show, _addr)			\
-+	IIO_DEVICE_ATTR(light_visible##_num, S_IRUGO, _show, NULL, _addr)
++#define IIO_DEV_ATTR_ADC(_num, _show, _addr)			\
++  IIO_DEVICE_ATTR(adc_##_num, S_IRUGO, _show, NULL, _addr)
 -- 
 1.6.2
 
