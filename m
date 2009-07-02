@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZGBJi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZGBJoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZGBJi0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 05:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZGBJiR
+	id S1752263AbZGBJoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 05:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZGBJoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 05:38:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60923 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752851AbZGBJiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 05:38:16 -0400
-Message-ID: <4A4C808A.9010302@redhat.com>
-Date: Thu, 02 Jul 2009 17:40:26 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Thu, 2 Jul 2009 05:44:12 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:40533 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbZGBJoL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 05:44:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=D8uu18N7DJY6fAY8/LDb1/ZJJ32GoeAmXYOZRlp7x3t32RafzgnVs2oDMxpQkzunz4
+         unXWC0momYnyoB2Qh7lF6iqTngeyeEkySQ5ePvm5F4QBFEntaGUiBb/nwTOdQz8hRlfp
+         gC5To1QH8afTwGCJyuzSxwvIAuque/g4aa+Hc=
+Date: Thu, 2 Jul 2009 17:46:20 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+Message-ID: <20090702094620.GE6372@cr0.nay.redhat.com>
+References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com> <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk, roland@redhat.com,
-       serue@us.ibm.com, dhowells@redhat.com, jmorris@namei.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [Patch 2/3] elf: clean up fill_note_info()
-References: <20090701050840.6188.84560.sendpatchset@localhost.localdomain>	<20090701050850.6188.59496.sendpatchset@localhost.localdomain> <20090701122955.da45e073.akpm@linux-foundation.org>
-In-Reply-To: <20090701122955.da45e073.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 1 Jul 2009 01:06:36 -0400
-> Amerigo Wang <amwang@redhat.com> wrote:
->
->   
->> +#define	NUM_NOTES	6
->>  	info->notes = kmalloc(NUM_NOTES * sizeof(struct memelfnote),
->>  			      GFP_KERNEL);
->> +#undef NUM_NOTES
->>     
->
-> That #define amounts to a really perverse code comment.
->
-> How about we do this?
->   
+On Thu, Jul 02, 2009 at 05:18:49PM +0800, Changli Gao wrote:
+>On Thu, Jul 2, 2009 at 5:13 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>> On Thu, Jul 02, 2009 at 03:36:41PM +0800, Changli Gao wrote:
+>>
+>> Why? Why do you need this feature?
+>>
+>Are you familiar with splice() and tee()? They both use pipes as kernel buffers.
 
+You are not answering the question, obviously.
 
-Ah, better! No problem for me.
-
-Thank you!
-> --- a/fs/binfmt_elf.c~elf-clean-up-fill_note_info-fix
-> +++ a/fs/binfmt_elf.c
-> @@ -1719,10 +1719,8 @@ static int elf_note_info_init(struct elf
->  	memset(info, 0, sizeof(*info));
->  	INIT_LIST_HEAD(&info->thread_list);
->  
-> -#define	NUM_NOTES	6
-> -	info->notes = kmalloc(NUM_NOTES * sizeof(struct memelfnote),
-> -			      GFP_KERNEL);
-> -#undef NUM_NOTES
-> +	/* Allocate space for six ELF notes */
-> +	info->notes = kmalloc(6 * sizeof(struct memelfnote), GFP_KERNEL);
->  	if (!info->notes)
->  		return 0;
->  	info->psinfo = kmalloc(sizeof(*info->psinfo), GFP_KERNEL);
-> _
->
->   
-
+And you snipped too much, how can you return that fd? Using the return value?
+Ah! This will probably break the user-space program...
