@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZGBNtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZGBNty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZGBNtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbZGBNsr
+	id S1755891AbZGBNty (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZGBNst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:48:47 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53242 "EHLO
+	Thu, 2 Jul 2009 09:48:49 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53244 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754170AbZGBNsn (ORCPT
+	with ESMTP id S1754296AbZGBNsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 09:48:43 -0400
 X-Cam-AntiVirus: no malware found
@@ -18,988 +18,934 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 02/14] IIO: max1363 ADC driver
-Date: Thu,  2 Jul 2009 13:47:32 +0000
-Message-Id: <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 06/14] IIO: Add generic ring buffer support to the IIO core
+Date: Thu,  2 Jul 2009 13:47:36 +0000
+Message-Id: <1246542464-6974-7-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
-In-Reply-To: <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
 References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
  <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-Core support for MAX1361, MAX1362, MAX1363, MAX1364,
-MAX1136, MAX1137, MAX1138, MAX1139, MAX1236, MAX1237,
-MAX1238, MAX1239.
+This provides a unified interface for hardware and software
+ring buffers.
 
-Ring buffer support later in series.
-
----
 Changes since V2:
-* Moved to new iio registration functions
-* General cleanups
+* Moved to a more consistent structure.  Now the ring buffer
+  has an associated struct device which is a child of the
+  relevant iio_dev.  This in turn has two children, one
+  for the event interface and one for the access interface.
+  These two interfaces are now managed via cdev structures.
+
+* Numerous minor cleanups
 ---
- drivers/iio/Kconfig            |    2 +
- drivers/iio/Makefile           |    2 +
- drivers/iio/adc/Kconfig        |   14 +
- drivers/iio/adc/Makefile       |    7 +
- drivers/iio/adc/max1363.h      |  257 +++++++++++++++++
- drivers/iio/adc/max1363_core.c |  622 ++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 904 insertions(+), 0 deletions(-)
- create mode 100644 drivers/iio/adc/Kconfig
- create mode 100644 drivers/iio/adc/Makefile
- create mode 100644 drivers/iio/adc/max1363.h
- create mode 100644 drivers/iio/adc/max1363_core.c
+ drivers/iio/Kconfig              |    7 +
+ drivers/iio/Makefile             |    1 +
+ drivers/iio/industrialio-ring.c  |  566 ++++++++++++++++++++++++++++++++++++++
+ include/linux/iio/ring_generic.h |  283 +++++++++++++++++++
+ 4 files changed, 857 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/iio/industrialio-ring.c
+ create mode 100644 include/linux/iio/ring_generic.h
 
 diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
-index 09e4101..ca54ab3 100644
+index f3545c8..8eb3d4c 100644
 --- a/drivers/iio/Kconfig
 +++ b/drivers/iio/Kconfig
-@@ -9,3 +9,5 @@ menuconfig IIO
- 	  drivers for many different types of embedded sensors using a
+@@ -10,6 +10,13 @@ menuconfig IIO
  	  number of different physical interfaces (i2c, spi etc). See
  	  Documentation/industrialio for more information.
+ 
++config IIO_RING_BUFFER
++	depends on IIO
++	bool "Enable ring buffer support within IIO"
++	help
++	  Provide core support for various ring buffer based data
++	  acquisition methods.
 +
-+source drivers/iio/adc/Kconfig
-\ No newline at end of file
+ source drivers/iio/accel/Kconfig
+ source drivers/iio/adc/Kconfig
+ source drivers/iio/light/Kconfig
 diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
-index 92b462a..9d11f64 100644
+index 14c661b..670b8f3 100644
 --- a/drivers/iio/Makefile
 +++ b/drivers/iio/Makefile
-@@ -4,3 +4,5 @@
+@@ -4,6 +4,7 @@
  
  obj-$(CONFIG_IIO) += industrialio.o
  industrialio-y := industrialio-core.o
-+
-+obj-y += adc/
-\ No newline at end of file
-diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
++industrialio-$(CONFIG_IIO_RING_BUFFER) += industrialio-ring.o
+ 
+ obj-y += accel/
+ obj-y += adc/
+diff --git a/drivers/iio/industrialio-ring.c b/drivers/iio/industrialio-ring.c
 new file mode 100644
-index 0000000..cb773d2
+index 0000000..6153d98
 --- /dev/null
-+++ b/drivers/iio/adc/Kconfig
-@@ -0,0 +1,14 @@
-+#
-+# ADC drivers
-+#
-+comment "Analog to digital convertors"
-+	depends on IIO
-+
-+config MAX1363
-+	tristate "MAXIM max1363 ADC driver"
-+	depends on IIO
-+	help
-+	  Say yes here to build support for many MAXIM i2c analog to digital
-+	  convertors (ADC). (max1361, max1362, max1363, max1364, max1136,
-+	  max1136, max1137, max1138, max1139, max1236, max1237, max11238,
-+	  max1239) Provides direct access via sysfs.
-diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
-new file mode 100644
-index 0000000..2a37fee
---- /dev/null
-+++ b/drivers/iio/adc/Makefile
-@@ -0,0 +1,7 @@
-+
-+# Makefile for industrial I/O ADC drivers
-+#
-+
-+max1363-y := max1363_core.o
-+
-+obj-$(CONFIG_MAX1363) += max1363.o
-diff --git a/drivers/iio/adc/max1363.h b/drivers/iio/adc/max1363.h
-new file mode 100644
-index 0000000..a9d5c21
---- /dev/null
-+++ b/drivers/iio/adc/max1363.h
-@@ -0,0 +1,257 @@
-+#ifndef _MAX1363_H_
-+#define  _MAX1363_H_
-+
-+#define MAX1363_SETUP_BYTE(a) ((a) | 0x80)
-+
-+/* There is a fair bit more defined here than currently
-+ * used, but the intention is to support everything these
-+ * chips do in the long run */
-+
-+/* see data sheets */
-+/* max1363 and max1236, max1237, max1238, max1239 */
-+#define MAX1363_SETUP_AIN3_IS_AIN3_REF_IS_VDD	0x00
-+#define MAX1363_SETUP_AIN3_IS_REF_EXT_TO_REF	0x20
-+#define MAX1363_SETUP_AIN3_IS_AIN3_REF_IS_INT	0x40
-+#define MAX1363_SETUP_AIN3_IS_REF_REF_IS_INT	0x60
-+#define MAX1363_SETUP_POWER_UP_INT_REF		0x10
-+#define MAX1363_SETUP_POWER_DOWN_INT_REF	0x00
-+
-+/* think about includeing max11600 etc - more settings */
-+#define MAX1363_SETUP_EXT_CLOCK			0x08
-+#define MAX1363_SETUP_INT_CLOCK			0x00
-+#define MAX1363_SETUP_UNIPOLAR			0x00
-+#define MAX1363_SETUP_BIPOLAR			0x04
-+#define MAX1363_SETUP_RESET			0x00
-+#define MAX1363_SETUP_NORESET			0x02
-+/* max1363 only - though don't care on others.
-+ * For now monitor modes are not implemented as the relevant
-+ * line is not connected on my test board.
-+ * The definitions are here as I intend to add this soon.
++++ b/drivers/iio/industrialio-ring.c
+@@ -0,0 +1,566 @@
++/* The industrial I/O core
++ *
++ * Copyright (c) 2008 Jonathan Cameron
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ *
++ * Handling of ring allocation / resizing.
++ *
++ *
++ * Things to look at here.
++ * - Better memory allocation techniques?
++ * - Alternative access techniques?
 + */
-+#define MAX1363_SETUP_MONITOR_SETUP		0x01
++#include <linux/kernel.h>
++#include <linux/device.h>
++#include <linux/interrupt.h>
++#include <linux/fs.h>
++#include <linux/poll.h>
++#include <linux/module.h>
++#include <linux/cdev.h>
++#include <linux/idr.h>
++#include <linux/iio/iio.h>
++#include <linux/iio/ring_generic.h>
++/* IDR for ring buffer identifier */
++static DEFINE_IDR(iio_ring_idr);
++/* IDR for ring event identifier */
++static DEFINE_IDR(iio_ring_event_idr);
++/* IDR for ring access identifier */
++static DEFINE_IDR(iio_ring_access_idr);
 +
-+/* Specific to the max1363 */
-+#define MAX1363_MON_RESET_CHAN(a) (1 << ((a) + 4))
-+#define MAX1363_MON_CONV_RATE_133ksps		0
-+#define MAX1363_MON_CONV_RATE_66_5ksps		0x02
-+#define MAX1363_MON_CONV_RATE_33_3ksps		0x04
-+#define MAX1363_MON_CONV_RATE_16_6ksps		0x06
-+#define MAX1363_MON_CONV_RATE_8_3ksps		0x08
-+#define MAX1363_MON_CONV_RATE_4_2ksps		0x0A
-+#define MAX1363_MON_CONV_RATE_2_0ksps		0x0C
-+#define MAX1363_MON_CONV_RATE_1_0ksps		0x0E
-+#define MAX1363_MON_INT_ENABLE			0x01
++int iio_push_ring_event(struct iio_ring_buffer *ring_buf,
++		       int event_code,
++		       s64 timestamp)
++{
++	return __iio_push_event(&ring_buf->ev_int,
++			       event_code,
++			       timestamp,
++			       &ring_buf->shared_ev_pointer);
++}
++EXPORT_SYMBOL(iio_push_ring_event);
 +
-+/* defined for readability reasons */
-+/* All chips */
-+#define MAX1363_CONFIG_BYTE(a) ((a))
-+
-+#define MAX1363_CONFIG_SE			0x01
-+#define MAX1363_CONFIG_DE			0x00
-+#define MAX1363_CONFIG_SCAN_TO_CS		0x00
-+#define MAX1363_CONFIG_SCAN_SINGLE_8		0x20
-+#define MAX1363_CONFIG_SCAN_MONITOR_MODE	0x40
-+#define MAX1363_CONFIG_SCAN_SINGLE_1		0x60
-+/* max123{6-9} only */
-+#define MAX1236_SCAN_MID_TO_CHANNEL		0x40
-+
-+/* max1363 only - merely part of channel selects or don't care for others*/
-+#define MAX1363_CONFIG_EN_MON_MODE_READ 0x18
-+
-+#define MAX1363_CHANNEL_SEL(a) ((a) << 1)
-+
-+/* max1363 strictly 0x06 - but doesn't matter */
-+#define MAX1363_CHANNEL_SEL_MASK		0x1E
-+#define MAX1363_SCAN_MASK			0x60
-+#define MAX1363_SE_DE_MASK			0x01
++int iio_push_or_escallate_ring_event(struct iio_ring_buffer *ring_buf,
++				    int event_code,
++				    s64 timestamp)
++{
++	if (ring_buf->shared_ev_pointer.ev_p)
++		__iio_change_event(ring_buf->shared_ev_pointer.ev_p,
++				   event_code,
++				   timestamp);
++	else
++		return iio_push_ring_event(ring_buf,
++					  event_code,
++					  timestamp);
++	return 0;
++}
++EXPORT_SYMBOL(iio_push_or_escallate_ring_event);
 +
 +/**
-+ * struct max1363_mode - scan mode information
-+ * @name:	Name used to identify the scan mode.
-+ * @conf:	The corresponding value of the configuration register
-+ * @numvals:	The number of values returned by a single scan
-+ */
-+struct max1363_mode {
-+	const char	*name;
-+	int8_t		conf;
-+	int		numvals;
-+};
++ * iio_ring_open() chrdev file open for ring buffer access
++ *
++ * This function relies on all ring buffer implementations having an
++ * iio_ring_buffer as their first element.
++ **/
++int iio_ring_open(struct inode *inode, struct file *filp)
++{
++	struct iio_handler *hand
++		= container_of(inode->i_cdev, struct iio_handler, chrdev);
++	struct iio_ring_buffer *rb = hand->private;
 +
-+#define MAX1363_MODE_SINGLE(_num) {					\
-+		.name = #_num,						\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1363_CONFIG_SCAN_SINGLE_1			\
-+			| MAX1363_CONFIG_SE,				\
-+			.numvals = 1,					\
-+			}
++	filp->private_data = hand->private;
++	if (rb->access.mark_in_use)
++		rb->access.mark_in_use(rb);
 +
-+#define MAX1363_MODE_SINGLE_TIMES_8(_num) {				\
-+		.name = #_num"x8",					\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1363_CONFIG_SCAN_SINGLE_8			\
-+			| MAX1363_CONFIG_SE,				\
-+			.numvals = 8,					\
-+			}
-+
-+#define MAX1363_MODE_SCAN_TO_CHANNEL(_num) {				\
-+		.name = "0..."#_num,					\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1363_CONFIG_SCAN_TO_CS			\
-+			| MAX1363_CONFIG_SE,				\
-+			.numvals = _num + 1,				\
-+			}
-+
-+
-+/* note not available for max1363 hence naming */
-+#define MAX1236_MODE_SCAN_MID_TO_CHANNEL(_mid, _num) {			\
-+		.name = #_mid"..."#_num,				\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1236_SCAN_MID_TO_CHANNEL			\
-+			| MAX1363_CONFIG_SE,				\
-+			.numvals = _num - _mid + 1			\
++	return 0;
 +}
 +
-+#define MAX1363_MODE_DIFF_SINGLE(_nump, _numm) {			\
-+		.name = #_nump"-"#_numm,				\
-+			.conf = MAX1363_CHANNEL_SEL(_nump)		\
-+			| MAX1363_CONFIG_SCAN_SINGLE_1			\
-+			| MAX1363_CONFIG_DE,				\
-+			.numvals = 1,					\
-+			}
++/**
++ * iio_ring_release() -chrdev file close ring buffer access
++ *
++ * This function relies on all ring buffer implementations having an
++ * iio_ring_buffer as their first element.
++ **/
++int iio_ring_release(struct inode *inode, struct file *filp)
++{
++	struct cdev *cd = inode->i_cdev;
++	struct iio_handler *hand = iio_cdev_to_handler(cd);
++	struct iio_ring_buffer *rb = hand->private;
 +
-+#define MAX1363_MODE_DIFF_SINGLE_TIMES_8(_nump, _numm) {		\
-+		.name = #_nump"-"#_numm,				\
-+			.conf = MAX1363_CHANNEL_SEL(_nump)		\
-+			| MAX1363_CONFIG_SCAN_SINGLE_8			\
-+			| MAX1363_CONFIG_DE,				\
-+			.numvals = 1,					\
-+			}
++	clear_bit(IIO_BUSY_BIT_POS, &rb->access_handler.flags);
++	if (rb->access.unmark_in_use)
++		rb->access.unmark_in_use(rb);
 +
-+/* Can't think how to automate naming so specify for now */
-+#define MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(_name, _num, _numvals) { \
-+		.name = #_name,						\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1363_CONFIG_SCAN_TO_CS			\
-+			| MAX1363_CONFIG_DE,				\
-+			.numvals = _numvals,				\
-+			}
-+
-+/* note only available for max1363 hence naming */
-+#define MAX1236_MODE_DIFF_SCAN_MID_TO_CHANNEL_NAMED(_name, _num, _numvals) { \
-+    .name = #_name,							\
-+			.conf = MAX1363_CHANNEL_SEL(_num)		\
-+			| MAX1236_SCAN_MID_TO_CHANNEL			\
-+			| MAX1363_CONFIG_SE,				\
-+			.numvals = _numvals,				\
++	return 0;
 +}
 +
-+/* Not currently handled */
-+#define MAX1363_MODE_MONITOR {					\
-+		.name = "monitor",				\
-+			.conf = MAX1363_CHANNEL_SEL(3)		\
-+			| MAX1363_CONFIG_SCAN_MONITOR_MODE	\
-+			| MAX1363_CONFIG_SE,			\
-+			.numvals = 10,				\
-+		}
++/**
++ * iio_ring_rip_outer() chrdev read for ring buffer access
++ *
++ * This function relies on all ring buffer implementations having an
++ * iio_ring _bufer as their first element.
++ **/
++ssize_t iio_ring_rip_outer(struct file *filp,
++			   char *buf,
++			   size_t count,
++			   loff_t *f_ps)
++{
++	struct iio_ring_buffer *rb = filp->private_data;
++	int ret, dead_offset, copied;
++	u8 *data;
++	/* rip lots must exist. */
++	if (!rb->access.rip_lots)
++		return -EINVAL;
++	copied = rb->access.rip_lots(rb, count, &data, &dead_offset);
 +
-+/* This may seem an overly long winded way to do this, but at least it makes
-+ * clear what all the various options actually do. Alternative suggestions
-+ * that don't require user to have intimate knowledge of the chip welcomed.
-+ */
++	if (copied < 0) {
++		ret = copied;
++		goto error_ret;
++	}
++	if (copy_to_user(buf, data + dead_offset, copied))  {
++		ret =  -EFAULT;
++		goto error_free_data_cpy;
++	}
++	/* In clever ring buffer designs this may not need to be freed.
++	 * When such a design exists I'll add this to ring access funcs.
++	 */
++	kfree(data);
 +
-+/* This must be maintained along side the max1363_mode_table in max1363_core */
-+enum max1363_modes {
-+	/* Single read of a single channel */
-+	_s0, _s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8, _s9, _s10, _s11,
-+	/* Eight reads of a single channel */
-+	se0, se1, se2, se3, se4, se5, se6, se7, se8, se9, se10, se11,
-+	/* Scan to channel */
-+	s0to1, s0to2, s0to3, s0to4, s0to5, s0to6,
-+	s0to7, s0to8, s0to9, s0to10, s0to11,
-+	/* Differential single read */
-+	d0m1, d2m3, d4m5, d6m7, d8m9, d10m11,
-+	d1m0, d3m2, d5m4, d7m6, d9m8, d11m10,
-+	/* Differential single read 8 times */
-+	de0m1, de2m3, de4m5, de6m7, de8m9, de10m11,
-+	de1m0, de3m2, de5m4, de7m6, de9m8, de11m10,
-+	/* Differential scan to channel */
-+	d0m1to2m3, d0m1to4m5, d0m1to6m7, d0m1to8m9, d0m1to10m11,
-+	d1m0to3m2, d1m0to5m4, d1m0to7m6, d1m0to9m8, d1m0to11m10,
-+	/* Scan mid to channel max123{6-9} only */
-+	s2to3, s6to7, s6to8, s6to9, s6to10, s6to11,
-+	/* Differential scan mid to channel */
-+	s6m7to8m9, s6m7to10m11, s7m6to9m8, s7m6to11m10,
++	return copied;
++
++error_free_data_cpy:
++	kfree(data);
++error_ret:
++	return ret;
++}
++
++static const struct file_operations iio_ring_fileops = {
++	.read = iio_ring_rip_outer,
++	.release = iio_ring_release,
++	.open = iio_ring_open,
++	.owner = THIS_MODULE,
 +};
 +
 +/**
-+ * struct max1363_chip_info - chip specifc information
-+ * @name:		indentification string for chip
-+ * @num_inputs:		number of physical inputs on chip
-+ * @int_vref_mv:	the internal reference voltage
-+ * @monitor_mode:	whether the chip supports monitor interrupts
-+ * @mode_list:		array of available scan modes
-+ * @num_modes:		the number of scan modes available
-+ * @default_mode:	the scan mode in which the chip starts up
-+ */
-+struct max1363_chip_info {
-+	const char			*name;
-+	u8				num_inputs;
-+	u16				int_vref_mv;
-+	bool				monitor_mode;
-+	const enum max1363_modes	*mode_list;
-+	int				num_modes;
-+	enum max1363_modes		default_mode;
-+};
-+
-+
-+/**
-+ * struct max1363_state - driver instance specific data
-+ * @indio_dev:		the industrial I/O device
-+ * @client:		i2c_client
-+ * @setupbyte:		cache of current device setup byte
-+ * @configbyte:		cache of current device config byte
-+ * @chip_info:		chip model specific constants, available modes etc
-+ * @current_mode:	the scan mode of this chip
-+ * @poll_work:		bottom half of polling interrupt handler
-+ * @protect_ring:	used to ensure only one polling bh running at a time
-+ * @reg:		supply regulator
-+ */
-+struct max1363_state {
-+	struct iio_dev			*indio_dev;
-+	struct i2c_client		*client;
-+	char				setupbyte;
-+	char				configbyte;
-+	const struct max1363_chip_info	*chip_info;
-+	const struct max1363_mode	*current_mode;
-+	struct work_struct		poll_work;
-+	atomic_t			protect_ring;
-+	struct iio_trigger		*trig;
-+	struct regulator		*reg;
-+};
-+
-+static inline void max1363_uninitialize_ring(struct iio_ring_buffer *ring)
++ * __iio_request_ring_buffer_event_chrdev() allocate ring event chrdev
++ * @buf:	ring buffer whose event chrdev we are allocating
++ * @owner:	the module who owns the ring buffer (for ref counting)
++ * @dev:	device with which the chrdev is associated
++ **/
++static inline int
++__iio_request_ring_buffer_event_chrdev(struct iio_ring_buffer *buf,
++				       int id,
++				       struct module *owner,
++				       struct device *dev)
 +{
-+};
++	int ret;
++	ret = iio_get_new_idr_val(&iio_ring_event_idr);
++	if (ret < 0)
++		goto error_ret;
++	else
++		buf->ev_int.id = ret;
 +
-+static inline int max1363_initialize_ring(struct iio_ring_buffer *ring)
-+{
++	snprintf(buf->ev_int._name, 20,
++		 "ring_event_line%d",
++		 buf->ev_int.id);
++	ret = iio_setup_ev_int(&(buf->ev_int),
++			       buf->ev_int._name,
++			       owner,
++			       dev);
++	if (ret)
++		goto error_free_id;
 +	return 0;
-+};
 +
++error_free_id:
++	iio_free_idr_val(&iio_ring_event_idr, buf->ev_int.id);
++error_ret:
++	return ret;
++}
 +
-+static inline ssize_t max1363_scan_from_ring(struct device *dev,
-+					     struct device_attribute *attr,
-+					     char *buf)
++static inline void
++__iio_free_ring_buffer_event_chrdev(struct iio_ring_buffer *buf)
 +{
-+	return 0;
++	iio_free_ev_int(&(buf->ev_int));
++	iio_free_idr_val(&iio_ring_event_idr, buf->ev_int.id);
++}
++
++static void iio_ring_access_release(struct device *dev)
++{
++	struct iio_ring_buffer *buf
++		= access_dev_to_iio_ring_buffer(dev);
++	cdev_del(&buf->access_handler.chrdev);
++	iio_device_free_chrdev_minor(MINOR(dev->devt));
++}
++
++static struct device_type iio_ring_access_type = {
++	.release = iio_ring_access_release,
 +};
 +
 +static inline int
-+max1363_register_ring_funcs_and_init(struct iio_dev *indio_dev)
++__iio_request_ring_buffer_access_chrdev(struct iio_ring_buffer *buf,
++					int id,
++					struct module *owner)
 +{
-+	return 0;
-+};
++	int ret, minor;
 +
-+static inline void max1363_ring_cleanup(struct iio_dev *indio_dev) {};
++	buf->access_handler.flags = 0;
 +
-+#endif /* _MAX1363_H_ */
-diff --git a/drivers/iio/adc/max1363_core.c b/drivers/iio/adc/max1363_core.c
-new file mode 100644
-index 0000000..b9025a4
---- /dev/null
-+++ b/drivers/iio/adc/max1363_core.c
-@@ -0,0 +1,622 @@
-+ /*
-+ * linux/drivers/industrialio/adc/max1363.c
-+ * Copyright (C) 2008 Jonathan Cameron
-+ *
-+ * based on linux/drivers/i2c/chips/max123x
-+ * Copyright (C) 2002-2004 Stefan Eletzhofer
-+ *
-+ * based on linux/drivers/acron/char/pcf8583.c
-+ * Copyright (C) 2000 Russell King
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * max1363.c
-+ *
-+ * Partial support for max1363 and similar chips.
-+ *
-+ * Not currently implemented.
-+ *
-+ * - Monitor interrrupt generation.
-+ * - Control of internal reference.
-+ * - Sysfs scan interface currently assumes unipolar mode.
-+ */
++	buf->access_dev.parent = &buf->dev;
++	buf->access_dev.class = &iio_class;
++	buf->access_dev.type = &iio_ring_access_type;
++	device_initialize(&buf->access_dev);
 +
-+#include <linux/interrupt.h>
-+#include <linux/gpio.h>
-+#include <linux/workqueue.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <linux/sysfs.h>
-+#include <linux/list.h>
-+#include <linux/i2c.h>
-+#include <linux/rtc.h>
-+#include <linux/regulator/consumer.h>
++	minor = iio_device_get_chrdev_minor();
++	if (minor < 0) {
++		ret = minor;
++		goto error_device_put;
++	}
++	buf->access_dev.devt = MKDEV(MAJOR(iio_devt), minor);
 +
-+#include <linux/iio/iio.h>
-+#include <linux/iio/sysfs.h>
-+
-+#include "max1363.h"
-+
-+/* Available scan modes.
-+ * Awkwardly the associated enum is in the header so it is available to
-+ * the ring buffer code.
-+ */
-+static const struct  max1363_mode max1363_mode_table[] = {
-+	MAX1363_MODE_SINGLE(0),
-+	MAX1363_MODE_SINGLE(1),
-+	MAX1363_MODE_SINGLE(2),
-+	MAX1363_MODE_SINGLE(3),
-+	MAX1363_MODE_SINGLE(4),
-+	MAX1363_MODE_SINGLE(5),
-+	MAX1363_MODE_SINGLE(6),
-+	MAX1363_MODE_SINGLE(7),
-+	MAX1363_MODE_SINGLE(8),
-+	MAX1363_MODE_SINGLE(9),
-+	MAX1363_MODE_SINGLE(10),
-+	MAX1363_MODE_SINGLE(11),
-+
-+	MAX1363_MODE_SINGLE_TIMES_8(0),
-+	MAX1363_MODE_SINGLE_TIMES_8(1),
-+	MAX1363_MODE_SINGLE_TIMES_8(2),
-+	MAX1363_MODE_SINGLE_TIMES_8(3),
-+	MAX1363_MODE_SINGLE_TIMES_8(4),
-+	MAX1363_MODE_SINGLE_TIMES_8(5),
-+	MAX1363_MODE_SINGLE_TIMES_8(6),
-+	MAX1363_MODE_SINGLE_TIMES_8(7),
-+	MAX1363_MODE_SINGLE_TIMES_8(8),
-+	MAX1363_MODE_SINGLE_TIMES_8(9),
-+	MAX1363_MODE_SINGLE_TIMES_8(10),
-+	MAX1363_MODE_SINGLE_TIMES_8(11),
-+
-+	MAX1363_MODE_SCAN_TO_CHANNEL(1),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(2),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(3),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(4),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(5),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(6),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(7),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(8),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(9),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(10),
-+	MAX1363_MODE_SCAN_TO_CHANNEL(11),
-+
-+	MAX1363_MODE_DIFF_SINGLE(0, 1),
-+	MAX1363_MODE_DIFF_SINGLE(2, 3),
-+	MAX1363_MODE_DIFF_SINGLE(4, 5),
-+	MAX1363_MODE_DIFF_SINGLE(6, 7),
-+	MAX1363_MODE_DIFF_SINGLE(8, 9),
-+	MAX1363_MODE_DIFF_SINGLE(10, 11),
-+	MAX1363_MODE_DIFF_SINGLE(1, 0),
-+	MAX1363_MODE_DIFF_SINGLE(3, 2),
-+	MAX1363_MODE_DIFF_SINGLE(5, 4),
-+	MAX1363_MODE_DIFF_SINGLE(7, 6),
-+	MAX1363_MODE_DIFF_SINGLE(9, 8),
-+	MAX1363_MODE_DIFF_SINGLE(11, 10),
-+
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(0, 1),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(2, 3),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(4, 5),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(6, 7),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(8, 9),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(10, 11),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(1, 0),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(3, 2),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(5, 4),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(7, 6),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(9, 8),
-+	MAX1363_MODE_DIFF_SINGLE_TIMES_8(11, 10),
-+
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(0-1...2-3, 2, 2),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(0-1...4-5, 4, 3),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(0-1...6-7, 6, 4),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(0-1...8-9, 8, 5),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(0-1...10-11, 10, 6),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(1-0...3-2, 3, 2),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(1-0...5-4, 5, 3),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(1-0...7-6, 7, 4),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(1-0...9-8, 9, 5),
-+	MAX1363_MODE_DIFF_SCAN_TO_CHANNEL_NAMED(1-0...11-10, 11, 6),
-+
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(2, 3),
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(6, 7),
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(6, 8),
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(6, 9),
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(6, 10),
-+	MAX1236_MODE_SCAN_MID_TO_CHANNEL(6, 11),
-+
-+	MAX1236_MODE_DIFF_SCAN_MID_TO_CHANNEL_NAMED(6-7...8-9, 8, 2),
-+	MAX1236_MODE_DIFF_SCAN_MID_TO_CHANNEL_NAMED(6-7...10-11, 10, 3),
-+	MAX1236_MODE_DIFF_SCAN_MID_TO_CHANNEL_NAMED(7-6...9-8, 9, 2),
-+	MAX1236_MODE_DIFF_SCAN_MID_TO_CHANNEL_NAMED(7-6...11-10, 11, 3),
-+};
-+
-+/* Applies to max1363 */
-+static const enum max1363_modes max1363_mode_list[] = {
-+	_s0, _s1, _s2, _s3,
-+	se0, se1, se2, se3,
-+	s0to1, s0to2, s0to3,
-+	d0m1, d2m3, d1m0, d3m2,
-+	de0m1, de2m3, de1m0, de3m2,
-+	d0m1to2m3, d1m0to3m2,
-+};
-+
-+/* Appies to max1236, max1237 */
-+static const enum max1363_modes max1236_mode_list[] = {
-+	_s0, _s1, _s2, _s3,
-+	se0, se1, se2, se3,
-+	s0to1, s0to2, s0to3,
-+	d0m1, d2m3, d1m0, d3m2,
-+	de0m1, de2m3, de1m0, de3m2,
-+	d0m1to2m3, d1m0to3m2,
-+	s2to3,
-+};
-+
-+/* Applies to max1238, max1239 */
-+static const enum max1363_modes max1238_mode_list[] = {
-+	_s0, _s1, _s2, _s3, _s4, _s5, _s6, _s7, _s8, _s9, _s10, _s11,
-+	se0, se1, se2, se3, se4, se5, se6, se7, se8, se9, se10, se11,
-+	s0to1, s0to2, s0to3, s0to4, s0to5, s0to6,
-+	s0to7, s0to8, s0to9, s0to10, s0to11,
-+	d0m1, d2m3, d4m5, d6m7, d8m9, d10m11,
-+	d1m0, d3m2, d5m4, d7m6, d9m8, d11m10,
-+	de0m1, de2m3, de4m5, de6m7, de8m9, de10m11,
-+	de1m0, de3m2, de5m4, de7m6, de9m8, de11m10,
-+	d0m1to2m3, d0m1to4m5, d0m1to6m7, d0m1to8m9, d0m1to10m11,
-+	d1m0to3m2, d1m0to5m4, d1m0to7m6, d1m0to9m8, d1m0to11m10,
-+	s6to7, s6to8, s6to9, s6to10, s6to11,
-+	s6m7to8m9, s6m7to10m11, s7m6to9m8, s7m6to11m10,
-+};
-+
-+
-+enum { max1361,
-+       max1362,
-+       max1363,
-+       max1364,
-+       max1136,
-+       max1137,
-+       max1138,
-+       max1139,
-+       max1236,
-+       max1237,
-+       max1238,
-+       max1239,
-+};
-+
-+/* max1363 and max1368 tested - rest from data sheet */
-+static const struct max1363_chip_info max1363_chip_info_tbl[] = {
-+	{
-+		.name = "max1361",
-+		.num_inputs = 4,
-+		.monitor_mode = 1,
-+		.mode_list = max1363_mode_list,
-+		.num_modes = ARRAY_SIZE(max1363_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1362",
-+		.num_inputs = 4,
-+		.monitor_mode = 1,
-+		.mode_list = max1363_mode_list,
-+		.num_modes = ARRAY_SIZE(max1363_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1363",
-+		.num_inputs = 4,
-+		.monitor_mode = 1,
-+		.mode_list = max1363_mode_list,
-+		.num_modes = ARRAY_SIZE(max1363_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1364",
-+		.num_inputs = 4,
-+		.monitor_mode = 1,
-+		.mode_list = max1363_mode_list,
-+		.num_modes = ARRAY_SIZE(max1363_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1136",
-+		.num_inputs = 4,
-+		.int_vref_mv = 4096,
-+		.mode_list = max1236_mode_list,
-+		.num_modes = ARRAY_SIZE(max1236_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1137",
-+		.num_inputs = 4,
-+		.int_vref_mv = 2048,
-+		.mode_list = max1236_mode_list,
-+		.num_modes = ARRAY_SIZE(max1236_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1138",
-+		.num_inputs = 12,
-+		.int_vref_mv = 4096,
-+		.mode_list = max1238_mode_list,
-+		.num_modes = ARRAY_SIZE(max1238_mode_list),
-+		.default_mode = s0to11,
-+	}, {
-+		.name = "max1139",
-+		.num_inputs = 12,
-+		.int_vref_mv = 2048,
-+		.mode_list = max1238_mode_list,
-+		.num_modes = ARRAY_SIZE(max1238_mode_list),
-+		.default_mode = s0to11,
-+	}, {
-+		.name = "max1236",
-+		.num_inputs = 4,
-+		.int_vref_mv = 4096,
-+		.mode_list = max1236_mode_list,
-+		.num_modes = ARRAY_SIZE(max1236_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1237",
-+		.num_inputs = 4,
-+		.int_vref_mv = 2048,
-+		.mode_list = max1236_mode_list,
-+		.num_modes = ARRAY_SIZE(max1236_mode_list),
-+		.default_mode = s0to3,
-+	}, {
-+		.name = "max1238",
-+		.num_inputs = 12,
-+		.int_vref_mv = 4096,
-+		.mode_list = max1238_mode_list,
-+		.num_modes = ARRAY_SIZE(max1238_mode_list),
-+		.default_mode = s0to11,
-+	}, {
-+		.name = "max1239",
-+		.num_inputs = 12,
-+		.int_vref_mv = 2048,
-+		.mode_list = max1238_mode_list,
-+		.num_modes = ARRAY_SIZE(max1238_mode_list),
-+		.default_mode = s0to11,
-+	},
-+};
-+
-+static int max1363_write_basic_config(struct i2c_client *client,
-+				      unsigned char d1,
-+				      unsigned char d2)
-+{
-+	int ret;
-+	u8 *tx_buf = kmalloc(2 , GFP_KERNEL);
-+	if (!tx_buf)
-+		return -ENOMEM;
-+	tx_buf[0] = d1;
-+	tx_buf[1] = d2;
-+
-+	ret = i2c_master_send(client, tx_buf, 2);
-+	kfree(tx_buf);
-+	return (ret > 0) ? 0 : ret;
-+}
-+
-+static int max1363_set_scan_mode(struct max1363_state *st)
-+{
-+	st->configbyte &= ~(MAX1363_CHANNEL_SEL_MASK
-+			    | MAX1363_SCAN_MASK
-+			    | MAX1363_SE_DE_MASK);
-+	st->configbyte |= st->current_mode->conf;
-+
-+	return max1363_write_basic_config(st->client,
-+					  st->setupbyte,
-+					  st->configbyte);
-+}
-+
-+static int max1363_initial_setup(struct max1363_state *st)
-+{
-+	st->setupbyte = MAX1363_SETUP_AIN3_IS_AIN3_REF_IS_VDD
-+		| MAX1363_SETUP_POWER_UP_INT_REF
-+		| MAX1363_SETUP_INT_CLOCK
-+		| MAX1363_SETUP_UNIPOLAR
-+		| MAX1363_SETUP_NORESET;
-+
-+	/* Set scan mode writes the config anyway so wait until then*/
-+	st->setupbyte = MAX1363_SETUP_BYTE(st->setupbyte);
-+	st->current_mode = &max1363_mode_table[st->chip_info->default_mode];
-+	st->configbyte = MAX1363_CONFIG_BYTE(st->configbyte);
-+
-+	return max1363_set_scan_mode(st);
-+}
-+
-+static ssize_t max1363_show_av_scan_modes(struct device *dev,
-+					  struct device_attribute *attr,
-+					  char *buf)
-+{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct max1363_state *st = dev_info->dev_data;
-+	int i, len = 0;
-+
-+	for (i = 0; i < st->chip_info->num_modes; i++)
-+		len += sprintf(buf + len, "%s ",
-+			       max1363_mode_table[st->chip_info
-+						  ->mode_list[i]].name);
-+	len += sprintf(buf + len, "\n");
-+
-+	return len;
-+}
-+
-+
-+/* The dev here is the sysfs related one, not the underlying i2c one */
-+static ssize_t max1363_scan_direct(struct device *dev,
-+				   struct device_attribute *attr,
-+				   char *buf)
-+{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct max1363_state *st = dev_info->dev_data;
-+	int len = 0, ret, i;
-+	struct i2c_client *client = st->client;
-+	char *rxbuf;
-+
-+	if (st->current_mode->numvals == 0)
-+		return 0;
-+	rxbuf = kmalloc(st->current_mode->numvals*2, GFP_KERNEL);
-+	if (rxbuf == NULL)
-+		return -ENOMEM;
-+
-+	/* Interpretation depends on whether these are signed or not!*/
-+	/* Assume not for now */
-+	ret = i2c_master_recv(client, rxbuf, st->current_mode->numvals*2);
-+
++	ret = iio_get_new_idr_val(&iio_ring_access_idr);
 +	if (ret < 0)
-+		return ret;
-+	for (i = 0; i < st->current_mode->numvals; i++)
-+		len += sprintf(buf+len, "%d ",
-+			       ((int)(rxbuf[i*2+0]&0x0F) << 8)
-+			       + ((int)(rxbuf[i*2+1])));
-+	kfree(rxbuf);
-+	len += sprintf(buf + len, "\n");
-+
-+	return len;
-+}
-+
-+static ssize_t max1363_scan(struct device *dev,
-+			    struct device_attribute *attr,
-+			    char *buf)
-+{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	int ret;
-+
-+	mutex_lock(&dev_info->mlock);
-+	if (dev_info->currentmode == INDIO_RING_TRIGGERED)
-+		ret = max1363_scan_from_ring(dev, attr, buf);
++		goto error_device_put;
 +	else
-+		ret = max1363_scan_direct(dev, attr, buf);
-+	mutex_unlock(&dev_info->mlock);
++		buf->access_id = ret;
++	dev_set_name(&buf->access_dev, "ring_access%d", buf->access_id);
++	ret = device_add(&buf->access_dev);
++	if (ret < 0) {
++		printk(KERN_ERR "failed to add the ring access dev\n");
++		goto error_free_idr;
++	}
++
++	cdev_init(&buf->access_handler.chrdev, &iio_ring_fileops);
++	buf->access_handler.chrdev.owner = owner;
++
++	ret = cdev_add(&buf->access_handler.chrdev, buf->access_dev.devt, 1);
++	if (ret) {
++		printk(KERN_ERR "failed to allocate ring access chrdev\n");
++		goto error_device_unregister;
++	}
++	return 0;
++error_device_unregister:
++	device_unregister(&buf->access_dev);
++error_free_idr:
++	iio_free_idr_val(&iio_ring_access_idr, buf->access_id);
++error_device_put:
++	put_device(&buf->access_dev);
 +
 +	return ret;
 +}
 +
-+/* Cannot query the device, so use local copy of state */
-+static ssize_t max1363_show_scan_mode(struct device *dev,
-+				      struct device_attribute *attr,
-+				      char *buf)
++static void __iio_free_ring_buffer_access_chrdev(struct iio_ring_buffer *buf)
 +{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct max1363_state *st = dev_info->dev_data;
-+
-+	return sprintf(buf, "%s\n", st->current_mode->name);
++	iio_free_idr_val(&iio_ring_access_idr, buf->access_id);
++	device_unregister(&buf->access_dev);
 +}
 +
-+static const struct max1363_mode
-+*__max1363_find_mode_in_ci(const struct max1363_chip_info *info,
-+				  const char *buf)
++void iio_ring_buffer_init(struct iio_ring_buffer *ring,
++			  struct iio_dev *dev_info)
 +{
-+	int i;
-+	for (i = 0; i <  info->num_modes; i++)
-+		if (strcmp(max1363_mode_table[info->mode_list[i]].name, buf)
-+		    == 0)
-+			return &max1363_mode_table[info->mode_list[i]];
-+	return NULL;
++	if (ring->access.mark_param_change)
++		ring->access.mark_param_change(ring);
++	ring->indio_dev = dev_info;
++	ring->ev_int.private = ring;
++	ring->access_handler.private = ring;
 +}
++EXPORT_SYMBOL(iio_ring_buffer_init);
 +
-+static ssize_t max1363_store_scan_mode(struct device *dev,
-+				       struct device_attribute *attr,
-+				       const char *buf,
-+				       size_t len)
++int iio_ring_buffer_register(struct iio_ring_buffer *ring)
 +{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct max1363_state *st = dev_info->dev_data;
-+	const struct max1363_mode *new_mode;
 +	int ret;
++	ret = iio_get_new_idr_val(&iio_ring_idr);
++	if (ret < 0)
++		goto error_ret;
++	else
++		ring->id = ret;
++
++	dev_set_name(&ring->dev, "ring_buffer%d", ring->id);
++	ret = device_add(&ring->dev);
++	if (ret)
++		goto error_free_id;
++
++	ret = __iio_request_ring_buffer_event_chrdev(ring,
++						     0,
++						     ring->owner,
++						     &ring->dev);
++	if (ret)
++		goto error_remove_device;
++
++	ret = __iio_request_ring_buffer_access_chrdev(ring,
++						      0,
++						      ring->owner);
++
++	if (ret)
++		goto error_free_ring_buffer_event_chrdev;
++
++	return ret;
++error_free_ring_buffer_event_chrdev:
++	__iio_free_ring_buffer_event_chrdev(ring);
++error_remove_device:
++	device_del(&ring->dev);
++error_free_id:
++	iio_free_idr_val(&iio_ring_idr, ring->id);
++error_ret:
++	return ret;
++}
++EXPORT_SYMBOL(iio_ring_buffer_register);
++
++void iio_ring_buffer_unregister(struct iio_ring_buffer *ring)
++{
++	__iio_free_ring_buffer_access_chrdev(ring);
++	__iio_free_ring_buffer_event_chrdev(ring);
++	device_del(&ring->dev);
++	iio_free_idr_val(&iio_ring_idr, ring->id);
++}
++EXPORT_SYMBOL(iio_ring_buffer_unregister);
++
++ssize_t iio_read_ring_length(struct device *dev,
++			     struct device_attribute *attr,
++			     char *buf)
++{
++	int len = 0;
++	struct iio_ring_buffer *ring = dev_get_drvdata(dev);
++
++	if (ring->access.get_length)
++		len = sprintf(buf, "%d\n",
++			      ring->access.get_length(ring));
++
++	return len;
++}
++EXPORT_SYMBOL(iio_read_ring_length);
++
++ ssize_t iio_write_ring_length(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf,
++			       size_t len)
++{
++	int ret;
++	ulong val;
++	struct iio_ring_buffer *ring = dev_get_drvdata(dev);
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret)
++		return ret;
++
++	if (ring->access.get_length)
++		if (val == ring->access.get_length(ring))
++			return len;
++
++	if (ring->access.set_length) {
++		ring->access.set_length(ring, val);
++		if (ring->access.mark_param_change)
++			ring->access.mark_param_change(ring);
++	}
++
++	return len;
++}
++EXPORT_SYMBOL(iio_write_ring_length);
++
++ssize_t iio_read_ring_bps(struct device *dev,
++			  struct device_attribute *attr,
++			  char *buf)
++{
++	int len = 0;
++	struct iio_ring_buffer *ring = dev_get_drvdata(dev);
++
++	if (ring->access.get_bpd)
++		len = sprintf(buf, "%d\n",
++			      ring->access.get_bpd(ring));
++
++	return len;
++}
++EXPORT_SYMBOL(iio_read_ring_bps);
++
++ssize_t iio_store_ring_enable(struct device *dev,
++			      struct device_attribute *attr,
++			      const char *buf,
++			      size_t len)
++{
++	int ret;
++	bool requested_state, current_state;
++	int previous_mode;
++	struct iio_ring_buffer *ring = dev_get_drvdata(dev);
++	struct iio_dev *dev_info = ring->indio_dev;
 +
 +	mutex_lock(&dev_info->mlock);
-+	new_mode = NULL;
-+	/* Avoid state changes if a ring buffer is enabled */
-+	if (!iio_ring_enabled(dev_info)) {
-+		new_mode
-+			= __max1363_find_mode_in_ci(st->chip_info, buf);
-+		if (!new_mode) {
++	previous_mode = dev_info->currentmode;
++	requested_state = !(buf[0] == '0');
++	current_state = !!(previous_mode & INDIO_ALL_RING_MODES);
++	if (current_state == requested_state) {
++		printk(KERN_INFO "iio-ring, current state requested again\n");
++		goto done;
++	}
++	if (requested_state) {
++		if (ring->preenable) {
++			ret = ring->preenable(dev_info);
++			if (ret) {
++				printk(KERN_ERR
++				       "Buffer not started:"
++				       "ring preenable failed\n");
++				goto error_ret;
++			}
++		}
++		if (ring->access.request_update) {
++			ret = ring->access.request_update(ring);
++			if (ret) {
++				printk(KERN_INFO
++				       "Buffer not started:"
++				       "ring parameter update failed\n");
++				goto error_ret;
++			}
++		}
++		if (ring->access.mark_in_use)
++			ring->access.mark_in_use(ring);
++		/* Definitely possible for devices to support both of these.*/
++		if (dev_info->modes & INDIO_RING_TRIGGERED) {
++			if (!dev_info->trig) {
++				printk(KERN_INFO
++				       "Buffer not started: no trigger\n");
++				ret = -EINVAL;
++				if (ring->access.unmark_in_use)
++					ring->access.unmark_in_use(ring);
++				goto error_ret;
++			}
++			dev_info->currentmode = INDIO_RING_TRIGGERED;
++		} else if (dev_info->modes & INDIO_RING_HARDWARE_BUFFER)
++			dev_info->currentmode = INDIO_RING_HARDWARE_BUFFER;
++		else { /* should never be reached */
 +			ret = -EINVAL;
 +			goto error_ret;
 +		}
-+		st->current_mode = new_mode;
-+		ret =  max1363_set_scan_mode(st);
-+		if (ret)
-+			goto error_ret;
-+	} else {
-+		ret = -EBUSY;
-+		goto error_ret;
-+	}
-+	mutex_unlock(&dev_info->mlock);
 +
++		if (ring->postenable) {
++
++			ret = ring->postenable(dev_info);
++			if (ret) {
++				printk(KERN_INFO
++				       "Buffer not started:"
++				       "postenable failed\n");
++				if (ring->access.unmark_in_use)
++					ring->access.unmark_in_use(ring);
++				dev_info->currentmode = previous_mode;
++				if (ring->postdisable)
++					ring->postdisable(dev_info);
++				goto error_ret;
++			}
++		}
++	} else {
++		if (ring->predisable) {
++			ret = ring->predisable(dev_info);
++			if (ret)
++				goto error_ret;
++		}
++		if (ring->access.unmark_in_use)
++			ring->access.unmark_in_use(ring);
++		dev_info->currentmode = INDIO_DIRECT_MODE;
++		if (ring->postdisable) {
++			ret = ring->postdisable(dev_info);
++			if (ret)
++				goto error_ret;
++		}
++	}
++done:
++	mutex_unlock(&dev_info->mlock);
 +	return len;
 +
 +error_ret:
 +	mutex_unlock(&dev_info->mlock);
-+
 +	return ret;
 +}
-+
-+IIO_DEV_ATTR_AVAIL_SCAN_MODES(max1363_show_av_scan_modes);
-+IIO_DEV_ATTR_SCAN_MODE(S_IRUGO | S_IWUSR,
-+		       max1363_show_scan_mode,
-+		       max1363_store_scan_mode);
-+
-+IIO_DEV_ATTR_SCAN(max1363_scan);
-+
-+static ssize_t max1363_show_name(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
++EXPORT_SYMBOL(iio_store_ring_enable);
++ssize_t iio_show_ring_enable(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
 +{
-+	struct iio_dev *dev_info = dev_get_drvdata(dev);
-+	struct max1363_state *st = dev_info->dev_data;
-+	return sprintf(buf, "%s\n", st->chip_info->name);
++	struct iio_ring_buffer *ring = dev_get_drvdata(dev);
++	return sprintf(buf, "%d\n", !!(ring->indio_dev->currentmode
++				       & INDIO_ALL_RING_MODES));
 +}
++EXPORT_SYMBOL(iio_show_ring_enable);
 +
-+IIO_DEVICE_ATTR(name, S_IRUGO, max1363_show_name, NULL, 0);
-+
-+/*name export */
-+
-+static struct attribute *max1363_attributes[] = {
-+	&iio_dev_attr_available_scan_modes.dev_attr.attr,
-+	&iio_dev_attr_scan_mode.dev_attr.attr,
-+	&iio_dev_attr_scan.dev_attr.attr,
-+	&iio_dev_attr_name.dev_attr.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group max1363_attribute_group = {
-+	.attrs = max1363_attributes,
-+};
-+
-+static int __devinit max1363_probe(struct i2c_client *client,
-+				   const struct i2c_device_id *id)
++ssize_t iio_scan_el_show(struct device *dev,
++			 struct device_attribute *attr,
++			 char *buf)
 +{
-+	int ret, i;
-+	struct max1363_state *st = kzalloc(sizeof(*st), GFP_KERNEL);
-+	if (st == NULL) {
-+		ret = -ENOMEM;
++	int ret;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct iio_scan_el *this_el = to_iio_scan_el(attr);
++
++	ret = iio_scan_mask_query(indio_dev, this_el->number);
++	if (ret < 0)
++		return ret;
++	return sprintf(buf, "%d\n", ret);
++}
++EXPORT_SYMBOL(iio_scan_el_show);
++
++ssize_t iio_scan_el_store(struct device *dev,
++			  struct device_attribute *attr,
++			  const char *buf,
++			  size_t len)
++{
++	int ret = 0;
++	bool state;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct iio_scan_el *this_el = to_iio_scan_el(attr);
++
++	state = !(buf[0] == '0');
++	mutex_lock(&indio_dev->mlock);
++	if (indio_dev->currentmode == INDIO_RING_TRIGGERED) {
++		ret = -EBUSY;
 +		goto error_ret;
 +	}
-+
-+	/* this is only used for device removal purposes */
-+	i2c_set_clientdata(client, st);
-+
-+	atomic_set(&st->protect_ring, 0);
-+
-+	/* Find the chip model specific data */
-+	for (i = 0; i < ARRAY_SIZE(max1363_chip_info_tbl); i++)
-+		if (!strcmp(max1363_chip_info_tbl[i].name, id->name)) {
-+			st->chip_info = &max1363_chip_info_tbl[i];
-+			break;
-+		};
-+	/* Unsupported chip */
-+	if (!st->chip_info) {
-+		dev_err(&client->dev, "%s is not supported\n", id->name);
-+		ret = -ENODEV;
-+		goto error_free_st;
-+	}
-+	st->reg = regulator_get(&client->dev, "vcc");
-+	if (!IS_ERR(st->reg)) {
-+		ret = regulator_enable(st->reg);
++	ret = iio_scan_mask_query(indio_dev, this_el->number);
++	if (ret < 0)
++		goto error_ret;
++	if (!state && ret) {
++		ret = iio_scan_mask_clear(indio_dev, this_el->number);
 +		if (ret)
-+			goto error_put_reg;
++			goto error_ret;
++		indio_dev->scan_count--;
++	} else if (state && !ret) {
++		ret = iio_scan_mask_set(indio_dev, this_el->number);
++		if (ret)
++			goto error_ret;
++		indio_dev->scan_count++;
 +	}
-+	st->client = client;
-+
-+	st->indio_dev = iio_allocate_device();
-+	if (st->indio_dev == NULL) {
-+		ret = -ENOMEM;
-+		goto error_disable_reg;
-+	}
-+
-+	/* Estabilish that the iio_dev is a child of the i2c device */
-+	st->indio_dev->dev.parent = &client->dev;
-+	st->indio_dev->attrs = &max1363_attribute_group;
-+	st->indio_dev->dev_data = (void *)(st);
-+	st->indio_dev->driver_module = THIS_MODULE;
-+	st->indio_dev->modes = INDIO_DIRECT_MODE;
-+
-+	ret = max1363_initial_setup(st);
-+	if (ret)
-+		goto error_free_device;
-+
-+	ret = max1363_register_ring_funcs_and_init(st->indio_dev);
-+	if (ret)
-+		goto error_free_device;
-+
-+	ret = iio_device_register(st->indio_dev);
-+	if (ret)
-+		goto error_cleanup_ring;
-+	ret = max1363_initialize_ring(st->indio_dev->ring);
-+	if (ret)
-+		goto error_dev_unreg;
-+	return 0;
-+error_dev_unreg:
-+	iio_device_unregister(st->indio_dev);
-+error_cleanup_ring:
-+	max1363_ring_cleanup(st->indio_dev);
-+error_free_device:
-+	iio_free_device(st->indio_dev);
-+error_disable_reg:
-+	if (!IS_ERR(st->reg))
-+		regulator_disable(st->reg);
-+error_put_reg:
-+	if (!IS_ERR(st->reg))
-+		regulator_put(st->reg);
-+error_free_st:
-+	kfree(st);
-+
++	if (this_el->set_state)
++		ret = this_el->set_state(this_el, indio_dev, state);
 +error_ret:
-+	return ret;
-+}
++	mutex_unlock(&indio_dev->mlock);
 +
-+static int max1363_remove(struct i2c_client *client)
++	return ret ? ret : len;
++
++}
++EXPORT_SYMBOL(iio_scan_el_store);
++
++ssize_t iio_scan_el_ts_show(struct device *dev,
++			    struct device_attribute *attr,
++			    char *buf)
 +{
-+	struct max1363_state *st = i2c_get_clientdata(client);
-+	struct iio_dev *indio_dev = st->indio_dev;
-+	max1363_uninitialize_ring(indio_dev->ring);
-+	iio_device_unregister(indio_dev);
-+	max1363_ring_cleanup(indio_dev);
-+	iio_free_device(indio_dev);
-+	if (!IS_ERR(st->reg)) {
-+		regulator_disable(st->reg);
-+		regulator_put(st->reg);
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	return sprintf(buf, "%d\n", indio_dev->scan_timestamp);
++}
++EXPORT_SYMBOL(iio_scan_el_ts_show);
++
++ssize_t iio_scan_el_ts_store(struct device *dev,
++			     struct device_attribute *attr,
++			     const char *buf,
++			     size_t len)
++{
++	int ret = 0;
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	bool state;
++	state = !(buf[0] == '0');
++	mutex_lock(&indio_dev->mlock);
++	if (indio_dev->currentmode == INDIO_RING_TRIGGERED) {
++		ret = -EBUSY;
++		goto error_ret;
 +	}
-+	kfree(st);
++	indio_dev->scan_timestamp = state;
++error_ret:
++	mutex_unlock(&indio_dev->mlock);
 +
-+	return 0;
++	return ret ? ret : len;
 +}
++EXPORT_SYMBOL(iio_scan_el_ts_store);
 +
-+static const struct i2c_device_id max1363_id[] = {
-+	{ "max1361", max1361 },
-+	{ "max1362", max1362 },
-+	{ "max1363", max1363 },
-+	{ "max1364", max1364 },
-+	{ "max1136", max1136 },
-+	{ "max1137", max1137 },
-+	{ "max1138", max1138 },
-+	{ "max1139", max1139 },
-+	{ "max1236", max1236 },
-+	{ "max1237", max1237 },
-+	{ "max1238", max1238 },
-+	{ "max1239", max1239 },
-+	{}
+diff --git a/include/linux/iio/ring_generic.h b/include/linux/iio/ring_generic.h
+new file mode 100644
+index 0000000..46e0c4b
+--- /dev/null
++++ b/include/linux/iio/ring_generic.h
+@@ -0,0 +1,283 @@
++/* The industrial I/O core - generic ring buffer interfaces.
++ *
++ * Copyright (c) 2008 Jonathan Cameron
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published by
++ * the Free Software Foundation.
++ */
++
++#ifndef _IIO_RING_GENERIC_H_
++#define _IIO_RING_GENERIC_H_
++#include <linux/iio/iio.h>
++
++struct iio_handler;
++struct iio_ring_buffer;
++struct iio_dev;
++
++/**
++ * iio_push_ring_event() - ring buffer specific push to event chrdev
++ * @ring_buf:		ring buffer that is the event source
++ * @event_code:		event indentification code
++ * @timestamp:		time of event
++ **/
++int iio_push_ring_event(struct iio_ring_buffer *ring_buf,
++			int event_code,
++			s64 timestamp);
++/**
++ * iio_push_or_escallate_ring_event() -	escallate or add as appropriate
++ *
++ * Typical usecase is to escallate a 50% ring full to 75% full if noone has yet
++ * read the first event. Clearly the 50% full is no longer of interest in
++ * typical use case.
++ **/
++int iio_push_or_escallate_ring_event(struct iio_ring_buffer *ring_buf,
++				     int event_code,
++				     s64 timestamp);
++
++/**
++ * struct iio_ring_access_funcs - access functions for ring buffers.
++ * @create:		perform allocation
++ * @init:		get ring buffer ready for use
++ * @_exit:		reverse steps in init
++ * @_free:		deallocate ring buffer
++ * @mark_in_use:	reference counting, typically to prevent module removal
++ * @unmark_in_use:	reduce reference count when no longer using ring buffer
++ * @store_to:		actually store stuff to the ring buffer
++ * @read_last:		get the last element stored
++ * @rip_lots:		try to get a specified number of elements (must exist)
++ * @mark_param_change:	notify ring that some relevant parameter has changed
++ *			Often this means the underlying storage may need to
++ *			change.
++ * @request_update:	if a parameter change has been marked, update underlying
++ *			storage.
++ * @get_bpd:		get current bytes per datum
++ * @set_bpd:		set number of bytes per datum
++ * @get_length:		get number of datums in ring
++ * @set_length:		set number of datums in ring
++ * @is_enabled:		query if ring is currently being used
++ * @enable:		enable the ring
++ *
++ * The purpose of this structure is to make the ring buffer element
++ * modular as event for a given driver, different usecases may require
++ * different ring designs (space efficiency vs speed for example.
++ *
++ * It is worth noting that a given ring implementation may only support a small
++ * proportion of these functions.  The core code 'should' cope fine with any of
++ * them not existing.
++ **/
++struct iio_ring_access_funcs {
++	void (*mark_in_use)(struct iio_ring_buffer *ring);
++	void (*unmark_in_use)(struct iio_ring_buffer *ring);
++
++	int (*store_to)(struct iio_ring_buffer *ring, u8 *data, s64 timestamp);
++	int (*read_last)(struct iio_ring_buffer *ring, u8 *data);
++	int (*rip_lots)(struct iio_ring_buffer *ring,
++			size_t count,
++			u8 **data,
++			int *dead_offset);
++
++	int (*mark_param_change)(struct iio_ring_buffer *ring);
++	int (*request_update)(struct iio_ring_buffer *ring);
++
++	int (*get_bpd)(struct iio_ring_buffer *ring);
++	int (*set_bpd)(struct iio_ring_buffer *ring, size_t bpd);
++	int (*get_length)(struct iio_ring_buffer *ring);
++	int (*set_length)(struct iio_ring_buffer *ring, int length);
++
++	int (*is_enabled)(struct iio_ring_buffer *ring);
++	int (*enable)(struct iio_ring_buffer *ring);
 +};
 +
-+MODULE_DEVICE_TABLE(i2c, max1363_id);
++/**
++ * struct iio_ring_buffer - general ring buffer structure
++ * @length:		[DEVICE]number of datums in ring
++ * @bpd:		[DEVICE]size of individual datum including timestamp
++ * @loopcount:		[INTERN]number of times the ring has looped
++ * @access_minor_name:	[INTERN]store of name of the access chrdev minor number
++ *			sysfs attribute
++ * @access_handler:	[INTERN]chrdev access handling
++ * @event_minor_name:	[INTERN]store of name of the event chrdev minor number
++ *			sysfs attribute
++ * @ev_int:		[INTERN]chrdev interface for the event chrdev
++ * @shared_ev_pointer:	[INTERN]the shared event pointer to allow escalation of
++ *			events
++ * @ring_access:	[DRIVER]ring access functions associated with the
++ *			implementation.
++ * @ring_prenable:	[DRIVER] function to run prior to marking ring enabled
++ * @ring_postenable:	[DRIVER] function to run after marking ring enabled
++ * @ring_predisable:	[DRIVER] function to run prior to marking ring disabled
++ * @ring_postdisable:	[DRIVER] function to run after marking ring disabled
++  **/
++struct iio_ring_buffer {
++	struct device dev;
++	struct device access_dev;
++	struct iio_dev *indio_dev;
++	struct module *owner;
++	int				id;
++	int				access_id;
++	int				length;
++	int				bpd;
++	int				loopcount;
++	struct iio_handler		access_handler;
++	struct iio_event_interface	ev_int;
++	struct iio_shared_ev_pointer	shared_ev_pointer;
++	struct iio_ring_access_funcs	access;
++	int				(*preenable)(struct iio_dev *);
++	int				(*postenable)(struct iio_dev *);
++	int				(*predisable)(struct iio_dev *);
++	int				(*postdisable)(struct iio_dev *);
 +
-+static struct i2c_driver max1363_driver = {
-+	.driver = {
-+		.name = "max1363",
-+	},
-+	.probe = max1363_probe,
-+	.remove = max1363_remove,
-+	.id_table = max1363_id,
++};
++void iio_ring_buffer_init(struct iio_ring_buffer *ring,
++			  struct iio_dev *dev_info);
++
++/**
++ * __iio_init_ring_buffer() - initialize common elements of ring buffers.
++ **/
++static inline void __iio_init_ring_buffer(struct iio_ring_buffer *ring,
++				 int bytes_per_datum, int length)
++{
++	ring->bpd = bytes_per_datum;
++	ring->length = length;
++	ring->loopcount = 0;
++	ring->shared_ev_pointer.ev_p = 0;
++	ring->shared_ev_pointer.lock =
++		__SPIN_LOCK_UNLOCKED(ring->shared_ev_pointer->loc);
++}
++
++/**
++ * struct iio_scan_el - an individual element of a scan
++ * @dev_attr:		control attribute (if directly controllable)
++ * @number:		unique identifier of element (used for bit mask)
++ * @bit_count:		number of bits in scan element
++ * @label:		useful data for the scan el (often reg address)
++ * @set_state:		for some devices datardy signals are generated
++ *			for any enabled lines.  This allows unwanted lines
++ *			to be disabled and hence not get in the way.
++ **/
++struct iio_scan_el {
++	struct device_attribute		dev_attr;
++	unsigned int			number;
++	int				bit_count;
++	unsigned int			label;
++
++	int (*set_state)(struct iio_scan_el *scanel,
++			 struct iio_dev *dev_info,
++			 bool state);
 +};
 +
-+static __init int max1363_init(void)
++#define to_iio_scan_el(_dev_attr)				\
++	container_of(_dev_attr, struct iio_scan_el, dev_attr);
++
++/**
++ * iio_scan_el_store() - sysfs scan element selection interface.
++ *
++ * A generic function used to enable various scan elements.  In some
++ * devices explicit read commands for each channel mean this is merely
++ * a software switch.  In others this must actively disable the channel.
++ * Complexities occur when this interacts with data ready type triggers
++ * which may not reset unless every channel that is enabled is explicitly
++ * read.
++ **/
++ssize_t iio_scan_el_store(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t len);
++/**
++ * iio_scal_el_show() -	sysfs interface to query whether a scan element is
++ *			is enabled or not.
++ **/
++ssize_t iio_scan_el_show(struct device *dev, struct device_attribute *attr,
++			 char *buf);
++/**
++ * IIO_SCAN_EL: - declare and initialize a scan element without control func
++ * @_name:	identifying name. Resulting struct is iio_scan_el_##_name,
++ *		sysfs element, scan_en_##_name.
++ * @_number:	unique id number for the scan element.
++ * @_bits:	number of bits in the scan element result (used in mixed bit
++ *		length devices).
++ * @_label:	indentification variable used by drivers.  Often a reg address.
++ **/
++#define IIO_SCAN_EL(_name, _number, _bits, _label)			\
++	struct iio_scan_el iio_scan_el_##_name = {			\
++		.dev_attr = __ATTR(scan_en_##_name,			\
++				   S_IRUGO | S_IWUSR,			\
++				   iio_scan_el_show,			\
++				   iio_scan_el_store),			\
++		.mask = (1 << _number),					\
++		.bit_count = _bits,					\
++		.label = _label,					\
++	}
++
++ssize_t iio_scan_el_ts_store(struct device *dev, struct device_attribute *attr,
++			     const char *buf, size_t len);
++
++ssize_t iio_scan_el_ts_show(struct device *dev, struct device_attribute *attr,
++			    char *buf);
++/**
++ * IIO_SCAN_EL_C: - declare and initialize a scan element with a control func
++ *
++ * @_controlfunc: function used to notify hardware of whether state changes
++ **/
++#define IIO_SCAN_EL_C(_name, _number, _bits, _label, _controlfunc)	\
++	struct iio_scan_el iio_scan_el_##_name = {			\
++		.dev_attr = __ATTR(scan_en_##_name,			\
++				   S_IRUGO | S_IWUSR,			\
++				   iio_scan_el_show,			\
++				   iio_scan_el_store),			\
++		.number =  _number,					\
++		.bit_count = _bits,					\
++		.label = _label,					\
++		.set_state = _controlfunc,				\
++	}
++/**
++ * IIO_SCAN_EL_TIMESTAMP: - declare a special scan element for timestamps
++ *
++ * Odd one out. Handled slightly differently from other scan elements.
++ **/
++#define IIO_SCAN_EL_TIMESTAMP					\
++	struct iio_scan_el iio_scan_el_timestamp = {		\
++		.dev_attr = __ATTR(scan_en_timestamp,		\
++				   S_IRUGO | S_IWUSR,		\
++				   iio_scan_el_ts_show,		\
++				   iio_scan_el_ts_store),	\
++	}
++
++static inline void iio_put_ring_buffer(struct iio_ring_buffer *ring)
 +{
-+	return i2c_add_driver(&max1363_driver);
-+}
++	put_device(&ring->dev);
++};
 +
-+static __exit void max1363_exit(void)
-+{
-+	i2c_del_driver(&max1363_driver);
-+}
++#define to_iio_ring_buffer(d)			\
++	container_of(d, struct iio_ring_buffer, dev)
++#define access_dev_to_iio_ring_buffer(d)			\
++	container_of(d, struct iio_ring_buffer, access_dev)
++int iio_ring_buffer_register(struct iio_ring_buffer *ring);
++void iio_ring_buffer_unregister(struct iio_ring_buffer *ring);
 +
-+MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
-+MODULE_DESCRIPTION("Maxim 1363 ADC");
-+MODULE_LICENSE("GPL v2");
++ssize_t iio_read_ring_length(struct device *dev,
++			     struct device_attribute *attr,
++			     char *buf);
++ssize_t iio_write_ring_length(struct device *dev,
++			      struct device_attribute *attr,
++			      const char *buf,
++			      size_t len);
++ssize_t iio_read_ring_bps(struct device *dev,
++			  struct device_attribute *attr,
++			  char *buf);
++ssize_t iio_store_ring_enable(struct device *dev,
++			      struct device_attribute *attr,
++			      const char *buf,
++			      size_t len);
++ssize_t iio_show_ring_enable(struct device *dev,
++			     struct device_attribute *attr,
++			     char *buf);
++#define IIO_RING_LENGTH_ATTR DEVICE_ATTR(length, S_IRUGO | S_IWUSR,	\
++					 iio_read_ring_length,		\
++					 iio_write_ring_length)
++#define IIO_RING_BPS_ATTR DEVICE_ATTR(bps, S_IRUGO | S_IWUSR,	\
++				      iio_read_ring_bps, NULL)
++#define IIO_RING_ENABLE_ATTR DEVICE_ATTR(ring_enable, S_IRUGO | S_IWUSR, \
++					 iio_show_ring_enable,		\
++					 iio_store_ring_enable)
 +
-+module_init(max1363_init);
-+module_exit(max1363_exit);
++#endif /* _IIO_RING_GENERIC_H_ */
 -- 
 1.6.2
 
