@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZGBBK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZGBBS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbZGBBK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Jul 2009 21:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZGBBKS
+	id S1753932AbZGBBS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Jul 2009 21:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZGBBSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Jul 2009 21:10:18 -0400
-Received: from mga02.intel.com ([134.134.136.20]:54438 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbZGBBKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Jul 2009 21:10:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,329,1243839600"; 
-   d="scan'208";a="529544703"
-Subject: Re: +
-	memory-hotplug-alloc-page-from-other-node-in-memory-online.patch added to
-	-mm tree
-From: yakui <yakui.zhao@intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Li, Shaohua" <shaohua.li@intel.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mel@csn.ul.ie" <mel@csn.ul.ie>
-In-Reply-To: <alpine.DEB.1.10.0907011317030.9522@gentwo.org>
-References: <200906291949.n5TJnuov028806@imap1.linux-foundation.org>
-	 <alpine.DEB.1.10.0906291804340.21956@gentwo.org>
-	 <20090630004735.GA21254@sli10-desk.sh.intel.com>
-	 <20090701025558.GA28524@sli10-desk.sh.intel.com>
-	 <1246419543.18688.14.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0907011317030.9522@gentwo.org>
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 09:11:13 +0800
-Message-Id: <1246497073.18688.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Jul 2009 21:18:21 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:36777 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZGBBSU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Jul 2009 21:18:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=UtgHSr2jWB1+T55PBJP278Xc8EEXr+WMigM16wqkU5Zh10fXB8iEuUQzH91CMcbWdG
+         UtdpPd0fBeKJ4yH0yVP2Za5zGQRbtAq2NUEyvqLWA3cPUZh9s9BR0DUMuGQecLb6M8IA
+         eisgzilKn5dF6nsJc9rt+kRT+KO4wx/N3NzX4=
+MIME-Version: 1.0
+In-Reply-To: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
+Date: Wed, 1 Jul 2009 18:18:23 -0700
+X-Google-Sender-Auth: e67f6bb88e9503cf
+Message-ID: <e9c3a7c20907011818q6151b7e1gf6d89f52296362f2@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel AHB 
+	DMA Controller
+From: Dan Williams <dan.j.williams@intel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: maciej.sosnowski@intel.com, avictor.za@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, patrice.vilchez@atmel.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-02 at 01:22 +0800, Christoph Lameter wrote:
-> On Wed, 1 Jul 2009, yakui wrote:
-> 
-> > If we can't allocate memory from other node when there is no memory on
-> > this node, we will have to do something like the bootmem allocator.
-> > After the memory page is added to the system memory, we will have to
-> > free the memory space used by the memory allocator. At the same time we
-> > will have to assure that the hot-plugged memory exists physically.
-> 
-> The bootmem allocator must stick around it seems. Its more like a node
-> bootstrap allocator then.
-> 
-> Maybe we can generalize that. The bootstrap allocator may only need to be
-> able boot one node (which simplifies design). During system bringup only
-> the boot node is brought up.
-> 
-> Then the other nodes are hotplugged later all in turn using the bootstrap
-> allocator for their node setup?
-Your idea looks fragrant. But it seems that it is difficult to realize.
-In the boot phase the bootmem allocator is initialized. And after the
-page buddy mechanism is enabled, the memory space used by bootmem
-allocator will be freed.
+On Fri, Jun 26, 2009 at 3:42 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
+> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+> at91sam9rl chip. It will be used on other products in the future.
+>
+> This first release covers only the memory-to-memory tranfer type. This is the
+> only tranfer type supported by this chip.  On other products, it will be used
+> also for peripheral DMA transfer (slave API support to come).
+>
+> I used dmatest client without problem in different configurations to test it.
+>
+> Full documentation for this controller can be found in the SAM9RL datasheet:
+> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
+>
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+[..]
 
-If we also do the similar thing for the hotplugged node, how and when to
-free the memory space used by the bootstrap allocator? It seems that we
-will have to wait before all the memory sections are onlined for this
-hotplugged node. And before all the memory sections are onlined, the
-bootstrap allocator and buddy page allocator will co-exist.
+A quick review comment:
 
-thanks.
-> 
-> There are a couple of things where one would want to spread out memory
-> across the nodes at boot time. How would node hotplugging handle that
-> situation?
+> +/**
+> + * atc_desc_get - get a unsused descriptor from free_list
+> + * @atchan: channel we want a new descriptor for
+> + */
+> +static struct at_desc *atc_desc_get(struct at_dma_chan *atchan)
+> +{
+> +       struct at_desc *desc, *_desc;
+> +       struct at_desc *ret = NULL;
+> +       unsigned int i = 0;
+> +       LIST_HEAD(tmp_list);
+> +
+> +       spin_lock_bh(&atchan->lock);
+> +       list_for_each_entry_safe(desc, _desc, &atchan->free_list, desc_node) {
+> +               i++;
+> +               if (async_tx_test_ack(&desc->txd)) {
+> +                       list_del(&desc->desc_node);
+> +                       ret = desc;
+> +                       break;
+> +               }
+> +               dev_dbg(chan2dev(&atchan->chan_common),
+> +                               "desc %p not ACKed\n", desc);
+> +       }
+> +       spin_unlock_bh(&atchan->lock);
+> +       dev_vdbg(chan2dev(&atchan->chan_common),
+> +               "scanned %u descriptors on freelist\n", i);
+> +
+> +       /* no more descriptor available in initial pool : create some more */
+> +       if (!ret) {
+> +               for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
+> +                       desc = atc_alloc_descriptor(&atchan->chan_common,
+> +                                                   GFP_KERNEL);
 
+This cannot be GFP_KERNEL as ->prep_dma_memcpy may be called from an
+atomic context.  Given that this should only be done in emergency
+situations this allocation should probably happen one descriptor at a
+time, if it must happen at all.  My recommendation is that if you find
+that the driver runs out of descriptors on a regular basis increase
+INIT_NR_DESCS_PER_CHANNEL  and only operate with the descriptors
+allocated from atc_alloc_chan_resources().  As it stands this allows
+the descriptor list to grow without bounds.
+
+Regards,
+Dan
