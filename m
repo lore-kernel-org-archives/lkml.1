@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZGBNs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZGBNtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZGBNs5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 09:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZGBNsn
+	id S1755032AbZGBNtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 09:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZGBNso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 09:48:43 -0400
-Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53243 "EHLO
+	Thu, 2 Jul 2009 09:48:44 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:53255 "EHLO
 	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754180AbZGBNsn (ORCPT
+	with ESMTP id S1754762AbZGBNsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 2 Jul 2009 09:48:43 -0400
 X-Cam-AntiVirus: no malware found
@@ -18,169 +18,397 @@ To: linux-kernel@vger.kernel.org
 Cc: chrisv@cyberswitching.com, daniel@caiaq.de, iws@ovro.caltech.edu,
        dmitry.torokhov@gmail.com, hmh@hmh.eng.br, david-b@pacbell.net,
        khali@linux-fr.org, Jonathan Cameron <jic23@cam.ac.uk>
-Subject: [PATCH 00/14] IIO V4. Industrial I/O Subsystem
-Date: Thu,  2 Jul 2009 13:47:30 +0000
-Message-Id: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
+Subject: [PATCH 03/14] IIO: tsl2561 digital light sensor core support
+Date: Thu,  2 Jul 2009 13:47:33 +0000
+Message-Id: <1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
 X-Mailer: git-send-email 1.6.2
+In-Reply-To: <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+ <1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Major changes since last version:
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-* Allocation of most internal structures now handled in a much
-  simpler fashion - very close to how input does it.
-* Moved to cdev based dynamic allocation of all chrdevs.
-* Cleaner and more modular code.
-* Now works fine with udev
-* Patch series reordered in order to aid review by adding devices
-  as soon as there is sufficient support.
-* Software ring buffer code thoroughly reworked.  Now much
-  more reliable.now reasonably happy with the core design so all
-  comments on the contents of the first patch especially welcome.
-* Numerous minor fixes, clarifications etc
+This is a pretty minimalist example of an IIO driver.
 
-As is readily apparent from the patches, some are still very much
-at the proof of concept stage.  The periodic rtc trigger is a tempoary
-stop gap until a more suitable timer interface is available. The gpio
-trigger is very minimal. Finally the documenation clearly still needs
-considerable refinement.
+---
+Unlike the existing light sensor driver tsl2550 all
+conversion to units is left to userspace.
+This is similar to the isl29003 driver.
 
-Thanks to everyone who has helped with comments on the previous versions
-and to the users for bug reports etc.
-
-All comments on any aspect so design or indeed specific elements of the
-patches would be most welcome! More formal reviews also welcome if
-anyone has time.  Suggestions relating to moving towards merging this
-also particuarly welcome.
-
-For now I'll still be reworking this patch set in response to reviews,
-so I wouldn't suggest using the tree as the basis of development just yet.
-
-git tree available at: (based on Linus' tree as of about 2 days ago)
-
-git://git.kernel.org/pub/scm/linux/kernel/git/jic23/iio_v4.git
-http://www.kernel.org/pub/scm/linux/kernel/git/jic23/iio_v4.git
-
-Updated white paper describing the subsystem to appear in the
-next few days.
-
-Note that I'm still not all that convinced by the name.
-Other suggestions would be most welcome.
-
-Jonathan Cameron (14):
-  IIO: core support for device registration and management
-  IIO: max1363 ADC driver
-  IIO: tsl2561 digital light sensor core support
-  IIO: lis3l02dq accelerometer core support
-  IIO: kxsd9 accelerometer minimal support
-  IIO: Add generic ring buffer support to the IIO core
-  IIO: VTI sca3000 series accelerometer driver (spi)
-  IIO: Trigger support added to core.
-  IIO: Ring buffer: Initial pass at rarely locked ring buffer
-  IIO: lis3l02dq ring buffer and data ready trigger support
-  IIO: max1363 add software ring buffer support using ring_sw
-  IIO: Periodic timer based trigger
-  IIO: Proof of concept gpio trigger
-  IIO: Initial documentation
-
- Documentation/iio/device.txt                |   49 +
- Documentation/iio/iio_utils.h               |  163 +++
- Documentation/iio/lis3l02dqbuffersimple.c   |  172 +++
- Documentation/iio/overview.txt              |   62 ++
- Documentation/iio/ring.txt                  |   62 ++
- Documentation/iio/trigger.txt               |   38 +
- Documentation/iio/userspace.txt             |   60 ++
- drivers/Kconfig                             |    2 +
- drivers/Makefile                            |    1 +
- drivers/iio/Kconfig                         |   42 +
- drivers/iio/Makefile                        |   16 +
- drivers/iio/accel/Kconfig                   |   28 +
- drivers/iio/accel/Makefile                  |   11 +
- drivers/iio/accel/kxsd9.c                   |  395 +++++++
- drivers/iio/accel/lis3l02dq.h               |  232 ++++
- drivers/iio/accel/lis3l02dq_core.c          |  925 ++++++++++++++++
- drivers/iio/accel/lis3l02dq_ring.c          |  599 +++++++++++
- drivers/iio/accel/sca3000.h                 |  273 +++++
- drivers/iio/accel/sca3000_core.c            | 1509 +++++++++++++++++++++++++++
- drivers/iio/accel/sca3000_ring.c            |  334 ++++++
- drivers/iio/adc/Kconfig                     |   14 +
- drivers/iio/adc/Makefile                    |    8 +
- drivers/iio/adc/max1363.h                   |  269 +++++
- drivers/iio/adc/max1363_core.c              |  622 +++++++++++
- drivers/iio/adc/max1363_ring.c              |  235 +++++
- drivers/iio/industrialio-core.c             |  847 +++++++++++++++
- drivers/iio/industrialio-ring.c             |  566 ++++++++++
- drivers/iio/industrialio-trigger.c          |  400 +++++++
- drivers/iio/light/Kconfig                   |   14 +
- drivers/iio/light/Makefile                  |    5 +
- drivers/iio/light/tsl2561.c                 |  275 +++++
- drivers/iio/ring_sw.c                       |  431 ++++++++
- drivers/iio/trigger/Kconfig                 |   18 +
- drivers/iio/trigger/Makefile                |    5 +
- drivers/iio/trigger/iio-trig-gpio.c         |  203 ++++
- drivers/iio/trigger/iio-trig-periodic-rtc.c |  230 ++++
- include/linux/iio/accel.h                   |  167 +++
- include/linux/iio/adc.h                     |   13 +
- include/linux/iio/chrdev.h                  |  118 +++
- include/linux/iio/gpio_trigger.h            |    6 +
- include/linux/iio/iio.h                     |  411 ++++++++
- include/linux/iio/light.h                   |   12 +
- include/linux/iio/prtc_trigger.h            |    7 +
- include/linux/iio/ring_generic.h            |  283 +++++
- include/linux/iio/ring_hw.h                 |   22 +
- include/linux/iio/ring_sw.h                 |  189 ++++
- include/linux/iio/sca3000.h                 |   37 +
- include/linux/iio/sysfs.h                   |  293 ++++++
- include/linux/iio/trigger.h                 |  148 +++
- include/linux/iio/trigger_consumer.h        |   45 +
- 50 files changed, 10866 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/iio/device.txt
- create mode 100644 Documentation/iio/iio_utils.h
- create mode 100644 Documentation/iio/lis3l02dqbuffersimple.c
- create mode 100644 Documentation/iio/overview.txt
- create mode 100644 Documentation/iio/ring.txt
- create mode 100644 Documentation/iio/trigger.txt
- create mode 100644 Documentation/iio/userspace.txt
- create mode 100644 drivers/iio/Kconfig
- create mode 100644 drivers/iio/Makefile
- create mode 100644 drivers/iio/accel/Kconfig
- create mode 100644 drivers/iio/accel/Makefile
- create mode 100644 drivers/iio/accel/kxsd9.c
- create mode 100644 drivers/iio/accel/lis3l02dq.h
- create mode 100644 drivers/iio/accel/lis3l02dq_core.c
- create mode 100644 drivers/iio/accel/lis3l02dq_ring.c
- create mode 100644 drivers/iio/accel/sca3000.h
- create mode 100644 drivers/iio/accel/sca3000_core.c
- create mode 100644 drivers/iio/accel/sca3000_ring.c
- create mode 100644 drivers/iio/adc/Kconfig
- create mode 100644 drivers/iio/adc/Makefile
- create mode 100644 drivers/iio/adc/max1363.h
- create mode 100644 drivers/iio/adc/max1363_core.c
- create mode 100644 drivers/iio/adc/max1363_ring.c
- create mode 100644 drivers/iio/industrialio-core.c
- create mode 100644 drivers/iio/industrialio-ring.c
- create mode 100644 drivers/iio/industrialio-trigger.c
+IIO may in future provide a home for such light sensor
+drivers.
+---
+ drivers/iio/Kconfig         |    3 +-
+ drivers/iio/Makefile        |    3 +-
+ drivers/iio/light/Kconfig   |   14 ++
+ drivers/iio/light/Makefile  |    5 +
+ drivers/iio/light/tsl2561.c |  275 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/iio/light.h   |   12 ++
+ 6 files changed, 310 insertions(+), 2 deletions(-)
  create mode 100644 drivers/iio/light/Kconfig
  create mode 100644 drivers/iio/light/Makefile
  create mode 100644 drivers/iio/light/tsl2561.c
- create mode 100644 drivers/iio/ring_sw.c
- create mode 100644 drivers/iio/trigger/Kconfig
- create mode 100644 drivers/iio/trigger/Makefile
- create mode 100644 drivers/iio/trigger/iio-trig-gpio.c
- create mode 100644 drivers/iio/trigger/iio-trig-periodic-rtc.c
- create mode 100644 include/linux/iio/accel.h
- create mode 100644 include/linux/iio/adc.h
- create mode 100644 include/linux/iio/chrdev.h
- create mode 100644 include/linux/iio/gpio_trigger.h
- create mode 100644 include/linux/iio/iio.h
  create mode 100644 include/linux/iio/light.h
- create mode 100644 include/linux/iio/prtc_trigger.h
- create mode 100644 include/linux/iio/ring_generic.h
- create mode 100644 include/linux/iio/ring_hw.h
- create mode 100644 include/linux/iio/ring_sw.h
- create mode 100644 include/linux/iio/sca3000.h
- create mode 100644 include/linux/iio/sysfs.h
- create mode 100644 include/linux/iio/trigger.h
- create mode 100644 include/linux/iio/trigger_consumer.h
+
+diff --git a/drivers/iio/Kconfig b/drivers/iio/Kconfig
+index ca54ab3..d37859d 100644
+--- a/drivers/iio/Kconfig
++++ b/drivers/iio/Kconfig
+@@ -10,4 +10,5 @@ menuconfig IIO
+ 	  number of different physical interfaces (i2c, spi etc). See
+ 	  Documentation/industrialio for more information.
+ 
+-source drivers/iio/adc/Kconfig
+\ No newline at end of file
++source drivers/iio/adc/Kconfig
++source drivers/iio/light/Kconfig
+diff --git a/drivers/iio/Makefile b/drivers/iio/Makefile
+index 9d11f64..4e78f98 100644
+--- a/drivers/iio/Makefile
++++ b/drivers/iio/Makefile
+@@ -5,4 +5,5 @@
+ obj-$(CONFIG_IIO) += industrialio.o
+ industrialio-y := industrialio-core.o
+ 
+-obj-y += adc/
+\ No newline at end of file
++obj-y += adc/
++obj-y += light/
+\ No newline at end of file
+diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
+new file mode 100644
+index 0000000..620e249
+--- /dev/null
++++ b/drivers/iio/light/Kconfig
+@@ -0,0 +1,14 @@
++#
++# Light sensors
++#
++comment "Light sensors"
++	depends on IIO
++
++config TSL2561
++       tristate "TAOS TSL2561 light-to-digital convertor"
++       depends on IIO
++       help
++	Say yes bere to build support for the TAOS light to digital
++	convertor.  This chip has two light sensors. One is broadband
++	including infrared whilst the other measures only infrared.
++	Provides direct access via sysfs.
+diff --git a/drivers/iio/light/Makefile b/drivers/iio/light/Makefile
+new file mode 100644
+index 0000000..ccff151
+--- /dev/null
++++ b/drivers/iio/light/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for industrial I/O Light sensors
++#
++
++obj-$(CONFIG_TSL2561)   += tsl2561.o
+diff --git a/drivers/iio/light/tsl2561.c b/drivers/iio/light/tsl2561.c
+new file mode 100644
+index 0000000..db1443c
+--- /dev/null
++++ b/drivers/iio/light/tsl2561.c
+@@ -0,0 +1,275 @@
++/*
++ *  tsl2561.c - Linux kernel modules for light to digital convertor
++ *
++ *  Copyright (C) 2008-2009 Jonathan Cameron <jic23@cam.ac.uk>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ *  Some portions based upon the tsl2550 driver.
++ *
++ *  This driver could probably be adapted easily to talk to the tsl2560 (smbus)
++ *
++ *  Needs some work to support the events this can generate.
++ *  Todo: Implement interrupt handling.  Currently a hardware bug means
++ *  this isn't available on my test board.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/i2c.h>
++#include <linux/iio/iio.h>
++#include <linux/iio/sysfs.h>
++#include <linux/iio/light.h>
++
++#define TSL2561_CONTROL_REGISTER 0x00
++#define TSL2561_TIMING_REGISTER 0x01
++#define TSL2561_THRESHLOW_LOW_REGISTER 0x02
++#define TSL2561_THRESHLOW_HIGH_REGISTER 0x03
++#define TSL2561_THRESHHIGH_LOW_REGISTER 0x04
++#define TSL2561_THRESHHIGH_HIGH_REGISTER 0x05
++#define TSL2561_INT_CONTROL_REGISTER 0x06
++
++#define TSL2561_INT_REG_INT_OFF 0x00
++#define TSL2561_INT_REG_INT_LEVEL 0x08
++#define TSL2561_INT_REG_INT_SMBUS 0x10
++#define TSL2561_INT_REG_INT_TEST 0x18
++
++#define TSL2561_ID_REGISTER 0x0A
++
++#define TSL2561_DATA_0_LOW 0x0C
++#define TSL2561_DATA_1_LOW 0x0E
++
++/* Control Register Values */
++#define TSL2561_CONT_REG_PWR_ON 0x03
++#define TSL2561_CONT_REG_PWR_OFF 0x00
++
++/**
++ * struct tsl2561_state - device specific state
++ * @indio_dev:		the industrialio I/O info structure
++ * @client:		i2c client
++ * @command_buf:	single command buffer used for all operations
++ * @command_buf_lock:	ensure unique access to command_buf
++ */
++struct tsl2561_state {
++	struct iio_dev		*indio_dev;
++	struct i2c_client	*client;
++	struct tsl2561_command	*command_buf;
++	struct mutex		command_buf_lock;
++};
++
++/**
++ * struct tsl2561_command - command byte for smbus
++ * @address:	register address
++ * @block:	is this a block r/w
++ * @word:	is this a word r/w
++ * @clear:	set to 1 to clear pending interrupt
++ * @cmd:	select the command register - always 1.
++ */
++struct tsl2561_command {
++	unsigned int address:4;
++	unsigned int block:1;
++	unsigned int word:1;
++	unsigned int clear:1;
++	unsigned int cmd:1;
++};
++
++static inline void tsl2561_init_command_buf(struct tsl2561_command *buf)
++{
++	buf->address = 0;
++	buf->block = 0;
++	buf->word = 0;
++	buf->clear = 0;
++	buf->cmd = 1;
++}
++
++static ssize_t tsl2561_read_val(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	int ret = 0, data;
++	ssize_t len = 0;
++	struct iio_dev_attr *this_attr = to_iio_dev_attr(attr);
++	struct iio_dev *indio_dev = dev_get_drvdata(dev);
++	struct tsl2561_state *st = indio_dev->dev_data;
++
++	mutex_lock(&st->command_buf_lock);
++	st->command_buf->cmd = 1;
++	st->command_buf->word = 1;
++	st->command_buf->address = this_attr->address;
++
++	data = i2c_smbus_read_word_data(st->client, *(char *)(st->command_buf));
++	if (data < 0) {
++		ret = data;
++		goto error_ret;
++	}
++	len = sprintf(buf, "%u\n", data);
++
++error_ret:
++	mutex_unlock(&st->command_buf_lock);
++
++	return ret ? ret : len;
++}
++
++static IIO_DEV_ATTR_LIGHT_INFRARED(0, tsl2561_read_val, TSL2561_DATA_0_LOW);
++static IIO_DEV_ATTR_LIGHT_BROAD(0, tsl2561_read_val, TSL2561_DATA_1_LOW);
++
++static struct attribute *tsl2561_attributes[] = {
++	&iio_dev_attr_light_infrared0.dev_attr.attr,
++	&iio_dev_attr_light_broadspectrum0.dev_attr.attr,
++	NULL,
++};
++
++static const struct attribute_group tsl2561_attribute_group = {
++	.attrs = tsl2561_attributes,
++};
++
++static int tsl2561_initialize(struct tsl2561_state *st)
++{
++	int err;
++
++	mutex_lock(&st->command_buf_lock);
++	st->command_buf->word = 0;
++	st->command_buf->block = 0;
++	st->command_buf->address = TSL2561_CONTROL_REGISTER;
++	err = i2c_smbus_write_byte_data(st->client, *(char *)(st->command_buf),
++					TSL2561_CONT_REG_PWR_ON);
++	if (err)
++		goto error_ret;
++
++	st->command_buf->address = TSL2561_INT_CONTROL_REGISTER;
++	err = i2c_smbus_write_byte_data(st->client, *(char *)(st->command_buf),
++					TSL2561_INT_REG_INT_TEST);
++
++error_ret:
++	mutex_unlock(&st->command_buf_lock);
++
++	return err;
++}
++
++static int tsl2561_powerdown(struct i2c_client *client)
++{
++	int err;
++	struct tsl2561_command Command = {
++		.cmd =  1,
++		.clear = 0,
++		.word = 0,
++		.block = 0,
++		.address = TSL2561_CONTROL_REGISTER,
++	};
++
++	err = i2c_smbus_write_byte_data(client, *(char *)(&Command),
++					TSL2561_CONT_REG_PWR_OFF);
++	return (err < 0) ? err : 0;
++}
++static int __devinit tsl2561_probe(struct i2c_client *client,
++				   const struct i2c_device_id *id)
++{
++	int ret = 0;
++	struct tsl2561_state *st = kzalloc(sizeof(*st), GFP_KERNEL);
++
++	if (st == NULL) {
++		ret = -ENOMEM;
++		goto error_ret;
++	}
++	i2c_set_clientdata(client, st);
++	st->client = client;
++	mutex_init(&st->command_buf_lock);
++
++	st->command_buf = kmalloc(sizeof(*st->command_buf), GFP_KERNEL);
++	if (st->command_buf == NULL) {
++		ret = -ENOMEM;
++		goto error_free_state;
++	}
++	tsl2561_init_command_buf(st->command_buf);
++
++	st->indio_dev = iio_allocate_device();
++	if (st->indio_dev == NULL) {
++		ret = -ENOMEM;
++		goto error_free_command_buf;
++	}
++	st->indio_dev->attrs = &tsl2561_attribute_group;
++	st->indio_dev->dev.parent = &client->dev;
++	st->indio_dev->dev_data = (void *)(st);
++	st->indio_dev->driver_module = THIS_MODULE;
++	st->indio_dev->modes = INDIO_DIRECT_MODE;
++	ret = iio_device_register(st->indio_dev);
++	if (ret)
++		goto error_free_iiodev;
++
++	/* Intialize the chip */
++	ret = tsl2561_initialize(st);
++	if (ret)
++		goto error_unregister_iiodev;
++
++	return 0;
++error_unregister_iiodev:
++	iio_device_unregister(st->indio_dev);
++error_free_iiodev:
++	iio_free_device(st->indio_dev);
++error_free_command_buf:
++	kfree(st->command_buf);
++error_free_state:
++	kfree(st);
++error_ret:
++	return ret;
++
++}
++
++static int __devexit tsl2561_remove(struct i2c_client *client)
++{
++	struct tsl2561_state *st =  i2c_get_clientdata(client);
++
++	iio_device_unregister(st->indio_dev);
++	iio_free_device(st->indio_dev);
++	kfree(st);
++
++	return tsl2561_powerdown(client);
++}
++
++static unsigned short normal_i2c[] = { 0x29, 0x39, 0x49, I2C_CLIENT_END };
++
++I2C_CLIENT_INSMOD;
++
++static const struct i2c_device_id tsl2561_id[] = {
++	{ "tsl2561", 0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, tsl2561_id);
++
++
++static struct i2c_driver tsl2561_driver = {
++	.driver = {
++		.name = "tsl2561",
++	},
++	.probe = tsl2561_probe,
++	.remove = __devexit_p(tsl2561_remove),
++	.id_table  = tsl2561_id,
++};
++
++static __init int tsl2561_init(void)
++{
++	return i2c_add_driver(&tsl2561_driver);
++}
++module_init(tsl2561_init);
++
++static __exit void tsl2561_exit(void)
++{
++	i2c_del_driver(&tsl2561_driver);
++}
++module_exit(tsl2561_exit);
++
++MODULE_AUTHOR("Jonathan Cameron <jic23@cam.ac.uk>");
++MODULE_DESCRIPTION("TSL2561 light sensor driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/iio/light.h b/include/linux/iio/light.h
+new file mode 100644
+index 0000000..60a8640
+--- /dev/null
++++ b/include/linux/iio/light.h
+@@ -0,0 +1,12 @@
++#include <linux/iio/sysfs.h>
++
++/* Light to digital sensor attributes */
++
++#define IIO_DEV_ATTR_LIGHT_INFRARED(_num, _show, _addr)			\
++	IIO_DEVICE_ATTR(light_infrared##_num, S_IRUGO, _show, NULL, _addr)
++
++#define IIO_DEV_ATTR_LIGHT_BROAD(_num, _show, _addr)			\
++	IIO_DEVICE_ATTR(light_broadspectrum##_num, S_IRUGO, _show, NULL, _addr)
++
++#define IIO_DEV_ATTR_LIGHT_VISIBLE(_num, _show, _addr)			\
++	IIO_DEVICE_ATTR(light_visible##_num, S_IRUGO, _show, NULL, _addr)
+-- 
+1.6.2
 
