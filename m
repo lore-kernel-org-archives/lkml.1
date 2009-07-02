@@ -1,72 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbZGBUzf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbZGBVNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118AbZGBUzf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 16:55:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZGBUz1
+	id S1755870AbZGBVNa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 17:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZGBVNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 16:55:27 -0400
-Received: from smtpauth01.csee.onr.siteprotect.com ([64.26.60.145]:41276 "EHLO
-	smtpauth01.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753509AbZGBUz0 (ORCPT
+	Thu, 2 Jul 2009 17:13:21 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43672 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753627AbZGBVNV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 16:55:26 -0400
-Date: Thu, 2 Jul 2009 17:07:02 -0400 (EDT)
-From: Vince Weaver <vince@deater.net>
-X-X-Sender: vince@pianoman.cluster.toy
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: [numbers] perfmon/pfmon overhead of 17%-94%
-In-Reply-To: <20090629210206.GB13125@elte.hu>
-Message-ID: <Pine.LNX.4.64.0907021702380.13747@pianoman.cluster.toy>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
- <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
- <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu>
- <20090627064404.GA19368@elte.hu> <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy>
- <20090629210206.GB13125@elte.hu>
+	Thu, 2 Jul 2009 17:13:21 -0400
+Message-ID: <4A4D2239.5000602@gmail.com>
+Date: Thu, 02 Jul 2009 23:10:17 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: David Howells <dhowells@redhat.com>, mingo@elte.hu,
+       akpm@linux-foundation.org, paulus@samba.org, arnd@arndb.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
+References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 02 Jul 2009 23:10:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds a écrit :
+> 
+> On Wed, 1 Jul 2009, David Howells wrote:
+>> +
+>> +#define ATOMIC64_INIT(i)	{ (i) }
+>> +#define atomic64_read(v)	((v)->counter)
+>> +#define atomic64_set(v, i)	(((v)->counter) = (i))
+> 
+> These seem to be buggy.
+> 
+> At least "atomic64_read()" needs to make sure to actually read it 
+> atomically - otherwise you'll do two 32-bit reads, and that just gets 
+> crap. Imagine if somebody is adding 1 to 0x00000000ffffffff, and then 
+> "atomic64_read()" reads it as two accesses in the wrong place, and gets 
+> either 0, or 0x00000001ffffffff, both of which are totally incorrect.
+> 
+> The case of 'atomic64_set()' is _slightly_ less clear, because I think we 
+> use it mostly for initializers, so atomicity is often not strictly 
+> required. But at least on x86, we do guarantee that it sets it atomically 
+> too.
+> 
+> Btw, Ingo: I looked at the x86-32 versions to be sure, and noticed a 
+> couple of buglets:
+> 
+>  - atomic64_xchg uses "atomic_read()". Sure, it happens to work, since 
+>    the "atomic_read()" is not type-safe, and gets a non-atomic 64-bit 
+>    read, but that looks really really bogus.
+> 
+>    It _should_ use __atomic64_read(), and the 64-bit versions should use a 
+>    different counter name ("counter64"?) or we should use an inline 
+>    function for atomic_read(), so that the type safety issue gets fixed.
+> 
+>  - atomic64_read() is being stupid with the whole loop thing. It _should_ 
+>    just do
+> 
+> 	static inline unsigned long long atomic64_read(atomic64_t *ptr)
+> 	{
+> 		unsigned long long old = __atomic64_read(ptr);
+> 		return cmpxchg8b(ptr, old, old);
+> 	}
+> 
+>    and that's it. No loop. cmpxchg8b() will return the right thing.
 
-sorry for the delay in responding, was away
+Using a fixed initial value (instead of __atomic64_read()) is even faster, 
+it apparently permits cpu to use an appropriate bus transaction.
 
-On Mon, 29 Jun 2009, Ingo Molnar wrote:
->
-> * Vince Weaver <vince@deater.net> wrote:
->
->>> If the 5 thousand cycles measurement overhead _still_ matters to
->>> you under such circumstances then by all means please submit the
->>> patches to improve it. Despite your claims this is totally
->>> fixable with the current perfcounters design, Peter outlined the
->>> steps of how to solve it, you can utilize ptrace if you want to.
->>
->> Is it really "totally" fixible?  I don't just mean getting the
->> overhead from ~3000 down to ~100, I mean down to zero.
->
-> The thing is, not even pfmon gets it down to zero:
->
->  pfmon -e INSTRUCTIONS_RETIRED --follow-fork --aggregate-results ~/million
->  1000001 INSTRUCTIONS_RETIRED
->
-> So ... do you take the hardliner purist view and consider it crap
-> due to that imprecision, or do you take the pragmatist view of also
-> considering the relative relevance of any imperfection? ;-)
+static inline unsigned long long atomic64_read(atomic64_t *ptr)
+{
+	unsigned long long old = 0LL ;
 
-as I said in a previous post, on most x86 chips the instructions_retired
-counter also includes any hardware interrupts that occur during the 
-process runtime.  So any clock interrupts, etc, show up as an extra 
-instruction.  So on the "million" benchmark, it's usually +/- 2 extra 
-instructions.
+	return cmpxchg8b(&ptr->counter, old, old);
+}
 
-It looks like support might be added to perfcounters to track these 
-hardware interrupt stats per-process, which would be great, as it's been 
-really hard to quantify that currently.
+I also rewrote cmpxchg8b() to not use %edi register but a generic "+m" constraint.
 
-In any case, it looks like the changes to make perf have lower overhead 
-have been merged, which makes me happy.  Thank you.
+static inline unsigned long long
+cmpxchg8b(unsigned long long *ptr, unsigned long long old, unsigned long long new)
+{
+        unsigned long low = new;
+        unsigned long high = new >> 32;
 
-Vince
+        asm volatile(
+                LOCK_PREFIX "cmpxchg8b %1\n"
+                     :  "+A" (old), "+m" (*ptr)
+                     :  "b" (low), "c" (high)
+                     );
+        return old;
+}
 
+
+
+I got a 4 x speedup on a dual quad core (Intel E5450) machine if all cpus try 
+to *read* the same atomic64 location.
+
+I tried various init value and got additional 5 % speedup chosing a
+value *most probably* different than actual atomic64 one,
+like (1LL << 32), with nice asm output...
+
+static inline unsigned long long atomic64_read(atomic64_t *ptr)
+{
+	unsigned long long old = (1LL << 32) ;
+
+	return cmpxchg8b(&ptr->counter, old, old);
+}
