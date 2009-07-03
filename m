@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZGCGpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZGCGqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbZGCGpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbZGCGp1
+	id S1754951AbZGCGqR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZGCGqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:45:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50806 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbZGCGp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:45:26 -0400
-Date: Fri, 3 Jul 2009 08:45:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: lennart@poettering.net, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703064518.GA30674@elte.hu>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
+	Fri, 3 Jul 2009 02:46:03 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:41458 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbZGCGqC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 02:46:02 -0400
+Date: Fri, 3 Jul 2009 15:45:56 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] video: sm501fb: Early initialization of mm_lock mutex.
+Message-ID: <20090703064555.GA8242@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Krzysztof Helt <krzysztof.h1@wp.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 537a1bf059fa312355696fa6db80726e655e7f17 (fbdev: add mutex for
+fb_mmap locking) introduces a ->mm_lock mutex for protecting smem
+assignments. Unfortunately in the case of sm501fb these happen quite
+early in the initialization code, well before the mutex_init() that takes
+place in register_framebuffer(), leading to:
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+------------[ cut here ]------------
+Badness at kernel/mutex.c:207
 
-> Lennart how does this fit your needs - this replaces the existing wait
-> active hack with a race free one and adds other events with a proper
-> infrastructure for them.
-> 
-> From: Alan Cox <alan@linux.intel.com>
-> 
-> This is needed and requested in various forms for ConsoleKit, screenblank
-> handling and the like so do the job with a single interface. Also build the
-> interface so that unlike VT_WAITACTIVE and friends it won't miss events.
-> 
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ---
-> 
->  drivers/char/vt.c       |    4 +
->  drivers/char/vt_ioctl.c |  181 ++++++++++++++++++++++++++++++++++-------------
->  include/linux/vt.h      |   14 ++++
->  include/linux/vt_kern.h |    3 +
->  kernel/power/console.c  |    4 +
->  5 files changed, 152 insertions(+), 54 deletions(-)
+Pid : 1, Comm:          swapper
+CPU : 0                 Not tainted  (2.6.31-rc1-00284-g529ba0d-dirty #2273)
 
-Just a side-note, please run new patches through 
-scripts/checkpatch.pl:
+PC is at __mutex_lock_slowpath+0x72/0x1bc
+PR is at __mutex_lock_slowpath+0x66/0x1bc
+...
 
-    total: 4 errors, 2 warnings, 0 checks, 294 lines checked
+matroxfb appears to have the same issue and has solved it with an early
+mutex_init(), so we do the same for sm501fb.
 
-all four errors it flagged should be fixed.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
 
-Even the two warnings about over-long lines show real problem areas 
-that could be improved:
+---
 
- - the copy_from_user() in vt_event_wait_ioctl() could be shortened 
-   if we didnt pass in an unsigned long (which is pointless anyway).
-   The cast to void __user * should be done in the ioctl 
-   demultiplexer vt_ioctl(), and the ioctl ugliness should not 
-   invade cleaner child functions such as vt_event_wait_ioctl().
+ drivers/video/sm501fb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
- - same for vt_event_wait_ioctl() - it passes in a type damaged by 
-   ioctl's limitations. Such type limitations and ioctl demuxing 
-   artifacts should be kept local to vt_ioctl().
-
-Thanks,
-
-	Ingo
+diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
+index 98f24f0..16d4f4c 100644
+--- a/drivers/video/sm501fb.c
++++ b/drivers/video/sm501fb.c
+@@ -1624,6 +1624,8 @@ static int __devinit sm501fb_start_one(struct sm501fb_info *info,
+ 	if (!fbi)
+ 		return 0;
+ 
++	mutex_init(&info->fb[head]->mm_lock);
++
+ 	ret = sm501fb_init_fb(info->fb[head], head, drvname);
+ 	if (ret) {
+ 		dev_err(info->dev, "cannot initialise fb %s\n", drvname);
