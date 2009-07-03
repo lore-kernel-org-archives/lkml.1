@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZGCGtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbZGCGwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbZGCGtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZGCGtJ
+	id S1754289AbZGCGwI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZGCGv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:49:09 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:39054 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZGCGtI (ORCPT
+	Fri, 3 Jul 2009 02:51:56 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40731 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbZGCGv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:49:08 -0400
-Subject: Re: [PATCH] ubifs: allow more than one volume to be mounted
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       linux-mtd@lists.infradead.org
-In-Reply-To: <1246547747-13366-1-git-send-email-daniel@caiaq.de>
-References: <1246547747-13366-1-git-send-email-daniel@caiaq.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 03 Jul 2009 09:48:44 +0300
-Message-Id: <1246603724.20721.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Jul 2009 06:48:45.0898 (UTC) FILETIME=[4FD28AA0:01C9FBAA]
-X-Nokia-AV: Clean
+	Fri, 3 Jul 2009 02:51:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=x2OkePg8cMJIzTTmFG9JRn4G6FTkvmD/WWODCgO8xO2UM6PPh6RC2DMGzWV+/85M0Y
+         ufKOAm9LN91dmz920SiN3Bw/VVyEQwyseNNwPWmNXmFHBABvRei19gCschURw1EvzX7G
+         5dS/ubvi6FO6XaTo8BNIFDHl3HDNcTYjtuZ14=
+MIME-Version: 1.0
+Date: Fri, 3 Jul 2009 12:14:41 +0530
+Message-ID: <abe8a1fd0907022344k2eb9874ejdbda3209a7cadf40@mail.gmail.com>
+Subject: Inline assembly queries [2]
+From: kernel mailz <kernelmailz@googlemail.com>
+To: linuxppc-dev@ozlabs.org, gcc-help@gcc.gnu.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-02 at 17:15 +0200, Daniel Mack wrote:
-> UBIFS uses a bdi device per volume, but does not care to hand out unique
-> names to each of them. This causes an error when trying to mount more
-> than one volumes.
+Hi,
 
-I've simplified your patch a little and pushed to ubifs-2.6.git. Also
-amended the MAINTAINERS file:
+Thanks for responding to my previous mail. A few more queries
 
-http://git.infradead.org/ubifs-2.6.git?a=commit;h=72093a661c0bd06d4843ac0ef8b909645483031b
-http://git.infradead.org/ubifs-2.6.git?a=commit;h=42feebfc9af4ab505cacb0ea20bef35957ef2676
+a. What is the use of adding format specifiers in inline assembly
+like
+asm volatile("ld%U1%X1 %0,%1":"=r"(ret) : "m"(*ptr) : "memory");
 
-I'll send this fix to Linus in few days.
+b. using m or Z  with a memory address. I tried replacing m/Z but no change
+Is there some guideline ?
+gcc documentation says Z is obsolete. Is m/Z replaceable ?
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
-
+- Manish
