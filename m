@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZGCIbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZGCIc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZGCIbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZGCIaT
+	id S1755020AbZGCIc5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZGCIcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:30:19 -0400
-Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:29900 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752982AbZGCIaQ (ORCPT
+	Fri, 3 Jul 2009 04:32:42 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:10580
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752095AbZGCIcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:30:16 -0400
-X-SpamScore: -18
-X-BigFish: VPS-18(z21eWz4015Lzz1202hzzz32i61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KM76A4-01-IVX-01
+	Fri, 3 Jul 2009 04:32:41 -0400
+X-SpamScore: 2
+X-BigFish: VPS2(zzzz1202hzz5e7biz32i63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KM76EA-01-IZQ-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [git pull] AMD IOMMU fixes for 2.6.31-rc1
-Date: Fri, 3 Jul 2009 10:29:11 +0200
-Message-ID: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
+CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>,
+       stable@kernel.org
+Subject: [PATCH 1/2] dma-debug: fix off-by-one error in overlap function
+Date: Fri, 3 Jul 2009 10:32:03 +0200
+Message-ID: <1246609924-31217-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 03 Jul 2009 08:29:18.0525 (UTC) FILETIME=[5B8C5ED0:01C9FBB8]
+In-Reply-To: <1246609924-31217-1-git-send-email-joerg.roedel@amd.com>
+References: <1246609924-31217-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 03 Jul 2009 08:32:08.0269 (UTC) FILETIME=[C0B93FD0:01C9FBB8]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+This patch fixes a bug in the overlap function which returned true if
+one region ends exactly before the second region begins. This is no
+overlap but the function returned true in that case.
 
-The following changes since commit 7c5371c403abb29f01bc6cff6c5096abdf2dc524:
-  Yinghai Lu (1):
-        x86: add boundary check for 32bit res before expand e820 resource to alignment
+Cc: stable@kernel.org
+Reported-by: Andrew Randrianasulu <randrik@mail.ru>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ lib/dma-debug.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
-
-Joerg Roedel (2):
-      amd-iommu: handle alias entries correctly in init code
-      amd-iommu: set evt_buf_size correctly
-
- arch/x86/kernel/amd_iommu_init.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
-
-These two patches fix an uncorrect device table initialization issue and a
-divide-by-zero error on an event log interrupt. Please pull.
-
-Thanks,
-
-	Joerg
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 3b93129..a9b6b5c 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -862,7 +862,7 @@ static inline bool overlap(void *addr, u64 size, void *start, void *end)
+ 
+ 	return ((addr >= start && addr < end) ||
+ 		(addr2 >= start && addr2 < end) ||
+-		((addr < start) && (addr2 >= end)));
++		((addr < start) && (addr2 > end)));
+ }
+ 
+ static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
+-- 
+1.6.3.3
 
 
