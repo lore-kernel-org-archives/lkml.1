@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZGCIF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZGCIGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbZGCIF6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZGCIFn
+	id S1754728AbZGCIGn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZGCIGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:05:43 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63398 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZGCIFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:05:41 -0400
-Message-ID: <4A4DBBC2.8010805@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 16:05:22 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 3 Jul 2009 04:06:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42337 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752209AbZGCIGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:06:19 -0400
+Date: Fri, 3 Jul 2009 10:05:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mikael Pettersson <mikpe@it.uu.se>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, alex.shi@intel.com,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] x86: add boundary check for 32bit res before expand
+	e820 resource to alignment -v2
+Message-ID: <20090703080547.GC13505@elte.hu>
+References: <4A4A81C9.9070008@zytor.com> <4A4A88A2.7010509@kernel.org> <alpine.LFD.2.01.0906301456170.3605@localhost.localdomain> <4A4A921F.7080100@kernel.org> <alpine.LFD.2.01.0906301559390.3605@localhost.localdomain> <alpine.LFD.2.01.0906301603280.3605@localhost.localdomain> <4A4A9C2F.80808@kernel.org> <4A4A9D8E.5080500@zytor.com> <4A4BB9C2.8020304@kernel.org> <4A4CF830.6000206@kernel.org>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] cgroup: Fix indent for /proc/cgroups
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4CF830.6000206@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, /proc/cgroups outputs is fairly ugly as following,
-#subsys_name    hierarchy       num_cgroups     enabled
-cpuset  0       1       1
-debug   0       1       1
-ns      0       1       1
 
-indent it in a good-looking way.
-#subsys_name    hierarchy       num_cgroups     enabled
-cpuset          0               1               1
-debug           0               1               1
-ns              0               1               1
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
+> +#define MAX_RESOURCE_SIZE ((resource_size_t)-1)
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- kernel/cgroup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> +		end = round_up(start, ram_alignment(start)) - 1;
+> +		if (end > MAX_RESOURCE_SIZE)
+> +			end = MAX_RESOURCE_SIZE;
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 3737a68..99fc160 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2963,7 +2963,7 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
- 	mutex_lock(&cgroup_mutex);
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
--		seq_printf(m, "%s\t%lu\t%d\t%d\n",
-+		seq_printf(m, "%s\t\t%lu\t\t%d\t\t%d\n",
- 			   ss->name, ss->root->subsys_bits,
- 			   ss->root->number_of_cgroups, !ss->disabled);
- 	}
--- 
-1.5.4.rc3
+As Andrew noted it, this should probably have a comment along the 
+lines of:
 
+		/*
+		 * Clip entries that go beyond our maximum resource 
+		 * awareness limit to the max. If we accepted them
+		 * blindly we'd get random rounding artifacts and a 
+		 * possibly messed up resource tree and boot 
+		 * failures:
+		 */
+		if (end > MAX_RESOURCE_SIZE)
+			end = MAX_RESOURCE_SIZE;
+
+	Ingo
