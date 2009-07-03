@@ -1,133 +1,425 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZGCOAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751268AbZGCOAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZGCOAh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 10:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbZGCN7w
+	id S1751268AbZGCOAy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZGCOAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:59:52 -0400
+	Fri, 3 Jul 2009 10:00:00 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:62728 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756688AbZGCN7u (ORCPT
+	with ESMTP id S1757425AbZGCN76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:59:50 -0400
+	Fri, 3 Jul 2009 09:59:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=bLozVPZgkJJqERsKQ7w1dqx+deyCq7gM0vYx06pPKlr0ENyGi0sGUMEU+i6jhuScBL
-         /L51JbPXUkWRx9WA4SogG39XYDk8QOLKxzhtqfOroBZK03etRwI783I3NaK7g9hOrfWh
-         x2FhzkDQUZ6QUFRzqyezHUCQ5j7H4chlw96mc=
+        b=EBnwOXDyah7ET00PYWWERtZgyH/9BNvjhNv9djTJnAOFKVa+pWaRmzSS5lN5w/qDLx
+         1h7qvTSeM+M3B7k03ZmxeArWTG0i3s+rZY+Jnj6tsVIlhwHR3JcuiAEs4ACXi+Uh+2Ey
+         prlepzw5648QTswHIpgY+LKMkLwNpGGqXswh0=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 03 Jul 2009 16:06:27 +0200
-Message-Id: <20090703140627.7303.87368.sendpatchset@localhost.localdomain>
+Date: Fri, 03 Jul 2009 16:06:33 +0200
+Message-Id: <20090703140633.7303.87265.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
 References: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
-Subject: [PATCH 04/22] Staging: rtl8192su: remove USE_ONE_PIPE ifdefs
+Subject: [PATCH 05/22] Staging: rtl8192su: remove EEPROM_OLD_FORMAT_SUPPORT ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH staging] Staging: rtl8192su: remove USE_ONE_PIPE ifdefs
+Subject: [PATCH staging] Staging: rtl8192su: remove EEPROM_OLD_FORMAT_SUPPORT ifdefs
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/Makefile      |    1 -
- drivers/staging/rtl8192su/r8192U.h      |   13 -------------
- drivers/staging/rtl8192su/r8192U_core.c |   15 ---------------
- 3 files changed, 29 deletions(-)
+ drivers/staging/rtl8192su/Makefile      |    2 
+ drivers/staging/rtl8192su/r8192S_hw.h   |   26 ----
+ drivers/staging/rtl8192su/r8192S_phy.c  |    5 
+ drivers/staging/rtl8192su/r8192U.h      |    6 
+ drivers/staging/rtl8192su/r8192U_core.c |  197 --------------------------------
+ 5 files changed, 236 deletions(-)
 
 Index: b/drivers/staging/rtl8192su/Makefile
 ===================================================================
 --- a/drivers/staging/rtl8192su/Makefile
 +++ b/drivers/staging/rtl8192su/Makefile
-@@ -6,7 +6,6 @@ EXTRA_CFLAGS += -mhard-float -DCONFIG_FO
+@@ -12,8 +12,6 @@ EXTRA_CFLAGS += -DRTL8190_Download_Firmw
+ EXTRA_CFLAGS += -DRTL8192S_PREPARE_FOR_NORMAL_RELEASE
+ EXTRA_CFLAGS += -DRTL8192SU_DISABLE_IQK=1
  
- EXTRA_CFLAGS += -DJACKSON_NEW_RX
- EXTRA_CFLAGS += -DTHOMAS_BEACON
--#EXTRA_CFLAGS += -DUSE_ONE_PIPE
+-#EXTRA_CFLAGS += -DEEPROM_OLD_FORMAT_SUPPORT
+-
+ #EXTRA_CFLAGS += -DUSB_RX_AGGREGATION_SUPPORT=0
+ #EXTRA_CFLAGS += -DUSB_TX_DRIVER_AGGREGATION_ENABLE=0
+ #EXTRA_CFLAGS += -DRTL8192SU_DISABLE_CCK_RATE=0
+Index: b/drivers/staging/rtl8192su/r8192S_hw.h
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192S_hw.h
++++ b/drivers/staging/rtl8192su/r8192S_hw.h
+@@ -1282,17 +1282,11 @@ Default: 00b.
+ #define 		EEPROM_Default_TxPower		0x1010
+ #define		EEPROM_Default_HT2T_TxPwr		0x10
  
- EXTRA_CFLAGS += -DRTL8192SU
- EXTRA_CFLAGS += -DRTL8190_Download_Firmware_From_Header=1
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-#define 		EEPROM_Default_TxPowerBase	0x0
+-#define 		EEPROM_Default_ThermalMeter	0x12
+-#define 		EEPROM_Default_PwDiff			0x4
+-#else
+ #define		EEPROM_Default_LegacyHTTxPowerDiff	0x3
+ #define		EEPROM_Default_ThermalMeter		0x12
+ #define		EEPROM_Default_AntTxPowerDiff		0x0
+ #define		EEPROM_Default_TxPwDiff_CrystalCap	0x5
+ #define		EEPROM_Default_TxPowerLevel		0x22
+-#endif
+ 
+ #define		EEPROM_CHANNEL_PLAN_FCC				0x0
+ #define		EEPROM_CHANNEL_PLAN_IC				0x1
+@@ -1330,25 +1324,6 @@ Default: 00b.
+ 
+ 
+ 	// <Roger_Notes> The followin are for different version of EEPROM contents purpose. 2008.11.22.
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-#define 		EEPROM_PwDiff					0x54 // Difference of gain index between legacy and high throughput OFDM.
+-#define 		EEPROM_ThermalMeter			0x55 // Thermal meter default value.
+-#define 		EEPROM_Reserved				0x56 // Reserved.
+-#define 		EEPROM_CrystalCap				0x57 // Crystal Cap.
+-#define 		EEPROM_TxPowerBase			0x58 // Tx Power of serving station.
+-#define 		EEPROM_TxPwIndex_CCK_24G	0x59 // 0x59~0x66
+-#define 		EEPROM_TxPwIndex_OFDM_24G	0x67 // 0x67~0x74
+-#define 		EEPROM_TSSI_A					0x75 //TSSI value of path A.
+-#define 		EEPROM_TSSI_B					0x76 //TSSI value of path B.
+-#define 		EEPROM_TxPwTkMode			0x77 //Tx Power tracking mode.
+-#define 		EEPROM_HT2T_CH1_A			0x78 //HT 2T path A channel 1 Power Index.
+-#define 		EEPROM_HT2T_CH7_A			0x79 //HT 2T path A channel 7 Power Index.
+-#define 		EEPROM_HT2T_CH13_A			0x7a //HT 2T path A channel 13 Power Index.
+-#define 		EEPROM_HT2T_CH1_B			0x7b //HT 2T path B channel 1 Power Index.
+-#define 		EEPROM_HT2T_CH7_B			0x7c //HT 2T path B channel 7 Power Index.
+-#define 		EEPROM_HT2T_CH13_B			0x7d //HT 2T path B channel 13 Power Index.
+-#define 		EEPROM_BoardType				0x7e //0x0: RTL8188SU, 0x1: RTL8191SU, 0x2: RTL8192SU, 0x3: RTL8191GU
+-#else
+ #define 		EEPROM_BoardType				0x54 //0x0: RTL8188SU, 0x1: RTL8191SU, 0x2: RTL8192SU, 0x3: RTL8191GU
+ #define		EEPROM_TxPwIndex				0x55 //0x55-0x66, Tx Power index.
+ #define 		EEPROM_PwDiff					0x67 // Difference of gain index between legacy and high throughput OFDM.
+@@ -1366,7 +1341,6 @@ Default: 00b.
+ #define 		EEPROM_TX_PWR_OFDM_DIFF		0x71// OFDM Tx Power Index Difference
+ #define 		EEPROM_TX_PWR_BAND_EDGE	0x73// TX Power offset at band-edge channel
+ #define 		TX_PWR_BAND_EDGE_CHK		0x79// Check if band-edge scheme is enabled
+-#endif
+ #define		EEPROM_Default_LegacyHTTxPowerDiff	0x3
+ #define		EEPROM_USB_Default_OPTIONAL_FUNC	0x8
+ #define		EEPROM_USB_Default_PHY_PARAM		0x0
+Index: b/drivers/staging/rtl8192su/r8192S_phy.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192S_phy.c
++++ b/drivers/staging/rtl8192su/r8192S_phy.c
+@@ -2639,10 +2639,6 @@ PHY_GetTxPowerLevel8192S(
+ 	//
+ //	if(priv->epromtype == EPROM_93c46)
+ 	{
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-		powerlevel = priv->TxPowerLevelCCK[index];
+-		powerlevelOFDM24G = priv->TxPowerLevelOFDM24G[index];
+-#else
+ 		//
+ 		// Mainly we use RF-A Tx Power to write the Tx Power registers, but the RF-B Tx
+ 		// Power must be calculated by the antenna diff.
+@@ -2821,7 +2817,6 @@ PHY_GetTxPowerLevel8192S(
+ 
+ 		// Notify Tx power difference for B/C/D to A!!!
+ 		rtl8192_setBBreg(dev, rFPGA0_TxGainStage, (bXBTxAGC|bXCTxAGC|bXDTxAGC), u4RegValue);
+-#endif
+ 	}
+ 
+ 	//
 Index: b/drivers/staging/rtl8192su/r8192U.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/r8192U.h
 +++ b/drivers/staging/rtl8192su/r8192U.h
-@@ -1085,18 +1085,6 @@ typedef struct _rt_firmware_info_819xUsb
- #define NUM_OF_FIRMWARE_QUEUE		10
- #define NUM_OF_PAGES_IN_FW		0x100
+@@ -1662,11 +1662,6 @@ typedef struct r8192_priv
+ 	bool	bDmDisableProtect;
+ 	bool	bIgnoreDiffRateTxPowerOffset;
  
--#ifdef USE_ONE_PIPE
--#define NUM_OF_PAGE_IN_FW_QUEUE_BE	0x000
--#define NUM_OF_PAGE_IN_FW_QUEUE_BK	0x000
--#define NUM_OF_PAGE_IN_FW_QUEUE_VI	0x0ff
--#define NUM_OF_PAGE_IN_FW_QUEUE_VO	0x000
--#define NUM_OF_PAGE_IN_FW_QUEUE_HCCA	0
--#define NUM_OF_PAGE_IN_FW_QUEUE_CMD	0x0
--#define NUM_OF_PAGE_IN_FW_QUEUE_MGNT	0x00
--#define NUM_OF_PAGE_IN_FW_QUEUE_HIGH	0
--#define NUM_OF_PAGE_IN_FW_QUEUE_BCN	0x0
--#define NUM_OF_PAGE_IN_FW_QUEUE_PUB	0x00
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-	u8  EEPROMTxPowerLevelCCK24G[14];		// CCK 2.4G channel 1~14
+-	//u8  EEPROMTxPowerLevelOFDM24G[14];	// OFDM 2.4G channel 1~14
+-	//u8  EEPROMTxPowerLevelOFDM5G[24];	// OFDM 5G
 -#else
- 
- #define NUM_OF_PAGE_IN_FW_QUEUE_BE	0x020
- #define NUM_OF_PAGE_IN_FW_QUEUE_BK	0x020
-@@ -1109,7 +1097,6 @@ typedef struct _rt_firmware_info_819xUsb
- #define NUM_OF_PAGE_IN_FW_QUEUE_BCN	0x4
- #define NUM_OF_PAGE_IN_FW_QUEUE_PUB	0x18
- 
+ 	// For EEPROM TX Power Index like 8190 series
+ 	u8  EEPROMRfACCKChnl1TxPwLevel[3];	//RF-A CCK Tx Power Level at channel 7
+ 	u8  EEPROMRfAOfdmChnlTxPwLevel[3];//RF-A CCK Tx Power Level at [0],[1],[2] = channel 1,7,13
+@@ -1678,7 +1673,6 @@ typedef struct r8192_priv
+ 	u8  RfCckChnlAreaTxPwr[2][3];
+ 	u8  RfOfdmChnlAreaTxPwr1T[2][3];
+ 	u8  RfOfdmChnlAreaTxPwr2T[2][3];
 -#endif
  
- #define APPLIED_RESERVED_QUEUE_IN_FW	0x80000000
- #define RSVD_FW_QUEUE_PAGE_BK_SHIFT	0x00
+ 	// Add For EEPROM Efuse switch and  Efuse Shadow map Setting
+ 	bool		EepromOrEfuse;
 Index: b/drivers/staging/rtl8192su/r8192U_core.c
 ===================================================================
 --- a/drivers/staging/rtl8192su/r8192U_core.c
 +++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -2985,11 +2985,7 @@ short rtl819xU_tx_cmd(struct net_device 
- 	// Fill up USB_OUT_CONTEXT.
- 	//----------------------------------------------------------------------------
- 	// Get index to out pipe from specified QueueID.
--#ifndef USE_ONE_PIPE
- 	idx_pipe = txqueue2outpipe(priv,queue_index);
+@@ -5056,26 +5056,6 @@ rtl8192SU_ConfigAdapterInfo8192SForAutoL
+ 	priv->EEPROMTxPwrTkMode = EEPROM_Default_TxPwrTkMode;
+ 
+ 
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-	for(i=0; i<6; i++)
+-		{
+-		priv->EEPROMHT2T_TxPwr[i] = EEPROM_Default_HT2T_TxPwr;
+-		}
+-
+-		for(i=0; i<14; i++)
+-		{
+-		priv->EEPROMTxPowerLevelCCK24G[i] = (u8)(EEPROM_Default_TxPower & 0xff);
+-			priv->EEPROMTxPowerLevelOFDM24G[i] = (u8)(EEPROM_Default_TxPower & 0xff);
+-		}
+-
+-	//
+-	// Update HAL variables.
+-	//
+-	memcpy( priv->TxPowerLevelOFDM24G, priv->EEPROMTxPowerLevelOFDM24G, 14);
+-	memcpy( priv->TxPowerLevelCCK, priv->EEPROMTxPowerLevelCCK24G, 14);
+-	//RT_PRINT_DATA(COMP_INIT|COMP_EFUSE, DBG_LOUD, ("HAL CCK 2.4G TxPwr: \n"), priv->TxPowerLevelCCK, 14);
+-	//RT_PRINT_DATA(COMP_INIT|COMP_EFUSE, DBG_LOUD, ("HAL OFDM 2.4G TxPwr: \n"), priv->TxPowerLevelOFDM24G, 14);
 -#else
--	idx_pipe = 0x04;
+ 
+ 	for (rf_path = 0; rf_path < 2; rf_path++)
+ 	{
+@@ -5125,7 +5105,6 @@ rtl8192SU_ConfigAdapterInfo8192SForAutoL
+ 		//priv->RfTxPwrLevelOfdm1T[0][i] ,
+ 		//priv->RfTxPwrLevelOfdm2T[0][i] );
+ 		}
 -#endif
- #ifdef JOHN_DUMP_TXDESC
- 	int i;
- 	printk("<Tx descriptor>--rate %x---",rate);
-@@ -3786,11 +3782,7 @@ short rtl8192_tx(struct net_device *dev,
- 		tx_desc->TxBufferSize = (u32)(skb->len - USB_HWDESC_HEADER_LEN);
- 	}
- 	/* Get index to out pipe from specified QueueID */
--#ifndef USE_ONE_PIPE
- 	idx_pipe = txqueue2outpipe(priv,tcb_desc->queue_index);
+ 
+ 	//
+ 	// Update remained HAL variables.
+@@ -5349,50 +5328,8 @@ static void rtl8192SU_ReadAdapterInfo819
+ 
+ 			RT_TRACE(COMP_INIT, "BoardType = %#x\n", priv->EEPROMBoardType);
+ 
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-
+-			//
+-			// Buffer TxPwIdx(i.e., from offset 0x58~0x75, total 30Bytes)
+-			//
+-			if(bLoad_From_EEPOM)
+-			{
+-				for(i = 0; i < 30; i += 2)
+-				{
+-					tmpValue = eprom_read(dev, (u16) ((EEPROM_TxPowerBase+i)>>1));
+-					*((u16 *)(&tmpBuffer[i])) = tmpValue;
+-				}
+-			}
+-
+-			//
+-			// Update CCK, OFDM Tx Power Index from above buffer.
+-			//
+-			if(bLoad_From_EEPOM)
+-			{
+-				for(i=0; i<14; i++)
+-				{
+-					priv->EEPROMTxPowerLevelCCK24G[i] = (u8)tmpBuffer[i+1];
+-					priv->EEPROMTxPowerLevelOFDM24G[i] = (u8)tmpBuffer[i+15];
+-				}
+-
+-			}
+-			else
+-			{
+-				for(i=0; i<14; i++)
+-				{
+-					priv->EEPROMTxPowerLevelCCK24G[i] = (u8)(EEPROM_Default_TxPower & 0xff);
+-					priv->EEPROMTxPowerLevelOFDM24G[i] = (u8)(EEPROM_Default_TxPower & 0xff);
+-				}
+-			}
+-
+-			for(i=0; i<14; i++)
+-			{
+-				RT_TRACE(COMP_INIT, "CCK 2.4G Tx Power Level, Index %d = 0x%02x\n", i, priv->EEPROMTxPowerLevelCCK24G[i]);
+-				RT_TRACE(COMP_INIT, "OFDM 2.4G Tx Power Level, Index %d = 0x%02x\n", i, priv->EEPROMTxPowerLevelOFDM24G[i]);
+-			}
 -#else
--	idx_pipe = 0x5;
+ 			// Please add code in the section!!!!
+ 			// And merge tx power difference section.
 -#endif
  
- 	//RT_DEBUG_DATA(COMP_SEND,tx_fwinfo,sizeof(tx_fwinfo_819x_usb));
- 	//RT_DEBUG_DATA(COMP_SEND,tx_desc,sizeof(tx_desc_819x_usb));
-@@ -11721,7 +11713,6 @@ static void HalUsbSetQueuePipeMapping819
- 	memset(priv->RtOutPipes,0,16);
- 	memset(priv->RtInPipes,0,16);
+ 			//
+ 			// Get TSSI value for each path.
+@@ -5422,47 +5359,10 @@ static void rtl8192SU_ReadAdapterInfo819
+ 			RT_TRACE(COMP_INIT, "TSSI_A = %#x, TSSI_B = %#x\n", priv->EEPROMTSSI_A, priv->EEPROMTSSI_B);
+ 			RT_TRACE(COMP_INIT, "TxPwrTkMod = %#x\n", priv->EEPROMTxPwrTkMode);
  
--#ifndef USE_ONE_PIPE
- 	iface_desc = intf->cur_altsetting;
- 	priv->ep_num = iface_desc->desc.bNumEndpoints;
- 
-@@ -11776,12 +11767,6 @@ static void HalUsbSetQueuePipeMapping819
- 	for(i=0; i < 9; i++)
- 		printk("%d  ", priv->txqueue_to_outpipemap[i]);
- 	printk("\n");
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-			//
+-			// Get HT 2T Path A and B Power Index.
+-			//
+-			if(bLoad_From_EEPOM)
+-			{
+-				for(i = 0; i < 6; i += 2)
+-				{
+-					tmpValue = eprom_read(dev, (u16) ((EEPROM_HT2T_CH1_A+i)>>1));
+-					*((u16*)(&priv->EEPROMHT2T_TxPwr[i])) = tmpValue;
+-				}
+-			}
+-			else
+-			{ // Default setting for Empty EEPROM
+-				for(i=0; i<6; i++)
+-				{
+-					priv->EEPROMHT2T_TxPwr[i] = EEPROM_Default_HT2T_TxPwr;
+-				}
+-			}
+-
+-			for(i=0; i<6; i++)
+-			{
+-				RT_TRACE(COMP_INIT, "EEPROMHT2T_TxPwr, Index %d = 0x%02x\n", i, priv->EEPROMHT2T_TxPwr[i]);
+-			}
 -#else
+ 
+-#endif
+ 		}
+ 
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-		//
+-		// Update HAL variables.
+-		//
+-		for(i=0; i<14; i++)
+-		{
+-			priv->TxPowerLevelOFDM24G[i] = priv->EEPROMTxPowerLevelOFDM24G[i];
+-			priv->TxPowerLevelCCK[i] = priv->EEPROMTxPowerLevelCCK24G[i];
+-		}
+-#else
+ 
+-#endif
+ 		priv->TxPowerDiff = priv->EEPROMPwDiff;
+ 		// Antenna B gain offset to antenna A, bit0~3
+ 		priv->AntennaTxPwDiff[0] = (priv->EEPROMTxPowerDiff & 0xf);
+@@ -5750,47 +5650,8 @@ rtl8192SU_ReadAdapterInfo8192SEFuse(stru
+ 
+ 		//if(pHalData->EEPROM_Def_Ver == 0)
+ 		{
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-			//
+-			// Get CCK Tx Power Index.
+-			//
+-			if(!priv->AutoloadFailFlag)
+-			{
+-				ReadEFuse(dev, EEPROM_TxPwIndex_CCK_24G, 14, (unsigned char*)CCKTxPwr);
+-				for(i=0; i<14; i++)
+-				{
+-					RT_TRACE(COMP_INIT, "CCK 2.4G Tx Power Level, Index %d = 0x%02x\n", i, CCKTxPwr[i]);
+-					priv->EEPROMTxPowerLevelCCK24G[i] = CCKTxPwr[i];
+-				}
+-			}
+-			else
+-			{ // Default setting for Empty EEPROM
+-				for(i=0; i<14; i++)
+-					priv->EEPROMTxPowerLevelCCK24G[i] = (u8)(EEPROM_Default_TxPower & 0xff);
+-			}
+-
+-			//
+-			// Get OFDM Tx Power Index.
+-			//
+-			if(!priv->AutoloadFailFlag)
+-			{
+-				ReadEFuse(dev, EEPROM_TxPwIndex_OFDM_24G, 14, (unsigned char*)OFDMTxPwr);
+-				for(i=0; i<14; i++)
+-				{
+-					RT_TRACE(COMP_INIT, "OFDM 2.4G Tx Power Level, Index %d = 0x%02x\n", i, OFDMTxPwr[i]);
+-					priv->EEPROMTxPowerLevelOFDM24G[i] = OFDMTxPwr[i];
+-				}
+-			}
+-			else
+-			{ // Default setting for Empty EEPROM
+-				usValue = 0x10;
+-				for(i=0; i<14; i++)
+-					priv->EEPROMTxPowerLevelOFDM24G[i] = (u8)usValue;
+-			}
+-#else
+ 			// Please add code in the section!!!!
+ 			// And merge tx power difference section.
+-#endif
+ 
+ 			//
+ 			// Get TSSI value for each path.
+@@ -5853,18 +5714,7 @@ rtl8192SU_ReadAdapterInfo8192SEFuse(stru
+ 			}
+ 		}
+ 
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-		//
+-		// Update HAL variables.
+-		//
+-		for(i=0; i<14; i++)
+-		{
+-			priv->TxPowerLevelOFDM24G[i] = priv->EEPROMTxPowerLevelOFDM24G[i];
+-			priv->TxPowerLevelCCK[i] = priv->EEPROMTxPowerLevelCCK24G[i];
+-		}
+-#else
+ 
+-#endif
+ 		priv->TxPowerDiff = priv->EEPROMPwDiff;
+ 		// Antenna B gain offset to antenna A, bit0~3
+ 		priv->AntennaTxPwDiff[0] = (priv->EEPROMTxPowerDiff & 0xf);
+@@ -6254,52 +6104,6 @@ rtl8192SU_ReadAdapterInfo8192SUsb(struct
+ 	RT_TRACE(COMP_INIT, "TxPwrTkMod = %#x\n", priv->EEPROMTxPwrTkMode);
+ 
+ 
+-#ifdef EEPROM_OLD_FORMAT_SUPPORT
+-
+-	//
+-	// <Roger_Notes> The following settings are EFUSE version dependence.
+-	// So we need to adjust reading offset.
+-	// 2008.11.22.
+-	//
 -	{
--		memset(priv->txqueue_to_outpipemap,0,9);
--		memset(priv->RtOutPipes,4,16);//all use endpoint 4 for out
+-			//
+-			// Get HT 2T Path A and B Power Index.
+-			//
+-			//if(!priv->AutoloadFailFlag)
+-			{
+-				for(i=0; i<6; i++)
+-				{
+-				priv->EEPROMHT2T_TxPwr[i] = *(u8 *)&hwinfo[EEPROM_HT2T_CH1_A+i];
+-				}
+-			}
+-
+-		//RT_PRINT_DATA(COMP_EFUSE, "HT2T TxPwr: \n"), pHalData->EEPROMHT2T_TxPwr, 6);
+-
+-		//
+-		// Get CCK and OFDM Tx Power Index.
+-		//
+-		//if(!priv->AutoloadFailFlag)
+-		{
+-			for(i=0; i<14; i++)
+-			{
+-				priv->EEPROMTxPowerLevelCCK24G[i] = *(u8 *)&hwinfo[EEPROM_TxPwIndex_CCK_24G+i];
+-				priv->EEPROMTxPowerLevelOFDM24G[i] = *(u8 *)&hwinfo[EEPROM_TxPwIndex_OFDM_24G+i];
+-			}
+-		}
+-
+-		//RT_PRINT_DATA(COMP_EFUSE, DBG_LOUD, ("CCK 2.4G TxPwr: \n"), pHalData->EEPROMTxPowerLevelCCK24G, 14);
+-		//RT_PRINT_DATA(COMP_EFUSE, DBG_LOUD, ("OFDM 2.4G TxPwr: \n"), pHalData->EEPROMTxPowerLevelOFDM24G, 14);
+-
+-		//
+-		// Update HAL variables.
+-		//
+-		memcpy( priv->TxPowerLevelOFDM24G, priv->EEPROMTxPowerLevelOFDM24G, 14);
+-		memcpy( priv->TxPowerLevelCCK, priv->EEPROMTxPowerLevelCCK24G, 14);
+-		//RT_PRINT_DATA(COMP_EFUSE, DBG_LOUD, ("HAL CCK 2.4G TxPwr: \n"), pHalData->TxPowerLevelCCK, 14);
+-		//RT_PRINT_DATA(COMP_EFUSE, DBG_LOUD, ("HAL OFDM 2.4G TxPwr: \n"), pHalData->TxPowerLevelOFDM24G, 14);
+-
 -	}
+-#else // Support new version of EFUSE content, 2008.11.22.
+ 	{
+ 		//
+ 		// Buffer TxPwIdx(i.e., from offset 0x55~0x66, total 18Bytes)
+@@ -6467,7 +6271,6 @@ rtl8192SU_ReadAdapterInfo8192SUsb(struct
+ 		priv->TxPwrbandEdgeLegacyOfdm[RF90_PATH_B][0],
+ 		priv->TxPwrbandEdgeLegacyOfdm[RF90_PATH_B][1]);
+ 	RT_TRACE((COMP_INIT&COMP_DBG), "Band-edge enable flag = %d\n", priv->TxPwrbandEdgeFlag);
 -#endif
  
- 	return;
- }
+ 	//
+ 	// Update remained HAL variables.
