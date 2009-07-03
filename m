@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759395AbZGCV3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZGCVbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759395AbZGCV3Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 17:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757983AbZGCV3R
+	id S1759067AbZGCVbg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 17:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbZGCVb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 17:29:17 -0400
-Received: from eddie.linux-mips.org ([78.24.191.182]:41168 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757740AbZGCV3Q (ORCPT
+	Fri, 3 Jul 2009 17:31:29 -0400
+Received: from smtpauth01.csee.onr.siteprotect.com ([64.26.60.145]:39264 "EHLO
+	smtpauth01.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756365AbZGCVb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 17:29:16 -0400
-Date: Fri, 3 Jul 2009 22:35:22 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
+	Fri, 3 Jul 2009 17:31:28 -0400
+Date: Fri, 3 Jul 2009 17:43:12 -0400 (EDT)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
 To: Ingo Molnar <mingo@elte.hu>
-cc: Borislav Petkov <borislav.petkov@amd.com>, Greg KH <gregkh@suse.de>,
-       x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
-In-Reply-To: <20090702075305.GC19187@elte.hu>
-Message-ID: <alpine.LFD.2.00.0907031526570.13862@eddie.linux-mips.org>
-References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org> <20090701111003.GC15958@elte.hu>
- <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org> <20090702075305.GC19187@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
+Subject: Re: [numbers] perfmon/pfmon overhead of 17%-94%
+In-Reply-To: <20090703075822.GA13505@elte.hu>
+Message-ID: <Pine.LNX.4.64.0907031729040.17432@pianoman.cluster.toy>
+References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
+ <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
+ <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu>
+ <20090627064404.GA19368@elte.hu> <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy>
+ <20090629210206.GB13125@elte.hu> <Pine.LNX.4.64.0907021702380.13747@pianoman.cluster.toy>
+ <20090703075822.GA13505@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Jul 2009, Ingo Molnar wrote:
 
-> >  Well, that's just a fast track to become a veteran, isn't it? ;)
-> 
-> No, that's just a fast track to quickly make it into the list of our 
-> Fallen Heroes :-/ The fast track to become a kernel veteran is to, 
-> if possible, not challenge a tank with a hand-grenade. But i 
-> digress.
+On Fri, 3 Jul 2009, Ingo Molnar wrote:
+> That would give a mixture of hardware and software counter based IRQ
+> instrumentation features that looks quite compelling. Any comments
+> on what features/capabilities you'd like to see in this area?
 
- What doesn't kill you will make you stronger, ;) but otherwise I digress 
-too.
+I'm mainly interested in just an aggregate total of "this many interrupts 
+occurred".  It wouldn't even need to be separated out by type or number. 
+I don't know if the metric would be useful to anyone else.  I tried to 
+hack this up a long time ago, to have the result reported with rusage()
+but never got anywhere with it.
 
-> > That shouldn't be a problem if we were about to panic().  For a 
-> > more sophisticated attempt of recovery -- yes, that would have to 
-> > be addressed.
-> 
-> We are only panic-ing if the sysctl is set. The diagnostics would be 
-> useful anyway. The proper approach would be to defer it a bit in the 
-> non-panic case an read it out from some friendlier context - such as 
-> the EDAC core.
+> Btw., perfcounters still has no support for older Intel CPUs such as
+> P3's and P2's - and they have pretty sane PMUs - so if you have such
+> a machine (which your perfmon contribution suggests you might
+> have/had) and are interested it would be nice to get support for
+> them. P4 support is interesting too but more challenging.
 
- Hmm, my concern is in the case of a PCI SERR the system may not 
-necessarily be in a recoverable state.  For example if a master abort 
-happened due to a timeout (which is outside the PCI spec I'm told, but the 
-only way to avoid holding the bus undefinitely) and the target finally 
-responded, then it may have corrupted a subsequent transaction.  My point 
-is thus any diagnostic output should be produced as soon as possible and 
-involving as little system resources as absolutely necessary.  This being 
-enough to identify the device triggering the SERR -- so that if an error 
-is fatal and recurs, then the possible offender can be determined.
+I was indeed the one who got perfmon2 running on Pentium Pro, Pentium II, 
+and MIPS R12k.  For all those though there was an existing PMU driver and 
+I just added the appropriate "case" statements to enable support, and then 
+provided an updated list of available counters to the userspace utility. 
+The only real kernel hacking involved was the week spent tracking down a 
+hard-to-debug interrupt issue on the MIPS machine.
 
- Deferring such initial diagnostic to a softirq or suchlike does not sound 
-as a terribly good idea to me.  I think this is also the right place to 
-disable the device's master access to the bus (and possibly target address 
-space decoders too -- the device may have started misdecoding and 
-interfering with transactions meant to involve other devices) -- till the 
-recovery procedure has been completed.
+Unfortunately I think writing PMU drivers is a bit beyond me, for the 
+amount of time I have.  Especially as the relevant machines I have are 
+located in relatively inaccessible locations (and PMU mistakes can lock up 
+the machines) plus it can take the better part of a day to compile 2.6 
+kernels on some of those machines.
 
- Then further processing, such as signalling the involved device's driver 
-that the error happened and letting it attempt to recover is something 
-that should happen in less restricted a context.  It is the driver only 
-that could further determine the cause based on the state of the device's 
-registers (e.g. what was the target when the reporting device acted as a 
-master) and the knowledge of how it operates, reset the device, etc.  
-Once the situation has been rectified and the device determined to be 
-capable to continue operating (e.g. the built-in to the firmware self-test 
--- if available -- was run and reported success) the device can be 
-reconfigured and put on the bus again.
-
-  Maciej
+Vince
