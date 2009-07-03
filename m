@@ -1,244 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZGCJdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbZGCJeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754904AbZGCJdj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbZGCJd0
+	id S1756983AbZGCJeS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbZGCJeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:33:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56075 "EHLO song.cn.fujitsu.com"
+	Fri, 3 Jul 2009 05:34:03 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58187 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756591AbZGCJdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:33:24 -0400
-Message-ID: <4A4DD0A0.5060500@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 17:34:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1755720AbZGCJeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:34:01 -0400
+Message-ID: <4A4DD0C7.6070401@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 17:35:03 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] kmemtrace: print binary output only if 'bin' option is
- set
+CC: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for	__raise_softirq_irqoff()
+References: <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu>
+In-Reply-To: <20090519082435.GB15286@elte.hu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently by default the output of kmemtrace is binary format instead
-of human-readable output.
+Ingo Molnar wrote:
+> * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> 
+>> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
+>>> Steven Rostedt wrote:
+>>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+>>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>>>>>
+>>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+>>>>>> can be found here: 
+>>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+>>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
+>>>>>>
+>>>>>> Changelog for v1 -> v2: 
+>>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+>>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+>>>>>>    __raise_softirq_irqoff()
+>>>>>>
+>>>>>> Changelog for v2 -> v3: 
+>>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
+>>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+>>>>>>
+>>>>>> Changelog for v3 -> v4: 
+>>>>>> 1: Come back to v2, and use forward declarations to avoid
+>>>>>>    recursive includes as Mathieu's suggestion
+>>>>>> 2: Modifiy the tracepoint name
+>>>>>> 3: Add comments for this tracepoint
+>>>>>>
+>>>>> This is a step in the right direction, but please see my email to Lai
+>>>>> about the fact that this assumes correct and undocumented include
+>>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
+>>>>> include dependencies is a build error waiting to happen.
+>>>>>
+>>>>> Including interrupt.h under a ifdef would allow keeping track of
+>>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+>>>> This is all moot, the events.c file no longer exists and as not an issue.
+>>>>
+>>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
+>>> So, this mistake does not exist.
+>>> Dose this patch has other error? I expect for your views.
+>>>
+>>> Thanks for your review, is great help to me. ;-) 
+>> Hello,
+>>
+>> It seems Mathieu has no other comments on this patch now.
+>> Ingo, what is your opinion on this patch?
+> 
+> There's a complication: this area of the softirq code needs fixes 
+> (unrelated to tracing).
+>  
+> This API:
+> 
+> inline void raise_softirq_irqoff(unsigned int nr)
+> {
+>         __raise_softirq_irqoff(nr);
+> 
+>         /*
+>          * If we're in an interrupt or softirq, we're done
+>          * (this also catches softirq-disabled code). We will
+>          * actually run the softirq once we return from
+>          * the irq or softirq.
+>          *
+>          * Otherwise we wake up ksoftirqd to make sure we
+>          * schedule the softirq soon.
+>          */
+>         if (!in_interrupt())
+>                 wakeup_softirqd();
+> }
+> 
+> is broken with RT tasks (as recently reported to lkml), as when a 
+> real-time task wakes up ksoftirqd (which has lower priority) it wont 
+> execute and we starve softirq execution.
+> 
+> The proper solution would be to have a new API:
+> 
+> 	raise_softirq_check()
+> 
+> and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
+> - and put raise_softirq_check() to all places that use 
+> raise_softirq*() from process context.
+>  
+> raise_softirq_check() would execute softirq handlers from process 
+> context, if there's any pending ones. It has to be called outside of 
+> bh critical sections - i.e. often a bit after the raise_softirq() 
+> has been done.
+> 
+> __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
+> and we'd only have two public APIs to trigger softirqs: 
+> raise_softirq() and raise_softirq_irqoff(). Both just set the 
+> pending flag and dont do any wakeup.
+> 
+> As a side-effect of these fixes, the tracepoints will be sorted out 
+> as well - there wont be any need to hack into 
+> __raise_softirq_irqoff().
+> 
+> 	Ingo
+> 
 
-This patch makes the following changes:
-  - We'll see human-readable output by default
-  - We'll see binary output if 'bin' option is set
+Hi, Ingo
 
-Note: you may probably need to explicitly disable context-info binary
-      output:
+	Could you give me the .config file that this bug occurs?
 
-	# echo 0 > options/context-info
-	# echo 1 > options/bin
-	# cat trace_pipe
-
-v2:
-- use %pF to print call_site
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
----
- kernel/trace/kmemtrace.c |  120 ++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 90 insertions(+), 30 deletions(-)
-
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 1edaa95..74903b6 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -239,12 +239,52 @@ struct kmemtrace_user_event_alloc {
- };
- 
- static enum print_line_t
--kmemtrace_print_alloc_user(struct trace_iterator *iter,
--			   struct kmemtrace_alloc_entry *entry)
-+kmemtrace_print_alloc_user(struct trace_iterator *iter, int flags)
-+{
-+	struct trace_seq *s = &iter->seq;
-+	struct kmemtrace_alloc_entry *entry;
-+	int ret;
-+
-+	trace_assign_type(entry, iter->ent);
-+
-+	ret = trace_seq_printf(s, "type_id %d call_site %pF ptr %lu "
-+	    "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d\n",
-+	    entry->type_id, (void *)entry->call_site, (unsigned long)entry->ptr,
-+	    (unsigned long)entry->bytes_req, (unsigned long)entry->bytes_alloc,
-+	    (unsigned long)entry->gfp_flags, entry->node);
-+
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+	return TRACE_TYPE_HANDLED;
-+}
-+
-+static enum print_line_t
-+kmemtrace_print_free_user(struct trace_iterator *iter, int flags)
- {
--	struct kmemtrace_user_event_alloc *ev_alloc;
- 	struct trace_seq *s = &iter->seq;
-+	struct kmemtrace_free_entry *entry;
-+	int ret;
-+
-+	trace_assign_type(entry, iter->ent);
-+
-+	ret = trace_seq_printf(s, "type_id %d call_site %pF ptr %lu\n",
-+			       entry->type_id, (void *)entry->call_site,
-+			       (unsigned long)entry->ptr);
-+
-+	if (!ret)
-+		return TRACE_TYPE_PARTIAL_LINE;
-+	return TRACE_TYPE_HANDLED;
-+}
-+
-+static enum print_line_t
-+kmemtrace_print_alloc_user_bin(struct trace_iterator *iter, int flags)
-+{
-+	struct trace_seq *s = &iter->seq;
-+	struct kmemtrace_alloc_entry *entry;
- 	struct kmemtrace_user_event *ev;
-+	struct kmemtrace_user_event_alloc *ev_alloc;
-+
-+	trace_assign_type(entry, iter->ent);
- 
- 	ev = trace_seq_reserve(s, sizeof(*ev));
- 	if (!ev)
-@@ -271,12 +311,14 @@ kmemtrace_print_alloc_user(struct trace_iterator *iter,
- }
- 
- static enum print_line_t
--kmemtrace_print_free_user(struct trace_iterator *iter,
--			  struct kmemtrace_free_entry *entry)
-+kmemtrace_print_free_user_bin(struct trace_iterator *iter, int flags)
- {
- 	struct trace_seq *s = &iter->seq;
-+	struct kmemtrace_free_entry *entry;
- 	struct kmemtrace_user_event *ev;
- 
-+	trace_assign_type(entry, iter->ent);
-+
- 	ev = trace_seq_reserve(s, sizeof(*ev));
- 	if (!ev)
- 		return TRACE_TYPE_PARTIAL_LINE;
-@@ -294,12 +336,14 @@ kmemtrace_print_free_user(struct trace_iterator *iter,
- 
- /* The two other following provide a more minimalistic output */
- static enum print_line_t
--kmemtrace_print_alloc_compress(struct trace_iterator *iter,
--					struct kmemtrace_alloc_entry *entry)
-+kmemtrace_print_alloc_compress(struct trace_iterator *iter)
- {
-+	struct kmemtrace_alloc_entry *entry;
- 	struct trace_seq *s = &iter->seq;
- 	int ret;
- 
-+	trace_assign_type(entry, iter->ent);
-+
- 	/* Alloc entry */
- 	ret = trace_seq_printf(s, "  +      ");
- 	if (!ret)
-@@ -362,12 +406,14 @@ kmemtrace_print_alloc_compress(struct trace_iterator *iter,
- }
- 
- static enum print_line_t
--kmemtrace_print_free_compress(struct trace_iterator *iter,
--			      struct kmemtrace_free_entry *entry)
-+kmemtrace_print_free_compress(struct trace_iterator *iter)
- {
-+	struct kmemtrace_free_entry *entry;
- 	struct trace_seq *s = &iter->seq;
- 	int ret;
- 
-+	trace_assign_type(entry, iter->ent);
-+
- 	/* Free entry */
- 	ret = trace_seq_printf(s, "  -      ");
- 	if (!ret)
-@@ -421,32 +467,31 @@ static enum print_line_t kmemtrace_print_line(struct trace_iterator *iter)
- {
- 	struct trace_entry *entry = iter->ent;
- 
--	switch (entry->type) {
--	case TRACE_KMEM_ALLOC: {
--		struct kmemtrace_alloc_entry *field;
--
--		trace_assign_type(field, entry);
--		if (kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL)
--			return kmemtrace_print_alloc_compress(iter, field);
--		else
--			return kmemtrace_print_alloc_user(iter, field);
--	}
--
--	case TRACE_KMEM_FREE: {
--		struct kmemtrace_free_entry *field;
--
--		trace_assign_type(field, entry);
--		if (kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL)
--			return kmemtrace_print_free_compress(iter, field);
--		else
--			return kmemtrace_print_free_user(iter, field);
--	}
-+	if (!(kmem_tracer_flags.val & TRACE_KMEM_OPT_MINIMAL))
-+		return TRACE_TYPE_UNHANDLED;
- 
-+	switch (entry->type) {
-+	case TRACE_KMEM_ALLOC:
-+		return kmemtrace_print_alloc_compress(iter);
-+	case TRACE_KMEM_FREE:
-+		return kmemtrace_print_free_compress(iter);
- 	default:
- 		return TRACE_TYPE_UNHANDLED;
- 	}
- }
- 
-+static struct trace_event kmem_trace_alloc = {
-+	.type			= TRACE_KMEM_ALLOC,
-+	.trace			= kmemtrace_print_alloc_user,
-+	.binary			= kmemtrace_print_alloc_user_bin,
-+};
-+
-+static struct trace_event kmem_trace_free = {
-+	.type			= TRACE_KMEM_FREE,
-+	.trace			= kmemtrace_print_free_user,
-+	.binary			= kmemtrace_print_free_user_bin,
-+};
-+
- static struct tracer kmem_tracer __read_mostly = {
- 	.name			= "kmemtrace",
- 	.init			= kmem_trace_init,
-@@ -463,6 +508,21 @@ void kmemtrace_init(void)
- 
- static int __init init_kmem_tracer(void)
- {
--	return register_tracer(&kmem_tracer);
-+	if (!register_ftrace_event(&kmem_trace_alloc)) {
-+		pr_warning("Warning: could not register kmem events\n");
-+		return 1;
-+	}
-+
-+	if (!register_ftrace_event(&kmem_trace_free)) {
-+		pr_warning("Warning: could not register kmem events\n");
-+		return 1;
-+	}
-+
-+	if (!register_tracer(&kmem_tracer)) {
-+		pr_warning("Warning: could not register the kmem tracer\n");
-+		return 1;
-+	}
-+
-+	return 0;
- }
- device_initcall(init_kmem_tracer);
--- 
-1.5.4.rc3
-
+Lai.
 
