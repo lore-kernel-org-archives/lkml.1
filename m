@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZGCHRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZGCHX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752574AbZGCHRs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 03:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZGCHRl
+	id S1752055AbZGCHX6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 03:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZGCHXs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 03:17:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52376 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751049AbZGCHRk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 03:17:40 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19g9vhxOG1g9u+zFwP5sP6zecLs0OJ1IXkmUG29xH
-	KJV1UxXDXWS/iW
-Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
- kernel modules
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246536617.4752.15.camel@laptop>
-References: <1246514639.13293.40.camel@marge.simson.net>
-	 <20090702064712.GA26690@elte.hu>
-	 <1246519076.6384.22.camel@marge.simson.net>
-	 <1246536617.4752.15.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 03 Jul 2009 09:17:39 +0200
-Message-Id: <1246605459.6092.189.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Fri, 3 Jul 2009 03:23:48 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:45470 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZGCHXr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 03:23:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OtmtLmbok57m0Wo+svaXsJ2Qmi8cr5YNec5o5p0kGLBPXajXBC9WU9O4hCWzbaZwIt
+         2KPZG9CcQL4XpJ31iyQfNYAnUYqDrWoHykm5sXIWVAlQCqs2WEqOsw7vf2Ge8qrMY/zf
+         Nhbn71cY6Hqk8kR41Yih9CjyStEtxhHDnCphk=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0907021016380.30890@chino.kir.corp.google.com>
+References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
+	 <1246374095.8014.28.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0906301114450.3879@gentwo.org>
+	 <alpine.DEB.2.00.0906301248000.16312@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0906301632570.22158@gentwo.org>
+	 <alpine.DEB.2.00.0906301413460.24397@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0906301722280.17682@gentwo.org>
+	 <alpine.DEB.2.00.0906301445070.26290@chino.kir.corp.google.com>
+	 <84144f020906302253n2424d4a5k3aaf124838a041df@mail.gmail.com>
+	 <alpine.DEB.2.00.0907021016380.30890@chino.kir.corp.google.com>
+Date: Fri, 3 Jul 2009 10:23:48 +0300
+X-Google-Sender-Auth: 34cc70cb9e97e38b
+Message-ID: <84144f020907030023v2d09632bt13b6c25f96c0b803@mail.gmail.com>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.67
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-02 at 14:10 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-07-02 at 09:17 +0200, Mike Galbraith wrote:
-> 
-> >  I've been pondering a perf archive tool
-> > that would package everything that's needed to do analysis on a
-> > different box.  One big problem though, is that while you can easily
-> > package vmlinux and modules, what about all the userland binaries?  A
-> > large perf.data and/or debug info binaries can easily make transport
-> > impractical enough.
-> 
-> I would simply extend the current file header with another section in
-> which we do a structured storage of the data structures we currently
-> build in perf-report. That is, the dso and symbol bits.
-> 
-> If we then run perf-report on a file containing such a section we read
-> that data instead of trying to locate them the regular way.
+Hi David,
 
-That's a good idea.
+On Wed, 1 Jul 2009, Pekka Enberg wrote:
+>> Lets go with the slab_out_of_memory() patch you outlined in a previous
+>> post and implement the slub_debug=p thing Christoph suggested. I think
+>> it's the best compromise at this point. When you guys finally see the
+>> light, we can always change it to a reasonable default. ;)
+>>
+>> So can you send a patch, please?
 
-If uname doesn't match stored record time uname, you're not live, so
-tools require an exportable perf.data.  If you're not live and not on
-the same host, annotate requires binaries appended via an export tool
-with --sym-filter -k -u -% whatever capability.
+On Thu, Jul 2, 2009 at 8:18 PM, David Rientjes<rientjes@google.com> wrote:
+> Sure, let me know if you think this is -rc material; otherwise, the bug
+> will have to be deferred until 2.6.32 with the temporary workaround of
+> disabling CONFIG_SLUB_DEBUG_ON.
 
-	-Mike
-
+We're at -rc2 so yes, I do think we should fix 2.6.31.
