@@ -1,46 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZGCJoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZGCJpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbZGCJoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZGCJoE
+	id S1757386AbZGCJpU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbZGCJpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:44:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41382 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752817AbZGCJoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:44:03 -0400
-Date: Fri, 3 Jul 2009 10:44:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090703091655.GB3902@elte.hu>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
-	<20090703064518.GA30674@elte.hu>
-	<20090703100834.6cb241b6@lxorguk.ukuu.org.uk>
-	<20090703091655.GB3902@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 05:45:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54771 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbZGCJpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:45:06 -0400
+Date: Fri, 3 Jul 2009 11:44:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
+Message-ID: <20090703094450.GB21141@elte.hu>
+References: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A4DD0C7.6070401@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A4DD0C7.6070401@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well i noticed such details in your final commits that go upstream 
-> as well - you dont appear to be making full use of the patch quality 
-> tools we have.
 
-Quite often deliberately. A lot of the tty patches keep whatever style
-they are patching. You'll then see a single big patch to clean the style
-of the entire file up instead of creating the horrible mishmashes of
-styles found in some of the code.
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> (Also, the patch carried your Signed-off-by - which we add if we 
-> consider patches worthy for upstream.)
+> Ingo Molnar wrote:
+> > * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> > 
+> >> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
+> >>> Steven Rostedt wrote:
+> >>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+> >>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >>>>>>
+> >>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+> >>>>>> can be found here: 
+> >>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+> >>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
+> >>>>>>
+> >>>>>> Changelog for v1 -> v2: 
+> >>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+> >>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+> >>>>>>    __raise_softirq_irqoff()
+> >>>>>>
+> >>>>>> Changelog for v2 -> v3: 
+> >>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
+> >>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+> >>>>>>
+> >>>>>> Changelog for v3 -> v4: 
+> >>>>>> 1: Come back to v2, and use forward declarations to avoid
+> >>>>>>    recursive includes as Mathieu's suggestion
+> >>>>>> 2: Modifiy the tracepoint name
+> >>>>>> 3: Add comments for this tracepoint
+> >>>>>>
+> >>>>> This is a step in the right direction, but please see my email to Lai
+> >>>>> about the fact that this assumes correct and undocumented include
+> >>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
+> >>>>> include dependencies is a build error waiting to happen.
+> >>>>>
+> >>>>> Including interrupt.h under a ifdef would allow keeping track of
+> >>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+> >>>> This is all moot, the events.c file no longer exists and as not an issue.
+> >>>>
+> >>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
+> >>> So, this mistake does not exist.
+> >>> Dose this patch has other error? I expect for your views.
+> >>>
+> >>> Thanks for your review, is great help to me. ;-) 
+> >> Hello,
+> >>
+> >> It seems Mathieu has no other comments on this patch now.
+> >> Ingo, what is your opinion on this patch?
+> > 
+> > There's a complication: this area of the softirq code needs fixes 
+> > (unrelated to tracing).
+> >  
+> > This API:
+> > 
+> > inline void raise_softirq_irqoff(unsigned int nr)
+> > {
+> >         __raise_softirq_irqoff(nr);
+> > 
+> >         /*
+> >          * If we're in an interrupt or softirq, we're done
+> >          * (this also catches softirq-disabled code). We will
+> >          * actually run the softirq once we return from
+> >          * the irq or softirq.
+> >          *
+> >          * Otherwise we wake up ksoftirqd to make sure we
+> >          * schedule the softirq soon.
+> >          */
+> >         if (!in_interrupt())
+> >                 wakeup_softirqd();
+> > }
+> > 
+> > is broken with RT tasks (as recently reported to lkml), as when a 
+> > real-time task wakes up ksoftirqd (which has lower priority) it wont 
+> > execute and we starve softirq execution.
+> > 
+> > The proper solution would be to have a new API:
+> > 
+> > 	raise_softirq_check()
+> > 
+> > and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
+> > - and put raise_softirq_check() to all places that use 
+> > raise_softirq*() from process context.
+> >  
+> > raise_softirq_check() would execute softirq handlers from process 
+> > context, if there's any pending ones. It has to be called outside of 
+> > bh critical sections - i.e. often a bit after the raise_softirq() 
+> > has been done.
+> > 
+> > __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
+> > and we'd only have two public APIs to trigger softirqs: 
+> > raise_softirq() and raise_softirq_irqoff(). Both just set the 
+> > pending flag and dont do any wakeup.
+> > 
+> > As a side-effect of these fixes, the tracepoints will be sorted out 
+> > as well - there wont be any need to hack into 
+> > __raise_softirq_irqoff().
+> > 
+> > 	Ingo
+> > 
+> 
+> Hi, Ingo
+> 
+> 	Could you give me the .config file that this bug occurs?
 
-Fair point
+I havent reproduced this - it was reported in a recent thread on 
+lkml. I dont have an URI for it - does anyone on the Cc: remember 
+the details?
 
-Alan
+	Ingo
