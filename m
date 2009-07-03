@@ -1,75 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758369AbZGCQyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbZGCQ74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758369AbZGCQyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZGCQyk
+	id S1757505AbZGCQ74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbZGCQ7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:54:40 -0400
-Received: from smtp106.sbc.mail.gq1.yahoo.com ([67.195.14.109]:28557 "HELO
-	smtp106.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755281AbZGCQyj (ORCPT
+	Fri, 3 Jul 2009 12:59:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35595 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754382AbZGCQ7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:54:39 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eJtCfQ+Nym7LgzsexTz8ipUSadnlt6Qnj1CBZrbzUqffD8EXVx8BmXcP7bO5SG7tPJUzqYZJwc9+BIms/7GKfnzdaH7/+Cl0YMNxA/jcTSVaR69zBMk3+6u09452P0r6w7JULP0QZZF/G2fS9YKNMGA5MjMf5E1jbZSxNSuwiGo=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: nYKFe3kVM1lpVUaox4fCoy7PmMnjXLSk.k.XsHbbfoTs.87tyRW5_jgntn2ZiZ3s4xRlpHG9Ihr1aS3uXo.NpsHkRKMNh4nQ6BLz47CxzIF1wdgqQweQy3U1n9hByEy51ZhiBkBu6f93w6qEDaM5upjs3JHp9eKfvBnDrhAS3mbhM6HH0TrPHCyHHPifrnm6L26eh5QQgzVgVUvITXMf9f.XnVVN4yKwcRiLXgi5B8vwL8CNusAQgE9Li3inJeQqareCQ8Tt5YSlJGuaeIKc3I4Me4XRgIvi.OtfICzW6DpzKpA7NiDXSNbw6_FCMxKujTRlD6HyFMdeVDIkoJD45LszPq97YBCc_D1C
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Alek Du <alek.du@intel.com>
-Subject: Re: [PATCH] gpio: pca953x: Add support for MAX7315
-Date: Fri, 3 Jul 2009 09:54:42 -0700
-User-Agent: KMail/1.9.10
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090703210803.24927aa2@dxy.sh.intel.com>
-In-Reply-To: <20090703210803.24927aa2@dxy.sh.intel.com>
+	Fri, 3 Jul 2009 12:59:48 -0400
+Date: Fri, 3 Jul 2009 09:58:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mingo@redhat.com, "H. Peter Anvin" <hpa@zytor.com>, paulus@samba.org,
+       acme@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [tip:perfcounters/urgent] x86: atomic64: The atomic64_t data
+ type should be 8 bytes aligned on 32-bit too
+In-Reply-To: <tip-bbf2a330d92c5afccfd17592ba9ccd50f41cf748@git.kernel.org>
+Message-ID: <alpine.LFD.2.01.0907030947300.3210@localhost.localdomain>
+References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain> <tip-bbf2a330d92c5afccfd17592ba9ccd50f41cf748@git.kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907030954.42458.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009, Alek Du wrote:
-> From eb473218a66568ee99d6be3904a0b95d67d0016e Mon Sep 17 00:00:00 2001
-> From: Alek Du <alek.du@intel.com>
-> Date: Wed, 1 Jul 2009 12:36:49 +0800
-> Subject: [PATCH] gpio: pca953x: Add support for MAX7315
-> 
-> MAX7315 is pin and software compatible with PCA9534, so add it to
-> the I2C device ID table of pca953x driver.
-> http://www.datasheetcatalog.org/datasheet/maxim/MAX7315.pdf
-> 
-> Signed-off-by: Alek Du <alek.du@intel.com>
-> Cc: David Brownell <david-b@pacbell.net>
-
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
 
-> ---
->  drivers/gpio/pca953x.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+On Fri, 3 Jul 2009, tip-bot for Eric Dumazet wrote:
 > 
-> diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
-> index cdb6574..8ab1308 100644
-> --- a/drivers/gpio/pca953x.c
-> +++ b/drivers/gpio/pca953x.c
-> @@ -40,6 +40,7 @@ static const struct i2c_device_id pca953x_id[] = {
->  	{ "pca9557", 8, },
->  
->  	{ "max7310", 8, },
-> +	{ "max7315", 8, },
->  	{ "pca6107", 8, },
->  	{ "tca6408", 8, },
->  	{ "tca6416", 16, },
-> -- 
-> 1.6.0.4
+> x86: atomic64: The atomic64_t data type should be 8 bytes aligned on 32-bit too
 > 
+> Locked instructions on two cache lines at once are painful. If
+> atomic64_t uses two cache lines, my test program is 10x slower.
 > 
+> The chance for that is significant: 4/32 or 12.5%.
 
+Btw, the comments here are not strictly correct.
 
+It's not necessarily even about "two cachelines". It's true that crossing 
+cachelines is extra painful, but from a CPU core angle, there's another 
+access width that matters almost as much, namely the width of the bus 
+between the core and the L1 cache. If it's not aligned to that, the core 
+needs to do each 8-byte read/write as two accesses, even if it's to the 
+same cacheline, and that complicates things.
+
+The cacheline itself is generally larger than the cache access width. I 
+could easily see a 64B cacheline, but a 256b (32B) bus between the cache 
+and the core.
+
+Making the atomics be naturally aligned means that you never cross either 
+one, of course.
+
+			Linus
