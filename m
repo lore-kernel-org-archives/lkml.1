@@ -1,65 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZGCVbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbZGCVlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759067AbZGCVbg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 17:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbZGCVb3
+	id S1759304AbZGCVlA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 17:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbZGCVkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 17:31:29 -0400
-Received: from smtpauth01.csee.onr.siteprotect.com ([64.26.60.145]:39264 "EHLO
-	smtpauth01.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756365AbZGCVb2 (ORCPT
+	Fri, 3 Jul 2009 17:40:52 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:53722 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756365AbZGCVku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 17:31:28 -0400
-Date: Fri, 3 Jul 2009 17:43:12 -0400 (EDT)
-From: Vince Weaver <vince@deater.net>
-X-X-Sender: vince@pianoman.cluster.toy
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: [numbers] perfmon/pfmon overhead of 17%-94%
-In-Reply-To: <20090703075822.GA13505@elte.hu>
-Message-ID: <Pine.LNX.4.64.0907031729040.17432@pianoman.cluster.toy>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy>
- <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy>
- <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu>
- <20090627064404.GA19368@elte.hu> <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy>
- <20090629210206.GB13125@elte.hu> <Pine.LNX.4.64.0907021702380.13747@pianoman.cluster.toy>
- <20090703075822.GA13505@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 3 Jul 2009 17:40:50 -0400
+Date: Fri, 3 Jul 2009 23:43:09 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, WANG Cong <amwang@redhat.com>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Floris Kraak <randakar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Frans Pop <elendil@planet.nl>,
+       maximilian attems <max@stro.at>, Tim Abbott <tabbott@ksplice.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: [GIT] kbuild fixes
+Message-ID: <20090703214309.GA15265@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus.
 
-On Fri, 3 Jul 2009, Ingo Molnar wrote:
-> That would give a mixture of hardware and software counter based IRQ
-> instrumentation features that looks quite compelling. Any comments
-> on what features/capabilities you'd like to see in this area?
+- various .gitignore updates
+- disabling of -Wformat-security
+  We looked at it and 'fixing' the warnings was not pleasant
+- fixes/improvements for the newly introduced macros in asm-generic/vmlinux.lds.h
 
-I'm mainly interested in just an aggregate total of "this many interrupts 
-occurred".  It wouldn't even need to be separated out by type or number. 
-I don't know if the metric would be useful to anyone else.  I tried to 
-hack this up a long time ago, to have the result reported with rusage()
-but never got anywhere with it.
+Nothing earth-shaking..
+And it has been in -next for a few days with no issues.
 
-> Btw., perfcounters still has no support for older Intel CPUs such as
-> P3's and P2's - and they have pretty sane PMUs - so if you have such
-> a machine (which your perfmon contribution suggests you might
-> have/had) and are interested it would be nice to get support for
-> them. P4 support is interesting too but more challenging.
+I am heading for a two week vacation in Sweden and will
+be offline in that period.
+Enjoy the kernel hacking while I enjoy my vacation :-) 
 
-I was indeed the one who got perfmon2 running on Pentium Pro, Pentium II, 
-and MIPS R12k.  For all those though there was an existing PMU driver and 
-I just added the appropriate "case" statements to enable support, and then 
-provided an updated list of available counters to the userspace utility. 
-The only real kernel hacking involved was the week spent tracking down a 
-hard-to-debug interrupt issue on the MIPS machine.
+	Sam
 
-Unfortunately I think writing PMU drivers is a bit beyond me, for the 
-amount of time I have.  Especially as the relevant machines I have are 
-located in relatively inaccessible locations (and PMU mistakes can lock up 
-the machines) plus it can take the better part of a day to compile 2.6 
-kernels on some of those machines.
 
-Vince
+The following changes since commit 4075ea8c54a7506844a69f674990241e7766357b:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
+
+Amerigo Wang (2):
+      gitignore: ignore gcov output files
+      kbuild: finally remove the obsolete variable $TOPDIR
+
+Floris Kraak (1):
+      Kbuild: Disable the -Wformat-security gcc flag
+
+Jaswinder Singh Rajput (1):
+      gitignore: ignore scripts/ihex2fw
+
+Paul Mundt (1):
+      asm-generic/vmlinux.lds.h: Fix up RW_DATA_SECTION definition.
+
+Tim Abbott (3):
+      Add new macros for page-aligned data and bss sections.
+      asm-generic/vmlinux.lds.h: shuffle INIT_TASK* macro names in vmlinux.lds.h
+      Add new __init_task_data macro to be used in arch init_task.c files.
+
+maximilian attems (1):
+      kbuild: deb-pkg ship changelog
+
+ .gitignore                        |    1 +
+ Makefile                          |    7 +++----
+ arch/mn10300/kernel/vmlinux.lds.S |    2 +-
+ drivers/scsi/cxgb3i/Kbuild        |    2 +-
+ include/asm-generic/vmlinux.lds.h |   12 ++++++------
+ include/linux/init_task.h         |    3 +++
+ include/linux/linkage.h           |    9 +++++++++
+ scripts/.gitignore                |    1 +
+ scripts/package/builddeb          |    2 ++
+ 9 files changed, 27 insertions(+), 12 deletions(-)
+
+diff --git a/.gitignore b/.gitignore
+index cecb3b0..b93fb7e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -27,6 +27,7 @@
+ *.gz
+ *.lzma
+ *.patch
++*.gcno
+ 
+ #
+ # Top-level generic files
+diff --git a/Makefile b/Makefile
+index d1216fe..b4c7ef5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -140,15 +140,13 @@ _all: modules
+ endif
+ 
+ srctree		:= $(if $(KBUILD_SRC),$(KBUILD_SRC),$(CURDIR))
+-TOPDIR		:= $(srctree)
+-# FIXME - TOPDIR is obsolete, use srctree/objtree
+ objtree		:= $(CURDIR)
+ src		:= $(srctree)
+ obj		:= $(objtree)
+ 
+ VPATH		:= $(srctree)$(if $(KBUILD_EXTMOD),:$(KBUILD_EXTMOD))
+ 
+-export srctree objtree VPATH TOPDIR
++export srctree objtree VPATH
+ 
+ 
+ # SUBARCH tells the usermode build what the underlying arch is.  That is set
+@@ -344,7 +342,8 @@ KBUILD_CPPFLAGS := -D__KERNEL__
+ 
+ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		   -fno-strict-aliasing -fno-common \
+-		   -Werror-implicit-function-declaration
++		   -Werror-implicit-function-declaration \
++		   -Wno-format-security
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
+ 
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+diff --git a/arch/mn10300/kernel/vmlinux.lds.S b/arch/mn10300/kernel/vmlinux.lds.S
+index bcebcef..c96ba3d 100644
+--- a/arch/mn10300/kernel/vmlinux.lds.S
++++ b/arch/mn10300/kernel/vmlinux.lds.S
+@@ -61,7 +61,7 @@ SECTIONS
+ 	_edata = .;		/* End of data section */
+   }
+ 
+-  .data.init_task : { INIT_TASK(THREAD_SIZE); }
++  .data.init_task : { INIT_TASK_DATA(THREAD_SIZE); }
+ 
+   /* might get freed after init */
+   . = ALIGN(PAGE_SIZE);
+diff --git a/drivers/scsi/cxgb3i/Kbuild b/drivers/scsi/cxgb3i/Kbuild
+index 25a2032..70d060b 100644
+--- a/drivers/scsi/cxgb3i/Kbuild
++++ b/drivers/scsi/cxgb3i/Kbuild
+@@ -1,4 +1,4 @@
+-EXTRA_CFLAGS += -I$(TOPDIR)/drivers/net/cxgb3
++EXTRA_CFLAGS += -I$(srctree)/drivers/net/cxgb3
+ 
+ cxgb3i-y := cxgb3i_init.o cxgb3i_iscsi.o cxgb3i_pdu.o cxgb3i_offload.o cxgb3i_ddp.o
+ obj-$(CONFIG_SCSI_CXGB3_ISCSI) += cxgb3i.o
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 92b73b6..720af4c 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -191,7 +191,7 @@
+ 	. = ALIGN(align);						\
+ 	*(.data.cacheline_aligned)
+ 
+-#define INIT_TASK(align)						\
++#define INIT_TASK_DATA(align)						\
+ 	. = ALIGN(align);						\
+ 	*(.data.init_task)
+ 
+@@ -434,10 +434,10 @@
+ /*
+  * Init task
+  */
+-#define INIT_TASK_DATA(align)						\
++#define INIT_TASK_DATA_SECTION(align)					\
+ 	. = ALIGN(align);						\
+ 	.data.init_task : {						\
+-		INIT_TASK						\
++		INIT_TASK_DATA(align)					\
+ 	}
+ 
+ #ifdef CONFIG_CONSTRUCTORS
+@@ -704,15 +704,15 @@
+  * matches the requirment of PAGE_ALIGNED_DATA.
+  *
+  * use 0 as page_align if page_aligned data is not used */
+-#define RW_DATA_SECTION(cacheline, nosave, pagealigned, inittask)	\
++#define RW_DATA_SECTION(cacheline, pagealigned, inittask)		\
+ 	. = ALIGN(PAGE_SIZE);						\
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {				\
+-		INIT_TASK(inittask)					\
++		INIT_TASK_DATA(inittask)				\
+ 		CACHELINE_ALIGNED_DATA(cacheline)			\
+ 		READ_MOSTLY_DATA(cacheline)				\
+ 		DATA_DATA						\
+ 		CONSTRUCTORS						\
+-		NOSAVE_DATA(nosave)					\
++		NOSAVE_DATA						\
+ 		PAGE_ALIGNED_DATA(pagealigned)				\
+ 	}
+ 
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index 5368fbd..7fc01b1 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -183,5 +183,8 @@ extern struct cred init_cred;
+ 	LIST_HEAD_INIT(cpu_timers[2]),					\
+ }
+ 
++/* Attach to the init_task data structure for proper alignment */
++#define __init_task_data __attribute__((__section__(".data.init_task")))
++
+ 
+ #endif
+diff --git a/include/linux/linkage.h b/include/linux/linkage.h
+index fee9e59..691f591 100644
+--- a/include/linux/linkage.h
++++ b/include/linux/linkage.h
+@@ -22,6 +22,15 @@
+ #define __page_aligned_bss	__section(.bss.page_aligned) __aligned(PAGE_SIZE)
+ 
+ /*
++ * For assembly routines.
++ *
++ * Note when using these that you must specify the appropriate
++ * alignment directives yourself
++ */
++#define __PAGE_ALIGNED_DATA	.section ".data.page_aligned", "aw"
++#define __PAGE_ALIGNED_BSS	.section ".bss.page_aligned", "aw"
++
++/*
+  * This is used by architectures to keep arguments on the stack
+  * untouched by the compiler by keeping them live until the end.
+  * The argument stack may be owned by the assembly-language
+diff --git a/scripts/.gitignore b/scripts/.gitignore
+index b939fbd..52cab46 100644
+--- a/scripts/.gitignore
++++ b/scripts/.gitignore
+@@ -7,3 +7,4 @@ pnmtologo
+ bin2c
+ unifdef
+ binoffset
++ihex2fw
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 01c2d13..b19f1f4 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -16,6 +16,8 @@ create_package() {
+ 	local pname="$1" pdir="$2"
+ 
+ 	cp debian/copyright "$pdir/usr/share/doc/$pname/"
++	cp debian/changelog "$pdir/usr/share/doc/$pname/changelog.Debian"
++	gzip -9 "$pdir/usr/share/doc/$pname/changelog.Debian"
+ 
+ 	# Fix ownership and permissions
+ 	chown -R root:root "$pdir"
