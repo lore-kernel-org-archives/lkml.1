@@ -1,92 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbZGCAL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbZGCALs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbZGCAL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZGCALQ
+	id S1757299AbZGCALs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZGCALg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:11:16 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:47442 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752794AbZGCALQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:11:16 -0400
-Date: Fri, 3 Jul 2009 02:11:17 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
-In-Reply-To: <19021.17576.808138.476600@samba.org>
-Message-ID: <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
- <19021.17576.808138.476600@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Thu, 2 Jul 2009 20:11:36 -0400
+Received: from kroah.org ([198.145.64.141]:49683 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754324AbZGCALf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:11:35 -0400
+Date: Thu, 2 Jul 2009 17:07:04 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.27.26
+Message-ID: <20090703000703.GA17190@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm announcing the release of the 2.6.27.26 kernel.  All users of the
+2.6.27 kernel series are very strongly encouraged to upgrade.
 
-On Friday 2009-07-03 01:37, tridge@samba.org wrote:
->
-> > Yes, here is your precedent case. The DUALNAMES patch breaks the
-> > operation on my Fujifilm Finepix A210 digital camera.
->
->interesting, but I think you may have been trapped by differences in
->the VFAT mounting options between the two examples.
+I'll also be replying to this message with a copy of the patch between
+2.6.27.25 and 2.6.27.26
 
-No special options — all defaults to whatever the Linux kernel and
-util-linux 2.14.1 gave me. Whereby util-linux should not make a
-difference because it just passes on the mount request for there is
-no special vfat helper.
+The updated 2.6.27.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
 
-Given my second report about the audio player (just sent out), I even
-compared dualnames=n with =y on the same kernel — which would rule
-out changed defaults between 2.6.29 and 2.6.31-rc.
+thanks,
 
-/proc/mounts contains, on .31-rc:
+greg k-h
 
-/dev/sdc1 /mnt vfat rw,relatime,fmask=0022,dmask=0022,codepage=437
-iocharset=utf8,errors=remont-ro 0 0
+------------
 
-> > Here, dscf4159.jpg is a preexisting file created by the camera itself 
-> > (and subsequently, Finepix's FAT code) as a result of taking a picture. 
-> > Then I just copied that file with two different kernels in succession.
->
->ok, dscf4159.jpg may or may not be a 8.3 name depending on the
->"shortname=" mount option. As this is a digital camera, I suspect that
->it was created as an 8.3 name, although you'd have to confirm that by
->inspecting the disk image. If you made a copy of the image available
->to me somewhere (please don't email it unless it compresses to a small
->size!) then I can tell you what the camera did in this case.
+ Makefile                         |    2 
+ arch/x86/kernel/reboot.c         |   18 ++++++++
+ arch/x86/kernel/setup.c          |   15 +-----
+ drivers/block/floppy.c           |   87 ++++++++++++++++++++++++++-------------
+ drivers/char/moxa.c              |    7 ++-
+ drivers/char/mxser.c             |    2 
+ drivers/char/pcmcia/cm4000_cs.c  |    3 -
+ drivers/firmware/memmap.c        |   16 ++++---
+ drivers/infiniband/hw/mlx4/qp.c  |    4 +
+ drivers/isdn/hisax/hfc_pci.c     |   41 +++++++++++++-----
+ drivers/isdn/hisax/hisax.h       |    2 
+ drivers/md/dm-mpath.c            |   11 ++++
+ drivers/md/dm.c                  |    4 +
+ drivers/md/raid5.c               |    1 
+ drivers/net/bonding/bond_sysfs.c |    1 
+ drivers/net/r8169.c              |   11 ++--
+ drivers/parport/parport_pc.c     |   34 ++++++++++++---
+ drivers/parport/parport_serial.c |   30 +++++++++++--
+ drivers/pci/pci.c                |    7 +--
+ drivers/pci/pcie/aspm.c          |    4 +
+ drivers/video/atmel_lcdfb.c      |   10 ----
+ fs/jbd/commit.c                  |    6 +-
+ include/linux/firmware-map.h     |   12 +----
+ include/linux/mlx4/qp.h          |    1 
+ kernel/acct.c                    |    6 +-
+ lib/Kconfig.debug                |    2 
+ mm/page_alloc.c                  |    6 +-
+ net/ipv4/tcp_ipv4.c              |    4 +
+ net/ipv4/tcp_output.c            |   13 ++++-
+ scripts/unifdef.c                |    6 +-
+ sound/core/seq/seq_midi_event.c  |    8 +--
+ sound/pci/ca0106/ca0106_mixer.c  |    6 ++
+ 32 files changed, 265 insertions(+), 115 deletions(-)
 
-http://jengelh.medozas.de/files/finepix.img.bz2
-(Includes an unreadable dscf3000 entry.)
+Clemens Ladisch (1):
+      sound: seq_midi_event: fix decoding of (N)RPN events
 
-Then, I just tried everything to get an overview:
+Dan Williams (1):
+      md/raid5: add missing call to schedule() after prepare_to_wait()
 
- (All with DUALNAMES=n)
- # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=lower
- # cp /mnt/dcim/100_fuji/dscf{4160,3004}.jpg
- # umount /mnt
- # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=win95
- # cp /mnt/dcim/100_fuji/dscf{4160,3005}.jpg
- # umount /mnt
- # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=winnt
- # cp /mnt/dcim/100_fuji/dscf{4160,3006}.jpg
- # umount /mnt
- # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=mixed
- # cp /mnt/dcim/100_fuji/dscf{4160,3007}.jpg
- # umount /mnt
+Dimitri Sivanich (1):
+      mm: fix handling of pagesets for downed cpus
 
-Result? The camera only displays 3006.
+Dirk Eibach (1):
+      char: moxa, prevent opening unavailable ports
 
-The dualnames patch's filling filenames with random illegal
-chars does seems to have a really foul side-effect after all.
+Eric Dumazet (1):
+      r8169: fix crash when large packets are received
+
+FUJITA Tomonori (1):
+      parport_pc: set properly the dma_mask for parport_pc device
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.27.26
+
+Jack Morgenstein (1):
+      IB/mlx4: Add strong ordering to local inval and fast reg work requests
+
+Jan Kara (1):
+      jbd: fix race in buffer processing in commit code
+
+Jean Delvare (1):
+      x86: Add quirk for reboot stalls on a Dell Optiplex 360
+
+Jens Rottmann (1):
+      parport_pc: after superio probing restore original register values
+
+Jiri Slaby (1):
+      pcmcia/cm4000: fix lock imbalance
+
+Justin P. Mattock (1):
+      kbuild: fix C libary confusion in unifdef.c due to getline()
+
+Karsten Keil (1):
+      ISDN: Fix DMA alloc for hfcpci
+
+Mikulas Patocka (2):
+      dm mpath: validate hw_handler argument count
+      dm mpath: validate table argument count
+
+Milan Broz (1):
+      dm: sysfs skip output when device is being destroyed
+
+Nicolas Ferre (1):
+      atmel_lcdfb: correct fifo size for some products
+
+Peter Botha (1):
+      char: mxser, fix ISA board lookup
+
+Peter Zijlstra (1):
+      lockdep: Select frame pointers on x86
+
+Philippe De Muyter (2):
+      parport: netmos 9845 & 9855 1P4S fixes
+      floppy: request and release only the ports we actually use
+
+Rafael J. Wysocki (2):
+      PCI PM: Fix handling of devices without PM support by pci_target_state()
+      PCI PM: Follow PCI_PM_CTRL_NO_SOFT_RESET during transitions from D3
+
+Renaud Lottiaux (1):
+      bsdacct: fix access to invalid filp in acct_on()
+
+Scott James Remnant (1):
+      floppy: provide a PNP device table in the module.
+
+Shaohua Li (1):
+      PCI: disable ASPM on VIA root-port-under-bridge configurations
+
+Stephen Hemminger (1):
+      bonding: fix multiple module load problem
+
+Steve Conklin (1):
+      x86: quirk for reboot stalls on a Dell Optiplex 330
+
+Takashi Iwai (1):
+      ALSA: ca0106 - Add missing registrations of vmaster controls
+
+Tom Quetchenbach (1):
+      tcp: advertise MSS requested by user
+
+Yinghai Lu (2):
+      firmware_map: fix hang with x86/32bit
+      x86: handle initrd that extends into unusable memory
+
