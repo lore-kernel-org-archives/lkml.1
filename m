@@ -1,95 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbZGCPxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZGCPzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbZGCPxV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZGCPxF
+	id S1757139AbZGCPzt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757046AbZGCPzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:53:05 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:35292 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755914AbZGCPxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:53:03 -0400
-X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Jul 2009 11:53:03 EDT
-Date: Fri, 3 Jul 2009 17:43:27 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: Alain Knaff <alain@knaff.lu>,
-       Michael Opdenacker <michael-lists@free-electrons.com>,
-       Florian Fainelli <florian@openwrt.org>,
-       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-embedded mailing list <linux-embedded@vger.kernel.org>
-Subject: Re: Status of bzip2 and lzma kernel compression for ARM?
-Message-ID: <20090703154327.GE4278@pc-ras4041.res.insa>
-References: <4A428AFF.20307@free-electrons.com> <4A433BCD.2030506@compulab.co.il> <200906251104.02830.florian@openwrt.org> <4A4396CB.9000703@free-electrons.com> <4A4776DD.50105@knaff.lu> <4A478286.8020908@knaff.lu> <4A48B1D9.90306@compulab.co.il>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A48B1D9.90306@compulab.co.il>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 3 Jul 2009 11:55:41 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41317 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756957AbZGCPzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 11:55:40 -0400
+Message-Id: <20090703152514.903448283@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 03 Jul 2009 11:25:14 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>, Thomas Renninger <trenn@suse.de>,
+       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [patch 2.6.30 0/4] Fix cpufreq locking dependency (resend)
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri,  3 Jul 2009 15:55:15 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 29, 2009 at 03:21:45PM +0300, Mike Rapoport wrote :
-> 
-> 
-> Alain Knaff wrote:
-> > Alain Knaff wrote:
-> >> Attached is a version of the ARM patch for 2.6.30
-> >>
-> >> There seems to be some issues with the include files (which did not pose
-> >> any problems in 2.6.28...), but hopefully somebody more experienced with
-> >> the ARM architecture (and with its recent development) than I can help
-> >> out there.
-> >>
-> >> Regards,
-> >>
-> >> Alain
-> > 
-> > Actually, the needed changes turned out to be easier than I initially
-> > feared. Attached a version that compiles all right.
-> 
-> I gave it a quick test and it hangs before "Decompressing kernel" is output.
-> I hope I'll have time this week to debug what's wrong there.
+(sorry, quilt mail problems in the previous post, here is the resend)
 
-On my testing board, it hangs after "Decompressing kernel" is output. It seems
-that it's getting stuck in the following piece of code in lib/decompressor_lzma.c
+Hi,
 
-while (get_pos(&wr) < header.dst_size) {
-                int pos_state = get_pos(&wr) & pos_state_mask;
-                uint16_t *prob = p + LZMA_IS_MATCH +
-                        (cst.state << LZMA_NUM_POS_BITS_MAX) + pos_state;
-                if (rc_is_bit_0(&rc, prob))
-                        process_bit0(&wr, &rc, &cst, p, pos_state, prob,
-                                     lc, literal_pos_mask);
-                else {
-                        process_bit1(&wr, &rc, &cst, p, pos_state, prob);
-                        if (cst.rep0 == 0)
-                                break;
-                }
-}
+Here is a patchset applying on 2.6.30 which should fix the cpufreq locking
+dependency. Sadly, my two main test machines does not seem to support cpufreq,
+so I have only been able to perform very light testing. (I can't afford to lock
+down my laptop right now).
 
-Based on some quick tests, it seems that header.dst_size is 0xFFFFFFFFFFFFFFFF,
-and if my understanding is correct, it's because LZMA doesn't write the file
-size in the header if it reads its input from a pipe, and piggy.lzma turns out
-to be created using a pipe.
+I went for the most straightforward fix I could think of and kept the current
+locking structure. As you will see, the second patch cleans up the error
+handling paths of cpufreq add dev, which were a total mess.
 
-Replacing cmd_lzma in scripts/Makefile.lib by the following snippet:
+As a general recommendation, creating scripts which does, concurrently :
 
-cmd_lzma = (lzma -9 -c $(filter-out FORCE, $^) > $@ && $(call size_append, $(filter-out FORCE,$^)) >> $@ ) || (rm -f $@ ; false)
+cpu hotplug up/down
+cpufreq sysfs actions
+change between cpufreq governors
+add governors on random CPU numbers
 
-does the trick, as lzma is able to write the file size in the header (and I
-think the second part is useless, as it's the filesize encoded in 32bits
-little-endian). However, it now hangs right after the 'done, booting the
-kernel.'
+will likely help stress-testing cpufreq locking. I really did not like what I've
+seen there. It looked _very_ fragile.
 
-Hope that helps,
+Hopefully this will be better with this patches, but again, testing is welcome.
+
+Thanks,
+
+Mathieu
+
+
 -- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
