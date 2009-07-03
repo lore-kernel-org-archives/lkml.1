@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZGCInD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbZGCIsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZGCInD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZGCImz
+	id S1753734AbZGCIsm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZGCIsa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:42:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54167 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbZGCImy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:42:54 -0400
-Message-ID: <4A4DC4CF.4020808@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 16:43:59 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroup: Fix indent for /proc/cgroups
-References: <4A4DBBC2.8010805@cn.fujitsu.com> <4A4DBF50.8090408@cn.fujitsu.com> <4A4DC358.7030900@cn.fujitsu.com>
-In-Reply-To: <4A4DC358.7030900@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 04:48:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44646 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbZGCIs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:48:28 -0400
+From: Tejun Heo <tj@kernel.org>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Niel Lambrechts <niel.lambrechts@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCHSET] block: fix merge of requests with different failfast settings
+Date: Fri,  3 Jul 2009 17:48:14 +0900
+Message-Id: <1246610898-22350-1-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 08:48:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gui Jianfeng wrote:
-> Li Zefan wrote:
->> CC: container list
->>
->> Gui Jianfeng wrote:
->>> Currently, /proc/cgroups outputs is fairly ugly as following,
->>> #subsys_name    hierarchy       num_cgroups     enabled
->>> cpuset  0       1       1
->>> debug   0       1       1
->>> ns      0       1       1
->>>
->>> indent it in a good-looking way.
->>> #subsys_name    hierarchy       num_cgroups     enabled
->>> cpuset          0               1               1
->>> debug           0               1               1
->>> ns              0               1               1
->>>
->> But if there's a subsystem with name length >= 8,
->> it won't be aligned properly..
-> 
->   Yeap, but there isn't such a case at least by now.
-> 
+Hello,
 
-This is not a good reason.
+Block layer didn't consider failfast status while merging requests and
+it led to premature failure of normal (non-failfast) IOs.  Niel
+Lambrechts could trigger the problem semi-reliably on ext4 when
+resuming from STR.  ext4 uses readahead when reading inodes and
+combined with the deterministic extra SATA PHY exception cycle during
+resume on the specific configuration, non-readahead inode read would
+fail causing ext4 errors.  Please read the following thread for
+details.
 
-We'll probably have such a subsystem. Actually there's a
-proposed subsystem named "maxdepth" which is of length 8.
+  http://lkml.org/lkml/2009/5/23/21
 
-See:
-http://lkml.org/lkml/2009/7/1/581
+This patchset contains the following four patches to fix the problem.
 
+ 0001-block-don-t-merge-requests-of-different-failfast-se.patch
+ 0002-block-use-the-same-failfast-bits-for-bio-and-reques.patch
+ 0003-block-implement-mixed-merge-of-different-failfast-r.patch
+ 0004-scsi-block-update-SCSI-to-handle-mixed-merge-failur.patch
+
+0001 disallows merge between requests with different failfast
+settings.  This one is the quick fix and should go into 2.6.31 and
+later to -stable as the bug is pretty serious and may lead to data
+loss.
+
+0002 preps for later changes.
+
+0003-0004 implements and applies mixed merge.  Requests of different
+failfast settings are merged as before but failure handling is updated
+such that parts which shouldn't fail without retrial are properly
+retried.
+
+I spent quite some time thinking about and testing it but I'd really
+like more pairs of eyes on this patchset as dangerous bugs can go
+unnoticed for quite a while in this area (anyone knows when the
+failfast bug was introduced?).
+
+Jens, I think the best way to merge this is to first push 0001 to
+Linus's tree and then pull it into for-next and then apply the rest on
+top of them.
+
+This patchset contains the following changes.
+
+ block/blk-core.c        |  118 +++++++++++++++++++++++++++++++++++++++++++-----
+ block/blk-merge.c       |   43 +++++++++++++++++
+ block/blk.h             |    1 
+ drivers/scsi/scsi_lib.c |    6 +-
+ include/linux/bio.h     |   43 +++++++++--------
+ include/linux/blkdev.h  |   27 ++++++++--
+ 6 files changed, 199 insertions(+), 39 deletions(-)
+
+Thanks.
+
+--
+tejun
