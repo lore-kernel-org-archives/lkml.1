@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbZGCL0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454AbZGCL07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbZGCL0f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 07:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZGCL0X
+	id S1755454AbZGCL07 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 07:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZGCL0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 07:26:23 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:51037 "EHLO smtp.anarazel.de"
+	Fri, 3 Jul 2009 07:26:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40695 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZGCL0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 07:26:22 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
-Date: Fri, 3 Jul 2009 13:26:21 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc1-andres-00457-g396ca83-dirty; KDE/4.2.95; x86_64; ; )
-Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200907030331.32531.andres@anarazel.de> <20090703061213.GA4847@ff.dom.local>
-In-Reply-To: <20090703061213.GA4847@ff.dom.local>
+	id S1752389AbZGCL0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 07:26:51 -0400
+Date: Fri, 3 Jul 2009 13:26:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
+       paulus@samba.org, arnd@arndb.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
+Message-ID: <20090703112642.GA14744@elte.hu>
+References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <20090703111755.GA7161@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907031326.21822.andres@anarazel.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703111755.GA7161@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0115]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
-> On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
-> ...
->
-> > Ok. I finally see the light. I bisected the issue down to
-> > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
-> > pinned timers
-> >
-> > Disabling timer migration like provided in the earlier commit stops the
-> > issue from occuring.
-> >
-> > That it is related to timers is sensible in the light of my findings,
-> > that I could trigger the issue only when using delay in netem - that is
-> > the codepath using qdisc_watchdog...
->
-> Andres, thanks for your work and time. It saved me a lot of searching,
-> because I wasn't able to trigger this on my old box.
-Thanks. It allowed me to go through some of my remaining paperwork ;-)
 
-Does anybody of you have an idea where the problem actually resides? 
-qdisc_watchdog_schedule looks innocent enough for my uneducated eyes - and the 
-patch/infrastructure from Arun goes over my head...
-I will happily test some ideas/patches.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Aside from that - is the whole PSCHED_TICKS2NS/PSCHED_NS2TICKS conversion 
-business purely backward compatibility?
+> Good point. I've done a simple:
+> 
+> u64 atomic64_read(atomic64_t *ptr)
+> {
+>         return cmpxchg8b(ptr, 0, 0);
+> }
 
-Andres
+-1 is better i guess, as that way we can avoid dirtying the 
+cacheline. Zero is way too common for atomics.
+
+	Ingo
