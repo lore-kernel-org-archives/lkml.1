@@ -1,243 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZGCLla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZGCLnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbZGCLla (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 07:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZGCLlT
+	id S1754603AbZGCLnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 07:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZGCLmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 07:41:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34920 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZGCLlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 07:41:17 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: venkatesh.pallipadi@intel.com
-Subject: Re: [patch 1/4] cpufreq: Eliminate the recent lockdep warnings in cpufreq
-Date: Fri, 3 Jul 2009 13:41:17 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.23-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: "Dave Jones" <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Dave Young" <hidave.darkstar@gmail.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
-References: <20090703000829.735976000@intel.com> <20090703000923.800507000@intel.com>
-In-Reply-To: <20090703000923.800507000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
+	Fri, 3 Jul 2009 07:42:54 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:49536 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752828AbZGCLmx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 07:42:53 -0400
+Subject: Re: Memory leak in iwlwifi or false positive?
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1246573533.17896.867.camel@rc-desk>
+References: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
+	 <1246573533.17896.867.camel@rc-desk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 03 Jul 2009 12:42:52 +0100
+Message-Id: <1246621372.24965.30.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907031341.19141.trenn@suse.de>
+X-OriginalArrivalTime: 03 Jul 2009 11:42:53.0320 (UTC) FILETIME=[66817080:01C9FBD3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 02:08:30 venkatesh.pallipadi@intel.com wrote:
-> Commit b14893a62c73af0eca414cfed505b8c09efc613c although it was very
-> much needed to properly cleanup ondemand timer, opened-up a can of worms
-> related to locking dependencies in cpufreq.
-> 
-> Patch here defines the need for dbs_mutex and cleans up its usage in
-> ondemand governor. This also resolves the lockdep warnings reported here
-I think I get these changes and now dbs_mutex is needed...
-Making sure governor() is always called with rwsem held (hope that is the
-case now) is a good idea. Unfortunately it requires the dbs_mutex in
-do_dbs_timer and it will be hard to ever remove it.
+Hi Reinette,
 
-I still do not see the need of "dbs_mutex protects data in dbs_tuners_ins
-from concurrent changes", though. If someone enlightens me, that would
-be appreciated.
+On Thu, 2009-07-02 at 15:25 -0700, reinette chatre wrote:
+> On Thu, 2009-07-02 at 14:32 -0700, Catalin Marinas wrote:
+> > I'm trying to get kmemleak more robust and with the latest patches (not
+> 
+> I just compiled my 2.6.31 kernel with kmemleak but did not yet look into
+> how it works ... I do see a lot of messages though. 
 
-Thanks,
+There are some patches in the latest mainline git tree to make it less
+verbose and some pending patches in my kmemleak branch (on
+git://linux-arm.org/linux-2.6.git).
 
-     Thomas
+Basically, it basically tracks all the allocated memory blocks. It scans
+starting with the data sections and stacks for pointers to (anywhere
+inside of) allocated memory blocks. The blocks found are scanned as well
+until it finishes scanning. If a memory block wasn't referred via any
+pointer during a scan, it is reported as a suspected leak (you can look
+at Documentation/kmemleak.txt).
 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/01925.html
-> http://lkml.indiana.edu/hypermail/linux/kernel/0907.0/00820.html
+> > This happens shortly after booting. Note that if an object is freed,
+> > kmemleak no longer tracks it and therefore no reporting. But in this
+> > case it looks like the iwlwifi code really allocated ~4800 blocks. Is it
+> > normal for this code to keep so many blocks allocated? If yes, it is
+> > probably kmemleak missing some root object in the references tree.
 > 
-> and few others..
+> Yes - this sounds about right. You tested with 5100 hardware which by
+> default initializes 20 TX queues. For each of these queues it maintains
+> a 256 buffer array of commands with 356 bytes used for each command.
 > 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c              |    4 ++--
->  drivers/cpufreq/cpufreq_conservative.c |   27 +++++++++++----------------
->  drivers/cpufreq/cpufreq_ondemand.c     |   27 +++++++++++----------------
->  3 files changed, 24 insertions(+), 34 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 6e2ec0b..c7fe16e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1070,8 +1070,6 @@ static int __cpufreq_remove_dev(struct sys_device 
-*sys_dev)
->  	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
->  #endif
->  
-> -	unlock_policy_rwsem_write(cpu);
-> -
->  	if (cpufreq_driver->target)
->  		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
->  
-> @@ -1088,6 +1086,8 @@ static int __cpufreq_remove_dev(struct sys_device 
-*sys_dev)
->  	if (cpufreq_driver->exit)
->  		cpufreq_driver->exit(data);
->  
-> +	unlock_policy_rwsem_write(cpu);
-> +
->  	free_cpumask_var(data->related_cpus);
->  	free_cpumask_var(data->cpus);
->  	kfree(data);
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c 
-b/drivers/cpufreq/cpufreq_conservative.c
-> index 7fc58af..58889f2 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -70,15 +70,10 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, 
-cpu_dbs_info);
->  static unsigned int dbs_enable;	/* number of CPUs using this policy */
->  
->  /*
-> - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
-> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
-> - * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, 
-then
-> - * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-> - * is recursive for the same process. -Venki
-> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, 
-because it
-> - * would deadlock with cancel_delayed_work_sync(), which is needed for 
-proper
-> - * raceless workqueue teardown.
-> + * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
-> + * different CPUs. It protects dbs_enable in governor start/stop. It also
-> + * serializes governor limit_change with do_dbs_timer. We do not want
-> + * do_dbs_timer to run when user is changing the governor or limits.
->   */
->  static DEFINE_MUTEX(dbs_mutex);
->  
-> @@ -488,18 +483,17 @@ static void do_dbs_timer(struct work_struct *work)
->  
->  	delay -= jiffies % delay;
->  
-> -	if (lock_policy_rwsem_write(cpu) < 0)
-> -		return;
-> +	mutex_lock(&dbs_mutex);
->  
->  	if (!dbs_info->enable) {
-> -		unlock_policy_rwsem_write(cpu);
-> +		mutex_unlock(&dbs_mutex);
->  		return;
->  	}
->  
->  	dbs_check_cpu(dbs_info);
->  
->  	queue_delayed_work_on(cpu, kconservative_wq, &dbs_info->work, delay);
-> -	unlock_policy_rwsem_write(cpu);
-> +	mutex_unlock(&dbs_mutex);
->  }
->  
->  static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
-> @@ -590,15 +584,16 @@ static int cpufreq_governor_dbs(struct cpufreq_policy 
-*policy,
->  					&dbs_cpufreq_notifier_block,
->  					CPUFREQ_TRANSITION_NOTIFIER);
->  		}
-> -		dbs_timer_init(this_dbs_info);
-> -
->  		mutex_unlock(&dbs_mutex);
->  
-> +		dbs_timer_init(this_dbs_info);
-> +
->  		break;
->  
->  	case CPUFREQ_GOV_STOP:
-> -		mutex_lock(&dbs_mutex);
->  		dbs_timer_exit(this_dbs_info);
-> +
-> +		mutex_lock(&dbs_mutex);
->  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
->  		dbs_enable--;
->  
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c 
-b/drivers/cpufreq/cpufreq_ondemand.c
-> index 1911d17..246ae14 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -78,15 +78,10 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, 
-cpu_dbs_info);
->  static unsigned int dbs_enable;	/* number of CPUs using this policy */
->  
->  /*
-> - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
-> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
-> - * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, 
-then
-> - * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-> - * is recursive for the same process. -Venki
-> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, 
-because it
-> - * would deadlock with cancel_delayed_work_sync(), which is needed for 
-proper
-> - * raceless workqueue teardown.
-> + * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
-> + * different CPUs. It protects dbs_enable in governor start/stop. It also
-> + * serializes governor limit_change with do_dbs_timer. We do not want
-> + * do_dbs_timer to run when user is changing the governor or limits.
->   */
->  static DEFINE_MUTEX(dbs_mutex);
->  
-> @@ -494,11 +489,10 @@ static void do_dbs_timer(struct work_struct *work)
->  
->  	delay -= jiffies % delay;
->  
-> -	if (lock_policy_rwsem_write(cpu) < 0)
-> -		return;
-> +	mutex_lock(&dbs_mutex);
->  
->  	if (!dbs_info->enable) {
-> -		unlock_policy_rwsem_write(cpu);
-> +		mutex_unlock(&dbs_mutex);
->  		return;
->  	}
->  
-> @@ -517,7 +511,7 @@ static void do_dbs_timer(struct work_struct *work)
->  			dbs_info->freq_lo, CPUFREQ_RELATION_H);
->  	}
->  	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
-> -	unlock_policy_rwsem_write(cpu);
-> +	mutex_unlock(&dbs_mutex);
->  }
->  
->  static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
-> @@ -598,14 +592,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy 
-*policy,
->  				max(min_sampling_rate,
->  				    latency * LATENCY_MULTIPLIER);
->  		}
-> -		dbs_timer_init(this_dbs_info);
-> -
->  		mutex_unlock(&dbs_mutex);
-> +
-> +		dbs_timer_init(this_dbs_info);
->  		break;
->  
->  	case CPUFREQ_GOV_STOP:
-> -		mutex_lock(&dbs_mutex);
->  		dbs_timer_exit(this_dbs_info);
-> +
-> +		mutex_lock(&dbs_mutex);
->  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
->  		dbs_enable--;
->  		mutex_unlock(&dbs_mutex);
-> -- 
-> 1.6.0.6
-> 
-> -- 
-> 
-> 
+> The 20 * 256 gives me 5120 ... would that explain the ~4800?
 
+OK, thanks. It could be a bug in kmemleak but I'll do some more testing
+tonight and let you know.
+
+It may be that I missed tracing some kmalloc calls.
+
+Thanks.
+
+-- 
+Catalin
 
