@@ -1,167 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZGCNPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZGCNRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZGCNPo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZGCNPh
+	id S1757434AbZGCNRm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 09:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZGCNRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:15:37 -0400
-Received: from mga01.intel.com ([192.55.52.88]:5211 "EHLO mga01.intel.com"
+	Fri, 3 Jul 2009 09:17:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54155 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbZGCNPg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:15:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,342,1243839600"; 
-   d="scan'208,223";a="471783069"
-Date: Fri, 3 Jul 2009 21:10:34 +0800
-From: Alek Du <alek.du@intel.com>
-To: David Brownell <david-b@pacbell.net>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
-Message-ID: <20090703211034.47fc0880@dxy.sh.intel.com>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1751425AbZGCNRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 09:17:34 -0400
+Date: Fri, 3 Jul 2009 15:17:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703131727.GA3207@elte.hu>
+References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk> <20090703064518.GA30674@elte.hu> <20090703100834.6cb241b6@lxorguk.ukuu.org.uk> <20090703091655.GB3902@elte.hu> <20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk> <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703114431.37abd528@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 02227060687d8ce8254714d9812e19b815463dd4 Mon Sep 17 00:00:00 2001
-From: Alek Du <alek.du@intel.com>
-Date: Wed, 1 Jul 2009 17:07:00 +0800
-Subject: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
 
-This patch is required when using this gpio driver with gpio_keys driver
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Signed-off-by: Alek Du <alek.du@intel.com>
-CC: David Brownell <david-b@pacbell.net>
----
- drivers/gpio/pca953x.c      |   54 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/i2c/pca953x.h |    3 ++
- 2 files changed, 57 insertions(+), 0 deletions(-)
+> > > Which is a cut and paste of code from the originals into the 
+> > > helper.
+> > 
+> > and this changes my points how? It's not like it's hard to fix, 
+> > and the code is moved non-trivially anyway, it's better to have 
+> > it nicer if we touch it anyway.
+> 
+> Its called engineering and good practice. The old code was 
+> correct. The paste of it is therefore most likely to be correct. 
+> Furthermore patches shouldn't mix clean up with other changes. So 
+> doing it as one is most definitely bad practice.
 
-diff --git a/drivers/gpio/pca953x.c b/drivers/gpio/pca953x.c
-index 8ab1308..47c1d99 100644
---- a/drivers/gpio/pca953x.c
-+++ b/drivers/gpio/pca953x.c
-@@ -13,6 +13,7 @@
- 
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/i2c.h>
- #include <linux/i2c/pca953x.h>
- #ifdef CONFIG_OF_GPIO
-@@ -51,6 +52,7 @@ MODULE_DEVICE_TABLE(i2c, pca953x_id);
- 
- struct pca953x_chip {
- 	unsigned gpio_start;
-+	unsigned irq_base;
- 	uint16_t reg_output;
- 	uint16_t reg_direction;
- 
-@@ -183,6 +185,13 @@ static void pca953x_gpio_set_value(struct gpio_chip *gc, unsigned off, int val)
- 	chip->reg_output = reg_val;
- }
- 
-+static int pca953x_gpio_to_irq(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pca953x_chip *chip = container_of(gc, struct pca953x_chip,
-+								gpio_chip);
-+	return chip->irq_base + offset;
-+}
-+
- static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
- {
- 	struct gpio_chip *gc;
-@@ -193,6 +202,7 @@ static void pca953x_setup_gpio(struct pca953x_chip *chip, int gpios)
- 	gc->direction_output = pca953x_gpio_direction_output;
- 	gc->get = pca953x_gpio_get_value;
- 	gc->set = pca953x_gpio_set_value;
-+	gc->to_irq = pca953x_gpio_to_irq;
- 	gc->can_sleep = 1;
- 
- 	gc->base = chip->gpio_start;
-@@ -251,6 +261,34 @@ pca953x_get_alt_pdata(struct i2c_client *client)
- }
- #endif
- 
-+/* the irq_chip at least needs one handler */
-+static void pca953x_irq_unmask(unsigned irq)
-+{
-+}
-+
-+static struct irq_chip pca953x_irqchip = {
-+	.name		= "pca953x_irqchip",
-+	.unmask		= pca953x_irq_unmask,
-+};
-+
-+static void pca953x_irq_handler(unsigned irq, struct irq_desc *desc)
-+{
-+	struct pca953x_chip *chip = (struct pca953x_chip *)get_irq_data(irq);
-+	int i;
-+
-+	if (desc->chip->ack)
-+		desc->chip->ack(irq);
-+	/* we must call all sub-irqs, since there is no way to read
-+	 * I2C gpio expander's status in irq context. The driver itself
-+	 * would be reponsible to check if the irq is for him.
-+	 */
-+	for (i = 0; i < chip->gpio_chip.ngpio; i++)
-+		generic_handle_irq(chip->irq_base + i);
-+
-+	if (desc->chip->unmask)
-+		desc->chip->unmask(irq);
-+}
-+
- static int __devinit pca953x_probe(struct i2c_client *client,
- 				   const struct i2c_device_id *id)
- {
-@@ -284,6 +322,8 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 
- 	chip->names = pdata->names;
- 
-+	chip->irq_base = pdata->irq_base;
-+
- 	/* initialize cached registers from their original values.
- 	 * we can't share this chip with another i2c master.
- 	 */
-@@ -315,6 +355,20 @@ static int __devinit pca953x_probe(struct i2c_client *client,
- 	}
- 
- 	i2c_set_clientdata(client, chip);
-+
-+	if (chip->irq_base) {
-+		int i;
-+
-+		set_irq_type(client->irq,
-+				IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_EDGE_RISING);
-+		set_irq_chained_handler(client->irq, pca953x_irq_handler);
-+		set_irq_data(client->irq, chip);
-+		for (i = 0; i < chip->gpio_chip.ngpio; i++) {
-+			set_irq_chip_and_handler_name(i + chip->irq_base,
-+				&pca953x_irqchip, handle_simple_irq, "demux");
-+			set_irq_chip_data(i + chip->irq_base, chip);
-+		}
-+	}
- 	return 0;
- 
- out_failed:
-diff --git a/include/linux/i2c/pca953x.h b/include/linux/i2c/pca953x.h
-index 81736d6..bf7c0a3 100644
---- a/include/linux/i2c/pca953x.h
-+++ b/include/linux/i2c/pca953x.h
-@@ -4,6 +4,9 @@ struct pca953x_platform_data {
- 	/* number of the first GPIO */
- 	unsigned	gpio_base;
- 
-+	/* number of the first IRQ */
-+	unsigned	irq_base;
-+
- 	/* initial polarity inversion setting */
- 	uint16_t	invert;
- 
--- 
-1.6.0.4
+So you cannot do such trivial cleanups safely and validate the 
+result?
+
+> > > > Also note the inconsistent printk-ing lines, mutiliated by 
+> > > > line warps. The use of pr_warning() would solve it:
+> > > 
+> > > Send patches if it bugs you that much. [...]
+> > 
+> > I find that a rather flippant attitude to kernel code quality 
+> > issues.
+> 
+> I have better uses for my time than fiddling with pr_warning(). 
+> Fixing real bugs for example, bugs that crash your system, broken 
+> locking that goes back to Linux 2.2 and DaveM's original push of 
+> lock_kernel out of IRQ paths
+
+That does not make you exempt from the rules everyone else seems to 
+be able to follow though ...
+
+> > Also, isnt it a double standard: why should newbies be held to 
+> > higher standards than you hold yourself to?
+> 
+> Why should anyone be held up to bogus standards ?
+
+I came across this patch of yours on lkml and noticed a few problems 
+- checkpatch noticed a few more. Is the reviewing of patches and the 
+commenting on unclean patches a 'bogus standard'? Do we have some 
+separate standard just for you?
+
+> To bend an appropriate metaphor Ingo - you are trying to criticize 
+> the paint finish of the bike shed while some of us are still 
+> replacing the rusted and corroded beams.
+> [...]
+
+That metaphor is quite inapposite: type safety and clean coding 
+standards are way more relevant than just 'paint finish'.
+
+To use a car analogy: if you ever open an engine, regardless of how 
+corroded it is on the outside, the first thing you will learn is to 
+work extremely cleanly - otherwise the pistons might get stuck and 
+the engine blows pretty quickly - or even if you are lucky you've 
+got a lot more wear and more fuel consumption.
+
+Or to advance your bike-shed metaphor some more: today's rusty and 
+corroded items are the result of missing anti-corrosion efforts in 
+the past ...
+
+> If it was a new bike shed you might be in order, but at the moment 
+> the tty layer is rescue archaeology and I'm spending my time doing 
+> useful things like fixing the real bugs and getting from where we 
+> are now to somewhere useful without causing too much carnage on 
+> the way. pr_warning is an end of the journey polishing job.
+> 
+> The x86 experience doesn't translate here - Andi left you a well 
+> maintained, well polished starting point. Nobody has been 
+> maintaining tty for years.
+
+Well, you might not have that experience because you did not take 
+part in it, but in my first hand experience the x86 situation and 
+unification translates pretty well to this situation: it was left in 
+quite a mess and one of the things we learned along the way is that 
+'temporary crap' is all but temporary and that the sanest 
+engineering choice is to just produce clean patches.
+
+You might discover that yourself with the TTY layer ... or you might 
+come to a different conclusion. We'll see.
+
+Anyway ... all i did was to comment on a somewhat deficient patch 
+that you submitted to lkml. If you dont want review feedback and if 
+you feel embarrased and defensive by getting it then please dont 
+send out slightly-messy signed-off patches to lkml, it's simple as 
+that.
+
+	Ingo
