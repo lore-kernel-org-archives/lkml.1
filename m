@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbZGCBxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZGCB63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbZGCBxw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 21:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbZGCBxo
+	id S1757273AbZGCB63 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZGCB6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 21:53:44 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:36746 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751563AbZGCBxo (ORCPT
+	Thu, 2 Jul 2009 21:58:20 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52956 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753344AbZGCB6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 21:53:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lFAVVGy5MKYsQ1jt6ikzKS4FjYOzbgUASQQIhoX/+5XNyXjOuYGV5IZRRyCPOrbN/K
-         FoOyD4iRh7JgRxbg84DK2nsABAq4jN46k4Nx3CfJReG4IdwAnVIRUFEQ70z0e93g7mg+
-         0b3dpvfJF91klBrSRz/9N5izpDsiZdyLq6zgM=
-Date: Fri, 3 Jul 2009 09:55:54 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-Message-ID: <20090703015554.GB5880@cr0.nay.redhat.com>
-References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com> <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com> <20090702094620.GE6372@cr0.nay.redhat.com> <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com> <20090702102138.GF6372@cr0.nay.redhat.com> <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com>
+	Thu, 2 Jul 2009 21:58:19 -0400
+Date: Fri, 3 Jul 2009 03:58:22 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: tridge@samba.org
+cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
+In-Reply-To: <19021.24134.319252.776778@samba.org>
+Message-ID: <alpine.LSU.2.00.0907030350330.24650@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+ <19021.17576.808138.476600@samba.org> <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr> <19021.20449.732095.210252@samba.org> <alpine.LSU.2.00.0907030254180.22039@fbirervta.pbzchgretzou.qr> <19021.24134.319252.776778@samba.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 08:43:39AM +0800, Changli Gao wrote:
->On Thu, Jul 2, 2009 at 6:21 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->> On Thu, Jul 02, 2009 at 06:04:02PM +0800, Changli Gao wrote:
->>>On Thu, Jul 2, 2009 at 5:46 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>>>>Are you familiar with splice() and tee()? They both use pipes as kernel buffers.
->>>>
->>>> You are not answering the question, obviously.
->>>When you use pipes as kernel buffer handlers, two fd isn't necessary.
->>>Using one will save half of fd resources. Is it obviously?
->>
->> Not really.. I can't see any reason why you use this method to save
->> fd's... pick read(2)/write(2).
->In order to use splice, you must have pipe first. The common code is:
->
->int fd[2];
->
->pipe(fd);
->splice(infd, NULL, fd[1], NULL, getpagesize(), SPLICE_F_MOVE);
->splice(fd[0], NULL, outfd, NULL, getpagesize(), SPLICE_F_MOVE);
->close(fd[0]);
->close(fd[1]);
->
->if pipe supports NULL argument, and returnes a RW pipe fd in that
->case, the code will become:
->
->int fd;
->
->fd = pipe(NULL);
->splice(infd, NULL, fd, NULL, getpagesize(), SPLICE_F_MOVE);
->splice(fd, NULL, outfd, NULL, getpagesize(), SPLICE_F_MOVE);
->close(fd);
->
->One fd is saved.
 
-
-What is a pipe in your mind? A pipe has two points, obviously,
-you are making it a single point, thus you can't call it a pipe
-any more...
-
-I don't like this.
-
-And just as what you showed above, you can close the fd's
-after finishing, thus you only save one fd during these
-two splice(), not useful...
-
-
->>
->> You are trying to break it...
->>
+On Friday 2009-07-03 03:26, tridge@samba.org wrote:
 >
->It depends on the argument for pipe, if the argument is NULL, it
->breaks the code above.
+> > Making WINNT the default would cause many a `ls` output to just
+> > scream at me in uppercaps because there are programs that
+> > create long names with all-uppers.
 >
+>well, you could also argue that having WINNT in effect does the
+>'correct' thing. It causes ls to display the name that is actually in
+>the filesystem. 
+>
+>I think the current default for VFAT on Linux is rather misleading. It
+>always displays 8.3 names as lowercase,
 
-Sure, malloc(2) can return NULL.
+There is no misleading in that, since VFAT is rather case-insensitive.
+Certainly, lowering all 8.3 names is more appalling to the eyes than
+keeping all-caps-longnames that way. I think I would even add a new
+heuristic for case transformation on display to fit my personal
+guidelines which would be:
+
+  ($file, $ext) = ($filename =~ /^(.*)\.(.*)$/);
+  $ext = lc $ext;
+  if ($file =~ /^[A-Z]+$/) {
+      $file = lc $ext;
+  }
+
+I think none of the shortcase= options does that at this time.
+
+>I should also point out that if we followed Alan's reasoning then we'd
+>have to actually make all these options separate filesystems[...]
+
+Linux has been doing case conversion all years long so I do not think
+Alan's request to make new filesystems was based solely upon
+shortname=; otherwise, I suspect, it would have raised it earlier.
 
