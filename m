@@ -1,72 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZGCC6N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZGCDAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbZGCC6N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:58:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZGCC6A
+	id S1756742AbZGCDAv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 23:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZGCDAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:58:00 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:36231 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbZGCC57 (ORCPT
+	Thu, 2 Jul 2009 23:00:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48436 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751067AbZGCDAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:57:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=r7FZsqnVgrQcxfvP9jg0/UK//yIS98o9lDgLnQs9kFi0cBQaJcsDAd2XHxCOA/VsrO
-         la2rMoumg1T4+RUKX7qxhiIN0HMRsendI7y71JDNOlePgZpe+VY6XM3KjiVU7AvFa96u
-         qzdTTk9ke9+XTonlOtS06F7NKy7BciatMr+LA=
-Date: Fri, 3 Jul 2009 11:00:08 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-Message-ID: <20090703030008.GD5880@cr0.nay.redhat.com>
-References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com> <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com> <20090702094620.GE6372@cr0.nay.redhat.com> <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com> <20090702102138.GF6372@cr0.nay.redhat.com> <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com> <20090703015554.GB5880@cr0.nay.redhat.com> <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 2 Jul 2009 23:00:39 -0400
+Message-Id: <200907030300.n6330BgL015030@imap1.linux-foundation.org>
+Subject: mmotm 2009-07-02-19-57 uploaded
+To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
+From: akpm@linux-foundation.org
+Date: Thu, 02 Jul 2009 20:00:11 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 10:10:13AM +0800, Changli Gao wrote:
->On Fri, Jul 3, 2009 at 9:55 AM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>
->>
->> What is a pipe in your mind? A pipe has two points, obviously,
->> you are making it a single point, thus you can't call it a pipe
->> any more...
->>
->> I don't like this
->How do you think the following code?
->
->mkfifo("/tmp/a", O_RDWR);
->fd = open("'/tmp/a", O_RDWR);
->
->Is it right? Is it allowed by Linux/Unix/POSIX?
->
->and when used by splice(), pipe represents a kernel buffer handler not
->its original meaning.
+The mm-of-the-moment snapshot 2009-07-02-19-57 has been uploaded to
 
-When I said 'pipe', I meant *anonymous* pipe, definitely!
-There is nothing related with *named* pipe here.
+   http://userweb.kernel.org/~akpm/mmotm/
 
-You are going to a *wrong* direction.
+and will soon be available at
 
->.
->>
->> And just as what you showed above, you can close the fd's
->> after finishing, thus you only save one fd during these
->> two splice(), not useful...
->splice() is a high performance system call. It maybe used in thousands
->of connection environment, so one instance saves one fd, and thousands
->of fd will be saved.
+   git://git.zen-sources.org/zen/mmotm.git
 
-If you repeat your (pipe,splice,splice,close,close) sequence for
-thousands times, it is still the same, nothing saves...
+It contains the following patches against 2.6.31-rc1:
+
+origin.patch
+vlynq-correct-typo-of-missing-config_-prefix-in-ifdef.patch
+vlynq-fix-typo-in-kconfig-to-enable-debugging.patch
+rtc-ds1374-fix-lock-imbalance.patch
+gcov-exclude-code-operating-in-userspace-from-profiling.patch
+sys_sync-fix-16%-performance-regression-in-ffsb-create_4k-test.patch
+sys_sync-fix-16%-performance-regression-in-ffsb-create_4k-test-fix.patch
+repeatable-slab-corruption-with-ltp-msgctl08.patch
+linux-next.patch
+next-remove-localversion.patch
+i-need-old-gcc.patch
+misc-work_on_cpu-acpi-dont-do-local_irq_enable-in-hard-irq.patch
+linux-next-temp-hack.patch
+acpi-battery-work-around-negative-s16-battery-current-on-acer.patch
+kernel-core-add-smp_call_function_any.patch
+kernel-core-add-smp_call_function_any-update.patch
+arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts-by-using-smp_call_function_any.patch
+acpi-reintroduce-acpi_device_ops-shutdown-method.patch
+s3c-fix-check-of-index-into-s3c_gpios.patch
+cpufreq-powernow-k8-support-family-0xf-with-2-low-p-states.patch
+pcmcia-yenta-add-missing-__devexit-marking.patch
+pcmcia-pccard-deadlock-fix.patch
+powerpc-sky-cpu-redundant-or-incorrect-tests-on-unsigned.patch
+video-initial-support-for-adv7180.patch
+media-remove-redundant-tests-on-unsigned.patch
+ecryptfs-fix-lockdep-reported-ab-ba-mutex-issue.patch
+ecryptfs-another-lockdep-issue.patch
+ecryptfs-yet-another-lockdep-issue.patch
+posix_cpu_timers_exit_group-do-not-use-thread_group_cputimer.patch
+timer-stats-fix-del_timer_sync-and-try_to_del_timer_sync.patch
+input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface.patch
+input-documentation-input-xpadtxt-update-for-new-driver-functionality.patch
+input-more-i8042-reset-quirks-for-msi-wind-clone-netbooks.patch
+input-tsc2007-remove-hr-timer.patch
+input-tsc2007-make-platform-callbacks-optional.patch
+gitignore-usr-initramfs_datacpiobz2-and-usr-initramfs_datacpiolzma.patch
+kernel-hacking-move-strip_asm_syms-from-general.patch
+leds-gpio-leds-fix-typographics-fault.patch
+leds-gpio-leds-fix-typographics-fault-checkpatch-fixes.patch
+mmc-in-mmc_power_up-use-previously-selected-ocr-if-available.patch
+omap-hsmmc-do-not-enable-buffer-ready-interrupt-if-using-dma.patch
+mmc-msm_sdccc-driver-for-htc-dream.patch
+msm_sdccc-convert-printkkern_level-to-pr_level.patch
+msm_sdccc-stylistic-cleaning.patch
+msm_sdccc-move-overly-indented-code-to-separate-function.patch
+jffs2-move-jffs2_gcd_mtd-threads-to-the-new-kthread-api.patch
+mtd-sst25l-non-jedec-spi-flash-driver.patch
+mtd-sst25l-non-jedec-spi-flash-driver-update.patch
+mtd-sst25l-non-jedec-spi-flash-driver-fix.patch
+drivers-mtd-mtdcorec-make-symbols-static.patch
+isdn-hisax-fix-lock-imbalance.patch
+drivers-net-r6040c-minor-code-cleanup.patch
+3x59x-fix-pci-resource-management.patch
+3x59x-fix-pci-resource-management-checkpatch-fixes.patch
+ext4-remove-redundant-test-on-unsigned.patch
+sunrpc-use-formatting-of-module-name-in-sunrpc.patch
+parisc-remove-obsolete-hw_interrupt_type.patch
+serial_txx9-use-container_of-instead-of-direct-cast.patch
+icom-converting-space-to-tabs.patch
+drivers-serial-bfin_sport_uartc-remove-wrong-and-unneeded-memset.patch
+serial-add-parameter-to-force-skipping-the-test-for-the-txen-bug.patch
+hypfs-remove-useless-variable-qname.patch
+scsi-use-the-common-hex_asc-array-rather-than-a-private-one.patch
+scsi-gdthc-use-unaligned-access-helpers.patch
+scsi-annotate-gdth_rdcap_data-gdth_rdcap16_data-endianness.patch
+scsi-add-__init-__exit-macros-to-ibmvstgtc.patch
+comedi-jr3_pcic-add-required-includes.patch
+vt6655-fix-build-when-config_wireless_ext.patch
+vt6655-remove-dependency-on-wireless_ext-version.patch
+stlc45xx-convert-config_interface-to-bss_info_changed.patch
+vt6655-s-void-void.patch
+staging-otus-remove-dependency-on-wireless_ext-version.patch
+staging-rt2860-remove-dependency-on-wireless_ext-version.patch
+staging-rtl8187se-remove-dependency-on-wireless_ext-version.patch
+drivers-usb-gadget-s3c2410_udcc-fix.patch
+usb-add-missing-class-descriptions-used-in-usb-devices-file.patch
+vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
+raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
+vfs-improve-comment-describing-fget_light.patch
+libfs-make-simple_read_from_buffer-conventional.patch
+fs-inodec-add-dev-id-and-inode-number-for-debugging-in-init_special_inode.patch
+vfs-split-generic_forget_inode-so-that-hugetlbfs-does-not-have-to-copy-it.patch
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch
+fs-fix-overflow-in-sys_mount-for-in-kernel-calls.patch
+fs-fix-overflow-in-sys_mount-for-in-kernel-calls-fix.patch
+sendfile-several-fixes.patch
+wireless-remove-redundant-tests-on-unsigned.patch
+xtensa-variant-specific-code.patch
+mm.patch
+elf-fix-multithreaded-program-core-dumping-on-arm.patch
+mm-mark-page-accessed-before-we-write_end.patch
+fix-virt_to_phys-warnings.patch
+fix-virt_to_phys-warnings-fix.patch
+drivers-video-s3c-fbc-fix-clock-setting-for-samsung-soc-framebuffer.patch
+cgroups-fix-pid-namespace-bug.patch
+flat-fix-uninitialized-ptr-with-shared-libs.patch
+include-linux-errnoh-in-linux-sysrqh.patch
+sys_pipe-fix-fd-leak-if-pipe-is-called-with-an-invalid-address.patch
+revert-mm-prevent-balance_dirty_pages-from-doing-too-much-work.patch
+genirq-do-not-disable-irq_wakeup-marked-irqs-on-suspend.patch
+cred_guard_mutex-do-not-return-eintr-to-user-space.patch
+page-allocator-ensure-that-processes-that-have-been-oom-killed-exit-the-page-allocator.patch
+cciss-fix-the-termination-of-the-scanning-thread.patch
+base-firmware_class-fix-lock-imbalance.patch
+maintainers-update-atlx-contact-info.patch
+nfsd-dont-hold-unrefcounted-creds-over-call-to-nfsd_setuser.patch
+arch-x86-oprofile-op_model_amdc-fix-op_amd_handle_ibs-return-type.patch
+drivers-rtc-rtc-cmosc-cmos_init-dont-ignore-pnp_register_driver-return-value.patch
+serial-bfin_5xx-fix-building-as-module-when-early-printk-is-enabled.patch
+oom-move-oom_adj-value-from-task_struct-to-mm_struct-fix.patch
+clocksource-save-mult_orig-in-clocksource_disable.patch
+include-linux-clocksourceh-coding-style-tweaks.patch
+usbconsole-fix-regression-in-usb-console-on-kernel-boot.patch
+usb-serial-regression-fix-to-move-sysrq-from-hot-path.patch
+ti_usb_3410_5052c-fix-uninitialised-variable-in-ti_do_download.patch
+9p-fix-incorrect-parameters-to-v9fs_file_readn.patch
+net-9p-fix-crash-due-to-bad-mount-parameters.patch
+fs-notify-inotify-decrement-user-inotify-count-on-close.patch
+wireless-nl80211-fix-lock-imbalance.patch
+mm-make-swap-token-dummies-static-inlines.patch
+mm-make-swap-token-dummies-static-inlines-fix.patch
+mm-make-swap-token-dummies-static-inlines-fix-2.patch
+mm-remove-obsoleted-alloc_pages-cpuset-comment.patch
+readahead-add-blk_run_backing_dev.patch
+readahead-add-blk_run_backing_dev-fix.patch
+readahead-add-blk_run_backing_dev-fix-fix-2.patch
+memory-hotplug-update-zone-pcp-at-memory-online.patch
+memory-hotplug-update-zone-pcp-at-memory-online-fix.patch
+memory-hotplug-exclude-isolated-page-from-pco-page-alloc.patch
+memory-hotplug-make-pages-from-movable-zone-always-isolatable.patch
+memory-hotplug-alloc-page-from-other-node-in-memory-online.patch
+memory-hotplug-migrate-swap-cache-page.patch
+vmscan-dont-attempt-to-reclaim-anon-page-in-lumpy-reclaim-when-no-swap-space-is-available.patch
+page_alloc-fix-kernel-doc-warning.patch
+hugetlb-balance-freeing-of-huge-pages-across-nodes.patch
+hugetlb-use-free_pool_huge_page-to-return-unused-surplus-pages.patch
+hugetlb-use-free_pool_huge_page-to-return-unused-surplus-pages-fix.patch
+hugetlb-clean-up-and-update-huge-pages-documentation.patch
+mm-clean-up-page_remove_rmap.patch
+mm-show_free_areas-display-slab-pages-in-two-separate-fields.patch
+frv-duplicate-output_buffer-of-e03.patch
+frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
+m32r-remove-redundant-tests-on-unsigned.patch
+m68k-count-can-reach-51-not-50.patch
+m68k-cnt-reaches-1-not-0.patch
+arch-m68k-include-asm-motorola_pgalloch-fix-kunmap-arg.patch
+rework-fix-is_single_threaded.patch
+printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec.patch
+printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix.patch
+printk-boot_delay-rename-printk_delay_msec-to-loops_per_msec-fix-2.patch
+printk-add-printk_delay-to-make-messages-readable-for-some-scenarios.patch
+printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-fix.patch
+printk-add-printk_delay-to-make-messages-readable-for-some-scenarios-cleanup.patch
+move-magic-numbers-into-magich.patch
+move-magic-numbers-into-magich-update.patch
+kernel-printkc-handle-more-than-one-con_boot.patch
+kmod-fix-race-in-usermodehelper-code.patch
+add-a-driver-for-the-winbond-wpcd376i-ir-functionality.patch
+add-a-driver-for-the-winbond-wpcd376i-ir-functionality-update.patch
+getrusage-fill-ru_maxrss-value.patch
+getrusage-fill-ru_maxrss-value-update.patch
+asm-sections-add-text-data-checking-functions-for-arches-to-override.patch
+kallsyms-use-new-arch_is_kernel_text.patch
+lockdep-use-new-arch_is_kernel_data.patch
+blackfin-override-text-data-checking-functions.patch
+drivers-hwmon-coretempc-enable-the-intel-atom.patch
+lis3-fix-typo.patch
+lis3-add-free-fall-wakeup-function-via-platform_data.patch
+lis3-add-power-management-functions.patch
+lis3-add-power-management-functions-fix.patch
+lis3_spi-code-cleanups.patch
+kcore-fix-proc-kcores-statst_size.patch
+proc-connector-add-event-for-process-becoming-session-leader.patch
+proc-connector-add-event-for-process-becoming-session-leader-checkpatch-fixes.patch
+procfs-provide-stack-information-for-threads-v08.patch
+spi-remove-imx-spi-driver.patch
+spi-add-spi-driver-for-most-known-imx-socs.patch
+rtc-add-driver-for-mxcs-internal-rtc-module.patch
+rtc-add-driver-for-mxcs-internal-rtc-module-fix.patch
+rtc-u300-coh-901-331-rtc-driver-v3.patch
+rtc-update-documentation-wrt-rtc_pie-irq_set_state.patch
+rtc-bfin-do-not-share-rtc-irq.patch
+rtc-add-freescale-stmp37xx-378x-driver.patch
+rtc-philips-nxp-pcf2123-driver.patch
+rtc-philips-nxp-pcf2123-driver-v03.patch
+rtc-philips-nxp-pcf2123-driver-v03-fix.patch
+rtc-philips-nxp-pcf2123-driver-v03-update.patch
+rtc-reorder-makefile.patch
+rtc-driver-for-pcap2-pmic.patch
+rtc-driver-for-pcap2-pmic-update.patch
+gpiolib-allow-exported-gpio-nodes-to-be-named-using-sysfs-links.patch
+gpiolib-allow-exported-gpio-nodes-to-be-named-using-sysfs-links-update.patch
+gpio-add-mc33880-driver.patch
+gpio-update-vr41xx-gpio-driver-to-use-gpiolib.patch
+omapfb-add-support-for-the-apollon-lcd.patch
+omapfb-add-support-for-mipi-dcs-compatible-lcds.patch
+omapfb-add-support-for-the-amstrad-delta-lcd.patch
+omapfb-add-support-for-the-2430sdp-lcd.patch
+omapfb-add-support-for-the-omap2evm-lcd.patch
+omapfb-add-support-for-the-3430sdp-lcd.patch
+omapfb-add-support-for-the-omap3-evm-lcd.patch
+omapfb-add-support-for-the-omap3-beagle-dvi-output.patch
+omapfb-add-support-for-the-gumstix-overo-lcd.patch
+omapfb-add-support-for-the-zoom-mdk-lcd.patch
+omapfb-add-support-for-rotation-on-the-blizzard-lcd-ctrl.patch
+n770-enable-lcd-mipi-dcs-in-kconfig.patch
+omapfb-dispc-various-typo-fixes.patch
+omapfb-dispc-disable-iface-clocks-along-with-func-clocks.patch
+omapfb-dispc-enable-wake-up-capability.patch
+omapfb-dispc-allow-multiple-external-irq-handlers.patch
+omapfb-suspend-resume-only-if-fb-device-is-already-initialized.patch
+omapfb-fix-coding-style-remove-dead-line.patch
+omapfb-add-fb-manual-update-option-to-kconfig.patch
+omapfb-hwa742-fix-pointer-to-be-const.patch
+atyfb-coding-style-cleanup.patch
+framebuffer-support-for-htc-dream.patch
+framebuffer-support-for-htc-dream-checkpatch-fixes.patch
+platinumfb-misplaced-parenthesis.patch
+intelfb-fix-setting-of-active-pipe-with-lvds-displays.patch
+hfsplus-identify-journal-info-block-in-volume-header.patch
+hfsplus-fix-journal-detection.patch
+memcg-remove-the-overhead-associated-with-the-root-cgroup.patch
+memcg-remove-the-overhead-associated-with-the-root-cgroup-fix.patch
+memcg-remove-the-overhead-associated-with-the-root-cgroup-fix-2.patch
+memcg-add-comments-explaining-memory-barriers.patch
+memcg-add-comments-explaining-memory-barriers-checkpatch-fixes.patch
+ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+do_wait-wakeup-optimization-shift-security_task_wait-from-eligible_child-to-wait_consider_task.patch
+do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch
+do_wait-wakeup-optimization-child_wait_callback-check-__wnothread-case.patch
+do_wait-optimization-do-not-place-sub-threads-on-task_struct-children-list.patch
+wait_consider_task-kill-parent-argument.patch
+signals-tracehook_notify_jctl-change.patch
+utrace-core.patch
+elf-clean-up-fill_note_info.patch
+elf-clean-up-fill_note_info-fix.patch
+flat-use-is_err_value-helper-macro.patch
+n_hdlc-add-buffer-flushing-checkpatch-fixes.patch
+asm-generic-remove-calling-flush_write_buffers-in-dma_sync__for_cpu.patch
+adfs-remove-redundant-test-on-unsigned.patch
+aio-ifdef-fields-in-mm_struct.patch
+bzip2-lzma-gzip-fix-comments-describing-decompressor-api.patch
+bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
+lzma-gzip-fix-potential-oops-when-input-data-is-truncated.patch
+sound-core-pcm_timerc-use-lib-gcdc.patch
+net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc.patch
+net-netfilter-ipvs-ip_vs_wrrc-use-lib-gcdc-fix.patch
+vfs-take-2add-set_page_dirty_notag.patch
+reiser4-vfs-add-super_operationssync_inodes-2.patch
+reiser4-export-remove_from_page_cache.patch
+reiser4-export-remove_from_page_cache-fix.patch
+reiser4-export-find_get_pages.patch
+reiser4.patch
+reiser4-adjust-to-the-new-aops.patch
+reiser4-adjust-to-the-new-aops-fixup.patch
+reiser4-remove-simple_prepare_write-usage.patch
+reiser4-remove-simple_prepare_write-usage-checkpatch-fixes.patch
+fs-symlink-write_begin-allocation-context-fix-reiser4-fix.patch
+reiser4-handling-error-returned-by-d_obtain_alias-fixup.patch
+reiser4-update-names-of-quota-methods.patch
+reiser4-use-set_page_dirty_notag.patch
+fs-reiser4-contextc-current_is_pdflush-got-removed.patch
+make-sure-nobodys-leaking-resources.patch
+journal_add_journal_head-debug.patch
+releasing-resources-with-children.patch
+make-frame_pointer-default=y.patch
+mutex-subsystem-synchro-test-module.patch
+slab-leaks3-default-y.patch
+put_bh-debug.patch
+add-debugging-aid-for-memory-initialisation-problems.patch
+keep-track-of-network-interface-renaming.patch
+workaround-for-a-pci-restoring-bug.patch
+prio_tree-debugging-patch.patch
+single_open-seq_release-leak-diagnostics.patch
+add-a-refcount-check-in-dput.patch
+getblk-handle-2tb-devices.patch
+getblk-handle-2tb-devices-fix.patch
+undeprecate-pci_find_device.patch
+notify_change-callers-must-hold-i_mutex.patch
