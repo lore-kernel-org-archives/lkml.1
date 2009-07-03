@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbZGCPwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbZGCPxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757720AbZGCPwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZGCPws
+	id S1758291AbZGCPxV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZGCPxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:52:48 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:37064 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756173AbZGCPwr convert rfc822-to-8bit (ORCPT
+	Fri, 3 Jul 2009 11:53:05 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:35292 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755914AbZGCPxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:52:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=RAGhqla4VtkG3vDUHGTk+mOa/sbY9kA6WC5e2TUUrKito3yfoqJQiSl6YujpH4gQR
-	Ms3WOhknj+sOqow6C8k8A==
+	Fri, 3 Jul 2009 11:53:03 -0400
+X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Jul 2009 11:53:03 EDT
+Date: Fri, 3 Jul 2009 17:43:27 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: Alain Knaff <alain@knaff.lu>,
+       Michael Opdenacker <michael-lists@free-electrons.com>,
+       Florian Fainelli <florian@openwrt.org>,
+       Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-embedded mailing list <linux-embedded@vger.kernel.org>
+Subject: Re: Status of bzip2 and lzma kernel compression for ARM?
+Message-ID: <20090703154327.GE4278@pc-ras4041.res.insa>
+References: <4A428AFF.20307@free-electrons.com> <4A433BCD.2030506@compulab.co.il> <200906251104.02830.florian@openwrt.org> <4A4396CB.9000703@free-electrons.com> <4A4776DD.50105@knaff.lu> <4A478286.8020908@knaff.lu> <4A48B1D9.90306@compulab.co.il>
 MIME-Version: 1.0
-In-Reply-To: <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
-	 <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
-	 <20090702164649.303c4952.akpm@linux-foundation.org>
-	 <2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
-	 <20090702175341.fd2e26d5.akpm@linux-foundation.org>
-	 <6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
-	 <20090702183004.1e3f4315.akpm@linux-foundation.org>
-	 <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Fri, 3 Jul 2009 08:52:46 -0700
-Message-ID: <6599ad830907030852p2cd667e3m353d68448e0cdc6a@mail.gmail.com>
-Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks" that 
-	shows only unique tgids
-From: Paul Menage <menage@google.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitzu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A48B1D9.90306@compulab.co.il>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 2, 2009 at 10:54 PM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> Why we can't do what readdir(/proc) does ? I'm sorry I misunderstand.
-> Following is an easy example.
->
->
-> 0. at open, inilialize f_pos to 0. f_pos is used as "pid"
->   remember "css_set with hole" as template in f_private?(or somewhere) at open
->   ...like this.
-> --
->   struct cgroupfs_root *root = cgrp->root;
->   struct cgroup *template = kzalloc(sizeof(void*) * CGROUP_SUBSYS_COUNT);
->
->   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
->        if (root->subsys_bits & (1UL << i))
->                template[i] =  cgrp->subsys[i];
-> --
->
->
-> 1. at read(), find task_struct of "pid" in f_pos.
-> 2. look up task_struct of "pid" and compare with f_private
-> --
->   struct cgroup *template = f_private;
->
->   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->        if (!template[i])
->                contiue;
->        if (template[i] != task_subsys_state(task, i))
->                break;
->   }
->   if (i == CGROUP_SUBSYS_COUNT)
->        print task;
+On Mon, Jun 29, 2009 at 03:21:45PM +0300, Mike Rapoport wrote :
+> 
+> 
+> Alain Knaff wrote:
+> > Alain Knaff wrote:
+> >> Attached is a version of the ARM patch for 2.6.30
+> >>
+> >> There seems to be some issues with the include files (which did not pose
+> >> any problems in 2.6.28...), but hopefully somebody more experienced with
+> >> the ARM architecture (and with its recent development) than I can help
+> >> out there.
+> >>
+> >> Regards,
+> >>
+> >> Alain
+> > 
+> > Actually, the needed changes turned out to be easier than I initially
+> > feared. Attached a version that compiles all right.
+> 
+> I gave it a quick test and it hangs before "Decompressing kernel" is output.
+> I hope I'll have time this week to debug what's wrong there.
 
-The problem with this is that the time taken to scan a single cgroup
-is linear in the total number of threads in the system, so if you have
-a lot of threads and a lot of cgroups (even if most of the threads are
-concentrated in a single cgroup) the time taken to scan all the tasks
-files in O(N^2) in the number of threads in the system. The current
-scheme is linear in the number of threads in a cgroup, so looking at
-all cgroups is linear in the number of threads in the system. (This
-O(N^2) problem is something that we've actually observed as an
-overhead on some busy systems at Google).
+On my testing board, it hangs after "Decompressing kernel" is output. It seems
+that it's getting stuck in the following piece of code in lib/decompressor_lzma.c
 
-Paul
+while (get_pos(&wr) < header.dst_size) {
+                int pos_state = get_pos(&wr) & pos_state_mask;
+                uint16_t *prob = p + LZMA_IS_MATCH +
+                        (cst.state << LZMA_NUM_POS_BITS_MAX) + pos_state;
+                if (rc_is_bit_0(&rc, prob))
+                        process_bit0(&wr, &rc, &cst, p, pos_state, prob,
+                                     lc, literal_pos_mask);
+                else {
+                        process_bit1(&wr, &rc, &cst, p, pos_state, prob);
+                        if (cst.rep0 == 0)
+                                break;
+                }
+}
+
+Based on some quick tests, it seems that header.dst_size is 0xFFFFFFFFFFFFFFFF,
+and if my understanding is correct, it's because LZMA doesn't write the file
+size in the header if it reads its input from a pipe, and piggy.lzma turns out
+to be created using a pipe.
+
+Replacing cmd_lzma in scripts/Makefile.lib by the following snippet:
+
+cmd_lzma = (lzma -9 -c $(filter-out FORCE, $^) > $@ && $(call size_append, $(filter-out FORCE,$^)) >> $@ ) || (rm -f $@ ; false)
+
+does the trick, as lzma is able to write the file size in the header (and I
+think the second part is useless, as it's the filesize encoded in 32bits
+little-endian). However, it now hangs right after the 'done, booting the
+kernel.'
+
+Hope that helps,
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
