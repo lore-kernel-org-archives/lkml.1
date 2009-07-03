@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZGCMDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZGCMDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZGCMDA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZGCMCx
+	id S1756292AbZGCMDX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbZGCMDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:02:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38680 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZGCMCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:02:53 -0400
-Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
- interrupt support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+	Fri, 3 Jul 2009 08:03:07 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:42022 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZGCMDF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:03:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RT8GUbPnew4lifcScpWK1ExMu+AveQIdz7L5kxKz9P/DOHuBOFQm2gzi4mpmxalKTa
+         4eO4FdB7oz7oY0KnhJNXGFzMGI2Bm6zD1OFLs81Hvemde1iucc9jaLssuFuyvSNkVDbw
+         coXig88f0qvSy8LFc5MsZanaj65rcBxuP33bk=
+Date: Fri, 3 Jul 2009 12:03:01 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090701112406.GE15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam>
-	 <1246441094.3403.10.camel@hpdv5.satnam>  <20090701112406.GE15958@elte.hu>
-Content-Type: text/plain
-Date: Fri, 03 Jul 2009 17:31:55 +0530
-Message-Id: <1246622515.2322.30.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
-Content-Transfer-Encoding: 7bit
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090703120301.GD4847@ff.dom.local>
+References: <200907030331.32531.andres@anarazel.de> <20090703061213.GA4847@ff.dom.local> <200907031326.21822.andres@anarazel.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907031326.21822.andres@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-01 at 13:24 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+On Fri, Jul 03, 2009 at 01:26:21PM +0200, Andres Freund wrote:
+> On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
+> > On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
+> > ...
+> >
+> > > Ok. I finally see the light. I bisected the issue down to
+> > > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
+> > > pinned timers
+> > >
+> > > Disabling timer migration like provided in the earlier commit stops the
+> > > issue from occuring.
+> > >
+> > > That it is related to timers is sensible in the light of my findings,
+> > > that I could trigger the issue only when using delay in netem - that is
+> > > the codepath using qdisc_watchdog...
+> >
+> > Andres, thanks for your work and time. It saved me a lot of searching,
+> > because I wasn't able to trigger this on my old box.
+> Thanks. It allowed me to go through some of my remaining paperwork ;-)
 > 
-> > 
-> > $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
-> > 
-> >  Performance counter stats for 'ls -lR /usr/include/':
-> > 
-> >             377  interrupts
-> >        53429936  int-mask-cycles
-> >            1119  int-pending-mask-cycles
-> > 
-> >     0.371457539  seconds time elapsed
+> Does anybody of you have an idea where the problem actually resides? 
+
+Do you mean possibly broken timers are not enough?
+
+> qdisc_watchdog_schedule looks innocent enough for my uneducated eyes - and the 
+> patch/infrastructure from Arun goes over my head...
+> I will happily test some ideas/patches.
 > 
-> Agreed, this is another useful generalization - and the 'cycles 
-> pending' metrics are not retrievable via any software means.
-> 
-> We could and should probably add a software counter for hardirqs as 
-> wel. That would allow the vector/irqnr information to be passed in, 
-> and it would allow architectures without irq metrics in the PMU to 
-> have this counter too.
-> 
+> Aside from that - is the whole PSCHED_TICKS2NS/PSCHED_NS2TICKS conversion 
+> business purely backward compatibility?
 
-Please let me know that addition of software counter will be in this
-patch or we can do it incrementally after this patch.
+The whole PSCHED_ conversion was to get finer resolution without
+breaking backward compatibility, I hope.;-)
 
-Thanks,
---
-JSR
-
-http://userweb.kernel.org/~jaswinder/
-
-
+Jarek P.
