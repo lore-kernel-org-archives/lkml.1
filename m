@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZGCM1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZGCMaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbZGCM1e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757108AbZGCM10
+	id S1756340AbZGCMaT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZGCMaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:27:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34274 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Jul 2009 08:30:03 -0400
+Received: from mail.anarazel.de ([217.115.131.40]:49708 "EHLO smtp.anarazel.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756586AbZGCM1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:27:25 -0400
-Date: Fri, 3 Jul 2009 14:27:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, akpm@linux-foundation.org,
-       paulus@samba.org, arnd@arndb.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] FRV: Implement atomic64_t
-Message-ID: <20090703122710.GC7161@elte.hu>
-References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <4A4D9FC4.1070201@gmail.com>
+	id S1751072AbZGCMaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:30:02 -0400
+From: Andres Freund <andres@anarazel.de>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
+Date: Fri, 3 Jul 2009 14:30:00 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc1-andres-00457-g396ca83-dirty; KDE/4.2.95; x86_64; ; )
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200907030331.32531.andres@anarazel.de> <200907031326.21822.andres@anarazel.de> <20090703120301.GD4847@ff.dom.local>
+In-Reply-To: <20090703120301.GD4847@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4D9FC4.1070201@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907031430.00946.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 03 July 2009 14:03:01 Jarek Poplawski wrote:
+> On Fri, Jul 03, 2009 at 01:26:21PM +0200, Andres Freund wrote:
+> > On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
+> > > On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
+> > > ...
+> > >
+> > > > Ok. I finally see the light. I bisected the issue down to
+> > > > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
+> > > > pinned timers
+> > > >
+> > > > Disabling timer migration like provided in the earlier commit stops
+> > > > the issue from occuring.
+> > > >
+> > > > That it is related to timers is sensible in the light of my findings,
+> > > > that I could trigger the issue only when using delay in netem - that
+> > > > is the codepath using qdisc_watchdog...
+> > > Andres, thanks for your work and time. It saved me a lot of searching,
+> > > because I wasn't able to trigger this on my old box.
+> > Thanks. It allowed me to go through some of my remaining paperwork ;-)
+> > Does anybody of you have an idea where the problem actually resides?
+> Do you mean possibly broken timers are not enough?
+I have no ideas how/if the timers are actually broken or if the problem does 
+reside somewhere else and is just made visible by the timer changes.
 
-* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+I would have expected more problem with completely borked timers ;-)
 
-> My last suggestion would be :
-> 
-> static inline unsigned long long atomic64_read(const atomic64_t *ptr)
-> {
-> 	unsigned long long res;
-> 
-> 	asm volatile(
-> 		"mov     %%ebx, %%eax\n\t"
-> 		"mov     %%ecx, %%edx\n\t"
-> 		LOCK_PREFIX "cmpxchg8b %1\n"
-> 			: "=A" (res)
-> 			: "m" (*ptr)
-> 		);
-> 	return res;
-> }
-> 
-> ebx/ecx being read only, and their value can be random, they are 
-> not even mentioned in asm constraints, so gcc is allowed to keep 
-> useful values in these registers.
-> 
-> So the following (stupid) example
-> 
->         for (i = 0; i < 10000000; i++) {
->                 res += atomic64_read(&myvar);
->         }
-> 
-> gives :
->         xorl    %esi, %esi
-> .L2:
->         mov     %ebx, %eax
->         mov     %ecx, %edx
->         lock;cmpxchg8b myvar
->         addl    %eax, %ecx
->         adcl    %edx, %ebx
->         addl    $1, %esi
->         cmpl    $10000000, %esi
->         jne     .L2
 
-Ok, agreed. We dont want to inline it - cmpxchg8b is way too fat - 
-but your code above is a valid optimization for the out-of-line 
-variant as well. So i have applied it as such, will post the whole 
-atomic64_t series soon, after some testing.
+> > Aside from that - is the whole PSCHED_TICKS2NS/PSCHED_NS2TICKS conversion
+> > business purely backward compatibility?
+> The whole PSCHED_ conversion was to get finer resolution without
+> breaking backward compatibility, I hope.;-)
+I haven't seen any problems - just curious ;-)
 
-	Ingo
+Andres
