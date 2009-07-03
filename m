@@ -1,101 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757881AbZGCMpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZGCMp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757881AbZGCMpq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbZGCMpU
+	id S1757936AbZGCMp7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbZGCMpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:45:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59923 "EHLO hera.kernel.org"
+	Fri, 3 Jul 2009 08:45:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59928 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757750AbZGCMpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:45:17 -0400
-Date: Fri, 3 Jul 2009 12:43:42 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
+	id S1757557AbZGCMpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:45:18 -0400
+Date: Fri, 3 Jul 2009 12:44:43 GMT
+From: tip-bot for Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
-       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Reduce size of functions
-Message-ID: <tip-3ac805d2afd3fa4a07cb5bcf352fd7fa83f28935@git.kernel.org>
-Git-Commit-ID: 3ac805d2afd3fa4a07cb5bcf352fd7fa83f28935
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
+       mingo@redhat.com, stable@kernel.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+In-Reply-To: <20090701213722.GH19926@Krystal>
+References: <20090701213722.GH19926@Krystal>
+Subject: [tip:x86/urgent] x86: Fix fixmap page order for FIX_TEXT_POKE0,1
+Message-ID: <tip-12b9d7ccb841805e347fec8f733f368f43ddba40@git.kernel.org>
+Git-Commit-ID: 12b9d7ccb841805e347fec8f733f368f43ddba40
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 12:43:55 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 12:44:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3ac805d2afd3fa4a07cb5bcf352fd7fa83f28935
-Gitweb:     http://git.kernel.org/tip/3ac805d2afd3fa4a07cb5bcf352fd7fa83f28935
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 3 Jul 2009 12:51:19 +0200
+Commit-ID:  12b9d7ccb841805e347fec8f733f368f43ddba40
+Gitweb:     http://git.kernel.org/tip/12b9d7ccb841805e347fec8f733f368f43ddba40
+Author:     Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+AuthorDate: Wed, 1 Jul 2009 17:37:22 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 13:26:43 +0200
+CommitDate: Fri, 3 Jul 2009 14:34:09 +0200
 
-x86: atomic64: Reduce size of functions
+x86: Fix fixmap page order for FIX_TEXT_POKE0,1
 
-cmpxchg8b is a huge instruction in terms of register footprint,
-we almost never want to inline it, not even within the same
-code module.
+Masami reported:
 
-GCC 4.3 still messes up for two functions, under-judging the
-true cost of this instruction - so annotate two key functions
-to reduce the bloat:
+> Since the fixmap pages are assigned higher address to lower,
+> text_poke() has to use it with inverted order (FIX_TEXT_POKE1
+> to FIX_TEXT_POKE0).
 
-arch/x86/lib/atomic64_32.o:
+I prefer to just invert the order of the fixmap declaration.
+It's simpler and more straightforward.
 
-   text	   data	    bss	    dec	    hex	filename
-   1763	      0	      0	   1763	    6e3	atomic64_32.o.before
-    435	      0	      0	    435	    1b3	atomic64_32.o.after
+Backward fixmaps seems to be used by both x86 32 and 64.
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
+It's really rare but a nasty bug, because it only hurts when
+instructions to patch are crossing a page boundary. If this
+happens, the fixmap write accesses will spill on the following
+fixmap, which may very well crash the system. And this does not
+crash the system, it could leave illegal instructions in place.
+Thanks Masami for finding this.
+
+It seems to have crept into the 2.6.30-rc series, so this calls
+for a -stable inclusion.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090701213722.GH19926@Krystal>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/lib/atomic64_32.c |    4 ++--
+ arch/x86/include/asm/fixmap.h |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index 6195962..a910238 100644
---- a/arch/x86/lib/atomic64_32.c
-+++ b/arch/x86/lib/atomic64_32.c
-@@ -4,7 +4,7 @@
- #include <asm/cmpxchg.h>
- #include <asm/atomic.h>
- 
--static inline u64 cmpxchg8b(u64 *ptr, u64 old, u64 new)
-+static noinline u64 cmpxchg8b(u64 *ptr, u64 old, u64 new)
- {
- 	u32 low = new;
- 	u32 high = new >> 32;
-@@ -74,7 +74,7 @@ u64 atomic64_read(atomic64_t *ptr)
-  *
-  * Atomically adds @delta to @ptr and returns @delta + *@ptr
-  */
--u64 atomic64_add_return(u64 delta, atomic64_t *ptr)
-+noinline u64 atomic64_add_return(u64 delta, atomic64_t *ptr)
- {
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 3eb0f79..7b2d71d 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -111,8 +111,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
+-	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
+-	FIX_TEXT_POKE1,
++	FIX_TEXT_POKE1,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE0, /* first page is last, because allocation is backward */
+ 	__end_of_permanent_fixed_addresses,
  	/*
- 	 * Try first with a (probably incorrect) assumption about
+ 	 * 256 temporary boot-time mappings, used by early_ioremap(),
