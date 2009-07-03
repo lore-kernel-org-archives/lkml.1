@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZGCIlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZGCInD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755061AbZGCIlg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZGCIlQ
+	id S1754100AbZGCInD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZGCImz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:41:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33475 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752434AbZGCIlO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:41:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 3 Jul 2009 17:39:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       minchan.kim@gmail.com
-Subject: Re: BUG at mm/vmscan.c:904 [mmotm 2009-07-02-19-57]
-Message-Id: <20090703173934.dc278fda.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A4DBF16.1020509@gmail.com>
-References: <4A4DBF16.1020509@gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Jul 2009 04:42:55 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54167 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbZGCImy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:42:54 -0400
+Message-ID: <4A4DC4CF.4020808@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 16:43:59 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] cgroup: Fix indent for /proc/cgroups
+References: <4A4DBBC2.8010805@cn.fujitsu.com> <4A4DBF50.8090408@cn.fujitsu.com> <4A4DC358.7030900@cn.fujitsu.com>
+In-Reply-To: <4A4DC358.7030900@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Jul 2009 10:19:34 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
-
-> Hi,
+Gui Jianfeng wrote:
+> Li Zefan wrote:
+>> CC: container list
+>>
+>> Gui Jianfeng wrote:
+>>> Currently, /proc/cgroups outputs is fairly ugly as following,
+>>> #subsys_name    hierarchy       num_cgroups     enabled
+>>> cpuset  0       1       1
+>>> debug   0       1       1
+>>> ns      0       1       1
+>>>
+>>> indent it in a good-looking way.
+>>> #subsys_name    hierarchy       num_cgroups     enabled
+>>> cpuset          0               1               1
+>>> debug           0               1               1
+>>> ns              0               1               1
+>>>
+>> But if there's a subsystem with name length >= 8,
+>> it won't be aligned properly..
 > 
-> I don't know what exactly lead to this, but I got it when installing a
-> kernel rpm (io load) in qemu:
+>   Yeap, but there isn't such a case at least by now.
 > 
-IIUC....
 
-plz revert this.
+This is not a good reason.
 
-  vmscan-dont-attempt-to-reclaim-anon-page-in-lumpy-reclaim-when-no-swap-space-is-available.patch
+We'll probably have such a subsystem. Actually there's a
+proposed subsystem named "maxdepth" which is of length 8.
 
-or rewrite as following.
-==
-+	if (nr_swap_pages <= 0 && (PageAnon(page) && !PageSwapCache(page)))
-+		return -EBUSY;
-+
-==
-
-CCed to Minchan and Kosaki.
-
-Regards,
--Kame
-
-
-
-> ------------[ cut here ]------------
-> kernel BUG at mm/vmscan.c:904!
-> invalid opcode: 0000 [#1] PREEMPT SMP
-> last sysfs file: /sys/devices/pci0000:00/0000:00:05.0/modalias
-> CPU 0
-> Modules linked in: e1000
-> Pid: 290, comm: kswapd0 Tainted: G       AW  2.6.31-rc1-mm1 #103
-> RIP: 0010:[<ffffffff81095c96>]  [<ffffffff81095c96>]
-> isolate_pages_global+0x196/0x260
-> RSP: 0018:ffff880011943c40  EFLAGS: 00010082
-> RAX: 00000000ffffffea RBX: ffffea0000050170 RCX: 0000000000000001
-> RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffffea0000050170
-> RBP: ffff880011943cd0 R08: 0000000000000001 R09: ffffffff81668b00
-> R10: 00000000ffffffff R11: 0000000000000001 R12: ffffffff81669060
-> R13: ffffea0000050198 R14: ffff880011943d50 R15: ffffffff81668b00
-> FS:  0000000000000000(0000) GS:ffff88000176f000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 00007f5d32981000 CR3: 0000000011adb000 CR4: 00000000000006f0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process kswapd0 (pid: 290, threadinfo ffff880011942000, task
-> ffff88001254c840)
-> Stack:
->  ffff880011943d68 0000000000000020 0000000000000030 000000020177f4b0
-> <0> 0000000000000003 000000008103329b 0000000000000001 ffffffffffffffff
-> <0> 0000000100000003 0000000000000000 0000000000000000 0000000000000000
-> Call Trace:
->  [<ffffffff81096ae6>] shrink_active_list+0xa6/0x330
->  [<ffffffff81032fe8>] ? task_rq_lock+0x48/0x90
->  [<ffffffff810985c0>] ? kswapd+0x0/0x770
->  [<ffffffff81098ab5>] kswapd+0x4f5/0x770
->  [<ffffffff81037177>] ? pick_next_task_fair+0xd7/0xf0
->  [<ffffffff810985c0>] ? kswapd+0x0/0x770
->  [<ffffffff81095b00>] ? isolate_pages_global+0x0/0x260
->  [<ffffffff8103f1ed>] ? default_wake_function+0xd/0x10
->  [<ffffffff8105aa30>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffff813f9978>] ? preempt_schedule+0x38/0x60
->  [<ffffffff813fbb40>] ? _spin_unlock_irqrestore+0x30/0x40
->  [<ffffffff810985c0>] ? kswapd+0x0/0x770
->  [<ffffffff8105a6b6>] kthread+0x96/0xa0
->  [<ffffffff8100ceaa>] child_rip+0xa/0x20
->  [<ffffffff8105a620>] ? kthread+0x0/0xa0
->  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
-> Code: 80 75 12 8b 55 bc 8b 75 b4 4c 89 ef e8 f4 f9 ff ff 85 c0 74 79 49
-> ff c7 49 83 c5 38 4c 39 7d 98 77 cf 48 ff 45 c8 e9 e9 fe ff ff <0f> 0b
-> eb fe 48 8b 53 30 48 8b 4b 28 48 8d 43 28 48 89 51 08 48
-> RIP  [<ffffffff81095c96>] isolate_pages_global+0x196/0x260
->  RSP <ffff880011943c40>
-> ---[ end trace fc1de39f3465335f ]---
-> note: kswapd0[290] exited with preempt_count 1
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+See:
+http://lkml.org/lkml/2009/7/1/581
 
