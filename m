@@ -1,72 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbZGCEpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZGCFA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbZGCEpQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 00:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZGCEpE
+	id S1756748AbZGCFA5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 01:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZGCFAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 00:45:04 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:51771 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751477AbZGCEpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 00:45:04 -0400
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       David Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>
-Message-Id: <E17B1878-B726-4CB6-B80A-9E454158750E@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-In-Reply-To: <4A4D6E7F.4060204@sandeen.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] un-static xfs_read_agf
-Date: Thu, 2 Jul 2009 23:45:02 -0500
-References: <20090703100551.e3f21aa0.sfr@canb.auug.org.au> <4A4D6E7F.4060204@sandeen.net>
-X-Mailer: Apple Mail (2.930.3)
+	Fri, 3 Jul 2009 01:00:48 -0400
+Received: from mga06.intel.com ([134.134.136.21]:10427 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750993AbZGCFAr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 01:00:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,338,1243839600"; 
+   d="scan'208";a="427313533"
+Subject: Re: fio sync read 4k block size 35% regression
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090702123747.GA8503@localhost>
+References: <1246418733.2560.468.camel@ymzhang>
+	 <20090701041010.GB22364@localhost> <1246424635.2560.470.camel@ymzhang>
+	 <20090701125027.GA28347@localhost> <1246505660.2560.482.camel@ymzhang>
+	 <20090702123747.GA8503@localhost>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 03 Jul 2009 13:01:10 +0800
+Message-Id: <1246597270.2560.493.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-07-02 at 20:37 +0800, Wu Fengguang wrote:
+> On Thu, Jul 02, 2009 at 11:34:20AM +0800, Zhang, Yanmin wrote:
+> > On Wed, 2009-07-01 at 20:50 +0800, Wu Fengguang wrote:
+> > > On Wed, Jul 01, 2009 at 01:03:55PM +0800, Zhang, Yanmin wrote:
+> > > > On Wed, 2009-07-01 at 12:10 +0800, Wu Fengguang wrote:
+> > > > > On Wed, Jul 01, 2009 at 11:25:33AM +0800, Zhang, Yanmin wrote:
+> > > > > > Comapraing with 2.6.30, fio sync read (block size 4k) has about 35% regression
+> > > > > > with kernel 2.6.31-rc1 ﻿on my stoakley machine with a JBOD (13 SCSI disks).
+> > > > > > 
+> > > > > > Every disk has 1 partition and 4 1-GB files. Start 10 processes per disk to
+> > > > > > do sy﻿nc read sequentinally.
+> > > > > > 
+> > > > > > Bisected down to below patch.
+> > > > > > 
+> > > > > > 51daa88ebd8e0d437289f589af29d4b39379ea76 is first bad commit
+> > > > > > commit 51daa88ebd8e0d437289f589af29d4b39379ea76
+> > > > > > Author: Wu Fengguang <fengguang.wu@intel.com>
+> > > > > > Date:   Tue Jun 16 15:31:24 2009 -0700
+> > > > > > 
+> > > > > >     readahead: remove sync/async readahead call dependency
+> > > > > > 
+> > > > > >     The readahead call scheme is error-prone in that it expects the call sites
+> > > > > >     to check for async readahead after doing a sync one.  I.e.
+> > > > > > 
+> > > > > >                         if (!page)
+> > > > > >                                 page_cache_sync_readahead();
+> > > > > >                         page = find_get_page();
+> > > > > >                         if (page && PageReadahead(page))
+> > > > > >                                 page_cache_async_readahead();
+> > > > > > 
+> > > > > > 
+> > > > > > I also test block size 64k and 128k, but they don't have regression. Perhaps
+> > > > > > the default read_ahead_kb is equal to 128?
+> > > > > > 
+> > > > > > Other 2 machines have no such regression. The JBODS of the 2 machines consists
+> > > > > > of 12 and 7 SATA/SAS disks while every disk has 2 partitions.
+> > > > > 
+> > > > > Yanmin, thanks for the tests!
+> > > > > 
+> > > > > Maybe the patch posted here can restore the performance:
+> > > > > 
+> > > > > http://lkml.org/lkml/2009/5/21/319
+> > > > I tried it and it doesn't help.
+> > > 
+> > > Then let's check what's happening behind the scene :)
+> > > 
+> > > Please apply the attached patch and run
+> > > 
+> > >         echo 1 > /debug/readahead/trace_enable
+> > >         # do benchmark
+> > >         echo 0 > /debug/readahead/trace_enable
+> > > 
+> > > and send the dmesg which will contain lots of lines like
+> > > 
+> > >         [   54.738105] readahead-initial0(pid=3290(zsh), dev=00:10(0:10), ino=105910(dmesg), req=0+1, ra=0+4-3, async=0) = 2
+> > >         [   54.751801] readahead-subsequent(pid=3290(dmesg), dev=00:10(0:10), ino=105910(dmesg), req=1+60, ra=4+8-8, async=1, miss=0) = 0
+> > I enlarged sys log buffer to 2MB and captured below data.
+> 
+> Thank you! Judging from these readahead requests, it's doing perfect
+> 64-page IOs. So the readahead size for sdm1 is 256KB?
+[ymzhang@lkp-st02-x8664 work]$ cat /sys/block/sdm/queue/read_ahead_kb 
+128
 
-On Jul 2, 2009, at 9:35 PM, Eric Sandeen wrote:
+We use the default readahead configuration.
 
-> CONFIG_XFS_DEBUG builds still need xfs_read_agf to be
-> non-static, oops.
->
-> Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
+>  As long as the
+> real IO size is 256KB, it should not create that much performance
+> regression.
+> 
+> However there are some CPU overheads caused by readahead cache hits
+> (the lines start with ==>). In this case, 4 processes are sequentially
+> reading the same file, whoever goes first and foremost will trigger
+> the readahead IO. Or sometimes two processes hit the PG_readahead page
+> almost at the same time, and submit duplicate readahead requests for
+> the same page(s). The duplicate efforts will be detected at radix tree
+> insertion time, so won't lead to duplicate IO.
+> 
+> That is a known issue, and should only cost a little CPU time.
+> 
+> Since I cannot find out the (real) problem by reasoning, can you
+> provide more data please?
+> - make sure the regression(s) disappear with 2.6.31-rc1+revert-51daa88ebd8e0
+I make sure.
 
-Reviewed-by: Felix Blyakher <felixb@sgi.com>
+> - collect some readahead traces with 2.6.31-rc1+revert-51daa88ebd8e0
+> - collect some blktrace data on sdm1 with 2.6.31-rc1
+I'm busy and will collect data next week.
 
->
-> ---
->
-> Index: linux-2.6/fs/xfs/xfs_ag.h
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/xfs_ag.h
-> +++ linux-2.6/fs/xfs/xfs_ag.h
-> @@ -91,6 +91,9 @@ typedef struct xfs_agf {
-> #define	XFS_AGF_BLOCK(mp)	XFS_HDR_BLOCK(mp, XFS_AGF_DADDR(mp))
-> #define	XFS_BUF_TO_AGF(bp)	((xfs_agf_t *)XFS_BUF_PTR(bp))
->
-> +extern int xfs_read_agf(struct xfs_mount *mp, struct xfs_trans *tp,
-> +			xfs_agnumber_t agno, int flags, struct xfs_buf **bpp);
-> +
-> /*
->  * Size of the unlinked inode hash table in the agi.
->  */
-> Index: linux-2.6/fs/xfs/xfs_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/xfs_alloc.c
-> +++ linux-2.6/fs/xfs/xfs_alloc.c
-> @@ -2248,7 +2248,7 @@ xfs_alloc_put_freelist(
-> /*
->  * Read in the allocation group header (free/alloc section).
->  */
-> -STATIC int				/* error */
-> +int					/* error */
-> xfs_read_agf(
-> 	struct xfs_mount	*mp,	/* mount point structure */
-> 	struct xfs_trans	*tp,	/* transaction pointer */
->
+> 
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143693+1, ra=143757+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143757+1, ra=143821+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143821+1, ra=143885+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143885+1, ra=143949+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143949+1, ra=144013+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144013+1, ra=144077+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144077+1, ra=144141+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144141+1, ra=144205+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144205+1, ra=144269+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144269+1, ra=144333+64-64, async=1) = 64
+>         readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144333+1, ra=144397+64-64, async=1) = 64
+>         readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144397+1, ra=144461+64-64, async=1) = 64
+>         readahead-marker(pid=7102(fio), dev=08:c1(sdm1), ino=49156(f4), req=144461+1, ra=144525+64-64, async=1) = 64
+>         readahead-marker(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144525+1, ra=144589+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144589+1, ra=144653+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144653+1, ra=144717+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144717+1, ra=144781+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144781+1, ra=144845+64-64, async=1) = 64
+> ==>     readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144845+1, ra=144909+64-64, async=1) = 64
+> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144909+1, ra=144909+128-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144973+1, ra=145037+64-64, async=1) = 64
+>         readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145037+1, ra=145101+64-64, async=1) = 64
+> ==>     readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145101+1, ra=145165+64-64, async=1) = 64
+> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145101+1, ra=145101+128-64, async=1) = 64
+> ==>     readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145165+1, ra=145229+64-64, async=1) = 64
+> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145165+1, ra=145229+64-64, async=1) = 64
+>         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145229+1, ra=145293+64-64, async=1) = 64
+>         readahead-marker(pid=7154(fio), dev=08:c1(sdm1), ino=49156(f4), req=145357+1, ra=145421+64-64, async=1) = 64
+>         readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145293+1, ra=145293+128-64, async=1) = 64
+> 
+> > In addition, I added new test cases to use mmap to read the files sequentionally.
+> > On this machine, there is about 40% regression. reverting your patch fixes it.
+> 
+> Does that also involves multiple processes concurrently reading the same file?
+>  
+> > On another machine with another JBOD (7 SAS disks), fio_mmap_sync_read_4k (64k/128k)
+> > has about 30% regression. But it's not caused by your patch. I am bisecting it on the
+> > 2nd machine now.
+> 
+> That may well related to my readahead patches.
+Not sure. But the bisect is stable to report Linus' patch.
 
