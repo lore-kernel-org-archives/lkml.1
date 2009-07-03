@@ -1,139 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbZGCBeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGCBkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbZGCBeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 21:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbZGCBeG
+	id S1754843AbZGCBkk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZGCBkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 21:34:06 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:49484 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZGCBeF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 21:34:05 -0400
-Date: Fri, 3 Jul 2009 09:33:58 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: Joe Jin <joe.jin@oracle.com>
-Cc: aacraid@adaptec.com, mark_salyzyn@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: kexec kernel failed to restart aacraid device
-Message-ID: <20090703013358.GA19596@joejin-pc.cn.oracle.com>
-References: <20090701005404.GA29923@joejin-pc.cn.oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090701005404.GA29923@joejin-pc.cn.oracle.com>
-User-Agent: Mutt/1.4.2.2i
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A4D600B.021A:SCFSTAT5015188,ss=1,fgs=0
+	Thu, 2 Jul 2009 21:40:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57556 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751716AbZGCBkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 21:40:31 -0400
+Message-ID: <4A4D61C7.4090409@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 09:41:27 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Benjamin Blum <bblum@google.com>, LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH] cgroups: fix pid namespace bug, fix
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+- add get_pid_ns()/put_pid_ns()
+- remove prefix "pids_"
 
-Checked aacraid drivers, initialzing and reset device at _aac_rx_init(), 
-at the begin of function, set @adapter_enable_int to aac_rx_disable_interrupt(),
-when device status it KERNEL_PANIC, driver will try to reset device,
-before reset device, it will check device health or no by call 
-aac_rx_check_health(), then aac_rx_check_health()->rx_sync_cmd() will use the
-aac_rx_disable_interrupt() to restore interrupt mask, is that the right
-action? if need to replace it to aac_rx_enable_interrupt_producer() before call
-aac_rx_check_health()?
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cgroup.c |   30 +++++++++++++++++-------------
+ 1 files changed, 17 insertions(+), 13 deletions(-)
 
-Have attached the patch, please review it.
-
-Thanks,
-Joe
-
-diff --git a/drivers/scsi/aacraid/rx.c b/drivers/scsi/aacraid/rx.c
-index f70d9f8..07142a6 100644
---- a/drivers/scsi/aacraid/rx.c
-+++ b/drivers/scsi/aacraid/rx.c
-@@ -556,7 +556,12 @@ int _aac_rx_init(struct aac_dev *dev)
- 	 */
- 	status = rx_readl(dev, MUnit.OMRx[0]);
- 	if (status & KERNEL_PANIC) {
--		if (aac_rx_restart_adapter(dev, aac_rx_check_health(dev)))
-+		int health;
-+
-+		dev->a_ops.adapter_enable_int = aac_rx_enable_interrupt_producer;
-+		health = aac_rx_check_health(dev);
-+		dev->a_ops.adapter_enable_int = aac_rx_disable_interrupt;
-+		if (aac_rx_restart_adapter(dev, health))
- 			goto error_iounmap;
- 		++restart;
- 	}
-@@ -594,7 +599,12 @@ int _aac_rx_init(struct aac_dev *dev)
- 		  ((startup_timeout > 60)
- 		    ? (startup_timeout - 60)
- 		    : (startup_timeout / 2))))) {
--			if (likely(!aac_rx_restart_adapter(dev, aac_rx_check_health(dev))))
-+			int health;
-+
-+			dev->a_ops.adapter_enable_int = aac_rx_enable_interrupt_producer;
-+			health = aac_rx_check_health(dev);
-+			dev->a_ops.adapter_enable_int = aac_rx_disable_interrupt;
-+			if (likely(!aac_rx_restart_adapter(dev, health)))
- 				start = jiffies;
- 			++restart;
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 13dddb4..ba675de 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2213,13 +2213,13 @@ struct cgroup_pids {
+ 	/* The cgroup those pids belong to */
+ 	struct cgroup *cgrp;
+ 	/* The namepsace those pids belong to */
+-	struct pid_namespace *pid_ns;
++	struct pid_namespace *ns;
+ 	/* Array of process ids in the cgroup */
+ 	pid_t *tasks_pids;
+ 	/* How many files are using the this tasks_pids array */
+-	int pids_use_count;
++	int use_count;
+ 	/* Length of the current tasks_pids array */
+-	int pids_length;
++	int length;
+ };
+ 
+ static int cmppid(const void *a, const void *b)
+@@ -2248,7 +2248,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
+ 
+ 	down_read(&cgrp->pids_mutex);
+ 	if (pid) {
+-		int end = cp->pids_length;
++		int end = cp->length;
+ 
+ 		while (index < end) {
+ 			int mid = (index + end) / 2;
+@@ -2262,7 +2262,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
  		}
-
-
-
-
-On 2009-07-01 08:54, Joe Jin wrote:
-> Hi,
-> 
-> When try to kdump via sysrq-trigger, found kernel hung when 
-> try to restart aacraid device, kernel print below messages:
-> 
->   Loading aacraid.ko
->   AAC0:  adapter kernel faile to start, init status = 0.
-> 
-> Normally startup, got following message what related the devices:
-> 
->   Adaptec aacraid driver 1.1-5[2461]
->   AAC0: kernel 4.2-0[8208] Jul  6 2006
->   AAC0: monitor 4.2-0[8208]
->   AAC0: bios 4.2-0[8208]
->   AAC0: serial C36FA5
->   AAC0: Non-DASD support enabled.
-> 
-> 
-> Device info from lspci:
->      
-> 02:03.0 0104: 9005:0285 (rev 01)                                                            
->         Subsystem: 9005:0286
->         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR+ FastB2B- 
->         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- 
->         Latency: 64 (250ns min, 250ns max), Cache Line Size: 64 bytes                       
->         Interrupt: pin A routed to IRQ 177                                                  
->         Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
->         Expansion ROM at fc9f0000 [disabled] [size=32K]                                     
->         Capabilities: [80] Power Management version 2
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)  
->                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-> 
-> 
-> Readed driver's codes found if ignore restart device at _aac_rx_init():
-> 
-> Changed
-> 	if ((((status & 0x0c) != 0x0c) || aac_reset_devices || reset_devices) && 
-> 		!aac_rx_restart_adapter(dev, 0))
-> 
-> to 
-> 	if ((aac_reset_devices || reset_devices) && 
-> 		!aac_rx_restart_adapter(dev, 0))
-> 
-> and get rid of reset_devices from kdump command line, kexec kernel could
-> bootup kernel normally, kdump would dump vmcore, looked like it caused by 
-> aac_rx_restart_adapter() could not restart devices, it made kdump kernel 
-> could not go on.
-> 
-> Any idea will appreciate~
-> 
-> Thanks,
-> Joe
-
+ 	}
+ 	/* If we're off the end of the array, we're done */
+-	if (index >= cp->pids_length)
++	if (index >= cp->length)
+ 		return NULL;
+ 	/* Update the abstract position to be the actual pid that we found */
+ 	iter = cp->tasks_pids + index;
+@@ -2281,7 +2281,7 @@ static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
+ {
+ 	struct cgroup_pids *cp = s->private;
+ 	int *p = v;
+-	int *end = cp->tasks_pids + cp->pids_length;
++	int *end = cp->tasks_pids + cp->length;
+ 
+ 	/*
+ 	 * Advance to the next pid in the array. If this goes off the
+@@ -2313,9 +2313,10 @@ static void release_cgroup_pid_array(struct cgroup_pids *cp)
+ 	struct cgroup *cgrp = cp->cgrp;
+ 
+ 	down_write(&cgrp->pids_mutex);
+-	BUG_ON(!cp->pids_use_count);
+-	if (!--cp->pids_use_count) {
++	BUG_ON(!cp->use_count);
++	if (!--cp->use_count) {
+ 		list_del(&cp->list);
++		put_pid_ns(cp->ns);
+ 		kfree(cp->tasks_pids);
+ 		kfree(cp);
+ 	}
+@@ -2352,7 +2353,7 @@ static struct file_operations cgroup_tasks_operations = {
+ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+ {
+ 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+-	struct pid_namespace *pid_ns = task_active_pid_ns(current);
++	struct pid_namespace *ns;
+ 	struct cgroup_pids *cp;
+ 	pid_t *pidarray;
+ 	int npids;
+@@ -2381,9 +2382,12 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+ 	 */
+ 	down_write(&cgrp->pids_mutex);
+ 
++	ns = get_pid_ns(current->nsproxy->pid_ns);
+ 	list_for_each_entry(cp, &cgrp->pids_list, list) {
+-		if (pid_ns == cp->pid_ns)
++		if (ns == cp->ns) {
++			put_pid_ns(ns);
+ 			goto found;
++		}
+ 	}
+ 
+ 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
+@@ -2393,13 +2397,13 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
+ 		return -ENOMEM;
+ 	}
+ 	cp->cgrp = cgrp;
+-	cp->pid_ns = pid_ns;
++	cp->ns = ns;
+ 	list_add(&cp->list, &cgrp->pids_list);
+ found:
+ 	kfree(cp->tasks_pids);
+ 	cp->tasks_pids = pidarray;
+-	cp->pids_length = npids;
+-	cp->pids_use_count++;
++	cp->length = npids;
++	cp->use_count++;
+ 	up_write(&cgrp->pids_mutex);
+ 
+ 	file->f_op = &cgroup_tasks_operations;
+-- 
+1.5.4.rc3
 
