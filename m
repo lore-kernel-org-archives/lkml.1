@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZGCT2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZGCTav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbZGCT2D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:28:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZGCT1y
+	id S1758913AbZGCTav (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZGCTao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:27:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37850 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756475AbZGCT1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:27:53 -0400
-Message-ID: <4A4E4493.3040009@zytor.com>
-Date: Fri, 03 Jul 2009 10:49:07 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 3 Jul 2009 15:30:44 -0400
+Received: from claw.goop.org ([74.207.240.146]:35003 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754197AbZGCTan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 15:30:43 -0400
+Message-ID: <4A4E5C66.1090206@goop.org>
+Date: Fri, 03 Jul 2009 12:30:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: mingo@redhat.com, paulus@samba.org, acme@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       eric.dumazet@gmail.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, tglx@linutronix.de,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [tip:perfcounters/urgent] x86: atomic64: The atomic64_t data
- type should be 8 bytes aligned on 32-bit too
-References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain> <tip-bbf2a330d92c5afccfd17592ba9ccd50f41cf748@git.kernel.org> <alpine.LFD.2.01.0907030947300.3210@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0907030947300.3210@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+To: lkml@MoreThan.org
+CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
+References: <200907031314.36243.lkml@morethan.org> <200907031338.24778.lkml@morethan.org> <4A4E5738.6080407@goop.org> <200907031413.17556.lkml@morethan.org>
+In-Reply-To: <200907031413.17556.lkml@morethan.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> It's not necessarily even about "two cachelines". It's true that crossing 
-> cachelines is extra painful, but from a CPU core angle, there's another 
-> access width that matters almost as much, namely the width of the bus 
-> between the core and the L1 cache. If it's not aligned to that, the core 
-> needs to do each 8-byte read/write as two accesses, even if it's to the 
-> same cacheline, and that complicates things.
-> 
-> The cacheline itself is generally larger than the cache access width. I 
-> could easily see a 64B cacheline, but a 256b (32B) bus between the cache 
-> and the core.
-> 
-> Making the atomics be naturally aligned means that you never cross either 
-> one, of course.
-> 
+On 07/03/09 12:13, Michael S. Zick wrote:
+> On Fri July 3 2009, Jeremy Fitzhardinge wrote:
+>   
+>> On 07/03/09 11:38, Michael S. Zick wrote:
+>>     
+>>> I make no claims for it at the moment - too early in the test process.
+>>> Just the general observation that it takes 0.5M to describe 0.5G of ram.
+>>>   
+>>>       
+>> Only if you're using 4k pages.  With large pages, 1 pte can map 2M, so
+>> 256 entries can map 512M, so you only need 1/2 a page of pagetable
+>> (assuming PAE; if not a single entry can map 4M).
+>>
+>>     
+>
+> Ah, but you can't assume that - look at your VIA-C7M tech sheet - NO PAE.
+>   
 
-Sometimes, of course, that down-mux is where alignment happens, too.
-Either which way, I don't think there is any doubt that unaligned
-atomics are just asking for trouble.
+According to
+http://www.via.com.tw/en/products/processors/c7-m/secure_by_design.jsp,
+it supports NX, which means it must support PAE.
 
-	-hpa
+But even without PAE, it can still support PSE (large pages).
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> Try ending the filename in ".S" and passing it to gcc, 
+> like the build system does.
+>   
 
+It doesn't make any difference.  After going through cpp the expression is:
+
+    # 62 "/home/jeremy/git/linux/arch/x86/kernel/head_32.S"
+    MAPPING_BEYOND_END = (((((1<<32) - 0xC0000000) >> 12) / 512) + 4) << 12
+      
+
+which will be evaluated by the assembler.   The C preprocessor doesn't
+evaluate expressions in the source; it only ever does substitutions and
+leaves the results for the compiler/assembler to evaluate.  (It evals
+expressions on cpp # lines, of course, but that's not relevant here.)
+
+    J
