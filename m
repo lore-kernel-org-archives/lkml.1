@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZGCUKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZGCUQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbZGCUKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbZGCUKc
+	id S1758033AbZGCUQk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbZGCUQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:10:32 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:45752 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbZGCUKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 16:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=seW+YRpggsEMKCq2wh738tqz9VYBY+S+4TtdsyTiZ54e5XW7bEoVyWCE1NdBVTK+jb
-         vhPkhFDbe6U0eC1AVzlQUYP1XAuPLYZMGLeU2C0RHdYG4WrHbAJGkeZoAbAuBfBz62FG
-         t0XKd9qJHzFmSJo58BmI5Nmc4s4Nd/Y9hAo7U=
+	Fri, 3 Jul 2009 16:16:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53979 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755150AbZGCUQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 16:16:30 -0400
+Message-ID: <4A4E671C.2090201@suse.cz>
+Date: Fri, 03 Jul 2009 22:16:28 +0200
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090703193340.GA6060@hexapodia.org>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-7-git-send-email-adi@vmware.com>
-	 <ea8d860a0907031118o7ad0ad4nbe147b32bba57a29@mail.gmail.com>
-	 <20090703193340.GA6060@hexapodia.org>
-Date: Fri, 3 Jul 2009 22:10:30 +0200
-X-Google-Sender-Auth: 8217ef6755f97535
-Message-ID: <ea8d860a0907031310m5cdd21cy3e86e96c1217676d@mail.gmail.com>
-Subject: Re: [tpmdd-devel] [PATCH 6/6] tpm_tis: add workarounds for iTPM
-From: Marcin Obara <marcin_obara@users.sourceforge.net>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net, seiji.munetoh@gmail.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, tony.luck@intel.com,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, hpa@zytor.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-modules@vger.kernel.org
+Subject: Re: [PATCH] reduce export symbol CRC table size on 64-bit archs
+References: <4A4A18780200007800008345@vpn.id2.novell.com>
+In-Reply-To: <4A4A18780200007800008345@vpn.id2.novell.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/3 Andy Isaacson <adi@hexapodia.org>:
-> On Fri, Jul 03, 2009 at 08:18:18PM +0200, Marcin Obara wrote:
->> Intel iTPM on mobile platforms require this patch.
->> Intel iTPM on desktop platforms works well without this patch.
->
-> Please do expand on this -- I don't have access to any iTPM desktop
-> platforms to verify.  Can you provide information on what desktop
-> platforms behave differently so that I can adjust the patch?
->
-> If you could simply boot a kernel with my patch series on a desktop iTPM
-> and provide the dmesg output, that would be great!
+Jan Beulich napsal(a):
+> Since these CRCs are really only 32-bit quantities, there's no need to
+> store them in 64-bit slots. Since, however, gcc doesn't allow
+> respective initializations, asm() constructs get used to create the CRC
+> tables (and its for that reason that the patch only makes x86-64 and
+> ia64 utilize that functionality, as I can't verify this doesn't break
+> in some subtle way elsewhere).
+> 
+...
+>  struct modversion_info
+>  {
+> -	unsigned long crc;
+> +	ksym_crc_t crc;
+>  	char name[MODULE_NAME_LEN];
+>  };
 
-Intel iTPM with HID:  ICO0102 does not require this patch.
- (http://lkml.org/lkml/2008/6/28/143)
+This change breaks module-init-tools:
+Before:
+$ /sbin/modprobe --dump-modversions _build/drivers/usb/core/usbcore.ko
+| head
+0xb49b735a      module_layout
+0xdb7e6a70      bus_register
+0xe3a25bcc      device_remove_file
+0x1fedf0f4      __request_region
+0x37429b3b      device_remove_bin_file
+0x27ac237c      cdev_del
+0xf3be63b3      per_cpu__current_task
+0x26b76a45      kmalloc_caches
+0x5a34a45c      __kmalloc
+0x1c820358      cdev_init
 
-Currently, I don't have Q45 platform tested few months ago.
+After:
+$ /sbin/modprobe --dump-modversions
+_build-crc-int/drivers/usb/core/usbcore.ko  | head
+0x75646f6d91ea7b5c      le_layout
+0x5f7375623e215f43      register
+0x69766564848c67e2      ce_remove_file
+0x65725f5f1fedf0f4      quest_region
+0x69766564a0c29c25      ce_remove_bin_file
+0x766564633ce98bc2      _del
+0x5f72657012c9615b      cpu__current_task
+0x6c616d6b6ea6c464      loc_caches
+0x6d6b5f5f5a34a45c      alloc
+0x766564631e5d885b      _init
 
---
-Marcin
+It also breaks the newly added depmod -E option (check symbol versions),
+which also reads the struct modversion_info array (*). Is it possible
+name the section differently (__versions2?) on those architectures where
+the size changes, so that it is possible to fix m-i-t in a
+backwards-compatible manner?
+
+Michal
+
+
+(*) dump_modvers() and load_symbols() in
+http://git.kernel.org/?p=utils/kernel/module-init-tools/module-init-tools.git;a=blob;f=elfops_core.c;hb=HEAD
