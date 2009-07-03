@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbZGCUwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759279AbZGCUw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbZGCUwJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbZGCUvy
+	id S1759279AbZGCUw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZGCUvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:51:54 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:57665 "EHLO
+	Fri, 3 Jul 2009 16:51:55 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:57666 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756083AbZGCUvy (ORCPT
+	with ESMTP id S1757036AbZGCUvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Jul 2009 16:51:54 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: mchehab@infradead.org
 Cc: linux-media@vger.kernel.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH repost 1/4] V4L: radio-si470x, fix lock imbalance
-Date: Fri,  3 Jul 2009 22:51:33 +0200
-Message-Id: <1246654296-23190-1-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH repost 2/4] V4L: em28xx, fix lock imbalance
+Date: Fri,  3 Jul 2009 22:51:34 +0200
+Message-Id: <1246654296-23190-2-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.2
+In-Reply-To: <1246654296-23190-1-git-send-email-jirislaby@gmail.com>
+References: <1246654296-23190-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is one path with omitted unlock in si470x_fops_release. Fix that.
+There is one omitted unlock in em28xx_usb_probe. Fix that.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/media/radio/radio-si470x.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/media/video/em28xx/em28xx-cards.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/media/radio/radio-si470x.c b/drivers/media/radio/radio-si470x.c
-index 640421c..46d2163 100644
---- a/drivers/media/radio/radio-si470x.c
-+++ b/drivers/media/radio/radio-si470x.c
-@@ -1200,7 +1200,7 @@ static int si470x_fops_release(struct file *file)
- 			video_unregister_device(radio->videodev);
- 			kfree(radio->buffer);
- 			kfree(radio);
--			goto done;
-+			goto unlock;
- 		}
- 
- 		/* stop rds reception */
-@@ -1213,9 +1213,8 @@ static int si470x_fops_release(struct file *file)
- 		retval = si470x_stop(radio);
- 		usb_autopm_put_interface(radio->intf);
+diff --git a/drivers/media/video/em28xx/em28xx-cards.c b/drivers/media/video/em28xx/em28xx-cards.c
+index 36abb35..922d21d 100644
+--- a/drivers/media/video/em28xx/em28xx-cards.c
++++ b/drivers/media/video/em28xx/em28xx-cards.c
+@@ -2445,6 +2445,7 @@ static int em28xx_usb_probe(struct usb_interface *interface,
+ 	retval = em28xx_init_dev(&dev, udev, interface, nr);
+ 	if (retval) {
+ 		em28xx_devused &= ~(1<<dev->devno);
++		mutex_unlock(&dev->lock);
+ 		kfree(dev);
+ 		goto err;
  	}
--
-+unlock:
- 	mutex_unlock(&radio->disconnect_lock);
--
- done:
- 	return retval;
- }
 -- 
 1.6.3.2
 
