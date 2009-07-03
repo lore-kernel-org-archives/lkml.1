@@ -1,151 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZGCDFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZGCDVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZGCDFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 23:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZGCDFg
+	id S1756469AbZGCDVz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 23:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZGCDVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 23:05:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62873 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751128AbZGCDFg (ORCPT
+	Thu, 2 Jul 2009 23:21:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:59731 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750850AbZGCDVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 23:05:36 -0400
-Date: Thu, 2 Jul 2009 22:15:47 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Benjamin Blum <bblum@google.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH v2] cgroups: fix pid namespace bug, fix
-Message-ID: <20090703031547.GA28049@hallyn.com>
-References: <4A4D73C5.9000305@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4D73C5.9000305@cn.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 2 Jul 2009 23:21:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=l+1qGrKb5LsvyvkpujEVc/QezA+DZ/QcD56Z7WjiHkK7gCsLIHe9yEwXr5MdnboWTb
+         WldI419cDUjTpV1/CzDaoGPWAdY+oDzP9OKBfvXwIS4NwttfYA2J43A1QZ7YUVcLH8HD
+         m4eTMISCLrMG+EN5YEraYRnfq4Jgg9T3x8+/4=
+Subject: Re: [PATCH] [MIPS] Hibernation: only save pages in system ram
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <20090702232205.GE14804@linux-mips.org>
+References: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+	 <20090702232205.GE14804@linux-mips.org>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 03 Jul 2009 11:21:37 +0800
+Message-Id: <1246591297.27828.165.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Li Zefan (lizf@cn.fujitsu.com):
-> - add get_pid_ns()/put_pid_ns()
-> - remove prefix "pids_"
+On Fri, 2009-07-03 at 00:22 +0100, Ralf Baechle wrote:
+> On Tue, Jun 30, 2009 at 10:52:50PM +0800, Wu Zhangjin wrote:
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-
-Reviewed-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
-
-> ---
->  kernel/cgroup.c |   28 +++++++++++++++-------------
->  1 files changed, 15 insertions(+), 13 deletions(-)
+> > From: Wu Zhangjin <wuzj@lemote.com>
+> > 
+> > when using hibernation(STD) with CONFIG_FLATMEM in linux-mips-64bit, it
+> > fails for the current mips-specific hibernation implementation save the
+> > pages in all of the memory space(except the nosave section) and make
+> > there will be not enough memory left to the STD task itself, and then
+> > fail. in reality, we only need to save the pages in system rams.
+> > 
+> > here is the reason why it fail:
+> > 
+> > kernel/power/snapshot.c:
+> > 
+> > static void mark_nosave_pages(struct memory_bitmap *bm)
+> > {
+> > 		...
+> > 		if (pfn_valid(pfn)) {
+> > 			...
+> > 		}
+> > }
+> > 
+> > arch/mips/include/asm/page.h:
+> > 
+> > 	...
+> > 	#ifdef CONFIG_FLATMEM
+> > 
+> > 	#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> > 
+> > 	#elif defined(CONFIG_SPARSEMEM)
+> > 
+> > 	/* pfn_valid is defined in linux/mmzone.h */
+> > 	...
+> > 
+> > we can rewrite pfn_valid(pfn) to fix this problem, but I really do not
+> > want to touch such a widely-used macro, so, I used another solution:
+> > 
+> > static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+> > {
+> > 	...
+> > 	if ( .... pfn_is_nosave(pfn)
+> > 		return NULL;
+> > 	...
+> > }
+> > 
+> > and pfn_is_nosave is implemented in arch/mips/power/cpu.c, so, hacking
+> > this one is better.
 > 
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 13dddb4..250dac0 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -2213,13 +2213,13 @@ struct cgroup_pids {
->  	/* The cgroup those pids belong to */
->  	struct cgroup *cgrp;
->  	/* The namepsace those pids belong to */
-> -	struct pid_namespace *pid_ns;
-> +	struct pid_namespace *ns;
->  	/* Array of process ids in the cgroup */
->  	pid_t *tasks_pids;
->  	/* How many files are using the this tasks_pids array */
-> -	int pids_use_count;
-> +	int use_count;
->  	/* Length of the current tasks_pids array */
-> -	int pids_length;
-> +	int length;
->  };
->  
->  static int cmppid(const void *a, const void *b)
-> @@ -2248,7 +2248,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
->  
->  	down_read(&cgrp->pids_mutex);
->  	if (pid) {
-> -		int end = cp->pids_length;
-> +		int end = cp->length;
->  
->  		while (index < end) {
->  			int mid = (index + end) / 2;
-> @@ -2262,7 +2262,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
->  		}
->  	}
->  	/* If we're off the end of the array, we're done */
-> -	if (index >= cp->pids_length)
-> +	if (index >= cp->length)
->  		return NULL;
->  	/* Update the abstract position to be the actual pid that we found */
->  	iter = cp->tasks_pids + index;
-> @@ -2281,7 +2281,7 @@ static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
->  {
->  	struct cgroup_pids *cp = s->private;
->  	int *p = v;
-> -	int *end = cp->tasks_pids + cp->pids_length;
-> +	int *end = cp->tasks_pids + cp->length;
->  
->  	/*
->  	 * Advance to the next pid in the array. If this goes off the
-> @@ -2313,9 +2313,10 @@ static void release_cgroup_pid_array(struct cgroup_pids *cp)
->  	struct cgroup *cgrp = cp->cgrp;
->  
->  	down_write(&cgrp->pids_mutex);
-> -	BUG_ON(!cp->pids_use_count);
-> -	if (!--cp->pids_use_count) {
-> +	BUG_ON(!cp->use_count);
-> +	if (!--cp->use_count) {
->  		list_del(&cp->list);
-> +		put_pid_ns(cp->ns);
->  		kfree(cp->tasks_pids);
->  		kfree(cp);
->  	}
-> @@ -2352,7 +2353,7 @@ static struct file_operations cgroup_tasks_operations = {
->  static int cgroup_tasks_open(struct inode *unused, struct file *file)
->  {
->  	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-> -	struct pid_namespace *pid_ns = task_active_pid_ns(current);
-> +	struct pid_namespace *ns = current->nsproxy->pid_ns;
->  	struct cgroup_pids *cp;
->  	pid_t *pidarray;
->  	int npids;
-> @@ -2382,7 +2383,7 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
->  	down_write(&cgrp->pids_mutex);
->  
->  	list_for_each_entry(cp, &cgrp->pids_list, list) {
-> -		if (pid_ns == cp->pid_ns)
-> +		if (ns == cp->ns)
->  			goto found;
->  	}
->  
-> @@ -2393,13 +2394,14 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
->  		return -ENOMEM;
->  	}
->  	cp->cgrp = cgrp;
-> -	cp->pid_ns = pid_ns;
-> +	cp->ns = ns;
-> +	get_pid_ns(ns);
->  	list_add(&cp->list, &cgrp->pids_list);
->  found:
->  	kfree(cp->tasks_pids);
->  	cp->tasks_pids = pidarray;
-> -	cp->pids_length = npids;
-> -	cp->pids_use_count++;
-> +	cp->length = npids;
-> +	cp->use_count++;
->  	up_write(&cgrp->pids_mutex);
->  
->  	file->f_op = &cgroup_tasks_operations;
-> -- 
-> 1.5.4.rc3
+> No - pfn_valid() is broken, so it should be fixed.  Commit
+> 752fbeb2e3555c0d236e992f1195fd7ce30e728d introduced the breakage.  It
+> seemed to assume that the valid range for PFNs doesn't start at 0 but
+> some higher number but got that entirely wrong..
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> #define ARCH_PFN_OFFSET         PFN_UP(PHYS_OFFSET)
+> #define pfn_valid(pfn)         ((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> 
+> works nicely when PHYS_OFFSET is 0 - as for most MIPS systems and goes
+> horribly wrong otherwise.  So I suggest below patch.
+
+Just test it with the latest master branch of linux-mips on fulong2e,
+Your patch works well, thanks!
+
+(BTW: of course, the ide-relative bug is also there even with Bart's
+patch, so, currently, I just revert this part of the ide patch: "ide:
+improve handling of Power Management requests" to test your patch: 
+
+diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+index d5f3c77..8c4608c 100644
+--- a/drivers/ide/ide-io.c
++++ b/drivers/ide/ide-io.c
+@@ -468,12 +468,12 @@ void do_ide_request(struct request_queue *q)
+                ide_hwif_t *prev_port;
+ repeat:
+                prev_port = hwif->host->cur_port;
+-
++/*
+                if (drive->dev_flags & IDE_DFLAG_BLOCKED)
+                        rq = hwif->rq;
+                else
+                        WARN_ON_ONCE(hwif->rq);
+-
++*/
+                if (drive->dev_flags & IDE_DFLAG_SLEEPING &&
+                    time_after(drive->sleep, jiffies)) {
+                        ide_unlock_port(hwif);
+
+So, I will try to test Bart's patch with linux-next, I'm cloning it
+currently! perhaps there is something missing in my git repo or the
+linux-mips git repo? because i can not apply bart's patch neither to my
+git repo nor to the master branch of linux-mips git repo directly, even
+if pulled linux-next and Davie's ide-2.6 in.
+)
+
+Regards,
+Wu Zhangjin
+
+> 
+>   Ralf
+> 
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> 
+>  arch/mips/include/asm/page.h |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
+> index dc0eaa7..96a14a4 100644
+> --- a/arch/mips/include/asm/page.h
+> +++ b/arch/mips/include/asm/page.h
+> @@ -165,7 +165,14 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+>  
+>  #ifdef CONFIG_FLATMEM
+>  
+> -#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> +#define pfn_valid(pfn)							\
+> +({									\
+> +	unsigned long __pfn = (pfn);					\
+> +	/* avoid <linux/bootmem.h> include hell */			\
+> +	extern unsigned long min_low_pfn;				\
+> +									\
+> +	__pfn >= min_low_pfn && __pfn < max_mapnr;			\
+> +})
+>  
+>  #elif defined(CONFIG_SPARSEMEM)
+>  
+
