@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbZGCKPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZGCKQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbZGCKPe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 06:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZGCKPW
+	id S1756549AbZGCKQl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 06:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbZGCKQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 06:15:22 -0400
-Received: from smtp-out-082.synserver.de ([212.40.180.82]:1027 "HELO
-	smtp-out-036.synserver.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1754297AbZGCKPV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 06:15:21 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: lars@laprican.de
-X-SynServer-PPID: 30568
-Message-ID: <4A4DDA51.3070401@metafoo.de>
-Date: Fri, 03 Jul 2009 12:15:45 +0200
-From: Lars-Peter Clausen <lars@metafoo.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: Fix wm8753 register cache size and initialization
-References: <1246574768-11447-1-git-send-email-lars@metafoo.de> <20090703093250.GA29130@rakim.wolfsonmicro.main>
-In-Reply-To: <20090703093250.GA29130@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 06:16:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52765 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753317AbZGCKQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 06:16:33 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090703092311.GA3712@redhat.com>
+References: <20090703092311.GA3712@redhat.com> <200906301951.n5UJpUSY013305@imap1.linux-foundation.org> <11314.1246585948@turing-police.cc.vt.edu> <20090702192047.10b81ada.akpm@linux-foundation.org> <20090703081821.GA4051@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] selinux_bprm_committed_creds: use __wake_up_parent()
+Date: Fri, 03 Jul 2009 11:16:32 +0100
+Message-ID: <3545.1246616192@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Fri, Jul 03, 2009 at 12:46:08AM +0200, Lars-Peter Clausen wrote:
->
->   
->> The register cache size is of by one. There are 63 registers in use but the
->> register cache size has only space for 62.
->>     
->
-> Only 62 of the registers are cached - please see the register cache
-> access code.
->   
-Yes. Thats the problem. The register cache holds place for 62 elements 
-where as there are 63 register which should be cached.
-In the register cache access code you subtract one from the registers 
-index to get it's index in the register cache array, so the last 
-register has the index 62. Which means it is the 63th element of the 
-array and thus the array has to consist of 63 elements.
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Currently reads to WM8753_ADCTL2 will always return -1 as it is out of 
-the register cache bounds which causes the OUT4 control to be unusable 
-and as a side effect audio volume will be quite low.
->   
->> Furthermore the codec's reg_cache_size is of by another one. Since the wm8753
->> register cache uses one-based indexing we have to add one to its size.
->>     
->
-> I'm not 100% sure what you mean here but I suspect you're misreading the
-> register cache access code?
->   
-The register cache access code uses one-based indexing so the first 
-element in the register cache array will be the register with the number 
-1 and the last register has the number ARRAY_SIZE(wm8753_reg).
-Now if you set reg_cache_size to ARRAY_SIZE(wm8753_reg) the last 
-register will never show up in devices codec_reg sysfs file as its index 
-is not lower the reg_cache_size.
+> (depends on ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+>  which exports __wake_up_parent)
+> 
+> Spotted by Valdis.Kletnieks@vt.edu.
 
-- Lars
+You probably want to add this as a 'Reported-by' tag.
+
+> selinux_bprm_committed_creds() should not play with ->wait_chldexit, now
+> that __wake_up_parent() is exported change the code to use this helper.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+Acked-by: David Howells <dhowells@redhat.com>
