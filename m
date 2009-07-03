@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756877AbZGCJBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757181AbZGCJBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756877AbZGCJBF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZGCJAl
+	id S1757181AbZGCJBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZGCJBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:00:41 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51979 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753284AbZGCJAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:00:39 -0400
-Message-ID: <4A4DC8A3.9040709@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 17:00:19 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 3 Jul 2009 05:01:07 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:40853 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756980AbZGCJBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=BbKPh7N67GlfXck5d33xCZ1CF+IXeT6eQ1+/+CiAYhUGA3xt7q3m6gQt+VA3BfZsR
+	ZXrpzlPv/Ml3IiUdT7iCQ==
+Date: Fri, 3 Jul 2009 02:01:00 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mitchell Erblich <erblichs@earthlink.net>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Re : .... get_page_from_freelist : MInority Suggestion to accept
+ GFP_NOFAIL accept during boot
+In-Reply-To: <61448F53-1F7A-47EF-AAF3-CB2A46AB8009@earthlink.net>
+Message-ID: <alpine.DEB.2.00.0907030155250.13657@chino.kir.corp.google.com>
+References: <61448F53-1F7A-47EF-AAF3-CB2A46AB8009@earthlink.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroup: Fix indent for /proc/cgroups
-References: <4A4DBBC2.8010805@cn.fujitsu.com> <4A4DBF50.8090408@cn.fujitsu.com> <4A4DC358.7030900@cn.fujitsu.com> <4A4DC4CF.4020808@cn.fujitsu.com>
-In-Reply-To: <4A4DC4CF.4020808@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Gui Jianfeng wrote:
->> Li Zefan wrote:
->>> CC: container list
->>>
->>> Gui Jianfeng wrote:
->>>> Currently, /proc/cgroups outputs is fairly ugly as following,
->>>> #subsys_name    hierarchy       num_cgroups     enabled
->>>> cpuset  0       1       1
->>>> debug   0       1       1
->>>> ns      0       1       1
->>>>
->>>> indent it in a good-looking way.
->>>> #subsys_name    hierarchy       num_cgroups     enabled
->>>> cpuset          0               1               1
->>>> debug           0               1               1
->>>> ns              0               1               1
->>>>
->>> But if there's a subsystem with name length >= 8,
->>> it won't be aligned properly..
->>   Yeap, but there isn't such a case at least by now.
->>
-> 
-> This is not a good reason.
-> 
-> We'll probably have such a subsystem. Actually there's a
-> proposed subsystem named "maxdepth" which is of length 8.
-> 
-> See:
-> http://lkml.org/lkml/2009/7/1/581
+On Thu, 2 Jul 2009, Mitchell Erblich wrote:
 
-  yes, this is a case. But at least others can be aligned 
-  properly, right? Anyway, please ignore it if you don't
-  like this change.
-
+> Group,
 > 
 > 
+> 	If I may suggest a minority opinion about the depreciating of the
+> GFP_NOFAIL flag..
 > 
+> 	I saw no discussion on the acceptance of using this flag during boot
+> and shortly
+> 	after boot.
+> 
+> 	Many kernel structures require memory and thus should guarantee memory
+> 	before they continue.
+> 	
+> 	As Linux is moved within embedded environments with smaller amounts of
+> 	physical memory, the chance that earlier mem failures becomes higher.
+> 
+> 	For this logic alone, my minority opinion is to not depreciate the
+> GFP_NOFAIL flag.
 > 
 
--- 
-Regards
-Gui Jianfeng
+I'm confused by your request because all allocations with orders under 
+PAGE_ALLOC_COSTLY_ORDER are inherently __GFP_NOFAIL and those that are not 
+can easily implement the same behavior in the caller:
 
+	struct page *page;
+	do {
+		page = alloc_pages(...);
+	} while (!page);
+
+Hopefully something could be done to ensure the next call to alloc_pages() 
+would be more likely to succeed, but __GFP_NOFAIL doesn't provide that 
+anyway.
