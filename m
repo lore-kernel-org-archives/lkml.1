@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZGCPwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbZGCPwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbZGCPwZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZGCPwB
+	id S1757720AbZGCPwz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZGCPws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:52:01 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41475 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757031AbZGCPv7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:51:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoFAKHETUpMQWU3/2dsb2JhbACBUMx0hBIFgTo
-Date: Fri, 3 Jul 2009 11:47:00 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, mingo@elte.hu, jolsa@redhat.com,
-       a.p.zijlstra@chello.nl, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org, Paul.McKenney@us.ibm.com
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703154700.GD10256@Krystal>
-References: <20090703152951.GA28837@gondor.apana.org.au> <4A4E25BB.8060408@gmail.com>
+	Fri, 3 Jul 2009 11:52:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:37064 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756173AbZGCPwr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 11:52:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=RAGhqla4VtkG3vDUHGTk+mOa/sbY9kA6WC5e2TUUrKito3yfoqJQiSl6YujpH4gQR
+	Ms3WOhknj+sOqow6C8k8A==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+In-Reply-To: <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+	 <20090702164649.303c4952.akpm@linux-foundation.org>
+	 <2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+	 <20090702175341.fd2e26d5.akpm@linux-foundation.org>
+	 <6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+	 <20090702183004.1e3f4315.akpm@linux-foundation.org>
+	 <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Fri, 3 Jul 2009 08:52:46 -0700
+Message-ID: <6599ad830907030852p2cd667e3m353d68448e0cdc6a@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks" that 
+	shows only unique tgids
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitzu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-In-Reply-To: <4A4E25BB.8060408@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:41:37 up 125 days, 12:07,  4 users,  load average: 0.71, 0.84,
-	0.70
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric Dumazet (eric.dumazet@gmail.com) wrote:
-> Herbert Xu a écrit :
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> >> Why don't we create a read_lock without acquire semantic instead (e.g.
-> >> read_lock_nomb(), or something with a better name like __read_lock()) ?
-> >> On architectures where memory barriers are needed to provide the acquire
-> >> semantic, it would be faster to do :
-> >>
-> >> __read_lock();
-> >> smp_mb();
-> >>
-> >> than :
-> >>
-> >> read_lock(); <- e.g. lwsync + isync or something like that
-> >> smp_mb(); <- full sync.
-> > 
-> > Hmm, why do we even care when read_lock should just die?
-> > 
-> > Cheers,
-> 
-> +1 :)
-> 
-> Do you mean using a spinlock instead or what ?
-> 
+On Thu, Jul 2, 2009 at 10:54 PM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>
+> Why we can't do what readdir(/proc) does ? I'm sorry I misunderstand.
+> Following is an easy example.
+>
+>
+> 0. at open, inilialize f_pos to 0. f_pos is used as "pid"
+>   remember "css_set with hole" as template in f_private?(or somewhere) at open
+>   ...like this.
+> --
+>   struct cgroupfs_root *root = cgrp->root;
+>   struct cgroup *template = kzalloc(sizeof(void*) * CGROUP_SUBSYS_COUNT);
+>
+>   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
+>        if (root->subsys_bits & (1UL << i))
+>                template[i] =  cgrp->subsys[i];
+> --
+>
+>
+> 1. at read(), find task_struct of "pid" in f_pos.
+> 2. look up task_struct of "pid" and compare with f_private
+> --
+>   struct cgroup *template = f_private;
+>
+>   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>        if (!template[i])
+>                contiue;
+>        if (template[i] != task_subsys_state(task, i))
+>                break;
+>   }
+>   if (i == CGROUP_SUBSYS_COUNT)
+>        print task;
 
-I think he meant RCU.
+The problem with this is that the time taken to scan a single cgroup
+is linear in the total number of threads in the system, so if you have
+a lot of threads and a lot of cgroups (even if most of the threads are
+concentrated in a single cgroup) the time taken to scan all the tasks
+files in O(N^2) in the number of threads in the system. The current
+scheme is linear in the number of threads in a cgroup, so looking at
+all cgroups is linear in the number of threads in the system. (This
+O(N^2) problem is something that we've actually observed as an
+overhead on some busy systems at Google).
 
-> Also, how many arches are able to have a true __read_lock()
-> (or __spin_lock() if that matters), without acquire semantic ?
-
-At least PowerPC, MIPS, recent ARM, alpha.
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Paul
