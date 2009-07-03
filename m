@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZGCMDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZGCMSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756292AbZGCMDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbZGCMDH
+	id S1755725AbZGCMSj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZGCMSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:03:07 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:42022 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752880AbZGCMDF (ORCPT
+	Fri, 3 Jul 2009 08:18:31 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51571 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752601AbZGCMSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:03:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=RT8GUbPnew4lifcScpWK1ExMu+AveQIdz7L5kxKz9P/DOHuBOFQm2gzi4mpmxalKTa
-         4eO4FdB7oz7oY0KnhJNXGFzMGI2Bm6zD1OFLs81Hvemde1iucc9jaLssuFuyvSNkVDbw
-         coXig88f0qvSy8LFc5MsZanaj65rcBxuP33bk=
-Date: Fri, 3 Jul 2009 12:03:01 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
-	possibly?caused by netem)
-Message-ID: <20090703120301.GD4847@ff.dom.local>
-References: <200907030331.32531.andres@anarazel.de> <20090703061213.GA4847@ff.dom.local> <200907031326.21822.andres@anarazel.de>
+	Fri, 3 Jul 2009 08:18:30 -0400
+Subject: [PATCH] kmemleak: Trace the kmalloc_large* functions in slub
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>
+Date: Fri, 03 Jul 2009 13:18:26 +0100
+Message-ID: <20090703121825.18771.79975.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.14.3.387.geb0c.dirty
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907031326.21822.andres@anarazel.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jul 2009 12:18:26.0496 (UTC) FILETIME=[5DFA4400:01C9FBD8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 01:26:21PM +0200, Andres Freund wrote:
-> On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
-> > On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
-> > ...
-> >
-> > > Ok. I finally see the light. I bisected the issue down to
-> > > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
-> > > pinned timers
-> > >
-> > > Disabling timer migration like provided in the earlier commit stops the
-> > > issue from occuring.
-> > >
-> > > That it is related to timers is sensible in the light of my findings,
-> > > that I could trigger the issue only when using delay in netem - that is
-> > > the codepath using qdisc_watchdog...
-> >
-> > Andres, thanks for your work and time. It saved me a lot of searching,
-> > because I wasn't able to trigger this on my old box.
-> Thanks. It allowed me to go through some of my remaining paperwork ;-)
-> 
-> Does anybody of you have an idea where the problem actually resides? 
+The kmalloc_large() and kmalloc_large_node() functions were missed when
+adding the kmemleak hooks to the slub allocator. However, they should be
+traced to avoid false positives.
 
-Do you mean possibly broken timers are not enough?
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/slub_def.h |    2 ++
+ mm/slub.c                |   10 ++++++----
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-> qdisc_watchdog_schedule looks innocent enough for my uneducated eyes - and the 
-> patch/infrastructure from Arun goes over my head...
-> I will happily test some ideas/patches.
-> 
-> Aside from that - is the whole PSCHED_TICKS2NS/PSCHED_NS2TICKS conversion 
-> business purely backward compatibility?
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 4dcbc2c..c1c862b 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -11,6 +11,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/kobject.h>
+ #include <linux/kmemtrace.h>
++#include <linux/kmemleak.h>
+ 
+ enum stat_item {
+ 	ALLOC_FASTPATH,		/* Allocation from cpu slab */
+@@ -233,6 +234,7 @@ static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
+ 	unsigned int order = get_order(size);
+ 	void *ret = (void *) __get_free_pages(flags | __GFP_COMP, order);
+ 
++	kmemleak_alloc(ret, size, 1, flags);
+ 	trace_kmalloc(_THIS_IP_, ret, size, PAGE_SIZE << order, flags);
+ 
+ 	return ret;
+diff --git a/mm/slub.c b/mm/slub.c
+index 819f056..f8d6df8 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -21,7 +21,6 @@
+ #include <linux/kmemcheck.h>
+ #include <linux/cpu.h>
+ #include <linux/cpuset.h>
+-#include <linux/kmemleak.h>
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/debugobjects.h>
+@@ -2833,13 +2832,15 @@ EXPORT_SYMBOL(__kmalloc);
+ static void *kmalloc_large_node(size_t size, gfp_t flags, int node)
+ {
+ 	struct page *page;
++	void *ptr = NULL;
+ 
+ 	flags |= __GFP_COMP | __GFP_NOTRACK;
+ 	page = alloc_pages_node(node, flags, get_order(size));
+ 	if (page)
+-		return page_address(page);
+-	else
+-		return NULL;
++		ptr = page_address(page);
++
++	kmemleak_alloc(ptr, size, 1, flags);
++	return ptr;
+ }
+ 
+ #ifdef CONFIG_NUMA
+@@ -2924,6 +2925,7 @@ void kfree(const void *x)
+ 	page = virt_to_head_page(x);
+ 	if (unlikely(!PageSlab(page))) {
+ 		BUG_ON(!PageCompound(page));
++		kmemleak_free(x);
+ 		put_page(page);
+ 		return;
+ 	}
 
-The whole PSCHED_ conversion was to get finer resolution without
-breaking backward compatibility, I hope.;-)
-
-Jarek P.
