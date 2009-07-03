@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbZGCXO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZGCXPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758988AbZGCXO4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 19:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZGCXOq
+	id S1756255AbZGCXPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 19:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZGCXPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 19:14:46 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:58168 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751067AbZGCXOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 19:14:45 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net C3FF239A5D4
-Subject: Re: RFC: Remote control sensors and Linux input layer
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: linux-input@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org
-In-Reply-To: <m3my7obqrd.fsf@intrepid.localdomain>
-References: <m3ab3prdnv.fsf@intrepid.localdomain>
-	 <m34otxr42y.fsf@intrepid.localdomain>
-	 <1246404739.12087.40.camel@pc07.localdom.local>
-	 <m3my7obqrd.fsf@intrepid.localdomain>
-Content-Type: text/plain
-Date: Sat, 04 Jul 2009 01:06:11 +0200
-Message-Id: <1246662371.5236.4.camel@pc07.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+	Fri, 3 Jul 2009 19:15:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44714 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbZGCXPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 19:15:02 -0400
+Message-ID: <4A4E90CD.6070905@kernel.org>
+Date: Sat, 04 Jul 2009 08:14:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
+       mingo@elte.hu, andi@firstfloor.org, hpa@zytor.com, tglx@linutronix.de,
+       cl@linux-foundation.org, akpm@linux-foundation.org
+Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
+ lpage NUMA support
+References: <1245850216-31653-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1245850216-31653-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 23:14:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Am Mittwoch, den 01.07.2009, 13:13 +0200 schrieb Krzysztof Halasa:
-> hermann pitton <hermann-pitton@arcor.de> writes:
+Tejun Heo wrote:
+> Hello,
 > 
-> > your prior mail with the RFC is only on linux-input.
+> This patchset is combination of the following two patchsets.
 > 
-> Well, I posted it to linux-input, -media, -kernel.
+> [1] x86,percpu: generalize 4k and lpage allocator
+> [2] percpu: teach lpage allocator about NUMA
 
-Krzysztof, sorry, my bad.
+Alpha changes from linus#master pulled into #for-next and this
+patchset has been published in #for-next on top of that.
 
-Mails did not arrive in timely manner as usual after some heavy
-thunderstorms here.
+Thanks.
 
-> > I wonder, why you don't start with the remote coming with your Avermedia
-> > card, but with some Philips remote coming with your TV.
-> 
-> Because I use the later. I will capture the AverMedia codes for complete
-> support but it's lower priority for me.
-> 
-> > It is years back, but we don't know until today, waiting nine months or
-> > so then, if we did break the bttv device ... Please keep the comments.
-> 
-> I will, of course, keep the ones which still apply.
-
-And of course it would be very nice to have RC5 support on transmitters
-and receivers capable for it.
-
-Cheers,
-Hermann
-
-
+-- 
+tejun
