@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZGCQZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbZGCQaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbZGCQZm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbZGCQZe
+	id S1757756AbZGCQaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZGCQaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:25:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47352 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756279AbZGCQZd (ORCPT
+	Fri, 3 Jul 2009 12:30:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:64733 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756020AbZGCQaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:25:33 -0400
-Date: Fri, 3 Jul 2009 17:26:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703172651.619162fd@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090703155809.GA20121@elte.hu>
-References: <20090703091655.GB3902@elte.hu>
-	<20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk>
-	<20090703095432.GC21141@elte.hu>
-	<20090703110620.64fd1283@lxorguk.ukuu.org.uk>
-	<20090703102234.GA32128@elte.hu>
-	<20090703114431.37abd528@lxorguk.ukuu.org.uk>
-	<20090703131727.GA3207@elte.hu>
-	<20090703143746.0379b2ee@lxorguk.ukuu.org.uk>
-	<20090703144754.GA13246@elte.hu>
-	<20090703160230.093e422c@lxorguk.ukuu.org.uk>
-	<20090703155809.GA20121@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 12:30:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=lh6N5FxxM2G1M6utJBx3U/d0QL1SZLcyELjp3Q7yaDfgbhEmAojHFSw2nIRr3gzTDY
+         KjD64eMHfQ99EosOAc61q3Fn37rT6qWsQQV0mwDMZOE+gl5UE0t48fE8il7Cg2gdlmuF
+         uFRjSqqcifiE4XoaiclFBpwXEfE0rk9jC/+vM=
+Date: Fri, 3 Jul 2009 11:30:11 -0500
+From: Ben Gamari <bgamari.foss@gmail.com>
+To: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
+Subject: Re: Infrastructure for tracking driver performance events
+Message-ID: <20090703163011.GA7476@ben-laptop>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	intel-gfx@lists.freedesktop.org
+References: <20090624172912.GB5565@ben-laptop>
+ <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Another question: i'm wondering why you brought up Voyager support 
-> here. Are you trying to insult me?
+On Thu, Jun 25, 2009 at 08:55:51AM -0400, Steven Rostedt wrote:
+> 
+> 
+> On Wed, 24 Jun 2009, Ben Gamari wrote:
+> You can filter on functions to trace. Or add a list of functions
+> in set_graph_function to just graph a specific list.
 
-[and]
+Perfect.
 
-> Pointing out when your code is unclean does not count as an offense 
-> on lkml, i hope
+> 
+> > 2) It is difficult to extract the kernel mode callgraph with no natural
+> >    way to capture the usermode callgraph
+> 
+> Do you just need a backtrace of some point, or a full user mode graph?
 
-Nor then I trust does pointing out that voyager needs a bit of work ;)
+Just a backtrace to the syscall invocation. This should allow us to
+identify which path mesa or the ddx took to hit the slow path.
 
+> 
+> > 3) A large amount of usermode support is necessary (which will likely be
+> >    the case for any option; listed here for completeness)
+> > 
+> > Another option seems to be systemtap. It has already been documented[3]
+> > that this option could provide both user-mode and kernel-mode
+> > backtraces. The driver could provide a kernel marker at every potential
+> > wait point (or a single marker in a function called at each wait point,
+> > for that matter) which would be picked up by systemtap and processed in
+> > usermode, calling ptrace to acquire a usermode backtrace. This approach
+> > seems slightly cleaner as it doesn't require the tracing on the entire
+> > machine to catch what should be reasonably rare events (hopefully).
+> 
+> Enabling the userstacktrace will give userspace stack traces at event
+> trace points. The thing is that the userspace utility must be built with 
+> frame pointers.
 
-I've no objection to pointing out unclean code (or to patches). If
-someone wants to fix all the printk(KERN_ calls in the tty layer for for
-it - great newbie project if a bit tedious I'd be delighted to receive the
-patches.
+Yep, I apparently hadn't read through the documentation all that well.
+It looks like the stacktrace and userstacktrace will serve quite nicely.
+Are there preexisting tools for resolving addresses in the produced
+stacktrace into symbols? Is there an example of this being done
+somewhere? Thanks,
 
-I'm still however utterly incredulous that you'd look at that bit of
-proposed code and see a formatting glitch but not that fact it couldn't
-possibly work. I'm still glad you did look at it - don't get me wrong.
-
-The way the tty layer work is done is like this and has been for almost
-two years
-
-	- Identify whats the next best thing to tackle on the giant pile
-	  of sucky turd list
-	- Rework it
-	- Debug it
-	- If it makes that piece of the code completeish whack the entire
-	  file through the coding style process (eg
-	  fe9cd962a62cb5f666cf48b9941d3f3cde134254,
-	  fb100b6ea7bf8a95e52b90cc0dc0ea5744a0a40a etc)
-	- Whines about > 80 characters get ignored
-	  for text strings
-
-That not only makes it easier to keep consistent internal styles, merge
-patches without collision and keep code and style changes apart it means
-that stuff gets cleaned up that doesn't otherwise change.
-
-A good example of what happens if you don't is
-
-scripts/checkpatch.pl --file arch/x86/kernel/cpu/mtrr/*c
-
-where the core part of the code isn't changed very much even though the
-interfaces completely get reworked. Thus it never gets cleaned up and
-reviewed as a whole. The code works, will probably work for years but
-never gets looked at as a whole and tidied.
-
-Alan
-
-
+- Ben
 
