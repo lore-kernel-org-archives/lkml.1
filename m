@@ -1,128 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756484AbZGCN7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZGCOAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756484AbZGCN7z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757159AbZGCN7i
+	id S1757308AbZGCOAR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbZGCN7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:59:38 -0400
-Received: from mail-bw0-f207.google.com ([209.85.218.207]:49731 "EHLO
-	mail-bw0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756817AbZGCN7h (ORCPT
+	Fri, 3 Jul 2009 09:59:47 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62728 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757397AbZGCN7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:59:37 -0400
+	Fri, 3 Jul 2009 09:59:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=plbn8nfkjYzbosrZm20ugCVxHiyTq7syLJjdAhlz09d/sDjmcfqT69kyW+oIvEdVWN
-         4saC0ZkQGXMxPYdXMGlx8b+zptRzS7YYwi345JB3oq7ALwLoki0dNNkiMC6EfhB2ndsl
-         6w3divRqee+R61D82BtghwdntdmdxN1cwaY9k=
+        b=eWsC6lciv3X24MUYNj8IkOFoRcFNuF+elHrYhPetx09bvopqjUYkOMHyCxDUljH8dS
+         tRk10SWerHi87N17At207EPTLIk8XfzTEPWknMtobwLcnJuRRvezCBV6v+BFqLn5moOs
+         pTHXpmCpdLsu0ojTrzxb6If93c9MW9ih5qJ4s=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 03 Jul 2009 16:06:11 +0200
-Message-Id: <20090703140611.7303.45808.sendpatchset@localhost.localdomain>
+Date: Fri, 03 Jul 2009 16:06:20 +0200
+Message-Id: <20090703140620.7303.26554.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
 References: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
-Subject: [PATCH 02/22] Staging: rtl8192su: remove CONFIG_RTL8192_PM ifdefs
+Subject: [PATCH 03/22] Staging: rtl8192su: remove THOMAS_TURBO ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH staging] Staging: rtl8192su: remove CONFIG_RTL8192_PM ifdefs
+Subject: [PATCH staging] Staging: rtl8192su: remove THOMAS_TURBO ifdefs
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/Makefile      |    1 -
- drivers/staging/rtl8192su/r8192U_core.c |   10 ----------
- drivers/staging/rtl8192su/r8192U_pm.c   |    2 --
- drivers/staging/rtl8192su/r8192U_pm.h   |    2 --
- 4 files changed, 15 deletions(-)
+ drivers/staging/rtl8192su/Makefile                      |    2 -
+ drivers/staging/rtl8192su/ieee80211/ieee80211.h         |    2 -
+ drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c      |    6 ----
+ drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c |   20 ----------------
+ 4 files changed, 1 insertion(+), 29 deletions(-)
 
 Index: b/drivers/staging/rtl8192su/Makefile
 ===================================================================
 --- a/drivers/staging/rtl8192su/Makefile
 +++ b/drivers/staging/rtl8192su/Makefile
-@@ -27,7 +27,6 @@ EXTRA_CFLAGS += -DRTL8192SU_ASIC_VERIFIC
- EXTRA_CFLAGS += -DRTL8192SU_USB_PHY_TEST=0
+@@ -5,7 +5,7 @@ EXTRA_CFLAGS += -O2
+ EXTRA_CFLAGS += -mhard-float -DCONFIG_FORCE_HARD_FLOAT=y
  
- #EXTRA_CFLAGS += -DMUTIPLE_BULK_OUT
--EXTRA_CFLAGS += -DCONFIG_RTL8192_PM
+ EXTRA_CFLAGS += -DJACKSON_NEW_RX
+-EXTRA_CFLAGS += -DTHOMAS_BEACON -DTHOMAS_TURBO
++EXTRA_CFLAGS += -DTHOMAS_BEACON
+ #EXTRA_CFLAGS += -DUSE_ONE_PIPE
  
- r8192s_usb-objs :=		\
- 	r8180_93cx6.o		\
-Index: b/drivers/staging/rtl8192su/r8192U_core.c
+ EXTRA_CFLAGS += -DRTL8192SU
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
 ===================================================================
---- a/drivers/staging/rtl8192su/r8192U_core.c
-+++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -76,9 +76,7 @@ double __extendsfdf2(float a) {return a;
- //#include "r8192xU_phyreg.h"
- #include <linux/usb.h>
- 
--#ifdef CONFIG_RTL8192_PM
- #include "r8192U_pm.h"
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211.h
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211.h
+@@ -1443,9 +1443,7 @@ struct ieee80211_network {
+         u8 wmm_info;
+         struct ieee80211_wmm_ac_param wmm_param[4];
+         u8 QoS_Enable;
+-#ifdef THOMAS_TURBO
+ 	u8 Turbo_Enable;//enable turbo mode, added by thomas
 -#endif
- 
- #include "ieee80211/dot11d.h"
- 
-@@ -97,9 +95,7 @@ double __extendsfdf2(float a) {return a;
- //#include "r8192xU_phyreg.h"
- #include <linux/usb.h>
- 
--#ifdef CONFIG_RTL8192_PM
- #include "r8192U_pm.h"
--#endif
- 
- #include "ieee80211/dot11d.h"
- 
-@@ -222,15 +218,9 @@ static struct usb_driver rtl8192_usb_dri
- 	.id_table	= rtl8192_usb_id_tbl,	          /* PCI_ID table  */
- 	.probe		= rtl8192_usb_probe,	          /* probe fn      */
- 	.disconnect	= rtl8192_usb_disconnect,	  /* remove fn     */
--#ifdef CONFIG_RTL8192_PM
- 	.suspend	= rtl8192U_suspend,	          /* PM suspend fn */
- 	.resume		= rtl8192U_resume,                 /* PM resume fn  */
- 	.reset_resume   = rtl8192U_resume,                 /* PM reset resume fn  */
--#else
--	.suspend	= NULL,			          /* PM suspend fn */
--	.resume      	= NULL,			          /* PM resume fn  */
--	.reset_resume   = NULL,                 /* PM reset resume fn  */
--#endif
- };
- 
- 
-Index: b/drivers/staging/rtl8192su/r8192U_pm.c
+ 	u16 CountryIeLen;
+ 	u8 CountryIeBuf[MAX_IE_LEN];
+         // HT Related, by amy, 2008.04.29
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
 ===================================================================
---- a/drivers/staging/rtl8192su/r8192U_pm.c
-+++ b/drivers/staging/rtl8192su/r8192U_pm.c
-@@ -9,7 +9,6 @@
-    Released under the terms of GPL (General Public Licence)
- */
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_rx.c
+@@ -1880,7 +1880,6 @@ int ieee80211_parse_info_param(struct ie
+ 				break;
+ 			}
  
--#ifdef CONFIG_RTL8192_PM
- #include "r8192U.h"
- #include "r8192U_pm.h"
+-#ifdef THOMAS_TURBO
+                         if (info_element->len == 7 &&
+                             info_element->data[0] == 0x00 &&
+                             info_element->data[1] == 0xe0 &&
+@@ -1889,7 +1888,6 @@ int ieee80211_parse_info_param(struct ie
+                             info_element->data[4] == 0x02) {
+                                 network->Turbo_Enable = 1;
+                         }
+-#endif
  
-@@ -71,4 +70,3 @@ int rtl8192U_enable_wake (struct pci_dev
- 	return(-EAGAIN);
+                         //for HTcap and HTinfo parameters
+ 			if(tmp_htcap_len == 0){
+@@ -2350,9 +2348,7 @@ static inline int ieee80211_network_init
+ 	network->unknown_cap_exist = false;
+ 	network->realtek_cap_exit = false;
+ 	network->marvell_cap_exist = false;
+-#ifdef THOMAS_TURBO
+ 	network->Turbo_Enable = 0;
+-#endif
+ 	network->CountryIeLen = 0;
+ 	memset(network->CountryIeBuf, 0, MAX_IE_LEN);
+ //Initialize HT parameters
+@@ -2528,9 +2524,7 @@ static inline void update_network(struct
+ #else
+ 	dst->QoS_Enable = 1;//for Rtl8187 simulation
+ #endif
+-#ifdef THOMAS_TURBO
+ 	dst->Turbo_Enable = src->Turbo_Enable;
+-#endif
+ 
+ 	dst->CountryIeLen = src->CountryIeLen;
+ 	memcpy(dst->CountryIeBuf, src->CountryIeBuf, src->CountryIeLen);
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
+===================================================================
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
+@@ -127,7 +127,6 @@ void ieee80211_WMM_Info(struct ieee80211
+ 	*tag_p = tag;
  }
  
--#endif //CONFIG_RTL8192_PM
-Index: b/drivers/staging/rtl8192su/r8192U_pm.h
-===================================================================
---- a/drivers/staging/rtl8192su/r8192U_pm.h
-+++ b/drivers/staging/rtl8192su/r8192U_pm.h
-@@ -10,7 +10,6 @@
+-#ifdef THOMAS_TURBO
+ void ieee80211_TURBO_Info(struct ieee80211_device *ieee, u8 **tag_p) {
+ 	u8 *tag = *tag_p;
  
- */
+@@ -144,7 +143,6 @@ void ieee80211_TURBO_Info(struct ieee802
+ 	*tag_p = tag;
+ 	printk(KERN_ALERT "This is enable turbo mode IE process\n");
+ }
+-#endif
  
--#ifdef CONFIG_RTL8192_PM
+ void enqueue_mgmt(struct ieee80211_device *ieee, struct sk_buff *skb)
+ {
+@@ -1063,9 +1061,7 @@ inline struct sk_buff *ieee80211_associa
  
- #ifndef R8192_PM_H
- #define R8192_PM_H
-@@ -24,4 +23,3 @@ int rtl8192U_resume (struct usb_interfac
- int rtl8192U_enable_wake (struct pci_dev *dev, u32 state, int enable);
+ 	unsigned int rate_len = ieee80211_MFIE_rate_len(ieee);
+ 	unsigned int wmm_info_len = beacon->qos_data.supported?9:0;
+-#ifdef THOMAS_TURBO
+ 	unsigned int turbo_info_len = beacon->Turbo_Enable?9:0;
+-#endif
  
- #endif //R8192U_PM_H
--#endif // CONFIG_RTL8192_PM
+ 	int len = 0;
+ 
+@@ -1103,7 +1099,6 @@ inline struct sk_buff *ieee80211_associa
+ 	{
+ 		cxvernum_ie_len = 5+2;
+ 	}
+-#ifdef THOMAS_TURBO
+ 	len = sizeof(struct ieee80211_assoc_request_frame)+ 2
+ 		+ beacon->ssid_len//essid tagged val
+ 		+ rate_len//rates tagged val
+@@ -1116,19 +1111,6 @@ inline struct sk_buff *ieee80211_associa
+ 		+ ccxrm_ie_len
+ 		+ cxvernum_ie_len
+ 		+ ieee->tx_headroom;
+-#else
+-	len = sizeof(struct ieee80211_assoc_request_frame)+ 2
+-		+ beacon->ssid_len//essid tagged val
+-		+ rate_len//rates tagged val
+-		+ wpa_ie_len
+-		+ wmm_info_len
+-                + ht_cap_len
+-		+ realtek_ie_len
+-		+ ckip_ie_len
+-		+ ccxrm_ie_len
+-		+ cxvernum_ie_len
+-		+ ieee->tx_headroom;
+-#endif
+ 
+ 	skb = dev_alloc_skb(len);
+ 
+@@ -1250,12 +1232,10 @@ inline struct sk_buff *ieee80211_associa
+ 	if(wmm_info_len) {
+ 	  ieee80211_WMM_Info(ieee, &tag);
+ 	}
+-#ifdef THOMAS_TURBO
+ 	tag = skb_put(skb,turbo_info_len);
+         if(turbo_info_len) {
+                 ieee80211_TURBO_Info(ieee, &tag);
+         }
+-#endif
+ 
+ 	if(ieee->pHTInfo->bCurrentHTSupport&&ieee->pHTInfo->bEnableHT){
+ 		if(ieee->pHTInfo->ePeerHTSpecVer == HT_SPEC_VER_EWC)
