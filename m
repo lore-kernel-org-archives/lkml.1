@@ -1,147 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbZGCPcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbZGCPcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbZGCPcD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZGCPbx
+	id S1757844AbZGCPcx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZGCPcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:31:53 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:37845 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756142AbZGCPbw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:31:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :organization:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=O8woN5XdJfuG7TqNKL8prIEeXQ+jARDQLzIaSC2+WeVfMMSe69sjllPlBYdwg6nThj
-         MrFclc5LEBBmETMfcQtVwxP3AThKL4XTRHanSKGQSKX1jASj6tJJQR6UhzlTMsWymLxa
-         vPPNtZdoyZVo+o2TdqBYTmQltTs3iRt6drPTo=
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-From: Wu Zhangjin <wuzhangjin@gmail.com>
-Reply-To: wuzhangjin@gmail.com
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-In-Reply-To: <200907031508.47891.bzolnier@gmail.com>
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera>
-	 <200907021813.57322.bzolnier@gmail.com> <1246593505.27828.187.camel@falcon>
-	 <200907031508.47891.bzolnier@gmail.com>
-Content-Type: text/plain
-Organization: DSLab, Lanzhou University, China
-Date: Fri, 03 Jul 2009 23:31:36 +0800
-Message-Id: <1246635096.16890.6.camel@falcon>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 11:32:45 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:51152 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755492AbZGCPco (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 11:32:44 -0400
+X-Greylist: delayed 1044 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Jul 2009 11:30:36 EDT
+Message-Id: <20090703144351.012414124@polymtl.ca>
+References: <20090703143705.997230857@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Fri, 03 Jul 2009 10:37:07 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dave Jones <davej@redhat.com>, Thomas Renninger <trenn@suse.de>,
+       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, sven.wegener@stealer.net
+Subject: [patch 2.6.30 1/4] remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+Content-Disposition: inline; filename=cpufreq-remove-rwsem-lock-from-CPUFREQ_GOV_STOP-call-missing-modification.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri,  3 Jul 2009 15:11:52 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+commit	42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
 
-> OK, I see another gotcha added by recent changes, we need to explicitly
-> initialize rq_in_flight variables now.  Revised patch below..
-> 
+Missed a call site for CPUFREQ_GOV_STOP to remove the rwlock taken around the
+teardown. To make a long story short, the rwlock write-lock causes a circular
+dependency with cancel_delayed_work_sync(), because the timer handler takes the
+read lock.
 
-Sorry, STD also not work. if apply this patch, the same problem as not
-apply it, it stopped at:
+Note that all callers to __cpufreq_set_policy are taking the rwsem. All sysfs
+callers (writers) hold the write rwsem at the earliest sysfs calling stage.
 
-...
-PM: Crete hibernation image:
-PM: Need to copy ... pages
-PM: Hibernation image created ...
+However, the rwlock write-lock is not needed upon governor stop.
 
-I think it's better to revert this commit:
- a1317f714af7aed60ddc182d0122477cbe36ee9b ("ide: improve handling of
-Power Management requests")
+Change :
+- Added comment from Venkyi at lock definition site.
 
-Regards,
-Wu Zhangjin
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+CC: rjw@sisk.pl
+CC: mingo@elte.hu
+CC: Shaohua Li <shaohua.li@intel.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Dave Young <hidave.darkstar@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: trenn@suse.de
+CC: sven.wegener@stealer.net
+CC: cpufreq@vger.kernel.org
+---
+ drivers/cpufreq/cpufreq.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] ide: make resume work again (for real)
-> 
-> It turns out that commit a1317f714af7aed60ddc182d0122477cbe36ee9b
-> ("ide: improve handling of Power Management requests") needs to take
-> into the account a new code added by the recent block layer changes
-> in commit 8f6205cd572fece673da0255d74843680f67f879 ("ide: dequeue
-> in-flight request") and prevent clearing of hwif->rq if the device
-> is blocked.
-> 
-> Thanks to Etienne, Wu and Jeff for help in fixing the issue.
-> 
-> Reported-and-tested-by: Jeff Chua <jeff.chua.linux@gmail.com>
-> Reported-and-tested-by: Etienne Basset <etienne.basset@numericable.fr>
-> Reported-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
-> Added patch description, no other changes.
-> 
->  drivers/ide/ide-io.c |   19 ++++++++++++-------
->  1 file changed, 12 insertions(+), 7 deletions(-)
-> 
-> Index: b/drivers/ide/ide-io.c
-> ===================================================================
-> --- a/drivers/ide/ide-io.c
-> +++ b/drivers/ide/ide-io.c
-> @@ -532,7 +532,8 @@ repeat:
->  
->  		if (startstop == ide_stopped) {
->  			rq = hwif->rq;
-> -			hwif->rq = NULL;
-> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
-> +				hwif->rq = NULL;
->  			goto repeat;
->  		}
->  	} else
-> @@ -616,7 +617,7 @@ void ide_timer_expiry (unsigned long dat
->  	unsigned long	flags;
->  	int		wait = -1;
->  	int		plug_device = 0;
-> -	struct request	*uninitialized_var(rq_in_flight);
-> +	struct request	*rq_in_flight = NULL;
->  
->  	spin_lock_irqsave(&hwif->lock, flags);
->  
-> @@ -679,8 +680,10 @@ void ide_timer_expiry (unsigned long dat
->  		spin_lock_irq(&hwif->lock);
->  		enable_irq(hwif->irq);
->  		if (startstop == ide_stopped && hwif->polling == 0) {
-> -			rq_in_flight = hwif->rq;
-> -			hwif->rq = NULL;
-> +			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-> +				rq_in_flight = hwif->rq;
-> +				hwif->rq = NULL;
-> +			}
->  			ide_unlock_port(hwif);
->  			plug_device = 1;
->  		}
-> @@ -775,7 +778,7 @@ irqreturn_t ide_intr (int irq, void *dev
->  	ide_startstop_t startstop;
->  	irqreturn_t irq_ret = IRQ_NONE;
->  	int plug_device = 0;
-> -	struct request *uninitialized_var(rq_in_flight);
-> +	struct request *rq_in_flight = NULL;
->  
->  	if (host->host_flags & IDE_HFLAG_SERIALIZE) {
->  		if (hwif != host->cur_port)
-> @@ -856,8 +859,10 @@ irqreturn_t ide_intr (int irq, void *dev
->  	 */
->  	if (startstop == ide_stopped && hwif->polling == 0) {
->  		BUG_ON(hwif->handler);
-> -		rq_in_flight = hwif->rq;
-> -		hwif->rq = NULL;
-> +		if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-> +			rq_in_flight = hwif->rq;
-> +			hwif->rq = NULL;
-> +		}
->  		ide_unlock_port(hwif);
->  		plug_device = 1;
->  	}
+Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-06-08 12:47:22.000000000 -0400
++++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-06-08 12:48:38.000000000 -0400
+@@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(cpufreq_driver_lo
+  *   are concerned with are online after they get the lock.
+  * - Governor routines that can be called in cpufreq hotplug path should not
+  *   take this sem as top level hotplug notifier handler takes this.
++ * - Lock should not be held across
++ *     __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+  */
+ static DEFINE_PER_CPU(int, policy_cpu);
+ static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
+@@ -1697,8 +1699,17 @@ static int __cpufreq_set_policy(struct c
+ 			dprintk("governor switch\n");
+ 
+ 			/* end old governor */
+-			if (data->governor)
++			if (data->governor) {
++				/*
++				 * Need to release the rwsem around governor
++				 * stop due to lock dependency between
++				 * cancel_delayed_work_sync and the read lock
++				 * taken in the delayed work handler.
++				 */
++				unlock_policy_rwsem_write(data->cpu);
+ 				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
++				lock_policy_rwsem_write(data->cpu);
++			}
+ 
+ 			/* start new governor */
+ 			data->governor = policy->governor;
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
