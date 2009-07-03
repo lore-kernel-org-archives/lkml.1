@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZGCLnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbZGCLyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbZGCLnl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 07:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZGCLnb
+	id S1754152AbZGCLyc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 07:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZGCLyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 07:43:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34879 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752828AbZGCLna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 07:43:30 -0400
-Date: Fri, 3 Jul 2009 13:43:10 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Eric Dumazet <eric.dumazet@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703114310.GA4534@jolsa.lab.eng.brq.redhat.com>
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu> <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com> <20090703102530.GD32128@elte.hu> <20090703111848.GA10267@jolsa.lab.eng.brq.redhat.com> <20090703113027.GC4847@ff.dom.local>
+	Fri, 3 Jul 2009 07:54:23 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:58356 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbZGCLyX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 07:54:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=kuY7tAO00T5IMJ9zYNZkK/B/zLt0bBBU7oVcR1jBDa0KhNKVuzNDeJNTJkVMB40pmi
+         AGz/+2qxS1if3rEaetfpUgI3TNU7xMzILhtOQm5YmaUdRop/4fBQAC+SOGZ/7Lp2cBNv
+         bEaNIuknJbJJP1/pUT65Rxx1Kn2Xixh6GISXo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090703113027.GC4847@ff.dom.local>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Date: Fri, 3 Jul 2009 12:54:25 +0100
+Message-ID: <f4527be0907030454q290fe99t73161a0fd6c1d4d2@mail.gmail.com>
+Subject: Errors in OSS Sound Blaster driver / DMA Documentation (KERN_WARN)
+From: Andrew Lyon <andrew.lyon@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 11:30:27AM +0000, Jarek Poplawski wrote:
-> On Fri, Jul 03, 2009 at 01:18:48PM +0200, Jiri Olsa wrote:
-> ...
-> > diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-> > index b7e5db8..4e77853 100644
-> > --- a/arch/x86/include/asm/spinlock.h
-> > +++ b/arch/x86/include/asm/spinlock.h
-> ...
-> > @@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
-> >   * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
-> >   * could then endup calling schedule and sleep forever if there are no more
-> >   * data on the socket.
-> > + *
-> > + * The sk_has_helper is always called right after a call to read_lock, so we
-> Btw.:
-> - * The sk_has_helper is always called right after a call to read_lock, so we
-> + * The sk_has_sleeper is always called right after a call to read_lock, so we
-> 
-> Jarek P.
+Hi,
 
-oops, thanks
+While investigating a compile failure of Xen kernel I noticed that the
+OSS Sound Blaster driver and DMA Documentation have the same problem,
+KERN_WARNING Is valid and declared in include/linux/kernel.h,
+KERN_WARN does not exist, here are the affected files:
+
+Documentation/DMA-mapping.txt:          printk(KERN_WARN "%s: Playback
+disabled due to DMA limitations.\n",
+Documentation/DMA-mapping.txt:          printk(KERN_WARN "%s: Record
+disabled due to DMA limitations.\n",
+arch/x86/kernel/cpu/common-xen.c:               printk(KERN_WARN
+"Unable to register CSTAR callback\n");
+sound/oss/sb_common.c:                          /* printk(KERN_WARN
+"Sound Blaster: Unexpected interrupt\n"); */
+sound/oss/sb_common.c:                          /* printk(KERN_WARN
+"Sound Blaster: Unexpected interrupt\n"); */
+sound/oss/sb_ess.c:                     /* printk(KERN_WARN "ESS:
+Unexpected interrupt\n"); */
+
+Andy
