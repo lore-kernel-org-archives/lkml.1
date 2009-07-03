@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZGCH6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZGCIAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbZGCH6h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 03:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZGCH6a
+	id S1753415AbZGCIAR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZGCIAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 03:58:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40470 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Jul 2009 04:00:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41090 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbZGCH6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 03:58:30 -0400
-Date: Fri, 3 Jul 2009 09:58:22 +0200
+	id S1751118AbZGCIAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:00:06 -0400
+Date: Fri, 3 Jul 2009 09:59:24 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Vince Weaver <vince@deater.net>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: [numbers] perfmon/pfmon overhead of 17%-94%
-Message-ID: <20090703075822.GA13505@elte.hu>
-References: <Pine.LNX.4.64.0906240937120.10620@pianoman.cluster.toy> <20090624151010.GA12799@elte.hu> <Pine.LNX.4.64.0906261417560.23467@pianoman.cluster.toy> <Pine.LNX.4.64.0906261520030.23653@pianoman.cluster.toy> <20090627060432.GB16200@elte.hu> <20090627064404.GA19368@elte.hu> <Pine.LNX.4.64.0906291354380.1404@pianoman.cluster.toy> <20090629210206.GB13125@elte.hu> <Pine.LNX.4.64.0907021702380.13747@pianoman.cluster.toy>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Greg KH <gregkh@suse.de>,
+       x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Kurt Garloff <garloff@suse.de>,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Doug Thompson <norsk5@yahoo.com>, Dave Jiang <djiang@mvista.com>
+Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
+Message-ID: <20090703075924.GB13505@elte.hu>
+References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org> <20090701111003.GC15958@elte.hu> <alpine.LFD.2.00.0907011816070.18056@eddie.linux-mips.org> <20090702075305.GC19187@elte.hu> <20090702104111.GA24940@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907021702380.13747@pianoman.cluster.toy>
+In-Reply-To: <20090702104111.GA24940@aftab>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,71 +38,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Vince Weaver <vince@deater.net> wrote:
+* Borislav Petkov <borislav.petkov@amd.com> wrote:
 
-> On Mon, 29 Jun 2009, Ingo Molnar wrote:
->>
->> * Vince Weaver <vince@deater.net> wrote:
->>
->>>> If the 5 thousand cycles measurement overhead _still_ matters to
->>>> you under such circumstances then by all means please submit the
->>>> patches to improve it. Despite your claims this is totally
->>>> fixable with the current perfcounters design, Peter outlined the
->>>> steps of how to solve it, you can utilize ptrace if you want to.
->>>
->>> Is it really "totally" fixible?  I don't just mean getting the
->>> overhead from ~3000 down to ~100, I mean down to zero.
->>
->> The thing is, not even pfmon gets it down to zero:
->>
->>  pfmon -e INSTRUCTIONS_RETIRED --follow-fork --aggregate-results ~/million
->>  1000001 INSTRUCTIONS_RETIRED
->>
->> So ... do you take the hardliner purist view and consider it crap
->> due to that imprecision, or do you take the pragmatist view of also
->> considering the relative relevance of any imperfection? ;-)
->
-> as I said in a previous post, on most x86 chips the 
-> instructions_retired counter also includes any hardware interrupts 
-> that occur during the process runtime.  So any clock interrupts, 
-> etc, show up as an extra instruction.  So on the "million" 
-> benchmark, it's usually +/- 2 extra instructions.
+> On Thu, Jul 02, 2009 at 09:53:05AM +0200, Ingo Molnar wrote:
+> > > That shouldn't be a problem if we were about to panic().  For a 
+> > > more sophisticated attempt of recovery -- yes, that would have to 
+> > > be addressed.
+> > 
+> > We are only panic-ing if the sysctl is set. The diagnostics 
+> > would be useful anyway. The proper approach would be to defer it 
+> > a bit in the non-panic case an read it out from some friendlier 
+> > context - such as the EDAC core.
+> 
+> Quickly skimming through code shows some functionality is there: 
+> drivers/edac/edac_pci{,_sysfs}.c but doesn't seem to be NMI safe. 
+> CCing some more people.
 
-yeah. But it has nothing to do with the function you are measuring, 
-right?
+the 'defer' would mean we put it into a softirq context or so and do 
+it from there - not from NMI context.
 
-My general point is really that what matters is the statistical 
-validity of the end result. I dont think you ever disagreed with 
-that point - you just seem to have a lower noise acceptance 
-threshold ;-)
-
-> It looks like support might be added to perfcounters to track 
-> these hardware interrupt stats per-process, which would be great, 
-> as it's been really hard to quantify that currently.
-
-Yeah. There's a patch-set in the works that attempts to do something 
-in this area - see these mails on lkml:
-
-    perf_counter: Add Generalized Hardware interrupt support
-
-Right now they are just convenience wrappers around CPU model 
-specific hw events - but we could extend the whole thing with 
-software counters as well and isolate per IRQ vector events and 
-counts, by adding a callback to do_IRQ().
-
-That would give a mixture of hardware and software counter based IRQ 
-instrumentation features that looks quite compelling. Any comments 
-on what features/capabilities you'd like to see in this area?
-
-> In any case, it looks like the changes to make perf have lower 
-> overhead have been merged, which makes me happy.  Thank you.
-
-You are welcome :)
-
-Btw., perfcounters still has no support for older Intel CPUs such as 
-P3's and P2's - and they have pretty sane PMUs - so if you have such 
-a machine (which your perfmon contribution suggests you might 
-have/had) and are interested it would be nice to get support for 
-them. P4 support is interesting too but more challenging.
+But yes, if we are about to panic due to this and want to print out 
+something useful, making EDAC NMI safe would be nice.
 
 	Ingo
