@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZGCKay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZGCKdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZGCKay (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 06:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZGCKaq
+	id S1754170AbZGCKdj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 06:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZGCKdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 06:30:46 -0400
-Received: from smtpfb2-g21.free.fr ([212.27.42.10]:37500 "EHLO
-	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbZGCKap (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 06:30:45 -0400
-Message-ID: <4A4DDD54.9030206@free.fr>
-Date: Fri, 03 Jul 2009 12:28:36 +0200
-From: Albert ARIBAUD <albert.aribaud@free.fr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090625)
+	Fri, 3 Jul 2009 06:33:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59262 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751072AbZGCKdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 06:33:31 -0400
+Date: Fri, 3 Jul 2009 12:33:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2/2 -tip] perf_counter: Add generalized hardware
+	interrupt support for AMD and Intel Corei7/Nehalem, Core2 and Atom
+Message-ID: <20090703103304.GG32128@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam> <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam> <1246527951.13659.4.camel@hpdv5.satnam>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Changli Gao <xiaosuo@gmail.com>, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-References: <20090703015554.GB5880@cr0.nay.redhat.com>	 <20090703030008.GD5880@cr0.nay.redhat.com>	 <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com>	 <20090703051917.GE5880@cr0.nay.redhat.com>	 <412e6f7f0907022242r52ad981fyd51c2a55f41ab228@mail.gmail.com>	 <20090703071504.GG5880@cr0.nay.redhat.com>	 <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com>	 <20090703081655.GH5880@cr0.nay.redhat.com>	 <412e6f7f0907030127u3d6806dfo9168600e7c71b241@mail.gmail.com>	 <20090703094229.GI5880@cr0.nay.redhat.com> <412e6f7f0907030259m5556ee2fobbb58d377bce4d17@mail.gmail.com>
-In-Reply-To: <412e6f7f0907030259m5556ee2fobbb58d377bce4d17@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246527951.13659.4.camel@hpdv5.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changli Gao a écrit :
 
-> Yea, in many cases, max fd number must be enlarged. More fds means
-> more memory. Although memory is cheaper today, we have to do our best
-> to save money.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Sorry for interrupting, but I don't see how pipe could return a single fd, 
-considering there are two (partly) independent ends, each being read (resp. 
-written) in their own time, and an fd has only one "current read/write 
-position" IIUC.
+> $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
+> 
+>  Performance counter stats for 'ls -lR /usr/include/':
+> 
+>             377  interrupts
+>        53429936  int-mask-cycles
+>            1119  int-pending-mask-cycles
 
-If the proposal is to have two independent positions (one for reads and one 
-for writes) for a single fd, then I am not sure the gain in the number of 
-fds used is worth the loss in the increased size of the fd structure.
+What's your take on my review feedback:
 
-Am I missing something?
+> We could and should probably add a software counter for hardirqs 
+> as well. That would allow the vector/irqnr information to be 
+> passed in, and it would allow architectures without irq metrics in 
+> the PMU to have this counter too.
+>
+> This way we could profile based on a specific interrupt source 
+> only - say based on the networking card.
 
-Amicalement,
--- 
-Albert.
+Why did you resend the patch while there was still unanswered review 
+feedback?
+
+	Ingo
