@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757935AbZGCRie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZGCRq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757935AbZGCRie (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 13:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZGCRi0
+	id S1757898AbZGCRq7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 13:46:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZGCRqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 13:38:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48599 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754736AbZGCRiZ (ORCPT
+	Fri, 3 Jul 2009 13:46:51 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:56368 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756246AbZGCRqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 13:38:25 -0400
-Date: Fri, 3 Jul 2009 10:38:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Eric Dumazet <eric.dumazet@gmail.com>, David Howells <dhowells@redhat.com>,
-       akpm@linux-foundation.org, paulus@samba.org, arnd@arndb.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: atomic64_t: Improve atomic64_add_return()
-In-Reply-To: <20090703120159.GB7161@elte.hu>
-Message-ID: <alpine.LFD.2.01.0907031035340.3210@localhost.localdomain>
-References: <20090701144913.GA28172@elte.hu> <20090701164700.29780.15103.stgit@warthog.procyon.org.uk> <alpine.LFD.2.01.0907011004000.3605@localhost.localdomain> <4A4D2239.5000602@gmail.com> <alpine.LFD.2.01.0907021419560.3210@localhost.localdomain>
- <20090703120159.GB7161@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Jul 2009 13:46:50 -0400
+Date: Fri, 3 Jul 2009 10:46:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org
+Subject: [PATCH -mmotm] gpio.h: fix warning for GENERIC_GPIO=n
+Message-Id: <20090703104640.07b26b28.randy.dunlap@oracle.com>
+In-Reply-To: <200907030300.n6330BgL015030@imap1.linux-foundation.org>
+References: <200907030300.n6330BgL015030@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.4A4E4402.01E1:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Fix build for CONFIG_GENERIC_GPIO=n, which causes this warning:
+
+include/linux/gpio.h:93: warning: 'struct device' declared inside parameter list
+include/linux/gpio.h:93: warning: its scope is only this definition or declaration, which is probably not what you want
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ include/linux/gpio.h |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- mmotm-2009-0702-1957.orig/include/linux/gpio.h
++++ mmotm-2009-0702-1957/include/linux/gpio.h
+@@ -12,6 +12,8 @@
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ 
++struct device;
++
+ /*
+  * Some platforms don't support the GPIO programming interface.
+  *
 
 
-On Fri, 3 Jul 2009, Ingo Molnar wrote:
->  u64 atomic64_add_return(u64 delta, atomic64_t *ptr)
->  {
-> +	/*
-> +	 * Try first with a (probably incorrect) assumption about
-> +	 * what we have there. We'll do two loops most likely,
-> +	 * but we'll get an ownership MESI transaction straight away
-> +	 * instead of a read transaction followed by a
-> +	 * flush-for-ownership transaction:
-> +	 */
-> +	u64 old_val, new_val, real_val = 1ULL << 32;
->  
->  	do {
-> +		old_val = real_val;
->  		new_val = old_val + delta;
->  
-> +		real_val = atomic64_cmpxchg(ptr, old_val, new_val);
-> +
-> +	} while (real_val != old_val);
-
-For the case where we actually have to keep looping until we succeed, 
-we're probably better off starting with a good guess rather than a bad 
-one.
-
-So I'd suggest using 'real_val = 0', which gives smaller code, rather than 
-the 1ull << 32 that is actively trying to be a bad guess.
-
-It won't matter all that much (since 0 really isn't a much better guess 
-than 1ull<<32), but I'd rather have a simple constant that doesn't matter, 
-over an odd constant that makes no sense.
-
-			Linus
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
