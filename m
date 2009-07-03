@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZGCPkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbZGCPkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbZGCPkV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbZGCPkH
+	id S1757756AbZGCPkj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbZGCPkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:40:07 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:64720 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756519AbZGCPkG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:40:06 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoFAI+9TUpMQWU3/2dsb2JhbACBUMxfhBIFgTo
-Date: Fri, 3 Jul 2009 11:40:07 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: mingo@elte.hu, jolsa@redhat.com, a.p.zijlstra@chello.nl,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org,
-       eric.dumazet@gmail.com, Paul.McKenney@us.ibm.com
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703154007.GC10256@Krystal>
-References: <20090703140401.GA10256@Krystal> <20090703152951.GA28837@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 3 Jul 2009 11:40:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58761 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757761AbZGCPkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 11:40:21 -0400
+Message-ID: <4A4E2638.9080101@kernel.org>
+Date: Fri, 03 Jul 2009 08:39:36 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: alex.shi@intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>,
+       "bugme-daemon@bugzilla.kernel.org" <bugme-daemon@bugzilla.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       yanmin.zhang@intel.com, tim.c.chen@intel.com
+Subject: Re: [Bugme-new] [Bug 13690] New: nodes_clear cause hugepage unusable
+ on non-NUMA machine
+References: <bug-13690-10286@http.bugzilla.kernel.org/>  <20090701183452.8660c8a9.akpm@linux-foundation.org>  <4A4C17FD.3080404@kernel.org> <1246517111.15721.5.camel@alexs-hp> <4A4C74D8.30809@kernel.org> <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
+In-Reply-To: <alpine.DEB.1.10.0907021003450.16359@gentwo.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090703152951.GA28837@gondor.apana.org.au>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:33:24 up 125 days, 11:59,  4 users,  load average: 0.17, 0.44,
-	0.53
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > Why don't we create a read_lock without acquire semantic instead (e.g.
-> > read_lock_nomb(), or something with a better name like __read_lock()) ?
-> > On architectures where memory barriers are needed to provide the acquire
-> > semantic, it would be faster to do :
-> > 
-> > __read_lock();
-> > smp_mb();
-> > 
-> > than :
-> > 
-> > read_lock(); <- e.g. lwsync + isync or something like that
-> > smp_mb(); <- full sync.
+Christoph Lameter wrote:
+> On Thu, 2 Jul 2009, Yinghai Lu wrote:
 > 
-> Hmm, why do we even care when read_lock should just die?
+>> Index: linux-2.6/arch/x86/mm/init_64.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/mm/init_64.c
+>> +++ linux-2.6/arch/x86/mm/init_64.c
+>> @@ -598,8 +598,14 @@ void __init paging_init(void)
+>>
+>>  	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+>>  	sparse_init();
+>> -	/* clear the default setting with node 0 */
+>> +#if MAX_NUMNODES > 1
+>> +	/*
+>> +	 * clear the default setting with node 0
+>> +	 * note: don't clear it, node_set_state will do nothing
+>> +	 *	 (aka set it back) when numa support is not compiled in
+>> +	 */
+>>  	nodes_clear(node_states[N_NORMAL_MEMORY]);
 > 
+> The problem was that nodes_clear() does not fall back to a noop on !NUMA.
+> The node_set/clear_states() operations do become noops.
+> 
+> Could we make it more consistent by using only operations of the same
+> type? F.e. Add a node_clearall_states() in include/linux/nodemask.h that
+> falls back to a noop on !NUMA like the node_*_states operation?
+> 
+> Another options is to restore node_states[N_NORMAL_MEMORY] to its
+> initial condition. See the definition of node_states in page_alloc.c.
 
-I guess you are proposing migration from rwlock to RCU ?
+could use node_clear_state(0, N_NORMAL_MEMORY) instead. because default one only have node 0 set in that mask.
 
-Well, in cases where critical sections are in the order of 20000
-cycles or more, and with 8 to 64-core machines, there is no significant
-gain in using RCU vs rwlocks, so the added complexity might not be
-justified if the critical sections are very long.
-
-But then it's a case by case thing. We would have to see what exactly is
-protected by this read lock and how long the critical section is.
-However, in any case, you are right: rwlocks are acceptable only for
-long critical sections, for which we just don't care about one extra
-memory barrier.
-
-Instead of optimizing away these read-side rwlock barriers, we would
-spend our time much more efficiently switching to RCU read side.
-
-Mathieu
-
-> Cheers,
-> -- 
-> Visit Openswan at http://www.openswan.org/
-> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-> Home Page: http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+YH
