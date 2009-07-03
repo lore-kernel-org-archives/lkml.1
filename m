@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZGCJc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZGCJbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756113AbZGCJc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGCJct
+	id S1754898AbZGCJbH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZGCJa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:32:49 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55547 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751401AbZGCJcs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:32:48 -0400
-Date: Fri, 3 Jul 2009 10:32:50 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: Fix wm8753 register cache size and initialization
-Message-ID: <20090703093250.GA29130@rakim.wolfsonmicro.main>
-References: <1246574768-11447-1-git-send-email-lars@metafoo.de>
+	Fri, 3 Jul 2009 05:30:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41740 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752952AbZGCJaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:30:55 -0400
+Date: Fri, 3 Jul 2009 11:30:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
+	vectored co-processor support for AMD and Intel Corei7/Nehalem
+Message-ID: <20090703093032.GI3902@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam> <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam> <1246606736.2322.9.camel@jaswinder.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246574768-11447-1-git-send-email-lars@metafoo.de>
-X-Cookie: Do not write below this line.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1246606736.2322.9.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 12:46:08AM +0200, Lars-Peter Clausen wrote:
 
-> The register cache size is of by one. There are 63 registers in use but the
-> register cache size has only space for 62.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Only 62 of the registers are cached - please see the register cache
-access code.
+> > $ ./perf list shows vector events like :
+> > 
+> >   vec-adds OR add                          [Hardware vector event]
+> >   vec-muls OR multiply                     [Hardware vector event]
+> >   vec-divs OR divide                       [Hardware vector event]
+> >   vec-idle-cycles OR vec-empty-cycles      [Hardware vector event]
+> >   vec-stall-cycles OR vec-busy-cycles      [Hardware vector event]
+> >   vec-ops OR vec-operations                [Hardware vector event]
 
-> Furthermore the codec's reg_cache_size is of by another one. Since the wm8753
-> register cache uses one-based indexing we have to add one to its size.
+btw., why does this printout SHOUT the 'or'? It's certainly not an 
+important piece of information. Something like:
 
-I'm not 100% sure what you mean here but I suspect you're misreading the
-register cache access code?
+   vec-adds | add                          [Hardware vector event]
+   vec-muls | multiply                     [Hardware vector event]
+   vec-divs | divide                       [Hardware vector event]
+   vec-idle-cycles | vec-empty-cycles      [Hardware vector event]
+   vec-stall-cycles | vec-busy-cycles      [Hardware vector event]
+   vec-ops | vec-operations                [Hardware vector event]
 
-> Register cache initialization only copied the first sizeof(void*) elements leaving the others
-> uninitialized. Fix it by using the size of the reg cache template.
+looks better on all levels.
 
-This fix is good (but should use wm8753->reg_cache for the size).  I'll
-fix this.
+	Ingo
