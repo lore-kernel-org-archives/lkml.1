@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZGCMaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbZGCMdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbZGCMaT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZGCMaD
+	id S1756686AbZGCMdO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZGCMdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:30:03 -0400
-Received: from mail.anarazel.de ([217.115.131.40]:49708 "EHLO smtp.anarazel.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbZGCMaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:30:02 -0400
-From: Andres Freund <andres@anarazel.de>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 ( possibly?caused by netem)
-Date: Fri, 3 Jul 2009 14:30:00 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc1-andres-00457-g396ca83-dirty; KDE/4.2.95; x86_64; ; )
-Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200907030331.32531.andres@anarazel.de> <200907031326.21822.andres@anarazel.de> <20090703120301.GD4847@ff.dom.local>
-In-Reply-To: <20090703120301.GD4847@ff.dom.local>
+	Fri, 3 Jul 2009 08:33:00 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:42833 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753669AbZGCMc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=veWTqouWY7sNxVCgkq2PTblfbLzyDHwioO9Uv2zTftsm1hhSLcHOUtMFRubMvo2tKU
+         d1Pw+YMj5YMnRIAZqrwF5Ck54hYN/QZGrCZ+xJfJFJs8eOsiyfkqVsBYccX2ifLJMa68
+         bHuXVU9mIIs6LgQmhTU1qpF7VduWus7msMrKc=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Date: Fri, 3 Jul 2009 15:33:01 +0300
+Message-ID: <5d96567b0907030533r5db79f9bi709f50d270706867@mail.gmail.com>
+Subject: RE: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK scheduling 
+	policy flag, Second try
+From: Raz <raziebe@gmail.com>
+To: mzxreary@0pointer.de
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907031430.00946.andres@anarazel.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 14:03:01 Jarek Poplawski wrote:
-> On Fri, Jul 03, 2009 at 01:26:21PM +0200, Andres Freund wrote:
-> > On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
-> > > On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
-> > > ...
-> > >
-> > > > Ok. I finally see the light. I bisected the issue down to
-> > > > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
-> > > > pinned timers
-> > > >
-> > > > Disabling timer migration like provided in the earlier commit stops
-> > > > the issue from occuring.
-> > > >
-> > > > That it is related to timers is sensible in the light of my findings,
-> > > > that I could trigger the issue only when using delay in netem - that
-> > > > is the codepath using qdisc_watchdog...
-> > > Andres, thanks for your work and time. It saved me a lot of searching,
-> > > because I wasn't able to trigger this on my old box.
-> > Thanks. It allowed me to go through some of my remaining paperwork ;-)
-> > Does anybody of you have an idea where the problem actually resides?
-> Do you mean possibly broken timers are not enough?
-I have no ideas how/if the timers are actually broken or if the problem does 
-reside somewhere else and is just made visible by the timer changes.
+Lennart  Hello
+I had the same problem several years ago, but in the servers arena.
+in order to solve it  I partitioned the solution to two:
+1. UNI processors machines
+2. SMP processors machines
 
-I would have expected more problem with completely borked timers ;-)
+In UNI processor I created a RT kthread that polls over RTC device.
+The observed jitter was 400us.
+in SMP processors machine we created a new type of scheduling , called offline.
+what i did it to offload a processor and assign it task. jitter is
+250us under heavy load. solution is open source and can be found at :
+http://sos-linux.svn.sourceforge.net/viewvc/sos-linux/offsched/Documentation/
 
-
-> > Aside from that - is the whole PSCHED_TICKS2NS/PSCHED_NS2TICKS conversion
-> > business purely backward compatibility?
-> The whole PSCHED_ conversion was to get finer resolution without
-> breaking backward compatibility, I hope.;-)
-I haven't seen any problems - just curious ;-)
-
-Andres
+Raz
