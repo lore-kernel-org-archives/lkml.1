@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbZGCCt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZGCCux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752220AbZGCCt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZGCCtt
+	id S1753389AbZGCCux (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 22:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZGCCuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:49:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44130 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbZGCCtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:49:49 -0400
-Message-ID: <4A4D71C1.9080608@kernel.org>
-Date: Fri, 03 Jul 2009 11:49:37 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 2 Jul 2009 22:50:44 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:57064 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbZGCCun (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 22:50:43 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: tridge@samba.org, Pavel Machek <pavel@ucw.cz>, john.lanza@linux.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz> <19019.16217.291678.588673@samba.org>
+	<20090701123141.402c17d2@lxorguk.ukuu.org.uk>
+	<19019.25035.244941.352337@samba.org>
+	<20090701143844.07728fdf@lxorguk.ukuu.org.uk>
+	<19019.27736.647500.497114@samba.org>
+	<20090701154151.7f45abad@lxorguk.ukuu.org.uk>
+	<19020.12748.348370.708306@samba.org>
+	<20090702113200.39a15f21@lxorguk.ukuu.org.uk>
+	<19020.43585.375900.217202@samba.org>
+	<20090702175627.580bdebc@lxorguk.ukuu.org.uk>
+Date: Fri, 03 Jul 2009 11:50:40 +0900
+In-Reply-To: <20090702175627.580bdebc@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Thu, 2 Jul 2009 17:56:27 +0100")
+Message-ID: <87skhe4gzj.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Reminder for feature libata spindown skipping and warning removal
- date Dec 2008
-References: <1246587338.2530.17.camel@jaswinder.satnam>
-In-Reply-To: <1246587338.2530.17.camel@jaswinder.satnam>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 02:49:53 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> Hello Tejun,
-> 
-> What: libata spindown skipping and warning
-> When: Dec 2008
-> Why:  Some halt(8) implementations synchronize caches for and spin
->       down libata disks because libata didn't use to spin down disk on
->       system halt (only synchronized caches).
->       Spin down on system halt is now implemented.  sysfs node
->       /sys/class/scsi_disk/h:c:i:l/manage_start_stop is present if
->       spin down support is available.
->       Because issuing spin down command to an already spun down disk
->       makes some disks spin up just to spin down again, libata tracks
->       device spindown status to skip the extra spindown command and
->       warn about it.
->       This is to give userspace tools the time to get updated and will
->       be removed after userspace is reasonably updated.
-> Who:  Tejun Heo <htejun@gmail.com>
-> 
-> If you are facing any issue regarding feature removal kindly update the
-> "Documentation/feature-removal-schedule.txt" like what you are waiting
-> for.
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Thanks for the reminder.  Just sent out patch to kill the feature.  :-)
+> To my mind we need to be careful of three things
+>
+> - Harming the kernel to work around a potentially country specific
+>   unproven problem for the benefit of a few big corporations only
 
+My choice is to provide the option of those to users. I'm not saying to
+ripping out the code for some users.
+
+> - Getting into situations where big companies behind closed doors make
+>   unaccountable decisions about a project they do not own
+
+Now, I'm not working for any companies. I can say there is no closed
+doors for me.
+
+> - Setting trends for country specific fixups. There are a lot of
+>   countries and if we keep the US happy we have to keep China happy and
+>   so it goes on. Big corporations employ armies of specialists for these
+>   purposes and make the gain from it. The community doesn't so it should
+>   no more carry the pain of it than of long term stable releases and
+>   supporting five year old vendor kernels
+
+I'm just thinking about users. If vendors shipped the buggy code like
+first buggy patch, I just thought it's more bad for our users. That's
+all.
+
+If there is community decision, I'll be really glad to follow it.
+
+Thanks.
 -- 
-tejun
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
