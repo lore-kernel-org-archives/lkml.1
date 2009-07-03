@@ -1,366 +1,353 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbZGCI7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZGCJAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756959AbZGCI7X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbZGCI7J
+	id S1756894AbZGCJAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZGCJAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:59:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38871 "EHLO hera.kernel.org"
+	Fri, 3 Jul 2009 05:00:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38938 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756787AbZGCI7E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:59:04 -0400
-Date: Fri, 3 Jul 2009 08:58:20 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	id S1753247AbZGCJAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:00:38 -0400
+Date: Fri, 3 Jul 2009 08:58:33 GMT
+From: tip-bot for Robin Getz <rgetz@blackfin.uclinux.org>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12459460983193-git-send-email->
-References: <12459460983193-git-send-email->
-Subject: [tip:core/rcu] rcu: Add synchronize_sched_expedited() rcutorture doc + updates
-Message-ID: <tip-240ebbf81f149b11a31e060ebe5ee51a3c775360@git.kernel.org>
-Git-Commit-ID: 240ebbf81f149b11a31e060ebe5ee51a3c775360
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, lethal@linux-sh.org,
+       vapier.adi@gmail.com, akpm@linux-foundation.org,
+       rgetz@blackfin.uclinux.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, lethal@linux-sh.org,
+       vapier.adi@gmail.com, akpm@linux-foundation.org,
+       rgetz@blackfin.uclinux.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200907012108.38030.rgetz@blackfin.uclinux.org>
+References: <200907012108.38030.rgetz@blackfin.uclinux.org>
+Subject: [tip:core/printk] printk: Enable the use of more than one CON_BOOT (early console)
+Message-ID: <tip-4d09161196c9a836eacea4b36e2f217bc34894cf@git.kernel.org>
+Git-Commit-ID: 4d09161196c9a836eacea4b36e2f217bc34894cf
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 08:58:22 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 08:58:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  240ebbf81f149b11a31e060ebe5ee51a3c775360
-Gitweb:     http://git.kernel.org/tip/240ebbf81f149b11a31e060ebe5ee51a3c775360
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Thu, 25 Jun 2009 09:08:18 -0700
+Commit-ID:  4d09161196c9a836eacea4b36e2f217bc34894cf
+Gitweb:     http://git.kernel.org/tip/4d09161196c9a836eacea4b36e2f217bc34894cf
+Author:     Robin Getz <rgetz@blackfin.uclinux.org>
+AuthorDate: Wed, 1 Jul 2009 21:08:37 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 10:02:29 +0200
+CommitDate: Fri, 3 Jul 2009 10:10:43 +0200
 
-rcu: Add synchronize_sched_expedited() rcutorture doc + updates
+printk: Enable the use of more than one CON_BOOT (early console)
 
-This patch updates the rcutorture documentation to include
-updated output format.  It also brings the RCU documentation up
-to date.
+Today, register_console() assumes the following usage:
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org
-Cc: torvalds@linux-foundation.org
-Cc: davem@davemloft.net
-Cc: dada1@cosmosbay.com
-Cc: zbr@ioremap.net
-Cc: jeff.chua.linux@gmail.com
-Cc: paulus@samba.org
-Cc: laijs@cn.fujitsu.com
-Cc: jengelh@medozas.de
-Cc: r000n@r000n.net
-Cc: benh@kernel.crashing.org
-Cc: mathieu.desnoyers@polymtl.ca
-LKML-Reference: <12459460983193-git-send-email->
+  - The first console to register with a flag set to CON_BOOT
+    is the one and only bootconsole.
+
+  - If another register_console() is called with an additional
+    CON_BOOT, it is silently rejected.
+
+  - As soon as a console without the CON_BOOT set calls
+    registers the bootconsole is automatically unregistered.
+
+  - Once there is a "real" console - register_console() will
+    silently reject any consoles with it's CON_BOOT flag set.
+
+In many systems (alpha, blackfin, microblaze, mips, powerpc,
+sh, & x86), there are early_printk implementations, which use
+the CON_BOOT which come out serial ports, vga, usb, & memory
+buffers.
+
+In many embedded systems, it would be nice to have two
+bootconsoles - in case the primary fails, you always have
+access to a backup memory buffer - but this requires at least
+two CON_BOOT consoles...
+
+This patch enables that functionality.
+
+With the change applied, on boot you get (if you try to
+re-enable a boot console after the "real" console has been
+registered):
+
+  root:/> dmesg | grep console
+  bootconsole [early_shadow0] enabled
+  bootconsole [early_BFuart0] enabled
+  Kernel command line: root=/dev/mtdblock0 rw earlyprintk=serial,uart0,57600 console=ttyBF0,57600 nmi_debug=regs
+  console handover:boot [early_BFuart0] boot [early_shadow0]  -> real [ttyBF0]
+  Too late to register bootconsole early_shadow0
+
+or:
+
+  root:/> dmesg | grep console
+  Kernel command line: root=/dev/mtdblock0 rw console=ttyBF0,57600
+  console [ttyBF0] enabled
+
+Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Paul Mundt" <lethal@linux-sh.org>
+LKML-Reference: <200907012108.38030.rgetz@blackfin.uclinux.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/RCU/RTFP.txt       |   77 ++++++++++++++++++++++++++++++++++++++
- Documentation/RCU/UP.txt         |   34 ++++++++++++----
- Documentation/RCU/checklist.txt  |   20 +++++++--
- Documentation/RCU/rcubarrier.txt |    7 +++
- Documentation/RCU/torture.txt    |   23 ++++++++++-
- Documentation/RCU/whatisRCU.txt  |   14 +++++-
- 6 files changed, 156 insertions(+), 19 deletions(-)
+ kernel/printk.c |  146 ++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 92 insertions(+), 54 deletions(-)
 
-diff --git a/Documentation/RCU/RTFP.txt b/Documentation/RCU/RTFP.txt
-index 9f711d2..d2b8523 100644
---- a/Documentation/RCU/RTFP.txt
-+++ b/Documentation/RCU/RTFP.txt
-@@ -743,3 +743,80 @@ Revised:
- 	RCU, realtime RCU, sleepable RCU, performance.
- "
- }
+diff --git a/kernel/printk.c b/kernel/printk.c
+index b4d97b5..41fe609 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -37,6 +37,12 @@
+ #include <asm/uaccess.h>
+ 
+ /*
++ * for_each_console() allows you to iterate on each console
++ */
++#define for_each_console(con) \
++	for (con = console_drivers; con != NULL; con = con->next)
 +
-+@article{PaulEMcKenney2008RCUOSR
-+,author="Paul E. McKenney and Jonathan Walpole"
-+,title="Introducing technology into the {Linux} kernel: a case study"
-+,Year="2008"
-+,journal="SIGOPS Oper. Syst. Rev."
-+,volume="42"
-+,number="5"
-+,pages="4--17"
-+,issn="0163-5980"
-+,doi={http://doi.acm.org/10.1145/1400097.1400099}
-+,publisher="ACM"
-+,address="New York, NY, USA"
-+,annotation={
-+	Linux changed RCU to a far greater degree than RCU has changed Linux.
-+}
-+}
++/*
+  * Architectures can override it:
+  */
+ void asmlinkage __attribute__((weak)) early_printk(const char *fmt, ...)
+@@ -412,7 +418,7 @@ static void __call_console_drivers(unsigned start, unsigned end)
+ {
+ 	struct console *con;
+ 
+-	for (con = console_drivers; con; con = con->next) {
++	for_each_console(con) {
+ 		if ((con->flags & CON_ENABLED) && con->write &&
+ 				(cpu_online(smp_processor_id()) ||
+ 				(con->flags & CON_ANYTIME)))
+@@ -544,7 +550,7 @@ static int have_callable_console(void)
+ {
+ 	struct console *con;
+ 
+-	for (con = console_drivers; con; con = con->next)
++	for_each_console(con)
+ 		if (con->flags & CON_ANYTIME)
+ 			return 1;
+ 
+@@ -1082,7 +1088,7 @@ void console_unblank(void)
+ 
+ 	console_locked = 1;
+ 	console_may_schedule = 0;
+-	for (c = console_drivers; c != NULL; c = c->next)
++	for_each_console(c)
+ 		if ((c->flags & CON_ENABLED) && c->unblank)
+ 			c->unblank();
+ 	release_console_sem();
+@@ -1097,7 +1103,7 @@ struct tty_driver *console_device(int *index)
+ 	struct tty_driver *driver = NULL;
+ 
+ 	acquire_console_sem();
+-	for (c = console_drivers; c != NULL; c = c->next) {
++	for_each_console(c) {
+ 		if (!c->device)
+ 			continue;
+ 		driver = c->device(c, index);
+@@ -1134,25 +1140,49 @@ EXPORT_SYMBOL(console_start);
+  * to register the console printing procedure with printk() and to
+  * print any messages that were printed by the kernel before the
+  * console driver was initialized.
++ *
++ * This can happen pretty early during the boot process (because of
++ * early_printk) - sometimes before setup_arch() completes - be careful
++ * of what kernel features are used - they may not be initialised yet.
++ *
++ * There are two types of consoles - bootconsoles (early_printk) and
++ * "real" consoles (everything which is not a bootconsole) which are
++ * handled differently.
++ *  - Any number of bootconsoles can be registered at any time.
++ *  - As soon as a "real" console is registered, all bootconsoles
++ *    will be unregistered automatically.
++ *  - Once a "real" console is registered, any attempt to register a
++ *    bootconsoles will be rejected
+  */
+-void register_console(struct console *console)
++void register_console(struct console *newcon)
+ {
+ 	int i;
+ 	unsigned long flags;
+-	struct console *bootconsole = NULL;
++	struct console *bcon = NULL;
+ 
+-	if (console_drivers) {
+-		if (console->flags & CON_BOOT)
+-			return;
+-		if (console_drivers->flags & CON_BOOT)
+-			bootconsole = console_drivers;
++	/*
++	 * before we register a new CON_BOOT console, make sure we don't
++	 * already have a valid console
++	 */
++	if (console_drivers && newcon->flags & CON_BOOT) {
++		/* find the last or real console */
++		for_each_console(bcon) {
++			if (!(bcon->flags & CON_BOOT)) {
++				printk(KERN_INFO "Too late to register bootconsole %s%d\n",
++					newcon->name, newcon->index);
++				return;
++			}
++		}
+ 	}
+ 
+-	if (preferred_console < 0 || bootconsole || !console_drivers)
++	if (console_drivers && console_drivers->flags & CON_BOOT)
++		bcon = console_drivers;
 +
-+@unpublished{PaulEMcKenney2008HierarchicalRCU
-+,Author="Paul E. McKenney"
-+,Title="Hierarchical {RCU}"
-+,month="November"
-+,day="3"
-+,year="2008"
-+,note="Available:
-+\url{http://lwn.net/Articles/305782/}
-+[Viewed November 6, 2008]"
-+,annotation="
-+	RCU with combining-tree-based grace-period detection,
-+	permitting it to handle thousands of CPUs.
-+"
-+}
++	if (preferred_console < 0 || bcon || !console_drivers)
+ 		preferred_console = selected_console;
+ 
+-	if (console->early_setup)
+-		console->early_setup();
++	if (newcon->early_setup)
++		newcon->early_setup();
+ 
+ 	/*
+ 	 *	See if we want to use this console driver. If we
+@@ -1160,13 +1190,13 @@ void register_console(struct console *console)
+ 	 *	that registers here.
+ 	 */
+ 	if (preferred_console < 0) {
+-		if (console->index < 0)
+-			console->index = 0;
+-		if (console->setup == NULL ||
+-		    console->setup(console, NULL) == 0) {
+-			console->flags |= CON_ENABLED;
+-			if (console->device) {
+-				console->flags |= CON_CONSDEV;
++		if (newcon->index < 0)
++			newcon->index = 0;
++		if (newcon->setup == NULL ||
++		    newcon->setup(newcon, NULL) == 0) {
++			newcon->flags |= CON_ENABLED;
++			if (newcon->device) {
++				newcon->flags |= CON_CONSDEV;
+ 				preferred_console = 0;
+ 			}
+ 		}
+@@ -1178,47 +1208,53 @@ void register_console(struct console *console)
+ 	 */
+ 	for (i = 0; i < MAX_CMDLINECONSOLES && console_cmdline[i].name[0];
+ 			i++) {
+-		if (strcmp(console_cmdline[i].name, console->name) != 0)
++		if (strcmp(console_cmdline[i].name, newcon->name) != 0)
+ 			continue;
+-		if (console->index >= 0 &&
+-		    console->index != console_cmdline[i].index)
++		if (newcon->index >= 0 &&
++		    newcon->index != console_cmdline[i].index)
+ 			continue;
+-		if (console->index < 0)
+-			console->index = console_cmdline[i].index;
++		if (newcon->index < 0)
++			newcon->index = console_cmdline[i].index;
+ #ifdef CONFIG_A11Y_BRAILLE_CONSOLE
+ 		if (console_cmdline[i].brl_options) {
+-			console->flags |= CON_BRL;
+-			braille_register_console(console,
++			newcon->flags |= CON_BRL;
++			braille_register_console(newcon,
+ 					console_cmdline[i].index,
+ 					console_cmdline[i].options,
+ 					console_cmdline[i].brl_options);
+ 			return;
+ 		}
+ #endif
+-		if (console->setup &&
+-		    console->setup(console, console_cmdline[i].options) != 0)
++		if (newcon->setup &&
++		    newcon->setup(newcon, console_cmdline[i].options) != 0)
+ 			break;
+-		console->flags |= CON_ENABLED;
+-		console->index = console_cmdline[i].index;
++		newcon->flags |= CON_ENABLED;
++		newcon->index = console_cmdline[i].index;
+ 		if (i == selected_console) {
+-			console->flags |= CON_CONSDEV;
++			newcon->flags |= CON_CONSDEV;
+ 			preferred_console = selected_console;
+ 		}
+ 		break;
+ 	}
+ 
+-	if (!(console->flags & CON_ENABLED))
++	if (!(newcon->flags & CON_ENABLED))
+ 		return;
+ 
+-	if (bootconsole && (console->flags & CON_CONSDEV)) {
+-		printk(KERN_INFO "console handover: boot [%s%d] -> real [%s%d]\n",
+-		       bootconsole->name, bootconsole->index,
+-		       console->name, console->index);
+-		unregister_console(bootconsole);
+-		console->flags &= ~CON_PRINTBUFFER;
++	if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == CON_CONSDEV)) {
++		/* we need to iterate through twice, to make sure we print
++		 * everything out, before we unregister the console(s)
++		 */
++		printk(KERN_INFO "console handover:");
++		for_each_console(bcon)
++			printk("boot [%s%d] ", bcon->name, bcon->index);
++		printk(" -> real [%s%d]\n", newcon->name, newcon->index);
++		for_each_console(bcon)
++			unregister_console(bcon);
++		newcon->flags &= ~CON_PRINTBUFFER;
+ 	} else {
+-		printk(KERN_INFO "console [%s%d] enabled\n",
+-		       console->name, console->index);
++		printk(KERN_INFO "%sconsole [%s%d] enabled\n",
++			(newcon->flags & CON_BOOT) ? "boot" : "" ,
++			newcon->name, newcon->index);
+ 	}
+ 
+ 	/*
+@@ -1226,16 +1262,16 @@ void register_console(struct console *console)
+ 	 *	preferred driver at the head of the list.
+ 	 */
+ 	acquire_console_sem();
+-	if ((console->flags & CON_CONSDEV) || console_drivers == NULL) {
+-		console->next = console_drivers;
+-		console_drivers = console;
+-		if (console->next)
+-			console->next->flags &= ~CON_CONSDEV;
++	if ((newcon->flags & CON_CONSDEV) || console_drivers == NULL) {
++		newcon->next = console_drivers;
++		console_drivers = newcon;
++		if (newcon->next)
++			newcon->next->flags &= ~CON_CONSDEV;
+ 	} else {
+-		console->next = console_drivers->next;
+-		console_drivers->next = console;
++		newcon->next = console_drivers->next;
++		console_drivers->next = newcon;
+ 	}
+-	if (console->flags & CON_PRINTBUFFER) {
++	if (newcon->flags & CON_PRINTBUFFER) {
+ 		/*
+ 		 * release_console_sem() will print out the buffered messages
+ 		 * for us.
+@@ -1287,11 +1323,13 @@ EXPORT_SYMBOL(unregister_console);
+ 
+ static int __init disable_boot_consoles(void)
+ {
+-	if (console_drivers != NULL) {
+-		if (console_drivers->flags & CON_BOOT) {
++	struct console *con;
 +
-+@conference{PaulEMcKenney2009MaliciousURCU
-+,Author="Paul E. McKenney"
-+,Title="Using a Malicious User-Level {RCU} to Torture {RCU}-Based Algorithms"
-+,Booktitle="linux.conf.au 2009"
-+,month="January"
-+,year="2009"
-+,address="Hobart, Australia"
-+,note="Available:
-+\url{http://www.rdrop.com/users/paulmck/RCU/urcutorture.2009.01.22a.pdf}
-+[Viewed February 2, 2009]"
-+,annotation="
-+	Realtime RCU and torture-testing RCU uses.
-+"
-+}
-+
-+@unpublished{MathieuDesnoyers2009URCU
-+,Author="Mathieu Desnoyers"
-+,Title="[{RFC} git tree] Userspace {RCU} (urcu) for {Linux}"
-+,month="February"
-+,day="5"
-+,year="2009"
-+,note="Available:
-+\url{http://lkml.org/lkml/2009/2/5/572}
-+\url{git://lttng.org/userspace-rcu.git}
-+[Viewed February 20, 2009]"
-+,annotation="
-+	Mathieu Desnoyers's user-space RCU implementation.
-+	git://lttng.org/userspace-rcu.git
-+"
-+}
-+
-+@unpublished{PaulEMcKenney2009BloatWatchRCU
-+,Author="Paul E. McKenney"
-+,Title="{RCU}: The {Bloatwatch} Edition"
-+,month="March"
-+,day="17"
-+,year="2009"
-+,note="Available:
-+\url{http://lwn.net/Articles/323929/}
-+[Viewed March 20, 2009]"
-+,annotation="
-+	Uniprocessor assumptions allow simplified RCU implementation.
-+"
-+}
-diff --git a/Documentation/RCU/UP.txt b/Documentation/RCU/UP.txt
-index aab4a9e..90ec534 100644
---- a/Documentation/RCU/UP.txt
-+++ b/Documentation/RCU/UP.txt
-@@ -2,14 +2,13 @@ RCU on Uniprocessor Systems
- 
- 
- A common misconception is that, on UP systems, the call_rcu() primitive
--may immediately invoke its function, and that the synchronize_rcu()
--primitive may return immediately.  The basis of this misconception
-+may immediately invoke its function.  The basis of this misconception
- is that since there is only one CPU, it should not be necessary to
- wait for anything else to get done, since there are no other CPUs for
- anything else to be happening on.  Although this approach will -sort- -of-
- work a surprising amount of the time, it is a very bad idea in general.
--This document presents three examples that demonstrate exactly how bad an
--idea this is.
-+This document presents three examples that demonstrate exactly how bad
-+an idea this is.
- 
- 
- Example 1: softirq Suicide
-@@ -82,11 +81,18 @@ Quick Quiz #2: What locking restriction must RCU callbacks respect?
- 
- Summary
- 
--Permitting call_rcu() to immediately invoke its arguments or permitting
--synchronize_rcu() to immediately return breaks RCU, even on a UP system.
--So do not do it!  Even on a UP system, the RCU infrastructure -must-
--respect grace periods, and -must- invoke callbacks from a known environment
--in which no locks are held.
-+Permitting call_rcu() to immediately invoke its arguments breaks RCU,
-+even on a UP system.  So do not do it!  Even on a UP system, the RCU
-+infrastructure -must- respect grace periods, and -must- invoke callbacks
-+from a known environment in which no locks are held.
-+
-+It -is- safe for synchronize_sched() and synchronize_rcu_bh() to return
-+immediately on an UP system.  It is also safe for synchronize_rcu()
-+to return immediately on UP systems, except when running preemptable
-+RCU.
-+
-+Quick Quiz #3: Why can't synchronize_rcu() return immediately on
-+	UP systems running preemptable RCU?
- 
- 
- Answer to Quick Quiz #1:
-@@ -117,3 +123,13 @@ Answer to Quick Quiz #2:
- 	callbacks acquire locks directly.  However, a great many RCU
- 	callbacks do acquire locks -indirectly-, for example, via
- 	the kfree() primitive.
-+
-+Answer to Quick Quiz #3:
-+	Why can't synchronize_rcu() return immediately on UP systems
-+	running preemptable RCU?
-+
-+	Because some other task might have been preempted in the middle
-+	of an RCU read-side critical section.  If synchronize_rcu()
-+	simply immediately returned, it would prematurely signal the
-+	end of the grace period, which would come as a nasty shock to
-+	that other thread when it started running again.
-diff --git a/Documentation/RCU/checklist.txt b/Documentation/RCU/checklist.txt
-index accfe2f..51525a3 100644
---- a/Documentation/RCU/checklist.txt
-+++ b/Documentation/RCU/checklist.txt
-@@ -11,7 +11,10 @@ over a rather long period of time, but improvements are always welcome!
- 	structure is updated more than about 10% of the time, then
- 	you should strongly consider some other approach, unless
- 	detailed performance measurements show that RCU is nonetheless
--	the right tool for the job.
-+	the right tool for the job.  Yes, you might think of RCU
-+	as simply cutting overhead off of the readers and imposing it
-+	on the writers.  That is exactly why normal uses of RCU will
-+	do much more reading than updating.
- 
- 	Another exception is where performance is not an issue, and RCU
- 	provides a simpler implementation.  An example of this situation
-@@ -240,10 +243,11 @@ over a rather long period of time, but improvements are always welcome!
- 	instead need to use synchronize_irq() or synchronize_sched().
- 
- 12.	Any lock acquired by an RCU callback must be acquired elsewhere
--	with irq disabled, e.g., via spin_lock_irqsave().  Failing to
--	disable irq on a given acquisition of that lock will result in
--	deadlock as soon as the RCU callback happens to interrupt that
--	acquisition's critical section.
-+	with softirq disabled, e.g., via spin_lock_irqsave(),
-+	spin_lock_bh(), etc.  Failing to disable irq on a given
-+	acquisition of that lock will result in deadlock as soon as the
-+	RCU callback happens to interrupt that acquisition's critical
-+	section.
- 
- 13.	RCU callbacks can be and are executed in parallel.  In many cases,
- 	the callback code simply wrappers around kfree(), so that this
-@@ -310,3 +314,9 @@ over a rather long period of time, but improvements are always welcome!
- 	Because these primitives only wait for pre-existing readers,
- 	it is the caller's responsibility to guarantee safety to
- 	any subsequent readers.
-+
-+16.	The various RCU read-side primitives do -not- contain memory
-+	barriers.  The CPU (and in some cases, the compiler) is free
-+	to reorder code into and out of RCU read-side critical sections.
-+	It is the responsibility of the RCU update-side primitives to
-+	deal with this.
-diff --git a/Documentation/RCU/rcubarrier.txt b/Documentation/RCU/rcubarrier.txt
-index 909602d..e439a0e 100644
---- a/Documentation/RCU/rcubarrier.txt
-+++ b/Documentation/RCU/rcubarrier.txt
-@@ -170,6 +170,13 @@ module invokes call_rcu() from timers, you will need to first cancel all
- the timers, and only then invoke rcu_barrier() to wait for any remaining
- RCU callbacks to complete.
- 
-+Of course, if you module uses call_rcu_bh(), you will need to invoke
-+rcu_barrier_bh() before unloading.  Similarly, if your module uses
-+call_rcu_sched(), you will need to invoke rcu_barrier_sched() before
-+unloading.  If your module uses call_rcu(), call_rcu_bh(), -and-
-+call_rcu_sched(), then you will need to invoke each of rcu_barrier(),
-+rcu_barrier_bh(), and rcu_barrier_sched().
-+
- 
- Implementing rcu_barrier()
- 
-diff --git a/Documentation/RCU/torture.txt b/Documentation/RCU/torture.txt
-index a342b6e..9dba3bb 100644
---- a/Documentation/RCU/torture.txt
-+++ b/Documentation/RCU/torture.txt
-@@ -76,8 +76,10 @@ torture_type	The type of RCU to test: "rcu" for the rcu_read_lock() API,
- 		"rcu_sync" for rcu_read_lock() with synchronous reclamation,
- 		"rcu_bh" for the rcu_read_lock_bh() API, "rcu_bh_sync" for
- 		rcu_read_lock_bh() with synchronous reclamation, "srcu" for
--		the "srcu_read_lock()" API, and "sched" for the use of
--		preempt_disable() together with synchronize_sched().
-+		the "srcu_read_lock()" API, "sched" for the use of
-+		preempt_disable() together with synchronize_sched(),
-+		and "sched_expedited" for the use of preempt_disable()
-+		with synchronize_sched_expedited().
- 
- verbose		Enable debug printk()s.  Default is disabled.
- 
-@@ -162,6 +164,23 @@ of the "old" and "current" counters for the corresponding CPU.  The
- "idx" value maps the "old" and "current" values to the underlying array,
- and is useful for debugging.
- 
-+Similarly, sched_expedited RCU provides the following:
-+
-+	sched_expedited-torture: rtc: d0000000016c1880 ver: 1090796 tfle: 0 rta: 1090796 rtaf: 0 rtf: 1090787 rtmbe: 0 nt: 27713319
-+	sched_expedited-torture: Reader Pipe:  12660320201 95875 0 0 0 0 0 0 0 0 0
-+	sched_expedited-torture: Reader Batch:  12660424885 0 0 0 0 0 0 0 0 0 0
-+	sched_expedited-torture: Free-Block Circulation:  1090795 1090795 1090794 1090793 1090792 1090791 1090790 1090789 1090788 1090787 0
-+	state: -1 / 0:0 3:0 4:0
-+
-+As before, the first four lines are similar to those for RCU.
-+The last line shows the task-migration state.  The first number is
-+-1 if synchronize_sched_expedited() is idle, -2 if in the process of
-+posting wakeups to the migration kthreads, and N when waiting on CPU N.
-+Each of the colon-separated fields following the "/" is a CPU:state pair.
-+Valid states are "0" for idle, "1" for waiting for quiescent state,
-+"2" for passed through quiescent state, and "3" when a race with a
-+CPU-hotplug event forces use of the synchronize_sched() primitive.
-+
- 
- USAGE
- 
-diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
-index 9617082..97ded24 100644
---- a/Documentation/RCU/whatisRCU.txt
-+++ b/Documentation/RCU/whatisRCU.txt
-@@ -785,6 +785,7 @@ RCU pointer/list traversal:
- 	rcu_dereference
- 	list_for_each_entry_rcu
- 	hlist_for_each_entry_rcu
-+	hlist_nulls_for_each_entry_rcu
- 
- 	list_for_each_continue_rcu	(to be deprecated in favor of new
- 					 list_for_each_entry_continue_rcu)
-@@ -807,19 +808,23 @@ RCU:	Critical sections	Grace period		Barrier
- 
- 	rcu_read_lock		synchronize_net		rcu_barrier
- 	rcu_read_unlock		synchronize_rcu
-+				synchronize_rcu_expedited
- 				call_rcu
- 
- 
- bh:	Critical sections	Grace period		Barrier
- 
- 	rcu_read_lock_bh	call_rcu_bh		rcu_barrier_bh
--	rcu_read_unlock_bh
-+	rcu_read_unlock_bh	synchronize_rcu_bh
-+				synchronize_rcu_bh_expedited
- 
- 
- sched:	Critical sections	Grace period		Barrier
- 
--	[preempt_disable]	synchronize_sched	rcu_barrier_sched
--	[and friends]		call_rcu_sched
-+	rcu_read_lock_sched	synchronize_sched	rcu_barrier_sched
-+	rcu_read_unlock_sched	call_rcu_sched
-+	[preempt_disable]	synchronize_sched_expedited
-+	[and friends]
- 
- 
- SRCU:	Critical sections	Grace period		Barrier
-@@ -827,6 +832,9 @@ SRCU:	Critical sections	Grace period		Barrier
- 	srcu_read_lock		synchronize_srcu	N/A
- 	srcu_read_unlock
- 
-+SRCU:	Initialization/cleanup
-+	init_srcu_struct
-+	cleanup_srcu_struct
- 
- See the comment headers in the source code (or the docbook generated
- from them) for more information.
++	for_each_console(con) {
++		if (con->flags & CON_BOOT) {
+ 			printk(KERN_INFO "turn off boot console %s%d\n",
+-				console_drivers->name, console_drivers->index);
+-			return unregister_console(console_drivers);
++				con->name, con->index);
++			return unregister_console(con);
+ 		}
+ 	}
+ 	return 0;
