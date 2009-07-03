@@ -1,139 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGCBkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZGCBl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZGCBkk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 21:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZGCBkc
+	id S1756901AbZGCBl0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:41:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZGCBlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 21:40:32 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57556 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751716AbZGCBkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 21:40:31 -0400
-Message-ID: <4A4D61C7.4090409@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 09:41:27 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 2 Jul 2009 21:41:19 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:43925 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751716AbZGCBlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 21:41:18 -0400
+Message-ID: <4A4D61BE.2010807@oss.ntt.co.jp>
+Date: Fri, 03 Jul 2009 10:41:18 +0900
+From: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Benjamin Blum <bblum@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroups: fix pid namespace bug, fix
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Greg KH <greg@kroah.com>
+CC: gregkh@suse.de, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] staging/vt6655: pointer to driver_data needs to be type
+ long
+References: <4A442E7C.7070301@oss.ntt.co.jp> <20090702194952.GF10957@kroah.com>
+In-Reply-To: <20090702194952.GF10957@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- add get_pid_ns()/put_pid_ns()
-- remove prefix "pids_"
+Greg KH wrote:
+> On Fri, Jun 26, 2009 at 11:12:12AM +0900, Fernando Luis Vázquez Cao wrote:
+>> Fix the compilation error below while at it.
+>>
+>> drivers/staging/vt6655/device_main.c:347: warning: cast from pointer to integer of different size
+>> drivers/staging/vt6655/device_main.c:347: error: initializer element is not constant
+>> drivers/staging/vt6655/device_main.c:347: error: (near initialization for ‘device_id_table[0].driver_data’)
+>>
+>> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> 
+> This patch doesn't apply :(
+> 
+> Care to resync off of tomorrow's linux-next tree?
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/cgroup.c |   30 +++++++++++++++++-------------
- 1 files changed, 17 insertions(+), 13 deletions(-)
+It seems that a patch from Alan Cox (linux-next: 38d257422fb010e11180fc9c5794812f390aca74)
+which fixes this issue got merged first, so mine is not needed anymore if you are planning
+to send the fix to Linus before the next merge window. What are your plans?
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 13dddb4..ba675de 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2213,13 +2213,13 @@ struct cgroup_pids {
- 	/* The cgroup those pids belong to */
- 	struct cgroup *cgrp;
- 	/* The namepsace those pids belong to */
--	struct pid_namespace *pid_ns;
-+	struct pid_namespace *ns;
- 	/* Array of process ids in the cgroup */
- 	pid_t *tasks_pids;
- 	/* How many files are using the this tasks_pids array */
--	int pids_use_count;
-+	int use_count;
- 	/* Length of the current tasks_pids array */
--	int pids_length;
-+	int length;
- };
- 
- static int cmppid(const void *a, const void *b)
-@@ -2248,7 +2248,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
- 
- 	down_read(&cgrp->pids_mutex);
- 	if (pid) {
--		int end = cp->pids_length;
-+		int end = cp->length;
- 
- 		while (index < end) {
- 			int mid = (index + end) / 2;
-@@ -2262,7 +2262,7 @@ static void *cgroup_tasks_start(struct seq_file *s, loff_t *pos)
- 		}
- 	}
- 	/* If we're off the end of the array, we're done */
--	if (index >= cp->pids_length)
-+	if (index >= cp->length)
- 		return NULL;
- 	/* Update the abstract position to be the actual pid that we found */
- 	iter = cp->tasks_pids + index;
-@@ -2281,7 +2281,7 @@ static void *cgroup_tasks_next(struct seq_file *s, void *v, loff_t *pos)
- {
- 	struct cgroup_pids *cp = s->private;
- 	int *p = v;
--	int *end = cp->tasks_pids + cp->pids_length;
-+	int *end = cp->tasks_pids + cp->length;
- 
- 	/*
- 	 * Advance to the next pid in the array. If this goes off the
-@@ -2313,9 +2313,10 @@ static void release_cgroup_pid_array(struct cgroup_pids *cp)
- 	struct cgroup *cgrp = cp->cgrp;
- 
- 	down_write(&cgrp->pids_mutex);
--	BUG_ON(!cp->pids_use_count);
--	if (!--cp->pids_use_count) {
-+	BUG_ON(!cp->use_count);
-+	if (!--cp->use_count) {
- 		list_del(&cp->list);
-+		put_pid_ns(cp->ns);
- 		kfree(cp->tasks_pids);
- 		kfree(cp);
- 	}
-@@ -2352,7 +2353,7 @@ static struct file_operations cgroup_tasks_operations = {
- static int cgroup_tasks_open(struct inode *unused, struct file *file)
- {
- 	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
--	struct pid_namespace *pid_ns = task_active_pid_ns(current);
-+	struct pid_namespace *ns;
- 	struct cgroup_pids *cp;
- 	pid_t *pidarray;
- 	int npids;
-@@ -2381,9 +2382,12 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
- 	 */
- 	down_write(&cgrp->pids_mutex);
- 
-+	ns = get_pid_ns(current->nsproxy->pid_ns);
- 	list_for_each_entry(cp, &cgrp->pids_list, list) {
--		if (pid_ns == cp->pid_ns)
-+		if (ns == cp->ns) {
-+			put_pid_ns(ns);
- 			goto found;
-+		}
- 	}
- 
- 	cp = kzalloc(sizeof(*cp), GFP_KERNEL);
-@@ -2393,13 +2397,13 @@ static int cgroup_tasks_open(struct inode *unused, struct file *file)
- 		return -ENOMEM;
- 	}
- 	cp->cgrp = cgrp;
--	cp->pid_ns = pid_ns;
-+	cp->ns = ns;
- 	list_add(&cp->list, &cgrp->pids_list);
- found:
- 	kfree(cp->tasks_pids);
- 	cp->tasks_pids = pidarray;
--	cp->pids_length = npids;
--	cp->pids_use_count++;
-+	cp->length = npids;
-+	cp->use_count++;
- 	up_write(&cgrp->pids_mutex);
- 
- 	file->f_op = &cgroup_tasks_operations;
--- 
-1.5.4.rc3
+Thanks,
 
+Fernando
