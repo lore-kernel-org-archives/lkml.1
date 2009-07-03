@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZGCQZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZGCQZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZGCQZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756988AbZGCQZH
+	id S1758406AbZGCQZm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757702AbZGCQZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:25:07 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:44158 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756279AbZGCQZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:25:06 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: dan.j.williams@intel.com, maciej.sosnowski@intel.com, avictor.za@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, haavard.skinnemoen@atmel.com
-Cc: patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       nicolas.ferre@atmel.com
-Subject: [PATCH] dmaengine: dmatest: add a maximum number of test iterations
-Date: Fri,  3 Jul 2009 19:26:51 +0200
-Message-Id: <1246642011-21749-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
-Message-Id: <448c4e65b62b87188ff0beb21133b60435b1f6bd.1246641180.git.nicolas.ferre@atmel.com>
+	Fri, 3 Jul 2009 12:25:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47352 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756279AbZGCQZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 12:25:33 -0400
+Date: Fri, 3 Jul 2009 17:26:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703172651.619162fd@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090703155809.GA20121@elte.hu>
+References: <20090703091655.GB3902@elte.hu>
+	<20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk>
+	<20090703095432.GC21141@elte.hu>
+	<20090703110620.64fd1283@lxorguk.ukuu.org.uk>
+	<20090703102234.GA32128@elte.hu>
+	<20090703114431.37abd528@lxorguk.ukuu.org.uk>
+	<20090703131727.GA3207@elte.hu>
+	<20090703143746.0379b2ee@lxorguk.ukuu.org.uk>
+	<20090703144754.GA13246@elte.hu>
+	<20090703160230.093e422c@lxorguk.ukuu.org.uk>
+	<20090703155809.GA20121@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dmatest usually waits for the killing of its kthreads to stop
-running tests.  This patch adds a parameter that sets a maximum
-number of test iterations.
+> Another question: i'm wondering why you brought up Voyager support 
+> here. Are you trying to insult me?
 
-This feature is quite interesting for debugging when you set a lot of
-traces in your dmaengine controller driver.
+[and]
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- drivers/dma/dmatest.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+> Pointing out when your code is unclean does not count as an offense 
+> on lkml, i hope
 
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index fb7da51..0131a1f 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -38,6 +38,11 @@ module_param(max_channels, uint, S_IRUGO);
- MODULE_PARM_DESC(max_channels,
- 		"Maximum number of channels to use (default: all)");
- 
-+static unsigned int iteration_nbr = 0;
-+module_param(iteration_nbr, uint, S_IRUGO);
-+MODULE_PARM_DESC(iteration_nbr,
-+		"Iteration number before stopping test (default: infinite)");
-+
- static unsigned int xor_sources = 3;
- module_param(xor_sources, uint, S_IRUGO);
- MODULE_PARM_DESC(xor_sources,
-@@ -270,7 +275,8 @@ static int dmatest_func(void *data)
- 
- 	flags = DMA_CTRL_ACK | DMA_COMPL_SKIP_DEST_UNMAP | DMA_PREP_INTERRUPT;
- 
--	while (!kthread_should_stop()) {
-+	while (!kthread_should_stop()
-+	       && !(iteration_nbr && total_tests >= iteration_nbr)) {
- 		struct dma_device *dev = chan->device;
- 		struct dma_async_tx_descriptor *tx = NULL;
- 		dma_addr_t dma_srcs[src_cnt];
-@@ -416,6 +422,13 @@ err_srcbuf:
- err_srcs:
- 	pr_notice("%s: terminating after %u tests, %u failures (status %d)\n",
- 			thread_name, total_tests, failed_tests, ret);
-+
-+	if (iteration_nbr > 0)
-+		while (!kthread_should_stop()) {
-+			DECLARE_WAIT_QUEUE_HEAD(wait_dmatest_exit);
-+			interruptible_sleep_on(&wait_dmatest_exit);
-+		}
-+
- 	return ret;
- }
- 
--- 
-1.5.3.7
+Nor then I trust does pointing out that voyager needs a bit of work ;)
+
+
+I've no objection to pointing out unclean code (or to patches). If
+someone wants to fix all the printk(KERN_ calls in the tty layer for for
+it - great newbie project if a bit tedious I'd be delighted to receive the
+patches.
+
+I'm still however utterly incredulous that you'd look at that bit of
+proposed code and see a formatting glitch but not that fact it couldn't
+possibly work. I'm still glad you did look at it - don't get me wrong.
+
+The way the tty layer work is done is like this and has been for almost
+two years
+
+	- Identify whats the next best thing to tackle on the giant pile
+	  of sucky turd list
+	- Rework it
+	- Debug it
+	- If it makes that piece of the code completeish whack the entire
+	  file through the coding style process (eg
+	  fe9cd962a62cb5f666cf48b9941d3f3cde134254,
+	  fb100b6ea7bf8a95e52b90cc0dc0ea5744a0a40a etc)
+	- Whines about > 80 characters get ignored
+	  for text strings
+
+That not only makes it easier to keep consistent internal styles, merge
+patches without collision and keep code and style changes apart it means
+that stuff gets cleaned up that doesn't otherwise change.
+
+A good example of what happens if you don't is
+
+scripts/checkpatch.pl --file arch/x86/kernel/cpu/mtrr/*c
+
+where the core part of the code isn't changed very much even though the
+interfaces completely get reworked. Thus it never gets cleaned up and
+reviewed as a whole. The code works, will probably work for years but
+never gets looked at as a whole and tidied.
+
+Alan
+
+
 
