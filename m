@@ -1,220 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZGCCZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbZGCC0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZGCCZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZGCCZV
+	id S1757614AbZGCC0A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 22:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756628AbZGCCZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:25:21 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:36890 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751475AbZGCCZT (ORCPT
+	Thu, 2 Jul 2009 22:25:53 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:49107 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752340AbZGCCZw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:25:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoFAP4CTUpMQWU3/2dsb2JhbACBUc1mhBAF
-Date: Thu, 2 Jul 2009 22:25:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Renninger <trenn@suse.de>
-Subject: Re: [patch 1/4] cpufreq: Eliminate the recent lockdep warnings in
-	cpufreq
-Message-ID: <20090703022518.GB26976@Krystal>
-References: <20090703000829.735976000@intel.com> <20090703000923.800507000@intel.com> <20090703010650.GA25030@Krystal> <7E82351C108FA840AB1866AC776AEC4669BFEF78@orsmsx505.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Jul 2009 22:25:52 -0400
+Date: Thu, 2 Jul 2009 19:25:53 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitzu.com
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+	that shows only unique tgids
+Message-ID: <20090703022553.GJ19135@count0.beaverton.ibm.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com> <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com> <20090702164649.303c4952.akpm@linux-foundation.org> <2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com> <20090702175341.fd2e26d5.akpm@linux-foundation.org> <6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com> <2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4669BFEF78@orsmsx505.amr.corp.intel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 22:23:55 up 124 days, 22:50,  3 users,  load average: 0.12, 0.20,
-	0.25
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pallipadi, Venkatesh (venkatesh.pallipadi@intel.com) wrote:
->  
-> 
-> >-----Original Message-----
-> >From: Mathieu Desnoyers [mailto:mathieu.desnoyers@polymtl.ca] 
-> >Sent: Thursday, July 02, 2009 6:07 PM
-> >To: Pallipadi, Venkatesh
-> >Cc: Dave Jones; linux-kernel@vger.kernel.org; 
-> >cpufreq@vger.kernel.org; kernel-testers@vger.kernel.org; Ingo 
-> >Molnar; Rafael J. Wysocki; Dave Young; Pekka Enberg; Thomas Renninger
-> >Subject: Re: [patch 1/4] cpufreq: Eliminate the recent lockdep 
-> >warnings in cpufreq
-> >
-> >* venkatesh.pallipadi@intel.com (venkatesh.pallipadi@intel.com) wrote:
-> >> Commit b14893a62c73af0eca414cfed505b8c09efc613c although it was very
-> >> much needed to properly cleanup ondemand timer, opened-up a 
-> >can of worms
-> >> related to locking dependencies in cpufreq.
-> >> 
-> >> Patch here defines the need for dbs_mutex and cleans up its usage in
-> >> ondemand governor. This also resolves the lockdep warnings 
-> >reported here
-> >> 
-> >> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/01925.html
-> >> http://lkml.indiana.edu/hypermail/linux/kernel/0907.0/00820.html
-> >> 
-> >> and few others..
-> >> 
-> >> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >> ---
-> >>  drivers/cpufreq/cpufreq.c              |    4 ++--
-> >>  drivers/cpufreq/cpufreq_conservative.c |   27 
-> >+++++++++++----------------
-> >>  drivers/cpufreq/cpufreq_ondemand.c     |   27 
-> >+++++++++++----------------
-> >>  3 files changed, 24 insertions(+), 34 deletions(-)
-> >> 
-> >> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> >> index 6e2ec0b..c7fe16e 100644
-> >> --- a/drivers/cpufreq/cpufreq.c
-> >> +++ b/drivers/cpufreq/cpufreq.c
-> >> @@ -1070,8 +1070,6 @@ static int __cpufreq_remove_dev(struct 
-> >sys_device *sys_dev)
-> >>  	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> >>  #endif
-> >>  
-> >> -	unlock_policy_rwsem_write(cpu);
-> >> -
-> >>  	if (cpufreq_driver->target)
-> >>  		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-> >>  
-> >> @@ -1088,6 +1086,8 @@ static int __cpufreq_remove_dev(struct 
-> >sys_device *sys_dev)
-> >>  	if (cpufreq_driver->exit)
-> >>  		cpufreq_driver->exit(data);
-> >>  
-> >> +	unlock_policy_rwsem_write(cpu);
-> >> +
-> >>  	free_cpumask_var(data->related_cpus);
-> >>  	free_cpumask_var(data->cpus);
-> >>  	kfree(data);
-> >> diff --git a/drivers/cpufreq/cpufreq_conservative.c 
-> >b/drivers/cpufreq/cpufreq_conservative.c
-> >> index 7fc58af..58889f2 100644
-> >> --- a/drivers/cpufreq/cpufreq_conservative.c
-> >> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> >> @@ -70,15 +70,10 @@ static DEFINE_PER_CPU(struct 
-> >cpu_dbs_info_s, cpu_dbs_info);
-> >>  static unsigned int dbs_enable;	/* number of CPUs using 
-> >this policy */
-> >>  
-> >>  /*
-> >> - * DEADLOCK ALERT! There is a ordering requirement between 
-> >cpu_hotplug
-> >> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
-> >> - * dbs_mutex. If any function that can potentially take 
-> >cpu_hotplug lock
-> >> - * (like __cpufreq_driver_target()) is being called with 
-> >dbs_mutex taken, then
-> >> - * cpu_hotplug lock should be taken before that. Note that 
-> >cpu_hotplug lock
-> >> - * is recursive for the same process. -Venki
-> >> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the 
-> >dbs_mutex, because it
-> >> - * would deadlock with cancel_delayed_work_sync(), which is 
-> >needed for proper
-> >> - * raceless workqueue teardown.
-> >> + * dbs_mutex protects data in dbs_tuners_ins from 
-> >concurrent changes on
-> >> + * different CPUs. It protects dbs_enable in governor 
-> >start/stop. It also
-> >> + * serializes governor limit_change with do_dbs_timer. We 
-> >do not want
-> >> + * do_dbs_timer to run when user is changing the governor or limits.
-> >>   */
-> >>  static DEFINE_MUTEX(dbs_mutex);
-> >>  
-> >> @@ -488,18 +483,17 @@ static void do_dbs_timer(struct 
-> >work_struct *work)
-> >>  
-> >>  	delay -= jiffies % delay;
-> >>  
-> >> -	if (lock_policy_rwsem_write(cpu) < 0)
-> >> -		return;
-> >> +	mutex_lock(&dbs_mutex);
-> >
-> >OK, I now have absolutely no idea what the rwsem mutex is protecting
-> >anymore.
-> >
-> >You should probably describe the new world order not just in terms of
-> >what the dbs_mutex is protecting, but also about what the rwsem is
-> >doing. I'm worried that this rwsem is there to protect against 
-> >more than
-> >what is protected by the dbs_mutex local to the ondemand/conservative
-> >governors.
-> >
-> >See below,
-> >
-> >>  
-> >>  	if (!dbs_info->enable) {
-> >> -		unlock_policy_rwsem_write(cpu);
-> >> +		mutex_unlock(&dbs_mutex);
-> >>  		return;
-> >>  	}
-> >>  
-> >>  	dbs_check_cpu(dbs_info);
-> >>  
-> >>  	queue_delayed_work_on(cpu, kconservative_wq, 
-> >&dbs_info->work, delay);
-> >> -	unlock_policy_rwsem_write(cpu);
-> >> +	mutex_unlock(&dbs_mutex);
-> >>  }
-> >>  
-> >>  static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
-> >> @@ -590,15 +584,16 @@ static int cpufreq_governor_dbs(struct 
-> >cpufreq_policy *policy,
-> >>  					&dbs_cpufreq_notifier_block,
-> >>  					CPUFREQ_TRANSITION_NOTIFIER);
-> >>  		}
-> >> -		dbs_timer_init(this_dbs_info);
-> >> -
-> >>  		mutex_unlock(&dbs_mutex);
-> >>  
-> >> +		dbs_timer_init(this_dbs_info);
-> >> +
-> >>  		break;
-> >>  
-> >>  	case CPUFREQ_GOV_STOP:
-> >> -		mutex_lock(&dbs_mutex);
-> >>  		dbs_timer_exit(this_dbs_info);
-> >
-> >So now the only thing that seems to prevent the init and exit to race
-> >with each other is the rwsem. But this does not seem to be described
-> >anywhere.
-> 
-> Mathieu,
-> 
-> Yes. rwsem in cpufreq core makes sure that START and STOP happen sequentially. There
-> Is no way for START and STOP for a CPU to happen at the same time as cpufreq core holds
-> per policy rwsem lock before making any change to the policy. I can add a comment to
-> that effect in cpufreq.c. This is a clean seperation across cpufreq core and governor,
-> as cpufreq core takes care of all the policy changes. With that, do you see any
-> Issues/races with this patchset?
-> 
+On Thu, Jul 02, 2009 at 06:17:56PM -0700, Benjamin Blum wrote:
+> On Thu, Jul 2, 2009 at 6:08 PM, Paul Menage<menage@google.com> wrote:
+> > On Thu, Jul 2, 2009 at 5:53 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
 
-I'll code a less intrusive patchset that should hopefully fix the
-problem tonight with less possible side-effects. I'll need help for
-testing though.
+<snip>
 
-Matheu
+> >
+> >>
+> >> One could perhaps create an alias (symlink?) and leave that in place
+> >> for a few kernel releases and then remove the old names.  The trick to
+> >> doing this politely is to arrange for a friendly printk to come out
+> >> when userspace uses the old filename, so people know to change their
+> >> tools.  That printk should come out once-per-boot, not once-per-access.
+> >
+> > Personally, I feel that a bit of ugliness in the naming inconsistency
+> > is less painful than trying to deprecate something that people might
+> > be using.
+> 
+> That's what the people who designed x86 said :P
 
-> Thanks,
-> Venki
+And look at how successful x86 has been! ;)
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Seriously, I don't think the name "tasks" is ugly. I think "tasks"
+is a nice balance between overly verbose ("cgroup.tasks") and specificity.
+If anything I think the new file should be called "processes", not
+"cgroup.procs". The established convention was "subsys.foo". cgroup is not
+a subsystem of itself hence the names "tasks" and "processes" are just fine.
+
+> > If we could just flip the names without breaking anyone,
+> > that would be great, but this is just a style issue rather than a
+> > functional issue. My experience of such printk() statements scattered
+> > around in code is that no-one takes much notice of them.
+
+I agree with Paul.
+
+> 
+> Whether or not we get rid of the old ones, it would be good to put in
+> aliases with the new style now so there's the option of removing the
+> old style ones later.
+
+What a terrible idea! If every alias has an uncertain future nobody will
+know which they should use. As a consequence 50% may use "tasks" and 50%
+may use "cgroup.tasks" and then we won't be able to remove either name!
+
+Let's stick with what we have and not add endless numbers of aliases for
+every possible naming convention.
+
+Cheers,
+	-Matt Helsley
