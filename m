@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbZGCAlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755629AbZGCAno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbZGCAlI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbZGCAkz
+	id S1755629AbZGCAno (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZGCAnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:40:55 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:4520 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbZGCAkz (ORCPT
+	Thu, 2 Jul 2009 20:43:37 -0400
+Received: from mail-vw0-f202.google.com ([209.85.212.202]:34214 "EHLO
+	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbZGCAng convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:40:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:user-agent:
-	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=F7um5hhijetdo1GDBdveZArXnQrdUV7CyTQnUgFiawvXeOUiEf3rUeCzi0/CQnIE4
-	2PIAKkAad0prMqZYL5M0w==
-From: Paul Menage <menage@google.com>
-Subject: [PATCH] Fix warning in get_cred()
-To: jmorris@namei.org, dhowells@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Date: Thu, 02 Jul 2009 17:40:39 -0700
-Message-ID: <20090703004039.22350.27996.stgit@menage.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
+	Thu, 2 Jul 2009 20:43:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XdM1hjnSHC7MgWY5VF5qKqmrgMDh0/Da9YuU2L0jjhjdFRWlDyJXYhkDKeae0vmuGp
+         2XH7hf5uLz+C7sTgpmN4tFMrILV/rhgnxTQG7BNWHighTiF0EtEP7DqB7yovpVnqz0eg
+         uVE1kqK9YuQQWHx7c5W+JG+nCypYVmQ314j+I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+In-Reply-To: <20090702102138.GF6372@cr0.nay.redhat.com>
+References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com>
+	 <20090702091309.GB6372@cr0.nay.redhat.com>
+	 <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com>
+	 <20090702094620.GE6372@cr0.nay.redhat.com>
+	 <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com>
+	 <20090702102138.GF6372@cr0.nay.redhat.com>
+Date: Fri, 3 Jul 2009 08:43:39 +0800
+Message-ID: <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+From: Changli Gao <xiaosuo@gmail.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix warning in get_cred()
+On Thu, Jul 2, 2009 at 6:21 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+> On Thu, Jul 02, 2009 at 06:04:02PM +0800, Changli Gao wrote:
+>>On Thu, Jul 2, 2009 at 5:46 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>>>>Are you familiar with splice() and tee()? They both use pipes as kernel buffers.
+>>>
+>>> You are not answering the question, obviously.
+>>When you use pipes as kernel buffer handlers, two fd isn't necessary.
+>>Using one will save half of fd resources. Is it obviously?
+>
+> Not really.. I can't see any reason why you use this method to save
+> fd's... pick read(2)/write(2).
+In order to use splice, you must have pipe first. The common code is:
 
-With gcc 4.2.4 (building UML) I get the warning
+int fd[2];
 
-include/linux/cred.h: In function 'get_cred':
-include/linux/cred.h:189: warning: passing argument 1 of
-'get_new_cred' discards qualifiers from pointer target type
+pipe(fd);
+splice(infd, NULL, fd[1], NULL, getpagesize(), SPLICE_F_MOVE);
+splice(fd[0], NULL, outfd, NULL, getpagesize(), SPLICE_F_MOVE);
+close(fd[0]);
+close(fd[1]);
 
-Inserting an additional local variable appears to keep the compiler
-happy, although it's not clear to me why this should be needed.
+if pipe supports NULL argument, and returnes a RW pipe fd in that
+case, the code will become:
 
-Signed-off-by: Paul Menage <menage@google.com>
+int fd;
 
----
+fd = pipe(NULL);
+splice(infd, NULL, fd, NULL, getpagesize(), SPLICE_F_MOVE);
+splice(fd, NULL, outfd, NULL, getpagesize(), SPLICE_F_MOVE);
+close(fd);
 
- include/linux/cred.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+One fd is saved.
 
-diff --git a/include/linux/cred.h b/include/linux/cred.h
-index 4fa9996..b3c76e8 100644
---- a/include/linux/cred.h
-+++ b/include/linux/cred.h
-@@ -186,7 +186,8 @@ static inline struct cred *get_new_cred(struct cred *cred)
-  */
- static inline const struct cred *get_cred(const struct cred *cred)
- {
--	return get_new_cred((struct cred *) cred);
-+	struct cred *nonconst_cred = (struct cred *) cred;
-+	return get_new_cred(nonconst_cred);
- }
- 
- /**
+>
+>>
+>>>
+>>> And you snipped too much, how can you return that fd? Using the return value?
+>>one RW file descriptor is returned. I have answered this in the first post.
+>
+> No, you never say *how* it is returned.
+return value. save in %eax in i386.
 
+>
+>>
+>>> Ah! This will probably break the user-space program...
+>>>
+>>I don't think so. As a skillful programmer, who will trasfter pipe() a
+>>NULL pointer? In any way, it is break sth, but not very seriously, and
+>>won't affact any right and robust program.
+>
+> Huh? Isn't the code sample below too common?
+>
+> if (pipe(...))
+>   perror("pipe");
+>
+> Currently pipe(2) can make sure this is robust.
+>
+> You are trying to break it...
+>
+
+It depends on the argument for pipe, if the argument is NULL, it
+breaks the code above.
+
+
+
+-- 
+Regards，
+Changli Gao(xiaosuo@gmail.com)
