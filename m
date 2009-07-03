@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZGCOFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZGCOHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758746AbZGCOFz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 10:05:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbZGCODc
+	id S1758799AbZGCOHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbZGCOGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 10:03:32 -0400
-Received: from mail-bw0-f207.google.com ([209.85.218.207]:63076 "EHLO
-	mail-bw0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756996AbZGCODa (ORCPT
+	Fri, 3 Jul 2009 10:06:51 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:56837 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756407AbZGCOGt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 10:03:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=CbeGMGHS1GNEhyczv6y0/wc122ONutza8KwZ6Q7K8HvPk6xDk73VLIDKom7eIvhR1/
-         7vNdcHKJceL5L/Kw0DMSTnE9ifRJmzsUTa7spm9sYjzULw1qH3Ga3Iu0HnaBWy6PT2YL
-         EW/EoNiUdmuAw3lCUmt8z+iybEJyzWWzigYcA=
-Date: Fri, 3 Jul 2009 18:03:29 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@vger.kernel.org
-Subject: Re: 2.6.29.4: softlockup at find_get_page() et al
-Message-ID: <20090703140329.GA9546@x200.localdomain>
-References: <20090616110051.GA4864@x200.localdomain> <20090616130833.GA27925@wotan.suse.de>
-MIME-Version: 1.0
+	Fri, 3 Jul 2009 10:06:49 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoFAL+rTUpMQWU3/2dsb2JhbACBUcxIhBIF
+Date: Fri, 3 Jul 2009 10:06:37 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: venkatesh.pallipadi@intel.com, Dave Jones <davej@redhat.com>,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       kernel-testers@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [patch 0/4] Take care of cpufreq lockdep issues (take 2)
+Message-ID: <20090703140637.GB10256@Krystal>
+References: <20090703000829.735976000@intel.com> <20090703065427.GA32687@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090616130833.GA27925@wotan.suse.de>
+In-Reply-To: <20090703065427.GA32687@elte.hu>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:04:23 up 125 days, 10:30,  3 users,  load average: 0.22, 0.14,
+	0.21
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 16, 2009 at 03:08:33PM +0200, Nick Piggin wrote:
-> On Tue, Jun 16, 2009 at 03:00:51PM +0400, Alexey Dobriyan wrote:
-> > Happened during overnight run when box was cross-compiling kernel slowly
-> > (only -j7).
+* Ingo Molnar (mingo@elte.hu) wrote:
+> 
+> * venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> wrote:
+> 
+> > Since recent chanegs to ondemand and conservative governor, there 
+> > have been multiple reports of lockdep issues in cpufreq. Patch 
+> > series takes care of these problems.
 > > 
-> > Example messages:
+> > This is the next attempt following the one here, which was not a 
+> > complete fix. 
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0906.3/01073.html
 > > 
-> > [67287.109985] BUG: soft lockup - CPU#0 stuck for 61s! [conf:3980]
-> > [67287.110001] CPU 0:
-> > [67287.110001] Pid: 3980, comm: conf Not tainted 2.6.29.4-x86_64 #1 P5E
-> > [67287.110001] RIP: 0010:[<ffffffff80264902>]  [<ffffffff80264902>] find_get_page+0x52/0xb0
-> > [67287.110001] RSP: 0018:ffff8801001eddd8  EFLAGS: 00000246
-> > [67287.110001] RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000034
-> > [67287.110001] RDX: 0000000000000002 RSI: 0000000000000001 RDI: ffffe200010a9f40
-> > [67287.110001] RBP: ffffffff8020c3ee R08: ffffe200010a9f48 R09: ffff8800aa798c28
-> > [67287.110001] R10: ffffe200010a9f40 R11: ffffffff802f9480 R12: ffff8800aa798c18
-> > [67287.110001] R13: ffffffff8020c3ee R14: ffffffff802f4e70 R15: 000000000000000c
-> > [67287.110001] FS:  0000000000000000(0000) GS:ffffffff8075b040(0063) knlGS:00000000557116c0
-> > [67287.110001] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-> > [67287.110001] CR2: 00000000556d9374 CR3: 000000012faa4000 CR4: 00000000000006e0
-> > [67287.110001] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > [67287.110001] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > [67287.110001] Call Trace:
-> > [67287.110001]  [<ffffffff802648cb>] ? find_get_page+0x1b/0xb0
-> > [67287.110001]  [<ffffffff80264bf3>] ? find_lock_page+0x23/0x80
-> > [67287.110001]  [<ffffffff80265631>] ? find_or_create_page+0x41/0xc0
-> > [67287.110001]  [<ffffffff802f4edd>] ? ext2_make_empty+0x2d/0x1f0
-> > [67287.110001]  [<ffffffff802f9556>] ? ext2_mkdir+0xd6/0x170
-> > [67287.110001]  [<ffffffff8029b37c>] ? sys_mkdirat+0x11c/0x130
-> > [67287.110001]  [<ffffffff802a585a>] ? alloc_fd+0x4a/0x140
-> > [67287.110001]  [<ffffffff8022ab14>] ? sysenter_dispatch+0x7/0x2b
+> > I am currently running some stress tests to make sure there are no 
+> > issues with these patches. But, wanted to send them out for 
+> > review/comments/testing before I head out for the long weekend.
+> > 
+> > If this patchset seems sane, the first patch in the patchset 
+> > should also get into 30.stable.
+> 
+> Btw., FYI, because my test-systems were frequently triggering those 
+> bugs, i kept testing the following series from you and Mathieu in 
+> -tip:
+> 
+>  ecf8b04: cpufreq: Define dbs_mutex purpose and cleanup its usage conservative gov
+>  b08c597: cpufreq: Define dbs_mutex purpose and cleanup its usage
+>  0807e30: cpufreq: remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+> 
+> So that fix-series, while probably not complete (given that you sent 
+> a v2 series), worked well in practice and gets my:
+> 
+>  Tested-by: Ingo Molnar <mingo@elte.hu>
+> 
+> Is the delta between this (tested) series and your v2 version 
+> significant? If not it might make sense to shape it as a delta patch 
+> to the v1 series, if that looks clean enough - to preserve testing 
+> results.
 
-memtest has found quite a lot of junk.
+The delta is very significant. The purpose of each lock changes quite a
+bit. I'm preparing a patch serie that should just fix the problem
+without significant locking semantic modification.
+
+(not that I have time to do this, but I end up spending more time
+looking at the proposed solutions than doing it..) ;)
+
+Mathieu
+
+> 
+> 	Ingo
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
