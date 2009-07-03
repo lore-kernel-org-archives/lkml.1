@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZGCAWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZGCAZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756005AbZGCAWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZGCAWD
+	id S1755782AbZGCAZA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZGCAYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:22:03 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:2791 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753009AbZGCAWC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:22:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Kw8BIVVL8v86ZINrA/UShBqJP2SfzFG5fzim+Eo/kD+YyQp94TfhJPz3liiouga3z
-	QKx66Vedyyi1a+1/7Y4MQ==
-MIME-Version: 1.0
-In-Reply-To: <20090702165413.f4a21471.akpm@linux-foundation.org>
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
-	 <20090702232625.3969.54444.stgit@menage.mtv.corp.google.com>
-	 <20090702165413.f4a21471.akpm@linux-foundation.org>
-Date: Thu, 2 Jul 2009 17:22:02 -0700
-Message-ID: <6599ad830907021722x7b012991i1eca056bc72c010c@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Ensures correct concurrent opening/reading of 
-	pidlists across pid namespaces
-From: Paul Menage <menage@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lizf@cn.fujitzu.com, serue@us.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       bblum@google.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Thu, 2 Jul 2009 20:24:53 -0400
+Received: from mga02.intel.com ([134.134.136.20]:33202 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753009AbZGCAYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:24:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,337,1243839600"; 
+   d="scan'208";a="529834841"
+Subject: Re: [RFC patch] Use IPI_shortcut for lapic timer broadcast
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <3877989d0906300001u2f185fb0lcab5614e245efc21@mail.gmail.com>
+References: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com>
+	 <1246307644.4534.26298.camel@localhost.localdomain>
+	 <3877989d0906300001u2f185fb0lcab5614e245efc21@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 02 Jul 2009 17:23:03 -0700
+Message-Id: <1246580583.4534.32443.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 2, 2009 at 4:54 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
->
-> The way these patches were sent states that you were their primary
-> author.  Is that accurate?  If not, they should have had
->
-> From: Ben Blum <bblum@google.com>
->
-> at the very top of the changelog.
+On Tue, 2009-06-30 at 00:01 -0700, Luming Yu wrote:
+> Thanks for review. How about the following patch?
+> 
+> /**The patch is enclosed in text attachment**
+> **Using web client to send the patch**
+> **below is for review, please apply attached  patch*/
+> 
+> 
+> Signed-off-by: Yu Luming <luming.yu@intel.com>
+> 
+>  apic.c         |    5 ++++-
+>  apic_flat_64.c |    7 ++++++-
+>  2 files changed, 10 insertions(+), 2 deletions(-)
+> 
+> 
+> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c.0	2009-06-29
+> 23:45:05.000000000 -0600
+> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c	2009-06-30
+> 00:37:56.000000000 -0600
+> @@ -419,7 +419,10 @@
+>  static void lapic_timer_broadcast(const struct cpumask *mask)
+>  {
+>  #ifdef CONFIG_SMP
+> -	apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+> +	if (unlikely(cpumask_weight(mask) == num_online_cpus() -1))
+> +		apic->send_IPI_all(LOCAL_TIMER_VECTOR);
+> +	else
+> +		apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
+>  #endif
+>  }
 
-Yes, they're originally by Ben.
+I dont think it is a good idea to pay the penalty for cpumask_weight and
+num_online_cpus, for the more common tickless case to fix this problem
+with less common no tickeless case.
 
-Hmm. "git log" in my tree shows:
+We should be able to add an interface to get tick_nohz_enabled from
+tick-sched.c and use that instead.
 
-commit 673496e073c88216b3d2d9fe76eb1163dedb5fa3
-Author: Ben Blum <bblum@google.com>
-Date:   Thu Jul 2 17:19:24 2009 -0700
+Thanks,
+Venki
 
-    Ensures correct concurrent opening/reading of pidlists across pid namespaces
+> 
+> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c.0	2009-06-29
+> 00:13:26.000000000 -0600
+> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c	2009-06-29
+> 00:11:23.000000000 -0600
+> @@ -274,7 +274,12 @@
+> 
+>  static void physflat_send_IPI_all(int vector)
+>  {
+> -	physflat_send_IPI_mask(cpu_online_mask, vector);
+> +	if (vector == NMI_VECTOR) {
+> +		physflat_send_IPI_mask(cpu_online_mask, vector);
+> +	} else {
+> +		__default_send_IPI_shortcut(APIC_DEST_ALLINC,
+> +					    vector, apic->dest_logical);
+> +	}
+>  }
+> 
+>  static unsigned int physflat_cpu_mask_to_apicid(const struct cpumask *cpumask)
 
-and "stg edit" shows the first line as:
-
-From: Ben Blum <bblum@google.com>
-
-So I'm not sure how "stg mail" managed to lose that.
-
-Paul
