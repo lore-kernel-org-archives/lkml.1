@@ -1,103 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZGCFRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbZGCFWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584AbZGCFRU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 01:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZGCFRK
+	id S1756043AbZGCFWb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 01:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZGCFWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 01:17:10 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:44555 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbZGCFRJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 01:17:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WhBQy3y1U9K/Rmwyf1tAGtUEvVHz11kYiOKl/N3AeSodKlqIzcSeUMVlR2m9PpgL2v
-         HZdfxU+fH50gLX3ny9wcuRL1+HBwIxauMESveo6Ux4rUc2ABMu7NlMzw5Zewdtwpy4z5
-         MWUtCXZbh5jKQAB1f7AcUs4sM+cDl+W1kLWBo=
-Date: Fri, 3 Jul 2009 13:19:17 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-Message-ID: <20090703051917.GE5880@cr0.nay.redhat.com>
-References: <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com> <20090702094620.GE6372@cr0.nay.redhat.com> <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com> <20090702102138.GF6372@cr0.nay.redhat.com> <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com> <20090703015554.GB5880@cr0.nay.redhat.com> <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com> <20090703030008.GD5880@cr0.nay.redhat.com> <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com>
+	Fri, 3 Jul 2009 01:22:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56879 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751635AbZGCFWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 01:22:22 -0400
+Date: Fri, 3 Jul 2009 05:22:20 +0000
+From: Kyle McMartin <kyle@hera.kernel.org>
+To: torvalds@linux-foundation.org
+Cc: linux-parisc@vger.kernel.org, kyle@mcmartin.ca,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: parisc for 2.6.31
+Message-ID: <20090703052220.GA6012@hera.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 05:22:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 12:08:58PM +0800, Changli Gao wrote:
->On Fri, Jul 3, 2009 at 11:00 AM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>
->> When I said 'pipe', I meant *anonymous* pipe, definitely!
->> There is nothing related with *named* pipe here.
->>
->Pipe means *anonymous* pipe? Who defined that? What the difference
->between an anonymou pipe and a named pipe? Two ends or one ends? I
->don't think so. Having explicit name is the right difference between
->them.
+Hi Linus,
 
-I have no interests to teach you its definition.
+Sorry these got delayed passed -rc1, but we were tracking down a few
+last minute bugs, and I wanted it to get some testing across a bunch of
+different hardware. (The only reason for the new commit timestamps is I
+rewrote a few of the commit messages, the patch contents are unchanged
+from what's been in the parisc branch for a few weeks now.)
 
-if you re-read my email, you should conclude what 'pipe' there means,
-according to the contexts.
+parisc-folks: the 'parisc' branch will get rebased after the merge, so
+you'll have to manually update your local branches that follow it.
 
->
->And when I said 'kernel buffer handler', I means it is not a
->traditional pipe, and I just extend and reuse the pipe API to create a
->kernel buffer handler for splicing use.
+Thanks, Kyle
 
+The following changes since commit d888a4c76c51092993643f8992bf55b3c28da483:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/vapier/blackfin
 
-What pipe(2) creates is exactly an *anonymous* pipe.
+are available in the git repository at:
 
->
->> You are going to a *wrong* direction.
->>
->What is the right direction you think? Keep the pipe() API unchanged
->and keep two fds refering to the same kernel buffer? If you want to
->keep the API unchanged just for compatiblity with POSIX, I agree with
->you, and maybe a new system call is needed.
+  hera.kernel.org:/pub/scm/linux/kernel/git/kyle/parisc-2.6.git for-linus
 
+Alexander Beregalov (5):
+      parisc: stifb: should depend on STI_CONSOLE
+      parisc: ccio-dma: fix build failure without procfs
+      parisc: remove CVS keywords
+      parisc: decode_exc.c should include kernel.h
+      parisc: superio: fix build breakage
 
-Yes, exactly.
-Inventing a new API is better than modifying pipe(2), IMO.
+Bastian Blank (1):
+      parisc: Remove casts from atomic macros
 
-BUT I still don't agree that you really need this... I think you
-can add a flag or something like that to an fd to do this, e.g.
+Christoph Hellwig (1):
+      parisc: remove dead code from sys_parisc32.c
 
-   fcntl(fd, F_SETFD, FD_PIPERW);
+Coly Li (1):
+      parisc: add parameter to read_cr16()
 
-Isn't this better?
+Grant Grundler (3):
+      parisc: advertise PCI devs after "assign_resources"
+      parisc: Fix gcc 4.4 warning in lba_pci.c
+      parisc: fix "delay!" timer handling
 
->
->>
->> If you repeat your (pipe,splice,splice,close,close) sequence for
->> thousands times, it is still the same, nothing saves...
->>
->You means that?
->
->while (<condition>) {
-> pipe/splice/splice/close/close?
->}
+Helge Deller (3):
+      parisc: fix ldcw inline assembler
+      parisc: fix irq compile bugs in arch/parisc/kernel/irq.c
+      parisc: ensure broadcast tlb purge runs single threaded
 
-At least this is what I understand from your words.
+Kyle McMartin (10):
+      parisc: wire up preadv/pwritev syscalls
+      parisc: kill WARN in free_initmem when DEBUG_KERNEL
+      parisc: wire up rt_tgsigqueueinfo
+      parisc: fix compile warning in mm/init.c
+      parisc: processor.c, fix bloated stack frame
+      parisc: inventory.c, fix bloated stack frame
+      parisc: wire sys_perf_counter_open to sys_ni_syscall
+      parisc: add task_pt_regs macro
+      parisc: perf: wire up sys_perf_counter_open
+      parisc: use generic atomic64 on 32-bit
 
->
->You don't know my meaning. As a proxy server, there maybe lots of
->connections to maintain, and these connections will keep open for a
->long time. If the data received can be sent in a relay cycle, the
->kernel buffer can be reused. If not, the kernel buffer must be
->reserved. When there are lots of these kinds of connections, lots of
->kernel buffers must be reserved. At this time, whether two fds per
->kernel buffer or one fds per kernel buffer matters.
+Matthew Wilcox (1):
+      parisc: Fix PCI resource allocation on non-PAT SBA machines
 
-SHow us the code, please.
+Randolph Chung (1):
+      parisc: fix mismatched parenthesis in memcpy.c
+
+Thomas Gleixner (1):
+      parisc: remove obsolete hw_interrupt_type
+
+ arch/parisc/Kconfig                    |    2 +
+ arch/parisc/include/asm/atomic.h       |   14 +++--
+ arch/parisc/include/asm/dma.h          |    3 +-
+ arch/parisc/include/asm/perf_counter.h |    7 +++
+ arch/parisc/include/asm/processor.h    |    3 +
+ arch/parisc/include/asm/system.h       |    4 +-
+ arch/parisc/include/asm/tlbflush.h     |   14 +++---
+ arch/parisc/include/asm/unistd.h       |    6 ++-
+ arch/parisc/kernel/cache.c             |   26 ++++++----
+ arch/parisc/kernel/inventory.c         |   41 +++++++++------
+ arch/parisc/kernel/irq.c               |   10 ++--
+ arch/parisc/kernel/pci-dma.c           |   12 +++--
+ arch/parisc/kernel/pci.c               |    3 +-
+ arch/parisc/kernel/processor.c         |   19 ++++---
+ arch/parisc/kernel/setup.c             |    3 +-
+ arch/parisc/kernel/sys_parisc32.c      |   62 ----------------------
+ arch/parisc/kernel/syscall_table.S     |    4 ++
+ arch/parisc/kernel/time.c              |   90 +++++++++++++++++++-------------
+ arch/parisc/lib/checksum.c             |    2 -
+ arch/parisc/lib/memcpy.c               |    2 +-
+ arch/parisc/math-emu/decode_exc.c      |    2 +-
+ arch/parisc/mm/fault.c                 |    3 +-
+ arch/parisc/mm/init.c                  |   29 +++-------
+ drivers/parisc/ccio-dma.c              |    7 ++-
+ drivers/parisc/dino.c                  |   12 ++--
+ drivers/parisc/eisa.c                  |    2 +-
+ drivers/parisc/gsc.c                   |    4 +-
+ drivers/parisc/gsc.h                   |    2 +-
+ drivers/parisc/iosapic.c               |    2 +-
+ drivers/parisc/lba_pci.c               |   41 ++++++++++-----
+ drivers/parisc/sba_iommu.c             |    2 +
+ drivers/parisc/superio.c               |    6 +-
+ drivers/video/Kconfig                  |    2 +
+ tools/perf/perf.h                      |    6 ++
+ 34 files changed, 228 insertions(+), 219 deletions(-)
+ create mode 100644 arch/parisc/include/asm/perf_counter.h
