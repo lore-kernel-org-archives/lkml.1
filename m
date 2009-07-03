@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079AbZGCJz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZGCJ5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755079AbZGCJz7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZGCJzv
+	id S1756056AbZGCJ5k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZGCJ53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:55:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40660 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 05:57:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60895 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZGCJzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:55:51 -0400
-Date: Fri, 3 Jul 2009 11:55:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] kmemtrace: print binary output only if 'bin' option
-	is set
-Message-ID: <20090703095547.GE21141@elte.hu>
-References: <4A4DD0A0.5060500@cn.fujitsu.com> <20090703095456.GA3505@localhost>
+	id S1752102AbZGCJ52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:57:28 -0400
+Date: Fri, 3 Jul 2009 11:56:59 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090703095659.GA4518@jolsa.lab.eng.brq.redhat.com>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com> <20090703092438.GE3902@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090703095456.GA3505@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090703092438.GE3902@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
-
-> On Fri, Jul 03, 2009 at 05:34:24PM +0800, Li Zefan wrote:
-> > Currently by default the output of kmemtrace is binary format instead
-> > of human-readable output.
-> > 
-> > This patch makes the following changes:
-> >   - We'll see human-readable output by default
-> >   - We'll see binary output if 'bin' option is set
-> > 
-> > Note: you may probably need to explicitly disable context-info binary
-> >       output:
-> > 
-> > 	# echo 0 > options/context-info
-> > 	# echo 1 > options/bin
-> > 	# cat trace_pipe
-> > 
-> > v2:
-> > - use %pF to print call_site
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> > Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  kernel/trace/kmemtrace.c |  120 ++++++++++++++++++++++++++++++++++-----------
-> >  1 files changed, 90 insertions(+), 30 deletions(-)
-> > 
-> > diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-> > index 1edaa95..74903b6 100644
-> > --- a/kernel/trace/kmemtrace.c
-> > +++ b/kernel/trace/kmemtrace.c
-> > @@ -239,12 +239,52 @@ struct kmemtrace_user_event_alloc {
-> >  };
-> >  
-> >  static enum print_line_t
-> > -kmemtrace_print_alloc_user(struct trace_iterator *iter,
-> > -			   struct kmemtrace_alloc_entry *entry)
-> > +kmemtrace_print_alloc_user(struct trace_iterator *iter, int flags)
-> > +{
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct kmemtrace_alloc_entry *entry;
-> > +	int ret;
-> > +
-> > +	trace_assign_type(entry, iter->ent);
-> > +
-> > +	ret = trace_seq_printf(s, "type_id %d call_site %pF ptr %lu "
-> > +	    "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d\n",
-> > +	    entry->type_id, (void *)entry->call_site, (unsigned long)entry->ptr,
-> > +	    (unsigned long)entry->bytes_req, (unsigned long)entry->bytes_alloc,
-> > +	    (unsigned long)entry->gfp_flags, entry->node);
-> > +
-> > +	if (!ret)
-> > +		return TRACE_TYPE_PARTIAL_LINE;
-> > +	return TRACE_TYPE_HANDLED;
-> > +}
+On Fri, Jul 03, 2009 at 11:24:38AM +0200, Ingo Molnar wrote:
 > 
-> [snip]
+> * Eric Dumazet <eric.dumazet@gmail.com> wrote:
 > 
-> kmemtrace_print_alloc_user() is meant for kmemtrace-user, that's 
-> what the naming is meant to convey. Also, 
-> kmemtrace_print_alloc_user_bin is kinda long. Could you leave the 
-> former as it was and come up with another name for the non-binary 
-> variant?
+> > Ingo Molnar a écrit :
+> > > * Jiri Olsa <jolsa@redhat.com> wrote:
+> > > 
+> > >> +++ b/arch/x86/include/asm/spinlock.h
+> > >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> > >>  #define _raw_read_relax(lock)	cpu_relax()
+> > >>  #define _raw_write_relax(lock)	cpu_relax()
+> > >>  
+> > >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> > >> +#define smp_mb__after_lock() do { } while (0)
+> > > 
+> > > Two small stylistic comments, please make this an inline function:
+> > > 
+> > > static inline void smp_mb__after_lock(void) { }
+> > > #define smp_mb__after_lock
+> > > 
+> > > (untested)
+> > > 
+> > >> +/* The lock does not imply full memory barrier. */
+> > >> +#ifndef smp_mb__after_lock
+> > >> +#define smp_mb__after_lock() smp_mb()
+> > >> +#endif
+> > > 
+> > > ditto.
+> > > 
+> > > 	Ingo
+> > 
+> > This was following existing implementations of various smp_mb__??? helpers :
+> > 
+> > # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> > 
+> > /*
+> >  * clear_bit may not imply a memory barrier
+> >  */
+> > #ifndef smp_mb__before_clear_bit
+> > #define smp_mb__before_clear_bit()      smp_mb()
+> > #define smp_mb__after_clear_bit()       smp_mb()
+> > #endif
+> 
+> Did i mention that those should be fixed too? :-)
+> 
+> 	Ingo
 
-should i hold off on this patch for now?
+ok, could I include it in the 2/2 or you prefer separate patch?
 
-	Ingo
+jirka
