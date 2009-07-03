@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZGCNd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755656AbZGCNgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbZGCNd0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZGCNdR
+	id S1755656AbZGCNgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 09:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZGCNge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:33:17 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:64556 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751892AbZGCNdQ (ORCPT
+	Fri, 3 Jul 2009 09:36:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41244 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752548AbZGCNgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:33:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=qyDP5EtfysOFRkczESo016JzRe+kyuRPTcPzsr2qU+dBTwKvK3bU60jcUOfSebx2Q/
-         kgFdeX3SDQyUPGC4FIy99L20rmXPYZpD7xTFjE/eN+s1fR6tNiFcRupPoir/u0um+KaK
-         fZM696Sk0TFi7PolflVDSOcnVwKX/8TVwEcIs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: [PATCH] Staging: vt6656: remove dependency on WIRELESS_EXT version
-Date: Fri, 3 Jul 2009 15:39:20 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090703-03460-gb01c1b8; KDE/4.2.4; i686; ; )
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, forest@alittletooquiet.net
-References: <1246615634-14939-1-git-send-email-a.beregalov@gmail.com>
-In-Reply-To: <1246615634-14939-1-git-send-email-a.beregalov@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Fri, 3 Jul 2009 09:36:33 -0400
+Date: Fri, 3 Jul 2009 14:37:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703143746.0379b2ee@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090703131727.GA3207@elte.hu>
+References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
+	<20090703064518.GA30674@elte.hu>
+	<20090703100834.6cb241b6@lxorguk.ukuu.org.uk>
+	<20090703091655.GB3902@elte.hu>
+	<20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk>
+	<20090703095432.GC21141@elte.hu>
+	<20090703110620.64fd1283@lxorguk.ukuu.org.uk>
+	<20090703102234.GA32128@elte.hu>
+	<20090703114431.37abd528@lxorguk.ukuu.org.uk>
+	<20090703131727.GA3207@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907031539.20778.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 12:07:14 Alexander Beregalov wrote:
-> As the driver is in mainline now we can remove such dependency.
-> WIRELESS_EXT is 22 now and it is always defined.
+> > Its called engineering and good practice. The old code was 
+> > correct. The paste of it is therefore most likely to be correct. 
+> > Furthermore patches shouldn't mix clean up with other changes. So 
+> > doing it as one is most definitely bad practice.
 > 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> So you cannot do such trivial cleanups safely and validate the 
+> result?
 
-That was fast. :)
+What part of not mixing clean-up with other changes didn't you
+understand ?
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+I'll do them when I am doing the cleanups not midstream. Thats how the
+tty layer work has been done so far and I don't plan to change policy now
+because the policy is working well with entire files getting shifted to
+coding style not just patches of them. It keeps the code consistently
+styled.
 
-BTW:
+> I came across this patch of yours on lkml and noticed a few problems 
+> - checkpatch noticed a few more. Is the reviewing of patches and the 
+> commenting on unclean patches a 'bogus standard'? Do we have some 
+> separate standard just for you?
 
-* It seems that both vt665x drivers should just select WIRELESS_EXT in
-  their Kconfig's and then we can remove all remaining CONFIG_WIRELESS_EXT
-  ifdefs.
+checkpatch is a tool, not a religion. Quite frankly the way some people
+behave with it is a disgrace and it puts people off contributing to the
+kernel when their 500 line driver gets nothing but emails from people
+saying "that space is wrong". At least in your case you can actually
+program and your opinion comes from real practise and experience - which
+is more than a lot of the self appointed codingstyle police can say.
 
-* vt6656 probably also needs to depend on USB.
+> Or to advance your bike-shed metaphor some more: today's rusty and 
+> corroded items are the result of missing anti-corrosion efforts in 
+> the past ...
 
-Alexander, could you look into it?
+So you want to paint it first and then do the engineering ? To give you a
+simple example - the tty layer uses pr_warning/pr_err etc *nowhere*. Not
+one. I could spend a day changing them all but it would be a stupid
+project because many of those printk calls will change by the time we are
+finished and don't you think it would be a lot saner if tty_port
+structures grew a device pointer and errors at the physical side got
+reported with dev_err and friends ?
 
-Thanks.
-Bart
+So I have no time for makework. It might be a good way to get top of the
+"patches commited this month" game but it doesn't fix the real problems.
+
+There is a start and an end, and doing things in the wrong order is just
+sloppy.
+
+> Anyway ... all i did was to comment on a somewhat deficient patch 
+> that you submitted to lkml. If you dont want review feedback and if 
+> you feel embarrased and defensive by getting it then please dont 
+> send out slightly-messy signed-off patches to lkml, it's simple as 
+> that.
+
+The message I thought was quite clear about what I was asking for. The
+fact you complained about spaces and missed the fact it couldn't even
+work was "enlightening" in terms of code review.
+
+Alan
