@@ -1,159 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZGCMlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZGCMoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZGCMlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757313AbZGCMl1
+	id S1757499AbZGCMoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZGCMoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:41:27 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:46244 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756344AbZGCMlZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:41:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YC7NeL9QrYjgt+flkw/nQgkfFHP5xCJt4IXYb3Z07Tehtjg52Z2ovEsm/7r4FVukRn
-         Wz6tiFHoUb8YXJQ3yZQ1AGVKrOePRl1JGto8zv1fhAhKNWhjYn0vsMNjVdg7esTj8HBc
-         ojRSM+eekYF1nCqNrjABvxpHNmiyW3EKvjfI8=
+	Fri, 3 Jul 2009 08:44:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59822 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753087AbZGCMoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:44:07 -0400
+Date: Fri, 3 Jul 2009 12:42:34 GMT
+From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
+       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
+References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
+Subject: [tip:perfcounters/urgent] x86: atomic64: The atomic64_t data type should be 8 bytes aligned on 32-bit too
+Message-ID: <tip-bbf2a330d92c5afccfd17592ba9ccd50f41cf748@git.kernel.org>
+Git-Commit-ID: bbf2a330d92c5afccfd17592ba9ccd50f41cf748
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <4A4DE3C1.5080307@vlnb.net>
-References: <4A3CD62B.1020407@vlnb.net> <4A48BBF9.6050408@vlnb.net>
-	 <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com>
-	 <20090629142124.GA28945@localhost> <20090629150109.GA3534@localhost>
-	 <4A48DFC5.3090205@vlnb.net> <20090630010414.GB31418@localhost>
-	 <4A49EEF9.6010205@vlnb.net>
-	 <a0272b440907030214l4016422bxbc98fd003bfe1b3d@mail.gmail.com>
-	 <4A4DE3C1.5080307@vlnb.net>
-Date: Fri, 3 Jul 2009 14:41:28 +0200
-Message-ID: <a0272b440907030541w1448d378n6fcabbb555d45fcc@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Ronald Moesbergen <intercommit@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: linux-kernel@vger.kernel.org, Wu Fengguang <fengguang.wu@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 12:42:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/3 Vladislav Bolkhovitin <vst@vlnb.net>:
->
-> Ronald Moesbergen, on 07/03/2009 01:14 PM wrote:
->>>>
->>>> OK, now I tend to agree on decreasing max_sectors_kb and increasing
->>>> read_ahead_kb. But before actually trying to push that idea I'd like
->>>> to
->>>> - do more benchmarks
->>>> - figure out why context readahead didn't help SCST performance
->>>>  (previous traces show that context readahead is submitting perfect
->>>>  large io requests, so I wonder if it's some io scheduler bug)
->>>
->>> Because, as we found out, without your http://lkml.org/lkml/2009/5/21/319
->>> patch read-ahead was nearly disabled, hence there were no difference
->>> which
->>> algorithm was used?
->>>
->>> Ronald, can you run the following tests, please? This time with 2 hosts,
->>> initiator (client) and target (server) connected using 1 Gbps iSCSI. It
->>> would be the best if on the client vanilla 2.6.29 will be ran, but any
->>> other
->>> kernel will be fine as well, only specify which. Blockdev-perftest should
->>> be
->>> ran as before in buffered mode, i.e. with "-a" switch.
->>>
->>> 1. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with all default settings.
->>>
->>> 2. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with default RA size and 64KB
->>> max_sectors_kb.
->>>
->>> 3. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and default
->>> max_sectors_kb.
->>>
->>> 4. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and 64KB
->>> max_sectors_kb.
->>>
->>> 5. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch and with context RA patch. RA
->>> size
->>> and max_sectors_kb are default. For your convenience I committed the
->>> backported context RA patches into the SCST SVN repository.
->>>
->>> 6. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with default RA
->>> size and 64KB max_sectors_kb.
->>>
->>> 7. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
->>> size
->>> and default max_sectors_kb.
->>>
->>> 8. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
->>> size
->>> and 64KB max_sectors_kb.
->>>
->>> 9. On the client default RA size and 64KB max_sectors_kb. On the server
->>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
->>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
->>>
->>> 10. On the client 2MB RA size and default max_sectors_kb. On the server
->>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
->>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
->>>
->>> 11. On the client 2MB RA size and 64KB max_sectors_kb. On the server
->>> vanilla
->>> 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA
->>> patches with 2MB RA size and 64KB max_sectors_kb.
->>
->> Ok, done. Performance is pretty bad overall :(
->>
->> The kernels I used:
->> client kernel: 2.6.26-15lenny3 (debian)
->> server kernel: 2.6.29.5 with blk_dev_run patch
->>
->> And I adjusted the blockdev-perftest script to drop caches on both the
->> server (via ssh) and the client.
->>
->> The results:
->>
+Commit-ID:  bbf2a330d92c5afccfd17592ba9ccd50f41cf748
+Gitweb:     http://git.kernel.org/tip/bbf2a330d92c5afccfd17592ba9ccd50f41cf748
+Author:     Eric Dumazet <eric.dumazet@gmail.com>
+AuthorDate: Fri, 3 Jul 2009 00:08:26 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 3 Jul 2009 13:26:38 +0200
 
-... results ...
+x86: atomic64: The atomic64_t data type should be 8 bytes aligned on 32-bit too
 
-> Those are on the server without io_context-2.6.29 and readahead-2.6.29
-> patches applied and with CFQ scheduler, correct?
+Locked instructions on two cache lines at once are painful. If
+atomic64_t uses two cache lines, my test program is 10x slower.
 
-No. It was done with the readahead patch
-(http://lkml.org/lkml/2009/5/21/319) and the context RA patch
-(starting at test 5) as you requested.
+The chance for that is significant: 4/32 or 12.5%.
 
-> Then we see how reorder of requests caused by many I/O threads submitting
-> I/O in separate I/O contexts badly affect performance and no RA, especially
-> with default 128KB RA size, can solve it. Less max_sectors_kb on the client
-> => more requests it sends at once => more reorder on the server => worse
-> throughput. Although, Fengguang, in theory, context RA with 2MB RA size
-> should considerably help it, no?
+Make sure an atomic64_t is 8 bytes aligned.
 
-Wouldn't setting scst_threads to 1 help also in this case?
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+LKML-Reference: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
+[ changed it to __aligned(8) as per Andrew's suggestion ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> Ronald, can you perform those tests again with both io_context-2.6.29 and
-> readahead-2.6.29 patches applied on the server, please?
 
-Ok. I only have access to the test systems during the week, so results
-might not be ready before Monday. Are there tests that we can exclude
-to speed things up?
+---
+ arch/x86/include/asm/atomic_32.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ronald.
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 2503d4e..ae0fbb5 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -250,7 +250,7 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ /* An 64bit atomic type */
+ 
+ typedef struct {
+-	unsigned long long counter;
++	unsigned long long __aligned(8) counter;
+ } atomic64_t;
+ 
+ #define ATOMIC64_INIT(val)	{ (val) }
