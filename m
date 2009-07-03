@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbZGCTOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZGCTR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbZGCTOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbZGCTN5
+	id S1758561AbZGCTR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZGCTRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:13:57 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:9413 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756264AbZGCTN5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:13:57 -0400
-Date: Fri, 3 Jul 2009 21:13:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: linux-kernel@vger.kernel.org, chrisv@cyberswitching.com, daniel@caiaq.de,
-       iws@ovro.caltech.edu, dmitry.torokhov@gmail.com, hmh@hmh.eng.br,
-       david-b@pacbell.net
-Subject: Re: [PATCH] IIO: Add missing I2C dependencies for max1363 and
- tsl2561
-Message-ID: <20090703211348.4033c109@hyperion.delvare>
-In-Reply-To: <4A4E3BED.5050504@cam.ac.uk>
-References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-7-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-8-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-11-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-13-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-14-git-send-email-jic23@cam.ac.uk>
-	<1246542464-6974-15-git-send-email-jic23@cam.ac.uk>
-	<4A4E3BED.5050504@cam.ac.uk>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 15:17:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48448 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756904AbZGCTRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 15:17:18 -0400
+Date: Fri, 3 Jul 2009 21:17:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: atomic64: inline atomic64_read()
+Message-ID: <20090703191709.GA17057@elte.hu>
+References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain> <tip-9103cab145a93cef13378632b332a824758a2f6f@git.kernel.org> <4A4E1AA2.30002@gmail.com> <20090703180450.GB3405@elte.hu> <alpine.LFD.2.01.0907031207030.3210@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0907031207030.3210@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Jul 2009 17:12:13 +0000, Jonathan Cameron wrote:
-> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Fri, 3 Jul 2009, Ingo Molnar wrote:
+> > > +
+> > > +	asm volatile(
+> > > +		"mov %%ebx, %%eax\n\t"
+> > > +		"mov %%ecx, %%edx\n\t"
+> > > +		LOCK_PREFIX "cmpxchg8b %1\n"
+> > > +			: "=&A" (res)
+> > > +			: "m" (*ptr) 
+> > > +		);
+> > 
+> > That clobbers or affects eax, ebx, ecx, edx. The only registers 
+> > it does not clobber is esi, edi and rbp.
 > 
-> I will roll these into the original patches at some point, but
-> for now they are here.
+> No, it only clobbers eax/edx. Yes, it touches ebx/ecx, but that's 
+> kind of incidental, and read-only, and doesn't matter.
 > 
-> Thanks to David Brownell for spotting this.
-> ---
->  drivers/iio/adc/Kconfig   |    2 +-
->  drivers/iio/light/Kconfig |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> > Linus, what's your preference in this case?
 > 
-> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
-> index cb773d2..ab2066c 100644
-> --- a/drivers/iio/adc/Kconfig
-> +++ b/drivers/iio/adc/Kconfig
-> @@ -6,7 +6,7 @@ comment "Analog to digital convertors"
->  
->  config MAX1363
->  	tristate "MAXIM max1363 ADC driver"
-> -	depends on IIO
-> +	depends on IIO && I2C
->  	help
->  	  Say yes here to build support for many MAXIM i2c analog to digital
->  	  convertors (ADC). (max1361, max1362, max1363, max1364, max1136,
-> diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
-> index 620e249..62d502c 100644
-> --- a/drivers/iio/light/Kconfig
-> +++ b/drivers/iio/light/Kconfig
-> @@ -6,7 +6,7 @@ comment "Light sensors"
->  
->  config TSL2561
->         tristate "TAOS TSL2561 light-to-digital convertor"
-> -       depends on IIO
-> +       depends on IIO && I2C
->         help
->  	Say yes bere to build support for the TAOS light to digital
->  	convertor.  This chip has two light sensors. One is broadband
+> I think it's kind of subtle to do that thing, but it _is_ very 
+> much a special case. It's odd to use a cmpxchg8b to just do a read 
+> in the first place, so the fact that we then play other games with 
+> it is kind of immaterial.
+> 
+> Adding a comment about the magic "we don't care about the initial 
+> values in eax/edx and ebx/ecx, but they have to match in case we 
+> end up doing a writeback" might be a good idea.
 
-Unrelated suggestion: you could surround all the driver configuration
-entries with a big
+Ok - i've applied it and added a comment as well about the reasons 
+an subtleties.
 
-if IIO
-
-(...)
-
-endif # IIO
-
-This would save you the hassle of adding "depends on IIO" to every
-driver. Many subsystems have resorted to this technique by now.
-
--- 
-Jean Delvare
+	Ingo
