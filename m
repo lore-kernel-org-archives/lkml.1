@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZGCHgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbZGCHiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbZGCHgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 03:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751425AbZGCHgZ
+	id S1753849AbZGCHiV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 03:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbZGCHiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 03:36:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48819 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751401AbZGCHgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 03:36:24 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/uNms5obTunn+KqXTnNgm+VNlWsJK6bOYIi5Hfnu
-	lWkcV4zSImNbqA
-Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
- kernel modules
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090703072717.GB7943@elte.hu>
-References: <1246514639.13293.40.camel@marge.simson.net>
-	 <20090702064712.GA26690@elte.hu>
-	 <1246519076.6384.22.camel@marge.simson.net>
-	 <20090702074214.GA19187@elte.hu> <1246521342.8681.5.camel@marge.simson.net>
-	 <20090703072717.GB7943@elte.hu>
-Content-Type: text/plain
-Date: Fri, 03 Jul 2009 09:36:25 +0200
-Message-Id: <1246606585.6257.2.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+	Fri, 3 Jul 2009 03:38:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39351 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbZGCHiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 03:38:07 -0400
+Date: Fri, 3 Jul 2009 09:38:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Kilroy <kilroyd@googlemail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] check spinlock_t/rwlock_t argument type on non-SMP
+	builds
+Message-ID: <20090703073801.GA10191@elte.hu>
+References: <1246560291-8104-1-git-send-email-kilroyd@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246560291-8104-1-git-send-email-kilroyd@googlemail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 09:27 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+
+* David Kilroy <kilroyd@googlemail.com> wrote:
+
+> When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy 
+> to get the first argument to the spinlock/rwlock functions wrong. 
+> This is because the parameter is not actually used in this 
+> configuration.
 > 
-> > On Thu, 2009-07-02 at 09:42 +0200, Ingo Molnar wrote:
-> > 
-> > (squirrels suggestions away for later reference)
-> > 
-> > > Btw, another thing: we are thinking about making -F 1000 (1 KHz 
-> > > auto-freq sampling) the default for perf top and perf record. This 
-> > > way we'd always gather enough data (and never too much or too little 
-> > > data), regardless of the intensity of the workload. Have you played 
-> > > with -F before, what's your general experience about it? It's 
-> > > particularly useful for 'rare' and highly fluctuating events like 
-> > > cache-misses.
-> > > 
-> > > Maybe 1KHz is a bit too low - Oprofile defaults to 100000 cycles 
-> > > interval by default which is about 10 KHz on a 1GHz box and 30 
-> > > KHz on a 3GHz box. Perhaps 10 KHz is a better default?
-> > 
-> > My default usage is 1000Hz to keep overhead low.  Works fine for 
-> > me.
+> Typically you will only find out it's wrong
+>  * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
+>  * after you've submitted your beautiful patch series.
 > 
-> ah, so you use -F by default?
-
-Yes.
-
-> I still think 10 KHz would be better - especially for really short 
-> runs like 'perf record -f -g ./git gc'. Since Oprofile samples at 26 
-> KHz by default, we must not go to a too low frequency, otherwise 
-> people might get a 'hm, the perf profiles are worse than the 
-> Oprofile ones' first impression ...
+> The first means a long wait, and the latter is a bit late.
 > 
-> We could perhaps add a freq=1000 switch to .perfconfig - we have 
-> Git's util/config.c facility - it's just unused right now ;-)
+> Add typechecking on the first argument of these macro functions. 
+> Note that since the typecheck now references the variable, the 
+> explicit read is redundant and can be removed.
 > 
-> [ Look at the Git sources about how config.c is used. ]
+> This change causes compiler warnings in net/ipv4/route.c, as this 
+> passes NULL as the first argument in the UP configuration. Simply 
+> cast this.
 
-Yeah, that's a good idea.. everyone can roll their own defaults.
+Wondering - can the wrappers be moved from CPP land to C land by 
+turning them into inlines? (i havent checked all usages so there 
+might be some surprises, but by and large it ought to be possible.)
 
-For me, it doesn't matter what the default is, I always specify.
-
-	-Mike
-
+	Ingo
