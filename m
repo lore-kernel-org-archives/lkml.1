@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbZGCXRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbZGCXfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759214AbZGCXRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 19:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZGCXRX
+	id S1759252AbZGCXfS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 19:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbZGCXfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 19:17:23 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42497 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751294AbZGCXRX (ORCPT
+	Fri, 3 Jul 2009 19:35:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59894 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752794AbZGCXfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 19:17:23 -0400
-Subject: Re: Memory leak in iwlwifi or false positive?
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1246573533.17896.867.camel@rc-desk>
-References: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
-	 <1246573533.17896.867.camel@rc-desk>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Sat, 04 Jul 2009 00:17:22 +0100
-Message-Id: <1246663042.14400.9.camel@pc1117.cambridge.arm.com>
+	Fri, 3 Jul 2009 19:35:05 -0400
+Date: Sat, 4 Jul 2009 01:35:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       Chinang Ma <chinang.ma@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090703233505.GL2041@one.firstfloor.org>
+References: <20090703025607.GK5480@parisc-linux.org> <87skhdaaub.fsf@basil.nowhere.org> <20090703185414.GP23611@kernel.dk> <20090703191321.GO5480@parisc-linux.org> <20090703192235.GV23611@kernel.dk> <20090703194557.GQ5480@parisc-linux.org> <20090703195458.GK2041@one.firstfloor.org> <20090703130421.646fe5cb@infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jul 2009 23:17:23.0331 (UTC) FILETIME=[6BC48530:01C9FC34]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703130421.646fe5cb@infradead.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Reinette,
+> ... so that you can't do power management on a per socket basis?
+> hardly a good idea.
 
-On Thu, 2009-07-02 at 15:25 -0700, reinette chatre wrote:
-> On Thu, 2009-07-02 at 14:32 -0700, Catalin Marinas wrote:
-> > pushed yet) it seems to no longer show so many random leaks. However, I
-> > get a lot of leaks reported in the iwlwifi code, about 4800 and they do
-> > not disappear from any subsequent memory scanning (as is usually the
-> > case with false positives). There are a lot of kmalloc's of < 512 bytes
-> > and /proc/slabinfo seems to be in line with this:
-[...]
-> Yes - this sounds about right. You tested with 5100 hardware which by
-> default initializes 20 TX queues. For each of these queues it maintains
-> a 256 buffer array of commands with 356 bytes used for each command.
+Interrupts should only happen when the socket did spent time submitting
+the work for them. Typically on drivers I'm familiar with the return
+MSI is tied to the CPU that did submit the work item
 
-With the latest kmemleak changes which I pushed to Linus they
-disappeared. I missed the kmalloc_large in slub and probably some of the
-root objects that keep references to others weren't scanned (maybe the
-kzalloc call in wiphy_new was missed as it links to all the bulk of the
-reported objects in the iwlwifi code).
+> just need to use a new enough irqbalance and it will spread out the
+> interrupts unless your load is low enough to go into low power mode.
 
-Thanks.
+When that load is low then likely you won't get many interrupts
+anyways.
+
+-Andi
 
 -- 
-Catalin
-
+ak@linux.intel.com -- Speaking for myself only.
