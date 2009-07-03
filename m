@@ -1,42 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751215AbZGCEDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZGCEF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751215AbZGCEDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 00:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742AbZGCEDr
+	id S1755415AbZGCEF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 00:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbZGCEFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 00:03:47 -0400
-Received: from mtoichi14.ns.itscom.net ([219.110.2.184]:55846 "EHLO
-	mtoichi14.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbZGCEDq (ORCPT
+	Fri, 3 Jul 2009 00:05:21 -0400
+Received: from mail-pz0-f193.google.com ([209.85.222.193]:39831 "EHLO
+	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbZGCEFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 00:03:46 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [PATCH] integrity: add ima_counts_put (updated) 
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <1246313060.3280.81.camel@dyn9002018117.watson.ibm.com>
-References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com> <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com> <12000.1246284749@jrobl> <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com> <7959.1246307789@jrobl> <1246313060.3280.81.camel@dyn9002018117.watson.ibm.com>
-Date: Fri, 03 Jul 2009 13:02:41 +0900
-Message-ID: <7465.1246593761@jrobl>
+	Fri, 3 Jul 2009 00:05:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=k7FT2dyi8r1bDli+k+KdJNyENb0Jnvz+lIV0tH0JzTi37z+C131+HKVJSYRTFY5NqW
+         qHnbhj9vv8fwgXJwXLMOCESlWbgm7gh6j3e0Xt+dT/UN7DYEMS2Z6yGk99Gd46YxZL2f
+         N1WdBcRMf7LQIfxXb8vI9u8trDV82gikek/CE=
+Subject: Re: [PATCH] [MIPS] Hibernation: only save pages in system ram
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+In-Reply-To: <1246591297.27828.165.camel@falcon>
+References: <1246373570-21090-1-git-send-email-wuzhangjin@gmail.com>
+	 <20090702232205.GE14804@linux-mips.org> <1246591297.27828.165.camel@falcon>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Fri, 03 Jul 2009 12:05:09 +0800
+Message-Id: <1246593909.27828.193.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-07-03 at 11:21 +0800, Wu Zhangjin wrote:
+> On Fri, 2009-07-03 at 00:22 +0100, Ralf Baechle wrote:
+> > On Tue, Jun 30, 2009 at 10:52:50PM +0800, Wu Zhangjin wrote:
+> > 
+> > > From: Wu Zhangjin <wuzj@lemote.com>
+> > > 
+> > > when using hibernation(STD) with CONFIG_FLATMEM in linux-mips-64bit, it
+> > > fails for the current mips-specific hibernation implementation save the
+> > > pages in all of the memory space(except the nosave section) and make
+> > > there will be not enough memory left to the STD task itself, and then
+> > > fail. in reality, we only need to save the pages in system rams.
+> > > 
+> > > here is the reason why it fail:
+> > > 
+> > > kernel/power/snapshot.c:
+> > > 
+> > > static void mark_nosave_pages(struct memory_bitmap *bm)
+> > > {
+> > > 		...
+> > > 		if (pfn_valid(pfn)) {
+> > > 			...
+> > > 		}
+> > > }
+> > > 
+> > > arch/mips/include/asm/page.h:
+> > > 
+> > > 	...
+> > > 	#ifdef CONFIG_FLATMEM
+> > > 
+> > > 	#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> > > 
+> > > 	#elif defined(CONFIG_SPARSEMEM)
+> > > 
+> > > 	/* pfn_valid is defined in linux/mmzone.h */
+> > > 	...
+> > > 
+> > > we can rewrite pfn_valid(pfn) to fix this problem, but I really do not
+> > > want to touch such a widely-used macro, so, I used another solution:
+> > > 
+> > > static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+> > > {
+> > > 	...
+> > > 	if ( .... pfn_is_nosave(pfn)
+> > > 		return NULL;
+> > > 	...
+> > > }
+> > > 
+> > > and pfn_is_nosave is implemented in arch/mips/power/cpu.c, so, hacking
+> > > this one is better.
+> > 
+> > No - pfn_valid() is broken, so it should be fixed.  Commit
+> > 752fbeb2e3555c0d236e992f1195fd7ce30e728d introduced the breakage.  It
+> > seemed to assume that the valid range for PFNs doesn't start at 0 but
+> > some higher number but got that entirely wrong..
+> > 
+> > #define ARCH_PFN_OFFSET         PFN_UP(PHYS_OFFSET)
+> > #define pfn_valid(pfn)         ((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> > 
+> > works nicely when PHYS_OFFSET is 0 - as for most MIPS systems and goes
+> > horribly wrong otherwise.  So I suggest below patch.
+> 
+> Just test it with the latest master branch of linux-mips on fulong2e,
+> Your patch works well, thanks!
+> 
+> (BTW: of course, the ide-relative bug is also there even with Bart's
+> patch, so, currently, I just revert this part of the ide patch: "ide:
+> improve handling of Power Management requests" to test your patch: 
+> 
+> diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+> index d5f3c77..8c4608c 100644
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -468,12 +468,12 @@ void do_ide_request(struct request_queue *q)
+>                 ide_hwif_t *prev_port;
+>  repeat:
+>                 prev_port = hwif->host->cur_port;
+> -
+> +/*
+>                 if (drive->dev_flags & IDE_DFLAG_BLOCKED)
+>                         rq = hwif->rq;
+>                 else
+>                         WARN_ON_ONCE(hwif->rq);
+> -
+> +*/
+>                 if (drive->dev_flags & IDE_DFLAG_SLEEPING &&
+>                     time_after(drive->sleep, jiffies)) {
+>                         ide_unlock_port(hwif);
+> 
+> So, I will try to test Bart's patch with linux-next, I'm cloning it
+> currently! perhaps there is something missing in my git repo or the
+> linux-mips git repo? because i can not apply bart's patch neither to 
+> git repo nor to the master branch of linux-mips git repo directly, even
+> if pulled linux-next and Davie's ide-2.6 in.
 
-Mimi Zohar:
-> NFSv3 is an interesting example. Permission checking is done once,
-> followed by multiple open/read/close calls. Incrementing the counters in
-> nfsd_permission() once and decrementing the counters in close, multiple
-> times, resulted in imbalance messages.  True, the solution in this case
-> was to increment in open and decrement in close, but that was only part
-> of the solution.  The other part of the solution, the important part,
-> was to add a call to ima_path_check() to measure the file.
+Sorry, I have missed something in Bart's patch, Can apply it now, so
+please ignore the above complaint.
 
-Let me make sure.
-Does "that was only part of the solution" mean IMA does not work for
-NFSD fully? To make IMA work fully, is incrementing before open
-absolutely necessary?
+but unfortunately, Bart's patch also not fix the problem of STD, I have
+reported my test result in another E-mail thread: "[Bug #13663] suspend
+to ram regression (IDE related)", so, please ignore this thread, thanks!
 
+Regards,
+Wu Zhangjin
 
-J. R. Okajima
+> )
+> 
+> Regards,
+> Wu Zhangjin
+> 
+> > 
+> >   Ralf
+> > 
+> > Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> > 
+> >  arch/mips/include/asm/page.h |    9 ++++++++-
+> >  1 files changed, 8 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
+> > index dc0eaa7..96a14a4 100644
+> > --- a/arch/mips/include/asm/page.h
+> > +++ b/arch/mips/include/asm/page.h
+> > @@ -165,7 +165,14 @@ typedef struct { unsigned long pgprot; } pgprot_t;
+> >  
+> >  #ifdef CONFIG_FLATMEM
+> >  
+> > -#define pfn_valid(pfn)		((pfn) >= ARCH_PFN_OFFSET && (pfn) < max_mapnr)
+> > +#define pfn_valid(pfn)							\
+> > +({									\
+> > +	unsigned long __pfn = (pfn);					\
+> > +	/* avoid <linux/bootmem.h> include hell */			\
+> > +	extern unsigned long min_low_pfn;				\
+> > +									\
+> > +	__pfn >= min_low_pfn && __pfn < max_mapnr;			\
+> > +})
+> >  
+> >  #elif defined(CONFIG_SPARSEMEM)
+> >  
+
