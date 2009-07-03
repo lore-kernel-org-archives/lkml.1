@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZGCOGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZGCOFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758510AbZGCOGQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 10:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbZGCOEE
+	id S1758746AbZGCOFz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbZGCODc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 10:04:04 -0400
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:58996 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758554AbZGCOEB (ORCPT
+	Fri, 3 Jul 2009 10:03:32 -0400
+Received: from mail-bw0-f207.google.com ([209.85.218.207]:63076 "EHLO
+	mail-bw0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756996AbZGCODa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 10:04:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoFAL+rTUpMQWU3/2dsb2JhbACBUcxIhBIFgTo
-Date: Fri, 3 Jul 2009 10:04:01 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jiri Olsa <jolsa@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org,
-       eric.dumazet@gmail.com, Paul McKenney <Paul.McKenney@us.ibm.com>
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703140401.GA10256@Krystal>
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu>
-Mime-Version: 1.0
+	Fri, 3 Jul 2009 10:03:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CbeGMGHS1GNEhyczv6y0/wc122ONutza8KwZ6Q7K8HvPk6xDk73VLIDKom7eIvhR1/
+         7vNdcHKJceL5L/Kw0DMSTnE9ifRJmzsUTa7spm9sYjzULw1qH3Ga3Iu0HnaBWy6PT2YL
+         EW/EoNiUdmuAw3lCUmt8z+iybEJyzWWzigYcA=
+Date: Fri, 3 Jul 2009 18:03:29 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@vger.kernel.org
+Subject: Re: 2.6.29.4: softlockup at find_get_page() et al
+Message-ID: <20090703140329.GA9546@x200.localdomain>
+References: <20090616110051.GA4864@x200.localdomain> <20090616130833.GA27925@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090703090606.GA3902@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:49:36 up 125 days, 10:15,  3 users,  load average: 0.12, 0.40,
-	0.41
+In-Reply-To: <20090616130833.GA27925@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Jiri Olsa <jolsa@redhat.com> wrote:
-> 
-> > +++ b/arch/x86/include/asm/spinlock.h
-> > @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
-> >  #define _raw_read_relax(lock)	cpu_relax()
-> >  #define _raw_write_relax(lock)	cpu_relax()
-> >  
-> > +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> > +#define smp_mb__after_lock() do { } while (0)
-> 
+On Tue, Jun 16, 2009 at 03:08:33PM +0200, Nick Piggin wrote:
+> On Tue, Jun 16, 2009 at 03:00:51PM +0400, Alexey Dobriyan wrote:
+> > Happened during overnight run when box was cross-compiling kernel slowly
+> > (only -j7).
+> > 
+> > Example messages:
+> > 
+> > [67287.109985] BUG: soft lockup - CPU#0 stuck for 61s! [conf:3980]
+> > [67287.110001] CPU 0:
+> > [67287.110001] Pid: 3980, comm: conf Not tainted 2.6.29.4-x86_64 #1 P5E
+> > [67287.110001] RIP: 0010:[<ffffffff80264902>]  [<ffffffff80264902>] find_get_page+0x52/0xb0
+> > [67287.110001] RSP: 0018:ffff8801001eddd8  EFLAGS: 00000246
+> > [67287.110001] RAX: 0000000000000001 RBX: 0000000000000000 RCX: 0000000000000034
+> > [67287.110001] RDX: 0000000000000002 RSI: 0000000000000001 RDI: ffffe200010a9f40
+> > [67287.110001] RBP: ffffffff8020c3ee R08: ffffe200010a9f48 R09: ffff8800aa798c28
+> > [67287.110001] R10: ffffe200010a9f40 R11: ffffffff802f9480 R12: ffff8800aa798c18
+> > [67287.110001] R13: ffffffff8020c3ee R14: ffffffff802f4e70 R15: 000000000000000c
+> > [67287.110001] FS:  0000000000000000(0000) GS:ffffffff8075b040(0063) knlGS:00000000557116c0
+> > [67287.110001] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
+> > [67287.110001] CR2: 00000000556d9374 CR3: 000000012faa4000 CR4: 00000000000006e0
+> > [67287.110001] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [67287.110001] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> > [67287.110001] Call Trace:
+> > [67287.110001]  [<ffffffff802648cb>] ? find_get_page+0x1b/0xb0
+> > [67287.110001]  [<ffffffff80264bf3>] ? find_lock_page+0x23/0x80
+> > [67287.110001]  [<ffffffff80265631>] ? find_or_create_page+0x41/0xc0
+> > [67287.110001]  [<ffffffff802f4edd>] ? ext2_make_empty+0x2d/0x1f0
+> > [67287.110001]  [<ffffffff802f9556>] ? ext2_mkdir+0xd6/0x170
+> > [67287.110001]  [<ffffffff8029b37c>] ? sys_mkdirat+0x11c/0x130
+> > [67287.110001]  [<ffffffff802a585a>] ? alloc_fd+0x4a/0x140
+> > [67287.110001]  [<ffffffff8022ab14>] ? sysenter_dispatch+0x7/0x2b
 
-Hm. Looking at http://lkml.org/lkml/2009/6/23/192, a very basic question
-comes to my mind :
-
-Why don't we create a read_lock without acquire semantic instead (e.g.
-read_lock_nomb(), or something with a better name like __read_lock()) ?
-On architectures where memory barriers are needed to provide the acquire
-semantic, it would be faster to do :
-
-__read_lock();
-smp_mb();
-
-than :
-
-read_lock(); <- e.g. lwsync + isync or something like that
-smp_mb(); <- full sync.
-
-Second point : __add_wait_queue/waitqueue_active/wake_up_interruptible
-would probably benefit from adding comments about their combined use
-with other checks and how nice memory barriers are.
-
-Mathieu
-
-
-> Two small stylistic comments, please make this an inline function:
-> 
-> static inline void smp_mb__after_lock(void) { }
-> #define smp_mb__after_lock
-> 
-> (untested)
-> 
-> > +/* The lock does not imply full memory barrier. */
-> > +#ifndef smp_mb__after_lock
-> > +#define smp_mb__after_lock() smp_mb()
-> > +#endif
-> 
-> ditto.
-> 
-> 	Ingo
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+memtest has found quite a lot of junk.
