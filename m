@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754137AbZGCKLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbZGCKMD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754137AbZGCKLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 06:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZGCKLm
+	id S1754088AbZGCKMD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 06:12:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZGCKLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 06:11:42 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:55527 "EHLO slimlogic.co.uk"
+	Fri, 3 Jul 2009 06:11:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57784 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbZGCKLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 06:11:41 -0400
-Subject: Re: [PATCHv3] PCAP regulator driver (for 2.6.32)
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Daniel Ribeiro <drwyrm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       openezx-devel <openezx-devel@lists.openezx.org>
-In-Reply-To: <20090703093517.GA4176@sortiz.org>
-References: <1246072682.10360.424.camel@brutus>
-	 <20090627105150.GA4780@sirena.org.uk> <1246123618.3727.29.camel@brutus>
-	 <20090703093517.GA4176@sortiz.org>
+	id S1754577AbZGCKLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 06:11:52 -0400
+Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
+ vectored co-processor support for AMD and Intel Corei7/Nehalem
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090703093032.GI3902@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam>
+	 <1246440909.3403.5.camel@hpdv5.satnam>
+	 <1246440977.3403.7.camel@hpdv5.satnam>
+	 <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
+	 <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam>
+	 <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam>
+	 <1246606736.2322.9.camel@jaswinder.satnam>  <20090703093032.GI3902@elte.hu>
 Content-Type: text/plain
-Date: Fri, 03 Jul 2009 11:11:41 +0100
-Message-Id: <1246615901.4438.1107.camel@vega.slimlogic.co.uk>
+Date: Fri, 03 Jul 2009 15:40:45 +0530
+Message-Id: <1246615845.2322.6.camel@jaswinder.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 11:35 +0200, Samuel Ortiz wrote:
-> Hi Daniel,
+On Fri, 2009-07-03 at 11:30 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> On Sat, Jun 27, 2009 at 02:26:58PM -0300, Daniel Ribeiro wrote:
-
-> > 
-> > Ideally, Samuel would push the PCAP patches on -rc phase, so the
-> > sub-drivers can all be merged through the respective subsystem trees on
-> > the .32 merge window.
-> If that's ok with Liam, I'll take the regulator patch. Most of the pcap
-> patches are not rc material, so they will be merged along with the regulator
-> driver with the next merge window.
+> > > $ ./perf list shows vector events like :
+> > > 
+> > >   vec-adds OR add                          [Hardware vector event]
+> > >   vec-muls OR multiply                     [Hardware vector event]
+> > >   vec-divs OR divide                       [Hardware vector event]
+> > >   vec-idle-cycles OR vec-empty-cycles      [Hardware vector event]
+> > >   vec-stall-cycles OR vec-busy-cycles      [Hardware vector event]
+> > >   vec-ops OR vec-operations                [Hardware vector event]
 > 
-> Liam, if you're fine with this patch, could you please SOB it ? Thanks.
+> btw., why does this printout SHOUT the 'or'? It's certainly not an 
+> important piece of information. Something like:
+> 
+>    vec-adds | add                          [Hardware vector event]
+>    vec-muls | multiply                     [Hardware vector event]
+>    vec-divs | divide                       [Hardware vector event]
+>    vec-idle-cycles | vec-empty-cycles      [Hardware vector event]
+>    vec-stall-cycles | vec-busy-cycles      [Hardware vector event]
+>    vec-ops | vec-operations                [Hardware vector event]
+> 
+> looks better on all levels.
+> 
 
-Signed-off-by: Liam Girdwood <lrg@slimlogic.co.uk>
+'OR' is also used for other events.
+If this is the only issue, I request you to accept these 2 patches.
 
-Thanks!
+I will send incremental patch which will fix these 'OR's and also avoid
+duplicating of these functions.
 
-Liam
+Thanks,
+--
+JSR
+
+http://userweb.kernel.org/~jaswinder/
 
 
