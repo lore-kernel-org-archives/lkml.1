@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZGCOBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbZGCOBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbZGCOBb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 10:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZGCOAP
+	id S1757679AbZGCOBQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZGCOAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 10:00:15 -0400
+	Fri, 3 Jul 2009 10:00:10 -0400
 Received: from mail-fx0-f218.google.com ([209.85.220.218]:62728 "EHLO
 	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752684AbZGCOAL (ORCPT
+	with ESMTP id S1757186AbZGCOAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 10:00:11 -0400
+	Fri, 3 Jul 2009 10:00:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=MGAr3nLfoO9m15/oItSqd94UMatJwa1s1bzcnl7MD95AMHfadrRV9AcpgI4Sh7fg9M
-         a3hZBCqiVENgFV87ndJevIv0IkolQ5pX5fKemKncX3QnQ4SdL7Ow6C5hf/GA8TiaNL7+
-         CSidwfC/thQ9USmXtk7ajk3eE7A6qIJKRU7xY=
+        b=bqoUGg7wGFKsTF7hog/xSyzbZMNnzsW606J4Yd6U12I2Sz+rQ1+VVCdVsg9Jm8O16s
+         Upndx/QD2cTGwI6sR2Bvuu3w5WuFgXNVsW7gHaW5HOLhaDSLQiX/m6eCekFnHsAHt7eK
+         iJD3vEdtO7eruyYXK0WzeOcnyUHdJIxUyJq1g=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: "Greg Kroah-Hartman" <gregkh@suse.de>
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Fri, 03 Jul 2009 16:06:47 +0200
-Message-Id: <20090703140647.7303.99932.sendpatchset@localhost.localdomain>
+Date: Fri, 03 Jul 2009 16:06:40 +0200
+Message-Id: <20090703140640.7303.21490.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
 References: <20090703140605.7303.54416.sendpatchset@localhost.localdomain>
-Subject: [PATCH 07/22] Staging: rtl8192su: remove USB_TX_DRIVER_AGGREGATION_ENABLE ifdefs
+Subject: [PATCH 06/22] Staging: rtl8192su: remove USB_RX_AGGREGATION_SUPPORT ifdefs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH staging] Staging: rtl8192su: remove USB_TX_DRIVER_AGGREGATION_ENABLE ifdefs
+Subject: [PATCH staging] Staging: rtl8192su: remove USB_RX_AGGREGATION_SUPPORT ifdefs
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/staging/rtl8192su/Makefile                      |    1 
- drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c |    8 
- drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h        |    3 
- drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c    |    3 
- drivers/staging/rtl8192su/r8192U.h                      |   31 -
- drivers/staging/rtl8192su/r8192U_core.c                 |  327 ----------------
- drivers/staging/rtl8192su/r819xU_HTType.h               |    3 
- 7 files changed, 376 deletions(-)
+ drivers/staging/rtl8192su/Makefile                   |    1 
+ drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h     |    6 
+ drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c |   15 
+ drivers/staging/rtl8192su/r8192U.h                   |   32 -
+ drivers/staging/rtl8192su/r8192U_core.c              |  471 -------------------
+ drivers/staging/rtl8192su/r8192U_dm.c                |   98 ---
+ drivers/staging/rtl8192su/r819xU_HTType.h            |    6 
+ 7 files changed, 629 deletions(-)
 
 Index: b/drivers/staging/rtl8192su/Makefile
 ===================================================================
@@ -51,48 +51,23 @@ Index: b/drivers/staging/rtl8192su/Makefile
  EXTRA_CFLAGS += -DRTL8192S_PREPARE_FOR_NORMAL_RELEASE
  EXTRA_CFLAGS += -DRTL8192SU_DISABLE_IQK=1
  
--#EXTRA_CFLAGS += -DUSB_TX_DRIVER_AGGREGATION_ENABLE=0
+-#EXTRA_CFLAGS += -DUSB_RX_AGGREGATION_SUPPORT=0
+ #EXTRA_CFLAGS += -DUSB_TX_DRIVER_AGGREGATION_ENABLE=0
  #EXTRA_CFLAGS += -DRTL8192SU_DISABLE_CCK_RATE=0
  EXTRA_CFLAGS += -DRTL8192S_DISABLE_FW_DM=0
- EXTRA_CFLAGS += -DDISABLE_BB_RF=0
-Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-===================================================================
---- a/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-+++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_softmac.c
-@@ -2237,11 +2237,7 @@ void ieee80211_softmac_xmit(struct ieee8
- #if 1
- 	/* if xmit available, just xmit it immediately, else just insert it to the wait queue */
- 	for(i = 0; i < txb->nr_frags; i++) {
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--		if ((skb_queue_len(&ieee->skb_drv_aggQ[queue_index]) != 0) ||
--#else
- 		if ((skb_queue_len(&ieee->skb_waitQ[queue_index]) != 0) ||
--#endif
- 		(!ieee->check_nic_enough_desc(ieee->dev,queue_index))||\
- 		     (ieee->queue_stop)) {
- 			/* insert the skb packet to the wait queue */
-@@ -2250,11 +2246,7 @@ void ieee80211_softmac_xmit(struct ieee8
- 			 * */
- 			//printk("error:no descriptor left@queue_index %d, %d, %d\n", queue_index, skb_queue_len(&ieee->skb_waitQ[queue_index]), ieee->check_nic_enough_desc(ieee->dev,queue_index));
- 			//ieee80211_stop_queue(ieee);
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--			skb_queue_tail(&ieee->skb_drv_aggQ[queue_index], txb->fragments[i]);
--#else
- 			skb_queue_tail(&ieee->skb_waitQ[queue_index], txb->fragments[i]);
--#endif
- 		}else{
- 			ieee->softmac_data_hard_start_xmit(
- 					txb->fragments[i],
 Index: b/drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h
 +++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_HT.h
-@@ -324,9 +324,6 @@ typedef struct _RT_HIGH_THROUGHPUT{
- 	u8				RxReorderPendingTime;
- 	u16				RxReorderDropCounter;
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	u8				UsbTxAggrNum;
+@@ -327,12 +327,6 @@ typedef struct _RT_HIGH_THROUGHPUT{
+ #ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
+ 	u8				UsbTxAggrNum;
+ #endif
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	u8				UsbRxFwAggrEn;
+-	u8				UsbRxFwAggrPageNum;
+-	u8				UsbRxFwAggrPacketNum;
+-	u8				UsbRxFwAggrTimeout;
 -#endif
  
  	// Add for Broadcom(Linksys) IOT. Joseph
@@ -101,12 +76,24 @@ Index: b/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
 ===================================================================
 --- a/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
 +++ b/drivers/staging/rtl8192su/ieee80211/rtl819x_HTProc.c
-@@ -102,9 +102,6 @@ void HTUpdateDefaultSetting(struct ieee8
- 	pHTInfo->RxReorderWinSize = 64;
- 	pHTInfo->RxReorderPendingTime = 30;
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	pHTInfo->UsbTxAggrNum = 4;
+@@ -105,21 +105,6 @@ void HTUpdateDefaultSetting(struct ieee8
+ #ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
+ 	pHTInfo->UsbTxAggrNum = 4;
+ #endif
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-#ifdef RTL8192SU
+-	pHTInfo->UsbRxFwAggrEn = 1;
+-	pHTInfo->UsbRxFwAggrPageNum = 16;
+-	pHTInfo->UsbRxFwAggrPacketNum = 8;
+-	pHTInfo->UsbRxFwAggrTimeout = 4; ////usb rx FW aggregation timeout threshold.It's in units of 64us
+-	// For page size of receive packet buffer.
+-	pHTInfo->UsbRxPageSize= 128;
+-#else
+-	pHTInfo->UsbRxFwAggrEn = 1;
+-	pHTInfo->UsbRxFwAggrPageNum = 24;
+-	pHTInfo->UsbRxFwAggrPacketNum = 8;
+-	pHTInfo->UsbRxFwAggrTimeout = 16; ////usb rx FW aggregation timeout threshold.It's in units of 64us
+-#endif
 -#endif
  
  
@@ -115,460 +102,778 @@ Index: b/drivers/staging/rtl8192su/r8192U.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/r8192U.h
 +++ b/drivers/staging/rtl8192su/r8192U.h
-@@ -465,30 +465,6 @@ typedef struct _tx_desc_819x_usb {
- }tx_desc_819x_usb, *ptx_desc_819x_usb;
+@@ -693,11 +693,7 @@ typedef struct rx_desc_819x_usb{
+ 	//DWORD 2
+ 	u16		Seq:12;
+ 	u16		Frag:4;
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	u8		UsbAggPktNum;//:8;
+-#else
+ 	u8		NextPktLen;//:8;
+-#endif
+ 	u8		Rsvd0:6;
+ 	u8		NextIND:1;
+ 	u8		Rsvd1:1;
+@@ -751,27 +747,6 @@ typedef struct rx_desc_819x_usb{
+ }rx_desc_819x_usb, *prx_desc_819x_usb;
  #endif
  
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--typedef struct _tx_desc_819x_usb_aggr_subframe {
--	//DWORD 0
--	u16	PktSize;
--	u8	Offset;
--	u8	TxFWInfoSize;
--
--	//DWORD 1
--	u8	RATid:3;
--	u8	DISFB:1;
--	u8	USERATE:1;
--	u8	MOREFRAG:1;
--	u8	NoEnc:1;
--	u8	PIFS:1;
--	u8	QueueSelect:5;
--	u8	NoACM:1;
--	u8	Reserved1:2;
--	u8	SecCAMID:5;
--	u8	SecDescAssign:1;
--	u8	SecType:2;
--	u8	PacketID:7;
--	u8	OWN:1;
--}tx_desc_819x_usb_aggr_subframe, *ptx_desc_819x_usb_aggr_subframe;
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-typedef struct _rx_desc_819x_usb_aggr_subframe{
+-	//DOWRD 0
+-	u16			Length:14;
+-	u16			CRC32:1;
+-	u16			ICV:1;
+-	u8			Offset;
+-	u8			RxDrvInfoSize;
+-	//DOWRD 1
+-	u8			Shift:2;
+-	u8			PHYStatus:1;
+-	u8			SWDec:1;
+-	u8			Reserved1:4;
+-	u8			Reserved2;
+-	u16			Reserved3;
+-	//DWORD 2
+-	//u4Byte		Reserved3;
+-	//DWORD 3
+-	//u4Byte           	BufferAddress;
+-}rx_desc_819x_usb_aggr_subframe, *prx_desc_819x_usb_aggr_subframe;
 -#endif
- 
  
  #ifdef RTL8192SU
-@@ -868,17 +844,10 @@ typedef struct rx_drvinfo_819x_usb{
- //#define TX_PACKET_SHIFT_BYTES 	  	(USB_HWDESC_HEADER_LEN + sizeof(tx_fwinfo_819x_usb))
- #define MAX_FRAGMENT_COUNT		8
- #ifdef RTL8192U
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--#define MAX_TRANSMIT_BUFFER_SIZE			32000
--#else
- #define MAX_TRANSMIT_BUFFER_SIZE			8000
--#endif
- #else
- #define MAX_TRANSMIT_BUFFER_SIZE  	(1600+(MAX_802_11_HEADER_LENGTH+ENCRYPTION_MAX_OVERHEAD)*MAX_FRAGMENT_COUNT)
- #endif
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--#define TX_PACKET_DRVAGGR_SUBFRAME_SHIFT_BYTES (sizeof(tx_desc_819x_usb_aggr_subframe) + sizeof(tx_fwinfo_819x_usb))
--#endif
- #define scrclng					4		// octets for crc32 (FCS, ICV)
+ //
+@@ -1896,13 +1871,6 @@ typedef struct r8192_priv
+ //#endif
  
- typedef enum rf_optype
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	bool		bCurrentRxAggrEnable;
+-	bool		bForcedUsbRxAggr;
+-	u32		ForcedUsbRxAggrInfo;
+-	u32		LastUsbRxAggrInfoSetting;
+-	u32		RegUsbRxAggrInfo;
+-#endif
+ 
+ 
+ 
 Index: b/drivers/staging/rtl8192su/r8192U_core.c
 ===================================================================
 --- a/drivers/staging/rtl8192su/r8192U_core.c
 +++ b/drivers/staging/rtl8192su/r8192U_core.c
-@@ -2163,249 +2163,6 @@ int rtl8192_hard_start_xmit(struct sk_bu
- 
- void rtl8192_try_wake_queue(struct net_device *dev, int pri);
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--u16 DrvAggr_PaddingAdd(struct net_device *dev, struct sk_buff *skb)
--{
--	u16     PaddingNum =  256 - ((skb->len + TX_PACKET_DRVAGGR_SUBFRAME_SHIFT_BYTES) % 256);
--	return  (PaddingNum&0xff);
--}
--
--u8 MRateToHwRate8190Pci(u8 rate);
--u8 QueryIsShort(u8 TxHT, u8 TxRate, cb_desc *tcb_desc);
--u8 MapHwQueueToFirmwareQueue(u8 QueueID);
--struct sk_buff *DrvAggr_Aggregation(struct net_device *dev, struct ieee80211_drv_agg_txb *pSendList)
--{
--	struct ieee80211_device *ieee = netdev_priv(dev);
--	struct r8192_priv *priv = ieee80211_priv(dev);
--	cb_desc 	*tcb_desc = NULL;
--	u8 		i;
--	u32		TotalLength;
--	struct sk_buff	*skb;
--	struct sk_buff  *agg_skb;
--	tx_desc_819x_usb_aggr_subframe *tx_agg_desc = NULL;
--	tx_fwinfo_819x_usb	       *tx_fwinfo = NULL;
--
--	//
--	// Local variable initialization.
--	//
--	/* first skb initialization */
--	skb = pSendList->tx_agg_frames[0];
--	TotalLength = skb->len;
--
--	/* Get the total aggregation length including the padding space and
--	 * sub frame header.
--	 */
--	for(i = 1; i < pSendList->nr_drv_agg_frames; i++) {
--		TotalLength += DrvAggr_PaddingAdd(dev, skb);
--		skb = pSendList->tx_agg_frames[i];
--		TotalLength += (skb->len + TX_PACKET_DRVAGGR_SUBFRAME_SHIFT_BYTES);
--	}
--
--	/* allocate skb to contain the aggregated packets */
--	agg_skb = dev_alloc_skb(TotalLength + ieee->tx_headroom);
--	memset(agg_skb->data, 0, agg_skb->len);
--	skb_reserve(agg_skb, ieee->tx_headroom);
--
--//	RT_DEBUG_DATA(COMP_SEND, skb->cb, sizeof(skb->cb));
--	/* reserve info for first subframe Tx descriptor to be set in the tx function */
--	skb = pSendList->tx_agg_frames[0];
--	tcb_desc = (cb_desc *)(skb->cb + MAX_DEV_ADDR_SIZE);
--	tcb_desc->drv_agg_enable = 1;
--	tcb_desc->pkt_size = skb->len;
-- 	tcb_desc->DrvAggrNum = pSendList->nr_drv_agg_frames;
--	printk("DrvAggNum = %d\n", tcb_desc->DrvAggrNum);
--//	RT_DEBUG_DATA(COMP_SEND, skb->cb, sizeof(skb->cb));
--//	printk("========>skb->data ======> \n");
--//	RT_DEBUG_DATA(COMP_SEND, skb->data, skb->len);
--	memcpy(agg_skb->cb, skb->cb, sizeof(skb->cb));
--	memcpy(skb_put(agg_skb,skb->len),skb->data,skb->len);
--
--	for(i = 1; i < pSendList->nr_drv_agg_frames; i++) {
--		/* push the next sub frame to be 256 byte aline */
--		skb_put(agg_skb,DrvAggr_PaddingAdd(dev,skb));
--
--		/* Subframe drv Tx descriptor and firmware info setting */
--		skb = pSendList->tx_agg_frames[i];
--		tcb_desc = (cb_desc *)(skb->cb + MAX_DEV_ADDR_SIZE);
--		tx_agg_desc = (tx_desc_819x_usb_aggr_subframe *)agg_skb->tail;
--		tx_fwinfo = (tx_fwinfo_819x_usb *)(agg_skb->tail + sizeof(tx_desc_819x_usb_aggr_subframe));
--
--		memset(tx_fwinfo,0,sizeof(tx_fwinfo_819x_usb));
--		/* DWORD 0 */
--		tx_fwinfo->TxHT = (tcb_desc->data_rate&0x80)?1:0;
--		tx_fwinfo->TxRate = MRateToHwRate8190Pci(tcb_desc->data_rate);
--		tx_fwinfo->EnableCPUDur = tcb_desc->bTxEnableFwCalcDur;
--		tx_fwinfo->Short = QueryIsShort(tx_fwinfo->TxHT, tx_fwinfo->TxRate, tcb_desc);
--		if(tcb_desc->bAMPDUEnable) {//AMPDU enabled
--			tx_fwinfo->AllowAggregation = 1;
--			/* DWORD 1 */
--			tx_fwinfo->RxMF = tcb_desc->ampdu_factor;
--			tx_fwinfo->RxAMD = tcb_desc->ampdu_density&0x07;//ampdudensity
--		} else {
--			tx_fwinfo->AllowAggregation = 0;
--			/* DWORD 1 */
--			tx_fwinfo->RxMF = 0;
--			tx_fwinfo->RxAMD = 0;
--		}
--
--		/* Protection mode related */
--		tx_fwinfo->RtsEnable = (tcb_desc->bRTSEnable)?1:0;
--		tx_fwinfo->CtsEnable = (tcb_desc->bCTSEnable)?1:0;
--		tx_fwinfo->RtsSTBC = (tcb_desc->bRTSSTBC)?1:0;
--		tx_fwinfo->RtsHT = (tcb_desc->rts_rate&0x80)?1:0;
--		tx_fwinfo->RtsRate =  MRateToHwRate8190Pci((u8)tcb_desc->rts_rate);
--		tx_fwinfo->RtsSubcarrier = (tx_fwinfo->RtsHT==0)?(tcb_desc->RTSSC):0;
--		tx_fwinfo->RtsBandwidth = (tx_fwinfo->RtsHT==1)?((tcb_desc->bRTSBW)?1:0):0;
--		tx_fwinfo->RtsShort = (tx_fwinfo->RtsHT==0)?(tcb_desc->bRTSUseShortPreamble?1:0):\
--				      (tcb_desc->bRTSUseShortGI?1:0);
--
--		/* Set Bandwidth and sub-channel settings. */
--		if(priv->CurrentChannelBW == HT_CHANNEL_WIDTH_20_40)
--		{
--			if(tcb_desc->bPacketBW) {
--				tx_fwinfo->TxBandwidth = 1;
--				tx_fwinfo->TxSubCarrier = 0;    //By SD3's Jerry suggestion, use duplicated mode
--			} else {
--				tx_fwinfo->TxBandwidth = 0;
--				tx_fwinfo->TxSubCarrier = priv->nCur40MhzPrimeSC;
--			}
--		} else {
--			tx_fwinfo->TxBandwidth = 0;
--			tx_fwinfo->TxSubCarrier = 0;
--		}
--
--		/* Fill Tx descriptor */
--		memset(tx_agg_desc, 0, sizeof(tx_desc_819x_usb_aggr_subframe));
--		/* DWORD 0 */
--		//tx_agg_desc->LINIP = 0;
--		//tx_agg_desc->CmdInit = 1;
--		tx_agg_desc->Offset =  sizeof(tx_fwinfo_819x_usb) + 8;
--		/* already raw data, need not to substract header length */
--		tx_agg_desc->PktSize = skb->len & 0xffff;
--
--		/*DWORD 1*/
--		tx_agg_desc->SecCAMID= 0;
--		tx_agg_desc->RATid = tcb_desc->RATRIndex;
--#if 0
--		/* Fill security related */
--		if( pTcb->bEncrypt && !Adapter->MgntInfo.SecurityInfo.SWTxEncryptFlag)
--		{
--			EncAlg = SecGetEncryptionOverhead(
--					Adapter,
--					&EncryptionMPDUHeadOverhead,
--					&EncryptionMPDUTailOverhead,
--					NULL,
--					NULL,
--					FALSE,
--					FALSE);
--			//2004/07/22, kcwu, EncryptionMPDUHeadOverhead has been added in previous code
--			//MPDUOverhead = EncryptionMPDUHeadOverhead + EncryptionMPDUTailOverhead;
--			MPDUOverhead = EncryptionMPDUTailOverhead;
--			tx_agg_desc->NoEnc = 0;
--			RT_TRACE(COMP_SEC, DBG_LOUD, ("******We in the loop SecCAMID is %d SecDescAssign is %d The Sec is %d********\n",tx_agg_desc->SecCAMID,tx_agg_desc->SecDescAssign,EncAlg));
--			//CamDumpAll(Adapter);
--		}
--		else
--#endif
--		{
--			//MPDUOverhead = 0;
--			tx_agg_desc->NoEnc = 1;
--		}
--#if 0
--		switch(EncAlg){
--			case NO_Encryption:
--				tx_agg_desc->SecType = 0x0;
--				break;
--			case WEP40_Encryption:
--			case WEP104_Encryption:
--				tx_agg_desc->SecType = 0x1;
--				break;
--			case TKIP_Encryption:
--				tx_agg_desc->SecType = 0x2;
--				break;
--			case AESCCMP_Encryption:
--				tx_agg_desc->SecType = 0x3;
--				break;
--			default:
--				tx_agg_desc->SecType = 0x0;
--				break;
--		}
--#else
--		tx_agg_desc->SecType = 0x0;
--#endif
--
--		if (tcb_desc->bHwSec) {
--			switch (priv->ieee80211->pairwise_key_type)
--			{
--				case KEY_TYPE_WEP40:
--				case KEY_TYPE_WEP104:
--					tx_agg_desc->SecType = 0x1;
--					tx_agg_desc->NoEnc = 0;
--					break;
--				case KEY_TYPE_TKIP:
--					tx_agg_desc->SecType = 0x2;
--					tx_agg_desc->NoEnc = 0;
--					break;
--				case KEY_TYPE_CCMP:
--					tx_agg_desc->SecType = 0x3;
--					tx_agg_desc->NoEnc = 0;
--					break;
--				case KEY_TYPE_NA:
--					tx_agg_desc->SecType = 0x0;
--					tx_agg_desc->NoEnc = 1;
--					break;
--			}
--		}
--
--		tx_agg_desc->QueueSelect = MapHwQueueToFirmwareQueue(tcb_desc->queue_index);
--		tx_agg_desc->TxFWInfoSize =  sizeof(tx_fwinfo_819x_usb);
--
--		tx_agg_desc->DISFB = tcb_desc->bTxDisableRateFallBack;
--		tx_agg_desc->USERATE = tcb_desc->bTxUseDriverAssingedRate;
--
--		tx_agg_desc->OWN = 1;
--
--		//DWORD 2
--		/* According windows driver, it seems that there no need to fill this field */
--		//tx_agg_desc->TxBufferSize= (u32)(skb->len - USB_HWDESC_HEADER_LEN);
--
--		/* to fill next packet */
--		skb_put(agg_skb,TX_PACKET_DRVAGGR_SUBFRAME_SHIFT_BYTES);
--		memcpy(skb_put(agg_skb,skb->len),skb->data,skb->len);
--	}
--
--	for(i = 0; i < pSendList->nr_drv_agg_frames; i++) {
--		dev_kfree_skb_any(pSendList->tx_agg_frames[i]);
--	}
--
--	return agg_skb;
--}
--
--/* NOTE:
--	This function return a list of PTCB which is proper to be aggregate with the input TCB.
--	If no proper TCB is found to do aggregation, SendList will only contain the input TCB.
--*/
--u8 DrvAggr_GetAggregatibleList(struct net_device *dev, struct sk_buff *skb,
--		struct ieee80211_drv_agg_txb *pSendList)
--{
--	struct ieee80211_device *ieee = netdev_priv(dev);
--	PRT_HIGH_THROUGHPUT	pHTInfo = ieee->pHTInfo;
--	u16		nMaxAggrNum = pHTInfo->UsbTxAggrNum;
--	cb_desc 	*tcb_desc = (cb_desc *)(skb->cb + MAX_DEV_ADDR_SIZE);
--	u8		QueueID = tcb_desc->queue_index;
--
--	do {
--		pSendList->tx_agg_frames[pSendList->nr_drv_agg_frames++] = skb;
--		if(pSendList->nr_drv_agg_frames >= nMaxAggrNum) {
--			break;
--		}
--
--	} while((skb = skb_dequeue(&ieee->skb_drv_aggQ[QueueID])));
--
--	RT_TRACE(COMP_AMSDU, "DrvAggr_GetAggregatibleList, nAggrTcbNum = %d \n", pSendList->nr_drv_agg_frames);
--	return pSendList->nr_drv_agg_frames;
--}
--#endif
- 
- static void rtl8192_tx_isr(struct urb *tx_urb)
+@@ -1601,12 +1601,6 @@ static void rtl8192_rx_isr(struct urb *u
+ u32 get_rxpacket_shiftbytes_819xusb(struct ieee80211_rx_stats *pstats)
  {
-@@ -2490,54 +2247,6 @@ static void rtl8192_tx_isr(struct urb *t
  
- 				return; //modified by david to avoid further processing AMSDU
- 			}
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--			else if ((skb_queue_len(&priv->ieee80211->skb_drv_aggQ[queue_index])!= 0)&&\
-- 				(!(priv->ieee80211->queue_stop))) {
--				// Tx Driver Aggregation process
--				/* The driver will aggregation the packets according to the following stets
--				 * 1. check whether there's tx irq available, for it's a completion return
--				 *    function, it should contain enough tx irq;
--				 * 2. check pakcet type;
--				 * 3. intialize sendlist, check whether the to-be send packet no greater than 1
--				 * 4. aggregation the packets, and fill firmware info and tx desc to it, etc.
--				 * 5. check whehter the packet could be sent, otherwise just insert to wait head
--				 * */
--				skb = skb_dequeue(&priv->ieee80211->skb_drv_aggQ[queue_index]);
--				if(!check_nic_enough_desc(dev, queue_index)) {
--					skb_queue_head(&(priv->ieee80211->skb_drv_aggQ[queue_index]), skb);
--					return;
--				}
--
--				{
--					/*TODO*/
--					/*
--					u8* pHeader = skb->data;
--
--					if(IsMgntQosData(pHeader) ||
--				            IsMgntQData_Ack(pHeader) ||
--					    IsMgntQData_Poll(pHeader) ||
--					    IsMgntQData_Poll_Ack(pHeader)
--					  )
--					*/
--					{
--						struct ieee80211_drv_agg_txb SendList;
--
--						memset(&SendList, 0, sizeof(struct ieee80211_drv_agg_txb));
--						if(DrvAggr_GetAggregatibleList(dev, skb, &SendList) > 1) {
--							skb = DrvAggr_Aggregation(dev, &SendList);
--
--#if 0
--						printk("=============>to send aggregated packet!\n");
--						RT_DEBUG_DATA(COMP_SEND, skb->cb, sizeof(skb->cb));
--						printk("\n=================skb->len = %d\n", skb->len);
--						RT_DEBUG_DATA(COMP_SEND, skb->data, skb->len);
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	if (pstats->bisrxaggrsubframe)
+-		return (sizeof(rx_desc_819x_usb) + pstats->RxDrvInfoSize
+-			+ pstats->RxBufShift + 8);
+-	else
 -#endif
--						}
--					}
--					priv->ieee80211->softmac_hard_start_xmit(skb, dev);
+ 		return (sizeof(rx_desc_819x_usb) + pstats->RxDrvInfoSize
+ 				+ pstats->RxBufShift);
+ 
+@@ -6780,20 +6774,6 @@ void rtl8192_hwconfig(struct net_device*
+ }
+ 
+ #ifdef RTL8192SU
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-u8 rtl8192SU_MapRxPageSizeToIdx(u16 RxPktSize	)
+-{
+-	switch(RxPktSize)
+-	{
+-		case 64:		return 0; break;
+-		case 128	:	return 1; break;
+-		case 256:		return 2; break;
+-		case 512:		return 3; break;
+-		case 1024:	return 4; break;
+-		default:		return 0;	// We use 64bytes in defult.
+-	}
+-}
+-#endif
+ 
+ //
+ //	Description:
+@@ -6951,165 +6931,8 @@ static void rtl8192SU_MacConfigBeforeFwD
+ 
+ 	RT_TRACE(COMP_INIT, "<---MacConfigBeforeFwDownloadASIC()\n");
+ }
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-void rtl8192SU_HalUsbRxAggr8192SUsb(struct net_device *dev, bool Value)
+-{
+-	struct r8192_priv *priv = ieee80211_priv((struct net_device *)dev);
+-	PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;;
+ 
+ 
+-	//
+-	// <Roger_Notes> We decrease Rx page aggregated threshold in B/G mode.
+-	// 2008.10.29
+-	//
+-	if(priv->ieee80211->mode == WIRELESS_MODE_B ||  priv->ieee80211->mode == WIRELESS_MODE_G)
+-	{// Overwrite current settings to disable Rx Aggregation.
+-		Value = false;
+-	}
+-
+-	// Alway set Rx Aggregation to Disable if current platform is Win2K USB 1.1, by Emily
+-	//if(PLATFORM_LIMITED_RX_BUF_SIZE(Adapter))
+-	//	Value = FALSE;
+-
+-	// Always set Rx Aggregation to Disable if connected AP is Realtek AP, by Joseph
+-	//if(pHTInfo->bCurrentRT2RTAggregation)
+-	//	Value = FALSE;
+-
+-	// The RX aggregation may be enabled/disabled dynamically according current traffic stream.
+-	//Enable Rx aggregation if downlink traffic is busier than uplink traffic. by Guangan
+-	if(priv->bCurrentRxAggrEnable != Value)
+-	{
+-		priv->bCurrentRxAggrEnable = Value;
+-		//Adapter->HalFunc.SetHwRegHandler(Adapter, HW_VAR_USB_RX_AGGR, (pu1Byte)&pHalData->bCurrentRxAggrEnable);
+-		{
+-			//u8 	Setting = ((pu1Byte)(val))[0];
+-			u8 	Setting = priv->bCurrentRxAggrEnable
+-			u32 	ulValue;
+-
+-			if(Setting==0)
+-			{
+-				//
+-				// <Roger_Notes> Reduce aggregated page threshold to 0x01 and set minimal threshold 0x0a.
+-				// i.e., disable Rx aggregation.
+-				//
+-				ulValue = 0x0001000a;
+-			}
+-			else
+-			{
+-				//PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;
+-				//HAL_DATA_TYPE *pHalData = GET_HAL_DATA(Adapter);
+-
+-				if (priv->bForcedUsbRxAggr)
+-				{// Using forced settings.
+-					ulValue = priv->ForcedUsbRxAggrInfo;
+-				}
+-				else
+-				{// Using default settings.
+-
+-					ulValue = (pHTInfo->UsbRxFwAggrEn<<24) | (pHTInfo->UsbRxFwAggrPageNum<<16) |
+-							(pHTInfo->UsbRxFwAggrPacketNum<<8) | (pHTInfo->UsbRxFwAggrTimeout);
 -				}
 -			}
+-
+-			write_nic_byte(dev, RXDMA_AGG_PG_TH, (u8)((ulValue&0xff0000)>>16));
+-			write_nic_byte_E(dev, USB_RX_AGG_TIMEOUT, (u8)(ulValue&0xff));
+-
+-			priv->LastUsbRxAggrInfoSetting = ulValue;
+-
+-			RT_TRACE(COMP_HT|COMP_RECV, "Set HW_VAR_USB_RX_AGGR: ulValue(%#x)\n", ulValue);
+-		}
+-		RT_TRACE(COMP_RECV, "HalUsbRxAggr8192SUsb() :  Set RxAggregation to %s\n", Value?"ON":"OFF");
+-	}
+-
+-}
 -#endif
+-
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-void rtl8192SU_HalUsbRxAggr8192SUsb(struct net_device *dev, bool Value)
+-{
+-	struct r8192_priv *priv = ieee80211_priv((struct net_device *)dev);
+-	PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;;
+-
+-
+-	//
+-	// <Roger_Notes> We decrease Rx page aggregated threshold in B/G mode.
+-	// 2008.10.29
+-	//
+-	if((priv->ieee80211->mode & WIRELESS_MODE_B) || (priv->ieee80211->mode & WIRELESS_MODE_G))
+-	{// Overwrite current settings to disable Rx Aggregation.
+-		Value = false;
+-	}
+-
+-	// Alway set Rx Aggregation to Disable if current platform is Win2K USB 1.1, by Emily
+-	//if(PLATFORM_LIMITED_RX_BUF_SIZE(Adapter))
+-	//	Value = FALSE;
+-
+-	// Always set Rx Aggregation to Disable if connected AP is Realtek AP, by Joseph
+-	//if(pHTInfo->bCurrentRT2RTAggregation)
+-	//	Value = FALSE;
+-
+-	// The RX aggregation may be enabled/disabled dynamically according current traffic stream.
+-	//Enable Rx aggregation if downlink traffic is busier than uplink traffic. by Guangan
+-	if(priv->bCurrentRxAggrEnable != Value)
+-	{
+-		priv->bCurrentRxAggrEnable = Value;
+-		//Adapter->HalFunc.SetHwRegHandler(Adapter, HW_VAR_USB_RX_AGGR, (pu1Byte)&pHalData->bCurrentRxAggrEnable);
+-		{
+-			//u8 	Setting = ((pu1Byte)(val))[0];
+-			u8 	Setting = priv->bCurrentRxAggrEnable
+-			u32 	ulValue;
+-
+-			if(Setting==0)
+-			{
+-				//
+-				// <Roger_Notes> Reduce aggregated page threshold to 0x01 and set minimal threshold 0x0a.
+-				// i.e., disable Rx aggregation.
+-				//
+-				ulValue = 0x0001000a;
+-			}
+-			else
+-			{
+-				//PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;
+-				//HAL_DATA_TYPE *pHalData = GET_HAL_DATA(Adapter);
+-
+-				if (priv->bForcedUsbRxAggr)
+-				{// Using forced settings.
+-					ulValue = priv->ForcedUsbRxAggrInfo;
+-				}
+-				else
+-				{// Using default settings.
+-
+-					ulValue = (pHTInfo->UsbRxFwAggrEn<<24) | (pHTInfo->UsbRxFwAggrPageNum<<16) |
+-							(pHTInfo->UsbRxFwAggrPacketNum<<8) | (pHTInfo->UsbRxFwAggrTimeout);
+-				}
+-			}
+-
+-			write_nic_byte(dev, RXDMA_AGG_PG_TH, (u8)((ulValue&0xff0000)>>16));
+-			write_nic_byte_E(dev, USB_RX_AGG_TIMEOUT, (u8)(ulValue&0xff));
+-
+-			priv->LastUsbRxAggrInfoSetting = ulValue;
+-
+-			RT_TRACE(COMP_HT|COMP_RECV, "Set HW_VAR_USB_RX_AGGR: ulValue(%#x)\n", ulValue);
+-		}
+-		RT_TRACE(COMP_RECV, "HalUsbRxAggr8192SUsb() :  Set RxAggregation to %s\n", Value?"ON":"OFF");
+-	}
+-
+-}
+-
+-u8 rtl8192SU_MapRxPageSizeToIdx(u16 RxPktSize	)
+-{
+-	switch(RxPktSize)
+-	{
+-		case 64:		return 0; break;
+-		case 128	:	return 1; break;
+-		case 256:		return 2; break;
+-		case 512:		return 3; break;
+-		case 1024:	return 4; break;
+-		default:		return 0;	// We use 64bytes in defult.
+-	}
+-}
+-#endif
+-
+ #if 0
+ static void rtl8192SU_SetHwRegAmpduMinSpace(struct net_device *dev, u8 MinSpaceCfg)
+ {
+@@ -7224,19 +7047,6 @@ static void rtl8192SU_MacConfigAfterFwDo
+ #endif
+ #endif
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	// Size of Tx/Rx packet buffer.
+-	tmpU1b = read_nic_byte(dev, PBP);
+-	RxPageCfg = rtl8192SU_MapRxPageSizeToIdx(priv->ieee80211->pHTInfo.UsbRxPageSize);
+-	write_nic_byte(dev, PBP, tmpU1b|RxPageCfg); // Set page size of Rx packet buffer to 128 bytes.
+-	tmpU1b = read_nic_byte(dev, RXDMA);
+-
+-	write_nic_byte(dev, RXDMA, tmpU1b|RXDMA_AGG_EN); // Rx aggregation enable.
+-	//PlatformIOWrite1Byte(Adapter, RXDMA_AGG_PG_TH, 0x14);	// Set page size of RxDMA aggregation threshold, default: 20.
+-	//write_nic_byte(dev, RXDMA_AGG_PG_TH, 0x40); // By Scott's suggestion, 2008.09.30.//92su del
+-	//write_nic_byte(dev, USB_RX_AGG_TIMEOUT, RXDMA_AGG_TIMEOUT_17_4_MS); // Set aggregation time-out to 17ms/4.
+-	rtl8192SU_HalUsbRxAggr8192SUsb(dev, true);
+-#endif
+ 
+ 	// Fix the RX FIFO issue(USB error), Rivesed by Roger, 2008-06-14
+ 	tmpU1b = read_nic_byte_E(dev, 0x5C);
+@@ -7961,23 +7771,6 @@ bool rtl8192_adapter_start(struct net_de
+ 		for (i=0; i<QOS_QUEUE_NUM; i++)
+ 		write_nic_dword(dev, WDCAPARA_ADD[i], DEFAULT_EDCA);
+ 	}
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	//3 For usb rx firmware aggregation control
+-	if(priv->ResetProgress == RESET_TYPE_NORESET)
+-	{
+-		u32 ulValue;
+-		PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;
+-		ulValue = (pHTInfo->UsbRxFwAggrEn<<24) | (pHTInfo->UsbRxFwAggrPageNum<<16) |
+-					(pHTInfo->UsbRxFwAggrPacketNum<<8) | (pHTInfo->UsbRxFwAggrTimeout);
+-		/*
+-		 * If usb rx firmware aggregation is enabled,
+-		 * when anyone of three threshold conditions above is reached,
+-		 * firmware will send aggregated packet to driver.
+-		 */
+-		write_nic_dword(dev, 0x1a8, ulValue);
+-		priv->bCurrentRxAggrEnable = true;
+-	}
+-#endif
+ 
+ 	rtl8192_phy_configmac(dev);
+ 
+@@ -10496,11 +10289,6 @@ void rtl8192SU_query_rxdesc_status(struc
+ 	//pu1Byte		pDesc = (pu1Byte)pDescIn;
+ 	//PRX_DRIVER_INFO_8192S		pDrvInfo;
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT//FIXLZM
+-	//if (bIsRxAggrSubframe)
+-		rx_desc_819x_usb_aggr_subframe *desc = (rx_desc_819x_usb_aggr_subframe *)skb->data;
+-	else
+-#endif
+ 	rx_desc_819x_usb *desc = (rx_desc_819x_usb *)skb->data;
+ 
+ 	if(0)
+@@ -10637,19 +10425,6 @@ void query_rxdesc_status(struct sk_buff 
+ 	//
+ 	//Get Rx Descriptor Information
+ 	//
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	if (bIsRxAggrSubframe)
+-	{
+-		rx_desc_819x_usb_aggr_subframe *desc = (rx_desc_819x_usb_aggr_subframe *)skb->data;
+-		stats->Length = desc->Length ;
+-		stats->RxDrvInfoSize = desc->RxDrvInfoSize;
+-		stats->RxBufShift = 0; //RxBufShift = 2 in RxDesc, but usb didn't shift bytes in fact.
+-		stats->bICV = desc->ICV;
+-		stats->bCRC = desc->CRC32;
+-		stats->bHwError = stats->bCRC|stats->bICV;
+-		stats->Decrypted = !desc->SWDec;//RTL8190 set this bit to indicate that Hw does not decrypt packet
+-	} else
+-#endif
+ 	{
+ 		rx_desc_819x_usb *desc = (rx_desc_819x_usb *)skb->data;
+ 
+@@ -10738,12 +10513,6 @@ void query_rxdesc_status(struct sk_buff 
+ 		skb_pull(skb,stats->RxBufShift + stats->RxDrvInfoSize);
+ 	}
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	/* for the rx aggregated sub frame, the redundant space truelly contained in the packet */
+-	if(bIsRxAggrSubframe) {
+-		skb_pull(skb, 8);
+-	}
+-#endif
+ 	/* for debug 2008.5.29 */
+ #if 0
+ 	{
+@@ -10906,27 +10675,6 @@ void rtl8192SU_rx_nomal(struct sk_buff* 
+ 	struct ieee80211_hdr_1addr *ieee80211_hdr = NULL;
+ 	bool unicast_packet = false;
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	struct sk_buff *agg_skb = NULL;
+-	u32  TotalLength = 0;//Total packet length for all aggregated packets.
+-	u32  TempDWord = 0;
+-	u32  PacketLength = 0;// Per-packet length include size of RxDesc.
+-	u32  PacketOccupiedLendth = 0;
+-	u8   TempByte = 0;
+-	u32  PacketShiftBytes = 0;
+-	rx_desc_819x_usb_aggr_subframe *RxDescr = NULL;
+-	u8  PaddingBytes = 0;
+-	//add just for testing
+-	u8   testing;
+-
+-	u8	TotalAggPkt = 0;
+-	PRT_HIGH_THROUGHPUT	pHTInfo =priv-> ieee80211->pHTInfo;
+-	u16	RxPageSize = pHTInfo->UsbRxPageSize;
+-
+-	stats->nTotalAggPkt = 0;
+-	//stats->bIsRxAggrSubframe = FALSE;
+-
+-#endif
+ 	//printk("**********skb->len = %d\n", skb->len);
+ 	/* 20 is for ps-poll */
+ 	if((skb->len >=(20 + sizeof(rx_desc_819x_usb))) && (skb->len < RX_URB_SIZE)) {
+@@ -10936,14 +10684,6 @@ void rtl8192SU_rx_nomal(struct sk_buff* 
+ 		/* TODO */
+ 
+ 		/* hardware related info */
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-		TotalAggPkt = stats->nTotalAggPkt;
+-		PacketLength = stats->Length + GetRxPacketShiftBytes8192SU(&stats, false);
+-
+-		agg_skb = skb;
+-		skb = dev_alloc_skb(PacketLength);
+-		memcpy(skb_put(skb,PacketLength),agg_skb->data,PacketLength);
+-#endif
+ 		priv->stats.rxoktotal++;  //YJ,test,090108
+ 
+ 		/* Process the MPDU recevied */
+@@ -10971,106 +10711,6 @@ void rtl8192SU_rx_nomal(struct sk_buff* 
  		}
- 	}
  
-@@ -3343,12 +3052,6 @@ short rtl8192SU_tx(struct net_device *de
- 		tx_desc->TxSubCarrier = 0;
+ 		//up is firs pkt, follow is next and next
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-		//
+-		// The following operations are for processing Rx aggregated packets.
+-		//
+-		if(TotalAggPkt>0)
+-			TotalAggPkt--;
+-
+-		while ( TotalAggPkt>0 )
+-		{// More aggregated packets need to process.
+-
+-			u8 tmpCRC = 0, tmpICV = 0;
+-
+-			//Page size must align to multiple of 128-Bytes.
+-			if((PacketLength%RxPageSize) != 0)
+-				//PacketLength = ((PacketLength/RxPageSize)+1)*RxPageSize;
+-				PacketLength = ((PacketLength>>7)+1)*RxPageSize; // RxPageSize is 128bytes as default.
+-
+-			// Current total packet occupied length in this buffer.
+-			PacketOccupiedLendth += PacketLength;
+-
+-#if (defined (RTL8192SU_FPGA_2MAC_VERIFICATION)||defined (RTL8192SU_ASIC_VERIFICATION))
+-			//if(PacketOccupiedLendth>pContext->BufLenUsed)
+-			if(PacketOccupiedLendth>skb->len)
+-			{
+-				RT_TRACE(COMP_RECV, "(1)HalUsbInMpduComplete8192SUsb(): pRtRfdStatus->Length(%#x)!!\n", stats->Length);
+-				RT_TRACE(COMP_RECV, "(1)HalUsbInMpduComplete8192SUsb(): Invalid PacketOccupiedLendth(%#x)!!, BufLenUsed(%#x)\n", PacketOccupiedLendth, stats->BufLenUsed);
+-				break;
+-			}
+-#endif
+-
+-			skb_pull(agg_skb, PacketLength);
+-
+-			//
+-			// Process the MPDU recevied.
+-			//
+-			//RT_TRACE(COMP_RECV,"%s:aggred pkt,total_len = %d\n",__FUNCTION__,agg_skb->len);
+-			RxDescr = (rx_desc_819x_usb_aggr_subframe *)(agg_skb->data);
+-
+-#if 0//92SU del
+-			tmpCRC = RxDescr->CRC32;
+-			tmpICV = RxDescr->ICV;
+-			memcpy(agg_skb->data, &agg_skb->data[44], 2);
+-			RxDescr->CRC32 = tmpCRC;
+-			RxDescr->ICV = tmpICV;
+-#endif
+-			memset(&stats, 0, sizeof(struct ieee80211_rx_stats));
+-			stats.signal = 0;
+-			stats.noise = -98;
+-			stats.rate = 0;
+-			stats.freq = IEEE80211_24GHZ_BAND;
+-
+-			rtl8192SU_query_rxdesc_status(agg_skb, &stats, true);
+-			//PacketLength = stats.Length;
+-			PacketLength = stats.Length +  GetRxPacketShiftBytes8192SU(&stats, true);
+-
+-#if (defined (RTL8192SU_FPGA_2MAC_VERIFICATION)||defined (RTL8192SU_ASIC_VERIFICATION))
+-			if((PacketOccupiedLendth+PacketLength)>skb->len)
+-			{
+-				RT_TRACE(COMP_RECV, "(2)HalUsbInMpduComplete8192SUsb(): Invalid PacketOccupiedLendth(%#x)+PacketLength(%#x)!!, BufLenUsed(%#x)\n",
+-					PacketOccupiedLendth, PacketLength, pContext->BufLenUsed);
+-				break;
+-			}
+-#endif
+-
+-			if(PacketLength > agg_skb->len) {
+-				break;
+-			}
+-
+-			/* Process the MPDU recevied */
+-			skb = dev_alloc_skb(PacketLength);
+-			memcpy(skb_put(skb,PacketLength),agg_skb->data, PacketLength);
+-			skb_trim(skb, skb->len - 4/*sCrcLng*/);
+-
+-			rx_pkt_len = skb->len;
+-			ieee80211_hdr = (struct ieee80211_hdr_1addr *)skb->data;
+-			unicast_packet = false;
+-			if(is_broadcast_ether_addr(ieee80211_hdr->addr1)) {
+-				//TODO
+-			}else if(is_multicast_ether_addr(ieee80211_hdr->addr1)){
+-				//TODO
+-			}else {
+-				/* unicast packet */
+-				unicast_packet = true;
+-			}
+-			if(!ieee80211_rx(priv->ieee80211,skb, &stats)) {
+-				dev_kfree_skb_any(skb);
+-			} else {
+-				priv->stats.rxoktotal++;
+-				if(unicast_packet) {
+-					priv->stats.rxbytesunicast += rx_pkt_len;
+-				}
+-			}
+-
+-			TotalAggPkt--;
+-
+-			skb_pull(agg_skb, TempDWord);
+-		}
+-
+-		dev_kfree_skb(agg_skb);
+-#endif
  	}
+ 	else
+ 	{
+@@ -11083,12 +10723,6 @@ void rtl8192SU_rx_nomal(struct sk_buff* 
+ #else
+ u32 GetRxPacketShiftBytes819xUsb(struct ieee80211_rx_stats  *Status, bool bIsRxAggrSubframe)
+ {
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	if (bIsRxAggrSubframe)
+-		return (sizeof(rx_desc_819x_usb) + Status->RxDrvInfoSize
+-			+ Status->RxBufShift + 8);
+-	else
+-#endif
+ 		return (sizeof(rx_desc_819x_usb) + Status->RxDrvInfoSize
+ 				+ Status->RxBufShift);
+ }
+@@ -11108,44 +10742,13 @@ void rtl8192_rx_nomal(struct sk_buff* sk
+ 	u32 rx_pkt_len = 0;
+ 	struct ieee80211_hdr_1addr *ieee80211_hdr = NULL;
+ 	bool unicast_packet = false;
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	struct sk_buff *agg_skb = NULL;
+-	u32  TotalLength = 0;
+-	u32  TempDWord = 0;
+-	u32  PacketLength = 0;
+-	u32  PacketOccupiedLendth = 0;
+-	u8   TempByte = 0;
+-	u32  PacketShiftBytes = 0;
+-	rx_desc_819x_usb_aggr_subframe *RxDescr = NULL;
+-	u8  PaddingBytes = 0;
+-	//add just for testing
+-	u8   testing;
+-
+-#endif
  
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable)
+ 	/* 20 is for ps-poll */
+ 	if((skb->len >=(20 + sizeof(rx_desc_819x_usb))) && (skb->len < RX_URB_SIZE)) {
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-		TempByte = *(skb->data + sizeof(rx_desc_819x_usb));
+-#endif
+ 		/* first packet should not contain Rx aggregation header */
+ 		query_rxdesc_status(skb, &stats, false);
+ 		/* TODO */
+ 		/* hardware related info */
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-		if (TempByte & BIT0) {
+-			agg_skb = skb;
+-			//TotalLength = agg_skb->len - 4; /*sCrcLng*/
+-			TotalLength = stats.Length - 4; /*sCrcLng*/
+-			//RT_TRACE(COMP_RECV, "%s:first aggregated packet!Length=%d\n",__FUNCTION__,TotalLength);
+-			/* though the head pointer has passed this position  */
+-			TempDWord = *(u32 *)(agg_skb->data - 4);
+-			PacketLength = (u16)(TempDWord & 0x3FFF); /*sCrcLng*/
+-			skb = dev_alloc_skb(PacketLength);
+-			memcpy(skb_put(skb,PacketLength),agg_skb->data,PacketLength);
+-			PacketShiftBytes = GetRxPacketShiftBytes819xUsb(&stats, false);
+-		}
+-#endif
+ 		/* Process the MPDU recevied */
+ 		skb_trim(skb, skb->len - 4/*sCrcLng*/);
+ 
+@@ -11169,80 +10772,6 @@ void rtl8192_rx_nomal(struct sk_buff* sk
+ 				priv->stats.rxbytesunicast += rx_pkt_len;
+ 			}
+ 		}
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-		testing = 1;
+-		// (PipeIndex == 0) && (TempByte & BIT0) => TotalLength > 0.
+-		if (TotalLength > 0) {
+-			PacketOccupiedLendth = PacketLength + (PacketShiftBytes + 8);
+-			if ((PacketOccupiedLendth & 0xFF) != 0)
+-				PacketOccupiedLendth = (PacketOccupiedLendth & 0xFFFFFF00) + 256;
+-			PacketOccupiedLendth -= 8;
+-			TempDWord = PacketOccupiedLendth - PacketShiftBytes; /*- PacketLength */
+-			if (agg_skb->len > TempDWord)
+-				skb_pull(agg_skb, TempDWord);
+-			else
+-				agg_skb->len = 0;
+-
+-			while (agg_skb->len>=GetRxPacketShiftBytes819xUsb(&stats, true)) {
+-				u8 tmpCRC = 0, tmpICV = 0;
+-				//RT_TRACE(COMP_RECV,"%s:aggred pkt,total_len = %d\n",__FUNCTION__,agg_skb->len);
+-				RxDescr = (rx_desc_819x_usb_aggr_subframe *)(agg_skb->data);
+-				tmpCRC = RxDescr->CRC32;
+-				tmpICV = RxDescr->ICV;
+-				memcpy(agg_skb->data, &agg_skb->data[44], 2);
+-				RxDescr->CRC32 = tmpCRC;
+-				RxDescr->ICV = tmpICV;
+-
+-				memset(&stats, 0, sizeof(struct ieee80211_rx_stats));
+-				stats.signal = 0;
+-				stats.noise = -98;
+-				stats.rate = 0;
+-				stats.freq = IEEE80211_24GHZ_BAND;
+-				query_rxdesc_status(agg_skb, &stats, true);
+-				PacketLength = stats.Length;
+-
+-				if(PacketLength > agg_skb->len) {
+-					break;
+-				}
+-				/* Process the MPDU recevied */
+-				skb = dev_alloc_skb(PacketLength);
+-				memcpy(skb_put(skb,PacketLength),agg_skb->data, PacketLength);
+-				skb_trim(skb, skb->len - 4/*sCrcLng*/);
+-
+-				rx_pkt_len = skb->len;
+-				ieee80211_hdr = (struct ieee80211_hdr_1addr *)skb->data;
+-				unicast_packet = false;
+-				if(is_broadcast_ether_addr(ieee80211_hdr->addr1)) {
+-					//TODO
+-				}else if(is_multicast_ether_addr(ieee80211_hdr->addr1)){
+-					//TODO
+-				}else {
+-					/* unicast packet */
+-					unicast_packet = true;
+-				}
+-				if(!ieee80211_rx(priv->ieee80211,skb, &stats)) {
+-					dev_kfree_skb_any(skb);
+-				} else {
+-					priv->stats.rxoktotal++;
+-					if(unicast_packet) {
+-						priv->stats.rxbytesunicast += rx_pkt_len;
+-					}
+-				}
+-				/* should trim the packet which has been copied to target skb */
+-				skb_pull(agg_skb, PacketLength);
+-				PacketShiftBytes = GetRxPacketShiftBytes819xUsb(&stats, true);
+-				PacketOccupiedLendth = PacketLength + PacketShiftBytes;
+-				if ((PacketOccupiedLendth & 0xFF) != 0) {
+-					PaddingBytes = 256 - (PacketOccupiedLendth & 0xFF);
+-					if (agg_skb->len > PaddingBytes)
+-						skb_pull(agg_skb, PaddingBytes);
+-					else
+-						agg_skb->len = 0;
+-				}
+-			}
+-			dev_kfree_skb(agg_skb);
+-		}
+-#endif
+ 	} else {
+ 		priv->stats.rxurberr++;
+ 		printk("actual_length:%d\n", skb->len);
+Index: b/drivers/staging/rtl8192su/r8192U_dm.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192U_dm.c
++++ b/drivers/staging/rtl8192su/r8192U_dm.c
+@@ -315,98 +315,6 @@ extern void deinit_hal_dm(struct net_dev
+ }
+ 
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-void dm_CheckRxAggregation(struct net_device *dev) {
+-	struct r8192_priv *priv = ieee80211_priv((struct net_device *)dev);
+-	PRT_HIGH_THROUGHPUT	pHTInfo = priv->ieee80211->pHTInfo;
+-	static unsigned long	lastTxOkCnt = 0;
+-	static unsigned long	lastRxOkCnt = 0;
+-	unsigned long		curTxOkCnt = 0;
+-	unsigned long		curRxOkCnt = 0;
+-
+-/*
+-	if (pHalData->bForcedUsbRxAggr) {
+-		if (pHalData->ForcedUsbRxAggrInfo == 0) {
+-			if (pHalData->bCurrentRxAggrEnable) {
+-				Adapter->HalFunc.HalUsbRxAggrHandler(Adapter, FALSE);
+-			}
+-		} else {
+-			if (!pHalData->bCurrentRxAggrEnable || (pHalData->ForcedUsbRxAggrInfo != pHalData->LastUsbRxAggrInfoSetting)) {
+-				Adapter->HalFunc.HalUsbRxAggrHandler(Adapter, TRUE);
+-			}
+-		}
+-		return;
+-	}
+-
+-*/
+-#ifdef RTL8192SU
+-	if (priv->bForcedUsbRxAggr) {
+-		if (priv->ForcedUsbRxAggrInfo == 0) {
+-			if (priv->bCurrentRxAggrEnable) {
+-				//Adapter->HalFunc.HalUsbRxAggrHandler(Adapter, FALSE);
+-				write_nic_dword(dev, 0x1a8, 0);
+-				priv->bCurrentRxAggrEnable = false;
+-			}
+-		} else {
+-			if (!priv->bCurrentRxAggrEnable || (priv->ForcedUsbRxAggrInfo != priv->LastUsbRxAggrInfoSetting)) {
+-				u32 ulValue;
+-				ulValue = (pHTInfo->UsbRxFwAggrEn<<24) | (pHTInfo->UsbRxFwAggrPageNum<<16) |
+-						(pHTInfo->UsbRxFwAggrPacketNum<<8) | (pHTInfo->UsbRxFwAggrTimeout);
+-				/*
+-				 * If usb rx firmware aggregation is enabled,
+-				 * when anyone of three threshold conditions above is reached,
+-				 * firmware will send aggregated packet to driver.
+-			 	*/
+-				write_nic_dword(dev, 0x1a8, ulValue);
+-				priv->bCurrentRxAggrEnable = true;
+-			}
+-		}
+-		return;
+-	}
+-
+-	if((priv->ieee80211->mode & WIRELESS_MODE_B) || (priv->ieee80211->mode & WIRELESS_MODE_G))
 -	{
--		//tx_desc->Tx_INFO_RSVD = (tcb_desc->DrvAggrNum & 0x1f) << 1; //92su del
+-		if (priv->bCurrentRxAggrEnable)
+-		{
+-			RT_TRACE(COMP_RECV, "dm_CheckRxAggregation() :  Disable Rx Aggregation!!\n");
+-			write_nic_dword(dev, 0x1a8, 0);
+-			priv->bCurrentRxAggrEnable = false;
+-			return;
+-		}
 -	}
 -#endif
- 
- 	//memset(tx_desc, 0, sizeof(tx_desc_819x_usb));
- 	/* DWORD 0 */
-@@ -3356,11 +3059,6 @@ short rtl8192SU_tx(struct net_device *de
-         //tx_desc->CmdInit = 1; //92su del
-         tx_desc->Offset =  USB_HWDESC_HEADER_LEN;
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable) {
--		tx_desc->PktSize = tcb_desc->pkt_size;//FIXLZM
--	} else
--#endif
- 	{
- 		tx_desc->PktSize = (skb->len - USB_HWDESC_HEADER_LEN) & 0xffff;
- 	}
-@@ -3469,11 +3167,6 @@ short rtl8192SU_tx(struct net_device *de
- #endif
-         tx_desc->OWN = 1;
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable) {
--		tx_desc->TxBufferSize = tcb_desc->pkt_size + sizeof(tx_fwinfo_819x_usb);
--	} else
--#endif
- 	{
- 		//DWORD 2
- 		//tx_desc->TxBufferSize = (u32)(skb->len - USB_HWDESC_HEADER_LEN);
-@@ -3653,12 +3346,6 @@ short rtl8192_tx(struct net_device *dev,
- 		tx_fwinfo->TxSubCarrier = 0;
- 	}
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable)
--	{
--		tx_fwinfo->Tx_INFO_RSVD = (tcb_desc->DrvAggrNum & 0x1f) << 1;
+-
+-	curTxOkCnt = priv->stats.txbytesunicast - lastTxOkCnt;
+-	curRxOkCnt = priv->stats.rxbytesunicast - lastRxOkCnt;
+-
+-	if((curTxOkCnt + curRxOkCnt) < 15000000) {
+-		return;
 -	}
+-
+-	if(curTxOkCnt > 4*curRxOkCnt) {
+-		if (priv->bCurrentRxAggrEnable) {
+-			write_nic_dword(dev, 0x1a8, 0);
+-			priv->bCurrentRxAggrEnable = false;
+-		}
+-	}else{
+-		if (!priv->bCurrentRxAggrEnable && !pHTInfo->bCurrentRT2RTAggregation) {
+-			u32 ulValue;
+-			ulValue = (pHTInfo->UsbRxFwAggrEn<<24) | (pHTInfo->UsbRxFwAggrPageNum<<16) |
+-				(pHTInfo->UsbRxFwAggrPacketNum<<8) | (pHTInfo->UsbRxFwAggrTimeout);
+-			/*
+-			 * If usb rx firmware aggregation is enabled,
+-			 * when anyone of three threshold conditions above is reached,
+-			 * firmware will send aggregated packet to driver.
+-			 */
+-			write_nic_dword(dev, 0x1a8, ulValue);
+-			priv->bCurrentRxAggrEnable = true;
+-		}
+-	}
+-
+-	lastTxOkCnt = priv->stats.txbytesunicast;
+-	lastRxOkCnt = priv->stats.rxbytesunicast;
+-}	// dm_CheckEdcaTurbo
 -#endif
- 	/* Fill Tx descriptor */
- 	memset(tx_desc, 0, sizeof(tx_desc_819x_usb));
- 	/* DWORD 0 */
-@@ -3666,11 +3353,6 @@ short rtl8192_tx(struct net_device *dev,
-         tx_desc->CmdInit = 1;
-         tx_desc->Offset =  sizeof(tx_fwinfo_819x_usb) + 8;
  
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable) {
--		tx_desc->PktSize = tcb_desc->pkt_size;
--	} else
--#endif
- 	{
- 		tx_desc->PktSize = (skb->len - TX_PACKET_SHIFT_BYTES) & 0xffff;
- 	}
-@@ -3766,11 +3448,6 @@ short rtl8192_tx(struct net_device *dev,
- #endif
-         tx_desc->OWN = 1;
  
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	if (tcb_desc->drv_agg_enable) {
--		tx_desc->TxBufferSize = tcb_desc->pkt_size + sizeof(tx_fwinfo_819x_usb);
--	} else
+ #ifdef RTL8192SU
+@@ -438,9 +346,6 @@ extern  void    hal_dm_watchdog(struct n
+ 	//if (IS_HARDWARE_TYPE_8192S(dev))
+ 	return;
+ 
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	dm_CheckRxAggregation(dev);
 -#endif
+ #ifdef TO_DO_LIST
+ 	if(Adapter->MgntInfo.mActingAsAp)
  	{
- 		//DWORD 2
- 		tx_desc->TxBufferSize = (u32)(skb->len - USB_HWDESC_HEADER_LEN);
-@@ -8017,11 +7694,7 @@ TxCheckStuck(struct net_device *dev)
- 	     		if(QueueID == TXCMD_QUEUE)
- 		         continue;
- #if 1
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--			if((skb_queue_len(&priv->ieee80211->skb_waitQ[QueueID]) == 0) && (skb_queue_len(&priv->ieee80211->skb_aggQ[QueueID]) == 0) && (skb_queue_len(&priv->ieee80211->skb_drv_aggQ[QueueID]) == 0))
--#else
- 		     	if((skb_queue_len(&priv->ieee80211->skb_waitQ[QueueID]) == 0)  && (skb_queue_len(&priv->ieee80211->skb_aggQ[QueueID]) == 0))
+@@ -490,9 +395,6 @@ extern  void    hal_dm_watchdog(struct n
+ 	dm_check_pbc_gpio(dev);
+ 	dm_send_rssi_tofw(dev);
+ 	dm_ctstoself(dev);
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	dm_CheckRxAggregation(dev);
 -#endif
- 			 	continue;
+ }	//HalDmWatchDog
  #endif
  
 Index: b/drivers/staging/rtl8192su/r819xU_HTType.h
 ===================================================================
 --- a/drivers/staging/rtl8192su/r819xU_HTType.h
 +++ b/drivers/staging/rtl8192su/r819xU_HTType.h
-@@ -293,9 +293,6 @@ typedef struct _RT_HIGH_THROUGHPUT{
- 	u8				RxReorderPendingTime;
- 	u16				RxReorderDropCounter;
- 
--#ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
--	u8				UsbTxAggrNum;
+@@ -296,12 +296,6 @@ typedef struct _RT_HIGH_THROUGHPUT{
+ #ifdef USB_TX_DRIVER_AGGREGATION_ENABLE
+ 	u8				UsbTxAggrNum;
+ #endif
+-#ifdef USB_RX_AGGREGATION_SUPPORT
+-	u8				UsbRxFwAggrEn;
+-	u8				UsbRxFwAggrPageNum;
+-	u8				UsbRxFwAggrPacketNum;
+-	u8				UsbRxFwAggrTimeout;
 -#endif
  
  	// Add for Broadcom(Linksys) IOT. Joseph
