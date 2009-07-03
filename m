@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZGCGzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZGCGzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZGCGzF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZGCGyz
+	id S1756005AbZGCGzk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZGCGzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:54:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34304 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZGCGyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:54:54 -0400
-Date: Fri, 3 Jul 2009 08:54:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: venkatesh.pallipadi@intel.com
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
-       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Thomas Renninger <trenn@suse.de>
-Subject: Re: [patch 0/4] Take care of cpufreq lockdep issues (take 2)
-Message-ID: <20090703065427.GA32687@elte.hu>
-References: <20090703000829.735976000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090703000829.735976000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 3 Jul 2009 02:55:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53851 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751268AbZGCGzb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 02:55:31 -0400
+Date: Thu, 2 Jul 2009 23:55:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Menage <menage@google.com>
+Cc: Benjamin Blum <bblum@google.com>, lizf@cn.fujitzu.com, serue@us.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+ that  shows only unique tgids
+Message-Id: <20090702235527.7ddc873c.akpm@linux-foundation.org>
+In-Reply-To: <6599ad830907022116n7a711c7fs52ff9b400ec8797f@mail.gmail.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	<20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+	<20090702164649.303c4952.akpm@linux-foundation.org>
+	<2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+	<20090702175341.fd2e26d5.akpm@linux-foundation.org>
+	<6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+	<2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
+	<20090702190845.0cafc46a.akpm@linux-foundation.org>
+	<6599ad830907022116n7a711c7fs52ff9b400ec8797f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2 Jul 2009 21:16:15 -0700 Paul Menage <menage@google.com> wrote:
 
-* venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> wrote:
-
-> Since recent chanegs to ondemand and conservative governor, there 
-> have been multiple reports of lockdep issues in cpufreq. Patch 
-> series takes care of these problems.
+> On Thu, Jul 2, 2009 at 7:08 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> >
+> > Why are we doing all this anyway? __To avoid presenting duplicated pids
+> > to userspace? __Nothing else?
 > 
-> This is the next attempt following the one here, which was not a 
-> complete fix. 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0906.3/01073.html
+> To present the pids or tgids in sorted order. Removing duplicates is
+> only for the case of the "procs" file; that could certainly be left to
+> userspace, but it wouldn't by itself remove the existing requirement
+> for a contiguous array.
 > 
-> I am currently running some stress tests to make sure there are no 
-> issues with these patches. But, wanted to send them out for 
-> review/comments/testing before I head out for the long weekend.
+> The seq_file iterator for these files relies on them being sorted so
+> that it can pick up where it left off even in the event of the pid set
+> changing between reads - it does a binary search to find the first pid
+> greater than the last one that was returned, so as to guarantee that
+> we return every pid that was in the cgroup before the scan started and
+> remained in the cgroup until after the scan finished; there are no
+> guarantees about pids that enter/leave the cgroup during the scan.
+
+OIC.  Gee we made it hard for ourselves.  That tears it.
+
+> > Or we can do it the other way? __Create an initially-empty local IDR
+> > tree or radix tree and, within that, mark off any pids which we've
+> > already emitted? __That'll have a worst-case memory consumption of
+> > approximately PID_MAX_LIMIT bits -- presently that's half a megabyte.
+> > With no large allocations needed?
+> >
 > 
-> If this patchset seems sane, the first patch in the patchset 
-> should also get into 30.stable.
+> But that would be half a megabyte per open fd?
 
-Btw., FYI, because my test-systems were frequently triggering those 
-bugs, i kept testing the following series from you and Mathieu in 
--tip:
+worst-case, assuming that there are 4,000,000/64 pids, spread evenly
+across the pid space.
 
- ecf8b04: cpufreq: Define dbs_mutex purpose and cleanup its usage conservative gov
- b08c597: cpufreq: Define dbs_mutex purpose and cleanup its usage
- 0807e30: cpufreq: remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+> That's a lot of memory
+> that userspace can pin down by opening fds.
 
-So that fix-series, while probably not complete (given that you sent 
-a v2 series), worked well in practice and gets my:
+yup.
 
- Tested-by: Ingo Molnar <mingo@elte.hu>
+> The reason for the current
+> pid array approach is to mean that there's only ever one pid array
+> allocated at a time per cgroup, rather than per open fd.
 
-Is the delta between this (tested) series and your v2 version 
-significant? If not it might make sense to shape it as a delta patch 
-to the v1 series, if that looks clean enough - to preserve testing 
-results.
+Oh.  Didn't know that.  That would have been an interesting thing to
+have documeted, but the sorry little comment which tried to explain
+this got deleted by this patch :(
 
-	Ingo
+> There's actually a structure already for doing that - cgroup_scanner,
+> which uses a high-watermark and a priority heap to provide a similar
+> guarantee, with a constant memory size overhead (typically one page).
+> But it can take O(n^2) time to scan a large cgroup, as would, I
+> suspect, using an IDR, so it's only used for cases where we really
+> can't avoid it due to locking reasons. I'd rather have something that
+> accumulates unsorted pids in page-size chunks as we iterate through
+> the cgroup, and then sorts them using something like Lai Jiangshan's
+> patch did.
 
+Was it a mistake to try to present an ordered, dupes-removed view of a
+large amount of data from the kernel?
+ 
+> >
+> > btw, did pidlist_uniq() actually needs to allocate new memory for the
+> > output array? __Could it have done the filtering in-place?
+> 
+> Yes - or just omit duplicates in the seq_file iterator, I guess
+
+OK.
+
+
+So now what?  lib/dynarray.c?
