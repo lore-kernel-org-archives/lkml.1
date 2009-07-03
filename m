@@ -1,80 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZGCKnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZGCKpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755131AbZGCKnV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 06:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbZGCKnN
+	id S1755569AbZGCKpH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 06:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbZGCKo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 06:43:13 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59774 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751584AbZGCKnM (ORCPT
+	Fri, 3 Jul 2009 06:44:57 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:44296 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbZGCKo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 06:43:12 -0400
-Date: Fri, 3 Jul 2009 11:44:31 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703114431.37abd528@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090703102234.GA32128@elte.hu>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk>
-	<20090703064518.GA30674@elte.hu>
-	<20090703100834.6cb241b6@lxorguk.ukuu.org.uk>
-	<20090703091655.GB3902@elte.hu>
-	<20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk>
-	<20090703095432.GC21141@elte.hu>
-	<20090703110620.64fd1283@lxorguk.ukuu.org.uk>
-	<20090703102234.GA32128@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 06:44:57 -0400
+Date: Fri, 3 Jul 2009 06:44:47 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, earl_chew@agilent.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, nhorman@tuxdriver.com
+Subject: Re: [PATCH 0/3] exec: Make do_coredump more robust and safer when
+	using pipes in core_pattern (v8)
+Message-ID: <20090703104447.GA19371@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090622172818.GB14673@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Which is a cut and paste of code from the originals into the 
-> > helper.
-> 
-> and this changes my points how? It's not like it's hard to fix, and 
-> the code is moved non-trivially anyway, it's better to have it nicer 
-> if we touch it anyway.
 
-Its called engineering and good practice. The old code was correct. The
-paste of it is therefore most likely to be correct. Furthermore patches
-shouldn't mix clean up with other changes. So doing it as one is most
-definitely bad practice.
+Patch V8, converting fatal_signal_pending to signal_pending
 
-> > > Also note the inconsistent printk-ing lines, mutiliated by line 
-> > > warps. The use of pr_warning() would solve it:
-> > 
-> > Send patches if it bugs you that much. [...]
-> 
-> I find that a rather flippant attitude to kernel code quality 
-> issues.
 
-I have better uses for my time than fiddling with pr_warning(). Fixing
-real bugs for example, bugs that crash your system, broken locking that
-goes back to Linux 2.2 and DaveM's original push of lock_kernel out of
-IRQ paths
+This patcset provides improvements to the core_pattern infrastructure:
 
-> Also, isnt it a double standard: why should newbies be held to 
-> higher standards than you hold yourself to?
+1) Make detection of recurseive core dumps more robust and accurate
 
-Why should anyone be held up to bogus standards ?
+2) Provide a sysctl to limit the number of parallel coredumps in flight when
+using pipes
 
-To bend an appropriate metaphor Ingo - you are trying to criticize the
-paint finish of the bike shed while some of us are still replacing the
-rusted and corroded beams.
+3) Allows for the kernel to wait for the completion of user space core dump
+processing
 
-If it was a new bike shed you might be in order, but at the moment the
-tty layer is rescue archaeology and I'm spending my time doing useful
-things like fixing the real bugs and getting from where we are now to
-somewhere useful without causing too much carnage on the way. pr_warning
-is an end of the journey polishing job.
+Neil
 
-The x86 experience doesn't translate here - Andi left you a well
-maintained, well polished starting point. Nobody has been maintaining tty
-for years.
 
-Alan
