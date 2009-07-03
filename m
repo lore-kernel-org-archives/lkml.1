@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbZGCUWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbZGCU12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbZGCUWZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbZGCUWP
+	id S1758482AbZGCU12 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZGCU1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:22:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57648
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756725AbZGCUWO (ORCPT
+	Fri, 3 Jul 2009 16:27:17 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:44306 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756588AbZGCU1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 16:22:14 -0400
-Date: Fri, 03 Jul 2009 13:22:20 -0700 (PDT)
-Message-Id: <20090703.132220.57384838.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: andres@anarazel.de, arun@linux.vnet.ibm.com, tglx@linutronix.de,
-       shemminger@vyatta.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
- possibly?caused by netem)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090703120301.GD4847@ff.dom.local>
-References: <20090703061213.GA4847@ff.dom.local>
-	<200907031326.21822.andres@anarazel.de>
-	<20090703120301.GD4847@ff.dom.local>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 3 Jul 2009 16:27:16 -0400
+Date: Fri, 3 Jul 2009 13:26:57 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       dbrownell@users.sourceforge.net
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       lud <linux-usb@vger.kernel.org>
+Subject: [PATCH -next] gadget audio: select SND_PCM
+Message-Id: <20090703132657.3289cdcf.randy.dunlap@oracle.com>
+In-Reply-To: <20090703162443.16495147.sfr@canb.auug.org.au>
+References: <20090703162443.16495147.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A4E6993.0105:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Fri, 3 Jul 2009 12:03:01 +0000
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> On Fri, Jul 03, 2009 at 01:26:21PM +0200, Andres Freund wrote:
->> On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
->> > On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
->> > ...
->> >
->> > > Ok. I finally see the light. I bisected the issue down to
->> > > eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
->> > > pinned timers
->> > >
->> > > Disabling timer migration like provided in the earlier commit stops the
->> > > issue from occuring.
->> > >
->> > > That it is related to timers is sensible in the light of my findings,
->> > > that I could trigger the issue only when using delay in netem - that is
->> > > the codepath using qdisc_watchdog...
->> >
->> > Andres, thanks for your work and time. It saved me a lot of searching,
->> > because I wasn't able to trigger this on my old box.
->> Thanks. It allowed me to go through some of my remaining paperwork ;-)
->> 
->> Does anybody of you have an idea where the problem actually resides? 
-> 
-> Do you mean possibly broken timers are not enough?
+Fix USB gadget audio: select SND_PCM, like many other sound
+drivers do, to fix build errors:
 
-Well, if you look at that commit the bisect pointed to Jarek, it is a
-change which starts causing a situation which never happened before.
-Namely, timers added on one cpu can be migrated and fire on another.
+drivers/built-in.o: In function `f_audio_playback_work':
+audio.c:(.text+0x15a3e7): undefined reference to `snd_pcm_kernel_ioctl'
+audio.c:(.text+0x15a471): undefined reference to `snd_pcm_lib_write'
+drivers/built-in.o: In function `_snd_pcm_hw_param_set':
+audio.c:(.text+0x15aca7): undefined reference to `snd_interval_refine'
+drivers/built-in.o: In function `gaudio_setup':
+(.init.text+0x12adf): undefined reference to `_snd_pcm_hw_params_any'
+drivers/built-in.o: In function `gaudio_setup':
+(.init.text+0x12b43): undefined reference to `snd_pcm_kernel_ioctl'
 
-So this could be exposing races in the networking that technically
-always existed.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/usb/gadget/Kconfig |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20090703.orig/drivers/usb/gadget/Kconfig
++++ linux-next-20090703/drivers/usb/gadget/Kconfig
+@@ -604,6 +604,7 @@ config USB_ZERO_HNPTEST
+ config USB_AUDIO
+ 	tristate "Audio Gadget (EXPERIMENTAL)"
+ 	depends on SND
++	select SND_PCM
+ 	help
+ 	  Gadget Audio is compatible with USB Audio Class specification 1.0.
+ 	  It will include at least one AudioControl interface, zero or more
+
+
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
