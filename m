@@ -1,119 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756959AbZGCN0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZGCNd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756959AbZGCN0h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZGCN0a
+	id S1755746AbZGCNd0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 09:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZGCNdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:26:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38615 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZGCN03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:26:29 -0400
-Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
- vectored co-processor support for AMD and Intel Corei7/Nehalem
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <1246625377.3088.10.camel@hpdv5.satnam>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
-	 <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam>
-	 <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam>
-	 <20090703102953.GF32128@elte.hu>
-	 <1246622122.2322.25.camel@jaswinder.satnam>
-	 <1246625377.3088.10.camel@hpdv5.satnam>
-Content-Type: text/plain
-Date: Fri, 03 Jul 2009 18:55:55 +0530
-Message-Id: <1246627555.2322.42.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+	Fri, 3 Jul 2009 09:33:17 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:64556 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbZGCNdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 09:33:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=qyDP5EtfysOFRkczESo016JzRe+kyuRPTcPzsr2qU+dBTwKvK3bU60jcUOfSebx2Q/
+         kgFdeX3SDQyUPGC4FIy99L20rmXPYZpD7xTFjE/eN+s1fR6tNiFcRupPoir/u0um+KaK
+         fZM696Sk0TFi7PolflVDSOcnVwKX/8TVwEcIs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [PATCH] Staging: vt6656: remove dependency on WIRELESS_EXT version
+Date: Fri, 3 Jul 2009 15:39:20 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090703-03460-gb01c1b8; KDE/4.2.4; i686; ; )
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, forest@alittletooquiet.net
+References: <1246615634-14939-1-git-send-email-a.beregalov@gmail.com>
+In-Reply-To: <1246615634-14939-1-git-send-email-a.beregalov@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907031539.20778.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 18:19 +0530, Jaswinder Singh Rajput wrote:
-> On Fri, 2009-07-03 at 17:25 +0530, Jaswinder Singh Rajput wrote:
-> > On Fri, 2009-07-03 at 12:29 +0200, Ingo Molnar wrote:
-> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > > 
-> > > >  Performance counter stats for '/usr/bin/rhythmbox /home/jaswinder/Music/singhiskinng.mp3':
-> > > > 
-> > > >        17552264  vec-adds                  (scaled from 66.28%)
-> > > >        19715258  vec-muls                  (scaled from 66.63%)
-> > > >        15862733  vec-divs                  (scaled from 66.82%)
-> > > >     23735187095  vec-idle-cycles           (scaled from 66.89%)
-> > > >        11353159  vec-stall-cycles          (scaled from 66.90%)
-> > > >        36628571  vec-ops                   (scaled from 66.48%)
-> > > 
-> > > Is stall-cycles equivalent to busy-cycles? 
-> > 
-> > 
-> > hmm, normally we can use these terms interchangeably. But they can be
-> > different some times.
-> > 
-> > busy means it is already executing some instructions so it will not take
-> > another instruction.
-> > 
-> > stall can be busy(executing) or non-executing may be it is waiting for
-> > some operands due to cache miss.
-> > 
-> > 
-> > > I.e. do we have this 
-> > > general relationship to the cycle event:
-> > > 
-> > > 	cycles = vec-stall-cycles + vec-idle-cycles
-> > > 
-> > > ?
+On Friday 03 July 2009 12:07:14 Alexander Beregalov wrote:
+> As the driver is in mainline now we can remove such dependency.
+> WIRELESS_EXT is 22 now and it is always defined.
 > 
-> Like on AMD :
-> 
->     13390918485  vec-adds                  (scaled from 57.07%)
->     22465091289  vec-muls                  (scaled from 57.22%)
->      2643789384  vec-divs                  (scaled from 57.21%)
->     17922784596  vec-idle-cycles           (scaled from 57.23%)
->      6402888606  vec-stall-cycles          (scaled from 57.17%)
->     55823491597  cycles                    (scaled from 57.05%)
->     51035264218  vec-ops                   (scaled from 57.05%)
-> 
->   187.494664172  seconds time elapsed
-> 
-> vec-idle-cycles + vec-stall-cycles = 24325673202
-> 
-> so cycles = 2.29 * (vec-idle-cycles + vec-stall-cycles)
-> 
-> On AMD I used : EventSelect 0D7h Dispatch Stall for FPU Full
-> The number of processor cycles the decoder is stalled because the
-> scheduler for the Floating Point Unit is full. This condition can be
-> caused by a lack of parallelism in FP-intensive code, or by cache misses
-> on FP operand loads (which could also show up as EventSelect 0D8h
-> instead, depending on the nature of the instruction sequences). May
-> occur simultaneously with certain other stall conditions; see
-> EventSelect 0D1h
-> 
-> So stall is due to lack of parallelism and cache misses.
-> If we keep on increasing the size of FP units and cache may at some
-> point be we can get vec-stall-cycles = zero.
-> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-I mean, So stall is majorly due to lack of parallelism and cache misses.
-If we keep on increasing the size of FP units and cache then stall time
-will keep on decreasing (ofcourse it will be never Zero ;)
+That was fast. :)
 
-And same thing will be happen for Intel.
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-So stall is not equal to busy.
+BTW:
 
-Please let me know what is next, should I remove busy term from alias.
+* It seems that both vt665x drivers should just select WIRELESS_EXT in
+  their Kconfig's and then we can remove all remaining CONFIG_WIRELESS_EXT
+  ifdefs.
 
-Thanks,
---
-JSR
+* vt6656 probably also needs to depend on USB.
 
+Alexander, could you look into it?
+
+Thanks.
+Bart
