@@ -1,75 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZGCTCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbZGCTDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbZGCTCV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757482AbZGCTCL
+	id S1758551AbZGCTDl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbZGCTDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:02:11 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:52748 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756475AbZGCTCI (ORCPT
+	Fri, 3 Jul 2009 15:03:34 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:40662 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756577AbZGCTDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:02:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kCC1RGAkqR1W8cQim9C9TJ25nOANUGr0DtLa7yZ5pVsomyGa+B68PbawRKiIEWgjo6
-         7C7piy+qi5O75Dd1sttVROsi4Q1dmdBN65u5Wx+w3S8L+elHpnGZaGgF6hX0KiKt+W6S
-         yf9TrdCXSLprn/gGb63Mg+A+RBWX2rY0ZeCag=
-Message-ID: <4A4E55A9.7090001@gmail.com>
-Date: Fri, 03 Jul 2009 20:02:01 +0100
-From: Dave <kilroyd@googlemail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090328)
+	Fri, 3 Jul 2009 15:03:33 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
+Date: Fri, 3 Jul 2009 14:03:17 -0500
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+References: <200907031314.36243.lkml@morethan.org> <4A4E54A8.4030606@goop.org>
+In-Reply-To: <4A4E54A8.4030606@goop.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Kilroy <kilroyd@googlemail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] check spinlock_t/rwlock_t argument type on non-SMP builds
-References: <1246560291-8104-1-git-send-email-kilroyd@googlemail.com> <20090703073801.GA10191@elte.hu>
-In-Reply-To: <20090703073801.GA10191@elte.hu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907031403.34566.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * David Kilroy <kilroyd@googlemail.com> wrote:
+On Fri July 3 2009, Jeremy Fitzhardinge wrote:
+> [ Missed some recipients. ]
 > 
->> When writing code for UP without CONFIG_DEBUG_SPINLOCK it's easy 
->> to get the first argument to the spinlock/rwlock functions wrong. 
->> This is because the parameter is not actually used in this 
->> configuration.
->>
->> Typically you will only find out it's wrong
->>  * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
->>  * after you've submitted your beautiful patch series.
->>
->> The first means a long wait, and the latter is a bit late.
->>
->> Add typechecking on the first argument of these macro functions. 
->> Note that since the typecheck now references the variable, the 
->> explicit read is redundant and can be removed.
->>
->> This change causes compiler warnings in net/ipv4/route.c, as this 
->> passes NULL as the first argument in the UP configuration. Simply 
->> cast this.
+> On 07/03/09 11:14, Michael S. Zick wrote:
+> > Here is one I have found useful in my VIA processor bug hunting:
+> >
+> > diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+> > index 3068388..2303d86 100644
+> > --- a/arch/x86/kernel/head_32.S
+> > +++ b/arch/x86/kernel/head_32.S
+> > @@ -61,7 +61,7 @@
+> >
+> >  /* Enough space to fit pagetables for the low memory linear map */
+> >  MAPPING_BEYOND_END = \
+> > -       PAGE_TABLE_SIZE(((1<<32) - __PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
+> > +       PAGE_TABLE_SIZE((1<<20) - (__PAGE_OFFSET >> PAGE_SHIFT)) << PAGE_SHIFT
+> >
+> >   
 > 
-> Wondering - can the wrappers be moved from CPP land to C land by 
-> turning them into inlines? (i havent checked all usages so there 
-> might be some surprises, but by and large it ought to be possible.)
+> These calculations are performed by the assembler, not the
+> preprocessor.  I think this transformation looks correct (in that its an
+> identity with the original), but my understanding is that the assembler
+> does it calculations in arbitrary precision, so there's no need to worry
+> about limiting the arithmetic to 32-bits.
+> 
+> >  /*
+> >   * Worst-case size of the kernel mapping we need to make:
+> >
+> > = = =
+> >
+> > Before:
+> >
+> >   #5 [0000010000 - 0000011000]          PGTABLE ==> [0000010000 - 0000011000]
+> >   #6 [0000011000 - 0000015000]          BOOTMAP ==> [0000011000 - 0000015000]
+> >
+> > After:
+> >
+> >   #5 [0000010000 - 000007d000]          PGTABLE ==> [0000010000 - 000007d000]
+> >   #6 [000007d000 - 0000081000]          BOOTMAP ==> [000007d000 - 0000081000]
+> >
+> > Someone who knows mm check which is the reasonable value please.
+> >   
+> 
+> 
+> The PGTABLE reservation seems much too big.  I think 1 page should be
+> sufficient for a system with large pages.  Even if not, 0x6d000 is way
+> too large.  And they symptoms of failing to reserve the initial
+> pagetable are pretty non-subtle.
+> 
 
-I thought about doing it that way. I decided not to because I suspected
-it would be harder to verify that the behaviour is unchanged.
+Random system halts, deadlocks with interrupts disabled?
+Yup, that sounds familiar.
 
-Also the _lock_irqsave functions output to the flags parameter (which
-isn't a pointer) so that has to remain a macro.
+If I ever get more than a stopped machine with a glowing power light;
+I will be certain to share.
 
-If you'd really rather an inline version, I can spend some time looking
-into it.
+Mike
+>     J
+> 
+> 
 
 
-Dave.
