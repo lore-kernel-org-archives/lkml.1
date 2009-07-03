@@ -1,45 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbZGCGwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZGCGzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbZGCGwI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZGCGv4
+	id S1754951AbZGCGzF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZGCGyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:51:56 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40731 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZGCGv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:51:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=x2OkePg8cMJIzTTmFG9JRn4G6FTkvmD/WWODCgO8xO2UM6PPh6RC2DMGzWV+/85M0Y
-         ufKOAm9LN91dmz920SiN3Bw/VVyEQwyseNNwPWmNXmFHBABvRei19gCschURw1EvzX7G
-         5dS/ubvi6FO6XaTo8BNIFDHl3HDNcTYjtuZ14=
+	Fri, 3 Jul 2009 02:54:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34304 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751268AbZGCGyy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 02:54:54 -0400
+Date: Fri, 3 Jul 2009 08:54:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: venkatesh.pallipadi@intel.com
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Thomas Renninger <trenn@suse.de>
+Subject: Re: [patch 0/4] Take care of cpufreq lockdep issues (take 2)
+Message-ID: <20090703065427.GA32687@elte.hu>
+References: <20090703000829.735976000@intel.com>
 MIME-Version: 1.0
-Date: Fri, 3 Jul 2009 12:14:41 +0530
-Message-ID: <abe8a1fd0907022344k2eb9874ejdbda3209a7cadf40@mail.gmail.com>
-Subject: Inline assembly queries [2]
-From: kernel mailz <kernelmailz@googlemail.com>
-To: linuxppc-dev@ozlabs.org, gcc-help@gcc.gnu.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703000829.735976000@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Thanks for responding to my previous mail. A few more queries
+* venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com> wrote:
 
-a. What is the use of adding format specifiers in inline assembly
-like
-asm volatile("ld%U1%X1 %0,%1":"=r"(ret) : "m"(*ptr) : "memory");
+> Since recent chanegs to ondemand and conservative governor, there 
+> have been multiple reports of lockdep issues in cpufreq. Patch 
+> series takes care of these problems.
+> 
+> This is the next attempt following the one here, which was not a 
+> complete fix. 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0906.3/01073.html
+> 
+> I am currently running some stress tests to make sure there are no 
+> issues with these patches. But, wanted to send them out for 
+> review/comments/testing before I head out for the long weekend.
+> 
+> If this patchset seems sane, the first patch in the patchset 
+> should also get into 30.stable.
 
-b. using m or Z  with a memory address. I tried replacing m/Z but no change
-Is there some guideline ?
-gcc documentation says Z is obsolete. Is m/Z replaceable ?
+Btw., FYI, because my test-systems were frequently triggering those 
+bugs, i kept testing the following series from you and Mathieu in 
+-tip:
 
-- Manish
+ ecf8b04: cpufreq: Define dbs_mutex purpose and cleanup its usage conservative gov
+ b08c597: cpufreq: Define dbs_mutex purpose and cleanup its usage
+ 0807e30: cpufreq: remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+
+So that fix-series, while probably not complete (given that you sent 
+a v2 series), worked well in practice and gets my:
+
+ Tested-by: Ingo Molnar <mingo@elte.hu>
+
+Is the delta between this (tested) series and your v2 version 
+significant? If not it might make sense to shape it as a delta patch 
+to the v1 series, if that looks clean enough - to preserve testing 
+results.
+
+	Ingo
+
