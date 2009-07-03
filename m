@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZGCAPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbZGCAWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZGCAPW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZGCAPJ
+	id S1756005AbZGCAWS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZGCAWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:15:09 -0400
-Received: from mail.samba.org ([66.70.73.150]:47335 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbZGCAPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:15:08 -0400
+	Thu, 2 Jul 2009 20:22:03 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2791 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753009AbZGCAWC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:22:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Kw8BIVVL8v86ZINrA/UShBqJP2SfzFG5fzim+Eo/kD+YyQp94TfhJPz3liiouga3z
+	QKx66Vedyyi1a+1/7Y4MQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19021.19842.663727.146474@samba.org>
-Date: Fri, 3 Jul 2009 10:14:58 +1000
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-	<20090701140503.GA21185@mit.edu>
-	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+In-Reply-To: <20090702165413.f4a21471.akpm@linux-foundation.org>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090702232625.3969.54444.stgit@menage.mtv.corp.google.com>
+	 <20090702165413.f4a21471.akpm@linux-foundation.org>
+Date: Thu, 2 Jul 2009 17:22:02 -0700
+Message-ID: <6599ad830907021722x7b012991i1eca056bc72c010c@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Ensures correct concurrent opening/reading of 
+	pidlists across pid namespaces
+From: Paul Menage <menage@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lizf@cn.fujitzu.com, serue@us.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       bblum@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+On Thu, Jul 2, 2009 at 4:54 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+>
+> The way these patches were sent states that you were their primary
+> author.  Is that accurate?  If not, they should have had
+>
+> From: Ben Blum <bblum@google.com>
+>
+> at the very top of the changelog.
 
-I should also mention that in the first patch I sent back in May, I
-added some code that made the 8.3 name problem easier on the user. It
-basically forced the shortname= option, overriding the mount option,
-when the patch was triggered. The end result was that a name like
-dcis3000.jpg would always be stored as a 8.3 name, and thus be visible
-to digital cameras, even if the mount options were set to say that
-lowercase names should be considered as "long" names.
+Yes, they're originally by Ben.
 
-Hirofumi objected, on the basis that I was overriding the VFAT
-mount option. I think that overriding in this case would in fact be
-worthwhile, as I don't think many users ever think carefully about
-what shortname= option they are using, and unless you get it right
-then you can get some real surprises.
+Hmm. "git log" in my tree shows:
 
-Hirofumi-san, do you think that same objection you expressed
-previously also applies to this new patch? For example, would you
-think it reasonable to modify the patch to store the filename as 8.3
-if it can fit in 8.3 in a case mapped manner? Or store as 8.3 if it is
-all uppercase or all lowercase?
+commit 673496e073c88216b3d2d9fe76eb1163dedb5fa3
+Author: Ben Blum <bblum@google.com>
+Date:   Thu Jul 2 17:19:24 2009 -0700
 
-I think we will hit cases like the one Jan has pointed out where the
-exising shortname= options will become even more confusing than they
-were already when this new patch is applied, especially as I think
-most distros these days magically supply a shortname= option when you
-insert some VFAT formatted media.
+    Ensures correct concurrent opening/reading of pidlists across pid namespaces
 
-Cheers, Tridge
+and "stg edit" shows the first line as:
+
+From: Ben Blum <bblum@google.com>
+
+So I'm not sure how "stg mail" managed to lose that.
+
+Paul
