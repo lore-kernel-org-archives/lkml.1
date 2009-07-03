@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755402AbZGCDen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbZGCDt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755402AbZGCDen (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 23:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZGCDee
+	id S1756093AbZGCDt7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 23:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753344AbZGCDtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 23:34:34 -0400
-Received: from mail-pz0-f193.google.com ([209.85.222.193]:58294 "EHLO
-	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752936AbZGCDee (ORCPT
+	Thu, 2 Jul 2009 23:49:50 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:20446 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbZGCDtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 23:34:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=P2ZR6d4H6/bgUX7dOKRRM8enuRSmlEF1ehY4UnD6liJLdPgXPnw8Oy3dRUsLy5T7dj
-         w52JY/69WA82joZiFNDH4FhTjz29bl7R9G1zFwhwu/Eug+Ta1ILQe4xZGYspjE5Nr1VU
-         yeyakYw3LGyKo8ks6wsW1T4urOs/Uc3LQW7GI=
-Message-ID: <4A4D7C94.2020307@gmail.com>
-Date: Thu, 02 Jul 2009 20:35:48 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Thu, 2 Jul 2009 23:49:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=hSNg+ORKfrHikMrZOnlpfu279QuC6UyQDnNvPXfcgjPiXEOIKlcvf237INl3TQRLn
+	TJqcW/a+8T3Pit9KDqtkg==
 MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCH] SElinux: Fix some typos.
-References: <1246556775-8942-1-git-send-email-justinmattock@gmail.com> <1246556775-8942-2-git-send-email-justinmattock@gmail.com> <alpine.LRH.2.00.0907030850500.10242@tundra.namei.org>
-In-Reply-To: <alpine.LRH.2.00.0907030850500.10242@tundra.namei.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090703022553.GJ19135@count0.beaverton.ibm.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+	 <20090702164649.303c4952.akpm@linux-foundation.org>
+	 <2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+	 <20090702175341.fd2e26d5.akpm@linux-foundation.org>
+	 <6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+	 <2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
+	 <20090703022553.GJ19135@count0.beaverton.ibm.com>
+Date: Thu, 2 Jul 2009 20:49:48 -0700
+Message-ID: <6599ad830907022049k45647d9cp7c53a2b9f13b4625@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks" that 
+	shows only unique tgids
+From: Paul Menage <menage@google.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Benjamin Blum <bblum@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitzu.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris wrote:
-> On Thu, 2 Jul 2009, Justin P. Mattock wrote:
+On Thu, Jul 2, 2009 at 7:25 PM, Matt Helsley<matthltc@us.ibm.com> wrote:
 >
->    
->> Signed-off-by: Justin P. Mattock<justinmattock@gmail.com>
->>
->> Fix some typos in some comments.
->>      
->
->    
->> -/* The file system's label must be initialized prior to use. */
->> +/* The filesystems label must be initialized prior to use. */
->>      
->
-> Your adding grammertical error's.
->
->    
-well, after figuring out how to have git send -email functioning correctly,
-I needed something to send.      : ^ )
-(but after doing a quick google filesystem did show up).
->> -	 * Note that the setting of hard limits (even to lower them) can be
->> +	 * Note: That the setting of hard limits (even to lower them) can be
->>      
->
-> Please get this patch reviewed by an English speaker.
->
->    
-That seems viable to me.
->>    * Description:
->>    * Call the NetLabel mechanism to get the security attributes of the given
->> - * packet and use those attributes to determine the correct context/SID to
->> - * assign to the packet.  Returns zero on success, negative values on failure.
->> + * packet and use those attributes to determine the correct context/SID to be
->> + * assigned to the packet.  Returns zero on success, negative values on failure.
->>      
->
-> Eschew the active voice?
->
->
-> - James
->    
-wast ist das?
-No I will not be afraid of submitting patches, and having them be rejected.
-all part of the learning curve.
+> Seriously, I don't think the name "tasks" is ugly. I think "tasks"
+> is a nice balance between overly verbose ("cgroup.tasks") and specificity.
+> If anything I think the new file should be called "processes", not
+> "cgroup.procs". The established convention was "subsys.foo". cgroup is not
+> a subsystem of itself hence the names "tasks" and "processes" are just fine.
 
-Justin P. Mattock
+But that means that every time we add a new cgroup framework control
+file, we risk breaking people who happen to already have setups that
+use that name. At least if we prefix all new names with "cgroup." it's
+easier for people to avoid future clashes. I consider it a mistake on
+my part that I didn't give the "tasks" file the "cgroup" prefix when I
+originally morphed cpusets into cgroups.
+
+Paul
