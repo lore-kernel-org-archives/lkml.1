@@ -1,228 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZGCNCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZGCNE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZGCNCu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbZGCNCm
+	id S1755371AbZGCNE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 09:04:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZGCNEu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:02:42 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40095 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753469AbZGCNCj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:02:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=vKUAWfwZXMQ7xJBewnDRxvfPE7Hh8Tf5UvxOhnNjOaRNqwTvwo/W7wceC3VKiICbNA
-         a2Q0U9GC8AZzDdT1gDH6FkKC/93l0p4JS+4tn9jqkMgowXgr5EVVWsWHTNez7I4FO4B3
-         bn7yotTA6ELpX4jPAM+b6Zt9gU2Z/63QR9o+c=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: wuzhangjin@gmail.com
-Subject: Re: [Bug #13663] suspend to ram regression (IDE related)
-Date: Fri, 3 Jul 2009 15:08:45 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc1-next-20090703-03460-gb01c1b8; KDE/4.2.4; i686; ; )
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Etienne Basset <etienne.basset@numericable.fr>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-ide@vger.kernel.org
-References: <etTXaRqGgAC.A.SaE.6iASKB@chimera> <200907021813.57322.bzolnier@gmail.com> <1246593505.27828.187.camel@falcon>
-In-Reply-To: <1246593505.27828.187.camel@falcon>
+	Fri, 3 Jul 2009 09:04:50 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:44842 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752389AbZGCNEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 09:04:50 -0400
+Message-ID: <4A4E01BF.8040209@atmel.com>
+Date: Fri, 03 Jul 2009 15:03:59 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "avictor.za@gmail.com" <avictor.za@gmail.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "patrice.vilchez@atmel.com" <patrice.vilchez@atmel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2 v2] dmaengine: at_hdmac: new driver for the Atmel
+ AHB DMA Controller
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com> <129600E5E5FB004392DDC3FB599660D7AF555E87@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <129600E5E5FB004392DDC3FB599660D7AF555E87@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907031508.47891.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 July 2009 05:58:25 Wu Zhangjin wrote:
-> On Thu, 2009-07-02 at 18:13 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 02 July 2009 03:46:43 Wu Zhangjin wrote:
-> > > On Wed, 2009-07-01 at 18:29 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Wednesday 01 July 2009 18:21:25 Bartlomiej Zolnierkiewicz wrote:
-> > > > > On Wednesday 01 July 2009 16:47:41 Wu Zhangjin wrote:
-> > > > > > On Wed, 2009-07-01 at 22:31 +0800, Jeff Chua wrote:
-> > > > > > > On Tue, Jun 30, 2009 at 12:21 AM, Jeff Chua<jeff.chua.linux@gmail.com> wrote:
-> > > > > > > 
-> > > > > > > > I just tried, and it "seems" to work. Will try a few more cycles.
-> > > > > > > 
-> > > > > > > STD/STR survived quite a few cycles now. Patch seems to be doing the
-> > > > > > > right thing.
-> > > > > > > 
-> > > > > > > On Mon, Jun 29, 2009 at 11:51 PM, Etienne
-> > > > > > > Basset<etienne.basset@numericable.fr> wrote:
-> > > > > > > 
-> > > > > > > > To have STR/resume work with current git, I have to :
-> > > > > > > 
-> > > > > > > > 1) apply Bart's patch
-> > > > > > > 
-> > > > > > > This is not yet in Linus's tree. And much needed to really fix the problem.
-> > > > > > > 
-> > > > > > > > 2) revert this commit : a1317f714af7aed60ddc182d0122477cbe36ee9b
-> > > > > > > 
-> > > > > > 
-> > > > > > Yes, This commit must be reverted, otherwise, STD/Hibernation will not
-> > > > > > work either. I have tested it on two different loongson-based machines:
-> > > > > > fuloong2e box and yeeloong2f netbook.(loongson is mips compatiable)
-> > > > > 
-> > > > > Since it seems like Dave is taking his sweet time with doing the revert
-> > > > > I stared at the code a bit more and I think that I finally found the bug
-> > > > > (thanks to your debugging work for giving me the right hint!).
-> > > > > 
-> > > > > The patch needs to take into the account a new code introduced by the recent
-> > > > > block layer changes (commit 8f6205cd572fece673da0255d74843680f67f879):
-> > > > > 
-> > > > > @@ -555,8 +560,11 @@ repeat:
-> > > > >                 startstop = start_request(drive, rq);
-> > > > >                 spin_lock_irq(&hwif->lock);
-> > > > >  
-> > > > > -               if (startstop == ide_stopped)
-> > > > > +               if (startstop == ide_stopped) {
-> > > > > +                       rq = hwif->rq;
-> > > > > +                       hwif->rq = NULL;
-> > > > >                         goto repeat;
-> > > > > +               }
-> > > > >         } else
-> > > > >                 goto plug_device;
-> > > > >  out:
-> > > > > 
-> > > > > and not zero hwif->rq if the device is blocked. 
-> > > > > 
-> > > > > Could you try the attached patch and see if it fixes the issue?
-> > > > 
-> > > > Here is the more complete version, also taking into the account changes
-> > > > in ide_intr() and ide_timer_expiry():
-> > > > 
-> > > 
-> > > Sorry, I can not apply this patch directly, which original version did
-> > > you use? I used the one in the master branch of linux-mips development
-> > > git repository.
-> > > 
-> > > commit 5a4f13fad1ab5bd08dea78fc55321e429d83cddf
-> > > Merge: ec9c45d e18ed14
-> > > Author: Linus Torvalds <torvalds@linux-foundation.org>
-> > > Date:   Mon Jun 29 20:07:43 2009 -0700
-> > > 
-> > >     Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6
-> > >     
-> > >     * git://git.kernel.org/pub/scm/linux/kernel/git/davem/ide-2.6:
-> > >       ide: memory overrun in ide_get_identity_ioctl() on big endian
-> > > machines using ioctl HDIO_OBSOLETE_IDENTITY
-> > >       ide: fix resume for CONFIG_BLK_DEV_IDEACPI=y
-> > >       ide-cd: handle fragmented packet commands gracefully
-> > >       ide: always kill the whole request on error
-> > >       ide: fix ide_kill_rq() for special ide-{floppy,tape} driver
-> > > requests
-> > > 
-> > > it this too old? should i merge another git repository?
-> > 
-> > Weird, I used linux-next but Linus' tree should also be fine
-> > (as it matches linux-next w.r.t. ide currently).
+Sosnowski, Maciej :
+> Nicolas Ferre wrote:
+>> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+>> at91sam9rl chip. It will be used on other products in the future.
+>>
+>> This first release covers only the memory-to-memory tranfer type. This is the
+>> only tranfer type supported by this chip.  On other products, it will be used
+>> also for peripheral DMA transfer (slave API support to come).
+>>
+>> I used dmatest client without problem in different configurations to test it.
+>>
+>> Full documentation for this controller can be found in the SAM9RL datasheet:
+>> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
+>>
+>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> ---
+> [...]
+>> +	/*
+>> +	 * We use dma_unmap_page() regardless of how the buffers were
+>> +	 * mapped before they were submitted...
+>> +	 */
+>> +	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP))
+>> +		dma_unmap_page(chan2parent(&atchan->chan_common), desc->lli.daddr,
+>> +				desc->len, DMA_FROM_DEVICE);
+>> +	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP))
+>> +		dma_unmap_page(chan2parent(&atchan->chan_common), desc->lli.saddr,
+>> +				desc->len, DMA_TO_DEVICE);
 > 
-> I just cloned the linux-next git repo, and tested your patch with
-> STD/Hibernation, unfortunately, it also not work :-(
-> 
-> here is the Call Trace:
-> 
-> blk_delete_timer+0x0/0x20
-> blk_requeue_request+0x24/0xd0
-> ide_requeue_and_plug+0x38/0xb0
-> ide_intr+0x120/0x300             --->  ide_intr....
-> handle_IRQ_event+0x94/0x230
-> handle_level_irq+0x7c/0x120
-> mach_irq_dispatch+0xc8/0x158
-> ret_from_irq+0x0/0x4
-> cpu_idle+0x30/0x60
-> start_kernel+0x330/0x34c
-> 
-> If _NOT_ apply your patch and comment this part, it works:
+> It is similar issue as the one fixed in 2.6.30 by 'ioatdma: fix "ioatdma frees DMA memory with wrong function"' patch:
+> commit 4f005dbe5584fe54c9f6d6d4f0acd3fb29be84da.
+> Note that this patch introduces dma control flags: DMA_COMPL_SRC_UNMAP_SINGLE and DMA_COMPL_DEST_UNMAP_SINGLE,
+> that could be used by the driver to choose proper unmapping.
 
-OK, I see another gotcha added by recent changes, we need to explicitly
-initialize rq_in_flight variables now.  Revised patch below..
+Sure Maciej, I correct this in my v3 patch (already done locally BTW).
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: make resume work again (for real)
+Kind regards,
+-- 
+Nicolas Ferre
 
-It turns out that commit a1317f714af7aed60ddc182d0122477cbe36ee9b
-("ide: improve handling of Power Management requests") needs to take
-into the account a new code added by the recent block layer changes
-in commit 8f6205cd572fece673da0255d74843680f67f879 ("ide: dequeue
-in-flight request") and prevent clearing of hwif->rq if the device
-is blocked.
-
-Thanks to Etienne, Wu and Jeff for help in fixing the issue.
-
-Reported-and-tested-by: Jeff Chua <jeff.chua.linux@gmail.com>
-Reported-and-tested-by: Etienne Basset <etienne.basset@numericable.fr>
-Reported-by: Wu Zhangjin <wuzhangjin@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-Added patch description, no other changes.
-
- drivers/ide/ide-io.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
-
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -532,7 +532,8 @@ repeat:
- 
- 		if (startstop == ide_stopped) {
- 			rq = hwif->rq;
--			hwif->rq = NULL;
-+			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0)
-+				hwif->rq = NULL;
- 			goto repeat;
- 		}
- 	} else
-@@ -616,7 +617,7 @@ void ide_timer_expiry (unsigned long dat
- 	unsigned long	flags;
- 	int		wait = -1;
- 	int		plug_device = 0;
--	struct request	*uninitialized_var(rq_in_flight);
-+	struct request	*rq_in_flight = NULL;
- 
- 	spin_lock_irqsave(&hwif->lock, flags);
- 
-@@ -679,8 +680,10 @@ void ide_timer_expiry (unsigned long dat
- 		spin_lock_irq(&hwif->lock);
- 		enable_irq(hwif->irq);
- 		if (startstop == ide_stopped && hwif->polling == 0) {
--			rq_in_flight = hwif->rq;
--			hwif->rq = NULL;
-+			if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-+				rq_in_flight = hwif->rq;
-+				hwif->rq = NULL;
-+			}
- 			ide_unlock_port(hwif);
- 			plug_device = 1;
- 		}
-@@ -775,7 +778,7 @@ irqreturn_t ide_intr (int irq, void *dev
- 	ide_startstop_t startstop;
- 	irqreturn_t irq_ret = IRQ_NONE;
- 	int plug_device = 0;
--	struct request *uninitialized_var(rq_in_flight);
-+	struct request *rq_in_flight = NULL;
- 
- 	if (host->host_flags & IDE_HFLAG_SERIALIZE) {
- 		if (hwif != host->cur_port)
-@@ -856,8 +859,10 @@ irqreturn_t ide_intr (int irq, void *dev
- 	 */
- 	if (startstop == ide_stopped && hwif->polling == 0) {
- 		BUG_ON(hwif->handler);
--		rq_in_flight = hwif->rq;
--		hwif->rq = NULL;
-+		if ((drive->dev_flags & IDE_DFLAG_BLOCKED) == 0) {
-+			rq_in_flight = hwif->rq;
-+			hwif->rq = NULL;
-+		}
- 		ide_unlock_port(hwif);
- 		plug_device = 1;
- 	}
