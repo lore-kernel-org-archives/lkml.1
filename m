@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbZGCUIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZGCUKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbZGCUIy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757365AbZGCUIq
+	id S1759238AbZGCUKj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbZGCUKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:08:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:64770 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757142AbZGCUIq convert rfc822-to-8bit (ORCPT
+	Fri, 3 Jul 2009 16:10:32 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:45752 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055AbZGCUKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 16:08:46 -0400
+	Fri, 3 Jul 2009 16:10:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ia36FifgpfE6VMdfjJIZpHZ1Nyu3pBC/pJVIAkc/npyzSz8/BeqJMwFUNGlYWXK6zI
-         fiREKpUh8ZG65yzdfz3FvYEzMdBrpVV7UcIgV5Wyedd4m4yCEv7/detu122B46LVJrsQ
-         IqN1GugL0BJUPRHX8UY9iJIBpEcGSACyS6BMs=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=seW+YRpggsEMKCq2wh738tqz9VYBY+S+4TtdsyTiZ54e5XW7bEoVyWCE1NdBVTK+jb
+         vhPkhFDbe6U0eC1AVzlQUYP1XAuPLYZMGLeU2C0RHdYG4WrHbAJGkeZoAbAuBfBz62FG
+         t0XKd9qJHzFmSJo58BmI5Nmc4s4Nd/Y9hAo7U=
 MIME-Version: 1.0
-In-Reply-To: <86802c440907031307s43fca3c0j77d4df78450ff757@mail.gmail.com>
-References: <200907031314.36243.lkml@morethan.org>
-	 <86802c440907031307s43fca3c0j77d4df78450ff757@mail.gmail.com>
-Date: Fri, 3 Jul 2009 13:08:49 -0700
-Message-ID: <86802c440907031308j3f996db6g9dfb1b8f9ccb7e7f@mail.gmail.com>
-Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: lkml@morethan.org
-Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090703193340.GA6060@hexapodia.org>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
+	 <1246410255-6839-7-git-send-email-adi@vmware.com>
+	 <ea8d860a0907031118o7ad0ad4nbe147b32bba57a29@mail.gmail.com>
+	 <20090703193340.GA6060@hexapodia.org>
+Date: Fri, 3 Jul 2009 22:10:30 +0200
+X-Google-Sender-Auth: 8217ef6755f97535
+Message-ID: <ea8d860a0907031310m5cdd21cy3e86e96c1217676d@mail.gmail.com>
+Subject: Re: [tpmdd-devel] [PATCH 6/6] tpm_tis: add workarounds for iTPM
+From: Marcin Obara <marcin_obara@users.sourceforge.net>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
+       tpmdd-devel@lists.sourceforge.net, seiji.munetoh@gmail.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 3, 2009 at 1:07 PM, Yinghai Lu<yhlu.kernel@gmail.com> wrote:
-> On Fri, Jul 3, 2009 at 11:14 AM, Michael S. Zick<lkml@morethan.org> wrote:
->> Here is one I have found useful in my VIA processor bug hunting:
->>
->> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
->> index 3068388..2303d86 100644
->> --- a/arch/x86/kernel/head_32.S
->> +++ b/arch/x86/kernel/head_32.S
->> @@ -61,7 +61,7 @@
->>
->>  /* Enough space to fit pagetables for the low memory linear map */
->>  MAPPING_BEYOND_END = \
->> -       PAGE_TABLE_SIZE(((1<<32) - __PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
->> +       PAGE_TABLE_SIZE((1<<20) - (__PAGE_OFFSET >> PAGE_SHIFT)) << PAGE_SHIFT
->>
->>  /*
->>  * Worst-case size of the kernel mapping we need to make:
->>
->> = = =
->>
->> Before:
->>
->>  #5 [0000010000 - 0000011000]          PGTABLE ==> [0000010000 - 0000011000]
->>  #6 [0000011000 - 0000015000]          BOOTMAP ==> [0000011000 - 0000015000]
->>
->> After:
->>
->>  #5 [0000010000 - 000007d000]          PGTABLE ==> [0000010000 - 000007d000]
->>  #6 [000007d000 - 0000081000]          BOOTMAP ==> [000007d000 - 0000081000]
->>
+2009/7/3 Andy Isaacson <adi@hexapodia.org>:
+> On Fri, Jul 03, 2009 at 08:18:18PM +0200, Marcin Obara wrote:
+>> Intel iTPM on mobile platforms require this patch.
+>> Intel iTPM on desktop platforms works well without this patch.
 >
-> that PGTABLE is from early resource. and it is filled by init_memory_mapping()
+> Please do expand on this -- I don't have access to any iTPM desktop
+> platforms to verify.  Can you provide information on what desktop
+> platforms behave differently so that I can adjust the patch?
 >
-> it mean preallocated pgtable to MAPPING_BEYOND_END is small now after
-> patch. and init_memory_mapping try to get more.
->
-> please send out whole dmesg. with and without your patch. it could
-> print out initial mapped before e820 allocation is involved for 32bit
->        printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
->                        max_pfn_mapped<<PAGE_SHIFT);
->
->
-> your patch should be right. except to change that 12 to PAGE_SHIFT
->
-mean
+> If you could simply boot a kernel with my patch series on a desktop iTPM
+> and provide the dmesg output, that would be great!
 
->>  /* Enough space to fit pagetables for the low memory linear map */
->>  MAPPING_BEYOND_END = \
->> -       PAGE_TABLE_SIZE(((1<<32) - __PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
->> +       PAGE_TABLE_SIZE((1<<(32 - PAGE_SHIFT)) - (__PAGE_OFFSET >> PAGE_SHIFT)) << PAGE_SHIFT
+Intel iTPM with HID:  ICO0102 does not require this patch.
+ (http://lkml.org/lkml/2008/6/28/143)
 
-YH
+Currently, I don't have Q45 platform tested few months ago.
+
+--
+Marcin
