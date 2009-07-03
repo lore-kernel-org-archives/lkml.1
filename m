@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756413AbZGCHBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbZGCHCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756413AbZGCHBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 03:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGCHBm
+	id S1756594AbZGCHCc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 03:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZGCHCY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 03:01:42 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:17570 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbZGCHBl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 03:01:41 -0400
+	Fri, 3 Jul 2009 03:02:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40445 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752456AbZGCHCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 03:02:24 -0400
+Message-ID: <4A4DACB4.5040207@kernel.org>
+Date: Fri, 03 Jul 2009 00:01:08 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090618142610.GC10629@pengutronix.de>
-References: <20090618025030.12363.69402.stgit@localhost.localdomain> 
-	<20090618065814.GA12942@pengutronix.de> <fa686aa40906180635g45724119x99cd4d1e4ede59f9@mail.gmail.com> 
-	<20090618142610.GC10629@pengutronix.de>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 3 Jul 2009 01:01:24 -0600
-Message-ID: <fa686aa40907030001r731d3d29h3873803d588cdf15@mail.gmail.com>
-Subject: Re: [spi-devel-general] [PATCH v4] powerpc/5200: Add mpc5200-spi 
-	(non-PSC) device driver
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linuxppc-dev@ozlabs.org, David Brownell <dbrownell@users.sourceforge.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       jonsmirl@gmail.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       tglx@linutronix.de, mikpe@it.uu.se, alex.shi@intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: add boundary check for 32bit res before
+ expand e820 resource to alignment
+References: <tip-4b05c392955458757790414bd7ba4280e1a515b0@git.kernel.org> <20090703065632.GB32687@elte.hu>
+In-Reply-To: <20090703065632.GB32687@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 18, 2009 at 8:26 AM, Wolfram Sang<w.sang@pengutronix.de> wrote:
->> There used to be a sysfs interface for dumping these, but it was an
->> ugly misuse.  I'd like to leave these in.  I still have the sysfs bits
->> in a private patch and I'm going to rework them for debugfs.
->
-> Okay. Maybe a comment stating the future use will be nice.
-
-okay
-
->> > But I wonder more about the usage of the SS pin and if this chipsel is needed
->> > at all (sadly I cannot test as I don't have any board with SPI connected to
->> > that device). You define the SS-pin as output, but do not set the SSOE-bit.
->> > More, you use the MODF-feature, so the SS-pin should be defined as input?
->> > According to Table 17.3 in the PM, you have that pin defined as generic purpose
->> > output.
+Ingo Molnar wrote:
+> * tip-bot for Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> Commit-ID:  4b05c392955458757790414bd7ba4280e1a515b0
+>> Gitweb:     http://git.kernel.org/tip/4b05c392955458757790414bd7ba4280e1a515b0
+>> Author:     Yinghai Lu <yinghai@kernel.org>
+>> AuthorDate: Thu, 2 Jul 2009 11:10:56 -0700
+>> Committer:  H. Peter Anvin <hpa@zytor.com>
+>> CommitDate: Thu, 2 Jul 2009 11:53:15 -0700
 >>
->> That's right.  The SS handling by the SPI device is completely
->> useless, so this driver uses it as a GPIO and asserts it manually.
->
-> That definately needs a comment :D (perhaps with some more details if you know them).
->
->> The MODF irq is probably irrelevant, but I'd like to leave it in for
->> completeness.
->
-> But it won't work if the pin is set to output, no?
+>> x86: add boundary check for 32bit res before expand e820 resource to alignment
+>>
+>> Avoid incorrect address arithmetic, ascerbated by previous improper
+>> definition of the round_up() macro.
+>>
+>> fix hang with HIGHMEM_64G and 32bit resource.
+>> according to hpa and Linus, use (resource_size_t)-1 to fend off big ranges.
+>> analyized by hpa
+>>
+>> Alex found:
+>> for i386 machine the specjbb2005 still can not run with hugepage
+>>
+>> -v2: it also fix hugepage problem
+>>
+>> Reported-and-tested-by: Mikael Pettersson <mikpe@it.uu.se>
+>> Reported-and-Tested-by: Alex Shi <alex.shi@intel.com>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> 
+> Peter, Yinghi - i zapped this and the other e820 patch from 
+> x86/urgent as Linus already applied slightly different versions 
+> upstream:
+> 
+> 7c5371c: x86: add boundary check for 32bit res before expand e820 resource to alignment
 
-yes
+the same, only comments is different.
 
-> Are you sure there are no side-effects?
+> 4364467: x86: fix power-of-2 round_up/round_down macros
+more safe.
 
-I'm sure.
+do we need to move it include/linux/kernel.h ?
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+YH
+
+
