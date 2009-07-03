@@ -1,143 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZGCTTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759078AbZGCTTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758960AbZGCTTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758638AbZGCTTX
+	id S1759078AbZGCTTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbZGCTTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:19:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46464 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758258AbZGCTTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:19:21 -0400
-Date: Fri, 3 Jul 2009 19:18:46 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
-       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A4E1AA2.30002@gmail.com>
-References: <4A4E1AA2.30002@gmail.com>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Inline atomic64_read() again
-Message-ID: <tip-5fc6406e15d35b99cd19ec5f1da5b3cc326db2e3@git.kernel.org>
-Git-Commit-ID: 5fc6406e15d35b99cd19ec5f1da5b3cc326db2e3
-X-Mailer: tip-git-log-daemon
+	Fri, 3 Jul 2009 15:19:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49097 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758803AbZGCTTY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 15:19:24 -0400
+Message-ID: <4A4E58AC.7010905@zytor.com>
+Date: Fri, 03 Jul 2009 12:14:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
+To: lkml@morethan.org
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
+References: <200907031314.36243.lkml@morethan.org> <4A4E54A8.4030606@goop.org> <200907031403.34566.lkml@morethan.org>
+In-Reply-To: <200907031403.34566.lkml@morethan.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 19:18:47 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5fc6406e15d35b99cd19ec5f1da5b3cc326db2e3
-Gitweb:     http://git.kernel.org/tip/5fc6406e15d35b99cd19ec5f1da5b3cc326db2e3
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Fri, 3 Jul 2009 16:50:10 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 21:16:48 +0200
+Michael S. Zick wrote:
+>>
+>> The PGTABLE reservation seems much too big.  I think 1 page should be
+>> sufficient for a system with large pages.  Even if not, 0x6d000 is way
+>> too large.  And they symptoms of failing to reserve the initial
+>> pagetable are pretty non-subtle.
+>>
+> 
+> Random system halts, deadlocks with interrupts disabled?
+> Yup, that sounds familiar.
+> 
+> If I ever get more than a stopped machine with a glowing power light;
+> I will be certain to share.
+> 
 
-x86: atomic64: Inline atomic64_read() again
+Let's see... on a non-PSE system we may need one PDE and one PTE page
+per 4 MB, up to 1 GB, for a total of 256 pages or 1 MB of memory, so in
+that sense 0x6d000 (109 pages) doesn't sound at all unreasonable
+(non-PSE system with 512 MB of RAM?)
 
-Now atomic64_read() is light weight (no register pressure and
-small icache), we can inline it again.
+However, we shouldn't have to do this kind of hacks with
+MAPPING_BEYOND_END, and we *certainly* shouldn't do it by implicitly
+hard-coding the value of PAGE_SHIFT.
 
-Also use "=&A" constraint instead of "+A" to avoid warning
-about unitialized 'res' variable. (gcc had to force 0 in eax/edx)
+	-hpa
 
-  $ size vmlinux.prev vmlinux.after
-     text    data     bss     dec     hex filename
-  4908667  451676 1684868 7045211  6b805b vmlinux.prev
-  4908651  451676 1684868 7045195  6b804b vmlinux.after
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <4A4E1AA2.30002@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/include/asm/atomic_32.h |   22 ++++++++++++++++++++++
- arch/x86/lib/atomic64_32.c       |   21 ---------------------
- 2 files changed, 22 insertions(+), 21 deletions(-)
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index d7c8849..dc5a667 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -295,6 +295,28 @@ extern void atomic64_set(atomic64_t *ptr, u64 new_val);
-  *
-  * Atomically reads the value of @ptr and returns it.
-  */
-+static inline u64 atomic64_read(atomic64_t *ptr)
-+{
-+	u64 res;
-+
-+	/*
-+	 * Note, we inline this atomic64_t primitive because
-+	 * it only clobbers EAX/EDX and leaves the others
-+	 * untouched. We also (somewhat subtly) rely on the
-+	 * fact that cmpxchg8b returns the current 64-bit value
-+	 * of the memory location we are touching:
-+	 */
-+	asm volatile(
-+		"mov %%ebx, %%eax\n\t"
-+		"mov %%ecx, %%edx\n\t"
-+		LOCK_PREFIX "cmpxchg8b %1\n"
-+			: "=&A" (res)
-+			: "m" (*ptr)
-+		);
-+
-+	return res;
-+}
-+
- extern u64 atomic64_read(atomic64_t *ptr);
- 
- /**
-diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index 1d98c9e..d79f4ac 100644
---- a/arch/x86/lib/atomic64_32.c
-+++ b/arch/x86/lib/atomic64_32.c
-@@ -69,28 +69,7 @@ void atomic64_set(atomic64_t *ptr, u64 new_val)
- EXPORT_SYMBOL(atomic64_read);
- 
- /**
-- * atomic64_read - read atomic64 variable
-- * @ptr:      pointer to type atomic64_t
-- *
-- * Atomically reads the value of @ptr and returns it.
-- */
--u64 atomic64_read(atomic64_t *ptr)
--{
--	u64 res;
--
--	asm volatile(
--		"mov %%ebx, %%eax\n\t"
--		"mov %%ecx, %%edx\n\t"
--		LOCK_PREFIX "cmpxchg8b %1\n"
--			: "+A" (res)
--			: "m" (*ptr)
--		);
--
--	return res;
--}
- EXPORT_SYMBOL(atomic64_read);
--
--/**
-  * atomic64_add_return - add and return
-  * @delta: integer value to add
-  * @ptr:   pointer to type atomic64_t
