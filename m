@@ -1,149 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757386AbZGCJpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZGCJq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757386AbZGCJpU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbZGCJpI
+	id S1757413AbZGCJq0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZGCJqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:45:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54771 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbZGCJpG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:45:06 -0400
-Date: Fri, 3 Jul 2009 11:44:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Zhaolei <zhaolei@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
-Message-ID: <20090703094450.GB21141@elte.hu>
-References: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com> <4A0CCB2E.10202@cn.fujitsu.com> <6A70E08D65F749FA92475F8BA1F9510D@zhaoleiwin> <20090519082435.GB15286@elte.hu> <4A4DD0C7.6070401@cn.fujitsu.com>
+	Fri, 3 Jul 2009 05:46:18 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:15181 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbZGCJqR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:46:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=puXO406MGC3O5hFejTq2ofXfLAgRiYToM842nh0+wtYzg6ypolcFydzznwLOqGZhZq
+         UhrC5QhYlTBWA4F1IFP1kEtkxD+kf93yqvyqr3QzYVV7rXrHylHn234oGjmJF8CV5fUG
+         5EsMUzTItI3/LI+JwG/vDROvufmfzEhDf+Ddo=
+Date: Fri, 3 Jul 2009 17:48:25 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hui Zhu <teawater@gmail.com>, xiyou.wangcong@gmail.com,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       dhowells@redhat.com, Russell King <rmk@arm.linux.org.uk>,
+       linux-arm-kernel@lists.arm.linux.org.uk, stable@kernel.org
+Subject: Re: [PATCH] Fix the multithread program core thread message error
+Message-ID: <20090703094825.GJ5880@cr0.nay.redhat.com>
+References: <daef60380906300212p2a461537p9730686084a9ef8d@mail.gmail.com> <20090701005437.GA5856@cr0.nay.redhat.com> <daef60380906302027i39097bd6wc336f44763cf32bc@mail.gmail.com> <20090701045102.GA6076@cr0.nay.redhat.com> <daef60380906302321n681b8092k32c468ae281f4fbb@mail.gmail.com> <20090701120519.d5b1ed78.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A4DD0C7.6070401@cn.fujitsu.com>
+In-Reply-To: <20090701120519.d5b1ed78.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 01, 2009 at 12:05:19PM -0700, Andrew Morton wrote:
+>On Wed, 1 Jul 2009 14:21:37 +0800
+>Hui Zhu <teawater@gmail.com> wrote:
+>
+>> Thanks for your help, Amerigo.
+>> 
+>> Hui
+>> 
+>> Fix the multithread program core thread message error.
+>> This issue just affect arch with neither has CORE_DUMP_USE_REGSET
+>> nor ELF_CORE_COPY_TASK_REGS, ARM is one of them.
+>> The thread message of core file is generated in
+>> elf_dump_thread_status.  The register values is set by
+>> elf_core_copy_task_regs in this function.
+>> If a arch doesn't define ELF_CORE_COPY_TASK_REGS, The function
+>> elf_core_copy_task_regs will do nothing.  Then the core file will
+>> not have the register message of thread.
+>> So add elf_core_copy_regs to set regiser values if
+>> ELF_CORE_COPY_TASK_REGS doesn't define.
+>> The following is how to reproduce this issue:
+>>
+>> ...
+>>
+>> Without the patch:
+>> (gdb) info threads
+>>  3 process 909  0x00000000 in ?? ()
+>>  2 process 908  0x00000000 in ?? ()
+>> * 1 process 907  0x4a6e2238 in raise () from /lib/libc.so.6
+>> You can found that the pc of 909 and 908 is 0x00000000.
+>> With the patch:
+>> (gdb) info threads
+>>  3 process 885  0x4a749974 in nanosleep () from /lib/libc.so.6
+>>  2 process 884  0x4a749974 in nanosleep () from /lib/libc.so.6
+>> * 1 process 883  0x4a6e2238 in raise () from /lib/libc.so.6
+>> The pc of 885 and 884 is right.
+>
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+Thanks for taking this.
 
-> Ingo Molnar wrote:
-> > * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
-> > 
-> >> * From: "Xiao Guangrong" <xiaoguangrong@cn.fujitsu.com>
-> >>> Steven Rostedt wrote:
-> >>>> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
-> >>>>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >>>>>>
-> >>>>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
-> >>>>>> can be found here: 
-> >>>>>> http://marc.info/?l=linux-kernel&m=123791201816245&w=2
-> >>>>>> This tracepoint can trace the time stamp when softirq action is raised. 
-> >>>>>>
-> >>>>>> Changelog for v1 -> v2: 
-> >>>>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
-> >>>>>> 2: Move the tracepoint from raise_softirq_irqoff() to
-> >>>>>>    __raise_softirq_irqoff()
-> >>>>>>
-> >>>>>> Changelog for v2 -> v3: 
-> >>>>>> Move the definition of __raise_softifq_irqoff() to .c file when
-> >>>>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
-> >>>>>>
-> >>>>>> Changelog for v3 -> v4: 
-> >>>>>> 1: Come back to v2, and use forward declarations to avoid
-> >>>>>>    recursive includes as Mathieu's suggestion
-> >>>>>> 2: Modifiy the tracepoint name
-> >>>>>> 3: Add comments for this tracepoint
-> >>>>>>
-> >>>>> This is a step in the right direction, but please see my email to Lai
-> >>>>> about the fact that this assumes correct and undocumented include
-> >>>>> dependencies in kernel/trace/events.c. Not explicitely stating the
-> >>>>> include dependencies is a build error waiting to happen.
-> >>>>>
-> >>>>> Including interrupt.h under a ifdef would allow keeping track of
-> >>>>> TRACE_EVENT specific build dependencies neatly on a per header basis.
-> >>>> This is all moot, the events.c file no longer exists and as not an issue.
-> >>>>
-> >>> As Steve's says, use ftrace in ftrace.h not in events.c now. 
-> >>> So, this mistake does not exist.
-> >>> Dose this patch has other error? I expect for your views.
-> >>>
-> >>> Thanks for your review, is great help to me. ;-) 
-> >> Hello,
-> >>
-> >> It seems Mathieu has no other comments on this patch now.
-> >> Ingo, what is your opinion on this patch?
-> > 
-> > There's a complication: this area of the softirq code needs fixes 
-> > (unrelated to tracing).
-> >  
-> > This API:
-> > 
-> > inline void raise_softirq_irqoff(unsigned int nr)
-> > {
-> >         __raise_softirq_irqoff(nr);
-> > 
-> >         /*
-> >          * If we're in an interrupt or softirq, we're done
-> >          * (this also catches softirq-disabled code). We will
-> >          * actually run the softirq once we return from
-> >          * the irq or softirq.
-> >          *
-> >          * Otherwise we wake up ksoftirqd to make sure we
-> >          * schedule the softirq soon.
-> >          */
-> >         if (!in_interrupt())
-> >                 wakeup_softirqd();
-> > }
-> > 
-> > is broken with RT tasks (as recently reported to lkml), as when a 
-> > real-time task wakes up ksoftirqd (which has lower priority) it wont 
-> > execute and we starve softirq execution.
-> > 
-> > The proper solution would be to have a new API:
-> > 
-> > 	raise_softirq_check()
-> > 
-> > and to remove the wakeup_softirqd() hack from raise_softirq_irqoff() 
-> > - and put raise_softirq_check() to all places that use 
-> > raise_softirq*() from process context.
-> >  
-> > raise_softirq_check() would execute softirq handlers from process 
-> > context, if there's any pending ones. It has to be called outside of 
-> > bh critical sections - i.e. often a bit after the raise_softirq() 
-> > has been done.
-> > 
-> > __raise_softirq_irqoff() would be made private to kernel/softirq.c, 
-> > and we'd only have two public APIs to trigger softirqs: 
-> > raise_softirq() and raise_softirq_irqoff(). Both just set the 
-> > pending flag and dont do any wakeup.
-> > 
-> > As a side-effect of these fixes, the tracepoints will be sorted out 
-> > as well - there wont be any need to hack into 
-> > __raise_softirq_irqoff().
-> > 
-> > 	Ingo
-> > 
-> 
-> Hi, Ingo
-> 
-> 	Could you give me the .config file that this bug occurs?
 
-I havent reproduced this - it was reported in a recent thread on 
-lkml. I dont have an URI for it - does anyone on the Cc: remember 
-the details?
+>I'm trying to work out if we should backport this fix into earlier
+>kernels (2.6.30.x, 2.6.29.x, etc).
+>
+>I'd have though that having gdb produce crap for all the threads would
+>be fairly irritating to ARM developers and hence we should backport
+>this.  But perhaps it doens't affect many people, dunno.
+>
+>What do poeple think?
 
-	Ingo
+This doesn't affect many platforms, only the platforms which has
+_neither_ CORE_DUMP_USE_REGSET nor ELF_CORE_COPY_TASK_REGS.
+
+I haven't checked all, just x86 and arm, x86 doesn't, arm does.
+
+
