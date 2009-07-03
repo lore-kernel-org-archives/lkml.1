@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751118AbZGCIWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZGCIYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751118AbZGCIWJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGCIV4
+	id S1753850AbZGCIYT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZGCIYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:21:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56465 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 04:24:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44908 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZGCIVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:21:54 -0400
-Date: Fri, 3 Jul 2009 10:21:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Joseph Cihula <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, hpa@zytor.com, andi@firstfloor.org,
-       chrisw@sous-sol.org, jmorris@namei.org, jbeulich@novell.com,
-       peterm@redhat.com, gang.wei@intel.com, shane.wang@intel.com
-Subject: Re: [RFC v6][PATCH 4/4] intel_txt: force IOMMU on for Intel(R) TXT
-	launch
-Message-ID: <20090703082111.GD21833@elte.hu>
-References: <4A4ACA6E.6080702@intel.com> <20090702213013.GC1419@ucw.cz>
+	id S1750935AbZGCIYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:24:05 -0400
+Date: Fri, 3 Jul 2009 10:20:37 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>
+Subject: Re: mmotm 2009-06-30-12-50 dies during early boot
+Message-ID: <20090703081821.GA4051@redhat.com>
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org> <11314.1246585948@turing-police.cc.vt.edu> <20090702192047.10b81ada.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090702213013.GC1419@ucw.cz>
+In-Reply-To: <20090702192047.10b81ada.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pavel Machek <pavel@ucw.cz> wrote:
-
+On 07/02, Andrew Morton wrote:
+>
+> On Thu, 02 Jul 2009 21:52:28 -0400 Valdis.Kletnieks@vt.edu wrote:
 > 
-> On Tue 2009-06-30 19:31:10, Joseph Cihula wrote:
-> > The tboot module will DMA protect all of memory in order to ensure the that
-> > kernel will be able to initialize without compromise (from DMA).  Consequently,
-> > the kernel must enable Intel(R) Virtualization Technology for Directed I/O
-> > (VT-d or Intel IOMMU) in order to replace this broad protection with the
-> > appropriate page-granular protection.  Otherwise DMA devices will be unable
-> > to read or write from memory and the kernel will eventually panic.
+> > On Tue, 30 Jun 2009 12:51:30 PDT, akpm@linux-foundation.org said:
+> > > The mm-of-the-moment snapshot 2009-06-30-12-50 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
 > > 
-> > Because runtime IOMMU support is configurable by command line options, this
-> > patch will force it to be enabled regardless of the options specified, and will
-> > log a message if it was required to force it on.
+> > (Would have gotten this out the door earlier, but I got confused about what
+> > that 'G' in the 'Tainted' meant, and put off reporting till I could reproduce
+> > it without the NVidia driver. Turns out it was untainted except for the
+> > warning I already reported...)
 > > 
+> > Dies fairly early during boot, somewhere in the first few lines of rc.sysinit.
 > > 
-> >  dmar.c        |    7 +++++++
-> >  intel-iommu.c |   17 +++++++++++++++--
-> >  2 files changed, 22 insertions(+), 2 deletions(-)
+> > It *looks* like it dies in this call:
 > > 
-> > Signed-off-by: Joseph Cihula <joseph.cihula@intel.com>
-> > Signed-off-by: Shane Wang <shane.wang@intel.com>
-> 
-> NAK. Breaks user expectations, misses  docs updates. 
+> > 	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
 
-What's your proposed solution? If an incompatible IOMMU option is 
-specified should the kernel to disable TXT and panic?
+Thanks! I'll send the patch soon.
 
-	Ingo
+selinux_commited_creds() should use __wake_up_parent(), it should not play
+with ->wait_cldexit directly.
+
+
+I wanted to fix this before,  but __wake_up_parent() was not exported.
+And now I forgot to do this when added child_wait_callback().
+
+My fault.
+
+Oleg.
+
