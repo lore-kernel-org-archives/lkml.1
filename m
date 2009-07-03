@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZGCIPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZGCIQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbZGCIPU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZGCIOr
+	id S1755061AbZGCIQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZGCIQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:14:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34439 "EHLO mx2.redhat.com"
+	Fri, 3 Jul 2009 04:16:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33574 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753989AbZGCIOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:14:46 -0400
-Date: Fri, 3 Jul 2009 10:14:45 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
-       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
-       davidel@xmailserver.org, eric.dumazet@gmail.com
-Subject: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com>
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com>
+	id S1751535AbZGCIQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:16:16 -0400
+Date: Fri, 3 Jul 2009 10:15:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
+	kernel modules
+Message-ID: <20090703081556.GA21833@elte.hu>
+References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246524170.7113.20.camel@marge.simson.net> <20090703072941.GC7943@elte.hu> <1246608058.6257.25.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1246608058.6257.25.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding smp_mb__after_lock define to be used as a smp_mb call after
-a lock.  
 
-Making it nop for x86, since {read|write|spin}_lock() on x86 are 
-full memory barriers.
+* Mike Galbraith <efault@gmx.de> wrote:
 
-wbr,
-jirka
+> > We need to calculate and cache the objdump annotation output 
+> > once, but after that it should be pretty fast as we just display 
+> > updated counts with the same lines over and over again. No 
+> > repeated objdump runs are needed.
+> 
+> But active files follow symbols, which change on the fly.
+> 
+> Besides, as mentioned previously, while displayed annotation was 
+> very cool, it took a lot of display space.  For me, top with the 
+> ability to emit bic-disposable mini-reports would be my primary 
+> perf tools usage. I'd only use big brothers when I needed their 
+> power/detail.
 
+Ok, then how about putting some sort of interactivity into perf top?
 
-Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+Up and down arrows would allow the walking of the histogram, and 
+hitting enter on a symbol would show the annotated function? It 
+would be way cool and more usable and more flexible than some 
+side-channel for mini-reports.
 
----
- arch/x86/include/asm/spinlock.h |    3 +++
- include/linux/spinlock.h        |    5 +++++
- include/net/sock.h              |    5 ++++-
- 3 files changed, 12 insertions(+), 1 deletions(-)
+PowerTop has a lot of good text interactivity code that might be 
+reused. (assuming it's under a kernel compatible license?)
 
-diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
-index b7e5db8..39ecc5f 100644
---- a/arch/x86/include/asm/spinlock.h
-+++ b/arch/x86/include/asm/spinlock.h
-@@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
- #define _raw_read_relax(lock)	cpu_relax()
- #define _raw_write_relax(lock)	cpu_relax()
- 
-+/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-+#define smp_mb__after_lock() do { } while (0)
-+
- #endif /* _ASM_X86_SPINLOCK_H */
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 252b245..ae053bd 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -132,6 +132,11 @@ do {								\
- #endif /*__raw_spin_is_contended*/
- #endif
- 
-+/* The lock does not imply full memory barrier. */
-+#ifndef smp_mb__after_lock
-+#define smp_mb__after_lock() smp_mb()
-+#endif
-+
- /**
-  * spin_unlock_wait - wait until the spinlock gets unlocked
-  * @lock: the spinlock in question.
-diff --git a/include/net/sock.h b/include/net/sock.h
-index 4eb8409..98afcd9 100644
---- a/include/net/sock.h
-+++ b/include/net/sock.h
-@@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
-  * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
-  * could then endup calling schedule and sleep forever if there are no more
-  * data on the socket.
-+ *
-+ * The sk_has_helper is always called right after a call to read_lock, so we
-+ * can use smp_mb__after_lock barrier.
-  */
- static inline int sk_has_sleeper(struct sock *sk)
- {
-@@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
- 	 *
- 	 * This memory barrier is paired in the sock_poll_wait.
- 	 */
--	smp_mb();
-+	smp_mb__after_lock();
- 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
- }
- 
+There's also the 'tig' tool - an interactive tool to walk Git 
+trees/commits. If it's under a compatible license that would be a 
+nice place to look for clues too - it has a very mature and 
+well-thought-out TUI in my opinion.
+
+	Ingo
