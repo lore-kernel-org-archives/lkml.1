@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbZGCJVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZGCJYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbZGCJVK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbZGCJUz
+	id S1754965AbZGCJYV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZGCJYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:20:55 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:38692 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753211AbZGCJUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:20:55 -0400
-Message-ID: <4A4DCD54.1080908@gmail.com>
-Date: Fri, 03 Jul 2009 11:20:20 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 3 Jul 2009 05:24:13 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54210 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbZGCJYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:24:13 -0400
+Date: Fri, 3 Jul 2009 11:24:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kurt Garloff <garloff@suse.de>, "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Greg KH <gregkh@suse.de>, x86@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] x86: sysctl to allow panic on IOCK NMI error
+Message-ID: <20090703092405.GD3902@elte.hu>
+References: <20090624213211.GA11291@kroah.com> <alpine.LFD.2.00.0906302324350.23134@eddie.linux-mips.org> <20090630223040.GA3802@suse.de> <alpine.LFD.2.00.0907010148490.23134@eddie.linux-mips.org> <20090701111003.GC15958@elte.hu> <20090703091935.GL20681@tpkurt2.suse.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jiri Olsa <jolsa@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu>
-In-Reply-To: <20090703090606.GA3902@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 03 Jul 2009 11:20:21 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703091935.GL20681@tpkurt2.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Jiri Olsa <jolsa@redhat.com> wrote:
-> 
->> +++ b/arch/x86/include/asm/spinlock.h
->> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
->>  #define _raw_read_relax(lock)	cpu_relax()
->>  #define _raw_write_relax(lock)	cpu_relax()
->>  
->> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
->> +#define smp_mb__after_lock() do { } while (0)
-> 
-> Two small stylistic comments, please make this an inline function:
-> 
-> static inline void smp_mb__after_lock(void) { }
-> #define smp_mb__after_lock
-> 
-> (untested)
-> 
->> +/* The lock does not imply full memory barrier. */
->> +#ifndef smp_mb__after_lock
->> +#define smp_mb__after_lock() smp_mb()
->> +#endif
-> 
-> ditto.
-> 
-> 	Ingo
 
-This was following existing implementations of various smp_mb__??? helpers :
+* Kurt Garloff <garloff@suse.de> wrote:
 
-# grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> Ingo,
+> 
+> On Wed, Jul 01, 2009 at 01:10:03PM +0200, Ingo Molnar wrote:
+> > * Maciej W. Rozycki <macro@linux-mips.org> wrote:
+> > 
+> > > On Tue, 30 Jun 2009, Greg KH wrote:
+> > > 
+> > > > >  These days an IOCK NMI typically happens in response to a PCI 
+> > > > > SERR -- it may be useful to traverse PCI buses to find the 
+> > > > > offender and dump this information on this occasion too.  The 
+> > > > > south bridge may have additional status too.
+> > > > 
+> > > > Sure, that would be great to have.  Care to make a patch?  :)
+> > > 
+> > >  ENOTIME, sorry.  Next year perhaps.  Or a homework project for 
+> > > one of the newbies. ;)
+> > 
+> > You know that this project would kill a newbie, right? :)
+> > 
+> > We have no real southbridge drivers on x86 - but we should 
+> > certainly add some. Also, walking the PCI device tree from NMI 
+> > context is tricky as the lists there are not NMI safe - we could 
+> > crash if we happen to get a #IOCK while loading/unloading 
+> > drivers (which is rare but could happen).
+> 
+> Well -- in case we panic the system anyway this is not necessarily 
+> a big issue (let's print the message before ...) -- if we crash 
+> trying to gather additional info, we'll lose the info. Currently 
+> we never have the info ...
 
-/*
- * clear_bit may not imply a memory barrier
- */
-#ifndef smp_mb__before_clear_bit
-#define smp_mb__before_clear_bit()      smp_mb()
-#define smp_mb__after_clear_bit()       smp_mb()
-#endif
+We dont _necessarily_ crash ... The crash/panic is default off and 
+sysctl driven.
 
+Allowing a crash is not the highest quality of implementation and 
+i'm somewhat wary of 'allow a little bit of crap' arguments - it's 
+too similar to the 'little bit pregnant' concept ;-)
 
+	Ingo
