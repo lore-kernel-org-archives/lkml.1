@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbZGCNGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZGCNJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbZGCNGM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 09:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZGCNF7
+	id S1756661AbZGCNJs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 09:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZGCNJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 09:05:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39615 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZGCNF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 09:05:59 -0400
-Subject: Re: ring-buffer: Kernel threads cpu utilization.
-From: Steven Rostedt <srostedt@redhat.com>
-To: Tej <bewith.tej@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <f1c9d250907022306j4ea1eb3g47101bd4a9528f61@mail.gmail.com>
-References: <f1c9d250907022306j4ea1eb3g47101bd4a9528f61@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 03 Jul 2009 09:06:00 -0400
-Message-Id: <1246626360.21331.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 09:09:41 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:47680 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbZGCNJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 09:09:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CWoOkb1TcUNqpcDf+Z3+T1mXKn9iL17T3gwqLbmXHP+qc9XVTZp0HVCbFLvitZqvpP
+         8xsN3idumbBDkWBXJm1UFnuLrn4SntsVmqpch8vyeXalJ/MyOI9I8hHZPDbM98tSdr3P
+         BKVVpA5aPsocxz0K3u9bWx/0lADAQ8/4xXOo0=
+Date: Fri, 3 Jul 2009 15:09:39 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Anton Blanchard <anton@samba.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Peter Zijlstra <peterz@infradead.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] perf tools: gitignore *.data
+Message-ID: <20090703130936.GA5072@nowhere>
+References: <1246603147.2322.3.camel@jaswinder.satnam> <20090703103852.GA3242@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703103852.GA3242@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2009-07-03 at 11:36 +0530, Tej wrote:
-> rb_producer and rb_comsumer, kernel thread uses lot of CPU (~100%)
-> bandwidth every 10s.
+On Fri, Jul 03, 2009 at 12:38:52PM +0200, Ingo Molnar wrote:
 > 
-> bisection results commit:
-> [5092dbc96f3acdac5433b27c06860352dc6d23b9] ring-buffer: add benchmark and tester
-> I have read commit logs:
-> git log -r 5092dbc96f3acdac5433b27c06860352dc6d23b9
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> Is it correct behavior for these thread to consume this much cpu
-> bandwidth even if someone selects rb benchmarks config options?
+> > perf.data made by perf record is a data file and need to be 
+> > ignored by git
+> > 
+> > Added *.data so that perf.data and its friends will be ignored.
+> 
+> >  cscope*
+> > +*.data
+> 
+> ok, this is something i wanted to revisit eventually - the 
+> 'perf.data' name sucks a bit - as .data postfix is quite unspecific.
+> 
+> Perhaps trace.perf is a better default name, and all files would 
+> have the .perf postfix?
+> 
+> I've Cc:-ed a number of folks who might have an opinion about this - 
+> what would be the best default naming and postfix for perf binary 
+> files?
+> 
+> 	Ingo
 
-Yes, that's a benchmark module, not something to be running on a
-production system. It consumes a lot of CPU time, because it is running
-a constant benchmark, and tests.
 
--- Steve
-
+perf.bin seems to me adequate as it tells everything (IMHO).
 
