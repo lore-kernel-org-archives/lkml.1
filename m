@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZGCXPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbZGCXRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756255AbZGCXPS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 19:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbZGCXPE
+	id S1759214AbZGCXRc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 19:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZGCXRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 19:15:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44714 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbZGCXPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 19:15:02 -0400
-Message-ID: <4A4E90CD.6070905@kernel.org>
-Date: Sat, 04 Jul 2009 08:14:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, x86@kernel.org, linux-arch@vger.kernel.org,
-       mingo@elte.hu, andi@firstfloor.org, hpa@zytor.com, tglx@linutronix.de,
-       cl@linux-foundation.org, akpm@linux-foundation.org
-Subject: Re: [PATCHSET] percpu: generalize first chunk allocators and improve
- lpage NUMA support
-References: <1245850216-31653-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1245850216-31653-1-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 3 Jul 2009 19:17:23 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:42497 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751294AbZGCXRX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 19:17:23 -0400
+Subject: Re: Memory leak in iwlwifi or false positive?
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1246573533.17896.867.camel@rc-desk>
+References: <1246570323.24044.16.camel@pc1117.cambridge.arm.com>
+	 <1246573533.17896.867.camel@rc-desk>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Sat, 04 Jul 2009 00:17:22 +0100
+Message-Id: <1246663042.14400.9.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 23:14:36 +0000 (UTC)
+X-OriginalArrivalTime: 03 Jul 2009 23:17:23.0331 (UTC) FILETIME=[6BC48530:01C9FC34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello,
-> 
-> This patchset is combination of the following two patchsets.
-> 
-> [1] x86,percpu: generalize 4k and lpage allocator
-> [2] percpu: teach lpage allocator about NUMA
+Hi Reinette,
 
-Alpha changes from linus#master pulled into #for-next and this
-patchset has been published in #for-next on top of that.
+On Thu, 2009-07-02 at 15:25 -0700, reinette chatre wrote:
+> On Thu, 2009-07-02 at 14:32 -0700, Catalin Marinas wrote:
+> > pushed yet) it seems to no longer show so many random leaks. However, I
+> > get a lot of leaks reported in the iwlwifi code, about 4800 and they do
+> > not disappear from any subsequent memory scanning (as is usually the
+> > case with false positives). There are a lot of kmalloc's of < 512 bytes
+> > and /proc/slabinfo seems to be in line with this:
+[...]
+> Yes - this sounds about right. You tested with 5100 hardware which by
+> default initializes 20 TX queues. For each of these queues it maintains
+> a 256 buffer array of commands with 356 bytes used for each command.
+
+With the latest kmemleak changes which I pushed to Linus they
+disappeared. I missed the kmalloc_large in slub and probably some of the
+root objects that keep references to others weren't scanned (maybe the
+kzalloc call in wiphy_new was missed as it links to all the bulk of the
+reported objects in the iwlwifi code).
 
 Thanks.
 
 -- 
-tejun
+Catalin
+
