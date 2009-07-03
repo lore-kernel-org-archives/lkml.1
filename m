@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbZGCQaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZGCQeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757756AbZGCQaZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZGCQaR
+	id S1757592AbZGCQeS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZGCQeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:30:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:64733 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbZGCQaQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:30:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=lh6N5FxxM2G1M6utJBx3U/d0QL1SZLcyELjp3Q7yaDfgbhEmAojHFSw2nIRr3gzTDY
-         KjD64eMHfQ99EosOAc61q3Fn37rT6qWsQQV0mwDMZOE+gl5UE0t48fE8il7Cg2gdlmuF
-         uFRjSqqcifiE4XoaiclFBpwXEfE0rk9jC/+vM=
-Date: Fri, 3 Jul 2009 11:30:11 -0500
-From: Ben Gamari <bgamari.foss@gmail.com>
-To: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
-Subject: Re: Infrastructure for tracking driver performance events
-Message-ID: <20090703163011.GA7476@ben-laptop>
-Mail-Followup-To: linux-kernel@vger.kernel.org,
-	intel-gfx@lists.freedesktop.org
-References: <20090624172912.GB5565@ben-laptop>
- <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
+	Fri, 3 Jul 2009 12:34:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41853 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756020AbZGCQeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 12:34:09 -0400
+Date: Fri, 3 Jul 2009 18:33:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703163358.GA19685@elte.hu>
+References: <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk> <20090703131727.GA3207@elte.hu> <20090703143746.0379b2ee@lxorguk.ukuu.org.uk> <20090703144754.GA13246@elte.hu> <20090703160230.093e422c@lxorguk.ukuu.org.uk> <20090703155809.GA20121@elte.hu> <20090703172651.619162fd@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0906241549170.15398@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090703172651.619162fd@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 25, 2009 at 08:55:51AM -0400, Steven Rostedt wrote:
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > > Ingo, if you've nothing better to do than quote out of context 
+> > > and be offensive, perhaps you should go fix voyager support or 
+> > > something productive instead.
+> > >
+> > Another question: i'm wondering why you brought up Voyager 
+> > support here. Are you trying to insult me?
 > 
+> [and]
 > 
-> On Wed, 24 Jun 2009, Ben Gamari wrote:
-> You can filter on functions to trace. Or add a list of functions
-> in set_graph_function to just graph a specific list.
-
-Perfect.
-
+> > Pointing out when your code is unclean does not count as an 
+> > offense on lkml, i hope
 > 
-> > 2) It is difficult to extract the kernel mode callgraph with no natural
-> >    way to capture the usermode callgraph
-> 
-> Do you just need a backtrace of some point, or a full user mode graph?
+> Nor then I trust does pointing out that voyager needs a bit of 
+> work ;)
 
-Just a backtrace to the syscall invocation. This should allow us to
-identify which path mesa or the ddx took to hit the slow path.
+Voyager is not upstream anymore so i dont understand your point ...
 
-> 
-> > 3) A large amount of usermode support is necessary (which will likely be
-> >    the case for any option; listed here for completeness)
-> > 
-> > Another option seems to be systemtap. It has already been documented[3]
-> > that this option could provide both user-mode and kernel-mode
-> > backtraces. The driver could provide a kernel marker at every potential
-> > wait point (or a single marker in a function called at each wait point,
-> > for that matter) which would be picked up by systemtap and processed in
-> > usermode, calling ptrace to acquire a usermode backtrace. This approach
-> > seems slightly cleaner as it doesn't require the tracing on the entire
-> > machine to catch what should be reasonably rare events (hopefully).
-> 
-> Enabling the userstacktrace will give userspace stack traces at event
-> trace points. The thing is that the userspace utility must be built with 
-> frame pointers.
+I do think the Voyager code needs a lot of work, and i reviewed the 
+patches that were submitted. I'm aware of no Voyager patch series 
+that i find acceptable, and the things i noticed so far already mean 
+quite a bit of work.
 
-Yep, I apparently hadn't read through the documentation all that well.
-It looks like the stacktrace and userstacktrace will serve quite nicely.
-Are there preexisting tools for resolving addresses in the produced
-stacktrace into symbols? Is there an example of this being done
-somewhere? Thanks,
-
-- Ben
-
+	Ingo
