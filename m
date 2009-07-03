@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbZGCUwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759367AbZGCUwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320AbZGCUwj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758919AbZGCUwD
+	id S1759367AbZGCUwv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757898AbZGCUwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:52:03 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:57668 "EHLO
+	Fri, 3 Jul 2009 16:52:14 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:57671 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758959AbZGCUwB (ORCPT
+	with ESMTP id S1758966AbZGCUwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 16:52:01 -0400
+	Fri, 3 Jul 2009 16:52:12 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: mchehab@infradead.org
 Cc: linux-media@vger.kernel.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH repost 3/4] V4L: hdpvr, fix lock imbalances
-Date: Fri,  3 Jul 2009 22:51:35 +0200
-Message-Id: <1246654296-23190-3-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH repost 4/4] V4L: saa7134, fix lock imbalance
+Date: Fri,  3 Jul 2009 22:51:36 +0200
+Message-Id: <1246654296-23190-4-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.3.2
 In-Reply-To: <1246654296-23190-1-git-send-email-jirislaby@gmail.com>
 References: <1246654296-23190-1-git-send-email-jirislaby@gmail.com>
@@ -24,106 +24,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are many lock imbalances in this driver. Fix all found.
+There seems to be one superfluos unlock in a poll function. Remove it.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/media/video/hdpvr/hdpvr-core.c  |   12 ++++++------
- drivers/media/video/hdpvr/hdpvr-video.c |    6 ++++--
- 2 files changed, 10 insertions(+), 8 deletions(-)
+ drivers/media/video/saa7134/saa7134-video.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/hdpvr/hdpvr-core.c b/drivers/media/video/hdpvr/hdpvr-core.c
-index 188bd5a..1c9bc94 100644
---- a/drivers/media/video/hdpvr/hdpvr-core.c
-+++ b/drivers/media/video/hdpvr/hdpvr-core.c
-@@ -126,7 +126,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	char *print_buf = kzalloc(5*buf_size+1, GFP_KERNEL);
- 	if (!print_buf) {
- 		v4l2_err(&dev->v4l2_dev, "Out of memory\n");
--		goto error;
-+		return retval;
- 	}
- #endif
- 
-@@ -140,7 +140,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	if (ret != 46) {
- 		v4l2_err(&dev->v4l2_dev,
- 			 "unexpected answer of status request, len %d\n", ret);
--		goto error;
-+		goto unlock;
- 	}
- #ifdef HDPVR_DEBUG
- 	else {
-@@ -163,7 +163,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 		v4l2_err(&dev->v4l2_dev, "unknown firmware version 0x%x\n",
- 			dev->usbc_buf[1]);
- 		ret = -EINVAL;
--		goto error;
-+		goto unlock;
+diff --git a/drivers/media/video/saa7134/saa7134-video.c b/drivers/media/video/saa7134/saa7134-video.c
+index 82b57a6..dd9aab0 100644
+--- a/drivers/media/video/saa7134/saa7134-video.c
++++ b/drivers/media/video/saa7134/saa7134-video.c
+@@ -1443,7 +1443,6 @@ video_poll(struct file *file, struct poll_table_struct *wait)
+ 			fh->cap.ops->buf_queue(&fh->cap,fh->cap.read_buf);
+ 			fh->cap.read_off = 0;
+ 		}
+-		mutex_unlock(&fh->cap.vb_lock);
+ 		buf = fh->cap.read_buf;
  	}
  
- 	response = dev->usbc_buf+38;
-@@ -188,10 +188,10 @@ static int device_authorization(struct hdpvr_device *dev)
- 			      10000);
- 	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev,
- 		 "magic request returned %d\n", ret);
--	mutex_unlock(&dev->usbc_mutex);
- 
- 	retval = ret != 8;
--error:
-+unlock:
-+	mutex_unlock(&dev->usbc_mutex);
- 	return retval;
- }
- 
-@@ -350,6 +350,7 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- 	mutex_lock(&dev->io_mutex);
- 	if (hdpvr_alloc_buffers(dev, NUM_BUFFERS)) {
-+		mutex_unlock(&dev->io_mutex);
- 		v4l2_err(&dev->v4l2_dev,
- 			 "allocating transfer buffers failed\n");
- 		goto error;
-@@ -381,7 +382,6 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- error:
- 	if (dev) {
--		mutex_unlock(&dev->io_mutex);
- 		/* this frees allocated memory */
- 		hdpvr_delete(dev);
- 	}
-diff --git a/drivers/media/video/hdpvr/hdpvr-video.c b/drivers/media/video/hdpvr/hdpvr-video.c
-index ccd47f5..5937de2 100644
---- a/drivers/media/video/hdpvr/hdpvr-video.c
-+++ b/drivers/media/video/hdpvr/hdpvr-video.c
-@@ -375,6 +375,7 @@ static int hdpvr_open(struct file *file)
- 	 * in resumption */
- 	mutex_lock(&dev->io_mutex);
- 	dev->open_count++;
-+	mutex_unlock(&dev->io_mutex);
- 
- 	fh->dev = dev;
- 
-@@ -383,7 +384,6 @@ static int hdpvr_open(struct file *file)
- 
- 	retval = 0;
- err:
--	mutex_unlock(&dev->io_mutex);
- 	return retval;
- }
- 
-@@ -519,8 +519,10 @@ static unsigned int hdpvr_poll(struct file *filp, poll_table *wait)
- 
- 	mutex_lock(&dev->io_mutex);
- 
--	if (video_is_unregistered(dev->video_dev))
-+	if (video_is_unregistered(dev->video_dev)) {
-+		mutex_unlock(&dev->io_mutex);
- 		return -EIO;
-+	}
- 
- 	if (dev->status == STATUS_IDLE) {
- 		if (hdpvr_start_streaming(dev)) {
 -- 
 1.6.3.2
 
