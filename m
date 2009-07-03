@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZGCI5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756394AbZGCI6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753284AbZGCI5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZGCI52
+	id S1756394AbZGCI6f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZGCI60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:57:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48735 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Jul 2009 04:58:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38823 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZGCI51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:57:27 -0400
-Date: Fri, 3 Jul 2009 10:57:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] AMD IOMMU fixes for 2.6.31-rc1
-Message-ID: <20090703085718.GJ21833@elte.hu>
-References: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
+	id S1750935AbZGCI6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:58:25 -0400
+Date: Fri, 3 Jul 2009 08:57:43 GMT
+From: tip-bot for Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
+       mingo@redhat.com, stable@kernel.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
+       linux-kernel@vger.kernel.org, stable@kernel.org, tglx@linutronix.de,
+       mhiramat@redhat.com, mingo@elte.hu
+In-Reply-To: <20090701213722.GH19926@Krystal>
+References: <20090701213722.GH19926@Krystal>
+Subject: [tip:x86/urgent] x86: Fix fixmap page order for FIX_TEXT_POKE0,1
+Message-ID: <tip-23202d8f10c901836fb272b5bf1f07a3dd3efb9a@git.kernel.org>
+Git-Commit-ID: 23202d8f10c901836fb272b5bf1f07a3dd3efb9a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 08:57:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  23202d8f10c901836fb272b5bf1f07a3dd3efb9a
+Gitweb:     http://git.kernel.org/tip/23202d8f10c901836fb272b5bf1f07a3dd3efb9a
+Author:     Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+AuthorDate: Wed, 1 Jul 2009 17:37:22 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 3 Jul 2009 09:08:34 +0200
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+x86: Fix fixmap page order for FIX_TEXT_POKE0,1
 
-> Hi Ingo,
-> 
-> The following changes since commit 7c5371c403abb29f01bc6cff6c5096abdf2dc524:
->   Yinghai Lu (1):
->         x86: add boundary check for 32bit res before expand e820 resource to alignment
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
-> 
-> Joerg Roedel (2):
->       amd-iommu: handle alias entries correctly in init code
->       amd-iommu: set evt_buf_size correctly
-> 
->  arch/x86/kernel/amd_iommu_init.c |   13 +++++++++----
->  1 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> These two patches fix an uncorrect device table initialization 
-> issue and a divide-by-zero error on an event log interrupt. Please 
-> pull.
+Masami reported:
 
-Pulled, thanks a lot Joerg!
+> Since the fixmap pages are assigned higher address to lower,
+> text_poke() has to use it with inverted order (FIX_TEXT_POKE1
+> to FIX_TEXT_POKE0).
 
-	Ingo
+I prefer to just invert the order of the fixmap declaration.
+It's simpler and more straightforward.
+
+Backward fixmaps seems to be used by both x86 32 and 64.
+
+It's really rare but a nasty bug, because it only hurts when
+instructions to patch are crossing a page boundary. If this
+happens, the fixmap write accesses will spill on the following
+fixmap, which may very well crash the system. And this does not
+crash the system, it could leave illegal instructions in place.
+Thanks Masami for finding this.
+
+It seems to have crept into the 2.6.30-rc series, so this calls
+for a -stable inclusion.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090701213722.GH19926@Krystal>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/fixmap.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 3eb0f79..7b2d71d 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -111,8 +111,8 @@ enum fixed_addresses {
+ #ifdef CONFIG_PARAVIRT
+ 	FIX_PARAVIRT_BOOTMAP,
+ #endif
+-	FIX_TEXT_POKE0,	/* reserve 2 pages for text_poke() */
+-	FIX_TEXT_POKE1,
++	FIX_TEXT_POKE1,	/* reserve 2 pages for text_poke() */
++	FIX_TEXT_POKE0, /* first page is last, because allocation is backward */
+ 	__end_of_permanent_fixed_addresses,
+ 	/*
+ 	 * 256 temporary boot-time mappings, used by early_ioremap(),
