@@ -1,101 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZGCMuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZGCMuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZGCMuO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbZGCMtr
+	id S1757118AbZGCMuh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:50:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753350AbZGCMuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:49:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55194 "EHLO hera.kernel.org"
+	Fri, 3 Jul 2009 08:50:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55225 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbZGCMtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:49:45 -0400
-Date: Fri, 3 Jul 2009 12:48:46 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
-       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Improve atomic64_read()
-Message-ID: <tip-67d7178f8fc64b7f68d7dd8a1b21dfa0d42c220c@git.kernel.org>
-Git-Commit-ID: 67d7178f8fc64b7f68d7dd8a1b21dfa0d42c220c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 12:48:47 +0000 (UTC)
+	id S1754382AbZGCMuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:50:20 -0400
+Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
+ vectored co-processor support for AMD and Intel Corei7/Nehalem
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1246622122.2322.25.camel@jaswinder.satnam>
+References: <1246440815.3403.3.camel@hpdv5.satnam>
+	 <1246440909.3403.5.camel@hpdv5.satnam>
+	 <1246440977.3403.7.camel@hpdv5.satnam>
+	 <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu>
+	 <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam>
+	 <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam>
+	 <20090703102953.GF32128@elte.hu>
+	 <1246622122.2322.25.camel@jaswinder.satnam>
+Content-Type: text/plain
+Date: Fri, 03 Jul 2009 18:19:37 +0530
+Message-Id: <1246625377.3088.10.camel@hpdv5.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  67d7178f8fc64b7f68d7dd8a1b21dfa0d42c220c
-Gitweb:     http://git.kernel.org/tip/67d7178f8fc64b7f68d7dd8a1b21dfa0d42c220c
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Fri, 3 Jul 2009 13:23:02 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 14:42:59 +0200
+On Fri, 2009-07-03 at 17:25 +0530, Jaswinder Singh Rajput wrote:
+> On Fri, 2009-07-03 at 12:29 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > >  Performance counter stats for '/usr/bin/rhythmbox /home/jaswinder/Music/singhiskinng.mp3':
+> > > 
+> > >        17552264  vec-adds                  (scaled from 66.28%)
+> > >        19715258  vec-muls                  (scaled from 66.63%)
+> > >        15862733  vec-divs                  (scaled from 66.82%)
+> > >     23735187095  vec-idle-cycles           (scaled from 66.89%)
+> > >        11353159  vec-stall-cycles          (scaled from 66.90%)
+> > >        36628571  vec-ops                   (scaled from 66.48%)
+> > 
+> > Is stall-cycles equivalent to busy-cycles? 
+> 
+> 
+> hmm, normally we can use these terms interchangeably. But they can be
+> different some times.
+> 
+> busy means it is already executing some instructions so it will not take
+> another instruction.
+> 
+> stall can be busy(executing) or non-executing may be it is waiting for
+> some operands due to cache miss.
+> 
+> 
+> > I.e. do we have this 
+> > general relationship to the cycle event:
+> > 
+> > 	cycles = vec-stall-cycles + vec-idle-cycles
+> > 
+> > ?
 
-x86: atomic64: Improve atomic64_read()
+Like on AMD :
 
-Optimize atomic64_read() as a special open-coded
-cmpxchg8b variant. This generates nicer code:
+    13390918485  vec-adds                  (scaled from 57.07%)
+    22465091289  vec-muls                  (scaled from 57.22%)
+     2643789384  vec-divs                  (scaled from 57.21%)
+    17922784596  vec-idle-cycles           (scaled from 57.23%)
+     6402888606  vec-stall-cycles          (scaled from 57.17%)
+    55823491597  cycles                    (scaled from 57.05%)
+    51035264218  vec-ops                   (scaled from 57.05%)
 
-arch/x86/lib/atomic64_32.o:
+  187.494664172  seconds time elapsed
 
-   text	   data	    bss	    dec	    hex	filename
-    435	      0	      0	    435	    1b3	atomic64_32.o.before
-    431	      0	      0	    431	    1af	atomic64_32.o.after
+vec-idle-cycles + vec-stall-cycles = 24325673202
 
-md5:
-   bd8ab95e69c93518578bfaf0ea3be4d9  atomic64_32.o.before.asm
-   2bdfd4bd1f6b7b61b7fc127aef90ce3b  atomic64_32.o.after.asm
+so cycles = 2.29 * (vec-idle-cycles + vec-stall-cycles)
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On AMD I used : EventSelect 0D7h Dispatch Stall for FPU Full
+The number of processor cycles the decoder is stalled because the
+scheduler for the Floating Point Unit is full. This condition can be
+caused by a lack of parallelism in FP-intensive code, or by cache misses
+on FP operand loads (which could also show up as EventSelect 0D8h
+instead, depending on the nature of the instruction sequences). May
+occur simultaneously with certain other stall conditions; see
+EventSelect 0D1h
 
+So stall is due to lack of parallelism and cache misses.
+If we keep on increasing the size of FP units and cache may at some
+point be we can get vec-stall-cycles = zero.
 
----
- arch/x86/lib/atomic64_32.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+Thanks,
+--
+JSR
 
-diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index fd28fd3..cd11803 100644
---- a/arch/x86/lib/atomic64_32.c
-+++ b/arch/x86/lib/atomic64_32.c
-@@ -62,9 +62,17 @@ void atomic64_set(atomic64_t *ptr, u64 new_val)
-  */
- u64 atomic64_read(atomic64_t *ptr)
- {
--	u64 old = 1LL << 32;
-+	u64 res;
- 
--	return cmpxchg8b(&ptr->counter, old, old);
-+	asm volatile(
-+		"mov %%ebx, %%eax\n\t"
-+		"mov %%ecx, %%edx\n\t"
-+		LOCK_PREFIX "cmpxchg8b %1\n"
-+			: "+A" (res)
-+			: "m" (*ptr)
-+		);
-+
-+	return res;
- }
- 
- /**
+http://userweb.kernel.org/~jaswinder/
+
