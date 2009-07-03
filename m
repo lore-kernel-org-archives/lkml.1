@@ -1,116 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZGCBJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZGCBKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZGCBJN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 21:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZGCBI7
+	id S1757036AbZGCBKP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZGCBKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 21:08:59 -0400
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:48331 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752380AbZGCBI6 (ORCPT
+	Thu, 2 Jul 2009 21:10:03 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33152 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754878AbZGCBKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 21:08:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XnIPbJRUW3grMjHs+wGli5u6Rz4CAVULUeGjU+Ejwx+oMn4uYQkGucDhxazZgDWQW/KiAVvP8oDUSVg7lDLKji2WJ/PDIV/F66i8Wq2mKj+Qedsu+27RQlg6k6DyxWyyPhvtnlJwdKtONhOS1CnhWWEnwUv3UeVX1oMeZ6cfNII=  ;
-X-YMail-OSG: QpuX2_oVM1n2dXS4poiR.lBec01qLEFoChewA14cAeF5zpbgn6.Fo64mGgXHx_Va.MB2NsrnaQBPhFZveL69IAJc0CseLYULaoAWZ64Z0wQ67u7pWaOxDQLkVqgcSlX0ebXDmfEai0hRAfMRXSQnSATFMES8wLvPWU2HzfyUspb8ge6HSIGTgcTizE1TmZgxcVubbwfjgDIw.Z90N6wO.K.L9mdh4Rb3ZWWEWrPgXTzm0iCT7eQKIHdrRFxYf63FdukP2ZwfNFOzHVxr
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] [RESEND][PATCH] SPI: xilinx_spi: Added platform driver and support for DS570
-Date: Thu, 2 Jul 2009 18:09:01 -0700
-User-Agent: KMail/1.9.10
-Cc: Richard =?iso-8859-1?q?R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4A366622.2050606@mocean-labs.com> <200906231237.54278.david-b@pacbell.net> <4A41DF44.4060705@mocean-labs.com>
-In-Reply-To: <4A41DF44.4060705@mocean-labs.com>
+	Thu, 2 Jul 2009 21:10:01 -0400
+Date: Fri, 3 Jul 2009 03:10:03 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: tridge@samba.org
+cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
+In-Reply-To: <19021.20449.732095.210252@samba.org>
+Message-ID: <alpine.LSU.2.00.0907030254180.22039@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+ <19021.17576.808138.476600@samba.org> <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr> <19021.20449.732095.210252@samba.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907021809.01990.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 24 June 2009, Richard Röjfors wrote:
-> On 09-06-23 21.37, David Brownell wrote:
-> > On Monday 15 June 2009, Richard Röjfors wrote:
-> >> This patch splits xilinx_spi into three parts, an OF and a platform
-> >> driver and generic part.
-> >>
-> >> The generic part now also works on X86 and also supports the Xilinx
-> >> SPI IP DS570
+
+On Friday 2009-07-03 02:25, tridge@samba.org wrote:
+>
+> >  (All with DUALNAMES=n)
+> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=lower
+> >  # cp /mnt/dcim/100_fuji/dscf{4160,3004}.jpg
+> >  # umount /mnt
+> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=win95
+> >  # cp /mnt/dcim/100_fuji/dscf{4160,3005}.jpg
+> >  # umount /mnt
+> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=winnt
+> >  # cp /mnt/dcim/100_fuji/dscf{4160,3006}.jpg
+> >  # umount /mnt
+> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=mixed
+> >  # cp /mnt/dcim/100_fuji/dscf{4160,3007}.jpg
+> >  # umount /mnt
 > > 
-> > Your Kconfig still mentions only DS464.
-> 
-> Correct, will update.
-
-Just checking -- you didn't send an update yet, right?
-
-
-> >> +	  See the "OPB Serial Peripheral Interface (SPI) (v1.00e)"
-> >> +	  Product Specification document (DS464) for hardware details.
-> >> +
-> >> +config SPI_XILINX_PLTFM
-> >> +	tristate "Xilinx SPI controller platform device"
-> >> +	depends on SPI_XILINX
+> > Result? The camera only displays 3006.
 > > 
-> > This should go first in the Kconfig, so that you don't goof up
-> > the dependency display ... the OF bits depend on it.
-> 
-> The OF parts only depend on SPI_XILINX, not SPI_XILINX_PLTFM. But
-> I can change the order anyway(?)
+> > The dualnames patch's filling filenames with random illegal
+> > chars does seems to have a really foul side-effect after 
+>
+>actually, you've just proved the patch works as intended on your
+>device!
+>
+>Only the shortname=winnt would create a 8.3 name when you use the
+>filename dscfNNNN.jpg.
 
-Maybe I misread something.  Make sure the Kconfig doesn't goof.
+The mount(8) manpage becomes pretty ambiguous with the dualnames
+patch. By default, "store a long name when the short name is not all
+upper case" would apply - and is invoked because I am a lazy typist
+who wrote "cp $this dscf3000" instead of "cp $this DSCF3000". Now
+since dualnames=n is in effect, no long name would need to be written
+because it still fits into 8.3Â â€” subsequently, one would assume an
+8.3 is generated for all shortname= cases.
 
+>That is why my first patch in May forced 
+>
+>   shortname_flags = VFAT_SFN_CREATE_WINNT;
 
-> >> +	/* devices to add to the bus when the host is up */
-> >> +	struct spi_board_info *devices;
-> >> +	u8 num_devices;
-> > 
-> > This is duplicating functionality in the SPI core code.
-> > That's not really the way to fly.
-> 
-> I have discussed the same problem in the I2C list.
-> 
-> We have a PCIe device which is a MFD (multifunction device).
-> 
-> Several MFD devices could be connected to a standard PC ->
-> we don't know the bus numbers in advance, and there could be
-> several PCIe devices connected. Which mean the we can not use
-> spi_register_board_info.
+Making WINNT the default would cause many a `ls` output to just
+scream at me in uppercaps because there are programs that
+create long names with all-uppers.
 
-You could, actually, given metadata about those devices.
-That's one of the things ACPI does -- in a way that many
-of us find ugly! -- and the "device tree" some PPCs use.
-
-
-> We can not call spi_add_device from the MFD because when it's
-> probed the drivers for the SPI bus might not be available.
-
-And you can't call spi_register_board_info() there since
-the init section is gone.
-
- 
-> So the solution in the I2C case was to add this into the driver
-> and if this tend to be a generic problem some generic solution might
-> be implemented.
-> 
-> So I would like to have the same thing in here.
-
-What I've done in such cases is make sure the bus adapter
-driver (in this case, for the spi_master) can issue some
-callback to code which makes spi_add_device(), or similar,
-calls.
-
-But if your initialization doesn't have that sort of
-clean structure, it's probably kind of awkward to add
-it just now...  :(
-
-- Dave
+shortname really needs to be split into "shortname that is applied
+during creation" and "shortname that is applied upon readdir".
 
