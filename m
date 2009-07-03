@@ -1,312 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZGCTmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbZGCTqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZGCTmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbZGCTmE
+	id S1758124AbZGCTqC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:46:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbZGCTpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:42:04 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:45277 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754197AbZGCTmC (ORCPT
+	Fri, 3 Jul 2009 15:45:55 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:46859 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756221AbZGCTpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:42:02 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuIEABf5TUpMQWU3/2dsb2JhbACBUcwfhBIF
-Date: Fri, 3 Jul 2009 15:41:54 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Thomas Renninger <trenn@suse.de>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "rjw@sisk.pl" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "sven.wegener@stealer.net" <sven.wegener@stealer.net>
-Subject: Re: [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
-Message-ID: <20090703194154.GB20266@Krystal>
-References: <20090703152514.903448283@polymtl.ca> <20090703152714.775719309@polymtl.ca> <7E82351C108FA840AB1866AC776AEC4669BFF0F5@orsmsx505.amr.corp.intel.com>
-Mime-Version: 1.0
+	Fri, 3 Jul 2009 15:45:54 -0400
+Date: Fri, 3 Jul 2009 13:45:57 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       Chinang Ma <chinang.ma@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090703194557.GQ5480@parisc-linux.org>
+References: <20090703025607.GK5480@parisc-linux.org> <87skhdaaub.fsf@basil.nowhere.org> <20090703185414.GP23611@kernel.dk> <20090703191321.GO5480@parisc-linux.org> <20090703192235.GV23611@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC4669BFF0F5@orsmsx505.amr.corp.intel.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:39:12 up 125 days, 16:05,  4 users,  load average: 0.78, 0.68,
-	0.47
+In-Reply-To: <20090703192235.GV23611@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pallipadi, Venkatesh (venkatesh.pallipadi@intel.com) wrote:
->  
+On Fri, Jul 03, 2009 at 09:22:35PM +0200, Jens Axboe wrote:
+> On Fri, Jul 03 2009, Matthew Wilcox wrote:
+> > Yes, but the irqs/sec increase doesn't appear to be due to MPT interrupts.
+> > In the /proc/interrupt summaries, RH5 did 388666895 IOC interrupts and
+> > 2.6.30 did 378419042.  As a percentage of interrupts, the IOC interrupts
+> > were 59.4% with RH and 51.8% with 2.6.30.
 > 
-> >-----Original Message-----
-> >From: Mathieu Desnoyers [mailto:mathieu.desnoyers@polymtl.ca] 
-> >Sent: Friday, July 03, 2009 8:25 AM
-> >To: linux-kernel@vger.kernel.org; Pallipadi, Venkatesh; Dave 
-> >Jones; Thomas Renninger; cpufreq@vger.kernel.org; 
-> >kernel-testers@vger.kernel.org; Ingo Molnar; rjw@sisk.pl; Dave 
-> >Young; Pekka Enberg
-> >Cc: Mathieu Desnoyers; Li, Shaohua; Rusty Russell; 
-> >sven.wegener@stealer.net
-> >Subject: [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
-> >
-> >OK, I've tried to clean it up the best I could, but please 
-> >test this with
-> >concurrent cpu hotplug and cpufreq add/remove in loops. I'm 
-> >sure we will make
-> >other interesting findings.
-> >
-> 
-> This is a good and needed cleanup of cpufreq_add_dev.
-> 
-> 
-> >This is step one of fixing the overall locking dependency mess 
-> >in cpufreq.
-> >
-> >Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> >CC: rjw@sisk.pl
-> >CC: mingo@elte.hu
-> >CC: Shaohua Li <shaohua.li@intel.com>
-> >CC: Pekka Enberg <penberg@cs.helsinki.fi>
-> >CC: Dave Young <hidave.darkstar@gmail.com>
-> >CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >CC: Rusty Russell <rusty@rustcorp.com.au>
-> >CC: sven.wegener@stealer.net
-> >CC: cpufreq@vger.kernel.org
-> >CC: Thomas Renninger <trenn@suse.de>
-> >---
-> > drivers/cpufreq/cpufreq.c |   65 
-> >++++++++++++++++++++++++++++------------------
-> > 1 file changed, 40 insertions(+), 25 deletions(-)
-> >
-> >Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
-> >===================================================================
-> >--- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	
-> >2009-07-02 23:59:08.000000000 -0400
-> >+++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-07-02 
-> >23:59:09.000000000 -0400
-> >@@ -763,6 +763,10 @@ static struct kobj_type ktype_cpufreq = 
-> >  * cpufreq_add_dev - add a CPU device
-> >  *
-> >  * Adds the cpufreq interface for a CPU device.
-> >+ *
-> >+ * The Oracle says: try running cpufreq 
-> >registration/unregistration concurrently
-> >+ * with with cpu hotplugging and all hell will break loose. 
-> >Tried to clean this
-> >+ * mess up, but more thorough testing is needed. - Mathieu
-> >  */
-> > static int cpufreq_add_dev(struct sys_device *sys_dev)
-> > {
-> >@@ -806,15 +810,12 @@ static int cpufreq_add_dev(struct sys_de
-> > 		goto nomem_out;
-> > 	}
-> > 	if (!alloc_cpumask_var(&policy->cpus, GFP_KERNEL)) {
-> >-		kfree(policy);
-> > 		ret = -ENOMEM;
-> >-		goto nomem_out;
-> >+		goto err_free_policy;
-> > 	}
-> > 	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL)) {
-> >-		free_cpumask_var(policy->cpus);
-> >-		kfree(policy);
-> > 		ret = -ENOMEM;
-> >-		goto nomem_out;
-> >+		goto err_free_cpumask;
-> > 	}
-> > 
-> > 	policy->cpu = cpu;
-> >@@ -822,7 +823,8 @@ static int cpufreq_add_dev(struct sys_de
-> > 
-> > 	/* Initially set CPU itself as the policy_cpu */
-> > 	per_cpu(policy_cpu, cpu) = cpu;
-> >-	lock_policy_rwsem_write(cpu);
-> >+	ret = (lock_policy_rwsem_write(cpu) < 0);
-> >+	WARN_ON(ret);
-> > 
-> > 	init_completion(&policy->kobj_unregister);
-> > 	INIT_WORK(&policy->update, handle_update);
-> >@@ -835,7 +837,7 @@ static int cpufreq_add_dev(struct sys_de
-> > 	ret = cpufreq_driver->init(policy);
-> > 	if (ret) {
-> > 		dprintk("initialization failed\n");
-> >-		goto err_out;
-> >+		goto err_unlock_policy;
-> > 	}
-> > 	policy->user_policy.min = policy->min;
-> > 	policy->user_policy.max = policy->max;
-> >@@ -860,15 +862,21 @@ static int cpufreq_add_dev(struct sys_de
-> > 		/* Check for existing affected CPUs.
-> > 		 * They may not be aware of it due to CPU Hotplug.
-> > 		 */
-> >-		managed_policy = cpufreq_cpu_get(j);		
-> >/* FIXME: Where is this released?  What about error paths? */
-> >+		managed_policy = cpufreq_cpu_get(j);
-> > 		if (unlikely(managed_policy)) {
-> > 
-> > 			/* Set proper policy_cpu */
-> > 			unlock_policy_rwsem_write(cpu);
-> > 			per_cpu(policy_cpu, cpu) = managed_policy->cpu;
-> > 
-> >-			if (lock_policy_rwsem_write(cpu) < 0)
-> >-				goto err_out_driver_exit;
-> >+			if (lock_policy_rwsem_write(cpu) < 0) {
-> >+				/* Should not go through policy 
-> >unlock path */
-> >+				if (cpufreq_driver->exit)
-> >+					cpufreq_driver->exit(policy);
-> >+				ret = -EBUSY;
-> >+				cpufreq_cpu_put(managed_policy);
-> >+				goto err_free_cpumask;
-> >+			}
-> > 
-> > 			spin_lock_irqsave(&cpufreq_driver_lock, flags);
-> > 			cpumask_copy(managed_policy->cpus, 
-> >policy->cpus);
-> >@@ -879,12 +887,14 @@ static int cpufreq_add_dev(struct sys_de
-> > 			ret = sysfs_create_link(&sys_dev->kobj,
-> > 						&managed_policy->kobj,
-> > 						"cpufreq");
-> >-			if (ret)
-> >-				goto err_out_driver_exit;
-> >-
-> >-			cpufreq_debug_enable_ratelimit();
-> >-			ret = 0;
-> >-			goto err_out_driver_exit; /* call 
-> >driver->exit() */
-> >+			if (!ret)
-> >+				cpufreq_cpu_put(managed_policy);
-> 
-> Looks like cpufreq_cpu_put is needed both with ret and !ret. No?
-> 
+> OK. So where are the extra irqs from?
 
-No. ret == 0 path is a "success path" only creating a symlink, and
-therefore __cpufreq_remove_dev() will take care of calling the
-cpufreq_cpu_put() to decrement the reference count :
+Let's see:
 
-static int __cpufreq_remove_dev(struct sys_device *sys_dev)
-{
-...
+Source	2.6.18	2.6.30	Delta
+qla	0.8%	0.8%	0
+eth	20%	27.6%	+7.6%
+ioc	59.4%	51.8%	-7.6%
+NMI	7.6%	7.9%	+0.3%
+LOC	12.2%	10%	-2.2%
+RES	-	1.8%	+1.8%
 
-        if (unlikely(cpu != data->cpu)) {
-                dprintk("removing link\n");
-                cpumask_clear_cpu(cpu, data->cpus);
-                spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-                sysfs_remove_link(&sys_dev->kobj, "cpufreq");
-                cpufreq_cpu_put(data);
-                cpufreq_debug_enable_ratelimit();
-                unlock_policy_rwsem_write(cpu);
-                return 0;
-        }
+I wouldn't be surprised to find out that 2.6.18 accounted rescheduling
+interrupts as 'LOC'.  So the difference in interrupts is all about
+the ethernet card.  I believe these systems have an igb card.
 
-This is, at least, how I understand what is happening here.
-
-Mathieu
-
-
-> Thanks,
-> Venki
-> 
-> >+			/*
-> >+			 * Success. We only needed to be added 
-> >to the mask.
-> >+			 * Call driver->exit() because only the 
-> >cpu parent of
-> >+			 * the kobj needed to call init().
-> >+			 */
-> >+			goto out_driver_exit; /* call driver->exit() */
-> > 		}
-> > 	}
-> > #endif
-> >@@ -894,25 +904,25 @@ static int cpufreq_add_dev(struct sys_de
-> > 	ret = kobject_init_and_add(&policy->kobj, 
-> >&ktype_cpufreq, &sys_dev->kobj,
-> > 				   "cpufreq");
-> > 	if (ret)
-> >-		goto err_out_driver_exit;
-> >+		goto out_driver_exit;
-> > 
-> > 	/* set up files for this cpu device */
-> > 	drv_attr = cpufreq_driver->attr;
-> > 	while ((drv_attr) && (*drv_attr)) {
-> > 		ret = sysfs_create_file(&policy->kobj, 
-> >&((*drv_attr)->attr));
-> > 		if (ret)
-> >-			goto err_out_driver_exit;
-> >+			goto err_out_kobj_put;
-> > 		drv_attr++;
-> > 	}
-> > 	if (cpufreq_driver->get) {
-> > 		ret = sysfs_create_file(&policy->kobj, 
-> >&cpuinfo_cur_freq.attr);
-> > 		if (ret)
-> >-			goto err_out_driver_exit;
-> >+			goto err_out_kobj_put;
-> > 	}
-> > 	if (cpufreq_driver->target) {
-> > 		ret = sysfs_create_file(&policy->kobj, 
-> >&scaling_cur_freq.attr);
-> > 		if (ret)
-> >-			goto err_out_driver_exit;
-> >+			goto err_out_kobj_put;
-> > 	}
-> > 
-> > 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-> >@@ -930,12 +940,14 @@ static int cpufreq_add_dev(struct sys_de
-> > 			continue;
-> > 
-> > 		dprintk("CPU %u already managed, adding link\n", j);
-> >-		cpufreq_cpu_get(cpu);
-> >+		managed_policy = cpufreq_cpu_get(cpu);
-> > 		cpu_sys_dev = get_cpu_sysdev(j);
-> > 		ret = sysfs_create_link(&cpu_sys_dev->kobj, 
-> >&policy->kobj,
-> > 					"cpufreq");
-> >-		if (ret)
-> >+		if (ret) {
-> >+			cpufreq_cpu_put(managed_policy);
-> > 			goto err_out_unregister;
-> >+		}
-> > 	}
-> > 
-> > 	policy->governor = NULL; /* to assure that the starting 
-> >sequence is
-> >@@ -967,17 +979,20 @@ err_out_unregister:
-> > 		per_cpu(cpufreq_cpu_data, j) = NULL;
-> > 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > 
-> >+err_out_kobj_put:
-> > 	kobject_put(&policy->kobj);
-> > 	wait_for_completion(&policy->kobj_unregister);
-> > 
-> >-err_out_driver_exit:
-> >+out_driver_exit:
-> > 	if (cpufreq_driver->exit)
-> > 		cpufreq_driver->exit(policy);
-> > 
-> >-err_out:
-> >+err_unlock_policy:
-> > 	unlock_policy_rwsem_write(cpu);
-> >+err_free_cpumask:
-> >+	free_cpumask_var(policy->cpus);
-> >+err_free_policy:
-> > 	kfree(policy);
-> >-
-> > nomem_out:
-> > 	module_put(cpufreq_driver->owner);
-> > module_out:
-> >
-> 
-> 
+The big difference between 2.6.18 and 2.6.30 is that the cards now have
+eight interrupts in use each, instead of one each (four for rx queues
+and four for tx queues).  Distressingly, these interrupts are all affine
+to the same CPUs (eth1's eight interrupts are all on CPU 9 and eth0's
+interrupts are all on CPU 1).  That would seem to be a fruitful avenue of
+investigation -- whether limiting the cards to a single RX/TX interrupt
+would be advantageous, or whether spreading the eight interrupts out
+over the CPUs would be advantageous.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
