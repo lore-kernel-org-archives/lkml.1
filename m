@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZGCCfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZGCCgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZGCCfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZGCCfm
+	id S1756960AbZGCCgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 22:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZGCCgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:35:42 -0400
-Received: from sandeen.net ([209.173.210.139]:17710 "EHLO mail.sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751475AbZGCCfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:35:41 -0400
-Message-ID: <4A4D6E7F.4060204@sandeen.net>
-Date: Thu, 02 Jul 2009 21:35:43 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Thu, 2 Jul 2009 22:36:09 -0400
+Received: from mail-pz0-f193.google.com ([209.85.222.193]:43075 "EHLO
+	mail-pz0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbZGCCgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 22:36:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=N22miW39hKsSkpkRWsIPIcJBoXKxAIlROLPov/+cPE6/JfsxeBHSBjg5UQMZrkQEyK
+         koZcPbGFJk5dUMfX3vsvUEug92M/e424QL8KkqoCwb3pXOKk7K0v/xIvig+G7RlaC2qo
+         EMcGbxl+fYn58UYiZ+6x6DLyn3J73SPCk4N9o=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: David Chinner <david@fromorbit.com>, xfs-masters@oss.sgi.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@lst.de>, Felix Blyakher <felixb@sgi.com>
-Subject: [PATCH] un-static xfs_read_agf
-References: <20090703100551.e3f21aa0.sfr@canb.auug.org.au>
-In-Reply-To: <20090703100551.e3f21aa0.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1246561482.27006.10694.camel@localhost.localdomain>
+References: <3877989d0906291953n599b7047x5fdf6033114e0eed@mail.gmail.com>
+	 <1246561482.27006.10694.camel@localhost.localdomain>
+Date: Fri, 3 Jul 2009 10:36:10 +0800
+Message-ID: <3877989d0907021936p7489f201t71f080d61ab1236f@mail.gmail.com>
+Subject: Re: [RFC patch] disable the assumption of apic_is_clustered_box for 
+	cores >= 6
+From: Luming Yu <luming.yu@gmail.com>
+To: suresh.b.siddha@intel.com
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CONFIG_XFS_DEBUG builds still need xfs_read_agf to be
-non-static, oops.
+On Fri, Jul 3, 2009 at 3:04 AM, Suresh Siddha<suresh.b.siddha@intel.com> wrote:
+> On Mon, 2009-06-29 at 19:53 -0700, Luming Yu wrote:
+>> Hello,
+>>
+>> We have to disable the assumption of apic_is_clustered_box that assumes high
+>> 4bits of 8 bit APIC ID was cluster id, which is just the function's guess.
+>> On a normal 4-socket system with >6cores Processor and HT enabled, we hit the
+>> limitation of the guess and failed. Have to disable the guess on any
+>> cores > 6 system.
+>>
+>> Without this patch, we can't use good TSC on any SMP system with 48+ logical CPU
+>
+> This patch doesn't seem to be the right fix. BTW, it appears that
+> Yinghai's patch in mainline appear to address this issue already. Did
+> you check if the mainline still has the issue that you are trying to fix
+> here?
 
-Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
----
-
-Index: linux-2.6/fs/xfs/xfs_ag.h
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_ag.h
-+++ linux-2.6/fs/xfs/xfs_ag.h
-@@ -91,6 +91,9 @@ typedef struct xfs_agf {
- #define	XFS_AGF_BLOCK(mp)	XFS_HDR_BLOCK(mp, XFS_AGF_DADDR(mp))
- #define	XFS_BUF_TO_AGF(bp)	((xfs_agf_t *)XFS_BUF_PTR(bp))
- 
-+extern int xfs_read_agf(struct xfs_mount *mp, struct xfs_trans *tp,
-+			xfs_agnumber_t agno, int flags, struct xfs_buf **bpp);
-+
- /*
-  * Size of the unlinked inode hash table in the agi.
-  */
-Index: linux-2.6/fs/xfs/xfs_alloc.c
-===================================================================
---- linux-2.6.orig/fs/xfs/xfs_alloc.c
-+++ linux-2.6/fs/xfs/xfs_alloc.c
-@@ -2248,7 +2248,7 @@ xfs_alloc_put_freelist(
- /*
-  * Read in the allocation group header (free/alloc section).
-  */
--STATIC int				/* error */
-+int					/* error */
- xfs_read_agf(
- 	struct xfs_mount	*mp,	/* mount point structure */
- 	struct xfs_trans	*tp,	/* transaction pointer */
-
+Oh.. my testing kernel is still -rc6. The patch should fix the problem.
+Thanks for the pointer. I believe I have heard of this patch, but don't know
+why I didn't check that first before spending time on this fix,
+although this patch didn't take
+too much time, but does create some noise. I'm sorry about that.
