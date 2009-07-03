@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbZGCIJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZGCIMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbZGCIJw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZGCIJh
+	id S1754286AbZGCIMk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZGCIMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:09:37 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37570 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751401AbZGCIJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:09:35 -0400
-Subject: Re: [PATCH] kmemleak: Mark nice +10
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       git-commits-head@vger.kernel.org
-In-Reply-To: <20090703070036.GC32687@elte.hu>
-References: <200907010300.n6130rRf026194@hera.kernel.org>
-	 <20090701075332.GA17252@elte.hu>
-	 <1246439937.8492.18.camel@pc1117.cambridge.arm.com>
-	 <20090701093015.GA6862@elte.hu>
-	 <1246528108.13320.19.camel@pc1117.cambridge.arm.com>
-	 <20090703070036.GC32687@elte.hu>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 03 Jul 2009 09:09:13 +0100
-Message-Id: <1246608553.24965.2.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jul 2009 08:09:15.0833 (UTC) FILETIME=[8EB02290:01C9FBB5]
+	Fri, 3 Jul 2009 04:12:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34351 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbZGCIMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:12:20 -0400
+Date: Fri, 3 Jul 2009 10:12:19 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org, eric.dumazet@gmail.com
+Subject: [PATCHv5 0/2] net: fix race in the receive/select
+Message-ID: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 09:00 +0200, Ingo Molnar wrote:
-> * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> 
-> > On Wed, 2009-07-01 at 11:30 +0200, Ingo Molnar wrote:
-> > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > > 
-> > > > > The minimal fix below removes scan_yield() and adds a 
-> > > > > cond_resched() to the outmost (safe) place of the scanning 
-> > > > > thread. This solves the regression.
-> > > > 
-> > > > With CONFIG_PREEMPT disabled it won't reschedule during the bss 
-> > > > scanning but I don't see this as a real issue (task stacks 
-> > > > scanning probably takes longer anyway).
-> > > 
-> > > Yeah. I suspect one more cond_resched() could be added - i just 
-> > > didnt see an obvious place for it, given that scan_block() is being 
-> > > called with asymetric held-locks contexts.
-> > 
-> > Now that your patch was merged, I propose adding a few more 
-> > cond_resched() calls, useful for the !PREEMPT case:
-> 
-> note, please also merge the renicing fix you sent. I have it tested 
-> in tip:out-of-tree, attached below.
+This patchset fixies the race within the poll_wait call and the receive callbacks,
+by adding memory barrier.
 
-I have this patch in my kmemleak branch
-(http://www.linux-arm.org/git?p=linux-2.6.git;a=shortlog;h=kmemleak)
-which I plan to push to Linus, only that I was waiting to accumulate a
-few more patches (to avoid sending too many pull requests).
+- 1/2 includes the actual fix
+- 2/2 includes optimization for the x86 arch
 
-I'll fix the scan_mutex lock as well, following comments and send a pull
-request tonight.
+It is discussed and described in the following discussions:
 
-Thanks.
+http://lkml.org/lkml/2009/6/18/124
+http://lkml.org/lkml/2009/6/25/188
+http://lkml.org/lkml/2009/6/29/216
 
--- 
-Catalin
+Patchset is made on top of Linus'es tree 7c5371c403abb29f01bc6cff6c5096abdf2dc524 .
 
+Booted on x86_64.
+
+wbr,
+jirka
+
+---
+ arch/x86/include/asm/spinlock.h |    3 ++
+ include/linux/spinlock.h        |    5 +++
+ include/net/sock.h              |   69 +++++++++++++++++++++++++++++++++++++++
+ net/atm/common.c                |    6 ++--
+ net/core/datagram.c             |    2 +-
+ net/core/sock.c                 |    8 ++--
+ net/dccp/output.c               |    2 +-
+ net/dccp/proto.c                |    2 +-
+ net/ipv4/tcp.c                  |    2 +-
+ net/iucv/af_iucv.c              |    4 +-
+ net/rxrpc/af_rxrpc.c            |    4 +-
+ net/unix/af_unix.c              |    8 ++--
+ 12 files changed, 96 insertions(+), 19 deletions(-)
