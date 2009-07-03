@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZGCIiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZGCIlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbZGCIiR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZGCIiF
+	id S1754656AbZGCIlX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZGCIlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:38:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62533 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbZGCIiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:38:04 -0400
-Message-ID: <4A4DC358.7030900@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 16:37:44 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 3 Jul 2009 04:41:15 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:42027 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbZGCIlO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:41:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SY3JMmOI23vhhwuHJ3Nzit/2e7VVCy75OkIvomC8hiTr37vefahf2tt1dV5J0qk2Ie
+         cSykBJ0AmtpuBFSuxjYHdRKhcNrFfPpbTeibtZ6NWQ9lMMK7fDZUxQf948wOsqpSwT2n
+         7uJpbD1T4HN2MrKbsqaDyLPirCSCCB/oZZ3XI=
+Date: Fri, 3 Jul 2009 10:41:11 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
+	kernel modules
+Message-ID: <20090703084109.GA4933@nowhere>
+References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246536617.4752.15.camel@laptop> <1246605459.6092.189.camel@marge.simson.net>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH] cgroup: Fix indent for /proc/cgroups
-References: <4A4DBBC2.8010805@cn.fujitsu.com> <4A4DBF50.8090408@cn.fujitsu.com>
-In-Reply-To: <4A4DBF50.8090408@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246605459.6092.189.camel@marge.simson.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> CC: container list
+On Fri, Jul 03, 2009 at 09:17:39AM +0200, Mike Galbraith wrote:
+> On Thu, 2009-07-02 at 14:10 +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-07-02 at 09:17 +0200, Mike Galbraith wrote:
+> > 
+> > >  I've been pondering a perf archive tool
+> > > that would package everything that's needed to do analysis on a
+> > > different box.  One big problem though, is that while you can easily
+> > > package vmlinux and modules, what about all the userland binaries?  A
+> > > large perf.data and/or debug info binaries can easily make transport
+> > > impractical enough.
+> > 
+> > I would simply extend the current file header with another section in
+> > which we do a structured storage of the data structures we currently
+> > build in perf-report. That is, the dso and symbol bits.
+> > 
+> > If we then run perf-report on a file containing such a section we read
+> > that data instead of trying to locate them the regular way.
 > 
-> Gui Jianfeng wrote:
->> Currently, /proc/cgroups outputs is fairly ugly as following,
->> #subsys_name    hierarchy       num_cgroups     enabled
->> cpuset  0       1       1
->> debug   0       1       1
->> ns      0       1       1
->>
->> indent it in a good-looking way.
->> #subsys_name    hierarchy       num_cgroups     enabled
->> cpuset          0               1               1
->> debug           0               1               1
->> ns              0               1               1
->>
+> That's a good idea.
 > 
-> But if there's a subsystem with name length >= 8,
-> it won't be aligned properly..
+> If uname doesn't match stored record time uname, you're not live, so
+> tools require an exportable perf.data.  If you're not live and not on
+> the same host, annotate requires binaries appended via an export tool
+> with --sym-filter -k -u -% whatever capability.
+> 
+> 	-Mike
 
-  Yeap, but there isn't such a case at least by now.
 
-> 
->> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
->> ---
->>  kernel/cgroup.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
->> index 3737a68..99fc160 100644
->> --- a/kernel/cgroup.c
->> +++ b/kernel/cgroup.c
->> @@ -2963,7 +2963,7 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
->>  	mutex_lock(&cgroup_mutex);
->>  	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
->>  		struct cgroup_subsys *ss = subsys[i];
->> -		seq_printf(m, "%s\t%lu\t%d\t%d\n",
->> +		seq_printf(m, "%s\t\t%lu\t\t%d\t\t%d\n",
->>  			   ss->name, ss->root->subsys_bits,
->>  			   ss->root->number_of_cgroups, !ss->disabled);
->>  	}
-> 
-> 
-> 
-> 
+Also that would make easier the implementation of a perf compare thing.
+A perf compare may have several uses, including:
 
--- 
-Regards
-Gui Jianfeng
+(1) comparing different workloads with a same executable.
+(2) comparing different executable versions for a same workload
+(3) (1) + (2) ?
+
+
+For the (2), having  self contained record files as operands would let
+comparisons based on symbols, pretty useful when you have to compare
+two different vmlinux (or whatever binary executable).
 
