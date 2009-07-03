@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZGCADg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZGCADx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbZGCADg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZGCAD3
+	id S1757340AbZGCADx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbZGCADn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:03:29 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48779 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbZGCAD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:03:28 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH v2] Show kernel stack usage to /proc/meminfo and OOM log
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Christoph Lameter <cl@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-In-Reply-To: <4A4B9BA1.6040109@redhat.com>
-References: <alpine.DEB.1.10.0907011315540.9522@gentwo.org> <4A4B9BA1.6040109@redhat.com>
-Message-Id: <20090703090226.08E6.A69D9226@jp.fujitsu.com>
+	Thu, 2 Jul 2009 20:03:43 -0400
+Received: from ozlabs.org ([203.10.76.45]:50506 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751420AbZGCADm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:03:42 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
+Date: Fri, 3 Jul 2009 09:33:38 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: tridge@samba.org, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       john.lanza@linux.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>
+References: <19013.8005.541836.436991@samba.org> <19021.14217.587592.808935@samba.org> <20090702224446.GD30840@elf.ucw.cz>
+In-Reply-To: <20090702224446.GD30840@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri,  3 Jul 2009 09:03:15 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200907030933.39589.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Christoph Lameter wrote:
-> > On Wed, 1 Jul 2009, David Howells wrote:
-> > 
-> >> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >>
-> >>> +	int pages = THREAD_SIZE / PAGE_SIZE;
-> >> Bad assumption.  On FRV, for example, THREAD_SIZE is 8K and PAGE_SIZE is 16K.
-> > 
-> > Guess that means we need arch specific accounting for this counter.
-> 
-> Or we count the number of stacks internally and only
-> convert to pages whenever we display the value.
+On Fri, 3 Jul 2009 08:14:46 am Pavel Machek wrote:
+> On Fri 2009-07-03 08:41:13, tridge@samba.org wrote:
+> > If you find a way to actually produce this problem in a way that is
+> > realistic for Linux users then let me know. Otherwise I think it is
+> > the best option we have, imperfect though it is.
+>
+> So, you know that particular option will cause someone's XP to
+> bluescreen, and  you still want it to default to "Y"?
 
-Thanks good idea. I'll implement this today (or tommorow).
+No, his point is the opposite: the rate of incidence of bluescreens on XP will 
+not measurably increase due to this patch.
 
-
+Cheers,
+Rusty.
