@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbZGCTd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbZGCTdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbZGCTd0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZGCTdT
+	id S1759030AbZGCTdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZGCTdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:33:19 -0400
-Received: from claw.goop.org ([74.207.240.146]:35010 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756880AbZGCTdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:33:19 -0400
-Message-ID: <4A4E5D02.7070902@goop.org>
-Date: Fri, 03 Jul 2009 12:33:22 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: lkml@MoreThan.org
-CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
-References: <200907031314.36243.lkml@morethan.org> <4A4E54A8.4030606@goop.org> <200907031403.34566.lkml@morethan.org>
-In-Reply-To: <200907031403.34566.lkml@morethan.org>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 15:33:37 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:21030 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757395AbZGCTdh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 15:33:37 -0400
+Date: Fri, 3 Jul 2009 12:33:40 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Marcin Obara <marcin_obara@users.sourceforge.net>
+Cc: Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
+       tpmdd-devel@lists.sourceforge.net, seiji.munetoh@gmail.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>
+Subject: Re: [tpmdd-devel] [PATCH 6/6] tpm_tis: add workarounds for iTPM
+Message-ID: <20090703193340.GA6060@hexapodia.org>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com> <1246410255-6839-7-git-send-email-adi@vmware.com> <ea8d860a0907031118o7ad0ad4nbe147b32bba57a29@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea8d860a0907031118o7ad0ad4nbe147b32bba57a29@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/03/09 12:03, Michael S. Zick wrote:
-> Random system halts, deadlocks with interrupts disabled?
-> Yup, that sounds familiar.
->
-> If I ever get more than a stopped machine with a glowing power light;
-> I will be certain to share.
->   
+On Fri, Jul 03, 2009 at 08:18:18PM +0200, Marcin Obara wrote:
+> 2009/7/1 Andy Isaacson <adi@vmware.com>:
+> > Some Lenovo platforms (X200 and T400, maybe others) have an "iTPM" which
+> > does not quite conform to the TPM spec. ?With one small hack the iTPM
+> > seems to work OK.
+> 
+> Small comment:
+> 
+> Intel iTPM on mobile platforms require this patch.
+> Intel iTPM on desktop platforms works well without this patch.
 
-Are you saying this patch does actually fix something, or that you still
-see the same symptoms with it applied?
+Please do expand on this -- I don't have access to any iTPM desktop
+platforms to verify.  Can you provide information on what desktop
+platforms behave differently so that I can adjust the patch?
 
-    J
+If you could simply boot a kernel with my patch series on a desktop iTPM
+and provide the dmesg output, that would be great!
+
+Thanks,
+-andy
