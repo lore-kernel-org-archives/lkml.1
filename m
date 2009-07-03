@@ -1,196 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZGCMq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZGCMrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZGCMq6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 08:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbZGCMpy
+	id S1758169AbZGCMrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 08:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZGCMp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 08:45:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59972 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757937AbZGCMpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 08:45:52 -0400
-Date: Fri, 3 Jul 2009 12:44:30 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, efault@gmx.de, arnd@arndb.de,
-       dhowells@redhat.com, fweisbec@gmail.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       a.p.zijlstra@chello.nl, efault@gmx.de, arnd@arndb.de,
-       fweisbec@gmail.com, dhowells@redhat.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Code atomic(64)_read and atomic(64)_set in C not CPP
-Message-ID: <tip-c6f91967a6015bbc270236aeb76a36771b195ebc@git.kernel.org>
-Git-Commit-ID: c6f91967a6015bbc270236aeb76a36771b195ebc
-X-Mailer: tip-git-log-daemon
+	Fri, 3 Jul 2009 08:45:57 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:53030 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757913AbZGCMp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 08:45:56 -0400
+Message-ID: <4A4DFD8B.3030104@vlnb.net>
+Date: Fri, 03 Jul 2009 16:46:03 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 12:44:31 +0000 (UTC)
+To: Ronald Moesbergen <intercommit@gmail.com>
+CC: linux-kernel@vger.kernel.org, Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+References: <4A3CD62B.1020407@vlnb.net> <4A48BBF9.6050408@vlnb.net>	 <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com>	 <20090629142124.GA28945@localhost> <20090629150109.GA3534@localhost>	 <4A48DFC5.3090205@vlnb.net> <20090630010414.GB31418@localhost>	 <4A49EEF9.6010205@vlnb.net>	 <a0272b440907030214l4016422bxbc98fd003bfe1b3d@mail.gmail.com>	 <4A4DE3C1.5080307@vlnb.net> <a0272b440907030541w1448d378n6fcabbb555d45fcc@mail.gmail.com>
+In-Reply-To: <a0272b440907030541w1448d378n6fcabbb555d45fcc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/ZzHjMu6IrQwvWMbU5mz1w/hgl8deWAf4H3X6
+ NlV6EzAqCwYsOuikk5GT3yIIq9vxEZu/xobO96Us+QQs8HkiTO
+ hg/4Irsi/620FyROz8KsQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c6f91967a6015bbc270236aeb76a36771b195ebc
-Gitweb:     http://git.kernel.org/tip/c6f91967a6015bbc270236aeb76a36771b195ebc
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Thu, 2 Jul 2009 08:57:12 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 14:32:21 +0200
 
-x86: atomic64: Code atomic(64)_read and atomic(64)_set in C not CPP
+Ronald Moesbergen, on 07/03/2009 04:41 PM wrote:
+> 2009/7/3 Vladislav Bolkhovitin <vst@vlnb.net>:
+>> Ronald Moesbergen, on 07/03/2009 01:14 PM wrote:
+>>>>> OK, now I tend to agree on decreasing max_sectors_kb and increasing
+>>>>> read_ahead_kb. But before actually trying to push that idea I'd like
+>>>>> to
+>>>>> - do more benchmarks
+>>>>> - figure out why context readahead didn't help SCST performance
+>>>>>  (previous traces show that context readahead is submitting perfect
+>>>>>  large io requests, so I wonder if it's some io scheduler bug)
+>>>> Because, as we found out, without your http://lkml.org/lkml/2009/5/21/319
+>>>> patch read-ahead was nearly disabled, hence there were no difference
+>>>> which
+>>>> algorithm was used?
+>>>>
+>>>> Ronald, can you run the following tests, please? This time with 2 hosts,
+>>>> initiator (client) and target (server) connected using 1 Gbps iSCSI. It
+>>>> would be the best if on the client vanilla 2.6.29 will be ran, but any
+>>>> other
+>>>> kernel will be fine as well, only specify which. Blockdev-perftest should
+>>>> be
+>>>> ran as before in buffered mode, i.e. with "-a" switch.
+>>>>
+>>>> 1. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 patch with all default settings.
+>>>>
+>>>> 2. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 patch with default RA size and 64KB
+>>>> max_sectors_kb.
+>>>>
+>>>> 3. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and default
+>>>> max_sectors_kb.
+>>>>
+>>>> 4. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and 64KB
+>>>> max_sectors_kb.
+>>>>
+>>>> 5. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 patch and with context RA patch. RA
+>>>> size
+>>>> and max_sectors_kb are default. For your convenience I committed the
+>>>> backported context RA patches into the SCST SVN repository.
+>>>>
+>>>> 6. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with default RA
+>>>> size and 64KB max_sectors_kb.
+>>>>
+>>>> 7. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
+>>>> size
+>>>> and default max_sectors_kb.
+>>>>
+>>>> 8. All defaults on the client, on the server vanilla 2.6.29 with
+>>>> Fengguang's
+>>>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
+>>>> size
+>>>> and 64KB max_sectors_kb.
+>>>>
+>>>> 9. On the client default RA size and 64KB max_sectors_kb. On the server
+>>>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
+>>>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
+>>>>
+>>>> 10. On the client 2MB RA size and default max_sectors_kb. On the server
+>>>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
+>>>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
+>>>>
+>>>> 11. On the client 2MB RA size and 64KB max_sectors_kb. On the server
+>>>> vanilla
+>>>> 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA
+>>>> patches with 2MB RA size and 64KB max_sectors_kb.
+>>> Ok, done. Performance is pretty bad overall :(
+>>>
+>>> The kernels I used:
+>>> client kernel: 2.6.26-15lenny3 (debian)
+>>> server kernel: 2.6.29.5 with blk_dev_run patch
+>>>
+>>> And I adjusted the blockdev-perftest script to drop caches on both the
+>>> server (via ssh) and the client.
+>>>
+>>> The results:
+>>>
+> 
+> ... results ...
+> 
+>> Those are on the server without io_context-2.6.29 and readahead-2.6.29
+>> patches applied and with CFQ scheduler, correct?
+> 
+> No. It was done with the readahead patch
+> (http://lkml.org/lkml/2009/5/21/319) and the context RA patch
+> (starting at test 5) as you requested.
 
-Occasionally we get bugs where atomic_read or atomic_set are
-used on atomic64_t variables or vice versa.  These bugs don't
-generate warnings on x86 because atomic_read and atomic_set are
-coded as macros rather than C functions, so we don't get any
-type-checking on their arguments; similarly for atomic64_read
-and atomic64_set in 64-bit kernels.
+OK, just wanted to clear.
 
-This converts them to C functions so that the arguments are
-type-checked and bugs like this will get caught more easily. It
-also converts atomic_cmpxchg and atomic_xchg, and
-atomic64_cmpxchg and atomic64_xchg on 64-bit, so we get
-type-checking on their arguments too.
+>> Then we see how reorder of requests caused by many I/O threads submitting
+>> I/O in separate I/O contexts badly affect performance and no RA, especially
+>> with default 128KB RA size, can solve it. Less max_sectors_kb on the client
+>> => more requests it sends at once => more reorder on the server => worse
+>> throughput. Although, Fengguang, in theory, context RA with 2MB RA size
+>> should considerably help it, no?
+> 
+> Wouldn't setting scst_threads to 1 help also in this case?
 
-Compiling a typical 64-bit x86 config, this generates no new
-warnings, and the vmlinux text is 86 bytes smaller.
+Let's check it in another time.
 
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> Ronald, can you perform those tests again with both io_context-2.6.29 and
+>> readahead-2.6.29 patches applied on the server, please?
+> 
+> Ok. I only have access to the test systems during the week, so results
+> might not be ready before Monday. Are there tests that we can exclude
+> to speed things up?
 
+Unfortunately, no. But this isn't urgent at all, so next week is OK.
 
----
- arch/x86/include/asm/atomic_32.h |   16 +++++++++++--
- arch/x86/include/asm/atomic_64.h |   42 ++++++++++++++++++++++++++++++-------
- 2 files changed, 47 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index b551bb1..aa045de 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -31,7 +31,10 @@ static inline int atomic_read(const atomic_t *v)
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)	(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -203,8 +206,15 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- 	return atomic_add_return(-i, v);
- }
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is already a given value
-diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-index 0d63602..d605dc2 100644
---- a/arch/x86/include/asm/atomic_64.h
-+++ b/arch/x86/include/asm/atomic_64.h
-@@ -18,7 +18,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -27,7 +30,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -192,7 +198,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-  */
--#define atomic64_read(v)		((v)->counter)
-+static inline long atomic64_read(const atomic64_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic64_set - set atomic64 variable
-@@ -201,7 +210,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic64_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic64_set(atomic64_t *v, long i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic64_add - add integer to atomic64 variable
-@@ -355,11 +367,25 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
- #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
- #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
- 
--#define atomic64_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
-+static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic64_xchg(atomic64_t *v, long new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is a given value
+Thanks,
+Vlad
