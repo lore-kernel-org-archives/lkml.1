@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbZGCQmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZGCQs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbZGCQmn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbZGCQmf
+	id S1757889AbZGCQs6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbZGCQsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:42:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41817 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756369AbZGCQmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:42:35 -0400
-Date: Fri, 3 Jul 2009 18:42:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703164225.GA21447@elte.hu>
-References: <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk> <20090703131727.GA3207@elte.hu> <20090703143746.0379b2ee@lxorguk.ukuu.org.uk> <20090703144754.GA13246@elte.hu> <20090703160230.093e422c@lxorguk.ukuu.org.uk> <20090703155809.GA20121@elte.hu> <20090703172651.619162fd@lxorguk.ukuu.org.uk>
+	Fri, 3 Jul 2009 12:48:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52718 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756717AbZGCQst (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 12:48:49 -0400
+Date: Fri, 3 Jul 2009 09:47:00 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, arnd@arndb.de,
+       fweisbec@gmail.com, dhowells@redhat.com, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+Subject: Re: [tip:perfcounters/urgent] x86: atomic64: Move the 32-bit atomic64_t
+ implementation to a .c file
+In-Reply-To: <tip-b7882b7c65abb00194bdb3d4a22d27d70fcc59ba@git.kernel.org>
+Message-ID: <alpine.LFD.2.01.0907030942260.3210@localhost.localdomain>
+References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain> <tip-b7882b7c65abb00194bdb3d4a22d27d70fcc59ba@git.kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090703172651.619162fd@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> A good example of what happens if you don't is
-> 
-> scripts/checkpatch.pl --file arch/x86/kernel/cpu/mtrr/*c
-> 
-> where the core part of the code isn't changed very much even 
-> though the interfaces completely get reworked. Thus it never gets 
-> cleaned up and reviewed as a whole. The code works, will probably 
-> work for years but never gets looked at as a whole and tidied.
+On Fri, 3 Jul 2009, tip-bot for Ingo Molnar wrote:
+> +int atomic64_add_negative(u64 delta, atomic64_t *ptr)
+> +{
+> +	long long old_val = atomic64_add_return(delta, ptr);
+> +
+> +	return old_val < 0;
+> +}
 
-I think even the MTRR code (which is indeed one of the few x86 
-places still not fully cleaned up) supports my arguments.
+Can we please fix this horribly mis-named 'old_val' variable?
 
-Look at the averages:
+It's not 'old_val'. It should be 'new_val' or 'result'.
 
-                                      errors   lines of code   errors/KLOC
-arch/x86/kernel/cpu/mtrr/amd.c             2             120          16.6
-arch/x86/kernel/cpu/mtrr/centaur.c         8             225          35.5
-arch/x86/kernel/cpu/mtrr/cleanup.c         0            1102             0
-arch/x86/kernel/cpu/mtrr/cyrix.c          10             275          36.3
-arch/x86/kernel/cpu/mtrr/generic.c        16             730          21.9
-arch/x86/kernel/cpu/mtrr/if.c             11             428          25.7
-arch/x86/kernel/cpu/mtrr/main.c           50             751          66.5
-arch/x86/kernel/cpu/mtrr/state.c           0              83             0
+As it is, the above looks very wrong, and made me think that you had done 
+the wrong semantics (ie "xadd" like semantics that literally return the 
+pre-add 'old' value).
 
-The arch/x86/kernel/cpu/mtrr/cleanup.c file is a new bit and 
-relatively clean.
+But on closer inspection, it looks like the code is correct, but the 
+naming is just totally wrong.
 
-	Ingo
+		Linus
