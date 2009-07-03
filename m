@@ -1,167 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZGCFA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbZGCFRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbZGCFA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 01:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZGCFAs
+	id S1756584AbZGCFRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 01:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZGCFRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 01:00:48 -0400
-Received: from mga06.intel.com ([134.134.136.21]:10427 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750993AbZGCFAr (ORCPT
+	Fri, 3 Jul 2009 01:17:10 -0400
+Received: from mail-px0-f190.google.com ([209.85.216.190]:44555 "EHLO
+	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbZGCFRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 01:00:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,338,1243839600"; 
-   d="scan'208";a="427313533"
-Subject: Re: fio sync read 4k block size 35% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Ying Han <yinghan@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090702123747.GA8503@localhost>
-References: <1246418733.2560.468.camel@ymzhang>
-	 <20090701041010.GB22364@localhost> <1246424635.2560.470.camel@ymzhang>
-	 <20090701125027.GA28347@localhost> <1246505660.2560.482.camel@ymzhang>
-	 <20090702123747.GA8503@localhost>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 03 Jul 2009 13:01:10 +0800
-Message-Id: <1246597270.2560.493.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Fri, 3 Jul 2009 01:17:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WhBQy3y1U9K/Rmwyf1tAGtUEvVHz11kYiOKl/N3AeSodKlqIzcSeUMVlR2m9PpgL2v
+         HZdfxU+fH50gLX3ny9wcuRL1+HBwIxauMESveo6Ux4rUc2ABMu7NlMzw5Zewdtwpy4z5
+         MWUtCXZbh5jKQAB1f7AcUs4sM+cDl+W1kLWBo=
+Date: Fri, 3 Jul 2009 13:19:17 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Changli Gao <xiaosuo@gmail.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+Message-ID: <20090703051917.GE5880@cr0.nay.redhat.com>
+References: <20090702091309.GB6372@cr0.nay.redhat.com> <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com> <20090702094620.GE6372@cr0.nay.redhat.com> <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com> <20090702102138.GF6372@cr0.nay.redhat.com> <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com> <20090703015554.GB5880@cr0.nay.redhat.com> <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com> <20090703030008.GD5880@cr0.nay.redhat.com> <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-02 at 20:37 +0800, Wu Fengguang wrote:
-> On Thu, Jul 02, 2009 at 11:34:20AM +0800, Zhang, Yanmin wrote:
-> > On Wed, 2009-07-01 at 20:50 +0800, Wu Fengguang wrote:
-> > > On Wed, Jul 01, 2009 at 01:03:55PM +0800, Zhang, Yanmin wrote:
-> > > > On Wed, 2009-07-01 at 12:10 +0800, Wu Fengguang wrote:
-> > > > > On Wed, Jul 01, 2009 at 11:25:33AM +0800, Zhang, Yanmin wrote:
-> > > > > > Comapraing with 2.6.30, fio sync read (block size 4k) has about 35% regression
-> > > > > > with kernel 2.6.31-rc1 ﻿on my stoakley machine with a JBOD (13 SCSI disks).
-> > > > > > 
-> > > > > > Every disk has 1 partition and 4 1-GB files. Start 10 processes per disk to
-> > > > > > do sy﻿nc read sequentinally.
-> > > > > > 
-> > > > > > Bisected down to below patch.
-> > > > > > 
-> > > > > > 51daa88ebd8e0d437289f589af29d4b39379ea76 is first bad commit
-> > > > > > commit 51daa88ebd8e0d437289f589af29d4b39379ea76
-> > > > > > Author: Wu Fengguang <fengguang.wu@intel.com>
-> > > > > > Date:   Tue Jun 16 15:31:24 2009 -0700
-> > > > > > 
-> > > > > >     readahead: remove sync/async readahead call dependency
-> > > > > > 
-> > > > > >     The readahead call scheme is error-prone in that it expects the call sites
-> > > > > >     to check for async readahead after doing a sync one.  I.e.
-> > > > > > 
-> > > > > >                         if (!page)
-> > > > > >                                 page_cache_sync_readahead();
-> > > > > >                         page = find_get_page();
-> > > > > >                         if (page && PageReadahead(page))
-> > > > > >                                 page_cache_async_readahead();
-> > > > > > 
-> > > > > > 
-> > > > > > I also test block size 64k and 128k, but they don't have regression. Perhaps
-> > > > > > the default read_ahead_kb is equal to 128?
-> > > > > > 
-> > > > > > Other 2 machines have no such regression. The JBODS of the 2 machines consists
-> > > > > > of 12 and 7 SATA/SAS disks while every disk has 2 partitions.
-> > > > > 
-> > > > > Yanmin, thanks for the tests!
-> > > > > 
-> > > > > Maybe the patch posted here can restore the performance:
-> > > > > 
-> > > > > http://lkml.org/lkml/2009/5/21/319
-> > > > I tried it and it doesn't help.
-> > > 
-> > > Then let's check what's happening behind the scene :)
-> > > 
-> > > Please apply the attached patch and run
-> > > 
-> > >         echo 1 > /debug/readahead/trace_enable
-> > >         # do benchmark
-> > >         echo 0 > /debug/readahead/trace_enable
-> > > 
-> > > and send the dmesg which will contain lots of lines like
-> > > 
-> > >         [   54.738105] readahead-initial0(pid=3290(zsh), dev=00:10(0:10), ino=105910(dmesg), req=0+1, ra=0+4-3, async=0) = 2
-> > >         [   54.751801] readahead-subsequent(pid=3290(dmesg), dev=00:10(0:10), ino=105910(dmesg), req=1+60, ra=4+8-8, async=1, miss=0) = 0
-> > I enlarged sys log buffer to 2MB and captured below data.
-> 
-> Thank you! Judging from these readahead requests, it's doing perfect
-> 64-page IOs. So the readahead size for sdm1 is 256KB?
-[ymzhang@lkp-st02-x8664 work]$ cat /sys/block/sdm/queue/read_ahead_kb 
-128
+On Fri, Jul 03, 2009 at 12:08:58PM +0800, Changli Gao wrote:
+>On Fri, Jul 3, 2009 at 11:00 AM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
+>>
+>> When I said 'pipe', I meant *anonymous* pipe, definitely!
+>> There is nothing related with *named* pipe here.
+>>
+>Pipe means *anonymous* pipe? Who defined that? What the difference
+>between an anonymou pipe and a named pipe? Two ends or one ends? I
+>don't think so. Having explicit name is the right difference between
+>them.
 
-We use the default readahead configuration.
+I have no interests to teach you its definition.
 
->  As long as the
-> real IO size is 256KB, it should not create that much performance
-> regression.
-> 
-> However there are some CPU overheads caused by readahead cache hits
-> (the lines start with ==>). In this case, 4 processes are sequentially
-> reading the same file, whoever goes first and foremost will trigger
-> the readahead IO. Or sometimes two processes hit the PG_readahead page
-> almost at the same time, and submit duplicate readahead requests for
-> the same page(s). The duplicate efforts will be detected at radix tree
-> insertion time, so won't lead to duplicate IO.
-> 
-> That is a known issue, and should only cost a little CPU time.
-> 
-> Since I cannot find out the (real) problem by reasoning, can you
-> provide more data please?
-> - make sure the regression(s) disappear with 2.6.31-rc1+revert-51daa88ebd8e0
-I make sure.
+if you re-read my email, you should conclude what 'pipe' there means,
+according to the contexts.
 
-> - collect some readahead traces with 2.6.31-rc1+revert-51daa88ebd8e0
-> - collect some blktrace data on sdm1 with 2.6.31-rc1
-I'm busy and will collect data next week.
+>
+>And when I said 'kernel buffer handler', I means it is not a
+>traditional pipe, and I just extend and reuse the pipe API to create a
+>kernel buffer handler for splicing use.
 
-> 
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143693+1, ra=143757+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143757+1, ra=143821+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143821+1, ra=143885+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143885+1, ra=143949+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=143949+1, ra=144013+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144013+1, ra=144077+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144077+1, ra=144141+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144141+1, ra=144205+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144205+1, ra=144269+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144269+1, ra=144333+64-64, async=1) = 64
->         readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144333+1, ra=144397+64-64, async=1) = 64
->         readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144397+1, ra=144461+64-64, async=1) = 64
->         readahead-marker(pid=7102(fio), dev=08:c1(sdm1), ino=49156(f4), req=144461+1, ra=144525+64-64, async=1) = 64
->         readahead-marker(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144525+1, ra=144589+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144589+1, ra=144653+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144653+1, ra=144717+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144717+1, ra=144781+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144781+1, ra=144845+64-64, async=1) = 64
-> ==>     readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=144845+1, ra=144909+64-64, async=1) = 64
-> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144909+1, ra=144909+128-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=144973+1, ra=145037+64-64, async=1) = 64
->         readahead-marker(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145037+1, ra=145101+64-64, async=1) = 64
-> ==>     readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145101+1, ra=145165+64-64, async=1) = 64
-> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145101+1, ra=145101+128-64, async=1) = 64
-> ==>     readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145165+1, ra=145229+64-64, async=1) = 64
-> ==>     readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145165+1, ra=145229+64-64, async=1) = 64
->         readahead-subsequent(pid=7115(fio), dev=08:c1(sdm1), ino=49156(f4), req=145229+1, ra=145293+64-64, async=1) = 64
->         readahead-marker(pid=7154(fio), dev=08:c1(sdm1), ino=49156(f4), req=145357+1, ra=145421+64-64, async=1) = 64
->         readahead-subsequent(pid=7167(fio), dev=08:c1(sdm1), ino=49156(f4), req=145293+1, ra=145293+128-64, async=1) = 64
-> 
-> > In addition, I added new test cases to use mmap to read the files sequentionally.
-> > On this machine, there is about 40% regression. reverting your patch fixes it.
-> 
-> Does that also involves multiple processes concurrently reading the same file?
->  
-> > On another machine with another JBOD (7 SAS disks), fio_mmap_sync_read_4k (64k/128k)
-> > has about 30% regression. But it's not caused by your patch. I am bisecting it on the
-> > 2nd machine now.
-> 
-> That may well related to my readahead patches.
-Not sure. But the bisect is stable to report Linus' patch.
 
+What pipe(2) creates is exactly an *anonymous* pipe.
+
+>
+>> You are going to a *wrong* direction.
+>>
+>What is the right direction you think? Keep the pipe() API unchanged
+>and keep two fds refering to the same kernel buffer? If you want to
+>keep the API unchanged just for compatiblity with POSIX, I agree with
+>you, and maybe a new system call is needed.
+
+
+Yes, exactly.
+Inventing a new API is better than modifying pipe(2), IMO.
+
+BUT I still don't agree that you really need this... I think you
+can add a flag or something like that to an fd to do this, e.g.
+
+   fcntl(fd, F_SETFD, FD_PIPERW);
+
+Isn't this better?
+
+>
+>>
+>> If you repeat your (pipe,splice,splice,close,close) sequence for
+>> thousands times, it is still the same, nothing saves...
+>>
+>You means that?
+>
+>while (<condition>) {
+> pipe/splice/splice/close/close?
+>}
+
+At least this is what I understand from your words.
+
+>
+>You don't know my meaning. As a proxy server, there maybe lots of
+>connections to maintain, and these connections will keep open for a
+>long time. If the data received can be sent in a relay cycle, the
+>kernel buffer can be reused. If not, the kernel buffer must be
+>reserved. When there are lots of these kinds of connections, lots of
+>kernel buffers must be reserved. At this time, whether two fds per
+>kernel buffer or one fds per kernel buffer matters.
+
+SHow us the code, please.
