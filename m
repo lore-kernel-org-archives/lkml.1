@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZGCAZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZGCA0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbZGCAZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZGCAZV
+	id S1757013AbZGCA0t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZGCA0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:25:21 -0400
-Received: from mail.samba.org ([66.70.73.150]:47665 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754004AbZGCAZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:25:20 -0400
+	Thu, 2 Jul 2009 20:26:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:3199 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754703AbZGCA0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:26:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=KmNvh8ZdOsF4UvSVWFDsvBuyojUuWfqt99paqXcN0pZXmjTMmP+8RfN4klMgkLJIR
+	rNaeaXqD6WoVnWMj8WyHw==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6599ad830907021722x7b012991i1eca056bc72c010c@mail.gmail.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	 <20090702232625.3969.54444.stgit@menage.mtv.corp.google.com>
+	 <20090702165413.f4a21471.akpm@linux-foundation.org>
+	 <6599ad830907021722x7b012991i1eca056bc72c010c@mail.gmail.com>
+Date: Thu, 2 Jul 2009 17:26:42 -0700
+Message-ID: <6599ad830907021726s16264cf3o1e8b4e20d00b50c8@mail.gmail.com>
+Subject: Re: [PATCH 2/2] Ensures correct concurrent opening/reading of 
+	pidlists across pid namespaces
+From: Paul Menage <menage@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lizf@cn.fujitzu.com, serue@us.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       bblum@google.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <19021.20449.732095.210252@samba.org>
-Date: Fri, 3 Jul 2009 10:25:05 +1000
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
-In-Reply-To: <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-	<20090701140503.GA21185@mit.edu>
-	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-	<19021.17576.808138.476600@samba.org>
-	<alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+On Thu, Jul 2, 2009 at 5:22 PM, Paul Menage<menage@google.com> wrote:
+>
+> So I'm not sure how "stg mail" managed to lose that.
+>
 
- > Then, I just tried everything to get an overview:
+Ah - I was missing a
 
-thanks!
+%(fromauth)s
 
- >  (All with DUALNAMES=n)
- >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=lower
- >  # cp /mnt/dcim/100_fuji/dscf{4160,3004}.jpg
- >  # umount /mnt
- >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=win95
- >  # cp /mnt/dcim/100_fuji/dscf{4160,3005}.jpg
- >  # umount /mnt
- >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=winnt
- >  # cp /mnt/dcim/100_fuji/dscf{4160,3006}.jpg
- >  # umount /mnt
- >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=mixed
- >  # cp /mnt/dcim/100_fuji/dscf{4160,3007}.jpg
- >  # umount /mnt
- > 
- > Result? The camera only displays 3006.
- > 
- > The dualnames patch's filling filenames with random illegal
- > chars does seems to have a really foul side-effect after 
+tag in my stgit patchmail template so it wasn't mentioning the real
+"From" author. Now fixed for next time I send.
 
-actually, you've just proved the patch works as intended on your
-device!
-
-Only the shortname=winnt would create a 8.3 name when you use the
-filename dscfNNNN.jpg. That is why my first patch in May forced 
-
-   shortname_flags = VFAT_SFN_CREATE_WINNT;
-
-when the patch triggered. I think this is the only sane behaviour for
-a VFAT filesystem on Linux. Unfortunately it isn't the default, and at
-least on my Ubuntu system the automatic mounting doesn't get this
-right.
-
-I'd love to change the default or do an override, at least when
-dualnames is diabled. Hirofumi-san, what do you think?
-
-Cheers, Tridge
-
-PS: I'm assuming you actually typed "shortname=" not
-"shortnames=". The option is not plural.
+Paul
