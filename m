@@ -1,95 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZGCOrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757538AbZGCOsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZGCOrT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 10:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZGCOrG
+	id S1757538AbZGCOsS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 10:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755739AbZGCOsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 10:47:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42154 "EHLO mx2.redhat.com"
+	Fri, 3 Jul 2009 10:48:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58074 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754333AbZGCOrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 10:47:05 -0400
-Message-ID: <4A4E19E4.4020009@redhat.com>
-Date: Fri, 03 Jul 2009 16:47:00 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1755593AbZGCOsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 10:48:04 -0400
+Date: Fri, 3 Jul 2009 16:47:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703144754.GA13246@elte.hu>
+References: <20090703064518.GA30674@elte.hu> <20090703100834.6cb241b6@lxorguk.ukuu.org.uk> <20090703091655.GB3902@elte.hu> <20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk> <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk> <20090703131727.GA3207@elte.hu> <20090703143746.0379b2ee@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Arkadiusz Miskiewicz <a.miskiewicz@gmail.com>
-CC: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: Linux 2.6.27.26
-References: <20090703000703.GA17190@kroah.com> <20090703000722.GB17190@kroah.com> <200907030852.24912.a.miskiewicz@gmail.com>
-In-Reply-To: <200907030852.24912.a.miskiewicz@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090703143746.0379b2ee@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Arkadiusz Miskiewicz wrote:
-> On Friday 03 of July 2009, Greg KH wrote:
-> 
-> Isn't this part broken?
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-yes, this part is broken, patch is misapplied to wrong function...
-it applies only for for dm_get_from_kobject(), not dm_blk_open()
+> > > Its called engineering and good practice. The old code was 
+> > > correct. The paste of it is therefore most likely to be 
+> > > correct. Furthermore patches shouldn't mix clean up with other 
+> > > changes. So doing it as one is most definitely bad practice.
+> > 
+> > So you cannot do such trivial cleanups safely and validate the 
+> > result?
+> 
+> What part of not mixing clean-up with other changes didn't you 
+> understand ? [...]
 
-The patch
+It's an argument you made on false premises.
 
-  4d89b7b4e4726893453d0fb4ddbb5b3e16353994 
-  Do not process sysfs attributes when device is being destroyed.
+The thing is, my review wasnt about old code being moved around. It 
+was about new code being introduced by you:
 
-is not needed for 2.6.27 (dm sysfs attributes are not there yet)
++       if (copy_from_user(&vw.event, (void __user *)arg, sizeof(struct vt_event)))
++               return -EFAULT;
++       /* Highest supported event for now */
++       if(vw.event.event > VT_MAX_EVENT)
++               return -EINVAL;
 
-Milan
+Same pattern as in the old commit: you used differing styles just 3 
+lines apart in new code and apparently didnt even notice it. So i 
+dont buy your argument at all that you will do 'cleanups later' as 
+your patch shows ignorance of the whole concept.
 
+Compromising on quality only results in crap being ingrained, it 
+results in procrastinating and it results in you submitting new code 
+with basic problems - the very patch here i commented on.
 
+Nor is you assertion correct that fixing basic issues in it has to 
+degrade it reliability: it can be done safely. In my experience 
+striving for quality in such a way improves the end result. (the 
+exception is when moving around whole files or significant chunks of 
+code - then we preserve the old one, then move it.)
+
+> > I came across this patch of yours on lkml and noticed a few 
+> > problems - checkpatch noticed a few more. Is the reviewing of 
+> > patches and the commenting on unclean patches a 'bogus 
+> > standard'? Do we have some separate standard just for you?
 > 
-> The code in 2.6.27 already has such thing and new code is trying to return 
-> NULL even if function returns int
+> checkpatch is a tool, not a religion. [...]
+
+The thing is, you didnt really answer my question whether you 
+consider yourself to be accountable to the same standards of quality 
+as other upstream kernel contributors?
+
+Obviously checkpatch is not a religion - in fact in my reply i gave 
+a specific example where checkpatch would complain but that 
+complaint is wrong. Checkpatch is a tool, and the problem is not 
+that you are not making use of that tool - the problem is that you 
+are producing unclean code. If you wrote clean code there would be 
+no reason for anyone to complain.
+
+So just like the religious application of checkpatch is not 
+acceptable, is the religious avoidance of checkpatch not acceptable 
+either ;-)
+
+> [...] Quite frankly the way some people behave with it is a 
+> disgrace and it puts people off contributing to the kernel when 
+> their 500 line driver gets nothing but emails from people saying 
+> "that space is wrong". At least in your case you can actually 
+> program and your opinion comes from real practise and experience - 
+> which is more than a lot of the self appointed codingstyle police 
+> can say.
+
+But you are not a newbie driver submitter, are you? Do you consider 
+yourself exempt from accepted rules of cleanliness, for new code you 
+submit?
+
+[...]
+
+> > Anyway ... all i did was to comment on a somewhat deficient 
+> > patch that you submitted to lkml. If you dont want review 
+> > feedback and if you feel embarrased and defensive by getting it 
+> > then please dont send out slightly-messy signed-off patches to 
+> > lkml, it's simple as that.
 > 
-> static int dm_blk_open(struct inode *inode, struct file *file)
-> {
->         struct mapped_device *md;
-> 
->         spin_lock(&_minor_lock);
-> 
->         md = inode->i_bdev->bd_disk->private_data;
->         if (!md)
->                 goto out;
-> 
->         if (test_bit(DMF_FREEING, &md->flags) ||
->             test_bit(DMF_DELETING, &md->flags)) {
->                 md = NULL;
->                 goto out;
->         }
-> 
->         dm_get(md);
->         atomic_inc(&md->open_count);
-> 
-> out:
->         spin_unlock(&_minor_lock);
-> 
->         return md ? 0 : -ENXIO;
-> }
-> 
-> 
->> diff --git a/drivers/md/dm.c b/drivers/md/dm.c
->> index ace998c..925efaf 100644
->> --- a/drivers/md/dm.c
->> +++ b/drivers/md/dm.c
->> @@ -265,6 +265,10 @@ static int dm_blk_open(struct inode *inode, struct
->> file *file) goto out;
->>         }
->>  
->> +       if (test_bit(DMF_FREEING, &md->flags) ||
->> +           test_bit(DMF_DELETING, &md->flags))
->> +               return NULL;
->> +
->>         dm_get(md);
->>         atomic_inc(&md->open_count);
->>  
-> 
-> 
+> The message I thought was quite clear about what I was asking for. 
+> The fact you complained about spaces and missed the fact it 
+> couldn't even work was "enlightening" in terms of code review.
+
+Here, in support of advancing a false argument you materially 
+distort the review i gave you, which, in part, said:
+
+| [...]
+|
+|   The cast to void __user * should be done in the ioctl 
+|   demultiplexer vt_ioctl(), and the ioctl ugliness should not 
+|   invade cleaner child functions such as vt_event_wait_ioctl().
+|
+| - same for vt_event_wait_ioctl() - it passes in a type damaged by
+|   ioctl's limitations. Such type limitations and ioctl demuxing 
+|   artifacts should be kept local to vt_ioctl().
+
+This goes beyond 'spaces'. Type cleanliness is the first and most 
+important thing when designing new interfaces - and you just added a 
+new unclean interface in form of vt_event_wait_ioctl().
+
+	Ingo
