@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZGCQeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbZGCQmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757592AbZGCQeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 12:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZGCQeK
+	id S1757598AbZGCQmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 12:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756409AbZGCQmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 12:34:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41853 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 12:42:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41817 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756020AbZGCQeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 12:34:09 -0400
-Date: Fri, 3 Jul 2009 18:33:58 +0200
+	id S1756369AbZGCQmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 12:42:35 -0400
+Date: Fri, 3 Jul 2009 18:42:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703163358.GA19685@elte.hu>
+Message-ID: <20090703164225.GA21447@elte.hu>
 References: <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk> <20090703131727.GA3207@elte.hu> <20090703143746.0379b2ee@lxorguk.ukuu.org.uk> <20090703144754.GA13246@elte.hu> <20090703160230.093e422c@lxorguk.ukuu.org.uk> <20090703155809.GA20121@elte.hu> <20090703172651.619162fd@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,26 +35,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > > Ingo, if you've nothing better to do than quote out of context 
-> > > and be offensive, perhaps you should go fix voyager support or 
-> > > something productive instead.
-> > >
-> > Another question: i'm wondering why you brought up Voyager 
-> > support here. Are you trying to insult me?
+> A good example of what happens if you don't is
 > 
-> [and]
+> scripts/checkpatch.pl --file arch/x86/kernel/cpu/mtrr/*c
 > 
-> > Pointing out when your code is unclean does not count as an 
-> > offense on lkml, i hope
-> 
-> Nor then I trust does pointing out that voyager needs a bit of 
-> work ;)
+> where the core part of the code isn't changed very much even 
+> though the interfaces completely get reworked. Thus it never gets 
+> cleaned up and reviewed as a whole. The code works, will probably 
+> work for years but never gets looked at as a whole and tidied.
 
-Voyager is not upstream anymore so i dont understand your point ...
+I think even the MTRR code (which is indeed one of the few x86 
+places still not fully cleaned up) supports my arguments.
 
-I do think the Voyager code needs a lot of work, and i reviewed the 
-patches that were submitted. I'm aware of no Voyager patch series 
-that i find acceptable, and the things i noticed so far already mean 
-quite a bit of work.
+Look at the averages:
+
+                                      errors   lines of code   errors/KLOC
+arch/x86/kernel/cpu/mtrr/amd.c             2             120          16.6
+arch/x86/kernel/cpu/mtrr/centaur.c         8             225          35.5
+arch/x86/kernel/cpu/mtrr/cleanup.c         0            1102             0
+arch/x86/kernel/cpu/mtrr/cyrix.c          10             275          36.3
+arch/x86/kernel/cpu/mtrr/generic.c        16             730          21.9
+arch/x86/kernel/cpu/mtrr/if.c             11             428          25.7
+arch/x86/kernel/cpu/mtrr/main.c           50             751          66.5
+arch/x86/kernel/cpu/mtrr/state.c           0              83             0
+
+The arch/x86/kernel/cpu/mtrr/cleanup.c file is a new bit and 
+relatively clean.
 
 	Ingo
