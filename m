@@ -1,90 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757467AbZGCCEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbZGCCI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757467AbZGCCEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZGCCEp
+	id S1757369AbZGCCI5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 22:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZGCCIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:04:45 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:41782 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbZGCCEo convert rfc822-to-8bit (ORCPT
+	Thu, 2 Jul 2009 22:08:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55506 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752350AbZGCCIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:04:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xtymEBVcVugVe6qrxbbToNZvY0gE6cVlhMDKTAla+lgVHtD4V3UBRz0dFkgq8kdvco
-         p5NlnNqoctCai3ei3ZJITC7iqDqEWQUBfTu6XScUePlbw56TyQEWNS4tWkV5iPPZuopY
-         3lq2S9W512x0svVV8wJdhaHyJIwEHzaVmIyyE=
-MIME-Version: 1.0
-In-Reply-To: <1246580583.4534.32443.camel@localhost.localdomain>
-References: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com>
-	 <1246307644.4534.26298.camel@localhost.localdomain>
-	 <3877989d0906300001u2f185fb0lcab5614e245efc21@mail.gmail.com>
-	 <1246580583.4534.32443.camel@localhost.localdomain>
-Date: Fri, 3 Jul 2009 10:04:48 +0800
-Message-ID: <3877989d0907021904g1154ad44m7da3888f9c01416@mail.gmail.com>
-Subject: Re: [RFC patch] Use IPI_shortcut for lapic timer broadcast
-From: Luming Yu <luming.yu@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 2 Jul 2009 22:08:48 -0400
+Date: Thu, 2 Jul 2009 19:08:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Blum <bblum@google.com>
+Cc: Paul Menage <menage@google.com>, lizf@cn.fujitzu.com, serue@us.ibm.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+ that  shows only unique tgids
+Message-Id: <20090702190845.0cafc46a.akpm@linux-foundation.org>
+In-Reply-To: <2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	<20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+	<20090702164649.303c4952.akpm@linux-foundation.org>
+	<2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+	<20090702175341.fd2e26d5.akpm@linux-foundation.org>
+	<6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+	<2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 3, 2009 at 8:23 AM, Pallipadi,
-Venkatesh<venkatesh.pallipadi@intel.com> wrote:
-> On Tue, 2009-06-30 at 00:01 -0700, Luming Yu wrote:
->> Thanks for review. How about the following patch?
->>
->> /**The patch is enclosed in text attachment**
->> **Using web client to send the patch**
->> **below is for review, please apply attached  patch*/
->>
->>
->> Signed-off-by: Yu Luming <luming.yu@intel.com>
->>
->>  apic.c         |    5 ++++-
->>  apic_flat_64.c |    7 ++++++-
->>  2 files changed, 10 insertions(+), 2 deletions(-)
->>
->>
->> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c.0    2009-06-29
->> 23:45:05.000000000 -0600
->> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c      2009-06-30
->> 00:37:56.000000000 -0600
->> @@ -419,7 +419,10 @@
->>  static void lapic_timer_broadcast(const struct cpumask *mask)
->>  {
->>  #ifdef CONFIG_SMP
->> -     apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
->> +     if (unlikely(cpumask_weight(mask) == num_online_cpus() -1))
->> +             apic->send_IPI_all(LOCAL_TIMER_VECTOR);
->> +     else
->> +             apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
->>  #endif
->>  }
->
-> I dont think it is a good idea to pay the penalty for cpumask_weight and
-> num_online_cpus, for the more common tickless case to fix this problem
-> with less common no tickeless case.
+On Thu, 2 Jul 2009 18:17:56 -0700 Benjamin Blum <bblum@google.com> wrote:
 
-In NO_HZ, the lapic_timer_broadcast is rare thing too...
+> On Thu, Jul 2, 2009 at 6:08 PM, Paul Menage<menage@google.com> wrote:
+> > On Thu, Jul 2, 2009 at 5:53 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> >>> In the first snippet, count will be at most equal to length. As length
+> >>> is determined from cgroup_task_count, it can be no greater than the
+> >>> total number of pids on the system.
+> >>
+> >> Well that's a problem, because there can be tens or hundreds of
+> >> thousands of pids, and there's a fairly low maximum size for kmalloc()s
+> >> (include/linux/kmalloc_sizes.h).
+> >>
+> >> And even if this allocation attempt doesn't exceed KMALLOC_MAX_SIZE,
+> >> large allocations are less unreliable. __There is a large break point at
+> >> 8*PAGE_SIZE (PAGE_ALLOC_COSTLY_ORDER).
+> >
+> > This has been a long-standing problem with the tasks file, ever since
+> > the cpusets days.
+> >
+> > There are ways around it - Lai Jiangshan <laijs@cn.fujitsu.com> posted
+> > a patch that allocated an array of pages to store pids in, with a
+> > custom sorting function that let you specify indirection rather than
+> > assuming everything was in one contiguous array. This was technically
+> > the right approach in terms of not needing vmalloc and never doing
+> > large allocations, but it was very complex; an alternative that was
+> > mooted was to use kmalloc for small cgroups and vmalloc for large
+> > ones, so the vmalloc penalty wouldn't be paid generally. The thread
+> > fizzled AFAICS.
+> 
+> As it is currently, the kmalloc call will simply fail if there are too
+> many pids, correct? Do we prefer not being able to read the file in
+> this case, or would we rather use vmalloc?
 
->
-> We should be able to add an interface to get tick_nohz_enabled from
-> tick-sched.c and use that instead.
+We'd prefer that we not use vmalloc and that the reads not fail!
 
-If we use send_IPI_all just for NO_HZ is disabled, we will leave a corner case
-here that lapic_timer_broadcast could be really really being actively used even
-NO_HZ enabled... if this will never happen, I would agree with you..
 
-Thanks,
-LUming
+
+Why are we doing all this anyway?  To avoid presenting duplicated pids
+to userspace?  Nothing else?
+
+If so, why not stop doing that - userspace can remove dupes (if it
+cares) more easily than the kernel can?
+
+
+Or we can do it the other way?  Create an initially-empty local IDR
+tree or radix tree and, within that, mark off any pids which we've
+already emitted?  That'll have a worst-case memory consumption of
+approximately PID_MAX_LIMIT bits -- presently that's half a megabyte. 
+With no large allocations needed?
+
+
+btw, did pidlist_uniq() actually needs to allocate new memory for the
+output array?  Could it have done the filtering in-place?
+
