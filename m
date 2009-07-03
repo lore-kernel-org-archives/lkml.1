@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbZGBX7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZGCADg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbZGBX7y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 19:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZGBX7p
+	id S1756543AbZGCADg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZGCAD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 19:59:45 -0400
-Received: from mail.samba.org ([66.70.73.150]:46462 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbZGBX7p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 19:59:45 -0400
+	Thu, 2 Jul 2009 20:03:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48779 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbZGCAD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:03:28 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH v2] Show kernel stack usage to /proc/meminfo and OOM log
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Christoph Lameter <cl@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+In-Reply-To: <4A4B9BA1.6040109@redhat.com>
+References: <alpine.DEB.1.10.0907011315540.9522@gentwo.org> <4A4B9BA1.6040109@redhat.com>
+Message-Id: <20090703090226.08E6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-ID: <19021.18919.560478.630755@samba.org>
-Date: Fri, 3 Jul 2009 09:59:35 +1000
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Added CONFIG_VFAT_FS_DUALNAMES option
-In-Reply-To: <20090702224446.GD30840@elf.ucw.cz>
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090702214646.GD1485@ucw.cz>
-	<19021.12158.915384.574218@samba.org>
-	<20090702223349.GA30840@elf.ucw.cz>
-	<19021.14217.587592.808935@samba.org>
-	<20090702224446.GD30840@elf.ucw.cz>
-X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
-Reply-To: tridge@samba.org
-From: tridge@samba.org
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri,  3 Jul 2009 09:03:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pavel,
+> Christoph Lameter wrote:
+> > On Wed, 1 Jul 2009, David Howells wrote:
+> > 
+> >> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> >>
+> >>> +	int pages = THREAD_SIZE / PAGE_SIZE;
+> >> Bad assumption.  On FRV, for example, THREAD_SIZE is 8K and PAGE_SIZE is 16K.
+> > 
+> > Guess that means we need arch specific accounting for this counter.
+> 
+> Or we count the number of stacks internally and only
+> convert to pages whenever we display the value.
 
- > That's why we have ethernet checksums. 
+Thanks good idea. I'll implement this today (or tommorow).
 
-which of course just changes the number of bits. The argument remains
-the same. 
 
- > It already _was_ perfect before you started patching it.
-
-wow, I really didn't expect the objection to my patch to be that VFAT
-is perfect!
-
-Cheers, Tridge
