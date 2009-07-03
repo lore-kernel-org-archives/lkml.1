@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbZGCSoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbZGCSp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbZGCSoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 14:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbZGCSoD
+	id S1758442AbZGCSp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 14:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756810AbZGCSpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 14:44:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37558 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 14:45:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53649 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754780AbZGCSoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 14:44:02 -0400
-Date: Fri, 3 Jul 2009 20:43:53 +0200
+	id S1755574AbZGCSpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 14:45:16 -0400
+Date: Fri, 3 Jul 2009 20:45:07 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: atomic64: inline atomic64_read()
-Message-ID: <20090703184353.GB4085@elte.hu>
-References: <alpine.LFD.2.01.0907021653030.3210@localhost.localdomain> <tip-9103cab145a93cef13378632b332a824758a2f6f@git.kernel.org> <4A4E1AA2.30002@gmail.com> <20090703180450.GB3405@elte.hu> <20090703111033.6e9627de@infradead.org> <20090703181815.GC3405@elte.hu> <20090703113002.6c2c103b@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
+       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de
+Subject: Re: [tip:perfcounters/urgent] x86: atomic64: Optimize CMPXCHG8B
+	sequences to not use the LOCK prefix
+Message-ID: <20090703184507.GA6094@elte.hu>
+References: <20090703111033.6e9627de@infradead.org> <tip-07aa81b2169a2cb5e62ad239fd8055ef484e4f79@git.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090703113002.6c2c103b@infradead.org>
+In-Reply-To: <tip-07aa81b2169a2cb5e62ad239fd8055ef484e4f79@git.kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,41 +38,10 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+* tip-bot for Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Fri, 3 Jul 2009 20:18:15 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Arjan van de Ven <arjan@infradead.org> wrote:
-> > 
-> > > On Fri, 3 Jul 2009 20:04:50 +0200
-> > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > > +static inline u64 atomic64_read(atomic64_t *ptr)
-> > > > > +{
-> > > > > +	u64 res;
-> > > > > +
-> > > > > +	asm volatile(
-> > > > > +		"mov %%ebx, %%eax\n\t"
-> > > > > +		"mov %%ecx, %%edx\n\t"
-> > > > > +		LOCK_PREFIX "cmpxchg8b %1\n"
-> > > 
-> > > also afaik cmpxchg implies the lock prefix, so no need to make an
-> > > explicit one... it just adds code size and alternatives-work
-> > 
-> > good point!
-> > 
-> > Is the same true of XADD as well? If yes then we can remove the lock 
-> > prefix from those as well - there's a few uses of that on 32-bit and 
-> > 64-bit as well.
-> > 
-> 
-> ok never mind I was wrong,
-> it seems cmpxchg does NOT imply a lock prefix, nor does xadd.
+> x86: atomic64: Optimize CMPXCHG8B sequences to not use the LOCK prefix
 
-Indeed, i just checked the SDM and the lock prefix is not implicit.
-
-Ignore the patch i sent out ;-)
+ok, that's wrong so i dropped it.
 
 	Ingo
