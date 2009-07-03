@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbZGCSKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbZGCSNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758165AbZGCSKZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 14:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZGCSKU
+	id S1758070AbZGCSNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 14:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbZGCSNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 14:10:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55771 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751509AbZGCSKT (ORCPT
+	Fri, 3 Jul 2009 14:13:15 -0400
+Received: from mail-qy0-f193.google.com ([209.85.221.193]:34111 "EHLO
+	mail-qy0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbZGCSNP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 14:10:19 -0400
-Date: Fri, 3 Jul 2009 11:10:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Menage <menage@google.com>
-Cc: Benjamin Blum <bblum@google.com>, lizf@cn.fujitzu.com, serue@us.ibm.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
- that  shows only unique tgids
-Message-Id: <20090703111016.ceb28541.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830907031054x74d90149y38aae60afa403d58@mail.gmail.com>
-References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
-	<2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
-	<20090702175341.fd2e26d5.akpm@linux-foundation.org>
-	<6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
-	<2f86c2480907021817o79fce75yd9785aab682f7bb4@mail.gmail.com>
-	<20090702190845.0cafc46a.akpm@linux-foundation.org>
-	<6599ad830907022116n7a711c7fs52ff9b400ec8797f@mail.gmail.com>
-	<20090702235527.7ddc873c.akpm@linux-foundation.org>
-	<6599ad830907030911m6176dc59id3a7d897b03d2bd@mail.gmail.com>
-	<20090703095000.cf46ad19.akpm@linux-foundation.org>
-	<6599ad830907031054x74d90149y38aae60afa403d58@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 14:13:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=E1B7WFUAqZcCs2wz2TcOqteE3tdk6RUl/2l6CPhPfw5WddzGmLG/R2MysOrKhVQfqk
+         QUxFkTGY3+VddtbE1rbxd7F3a8yHqujczEnP+iU3dqKPRy4WJ3wQ0VHd7S4Z4FNFn2c7
+         L/sH2q6BpBsI1ZrWgcYygWnz6QINR1jvEmW8M=
+MIME-Version: 1.0
+In-Reply-To: <200907031751.46280.arnd@arndb.de>
+References: <8bd0f97a0907030114g459863e9l829a6291e990b9cf@mail.gmail.com> 
+	<200907031751.46280.arnd@arndb.de>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 3 Jul 2009 14:12:58 -0400
+Message-ID: <8bd0f97a0907031112k3b1c0941r41bd126d9fcedcfc@mail.gmail.com>
+Subject: Re: making asm-generic/futex.h completely usable
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Jul 2009 10:54:48 -0700 Paul Menage <menage@google.com> wrote:
+On Fri, Jul 3, 2009 at 11:51, Arnd Bergmann wrote:
+> On Friday 03 July 2009, Mike Frysinger wrote:
+>> ive been reading up on futexes of late and have been poking around the
+>> futex kernel pieces to see what is needed to get Blackfin working with
+>> it.
+>>
+>> Blackfin falls into the "no hardware atomic instructions" category as
+>> can easily be seen in our atomic.h: disable interrupts, do
+>> load/stores, restore interrupts.  my understanding of the
+>> futex_atomic_op_inuser() function is that this runs in process
+>> context, so this same interrupt trick should work fine.  which leads
+>> me to wonder why doesnt the asm-generic/futex.h header already take
+>> this approach ?
+>
+> The code does not run in user space, the name indicates that it
+> operates on variables in user space while running in the kernel.
 
-> >__Unfortunately radix-trees are presented as operating on
-> > void* data, so one would need to do some typecasting when storing
-> > BITS_PER_LONG-sized bitfields inside them.
-> 
-> That would mean adding something a bit like the IDA wrapper that
-> converts IDR to deal with bitfields?
+when i said "process context" i didnt mean it was running in usermode.
+ i meant the context of the kernel execution is of a process, so it
+can sleep.  since it needs to use get/put user, that means it can
+sleep fine.
 
-I guess so.
+> The irq-disable trick fundamentally does not work on SMP systems,
+> which need architecture specific atomic operations for this.
 
-> Is the benefit of avoiding a vmalloc() at all costs really worth the
-> additional complexity
+i'm guessing spin lock with irq semantics wouldnt work due to the
+possibility of get/put user sleeping ...
 
-Well no.  But nor was it worth the additional complexity the last twenty
-times someone resorted to vmalloc to solve a problem of this nature.  Taking
-a kernel-wide perspective here gives a different answer.
+>> seems to me that the SuperH implementation fits the bill nicely.
+>> their arch/sh/include/asm/futex-irq.h looks like it could be literally
+>> straight copied into asm-generic/futex.h thus making it fully
+>> functional for everyone by default.
+>
+> That sounds reasonable for the arch/sh/include/asm/futex.h file, but
+> the futex-irq.h file would still be reserved for non-SMP architectures.
+> I believe that out of the architectures currently using asm-generic/futex.h,
+> blackfin is the only one that supports SMP, so you still lose ;-)
 
-However I don't think a little scoreboarding thing (what's the correct
-term) built around radix-trees would suffice to solve many of those
-past sins.  Whereas a general dynamic array thing would be applicable
-in many cases.
+if the functions were able to be overridden on a per-function basis,
+that is easy to handle with CONFIG_SMP in the Blackfin header.
+-mike
