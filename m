@@ -1,79 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZGCIyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZGCI5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755603AbZGCIyL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZGCIxs
+	id S1753922AbZGCI5R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZGCI5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:53:48 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:36025 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751554AbZGCIxq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b0q8MMQ1I4hx5FoP8G32ZQKhgc8IuSpqbrZcQrXVqcXCBFVrC3uIqRXMW41ZpPVdM0
-         +JQdsJ6ysL71sSbEnTWkT8ayThSILgSfVXSKGJPWrY8p0KPLMMyfIeQ5MlsR3XqrNNU1
-         GN+MX0GJn2Pg+ngChoTLiJJr5UxY83lWE2e1o=
-Date: Fri, 3 Jul 2009 10:53:45 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
-	kernel modules
-Message-ID: <20090703085344.GB4933@nowhere>
-References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246524170.7113.20.camel@marge.simson.net> <20090703072941.GC7943@elte.hu> <1246608058.6257.25.camel@marge.simson.net> <20090703081556.GA21833@elte.hu> <1246609724.6257.28.camel@marge.simson.net>
+	Fri, 3 Jul 2009 04:57:04 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53861 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752149AbZGCI5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:57:02 -0400
+Message-ID: <4A4DC81B.3050608@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 16:58:03 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246609724.6257.28.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Paul Menage <menage@google.com>
+CC: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 8/9] [RFC] Example multi-bindable subsystem: a per-cgroup
+ notes field
+References: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com> <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 10:28:44AM +0200, Mike Galbraith wrote:
-> On Fri, 2009-07-03 at 10:15 +0200, Ingo Molnar wrote:
-> > * Mike Galbraith <efault@gmx.de> wrote:
-> > 
-> > > > We need to calculate and cache the objdump annotation output 
-> > > > once, but after that it should be pretty fast as we just display 
-> > > > updated counts with the same lines over and over again. No 
-> > > > repeated objdump runs are needed.
-> > > 
-> > > But active files follow symbols, which change on the fly.
-> > > 
-> > > Besides, as mentioned previously, while displayed annotation was 
-> > > very cool, it took a lot of display space.  For me, top with the 
-> > > ability to emit bic-disposable mini-reports would be my primary 
-> > > perf tools usage. I'd only use big brothers when I needed their 
-> > > power/detail.
-> > 
-> > Ok, then how about putting some sort of interactivity into perf top?
-> > 
-> > Up and down arrows would allow the walking of the histogram, and 
-> > hitting enter on a symbol would show the annotated function? It 
-> > would be way cool and more usable and more flexible than some 
-> > side-channel for mini-reports.
-> > 
-> > PowerTop has a lot of good text interactivity code that might be 
-> > reused. (assuming it's under a kernel compatible license?)
-> > 
-> > There's also the 'tig' tool - an interactive tool to walk Git 
-> > trees/commits. If it's under a compatible license that would be a 
-> > nice place to look for clues too - it has a very mature and 
-> > well-thought-out TUI in my opinion.
+Paul Menage wrote:
+> [RFC] Example multi-bindable subsystem: a per-cgroup notes field
 > 
-> Cool.  I love free samples to bend/spindle/mutilate :)
+> As an example of a multiply-bindable subsystem, this patch introduces
+> the "info" subsystem, which provides a single file, "info.notes", in
+> which user-space middleware can store an arbitrary (by default up to
+> one page) binary string representing configuration data about that
+> cgroup.  This reduces the need to keep additional state outside the
+> cgroup filesystem.  The maximum notes size for a hierarchy can be set
+> by updating the "info.size" file in the root cgroup.
 > 
-> 	-Mike
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
+> ---
+> 
+>  include/linux/cgroup_subsys.h |    6 ++
+>  init/Kconfig                  |    9 +++
+>  kernel/Makefile               |    1 
+>  kernel/info_cgroup.c          |  133 +++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 149 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/info_cgroup.c
+> 
+> diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
+> index f78605e..5dfea38 100644
+> --- a/include/linux/cgroup_subsys.h
+> +++ b/include/linux/cgroup_subsys.h
+> @@ -60,3 +60,9 @@ SUBSYS(net_cls)
+>  #endif
+>  
+>  /* */
+> +
+> +#ifdef CONFIG_CGROUP_INFO
+> +MULTI_SUBSYS(info)
+> +#endif
+> +
+> +/* */
+> diff --git a/init/Kconfig b/init/Kconfig
+> index d904d6c..3bd4685 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -604,6 +604,15 @@ config CGROUP_MEM_RES_CTLR_SWAP
+>  	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
+>  	  size is 4096bytes, 512k per 1Gbytes of swap.
+>  
+> +config CGROUP_INFO
+> +	bool "Simple application-specific info cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  Provides a simple cgroups subsystem with an "info.notes"
+> +	  field, which can be used by middleware to store
+> +	  application-specific configuration data about a cgroup. Can
+> +	  be mounted on multiple hierarchies at once.
+> +
+>  endif # CGROUPS
+>  
+>  config MM_OWNER
+> diff --git a/kernel/Makefile b/kernel/Makefile
+> index 7ffdc16..e713a67 100644
+> --- a/kernel/Makefile
+> +++ b/kernel/Makefile
+> @@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
+>  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+>  obj-$(CONFIG_CPUSETS) += cpuset.o
+>  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+> +obj-$(CONFIG_CGROUP_INFO) += info_cgroup.o
+>  obj-$(CONFIG_UTS_NS) += utsname.o
+>  obj-$(CONFIG_USER_NS) += user_namespace.o
+>  obj-$(CONFIG_PID_NS) += pid_namespace.o
+> diff --git a/kernel/info_cgroup.c b/kernel/info_cgroup.c
+> new file mode 100644
+> index 0000000..34cfdb8
+> --- /dev/null
+> +++ b/kernel/info_cgroup.c
+> @@ -0,0 +1,133 @@
+> +/*
+> + * info_cgroup.c - simple cgroup providing a "notes" field
+> + */
+> +
+> +#include "linux/cgroup.h"
+> +#include "linux/err.h"
+> +#include "linux/seq_file.h"
+> +
 
+#include <linux/xxx>
 
-The same interactivity could also apply to perf report, by dynamically
-expanding callchains, linking to more details with annotate, etc...
+And I got compile error, because of missing
+#include <linux/uaccess.h>
 
+> +struct info_cgroup {
+> +	struct cgroup_subsys_state css;
+> +	/* notes string for this cgroup */
+> +	const char *notes;
+> +	size_t len;
+> +	/*
+> +	 * size limit for notes in this hierarchy. Only relevant for
+> +	 * the root cgroup. Not synchronized since it's a single word
+> +	 * value and writes to it never depend on previously read
+> +	 * values.
+> +	 */
+> +	size_t max_len;
+
+If it's not per cgroup, it can be a global value.
+But why not make it per cgroup?
+
+> +	spinlock_t lock;
+> +};
+> +
+> +static inline struct info_cgroup *cg_info(struct cgroup *cg)
+> +{
+> +	return container_of(cgroup_subsys_state(cg, info_subsys_id),
+> +			    struct info_cgroup, css);
+> +}
+> +
+> +static struct cgroup_subsys_state *info_create(struct cgroup_subsys *ss,
+> +					       struct cgroup *cg)
+> +{
+> +	struct info_cgroup *info = kzalloc(sizeof(*info), GFP_KERNEL);
+
+newline needed
+
+> +	if (!info)
+> +		return ERR_PTR(-ENOMEM);
+> +	spin_lock_init(&info->lock);
+> +	if (!cg->parent)
+> +		info->max_len = PAGE_SIZE;
+> +	return &info->css;
+> +}
+> +
+> +static void info_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+
+newline needed
+
+> +	kfree(css->notes);
+> +	kfree(css);
+> +}
+> +
+> +
+> +static int info_read(struct cgroup *cont,
+> +		     struct cftype *cft,
+> +		     struct seq_file *seq)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+
+newline needed
+
+> +	spin_lock(&css->lock);
+> +	if (css->notes)
+> +		seq_write(seq, css->notes, css->len);
+> +	spin_unlock(&css->lock);
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Use a custom write function so that we can handle binary data
+> + */
+> +
+> +static ssize_t info_write(struct cgroup *cgrp, struct cftype *cft,
+> +			  struct file *file,
+> +			  const char __user *userbuf,
+> +			  size_t nbytes, loff_t *unused_ppos) {
+> +	struct info_cgroup *css = cg_info(cgrp);
+> +	char *notes = NULL;
+
+newline needed
+
+> +	if (nbytes > cg_info(cgrp->top_cgroup)->max_len)
+> +		return -E2BIG;
+> +	if (nbytes) {
+> +		notes = kmalloc(nbytes, GFP_USER);
+> +		if (!notes)
+> +			return -ENOMEM;
+> +		if (copy_from_user(notes, userbuf, nbytes))
+
+missing kfree(notes)
+
+> +			return -EFAULT;
+> +	}
+> +
+> +	spin_lock(&css->lock);
+> +	kfree(css->notes);
+> +	css->notes = notes;
+> +	css->len = nbytes;
+> +	spin_unlock(&css->lock);
+> +	return nbytes;
+> +}
+> +
+> +static u64 notes_size_read(struct cgroup *cont, struct cftype *cft)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	return css->max_len;
+> +}
+> +
+> +static int notes_size_write(struct cgroup *cont, struct cftype *cft, u64 val)
+> +{
+> +	struct info_cgroup *css = cg_info(cont);
+> +	css->max_len = val;
+> +	return 0;
+> +}
+> +
+> +static struct cftype info_files[] =  {
+> +	{
+> +		.name = "notes",
+> +		.read_seq_string = info_read,
+> +		.write = info_write,
+> +	},
+> +};
+> +
+> +static struct cftype info_root_files[] = {
+> +	{
+> +		.name = "size",
+> +		.read_u64 = notes_size_read,
+> +		.write_u64 = notes_size_write,
+> +	},
+> +};
+> +
+> +static int info_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+> +{
+> +	if (!cont->parent)
+> +		cgroup_add_files(cont, ss, info_root_files,
+> +				 ARRAY_SIZE(info_root_files));
+> +	return cgroup_add_files(cont, ss, info_files, ARRAY_SIZE(info_files));
+> +}
+> +
+> +struct cgroup_subsys info_subsys = {
+> +	.name = "info",
+> +	.create = info_create,
+> +	.destroy = info_destroy,
+> +	.populate = info_populate,
+> +	.subsys_id = info_subsys_id,
+> +};
+> 
+> 
+> 
