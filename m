@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbZGCScs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZGCSiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758966AbZGCScs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 14:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758941AbZGCSch
+	id S1757911AbZGCSiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 14:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756684AbZGCSh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 14:32:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53639 "EHLO hera.kernel.org"
+	Fri, 3 Jul 2009 14:37:58 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:49008 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758948AbZGCScf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 14:32:35 -0400
-Date: Fri, 3 Jul 2009 18:31:25 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
-       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090703111033.6e9627de@infradead.org>
-References: <20090703111033.6e9627de@infradead.org>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Optimize CMPXCHG8B sequences to not use the LOCK prefix
-Message-ID: <tip-07aa81b2169a2cb5e62ad239fd8055ef484e4f79@git.kernel.org>
-Git-Commit-ID: 07aa81b2169a2cb5e62ad239fd8055ef484e4f79
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 03 Jul 2009 18:31:26 +0000 (UTC)
+	id S1756638AbZGCSh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 14:37:57 -0400
+Subject: Re: [PATCH] integrity: add ima_counts_put (updated)
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
+       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <7465.1246593761@jrobl>
+References: <1246029874-6860-1-git-send-email-zohar@linux.vnet.ibm.com>
+	 <1246039527.4809.18.camel@dyn9002018117.watson.ibm.com>
+	 <12000.1246284749@jrobl>
+	 <1246286783.4054.56.camel@dyn9002018117.watson.ibm.com>
+	 <7959.1246307789@jrobl>
+	 <1246313060.3280.81.camel@dyn9002018117.watson.ibm.com>
+	 <7465.1246593761@jrobl>
+Content-Type: text/plain
+Date: Fri, 03 Jul 2009 14:37:59 -0400
+Message-Id: <1246646279.3844.16.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  07aa81b2169a2cb5e62ad239fd8055ef484e4f79
-Gitweb:     http://git.kernel.org/tip/07aa81b2169a2cb5e62ad239fd8055ef484e4f79
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 3 Jul 2009 20:15:58 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 3 Jul 2009 20:24:00 +0200
+On Fri, 2009-07-03 at 13:02 +0900, hooanon05@yahoo.co.jp wrote:
+> Mimi Zohar:
+> > NFSv3 is an interesting example. Permission checking is done once,
+> > followed by multiple open/read/close calls. Incrementing the counters in
+> > nfsd_permission() once and decrementing the counters in close, multiple
+> > times, resulted in imbalance messages.  True, the solution in this case
+> > was to increment in open and decrement in close, but that was only part
+> > of the solution.  The other part of the solution, the important part,
+> > was to add a call to ima_path_check() to measure the file.
+> 
+> Let me make sure.
+> Does "that was only part of the solution" mean IMA does not work for
+> NFSD fully? To make IMA work fully, is incrementing before open
+> absolutely necessary?
+> 
+> J. R. Okajima
 
-x86: atomic64: Optimize CMPXCHG8B sequences to not use the LOCK prefix
+The patch is fine.  It adds a call to ima_path_check() in
+nfsd_permission(), but delays incrementing the counters to nfsd_open()
+and decrementing the counters to nfsd_close() in order for the counters
+to be balanced.
 
-Arjan noted that the CMPXCHG8B instruction has an implicit lock
-prefix, so there's no need to add the prefix explicitly.
+Mimi
 
-This gives us smaller code and smaller alternative-instructions
-tables.
-
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <20090703111033.6e9627de@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/include/asm/atomic_32.h |    2 +-
- arch/x86/lib/atomic64_32.c       |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index de89959..130f4ab 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -302,7 +302,7 @@ static inline u64 atomic64_read(atomic64_t *ptr)
- 	asm volatile(
- 		"mov %%ebx, %%eax\n\t"
- 		"mov %%ecx, %%edx\n\t"
--		LOCK_PREFIX "cmpxchg8b %1\n"
-+		"cmpxchg8b %1\n"
- 			: "=&A" (res)
- 			: "m" (*ptr)
- 		);
-diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index d79f4ac..e4a6671 100644
---- a/arch/x86/lib/atomic64_32.c
-+++ b/arch/x86/lib/atomic64_32.c
-@@ -12,7 +12,7 @@ static noinline u64 cmpxchg8b(u64 *ptr, u64 old, u64 new)
- 	u32 high = new >> 32;
- 
- 	asm volatile(
--		LOCK_PREFIX "cmpxchg8b %1\n"
-+		"cmpxchg8b %1\n"
- 		     : "+A" (old), "+m" (*ptr)
- 		     :  "b" (low),  "c" (high)
- 		     );
