@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZGCAZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZGCAZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbZGCAZA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZGCAYx
+	id S1756316AbZGCAZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 20:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZGCAZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:24:53 -0400
-Received: from mga02.intel.com ([134.134.136.20]:33202 "EHLO mga02.intel.com"
+	Thu, 2 Jul 2009 20:25:21 -0400
+Received: from mail.samba.org ([66.70.73.150]:47665 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbZGCAYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:24:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,337,1243839600"; 
-   d="scan'208";a="529834841"
-Subject: Re: [RFC patch] Use IPI_shortcut for lapic timer broadcast
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <3877989d0906300001u2f185fb0lcab5614e245efc21@mail.gmail.com>
-References: <3877989d0906282347i311eb14bp80a7c80878219c31@mail.gmail.com>
-	 <1246307644.4534.26298.camel@localhost.localdomain>
-	 <3877989d0906300001u2f185fb0lcab5614e245efc21@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 02 Jul 2009 17:23:03 -0700
-Message-Id: <1246580583.4534.32443.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1754004AbZGCAZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 20:25:20 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19021.20449.732095.210252@samba.org>
+Date: Fri, 3 Jul 2009 10:25:05 +1000
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
+In-Reply-To: <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+	<19021.17576.808138.476600@samba.org>
+	<alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 00:01 -0700, Luming Yu wrote:
-> Thanks for review. How about the following patch?
-> 
-> /**The patch is enclosed in text attachment**
-> **Using web client to send the patch**
-> **below is for review, please apply attached  patch*/
-> 
-> 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
-> 
->  apic.c         |    5 ++++-
->  apic_flat_64.c |    7 ++++++-
->  2 files changed, 10 insertions(+), 2 deletions(-)
-> 
-> 
-> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c.0	2009-06-29
-> 23:45:05.000000000 -0600
-> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic.c	2009-06-30
-> 00:37:56.000000000 -0600
-> @@ -419,7 +419,10 @@
->  static void lapic_timer_broadcast(const struct cpumask *mask)
->  {
->  #ifdef CONFIG_SMP
-> -	apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
-> +	if (unlikely(cpumask_weight(mask) == num_online_cpus() -1))
-> +		apic->send_IPI_all(LOCAL_TIMER_VECTOR);
-> +	else
-> +		apic->send_IPI_mask(mask, LOCAL_TIMER_VECTOR);
->  #endif
->  }
+Hi Jan,
 
-I dont think it is a good idea to pay the penalty for cpumask_weight and
-num_online_cpus, for the more common tickless case to fix this problem
-with less common no tickeless case.
+ > Then, I just tried everything to get an overview:
 
-We should be able to add an interface to get tick_nohz_enabled from
-tick-sched.c and use that instead.
+thanks!
 
-Thanks,
-Venki
+ >  (All with DUALNAMES=n)
+ >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=lower
+ >  # cp /mnt/dcim/100_fuji/dscf{4160,3004}.jpg
+ >  # umount /mnt
+ >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=win95
+ >  # cp /mnt/dcim/100_fuji/dscf{4160,3005}.jpg
+ >  # umount /mnt
+ >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=winnt
+ >  # cp /mnt/dcim/100_fuji/dscf{4160,3006}.jpg
+ >  # umount /mnt
+ >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=mixed
+ >  # cp /mnt/dcim/100_fuji/dscf{4160,3007}.jpg
+ >  # umount /mnt
+ > 
+ > Result? The camera only displays 3006.
+ > 
+ > The dualnames patch's filling filenames with random illegal
+ > chars does seems to have a really foul side-effect after 
 
-> 
-> --- linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c.0	2009-06-29
-> 00:13:26.000000000 -0600
-> +++ linux-2.6.30-rc6/arch/x86/kernel/apic/apic_flat_64.c	2009-06-29
-> 00:11:23.000000000 -0600
-> @@ -274,7 +274,12 @@
-> 
->  static void physflat_send_IPI_all(int vector)
->  {
-> -	physflat_send_IPI_mask(cpu_online_mask, vector);
-> +	if (vector == NMI_VECTOR) {
-> +		physflat_send_IPI_mask(cpu_online_mask, vector);
-> +	} else {
-> +		__default_send_IPI_shortcut(APIC_DEST_ALLINC,
-> +					    vector, apic->dest_logical);
-> +	}
->  }
-> 
->  static unsigned int physflat_cpu_mask_to_apicid(const struct cpumask *cpumask)
+actually, you've just proved the patch works as intended on your
+device!
 
+Only the shortname=winnt would create a 8.3 name when you use the
+filename dscfNNNN.jpg. That is why my first patch in May forced 
+
+   shortname_flags = VFAT_SFN_CREATE_WINNT;
+
+when the patch triggered. I think this is the only sane behaviour for
+a VFAT filesystem on Linux. Unfortunately it isn't the default, and at
+least on my Ubuntu system the automatic mounting doesn't get this
+right.
+
+I'd love to change the default or do an override, at least when
+dualnames is diabled. Hirofumi-san, what do you think?
+
+Cheers, Tridge
+
+PS: I'm assuming you actually typed "shortname=" not
+"shortnames=". The option is not plural.
