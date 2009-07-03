@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbZGCJDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbZGCJGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbZGCJDd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGCJDZ
+	id S1755394AbZGCJGd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZGCJGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:03:25 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33069 "EHLO mx2.mail.elte.hu"
+	Fri, 3 Jul 2009 05:06:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59293 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751171AbZGCJDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:03:25 -0400
-Date: Fri, 3 Jul 2009 11:03:23 +0200
+	id S1750896AbZGCJGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:06:22 -0400
+Date: Fri, 3 Jul 2009 11:06:06 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] dma-debug fixes for 2.6.31-rc1
-Message-ID: <20090703090323.GA31461@elte.hu>
-References: <1246609924-31217-1-git-send-email-joerg.roedel@amd.com>
+To: Jiri Olsa <jolsa@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org,
+       eric.dumazet@gmail.com
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090703090606.GA3902@elte.hu>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246609924-31217-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -33,31 +37,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+* Jiri Olsa <jolsa@redhat.com> wrote:
 
-> Hi Ingo,
-> 
-> The following changes since commit 7c5371c403abb29f01bc6cff6c5096abdf2dc524:
->   Yinghai Lu (1):
->         x86: add boundary check for 32bit res before expand e820 resource to alignment
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-debug/fixes
-> 
-> Ingo Molnar (1):
->       dma-debug: Put all hash-chain locks into the same lock class
-> 
-> Joerg Roedel (1):
->       dma-debug: fix off-by-one error in overlap function
-> 
->  lib/dma-debug.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> These patches make dma-debug work better with lockdep enabled and 
-> fix a corner case in the overlap function were one region ends 
-> exactly where the other one begins. Please pull.
+> +++ b/arch/x86/include/asm/spinlock.h
+> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+>  #define _raw_read_relax(lock)	cpu_relax()
+>  #define _raw_write_relax(lock)	cpu_relax()
+>  
+> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> +#define smp_mb__after_lock() do { } while (0)
 
-Pulled, thanks Joerg!
+Two small stylistic comments, please make this an inline function:
+
+static inline void smp_mb__after_lock(void) { }
+#define smp_mb__after_lock
+
+(untested)
+
+> +/* The lock does not imply full memory barrier. */
+> +#ifndef smp_mb__after_lock
+> +#define smp_mb__after_lock() smp_mb()
+> +#endif
+
+ditto.
 
 	Ingo
