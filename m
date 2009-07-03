@@ -1,113 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbZGCFzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZGCF4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754345AbZGCFzZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 01:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZGCFzP
+	id S1754877AbZGCF4f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 01:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZGCF42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 01:55:15 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:33521 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbZGCFzO (ORCPT
+	Fri, 3 Jul 2009 01:56:28 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34784 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbZGCF41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 01:55:14 -0400
-Message-ID: <4A4D9D41.5090006@monstr.eu>
-Date: Fri, 03 Jul 2009 07:55:13 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: microblaze-uclinux@itee.uq.edu.au
-CC: John Williams <john.williams@petalogix.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       John Linn <John.Linn@xilinx.com>, Michal Simek <monstr@monstr.eu>
-Subject: Re: [microblaze-uclinux] [PATCH 03/11] microblaze: fall back on generic
- header files for the ABI
-References: <cover.1245345894.git.arnd@arndb.de> <4A4B49D0.2090101@monstr.eu> <1d3f23370907011552h5b3c96b9h208d5567e7a2a615@mail.gmail.com> <200907021136.07426.arnd@arndb.de>
-In-Reply-To: <200907021136.07426.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 3 Jul 2009 01:56:27 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 3 Jul 2009 14:54:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Menage <menage@google.com>, Benjamin Blum <bblum@google.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitzu.com
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+ that  shows only unique tgids
+Message-Id: <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090702183004.1e3f4315.akpm@linux-foundation.org>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+	<20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+	<20090702164649.303c4952.akpm@linux-foundation.org>
+	<2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+	<20090702175341.fd2e26d5.akpm@linux-foundation.org>
+	<6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+	<20090702183004.1e3f4315.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2 Jul 2009 18:30:04 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 2 Jul 2009 18:08:29 -0700 Paul Menage <menage@google.com> wrote:
+> 
+> > On Thu, Jul 2, 2009 at 5:53 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> > >> In the first snippet, count will be at most equal to length. As length
+> > >> is determined from cgroup_task_count, it can be no greater than the
+> > >> total number of pids on the system.
+> > >
+> > > Well that's a problem, because there can be tens or hundreds of
+> > > thousands of pids, and there's a fairly low maximum size for kmalloc()s
+> > > (include/linux/kmalloc_sizes.h).
+> > >
+> > > And even if this allocation attempt doesn't exceed KMALLOC_MAX_SIZE,
+> > > large allocations are less unreliable. __There is a large break point at
+> > > 8*PAGE_SIZE (PAGE_ALLOC_COSTLY_ORDER).
+> > 
+> > This has been a long-standing problem with the tasks file, ever since
+> > the cpusets days.
+> > 
+> > There are ways around it - Lai Jiangshan <laijs@cn.fujitsu.com> posted
+> > a patch that allocated an array of pages to store pids in, with a
+> > custom sorting function that let you specify indirection rather than
+> > assuming everything was in one contiguous array. This was technically
+> > the right approach in terms of not needing vmalloc and never doing
+> > large allocations, but it was very complex; an alternative that was
+> > mooted was to use kmalloc for small cgroups and vmalloc for large
+> > ones, so the vmalloc penalty wouldn't be paid generally. The thread
+> > fizzled AFAICS.
+> 
+> It's a problem which occurs fairly regularly.  Some sites are fairly
+> busted.  Many gave up and used vmalloc().  Others use an open-coded
+> array-of-pages thing.
+> 
+> This happens enough that I expect the kernel would benefit from a
+> general dynamic-array library facility.  Something whose interface
+> mimics the C-level array operations but which is internally implemented
+> via some data structure which uses PAGE_SIZE allocations.  Probably a
+> simple two-level thing would suffice.
+> 
+I think both of kmalloc usage here are very bad.
+
+Why we can't do what readdir(/proc) does ? I'm sorry I misunderstand.
+Following is an easy example.
 
 
-Arnd Bergmann wrote:
-> On Thursday 02 July 2009, John Williams wrote:
->> However, we've just "broken" the ABI in 2.6.31, if we merge further
->> ABI breakage in 2.6.32 it's more pain and confusion.
->>
->> So, unless we can merge and validate this ABI breakage during the
->> 2.6.31-rc cycle, I think we need to hold on changes that would break
->> the ABI again, so soon.
->>
->> Longer term there will be a complete redo of glibc up to the latest
->> version, which will obviously require a new toolchain for users - I
->> think that is the right place to do the next round of ABI breakage.
->>
->> Any thoughts?
-> 
-> Normally the rule is to never break the ABI at all, even in a major
-> update of glibc.
-> 
-> Initially I had hoped that we could do the change before 2.6.30 and
-> I worked hard on getting the ABI patches to you early enough for
-> that. After that failed, I made sure that you had everything in
-> place for 2.6.31 and I believed that Michal said he would integrate
-> that in the microblaze-mmu merge, before you actually start seeing
-> users on the mainline kernel.
+0. at open, inilialize f_pos to 0. f_pos is used as "pid"
+   remember "css_set with hole" as template in f_private?(or somewhere) at open
+   ...like this.
+--
+   struct cgroupfs_root *root = cgrp->root;
+   struct cgroup *template = kzalloc(sizeof(void*) * CGROUP_SUBSYS_COUNT);
 
-we are talking about minor change - I know it break ABI a little bit
-but don't be scared with it.
-Two changes - first ssize_t is no problem - just warning messages
-Second change kernel_mode_t from short to int breaks only ipc structures.
-We are working on solving problem about another IPC trouble. I found a problem with
-some syscalls which needs to be fixed in kernel and glibc - we will need newest toolchain
-for it in any case. John just wanted to be sure that we will have working correct version.
-I added most of your patches to my next branch for testing. I expect that Stephen merge it to next soon.
-
-Thanks for your work,
-Michal
+   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
+	if (root->subsys_bits & (1UL << i))
+		template[i] =  cgrp->subsys[i];
+--
 
 
-> 
-> If we don't get that into 2.6.31 any more (and the chances
-> have slimmed down a lot after the end of the merge window), I
-> think we should just declare complete failure and not touch
-> the ABI any more, however broken it may be. 
-> 
-> In over 14 months, not even the most basic fixes to the ABI
-> that I mentioned in the first review have been applied:
-> 
-> On Tuesday 15 April 2008, Michal Simek wrote:
->> Arnd Bergmann wrote:
->>> * Your syscall ABI is largely obsolete. A third of the syscalls you
->>> define should not even be there in the first place as they have been
->>> replaced by newer versions. E.g. you have select, _newselect and pselect6,
->>> where just pselect6 would be sufficient -- you don't need to worry about
->>> backwards compatibility if you don't have existing code. A good start
->>> would be to take the arch/blackfin syscall list and further reduce it
->>> from there. Further examples are:
->>> - replace socketcall with separate syscall entry points
->>> - replace ipc with a separate entry points
->>> - remove all the legacy signal handling from arch/microblaze/kernel/signal.c
->>> - remove sys_mmap, sys_olduname and sys_vfork
->>> - finally define a generic sys_mmap2 and sys_uname in kernel/ so you don't
->>>   need another copy in arch/microblaze/kernel
->>> - Use 64 bit off_t, and 32 bit uid_t, gid_t etc.
->> This kernel don't need to keep backward compatibility. No one will port to
->> previous version. I'll look at your points and I'll send you what I do.
-> 
-> 	Arnd <><
-> ___________________________
-> microblaze-uclinux mailing list
-> microblaze-uclinux@itee.uq.edu.au
-> Project Home Page : http://www.itee.uq.edu.au/~jwilliams/mblaze-uclinux
-> Mailing List Archive : http://www.itee.uq.edu.au/~listarch/microblaze-uclinux/
-> 
-> 
+1. at read(), find task_struct of "pid" in f_pos.
+2. look up task_struct of "pid" and compare with f_private
+--
+   struct cgroup *template = f_private;
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+   for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+	if (!template[i])
+		contiue;
+	if (template[i] != task_subsys_state(task, i))
+		break;
+   }
+   if (i == CGROUP_SUBSYS_COUNT)
+	print task;
+ --
+   
+4. f_pos++ until filling seq_buffer.
+
+
+Thanks,
+-Kame
+
+
+
+
+
