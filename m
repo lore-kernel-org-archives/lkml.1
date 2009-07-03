@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZGCJbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZGCJZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbZGCJbH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZGCJa4
+	id S1756302AbZGCJZJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZGCJY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:30:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41740 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 05:24:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44812 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952AbZGCJaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:30:55 -0400
-Date: Fri, 3 Jul 2009 11:30:32 +0200
+	id S1752434AbZGCJYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:24:55 -0400
+Date: Fri, 3 Jul 2009 11:24:38 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
-	vectored co-processor support for AMD and Intel Corei7/Nehalem
-Message-ID: <20090703093032.GI3902@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam> <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam> <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam> <1246606736.2322.9.camel@jaswinder.satnam>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Jiri Olsa <jolsa@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
+       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
+       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
+Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090703092438.GE3902@elte.hu>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1246606736.2322.9.camel@jaswinder.satnam>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A4DCD54.1080908@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -39,27 +38,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+* Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-> > $ ./perf list shows vector events like :
+> Ingo Molnar a écrit :
+> > * Jiri Olsa <jolsa@redhat.com> wrote:
 > > 
-> >   vec-adds OR add                          [Hardware vector event]
-> >   vec-muls OR multiply                     [Hardware vector event]
-> >   vec-divs OR divide                       [Hardware vector event]
-> >   vec-idle-cycles OR vec-empty-cycles      [Hardware vector event]
-> >   vec-stall-cycles OR vec-busy-cycles      [Hardware vector event]
-> >   vec-ops OR vec-operations                [Hardware vector event]
+> >> +++ b/arch/x86/include/asm/spinlock.h
+> >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+> >>  #define _raw_read_relax(lock)	cpu_relax()
+> >>  #define _raw_write_relax(lock)	cpu_relax()
+> >>  
+> >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
+> >> +#define smp_mb__after_lock() do { } while (0)
+> > 
+> > Two small stylistic comments, please make this an inline function:
+> > 
+> > static inline void smp_mb__after_lock(void) { }
+> > #define smp_mb__after_lock
+> > 
+> > (untested)
+> > 
+> >> +/* The lock does not imply full memory barrier. */
+> >> +#ifndef smp_mb__after_lock
+> >> +#define smp_mb__after_lock() smp_mb()
+> >> +#endif
+> > 
+> > ditto.
+> > 
+> > 	Ingo
+> 
+> This was following existing implementations of various smp_mb__??? helpers :
+> 
+> # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
+> 
+> /*
+>  * clear_bit may not imply a memory barrier
+>  */
+> #ifndef smp_mb__before_clear_bit
+> #define smp_mb__before_clear_bit()      smp_mb()
+> #define smp_mb__after_clear_bit()       smp_mb()
+> #endif
 
-btw., why does this printout SHOUT the 'or'? It's certainly not an 
-important piece of information. Something like:
-
-   vec-adds | add                          [Hardware vector event]
-   vec-muls | multiply                     [Hardware vector event]
-   vec-divs | divide                       [Hardware vector event]
-   vec-idle-cycles | vec-empty-cycles      [Hardware vector event]
-   vec-stall-cycles | vec-busy-cycles      [Hardware vector event]
-   vec-ops | vec-operations                [Hardware vector event]
-
-looks better on all levels.
+Did i mention that those should be fixed too? :-)
 
 	Ingo
