@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbZGCTNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbZGCTOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbZGCTNe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 15:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbZGCTNU
+	id S1759000AbZGCTOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 15:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbZGCTN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 15:13:20 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:50745 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758884AbZGCTNT (ORCPT
+	Fri, 3 Jul 2009 15:13:57 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:9413 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756264AbZGCTN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 15:13:19 -0400
-Date: Fri, 3 Jul 2009 13:13:22 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       Chinang Ma <chinang.ma@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: >10% performance degradation since 2.6.18
-Message-ID: <20090703191321.GO5480@parisc-linux.org>
-References: <20090703025607.GK5480@parisc-linux.org> <87skhdaaub.fsf@basil.nowhere.org> <20090703185414.GP23611@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090703185414.GP23611@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 3 Jul 2009 15:13:57 -0400
+Date: Fri, 3 Jul 2009 21:13:48 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: linux-kernel@vger.kernel.org, chrisv@cyberswitching.com, daniel@caiaq.de,
+       iws@ovro.caltech.edu, dmitry.torokhov@gmail.com, hmh@hmh.eng.br,
+       david-b@pacbell.net
+Subject: Re: [PATCH] IIO: Add missing I2C dependencies for max1363 and
+ tsl2561
+Message-ID: <20090703211348.4033c109@hyperion.delvare>
+In-Reply-To: <4A4E3BED.5050504@cam.ac.uk>
+References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-2-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-3-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-4-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-5-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-6-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-7-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-8-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-9-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-10-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-11-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-12-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-13-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-14-git-send-email-jic23@cam.ac.uk>
+	<1246542464-6974-15-git-send-email-jic23@cam.ac.uk>
+	<4A4E3BED.5050504@cam.ac.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 08:54:14PM +0200, Jens Axboe wrote:
-> On Fri, Jul 03 2009, Andi Kleen wrote:
-> > 
-> > Matthew Wilcox <matthew@wil.cx> writes:
-> > >
-> > > ======oprofile CPU_CLK_UNHALTED for top 30 functions
-> > > Cycles% 2.6.18-92.el5-op           Cycles% 2.6.30
-> > > 70.1409 <database>                 67.0207 <database>
-> > > 1.3556 mpt_interrupt               1.7029 mpt_interrupt
-> > 
-> > It's strange that mpt_interrupt is that more costly in 2.6.30
-> > than in 2.6.18. I diffed 2.6.30's drivers/message/fusion/mptbase.c
-> > to a rhel 5.3s and they seem to be about the same. 
-> > 
-> > So why does it cost 0.5% more in 2.6.30?
-> > 
-> > [adding MPT maintainers]
+On Fri, 03 Jul 2009 17:12:13 +0000, Jonathan Cameron wrote:
+> Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 > 
-> Look at the irqs/sec rate, it's higher by about the same percentage. So
-> it's likely not a more costly irq handler, it's likely just called that
-> much more. It could be IO pattern, causing more commands to be issued
-> (which leads to more interrupts, etc).
+> I will roll these into the original patches at some point, but
+> for now they are here.
+> 
+> Thanks to David Brownell for spotting this.
+> ---
+>  drivers/iio/adc/Kconfig   |    2 +-
+>  drivers/iio/light/Kconfig |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> index cb773d2..ab2066c 100644
+> --- a/drivers/iio/adc/Kconfig
+> +++ b/drivers/iio/adc/Kconfig
+> @@ -6,7 +6,7 @@ comment "Analog to digital convertors"
+>  
+>  config MAX1363
+>  	tristate "MAXIM max1363 ADC driver"
+> -	depends on IIO
+> +	depends on IIO && I2C
+>  	help
+>  	  Say yes here to build support for many MAXIM i2c analog to digital
+>  	  convertors (ADC). (max1361, max1362, max1363, max1364, max1136,
+> diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
+> index 620e249..62d502c 100644
+> --- a/drivers/iio/light/Kconfig
+> +++ b/drivers/iio/light/Kconfig
+> @@ -6,7 +6,7 @@ comment "Light sensors"
+>  
+>  config TSL2561
+>         tristate "TAOS TSL2561 light-to-digital convertor"
+> -       depends on IIO
+> +       depends on IIO && I2C
+>         help
+>  	Say yes bere to build support for the TAOS light to digital
+>  	convertor.  This chip has two light sensors. One is broadband
 
-Yes, but the irqs/sec increase doesn't appear to be due to MPT interrupts.
-In the /proc/interrupt summaries, RH5 did 388666895 IOC interrupts and
-2.6.30 did 378419042.  As a percentage of interrupts, the IOC interrupts
-were 59.4% with RH and 51.8% with 2.6.30.
+Unrelated suggestion: you could surround all the driver configuration
+entries with a big
 
-This isn't quite conclusive since the collection of /proc/interrupts is
-over the entire life of the system, not during the measurement period.
-But I do find it persuasive.
+if IIO
+
+(...)
+
+endif # IIO
+
+This would save you the hassle of adding "depends on IIO" to every
+driver. Many subsystems have resorted to this technique by now.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jean Delvare
