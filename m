@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZGCIlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755061AbZGCIlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZGCIlX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZGCIlP
+	id S1755061AbZGCIlg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZGCIlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:41:15 -0400
-Received: from mail-ew0-f215.google.com ([209.85.219.215]:42027 "EHLO
-	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbZGCIlO (ORCPT
+	Fri, 3 Jul 2009 04:41:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33475 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbZGCIlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Jul 2009 04:41:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=SY3JMmOI23vhhwuHJ3Nzit/2e7VVCy75OkIvomC8hiTr37vefahf2tt1dV5J0qk2Ie
-         cSykBJ0AmtpuBFSuxjYHdRKhcNrFfPpbTeibtZ6NWQ9lMMK7fDZUxQf948wOsqpSwT2n
-         7uJpbD1T4HN2MrKbsqaDyLPirCSCCB/oZZ3XI=
-Date: Fri, 3 Jul 2009 10:41:11 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
-	kernel modules
-Message-ID: <20090703084109.GA4933@nowhere>
-References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246536617.4752.15.camel@laptop> <1246605459.6092.189.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246605459.6092.189.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 3 Jul 2009 17:39:34 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       minchan.kim@gmail.com
+Subject: Re: BUG at mm/vmscan.c:904 [mmotm 2009-07-02-19-57]
+Message-Id: <20090703173934.dc278fda.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A4DBF16.1020509@gmail.com>
+References: <4A4DBF16.1020509@gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 09:17:39AM +0200, Mike Galbraith wrote:
-> On Thu, 2009-07-02 at 14:10 +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-07-02 at 09:17 +0200, Mike Galbraith wrote:
-> > 
-> > >  I've been pondering a perf archive tool
-> > > that would package everything that's needed to do analysis on a
-> > > different box.  One big problem though, is that while you can easily
-> > > package vmlinux and modules, what about all the userland binaries?  A
-> > > large perf.data and/or debug info binaries can easily make transport
-> > > impractical enough.
-> > 
-> > I would simply extend the current file header with another section in
-> > which we do a structured storage of the data structures we currently
-> > build in perf-report. That is, the dso and symbol bits.
-> > 
-> > If we then run perf-report on a file containing such a section we read
-> > that data instead of trying to locate them the regular way.
+On Fri, 03 Jul 2009 10:19:34 +0200
+Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> Hi,
 > 
-> That's a good idea.
+> I don't know what exactly lead to this, but I got it when installing a
+> kernel rpm (io load) in qemu:
 > 
-> If uname doesn't match stored record time uname, you're not live, so
-> tools require an exportable perf.data.  If you're not live and not on
-> the same host, annotate requires binaries appended via an export tool
-> with --sym-filter -k -u -% whatever capability.
+IIUC....
+
+plz revert this.
+
+  vmscan-dont-attempt-to-reclaim-anon-page-in-lumpy-reclaim-when-no-swap-space-is-available.patch
+
+or rewrite as following.
+==
++	if (nr_swap_pages <= 0 && (PageAnon(page) && !PageSwapCache(page)))
++		return -EBUSY;
++
+==
+
+CCed to Minchan and Kosaki.
+
+Regards,
+-Kame
+
+
+
+> ------------[ cut here ]------------
+> kernel BUG at mm/vmscan.c:904!
+> invalid opcode: 0000 [#1] PREEMPT SMP
+> last sysfs file: /sys/devices/pci0000:00/0000:00:05.0/modalias
+> CPU 0
+> Modules linked in: e1000
+> Pid: 290, comm: kswapd0 Tainted: G       AW  2.6.31-rc1-mm1 #103
+> RIP: 0010:[<ffffffff81095c96>]  [<ffffffff81095c96>]
+> isolate_pages_global+0x196/0x260
+> RSP: 0018:ffff880011943c40  EFLAGS: 00010082
+> RAX: 00000000ffffffea RBX: ffffea0000050170 RCX: 0000000000000001
+> RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffffea0000050170
+> RBP: ffff880011943cd0 R08: 0000000000000001 R09: ffffffff81668b00
+> R10: 00000000ffffffff R11: 0000000000000001 R12: ffffffff81669060
+> R13: ffffea0000050198 R14: ffff880011943d50 R15: ffffffff81668b00
+> FS:  0000000000000000(0000) GS:ffff88000176f000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00007f5d32981000 CR3: 0000000011adb000 CR4: 00000000000006f0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process kswapd0 (pid: 290, threadinfo ffff880011942000, task
+> ffff88001254c840)
+> Stack:
+>  ffff880011943d68 0000000000000020 0000000000000030 000000020177f4b0
+> <0> 0000000000000003 000000008103329b 0000000000000001 ffffffffffffffff
+> <0> 0000000100000003 0000000000000000 0000000000000000 0000000000000000
+> Call Trace:
+>  [<ffffffff81096ae6>] shrink_active_list+0xa6/0x330
+>  [<ffffffff81032fe8>] ? task_rq_lock+0x48/0x90
+>  [<ffffffff810985c0>] ? kswapd+0x0/0x770
+>  [<ffffffff81098ab5>] kswapd+0x4f5/0x770
+>  [<ffffffff81037177>] ? pick_next_task_fair+0xd7/0xf0
+>  [<ffffffff810985c0>] ? kswapd+0x0/0x770
+>  [<ffffffff81095b00>] ? isolate_pages_global+0x0/0x260
+>  [<ffffffff8103f1ed>] ? default_wake_function+0xd/0x10
+>  [<ffffffff8105aa30>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff813f9978>] ? preempt_schedule+0x38/0x60
+>  [<ffffffff813fbb40>] ? _spin_unlock_irqrestore+0x30/0x40
+>  [<ffffffff810985c0>] ? kswapd+0x0/0x770
+>  [<ffffffff8105a6b6>] kthread+0x96/0xa0
+>  [<ffffffff8100ceaa>] child_rip+0xa/0x20
+>  [<ffffffff8105a620>] ? kthread+0x0/0xa0
+>  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
+> Code: 80 75 12 8b 55 bc 8b 75 b4 4c 89 ef e8 f4 f9 ff ff 85 c0 74 79 49
+> ff c7 49 83 c5 38 4c 39 7d 98 77 cf 48 ff 45 c8 e9 e9 fe ff ff <0f> 0b
+> eb fe 48 8b 53 30 48 8b 4b 28 48 8d 43 28 48 89 51 08 48
+> RIP  [<ffffffff81095c96>] isolate_pages_global+0x196/0x260
+>  RSP <ffff880011943c40>
+> ---[ end trace fc1de39f3465335f ]---
+> note: kswapd0[290] exited with preempt_count 1
 > 
-> 	-Mike
-
-
-Also that would make easier the implementation of a perf compare thing.
-A perf compare may have several uses, including:
-
-(1) comparing different workloads with a same executable.
-(2) comparing different executable versions for a same workload
-(3) (1) + (2) ?
-
-
-For the (2), having  self contained record files as operands would let
-comparisons based on symbols, pretty useful when you have to compare
-two different vmlinux (or whatever binary executable).
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
