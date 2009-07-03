@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758422AbZGCSyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbZGCS4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758422AbZGCSyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 14:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbZGCSyM
+	id S1758306AbZGCS4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 14:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZGCS4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 14:54:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47301 "EHLO kernel.dk"
+	Fri, 3 Jul 2009 14:56:03 -0400
+Received: from claw.goop.org ([74.207.240.146]:58746 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755842AbZGCSyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 14:54:11 -0400
-Date: Fri, 3 Jul 2009 20:54:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       Chinang Ma <chinang.ma@intel.com>,
-       "Prickett, Terry O" <terry.o.prickett@intel.com>,
-       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
-       DL-MPTFusionLinux@lsi.com
-Subject: Re: >10% performance degradation since 2.6.18
-Message-ID: <20090703185414.GP23611@kernel.dk>
-References: <20090703025607.GK5480@parisc-linux.org> <87skhdaaub.fsf@basil.nowhere.org>
+	id S1756264AbZGCS4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 14:56:02 -0400
+Message-ID: <4A4E5440.3090409@goop.org>
+Date: Fri, 03 Jul 2009 11:56:00 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87skhdaaub.fsf@basil.nowhere.org>
+To: lkml@MoreThan.org
+CC: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
+References: <200907031314.36243.lkml@morethan.org>
+In-Reply-To: <200907031314.36243.lkml@morethan.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03 2009, Andi Kleen wrote:
-> 
-> Matthew Wilcox <matthew@wil.cx> writes:
-> >
-> > ======oprofile CPU_CLK_UNHALTED for top 30 functions
-> > Cycles% 2.6.18-92.el5-op           Cycles% 2.6.30
-> > 70.1409 <database>                 67.0207 <database>
-> > 1.3556 mpt_interrupt               1.7029 mpt_interrupt
-> 
-> It's strange that mpt_interrupt is that more costly in 2.6.30
-> than in 2.6.18. I diffed 2.6.30's drivers/message/fusion/mptbase.c
-> to a rhel 5.3s and they seem to be about the same. 
-> 
-> So why does it cost 0.5% more in 2.6.30?
-> 
-> [adding MPT maintainers]
+On 07/03/09 11:14, Michael S. Zick wrote:
+> Here is one I have found useful in my VIA processor bug hunting:
+>
+> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+> index 3068388..2303d86 100644
+> --- a/arch/x86/kernel/head_32.S
+> +++ b/arch/x86/kernel/head_32.S
+> @@ -61,7 +61,7 @@
+>
+>  /* Enough space to fit pagetables for the low memory linear map */
+>  MAPPING_BEYOND_END = \
+> -       PAGE_TABLE_SIZE(((1<<32) - __PAGE_OFFSET) >> PAGE_SHIFT) << PAGE_SHIFT
+> +       PAGE_TABLE_SIZE((1<<20) - (__PAGE_OFFSET >> PAGE_SHIFT)) << PAGE_SHIFT
+>
+>   
 
-Look at the irqs/sec rate, it's higher by about the same percentage. So
-it's likely not a more costly irq handler, it's likely just called that
-much more. It could be IO pattern, causing more commands to be issued
-(which leads to more interrupts, etc).
+These calculations are performed by the assembler, not the
+preprocessor.  I think this transformation looks correct (in that its an
+identity with the original), but my understanding is that the assembler
+does it calculations in arbitrary precision, so there's no need to worry
+about limiting the arithmetic to 32-bits.
 
-> > 1.1622 __blockdev_direct_IO        1.1443 kmem_cache_alloc
-> 
-> It would be interesting to find out why kmem_cache_alloc
-> is that more expensive. Either it is called more or the allocator
-> is slower. Any chance of a callgraph profile run so we
-> can see the callers?
+>  /*
+>   * Worst-case size of the kernel mapping we need to make:
+>
+> = = =
+>
+> Before:
+>
+>   #5 [0000010000 - 0000011000]          PGTABLE ==> [0000010000 - 0000011000]
+>   #6 [0000011000 - 0000015000]          BOOTMAP ==> [0000011000 - 0000015000]
+>
+> After:
+>
+>   #5 [0000010000 - 000007d000]          PGTABLE ==> [0000010000 - 000007d000]
+>   #6 [000007d000 - 0000081000]          BOOTMAP ==> [000007d000 - 0000081000]
+>
+> Someone who knows mm check which is the reasonable value please.
+>   
 
-Could be more IO as well, that hits the allocate often.
 
-I agree with some callgraph data, that would at least eliminate the
-guessing here. And some detailed IO statistics, amount of data
-transferred as well as iostat info to see if the pattern is
-significantly worse.
+The PGTABLE reservation seems much too big.  I think 1 page should be
+sufficient for a system with large pages.  Even if not, 0x6d000 is way
+too large.  And they symptoms of failing to reserve the initial
+pagetable are pretty non-subtle.
 
--- 
-Jens Axboe
-
+    J
