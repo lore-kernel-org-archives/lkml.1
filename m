@@ -1,84 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZGCJZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZGCJ0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZGCJZJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZGCJY4
+	id S1756435AbZGCJ0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZGCJ0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:24:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44812 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 05:26:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45381 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbZGCJYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:24:55 -0400
-Date: Fri, 3 Jul 2009 11:24:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Jiri Olsa <jolsa@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, fbl@redhat.com,
-       nhorman@redhat.com, davem@redhat.com, htejun@gmail.com,
-       jarkao2@gmail.com, oleg@redhat.com, davidel@xmailserver.org
-Subject: Re: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
-Message-ID: <20090703092438.GE3902@elte.hu>
-References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com> <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com> <20090703090606.GA3902@elte.hu> <4A4DCD54.1080908@gmail.com>
+	id S1751779AbZGCJ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:26:38 -0400
+Date: Fri, 3 Jul 2009 11:23:11 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: [PATCH] selinux_bprm_committed_creds: use __wake_up_parent()
+Message-ID: <20090703092311.GA3712@redhat.com>
+References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org> <11314.1246585948@turing-police.cc.vt.edu> <20090702192047.10b81ada.akpm@linux-foundation.org> <20090703081821.GA4051@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A4DCD54.1080908@gmail.com>
+In-Reply-To: <20090703081821.GA4051@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(depends on ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+ which exports __wake_up_parent)
 
-* Eric Dumazet <eric.dumazet@gmail.com> wrote:
+Spotted by Valdis.Kletnieks@vt.edu.
 
-> Ingo Molnar a écrit :
-> > * Jiri Olsa <jolsa@redhat.com> wrote:
-> > 
-> >> +++ b/arch/x86/include/asm/spinlock.h
-> >> @@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
-> >>  #define _raw_read_relax(lock)	cpu_relax()
-> >>  #define _raw_write_relax(lock)	cpu_relax()
-> >>  
-> >> +/* The {read|write|spin}_lock() on x86 are full memory barriers. */
-> >> +#define smp_mb__after_lock() do { } while (0)
-> > 
-> > Two small stylistic comments, please make this an inline function:
-> > 
-> > static inline void smp_mb__after_lock(void) { }
-> > #define smp_mb__after_lock
-> > 
-> > (untested)
-> > 
-> >> +/* The lock does not imply full memory barrier. */
-> >> +#ifndef smp_mb__after_lock
-> >> +#define smp_mb__after_lock() smp_mb()
-> >> +#endif
-> > 
-> > ditto.
-> > 
-> > 	Ingo
-> 
-> This was following existing implementations of various smp_mb__??? helpers :
-> 
-> # grep -4 smp_mb__before_clear_bit include/asm-generic/bitops.h
-> 
-> /*
->  * clear_bit may not imply a memory barrier
->  */
-> #ifndef smp_mb__before_clear_bit
-> #define smp_mb__before_clear_bit()      smp_mb()
-> #define smp_mb__after_clear_bit()       smp_mb()
-> #endif
+selinux_bprm_committed_creds() should not play with ->wait_chldexit, now
+that __wake_up_parent() is exported change the code to use this helper.
 
-Did i mention that those should be fixed too? :-)
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-	Ingo
+--- WAIT/security/selinux/hooks.c~SEL_WAKE_PARENT	2009-06-16 17:01:42.000000000 +0200
++++ WAIT/security/selinux/hooks.c	2009-07-03 11:15:08.000000000 +0200
+@@ -2404,7 +2404,7 @@ static void selinux_bprm_committed_creds
+ 	/* Wake up the parent if it is waiting so that it can recheck
+ 	 * wait permission to the new task SID. */
+ 	read_lock(&tasklist_lock);
+-	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
++	__wake_up_parent(current, current->real_parent);
+ 	read_unlock(&tasklist_lock);
+ }
+ 
+
