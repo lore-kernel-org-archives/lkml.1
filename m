@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZGCKWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbZGCKYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbZGCKWy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 06:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZGCKWp
+	id S1756474AbZGCKYn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 06:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZGCKYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 06:22:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43894 "EHLO mx3.mail.elte.hu"
+	Fri, 3 Jul 2009 06:24:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59132 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753093AbZGCKWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 06:22:44 -0400
-Date: Fri, 3 Jul 2009 12:22:34 +0200
+	id S1752982AbZGCKYe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 06:24:34 -0400
+Date: Fri, 3 Jul 2009 12:24:31 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] vt: add an event interface
-Message-ID: <20090703102234.GA32128@elte.hu>
-References: <20090702113529.4896.2321.stgit@t61.ukuu.org.uk> <20090703064518.GA30674@elte.hu> <20090703100834.6cb241b6@lxorguk.ukuu.org.uk> <20090703091655.GB3902@elte.hu> <20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk> <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Horst Schirmeier <horst@schirmeier.com>, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] doc: missing value 2 for randomize-va-space
+Message-ID: <20090703102431.GC32128@elte.hu>
+References: <20090702152338.GU26384@quickstop.soohrt.org> <alpine.LNX.2.00.0907030109191.4994@wotan.suse.de> <20090703000523.GX26384@quickstop.soohrt.org> <alpine.LNX.2.00.0907031200560.4994@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090703110620.64fd1283@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LNX.2.00.0907031200560.4994@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -33,29 +34,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+* Jiri Kosina <jkosina@suse.cz> wrote:
 
-> > Your method leads to stuff like this in a recent commit:
 > 
-> Which is a cut and paste of code from the originals into the 
-> helper.
-
-and this changes my points how? It's not like it's hard to fix, and 
-the code is moved non-trivially anyway, it's better to have it nicer 
-if we touch it anyway.
-
-> > Also note the inconsistent printk-ing lines, mutiliated by line 
-> > warps. The use of pr_warning() would solve it:
+> [ added Ingo to CC ]
 > 
-> Send patches if it bugs you that much. [...]
+> On Fri, 3 Jul 2009, Horst Schirmeier wrote:
+> 
+> > On Fri, 03 Jul 2009, Jiri Kosina wrote:
+> > > >      There a few legacy applications out there (such as some ancient
+> > > 
+> > > ... would you please fix this typo/grammo as well? (There a few ...)
+> > > 
+> > > >      versions of libc.so.5 from 1996) that assume that brk area starts
+> > > 
+> > > Also, the text itself doesn't seem to be super-clear ... namely, it 
+> > > describes what CONFIG_COMPAT_BRK is about, but doesn't really clarify how 
+> > > exactly does this correlate with randomize_va_space == 2. Would you mind 
+> > > also fixing this bit?
+> > 
+> > I hope I didn't misread the sources :-)  Opinions?
+> > 
+> > ---
+> > 
+> > The documentation for /proc/sys/kernel/* does not mention the possible
+> > value 2 for randomize-va-space yet.  While being there, doing some
+> > reformatting, fixing grammar problems and clarifying the correlations
+> > between randomize-va-space, kernel parameter "norandmaps" and the
+> > CONFIG_COMPAT_BRK option.
+> >                                                     
+> > Signed-off-by: Horst Schirmeier <horst@schirmeier.com>
+> 
+> Acked-by: Jiri Kosina <jkosina@suse.cz>
+> 
+> Ingo, will you take this through your tree?
+> 
+> > 
+> > ---
+> >  Documentation/sysctl/kernel.txt |   30 +++++++++++++++++-------------
+> >  1 files changed, 17 insertions(+), 13 deletions(-)
 
-I find that a rather flippant attitude to kernel code quality 
-issues.
-
-Also, isnt it a double standard: why should newbies be held to 
-higher standards than you hold yourself to?
-
-Please just fix problems like everyone else is expected to fix it 
-too and you wont get such review feedback.
+This could go to your or Randy's docs tree, right? (would be fine by 
+me)
 
 	Ingo
