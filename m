@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbZGCIxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZGCIyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbZGCIxz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZGCIxr
+	id S1755603AbZGCIyL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZGCIxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:53:47 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45974 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbZGCIxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:53:48 -0400
+Received: from mail-ew0-f215.google.com ([209.85.219.215]:36025 "EHLO
+	mail-ew0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbZGCIxq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Jul 2009 04:53:46 -0400
-Date: Fri, 3 Jul 2009 10:53:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=b0q8MMQ1I4hx5FoP8G32ZQKhgc8IuSpqbrZcQrXVqcXCBFVrC3uIqRXMW41ZpPVdM0
+         +JQdsJ6ysL71sSbEnTWkT8ayThSILgSfVXSKGJPWrY8p0KPLMMyfIeQ5MlsR3XqrNNU1
+         GN+MX0GJn2Pg+ngChoTLiJJr5UxY83lWE2e1o=
+Date: Fri, 3 Jul 2009 10:53:45 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
 	kernel modules
-Message-ID: <20090703085338.GI21833@elte.hu>
-References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246536617.4752.15.camel@laptop> <1246605459.6092.189.camel@marge.simson.net> <20090703084109.GA4933@nowhere>
+Message-ID: <20090703085344.GB4933@nowhere>
+References: <1246514639.13293.40.camel@marge.simson.net> <20090702064712.GA26690@elte.hu> <1246519076.6384.22.camel@marge.simson.net> <1246524170.7113.20.camel@marge.simson.net> <20090703072941.GC7943@elte.hu> <1246608058.6257.25.camel@marge.simson.net> <20090703081556.GA21833@elte.hu> <1246609724.6257.28.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090703084109.GA4933@nowhere>
+In-Reply-To: <1246609724.6257.28.camel@marge.simson.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Fri, Jul 03, 2009 at 09:17:39AM +0200, Mike Galbraith wrote:
-> > On Thu, 2009-07-02 at 14:10 +0200, Peter Zijlstra wrote:
-> > > On Thu, 2009-07-02 at 09:17 +0200, Mike Galbraith wrote:
-> > > 
-> > > >  I've been pondering a perf archive tool
-> > > > that would package everything that's needed to do analysis on a
-> > > > different box.  One big problem though, is that while you can easily
-> > > > package vmlinux and modules, what about all the userland binaries?  A
-> > > > large perf.data and/or debug info binaries can easily make transport
-> > > > impractical enough.
-> > > 
-> > > I would simply extend the current file header with another section in
-> > > which we do a structured storage of the data structures we currently
-> > > build in perf-report. That is, the dso and symbol bits.
-> > > 
-> > > If we then run perf-report on a file containing such a section we read
-> > > that data instead of trying to locate them the regular way.
+On Fri, Jul 03, 2009 at 10:28:44AM +0200, Mike Galbraith wrote:
+> On Fri, 2009-07-03 at 10:15 +0200, Ingo Molnar wrote:
+> > * Mike Galbraith <efault@gmx.de> wrote:
 > > 
-> > That's a good idea.
+> > > > We need to calculate and cache the objdump annotation output 
+> > > > once, but after that it should be pretty fast as we just display 
+> > > > updated counts with the same lines over and over again. No 
+> > > > repeated objdump runs are needed.
+> > > 
+> > > But active files follow symbols, which change on the fly.
+> > > 
+> > > Besides, as mentioned previously, while displayed annotation was 
+> > > very cool, it took a lot of display space.  For me, top with the 
+> > > ability to emit bic-disposable mini-reports would be my primary 
+> > > perf tools usage. I'd only use big brothers when I needed their 
+> > > power/detail.
 > > 
-> > If uname doesn't match stored record time uname, you're not live, so
-> > tools require an exportable perf.data.  If you're not live and not on
-> > the same host, annotate requires binaries appended via an export tool
-> > with --sym-filter -k -u -% whatever capability.
+> > Ok, then how about putting some sort of interactivity into perf top?
 > > 
-> > 	-Mike
+> > Up and down arrows would allow the walking of the histogram, and 
+> > hitting enter on a symbol would show the annotated function? It 
+> > would be way cool and more usable and more flexible than some 
+> > side-channel for mini-reports.
+> > 
+> > PowerTop has a lot of good text interactivity code that might be 
+> > reused. (assuming it's under a kernel compatible license?)
+> > 
+> > There's also the 'tig' tool - an interactive tool to walk Git 
+> > trees/commits. If it's under a compatible license that would be a 
+> > nice place to look for clues too - it has a very mature and 
+> > well-thought-out TUI in my opinion.
 > 
+> Cool.  I love free samples to bend/spindle/mutilate :)
 > 
-> Also that would make easier the implementation of a perf compare 
-> thing. A perf compare may have several uses, including:
-> 
-> (1) comparing different workloads with a same executable.
-> (2) comparing different executable versions for a same workload
-> (3) (1) + (2) ?
-> 
-> For the (2), having self contained record files as operands would 
-> let comparisons based on symbols, pretty useful when you have to 
-> compare two different vmlinux (or whatever binary executable).
+> 	-Mike
 
-very good points.
 
-	Ingo
+The same interactivity could also apply to perf report, by dynamically
+expanding callchains, linking to more details with annotate, etc...
+
