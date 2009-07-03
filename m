@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbZGCU12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759237AbZGCUiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbZGCU12 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 16:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZGCU1R
+	id S1759237AbZGCUiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 16:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbZGCUiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 16:27:17 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:44306 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756588AbZGCU1Q (ORCPT
+	Fri, 3 Jul 2009 16:38:11 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:42724 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756899AbZGCUiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 16:27:16 -0400
-Date: Fri, 3 Jul 2009 13:26:57 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
-       dbrownell@users.sourceforge.net
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       lud <linux-usb@vger.kernel.org>
-Subject: [PATCH -next] gadget audio: select SND_PCM
-Message-Id: <20090703132657.3289cdcf.randy.dunlap@oracle.com>
-In-Reply-To: <20090703162443.16495147.sfr@canb.auug.org.au>
-References: <20090703162443.16495147.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Jul 2009 16:38:11 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
+Date: Fri, 3 Jul 2009 15:38:07 -0500
+User-Agent: KMail/1.9.9
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+References: <200907031314.36243.lkml@morethan.org> <200907031441.04604.lkml@morethan.org> <4A4E609C.5030608@zytor.com>
+In-Reply-To: <4A4E609C.5030608@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A4E6993.0105:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200907031538.11603.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri July 3 2009, H. Peter Anvin wrote:
+> Michael S. Zick wrote:
+> > 
+> > Good point: (1<<(32-PAGE_SIFT)) would handle other than 4k pages.
+> > 
+> > I just hardcoded it as a working example of the change from setting
+> > the page table size by design rather than numeric error.
+> > 
+> 
+> As Jeremy pointed out, it's not wrong as written.  gas by design uses
+> arbitrary-precision arithmetic, and even if it didn't, it would still be
+> correct: (1 << 32) would collapse to 0, so all the rest of the
+> calculations would still be right.
+> 
+> Any way you can dump out this value from the vmlinux file (nm vmlinux |
+> grep MAPPING_BEYOND_END) in both cases?  
+>
 
-Fix USB gadget audio: select SND_PCM, like many other sound
-drivers do, to fix build errors:
+Can't find it in either case, or with objdump.
 
-drivers/built-in.o: In function `f_audio_playback_work':
-audio.c:(.text+0x15a3e7): undefined reference to `snd_pcm_kernel_ioctl'
-audio.c:(.text+0x15a471): undefined reference to `snd_pcm_lib_write'
-drivers/built-in.o: In function `_snd_pcm_hw_param_set':
-audio.c:(.text+0x15aca7): undefined reference to `snd_interval_refine'
-drivers/built-in.o: In function `gaudio_setup':
-(.init.text+0x12adf): undefined reference to `_snd_pcm_hw_params_any'
-drivers/built-in.o: In function `gaudio_setup':
-(.init.text+0x12b43): undefined reference to `snd_pcm_kernel_ioctl'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/usb/gadget/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20090703.orig/drivers/usb/gadget/Kconfig
-+++ linux-next-20090703/drivers/usb/gadget/Kconfig
-@@ -604,6 +604,7 @@ config USB_ZERO_HNPTEST
- config USB_AUDIO
- 	tristate "Audio Gadget (EXPERIMENTAL)"
- 	depends on SND
-+	select SND_PCM
- 	help
- 	  Gadget Audio is compatible with USB Audio Class specification 1.0.
- 	  It will include at least one AudioControl interface, zero or more
+(g)as reports itself as version 2.18
 
 
+> What version of as/binutils do 
+> you have installed?
+> 
+> > And yes, it has 512Mbyte of ram, so 1/2Mbyte page table sounds right to me.
+> 
+> /proc/cpuinfo, please?
+> 
+
+That takes a running machine - which is a bit of a challenge at the moment.
+Well, for the past four months, if truth be told.
+
+Anything in particular you are looking for?
+I may have it in my notes and data captures.
+
+Mike
+> 	-hpa
+> 
 
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
