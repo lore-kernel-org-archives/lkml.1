@@ -1,51 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbZGCJ0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZGCJd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756435AbZGCJ0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:26:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZGCJ0j
+	id S1756219AbZGCJd2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475AbZGCJdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:26:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45381 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751779AbZGCJ0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:26:38 -0400
-Date: Fri, 3 Jul 2009 11:23:11 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
-       James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: [PATCH] selinux_bprm_committed_creds: use __wake_up_parent()
-Message-ID: <20090703092311.GA3712@redhat.com>
-References: <200906301951.n5UJpUSY013305@imap1.linux-foundation.org> <11314.1246585948@turing-police.cc.vt.edu> <20090702192047.10b81ada.akpm@linux-foundation.org> <20090703081821.GA4051@redhat.com>
+	Fri, 3 Jul 2009 05:33:20 -0400
+Received: from mga05.intel.com ([192.55.52.89]:27712 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751678AbZGCJdT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 05:33:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,340,1243839600"; 
+   d="scan'208";a="704761424"
+Date: Fri, 3 Jul 2009 11:35:18 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       openezx-devel <openezx-devel@lists.openezx.org>
+Subject: Re: [PATCHv3] PCAP regulator driver (for 2.6.32)
+Message-ID: <20090703093517.GA4176@sortiz.org>
+References: <1246072682.10360.424.camel@brutus> <20090627105150.GA4780@sirena.org.uk> <1246123618.3727.29.camel@brutus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090703081821.GA4051@redhat.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1246123618.3727.29.camel@brutus>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(depends on ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
- which exports __wake_up_parent)
+Hi Daniel,
 
-Spotted by Valdis.Kletnieks@vt.edu.
+On Sat, Jun 27, 2009 at 02:26:58PM -0300, Daniel Ribeiro wrote:
+> Em Sáb, 2009-06-27 às 11:51 +0100, Mark Brown escreveu:
+> > On Sat, Jun 27, 2009 at 12:18:02AM -0300, Daniel Ribeiro wrote:
+> > > Add (partial) support for the voltage regulators on the PCAP2 PMIC.
+> > > 
+> > > Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+> > 
+> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > 
+> > Looks good.
+> 
+> Thanks.
+> 
+> > > Mark, can you please assert that this only gets merged after Samuel has
+> > > a chance to merge the set_bits patch? Thanks!
+> > 
+> > It's Liam who manages the regulator tree, though given the set_bits()
+> > patch perhaps this one might end up getting merged via the MFD tree (or
+> > both via the regulator tree).
+> 
+> I prefer the set_bits() patch going through the MFD tree. I sent some
+> other fixes, and a patch to solve a similar race issue for the ADC/TS
+> driver.
+> 
+> Ideally, Samuel would push the PCAP patches on -rc phase, so the
+> sub-drivers can all be merged through the respective subsystem trees on
+> the .32 merge window.
+If that's ok with Liam, I'll take the regulator patch. Most of the pcap
+patches are not rc material, so they will be merged along with the regulator
+driver with the next merge window.
 
-selinux_bprm_committed_creds() should not play with ->wait_chldexit, now
-that __wake_up_parent() is exported change the code to use this helper.
+Liam, if you're fine with this patch, could you please SOB it ? Thanks.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Cheers,
+Samuel.
 
---- WAIT/security/selinux/hooks.c~SEL_WAKE_PARENT	2009-06-16 17:01:42.000000000 +0200
-+++ WAIT/security/selinux/hooks.c	2009-07-03 11:15:08.000000000 +0200
-@@ -2404,7 +2404,7 @@ static void selinux_bprm_committed_creds
- 	/* Wake up the parent if it is waiting so that it can recheck
- 	 * wait permission to the new task SID. */
- 	read_lock(&tasklist_lock);
--	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
-+	__wake_up_parent(current, current->real_parent);
- 	read_unlock(&tasklist_lock);
- }
- 
 
+> -- 
+> Daniel Ribeiro
+
+
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
