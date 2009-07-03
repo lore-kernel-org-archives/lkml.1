@@ -1,101 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZGCJky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbZGCJkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753371AbZGCJky (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbZGCJkZ
+	id S1757179AbZGCJkm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbZGCJkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:40:25 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:48689 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756976AbZGCJkT (ORCPT
+	Fri, 3 Jul 2009 05:40:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56178 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756817AbZGCJkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Jul 2009 05:40:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=bRf0sEEuipeXm75p5HdExDKmZdTHhgBkFLu4OB68SAL5WZldq3lwlkReZpcxhikpjX
-         7dKHMMcfImfjqRNfMKSBCuiSBNQhTxcxMM+dLxSXovmsPK9A6Z6SWMxY9Hs7ek2brOjd
-         ERBpETZ6X5cIXWDE3L1NM7tGF1r0x2viK4Q74=
-Date: Fri, 3 Jul 2009 17:42:29 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-Message-ID: <20090703094229.GI5880@cr0.nay.redhat.com>
-References: <20090703015554.GB5880@cr0.nay.redhat.com> <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com> <20090703030008.GD5880@cr0.nay.redhat.com> <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com> <20090703051917.GE5880@cr0.nay.redhat.com> <412e6f7f0907022242r52ad981fyd51c2a55f41ab228@mail.gmail.com> <20090703071504.GG5880@cr0.nay.redhat.com> <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com> <20090703081655.GH5880@cr0.nay.redhat.com> <412e6f7f0907030127u3d6806dfo9168600e7c71b241@mail.gmail.com>
+Date: Fri, 3 Jul 2009 11:40:21 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: tridge@samba.org
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <19021.31291.642416.956966@samba.org>
+Message-ID: <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
+References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+ <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
+ <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <412e6f7f0907030127u3d6806dfo9168600e7c71b241@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 04:27:29PM +0800, Changli Gao wrote:
->On Fri, Jul 3, 2009 at 4:16 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->> On Fri, Jul 03, 2009 at 03:40:34PM +0800, Changli Gao wrote:
->>>On Fri, Jul 3, 2009 at 3:15 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>>>
->>>> If saving one fd really helps here, probably you want to
->>>> save more, you will need a syscall like:
->>>>
->>>>  int splice_without_new_fd(int infd, int outfd);
->>>Do you know sendfile()? Its current implementation is buggy, and will
->>>be blocked on outfd. Anyway, the above code is just a use case, there
->>>are other cases sendfile can't cover.
->>
->> So what? So you should fix it intead of inventing a new pipe() and use
->> splice(2)...
->I said: It just a special case. Fixing sendfile() won't fix everything.
 
-What do you want? Just saving an fd, isn't it?
-
-sendfile() does this but you said it's buggy, if you fix it, what is the
-rest problem?
-
+On Friday 2009-07-03 05:25, tridge@samba.org wrote:
 >
->>
->> Wait... if splice(2) doesn't block, what is your point for saving
->> an fd in your code? You can do:
->>
->> int splice_two_fd(int fd1, int fd2)
->> {
->>        int fds[2];
->>        pipe(fds);
->>        splice(fd1, fds[0]);//not block
->>        splice(fds[1], fd2);//not block
->>        close(fds[0]); //can be closed soon
->>        close(fds[1]); //ditto
->> }
->>
->> Outside this function no new fd's are used.
->>
->In fact, sendfile(2) is implemented via splice(2) infrastructure. The
->logic is the same, and much clever than yours. Dive into its code, you
->will find the reason why it must be blocked on outfd.
+>That is why setting shortname=winnt is desirable when using the "no
+>dualnames" patch I posted. That tells Linux to behave more like what
+>current windows versions behave, which is to try and put it in the 8.3
+>entry if it can, even if it is all lowercase.
 
+Right. That in itself is fine, but I'd still like to have readdir
+return lowercase names here then. This is sort of what I seem to
+remember from Windows: files only having a total-uppercase 8.3
+name were still displayed as lowercase. This is why I am all for
+splitting the shortcase option. (Maybe patches speak louder but
+ATM I am so into Netfilter ;)
 
-Sure, this is done in user-space, definitely....
+>btw, if you still think your camera really is looking at the long
+>filename entries,
 
+I toyed with the hexeditor a bit and modified the FAT entry's
+filename directly. (I just hope there is not any checksum?)
+
+ * if a filename is of the form /dscf????.jpg/i, the A210 requires
+   that 8.3 names be all uppercase (even in the persence of a
+   freeform long name) otherwise the OSD will (explicitly) display
+   "READ ERROR".
+
+ * if the 8.3 name is, for example, DsCE1234.jpg, the OSD seems to
+   be confused and displays "00000000" as the picture index.
+
+ => So uppercase 8.3 is a hard requirement for _any_ filename.
+
+I also looked again at the finepix.img.bz2 I made available earlier.
+It has a long entry "dscf3000.jpg", but "no shortname" (i.e. an
+invalid one as generated by the patch), and that is most likely the
+reason that the camera ignores this file completely.
+
+>then try creating a file like DsCf2000.jpg with a
+>unpatched kernel, mounted with shortname=winnt. That will create two
+>directory entries for the file, one being DSCF2000.JPG and the other
+>being DsCf2000.jpg.
 >
->>>
->>>>
->>>> But splice(2) is designed to be as it is. You need to increase
->>>> your fd limit, instead of saving one by pipe().
->>>>
->>>I don't agree with you. We should save resource as much as we can, and
->>>not work around it.
->>
->> You are saying splice(2) is wrong? Because it is splice(2) who
->> needs 3 fd's finally.
->>
->It isn't splice(2)'s fault. In fact, I can also work around this issue
->by named pipe.
+>Then view the list of photos on the LCD back panel of your
+>camera. Assuming it has a way to see the filename, does it display the
+>mixed case name DsCf2000.jpg, or does it display a non-mixed name like
+>dscf2000.jpg or DSCF2000.JPG.
 
-And increase the max fd number...
+It does not display the filename, just the index number. But the
+image is present/selectable, because the 8.3 name is present and is
+all-uppercase (see above).
+
+>If it displays a mixed name (ie. DsCf) then your camera can indeed
+>read long filename entries. If it displays a all uppercase or all
+>lowercase name then I think it is only capable of reading short names
+>from FAT filesystems. That is what I think you will find.
+
+Capable or not — it only /needs/ 8.3 for DCIM operation :)
