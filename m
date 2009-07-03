@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZGCISE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZGCISX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZGCISE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZGCIRu
+	id S1756030AbZGCISX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZGCISI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:17:50 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:62634 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbZGCIRt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:17:49 -0400
-Message-ID: <4A4DBE83.2020803@linux.vnet.ibm.com>
-Date: Fri, 03 Jul 2009 10:17:07 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 3 Jul 2009 04:18:08 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:60325 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753736AbZGCISH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:18:07 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] gcov causes vread_tsc to increment kernel memory
-References: <alpine.DEB.2.00.0907011245230.22887@gandalf.stny.rr.com> <4A4CA0D5.6010103@linux.vnet.ibm.com> <20090703071315.GE32687@elte.hu>
-In-Reply-To: <20090703071315.GE32687@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <19021.48828.428272.100850@cargo.ozlabs.ibm.com>
+Date: Fri, 3 Jul 2009 18:18:04 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/6 -tip] perf stat: treat same behaviour for all
+	CYCLES and CLOCKS
+In-Reply-To: <20090701113915.GG15958@elte.hu>
+References: <1246440815.3403.3.camel@hpdv5.satnam>
+	<1246440909.3403.5.camel@hpdv5.satnam>
+	<1246440977.3403.7.camel@hpdv5.satnam>
+	<20090701113915.GG15958@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+Ingo Molnar writes:
+
+> Other 'compound' events might be possible too: for example a new 
+> cache-hits field could be is cache-refs minus cache-misses.
+
+Hmmm, on the MPC7450 family there are events for cache-hits and
+cache-misses, so there it would be nice to be able to ask for
+cache-refs and have it compute cache-hits plus cache-misses.
+
+> I.e. the simplest model for 'compound' events would be:
 > 
->> Also seeing as function tracer and gcov work on a similar basis 
->> and require similar files to be excluded from profiling, it would 
->> be nice if we wouldn't need to mark those files separately. [...]
+>   X = A / B
+>   X = A - B
+>   X = A + B
 > 
-> One of the general things i pointed out during review is that 
-> there's a fair amount of overlap between tracing/instrumentation and 
-> the gcov support patches and now for a change Andrew has merged 
-> incomplete stuff upstream prematurely ;-)
+> We could list them in the event table, with a flag that specifies 
+> which arithmetic operation connects two 'atomic' counters.
+> 
+> Then the adding of a new compound event would only be the matter of 
+> adding one more line to the event table.
 
-Yes there is overlap between ftrace and gcov and I will help in finding
-and merging those bits, but as I also pointed out during review, there
-are also fundamental differences.
+Sounds nice.  If we do this we should ensure that the two events
+get put into one group if possible.
 
-By including the gcov infrastructure upstream now, we can incrementally
-improve its integration with any similar mechanism _while_ people are
-improving their test cases and identifying more bugs based on code
-coverage measurements.
-
-
+Paul.
