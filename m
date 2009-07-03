@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758292AbZGCRJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZGCRN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758292AbZGCRJw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 13:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbZGCRJo
+	id S1758008AbZGCRN0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 13:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZGCRNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 13:09:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43102 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbZGCRJo (ORCPT
+	Fri, 3 Jul 2009 13:13:18 -0400
+Received: from ppsw-6.csi.cam.ac.uk ([131.111.8.136]:58225 "EHLO
+	ppsw-6.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754781AbZGCRNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 13:09:44 -0400
-Date: Thu, 2 Jul 2009 23:12:46 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Reminder for feature Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL
- exports removal date before 2.6.19 Nov 2006
-Message-ID: <20090702231246.1a144b61@infradead.org>
-In-Reply-To: <1246586623.2530.6.camel@jaswinder.satnam>
-References: <1246586623.2530.6.camel@jaswinder.satnam>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Jul 2009 13:13:17 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4A4E3BED.5050504@cam.ac.uk>
+Date: Fri, 03 Jul 2009 17:12:13 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Jonathan Cameron <jic23@cam.ac.uk>
+CC: linux-kernel@vger.kernel.org, chrisv@cyberswitching.com, daniel@caiaq.de,
+       iws@ovro.caltech.edu, dmitry.torokhov@gmail.com, hmh@hmh.eng.br,
+       david-b@pacbell.net, khali@linux-fr.org
+Subject: [PATCH] IIO: Add missing I2C dependencies for max1363 and tsl2561
+References: <1246542464-6974-1-git-send-email-jic23@cam.ac.uk> <1246542464-6974-2-git-send-email-jic23@cam.ac.uk> <1246542464-6974-3-git-send-email-jic23@cam.ac.uk> <1246542464-6974-4-git-send-email-jic23@cam.ac.uk> <1246542464-6974-5-git-send-email-jic23@cam.ac.uk> <1246542464-6974-6-git-send-email-jic23@cam.ac.uk> <1246542464-6974-7-git-send-email-jic23@cam.ac.uk> <1246542464-6974-8-git-send-email-jic23@cam.ac.uk> <1246542464-6974-9-git-send-email-jic23@cam.ac.uk> <1246542464-6974-10-git-send-email-jic23@cam.ac.uk> <1246542464-6974-11-git-send-email-jic23@cam.ac.uk> <1246542464-6974-12-git-send-email-jic23@cam.ac.uk> <1246542464-6974-13-git-send-email-jic23@cam.ac.uk> <1246542464-6974-14-git-send-email-jic23@cam.ac.uk> <1246542464-6974-15-git-send-email-jic23@cam.ac.uk>
+In-Reply-To: <1246542464-6974-15-git-send-email-jic23@cam.ac.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Jul 2009 07:33:43 +0530
-Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 
-> Hello Arjan,
-> 
-> What:   Unused EXPORT_SYMBOL/EXPORT_SYMBOL_GPL exports
->         (temporary transition config option provided until then)
->         The transition config option will also be removed at the same
-> time. When:   before 2.6.19
-> Why:    Unused symbols are both increasing the size of the kernel
-> binary and are often a sign of "wrong API"
-> Who:    Arjan van de Ven <arjan@linux.intel.com>
-> 
-> If you are facing any issue regarding feature removal kindly update
-> the "Documentation/feature-removal-schedule.txt" like what you are
-> waiting for.
-> 
-> Thanks,
-> --
-> JSR
-> 
-> http://userweb.kernel.org/~jaswinder/
-> 
+I will roll these into the original patches at some point, but
+for now they are here.
 
-??
+Thanks to David Brownell for spotting this.
+---
+ drivers/iio/adc/Kconfig   |    2 +-
+ drivers/iio/light/Kconfig |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-what are you suggesting?
-
-unused symbols are getting marked and later approved as appropriate...
-
-
+diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+index cb773d2..ab2066c 100644
+--- a/drivers/iio/adc/Kconfig
++++ b/drivers/iio/adc/Kconfig
+@@ -6,7 +6,7 @@ comment "Analog to digital convertors"
+ 
+ config MAX1363
+ 	tristate "MAXIM max1363 ADC driver"
+-	depends on IIO
++	depends on IIO && I2C
+ 	help
+ 	  Say yes here to build support for many MAXIM i2c analog to digital
+ 	  convertors (ADC). (max1361, max1362, max1363, max1364, max1136,
+diff --git a/drivers/iio/light/Kconfig b/drivers/iio/light/Kconfig
+index 620e249..62d502c 100644
+--- a/drivers/iio/light/Kconfig
++++ b/drivers/iio/light/Kconfig
+@@ -6,7 +6,7 @@ comment "Light sensors"
+ 
+ config TSL2561
+        tristate "TAOS TSL2561 light-to-digital convertor"
+-       depends on IIO
++       depends on IIO && I2C
+        help
+ 	Say yes bere to build support for the TAOS light to digital
+ 	convertor.  This chip has two light sensors. One is broadband
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.2
+
