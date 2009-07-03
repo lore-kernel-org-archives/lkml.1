@@ -1,75 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZGCGWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbZGCGZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZGCGWV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZGCGWN
+	id S1755954AbZGCGZB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389AbZGCGYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:22:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:8001 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZGCGWN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:22:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=PH2lsH6rEEga+z4ds67J8XgroIGW4HKFXNUopfFSWiVZ2IgUMRqeh+EL12mmPXtou6
-         O47iNkEhQxjJh0LANHR829lpbl/7ly3dDKe87kiev80TLj9P7UMngzL9vWg6QszliXQE
-         Z5KJl9QWOA2pJ1NG8Nb210L87iLW5053N6PpE=
-Message-ID: <4A4DA3E0.6050404@gmail.com>
-Date: Thu, 02 Jul 2009 23:23:28 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
-MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
-Subject: Re: [PATCH] SElinux: Fix some typos.
-References: <1246556775-8942-1-git-send-email-justinmattock@gmail.com> <1246556775-8942-2-git-send-email-justinmattock@gmail.com> <alpine.LRH.2.00.0907030850500.10242@tundra.namei.org> <4A4D7C94.2020307@gmail.com> <alpine.LRH.2.00.0907031544160.12340@tundra.namei.org>
-In-Reply-To: <alpine.LRH.2.00.0907031544160.12340@tundra.namei.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 02:24:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38886 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbZGCGYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 02:24:53 -0400
+Date: Fri, 3 Jul 2009 16:24:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for July 3
+Message-Id: <20090703162443.16495147.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__3_Jul_2009_16_24_43_+1000_KA_Ki7aG4y4Fc02T"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris wrote:
-> On Thu, 2 Jul 2009, Justin P. Mattock wrote:
->
->    
->> No I will not be afraid of submitting patches, and having them be rejected.
->> all part of the learning curve.
->>      
->
-> I'd suggest generally not starting out with spelling, grammatical and
-> formatting patches.  It eats reviewer bandwidth, perturbs the codebase
-> (causing people working on it to have to update their code) and does not
-> give you as much opportunity to to learn about the code.
->
->    
-No my intentions were not to eat reviewer bandwidth, or get in the way.
-just turned out as I was going through(for example) hooks.c I noticed a 
-portion of it
-had proper grammar, and then a portion of it seemed as if the author was too
-much in a hurry to worry about that.(so I figured hey why not, that's all).
-> Try fixing smaller, known bugs or adding small useful changes.
->
-> The TODO list for the SELinux kernel code is here:
-> http://selinuxproject.org/page/Kernel_Development
->
->    
-Thanks for this, Ill have to give this a look and see.
+--Signature=_Fri__3_Jul_2009_16_24_43_+1000_KA_Ki7aG4y4Fc02T
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> You can also email the maintainers and ask for suggestions on what to
-> tackle.
->
->
-> - James
->    
-alright James,
-Thanks for taking the time
-next time I decide to have a major case of
-OCD, I'll remember that creating churn is not
-a good idea.
+Hi all,
 
-Justin P. Mattock
+Changes since 20090702:
+
+Dropped tree: sfi (build problems)
+
+This tree fails to build for powerpc allyesconfig.
+
+The xfs tree gained a build failure so I used the version from
+next-20090702.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 132 trees (counting Linus' and 19 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
+x-helper-errata.c
+CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
+CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
+CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
+CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+CONFLICT (content): Merge conflict in fs/configfs/dir.c
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging ubifs/linux-next
+Merging xfs/master
+$ git reset --hard HEAD^
+Merging refs/next/20090702/xfs
+Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
+CONFLICT (content): Merge conflict in fs/reiserfs/super.c
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging kbuild/master
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+$ git checkout HEAD drivers/platform/x86/eeepc-laptop.c
+[master 6233d2e] Revert "eeepc-laptop: Register as a pci-hotplug device"
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/powermac/setup=
+.c
+Merging mmc/next
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+CONFLICT (content): Merge conflict in drivers/char/tty_ldisc.c
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging edac-amd/for-next
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/alpha/include/asm/percpu.h
+CONFLICT (content): Merge conflict in arch/mn10300/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in include/linux/percpu-defs.h
+Merging sfi/sfi-test
+$ git reset --hard HEAD^
+Merging asm-generic/next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+Applying: rr/pmac: fix for cpumask accessor changes
+
+--Signature=_Fri__3_Jul_2009_16_24_43_+1000_KA_Ki7aG4y4Fc02T
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpNpCsACgkQjjKRsyhoI8yZegCfdXB0wmixdKJZ+PdCRbz9r7PO
+aeYAoINqy3RAKzl/Sv3M5F2WospYyvMo
+=owdd
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__3_Jul_2009_16_24_43_+1000_KA_Ki7aG4y4Fc02T--
