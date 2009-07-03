@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZGCPsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbZGCPs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZGCPsQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 11:48:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZGCPsB
+	id S1758121AbZGCPs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 11:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZGCPsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 11:48:01 -0400
-Received: from 174-143-236-118.static.slicehost.net ([174.143.236.118]:44945
-	"EHLO fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756649AbZGCPsA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 11:48:00 -0400
-Date: Fri, 3 Jul 2009 11:47:57 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, steved@redhat.com,
-       rasmus@msconsult.dk, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: NFSD: Don't hold unrefcounted creds over call to nfsd_setuser()
-Message-ID: <20090703154757.GG31538@fieldses.org>
-References: <20090703142250.GB31538@fieldses.org> <20090702203937.GA10504@fieldses.org> <20090702133532.28297.89635.stgit@warthog.procyon.org.uk> <575.1246570293@redhat.com> <20090702230955.GB12376@fieldses.org> <31545.1246632086@redhat.com>
+	Fri, 3 Jul 2009 11:48:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50219 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756332AbZGCPsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 11:48:51 -0400
+Date: Fri, 3 Jul 2009 17:48:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] vt: add an event interface
+Message-ID: <20090703154845.GB13580@elte.hu>
+References: <20090703091655.GB3902@elte.hu> <20090703104459.1d9d0bbf@lxorguk.ukuu.org.uk> <20090703095432.GC21141@elte.hu> <20090703110620.64fd1283@lxorguk.ukuu.org.uk> <20090703102234.GA32128@elte.hu> <20090703114431.37abd528@lxorguk.ukuu.org.uk> <20090703131727.GA3207@elte.hu> <20090703143746.0379b2ee@lxorguk.ukuu.org.uk> <20090703144754.GA13246@elte.hu> <20090703160230.093e422c@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31545.1246632086@redhat.com>
+In-Reply-To: <20090703160230.093e422c@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0024]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch is appropriate for 2.6.31 (and stable), and is also
-available from
 
-  git://linux-nfs.org/~bfields/linux.git for-2.6.31
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
---b.
+> > The thing is, you didnt really answer my question whether you 
+> > consider yourself to be accountable to the same standards of 
+> > quality as other upstream kernel contributors?
+> 
+> I did answer it, I guess you didn't like the answer ?
 
-commit 033a666ccb842ab4134fcd0c861d5ba9f5d6bf3a
-Author: David Howells <dhowells@redhat.com>
-Date:   Thu Jul 2 14:35:32 2009 +0100
+You did not answer it really, you questioned the validity of the 
+question:
 
-    NFSD: Don't hold unrefcounted creds over call to nfsd_setuser()
-    
-    nfsd_open() gets an unrefcounted pointer to the current process's effective
-    credentials at the top of the function, then calls nfsd_setuser() via
-    fh_verify() - which may replace and destroy the current process's effective
-    credentials - and then passes the unrefcounted pointer to dentry_open() - but
-    the credentials may have been destroyed by this point.
-    
-    Instead, the value from current_cred() should be passed directly to
-    dentry_open() as one of its arguments, rather than being cached in a variable.
-    
-    Possibly fh_verify() should return the creds to use.
-    
-    This is a regression introduced by
-    745ca2475a6ac596e3d8d37c2759c0fbe2586227 "CRED: Pass credentials through
-    dentry_open()".
-    
-    Signed-off-by: David Howells <dhowells@redhat.com>
-    Tested-and-Verified-By: Steve Dickson <steved@redhat.com>
-    Cc: stable@kernel.org
-    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+| > Also, isnt it a double standard: why should newbies be held to 
+| > higher standards than you hold yourself to?
+|
+| Why should anyone be held up to bogus standards ?
+|
+| [...]
 
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 4145083..23341c1 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -678,7 +678,6 @@ __be32
- nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
- 			int access, struct file **filp)
- {
--	const struct cred *cred = current_cred();
- 	struct dentry	*dentry;
- 	struct inode	*inode;
- 	int		flags = O_RDONLY|O_LARGEFILE;
-@@ -733,7 +732,7 @@ nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
- 		vfs_dq_init(inode);
- 	}
- 	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_path.mnt),
--			    flags, cred);
-+			    flags, current_cred());
- 	if (IS_ERR(*filp))
- 		host_err = PTR_ERR(*filp);
- 	else
+So did i get you right that in your opinion sending and writing 
+clean code is a 'bogus standard'? Sorry about trying to interpret 
+you here, i have no choice because you did not reply to my question.
+
+I thought the obvious portions of Documentation/CodingStyle applied 
+to everyone - so it applies to you only if you like it?
+
+	Ingo
