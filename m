@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZGCIPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZGCIPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbZGCIPF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZGCIOq
+	id S1755850AbZGCIPU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZGCIOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 3 Jul 2009 04:14:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34439 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753989AbZGCIOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Jul 2009 04:14:46 -0400
-Received: from mail-px0-f190.google.com ([209.85.216.190]:49442 "EHLO
-	mail-px0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbZGCIOp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:14:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Xn7BVClsuMPbAZzrTcnZErFAqjKx1Dvlqxc1Hhryfp+UE4qJ1HLT1YplUdeEHnKt6n
-         b7s/pKVNuZAwAmaog3+Bdh2kRQ7xALNY3J1SIzn9Quvwza41WxYVvd5A36D0EeCRxTln
-         tYtreOI2fHNNiyqyOXM2sLruQnrczSn+b7Iws=
-Date: Fri, 3 Jul 2009 16:16:55 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Changli Gao <xiaosuo@gmail.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
-Message-ID: <20090703081655.GH5880@cr0.nay.redhat.com>
-References: <20090702102138.GF6372@cr0.nay.redhat.com> <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com> <20090703015554.GB5880@cr0.nay.redhat.com> <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com> <20090703030008.GD5880@cr0.nay.redhat.com> <412e6f7f0907022108p7c533ed2wd16fceb0f282ed62@mail.gmail.com> <20090703051917.GE5880@cr0.nay.redhat.com> <412e6f7f0907022242r52ad981fyd51c2a55f41ab228@mail.gmail.com> <20090703071504.GG5880@cr0.nay.redhat.com> <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com>
+Date: Fri, 3 Jul 2009 10:14:45 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, fbl@redhat.com, nhorman@redhat.com,
+       davem@redhat.com, htejun@gmail.com, jarkao2@gmail.com, oleg@redhat.com,
+       davidel@xmailserver.org, eric.dumazet@gmail.com
+Subject: [PATCHv5 2/2] memory barrier: adding smp_mb__after_lock
+Message-ID: <20090703081445.GG2902@jolsa.lab.eng.brq.redhat.com>
+References: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <412e6f7f0907030040v6133badat7058186a01d78f44@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090703081219.GE2902@jolsa.lab.eng.brq.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 03, 2009 at 03:40:34PM +0800, Changli Gao wrote:
->On Fri, Jul 3, 2009 at 3:15 PM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
->>
->> If saving one fd really helps here, probably you want to
->> save more, you will need a syscall like:
->>
->>  int splice_without_new_fd(int infd, int outfd);
->Do you know sendfile()? Its current implementation is buggy, and will
->be blocked on outfd. Anyway, the above code is just a use case, there
->are other cases sendfile can't cover.
+Adding smp_mb__after_lock define to be used as a smp_mb call after
+a lock.  
 
-So what? So you should fix it intead of inventing a new pipe() and use
-splice(2)...
+Making it nop for x86, since {read|write|spin}_lock() on x86 are 
+full memory barriers.
 
-Wait... if splice(2) doesn't block, what is your point for saving
-an fd in your code? You can do:
+wbr,
+jirka
 
-int splice_two_fd(int fd1, int fd2)
-{
-	int fds[2];
-	pipe(fds);
-	splice(fd1, fds[0]);//not block
-	splice(fds[1], fd2);//not block
-	close(fds[0]); //can be closed soon
-	close(fds[1]); //ditto
-}
 
-Outside this function no new fd's are used.
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 
->
->>
->> But splice(2) is designed to be as it is. You need to increase
->> your fd limit, instead of saving one by pipe().
->>
->I don't agree with you. We should save resource as much as we can, and
->not work around it.
+---
+ arch/x86/include/asm/spinlock.h |    3 +++
+ include/linux/spinlock.h        |    5 +++++
+ include/net/sock.h              |    5 ++++-
+ 3 files changed, 12 insertions(+), 1 deletions(-)
 
-You are saying splice(2) is wrong? Because it is splice(2) who
-needs 3 fd's finally.
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index b7e5db8..39ecc5f 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -302,4 +302,7 @@ static inline void __raw_write_unlock(raw_rwlock_t *rw)
+ #define _raw_read_relax(lock)	cpu_relax()
+ #define _raw_write_relax(lock)	cpu_relax()
+ 
++/* The {read|write|spin}_lock() on x86 are full memory barriers. */
++#define smp_mb__after_lock() do { } while (0)
++
+ #endif /* _ASM_X86_SPINLOCK_H */
+diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
+index 252b245..ae053bd 100644
+--- a/include/linux/spinlock.h
++++ b/include/linux/spinlock.h
+@@ -132,6 +132,11 @@ do {								\
+ #endif /*__raw_spin_is_contended*/
+ #endif
+ 
++/* The lock does not imply full memory barrier. */
++#ifndef smp_mb__after_lock
++#define smp_mb__after_lock() smp_mb()
++#endif
++
+ /**
+  * spin_unlock_wait - wait until the spinlock gets unlocked
+  * @lock: the spinlock in question.
+diff --git a/include/net/sock.h b/include/net/sock.h
+index 4eb8409..98afcd9 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -1271,6 +1271,9 @@ static inline int sk_has_allocations(const struct sock *sk)
+  * in its cache, and so does the tp->rcv_nxt update on CPU2 side.  The CPU1
+  * could then endup calling schedule and sleep forever if there are no more
+  * data on the socket.
++ *
++ * The sk_has_helper is always called right after a call to read_lock, so we
++ * can use smp_mb__after_lock barrier.
+  */
+ static inline int sk_has_sleeper(struct sock *sk)
+ {
+@@ -1280,7 +1283,7 @@ static inline int sk_has_sleeper(struct sock *sk)
+ 	 *
+ 	 * This memory barrier is paired in the sock_poll_wait.
+ 	 */
+-	smp_mb();
++	smp_mb__after_lock();
+ 	return sk->sk_sleep && waitqueue_active(sk->sk_sleep);
+ }
+ 
