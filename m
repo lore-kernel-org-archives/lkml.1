@@ -1,67 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbZGCI32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZGCIab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173AbZGCI32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZGCI3P
+	id S1752982AbZGCIab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZGCIaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:29:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54542 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755858AbZGCI3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:29:13 -0400
-Date: Fri, 3 Jul 2009 10:29:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi@redhat.com" <avi@redhat.com>
-Subject: Re: [PATCH v5] enable x2APIC without interrupt remapping under KVM
-Message-ID: <20090703082905.GF21833@elte.hu>
-References: <20090701133007.GC27539@redhat.com> <1246482017.27006.10670.camel@localhost.localdomain>
+	Fri, 3 Jul 2009 04:30:16 -0400
+Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:35727
+	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751742AbZGCIaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:30:13 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zzzz1202hzzz32i62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KM76A9-02-2ZX-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/2] amd-iommu: handle alias entries correctly in init code
+Date: Fri, 3 Jul 2009 10:29:12 +0200
+Message-ID: <1246609753-30929-2-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
+References: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 03 Jul 2009 08:29:18.0540 (UTC) FILETIME=[5B8EA8C0:01C9FBB8]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1246482017.27006.10670.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+An alias entry in the ACPI table means that the device can send requests to the
+IOMMU with both device ids, its own and the alias. This is not handled properly
+in the ACPI init code. This patch fixes the issue.
 
-* Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu_init.c |   11 +++++++----
+ 1 files changed, 7 insertions(+), 4 deletions(-)
 
-> On Wed, 2009-07-01 at 06:30 -0700, Gleb Natapov wrote:
-> > KVM would like to provide x2APIC interface to a guest without emulating
-> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
-> > is that x2APIC interface is better virtualizable and provides better
-> > performance than mmio xAPIC interface:
-> >     
-> > - msr exits are faster than mmio (no page table walk, emulation)
-> > - no need to read back ICR to look at the busy bit
-> > - one 64 bit ICR write instead of two 32 bit writes
-> > - shared code with the Hyper-V paravirt interface
-> >     
-> > Included patch changes x2APIC enabling logic to enable it even if IR
-> > initialization failed, but kernel runs under KVM and no apic id is
-> > greater than 255 (if there is one spec requires BIOS to move to x2apic
-> > mode before starting an OS).
-> > 
-> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> 
-> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 10b2acc..ec72c77 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -691,6 +691,7 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
+ 
+ 			devid = e->devid;
+ 			devid_to = e->ext >> 8;
++			set_dev_entry_from_acpi(iommu, devid   , e->flags, 0);
+ 			set_dev_entry_from_acpi(iommu, devid_to, e->flags, 0);
+ 			amd_iommu_alias_table[devid] = devid_to;
+ 			break;
+@@ -749,11 +750,13 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
+ 
+ 			devid = e->devid;
+ 			for (dev_i = devid_start; dev_i <= devid; ++dev_i) {
+-				if (alias)
++				if (alias) {
+ 					amd_iommu_alias_table[dev_i] = devid_to;
+-				set_dev_entry_from_acpi(iommu,
+-						amd_iommu_alias_table[dev_i],
+-						flags, ext_flags);
++					set_dev_entry_from_acpi(iommu,
++						devid_to, flags, ext_flags);
++				}
++				set_dev_entry_from_acpi(iommu, dev_i,
++							flags, ext_flags);
+ 			}
+ 			break;
+ 		default:
+-- 
+1.6.3.3
 
-Now, since this affects core x86 APIC code non-trivially so should 
-submitted to and go via the x86 tree. (Can prepare a special branch 
-with just this change if KVM tree wants/needs to pull it before 
-v2.6.32.)
 
-	Ingo
