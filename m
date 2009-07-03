@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZGCISX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZGCITr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbZGCISX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZGCISI
+	id S1755543AbZGCITr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZGCITd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:18:08 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:60325 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753736AbZGCISH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:18:07 -0400
+	Fri, 3 Jul 2009 04:19:33 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58659 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbZGCITc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:19:32 -0400
+Message-ID: <4A4DBF50.8090408@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 16:20:32 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+CC: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] cgroup: Fix indent for /proc/cgroups
+References: <4A4DBBC2.8010805@cn.fujitsu.com>
+In-Reply-To: <4A4DBBC2.8010805@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-ID: <19021.48828.428272.100850@cargo.ozlabs.ibm.com>
-Date: Fri, 3 Jul 2009 18:18:04 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/6 -tip] perf stat: treat same behaviour for all
-	CYCLES and CLOCKS
-In-Reply-To: <20090701113915.GG15958@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	<1246440909.3403.5.camel@hpdv5.satnam>
-	<1246440977.3403.7.camel@hpdv5.satnam>
-	<20090701113915.GG15958@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
+CC: container list
 
-> Other 'compound' events might be possible too: for example a new 
-> cache-hits field could be is cache-refs minus cache-misses.
-
-Hmmm, on the MPC7450 family there are events for cache-hits and
-cache-misses, so there it would be nice to be able to ask for
-cache-refs and have it compute cache-hits plus cache-misses.
-
-> I.e. the simplest model for 'compound' events would be:
+Gui Jianfeng wrote:
+> Currently, /proc/cgroups outputs is fairly ugly as following,
+> #subsys_name    hierarchy       num_cgroups     enabled
+> cpuset  0       1       1
+> debug   0       1       1
+> ns      0       1       1
 > 
->   X = A / B
->   X = A - B
->   X = A + B
+> indent it in a good-looking way.
+> #subsys_name    hierarchy       num_cgroups     enabled
+> cpuset          0               1               1
+> debug           0               1               1
+> ns              0               1               1
 > 
-> We could list them in the event table, with a flag that specifies 
-> which arithmetic operation connects two 'atomic' counters.
+
+But if there's a subsystem with name length >= 8,
+it won't be aligned properly..
+
 > 
-> Then the adding of a new compound event would only be the matter of 
-> adding one more line to the event table.
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  kernel/cgroup.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 3737a68..99fc160 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -2963,7 +2963,7 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
+>  	mutex_lock(&cgroup_mutex);
+>  	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>  		struct cgroup_subsys *ss = subsys[i];
+> -		seq_printf(m, "%s\t%lu\t%d\t%d\n",
+> +		seq_printf(m, "%s\t\t%lu\t\t%d\t\t%d\n",
+>  			   ss->name, ss->root->subsys_bits,
+>  			   ss->root->number_of_cgroups, !ss->disabled);
+>  	}
 
-Sounds nice.  If we do this we should ensure that the two events
-get put into one group if possible.
-
-Paul.
