@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757439AbZGCCJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbZGCCKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757439AbZGCCJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 22:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZGCCJs
+	id S1756635AbZGCCKY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 22:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbZGCCKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 22:09:48 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:51456 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbZGCCJr (ORCPT
+	Thu, 2 Jul 2009 22:10:11 -0400
+Received: from mail-vw0-f202.google.com ([209.85.212.202]:42990 "EHLO
+	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZGCCKK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 22:09:47 -0400
-Date: Fri, 3 Jul 2009 04:09:50 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <19021.26102.80885.330380@samba.org>
-Message-ID: <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
- <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
- <19021.26102.80885.330380@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Thu, 2 Jul 2009 22:10:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TCxWp0oy5zDnqhb3FfLcVjRO7bV083MxJ1L7ihlD7fz93lPJNbU0gzUM7693eCg0nm
+         53K1vA37dCEM8M0nqso7dN5mF6p2ZB9qSlg9LUPR/f6LybLCq6Vsuo+Q0RP//M3nPNFE
+         n6HbyJVVQDHPBYwUMgj9LvezSbW4Rolnu/TAs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+In-Reply-To: <20090703015554.GB5880@cr0.nay.redhat.com>
+References: <412e6f7f0907020036y76abbc7du99c7b695f725be4@mail.gmail.com>
+	 <20090702091309.GB6372@cr0.nay.redhat.com>
+	 <412e6f7f0907020218m1f4a9651l2c682a9905925bcd@mail.gmail.com>
+	 <20090702094620.GE6372@cr0.nay.redhat.com>
+	 <412e6f7f0907020304u166b6d17id1bcf5d334b45c53@mail.gmail.com>
+	 <20090702102138.GF6372@cr0.nay.redhat.com>
+	 <412e6f7f0907021743m6ed8ae10uecd13c4fc4ec7cbb@mail.gmail.com>
+	 <20090703015554.GB5880@cr0.nay.redhat.com>
+Date: Fri, 3 Jul 2009 10:10:13 +0800
+Message-ID: <412e6f7f0907021910w64af0525h17afb518f0e18f97@mail.gmail.com>
+Subject: Re: PROPOSAL: extend pipe() to support NULL argument.
+From: Changli Gao <xiaosuo@gmail.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 2009-07-03 03:59, tridge@samba.org wrote:
+On Fri, Jul 3, 2009 at 9:55 AM, Amerigo Wang<xiyou.wangcong@gmail.com> wrote:
 >
-> > The cam does not have a problem with long filenames 牴 
 >
->That is curious. When you use a long filename (ie. a real long
->filename, not a mixed case 8.3 name), if you ask the camera for
->details on the photo,
+> What is a pipe in your mind? A pipe has two points, obviously,
+> you are making it a single point, thus you can't call it a pipe
+> any more...
+>
+> I don't like this
+How do you think the following code?
 
-No-no, as previously mentioned it ignores filenames not in the
-format of dscf????.jpg. But if I interpret the hexdump right,
-standard Linux creates a long name *anyway*, even for names
-fitting in 8.3, if it's lowercase:
+mkfifo("/tmp/a", O_RDWR);
+fd = open("'/tmp/a", O_RDWR);
 
-│00bce510 79 39 79 39 03 00 f5 5b-79 39 95 4b 00 00 00 00 |y9y9? ?[y9?K    |    
-│00bce520 41 67 00 6f 00 64 00 64-00 61 00 0f 00 27 6d 00 |Ag o d d a ? 'm |    
-│00bce530 6e 00 2e 00 7a 00 69 00-70 00 00 00 00 00 ff ff |n . z i p     ??|    
-│00bce540 47 4f 44 44 41 4d 4e 20-5a 49 50 20 00 64 d2 20 |GODDAMN ZIP  d? |    
+Is it right? Is it allowed by Linux/Unix/POSIX?
+
+and when used by splice(), pipe represents a kernel buffer handler not
+its original meaning.
+.
+>
+> And just as what you showed above, you can close the fd's
+> after finishing, thus you only save one fd during these
+> two splice(), not useful...
+splice() is a high performance system call. It maybe used in thousands
+of connection environment, so one instance saves one fd, and thousands
+of fd will be saved.
+
+>
+>
+>>>
+>>> You are trying to break it...
+>>>
+>>
+>>It depends on the argument for pipe, if the argument is NULL, it
+>>breaks the code above.
+>>
+>
+> Sure, malloc(2) can return NULL.
+>
+>
+You should check the return value returned by malloc brefore passing
+it to pipe(), and not rely on pipe()'s check.
+
+
+-- 
+Regards，
+Changli Gao(xiaosuo@gmail.com)
