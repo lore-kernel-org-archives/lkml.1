@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZGCIBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZGCIF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754421AbZGCIBM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZGCIA7
+	id S1752786AbZGCIF6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZGCIFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:00:59 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54658 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751118AbZGCIA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:00:58 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/nKlw2yz7ncjtCA5g9zeCl97gUF+sl+PbXan5G6X
-	8WVtFYpoze5AvX
-Subject: Re: [patch 0/4] perf_counter tools: support annotation of live
- kernel modules
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090703072941.GC7943@elte.hu>
-References: <1246514639.13293.40.camel@marge.simson.net>
-	 <20090702064712.GA26690@elte.hu>
-	 <1246519076.6384.22.camel@marge.simson.net>
-	 <1246524170.7113.20.camel@marge.simson.net> <20090703072941.GC7943@elte.hu>
-Content-Type: text/plain
-Date: Fri, 03 Jul 2009 10:00:58 +0200
-Message-Id: <1246608058.6257.25.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Fri, 3 Jul 2009 04:05:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63398 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbZGCIFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:05:41 -0400
+Message-ID: <4A4DBBC2.8010805@cn.fujitsu.com>
+Date: Fri, 03 Jul 2009 16:05:22 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] cgroup: Fix indent for /proc/cgroups
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.63
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 09:29 +0200, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Thu, 2009-07-02 at 09:17 +0200, Mike Galbraith wrote:
-> > 
-> > > After I resurrect (well, try) live annotation in top...
-> > 
-> > Random thought wrt live top annotation: instead of resurrecting in 
-> > the previous form, which could be a bit intrusive display space 
-> > wise, what do you think of this idea?
-> > 
-> > Provide a kbd input snapshot trigger which builds a perf record 
-> > (hard?) compatible file for the symbols being displayed.  Start a 
-> > background task to annotate the lot, stuffing annotate output into 
-> > an output file.
-> > 
-> > Better ideas highly welcome.
-> 
-> Hm, is there really a performance problem?
+Currently, /proc/cgroups outputs is fairly ugly as following,
+#subsys_name    hierarchy       num_cgroups     enabled
+cpuset  0       1       1
+debug   0       1       1
+ns      0       1       1
 
-Sort of..
+indent it in a good-looking way.
+#subsys_name    hierarchy       num_cgroups     enabled
+cpuset          0               1               1
+debug           0               1               1
+ns              0               1               1
 
-> We need to calculate and cache the objdump annotation output once, 
-> but after that it should be pretty fast as we just display updated 
-> counts with the same lines over and over again. No repeated objdump 
-> runs are needed.
 
-But active files follow symbols, which change on the fly.
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ kernel/cgroup.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Besides, as mentioned previously, while displayed annotation was very
-cool, it took a lot of display space.  For me, top with the ability to
-emit bic-disposable mini-reports would be my primary perf tools usage.
-I'd only use big brothers when I needed their power/detail.
-
-	-Mike
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 3737a68..99fc160 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -2963,7 +2963,7 @@ static int proc_cgroupstats_show(struct seq_file *m, void *v)
+ 	mutex_lock(&cgroup_mutex);
+ 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+ 		struct cgroup_subsys *ss = subsys[i];
+-		seq_printf(m, "%s\t%lu\t%d\t%d\n",
++		seq_printf(m, "%s\t\t%lu\t\t%d\t\t%d\n",
+ 			   ss->name, ss->root->subsys_bits,
+ 			   ss->root->number_of_cgroups, !ss->disabled);
+ 	}
+-- 
+1.5.4.rc3
 
