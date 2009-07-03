@@ -1,93 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbZGCJkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZGCJlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179AbZGCJkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 05:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbZGCJkW
+	id S1757095AbZGCJlL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 05:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756347AbZGCJki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 05:40:22 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56178 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756817AbZGCJkT (ORCPT
+	Fri, 3 Jul 2009 05:40:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38681 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757108AbZGCJkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 05:40:19 -0400
-Date: Fri, 3 Jul 2009 11:40:21 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-In-Reply-To: <19021.31291.642416.956966@samba.org>
-Message-ID: <alpine.LSU.2.00.0907031121250.16093@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
- <alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr> <19021.19842.663727.146474@samba.org> <87hbxu60qm.fsf@devron.myhome.or.jp> <19021.23231.213863.726785@samba.org> <alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
- <19021.26102.80885.330380@samba.org> <alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr> <19021.31291.642416.956966@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 3 Jul 2009 05:40:37 -0400
+Date: Fri, 3 Jul 2009 10:39:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: avorontsov@ru.mvista.com
+Cc: Alan Cox <alan@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] 8250: Now honours baud rate lower bounds
+Message-ID: <20090703103924.45902824@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090702223013.GA26960@oksana.dev.rtsoft.ru>
+References: <20090702213624.GA23193@oksana.dev.rtsoft.ru>
+	<20090702225312.02f78ec4@lxorguk.ukuu.org.uk>
+	<20090702223013.GA26960@oksana.dev.rtsoft.ru>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> How about this patch down below?
 
-On Friday 2009-07-03 05:25, tridge@samba.org wrote:
->
->That is why setting shortname=winnt is desirable when using the "no
->dualnames" patch I posted. That tells Linux to behave more like what
->current windows versions behave, which is to try and put it in the 8.3
->entry if it can, even if it is all lowercase.
+Thats much better.
 
-Right. That in itself is fine, but I'd still like to have readdir
-return lowercase names here then. This is sort of what I seem to
-remember from Windows: files only having a total-uppercase 8.3
-name were still displayed as lowercase. This is why I am all for
-splitting the shortcase option. (Maybe patches speak louder but
-ATM I am so into Netfilter ;)
-
->btw, if you still think your camera really is looking at the long
->filename entries,
-
-I toyed with the hexeditor a bit and modified the FAT entry's
-filename directly. (I just hope there is not any checksum?)
-
- * if a filename is of the form /dscf????.jpg/i, the A210 requires
-   that 8.3 names be all uppercase (even in the persence of a
-   freeform long name) otherwise the OSD will (explicitly) display
-   "READ ERROR".
-
- * if the 8.3 name is, for example, DsCE1234.jpg, the OSD seems to
-   be confused and displays "00000000" as the picture index.
-
- => So uppercase 8.3 is a hard requirement for _any_ filename.
-
-I also looked again at the finepix.img.bz2 I made available earlier.
-It has a long entry "dscf3000.jpg", but "no shortname" (i.e. an
-invalid one as generated by the patch), and that is most likely the
-reason that the camera ignores this file completely.
-
->then try creating a file like DsCf2000.jpg with a
->unpatched kernel, mounted with shortname=winnt. That will create two
->directory entries for the file, one being DSCF2000.JPG and the other
->being DsCf2000.jpg.
->
->Then view the list of photos on the LCD back panel of your
->camera. Assuming it has a way to see the filename, does it display the
->mixed case name DsCf2000.jpg, or does it display a non-mixed name like
->dscf2000.jpg or DSCF2000.JPG.
-
-It does not display the filename, just the index number. But the
-image is present/selectable, because the 8.3 name is present and is
-all-uppercase (see above).
-
->If it displays a mixed name (ie. DsCf) then your camera can indeed
->read long filename entries. If it displays a all uppercase or all
->lowercase name then I think it is only capable of reading short names
->from FAT filesystems. That is what I think you will find.
-
-Capable or not — it only /needs/ 8.3 for DCIM operation :)
+Alan
