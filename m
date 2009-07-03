@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZGCGqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZGCGrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZGCGqR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 02:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZGCGqD
+	id S1755506AbZGCGrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 02:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZGCGrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 02:46:03 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:41458 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbZGCGqC (ORCPT
+	Fri, 3 Jul 2009 02:47:08 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:54672 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbZGCGrH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 02:46:02 -0400
-Date: Fri, 3 Jul 2009 15:45:56 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Krzysztof Helt <krzysztof.h1@wp.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] video: sm501fb: Early initialization of mm_lock mutex.
-Message-ID: <20090703064555.GA8242@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Krzysztof Helt <krzysztof.h1@wp.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Fri, 3 Jul 2009 02:47:07 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: tridge@samba.org
+Cc: Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
+       john.lanza@linux.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
+       jcm@jonmasters.org
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
+	<19021.19842.663727.146474@samba.org>
+	<87hbxu60qm.fsf@devron.myhome.or.jp>
+	<19021.23231.213863.726785@samba.org>
+	<alpine.LSU.2.00.0907030347210.24650@fbirervta.pbzchgretzou.qr>
+	<19021.26102.80885.330380@samba.org>
+	<alpine.LSU.2.00.0907030403330.26905@fbirervta.pbzchgretzou.qr>
+	<19021.31291.642416.956966@samba.org>
+Date: Fri, 03 Jul 2009 15:46:59 +0900
+In-Reply-To: <19021.31291.642416.956966@samba.org> (tridge@samba.org's message
+	of "Fri, 3 Jul 2009 13:25:47 +1000")
+Message-ID: <87tz1up8kc.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 537a1bf059fa312355696fa6db80726e655e7f17 (fbdev: add mutex for
-fb_mmap locking) introduces a ->mm_lock mutex for protecting smem
-assignments. Unfortunately in the case of sm501fb these happen quite
-early in the initialization code, well before the mutex_init() that takes
-place in register_framebuffer(), leading to:
+tridge@samba.org writes:
 
-------------[ cut here ]------------
-Badness at kernel/mutex.c:207
+> right, that is not unexpected. It creates both the long name and the
+> short name in this case as the short name is constrained to not be
+> case preserving, and the filesystem normally tries to be both
+> case-insensitive and case-preserving. As the long name has no
+> constraints on the case of characters it creates both so that devices
+> (like your camera I think) that only look at the 8.3 entries will see
+> a file.
+>
+> That is why setting shortname=winnt is desirable when using the "no
+> dualnames" patch I posted. That tells Linux to behave more like what
+> current windows versions behave, which is to try and put it in the 8.3
+> entry if it can, even if it is all lowercase.
+>
+> What I would like to see us do for maximum compatibility with devices
+> like this, while still maximising the legal safety, is to take mixed
+> case prefixes or suffixes that fit in 8.3 and uppercase them and set
+> the CASE_LOWER_BASE and CASE_LOWER_EXT bits appropriately in the flags
+> field, and not store a long name. That would makes us really nicely
+> compatible with devices like your camera, at the price of losing mixed
+> case preservation for 8.3 names.
+>
+> It would be another departure from previous behaviour however, so I
+> want to get some feedback from Hirofumi-san first. 
 
-Pid : 1, Comm:          swapper
-CPU : 0                 Not tainted  (2.6.31-rc1-00284-g529ba0d-dirty #2273)
+I guess it would be depending on how many shortname only devices are
+there though. At least for now, I'd like to keep that small.
 
-PC is at __mutex_lock_slowpath+0x72/0x1bc
-PR is at __mutex_lock_slowpath+0x66/0x1bc
-...
+Thanks.
 
-matroxfb appears to have the same issue and has solved it with an early
-mutex_init(), so we do the same for sm501fb.
+> btw, if you still think your camera really is looking at the long
+> filename entries, then try creating a file like DsCf2000.jpg with a
+> unpatched kernel, mounted with shortname=winnt. That will create two
+> directory entries for the file, one being DSCF2000.JPG and the other
+> being DsCf2000.jpg.
+>
+> Then view the list of photos on the LCD back panel of your
+> camera. Assuming it has a way to see the filename, does it display the
+> mixed case name DsCf2000.jpg, or does it display a non-mixed name like
+> dscf2000.jpg or DSCF2000.JPG.
+>
+> If it displays a mixed name (ie. DsCf) then your camera can indeed
+> read long filename entries. If it displays a all uppercase or all
+> lowercase name then I think it is only capable of reading short names
+> from FAT filesystems. That is what I think you will find.
+>
+> Cheers, Tridge
 
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-
----
-
- drivers/video/sm501fb.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/video/sm501fb.c b/drivers/video/sm501fb.c
-index 98f24f0..16d4f4c 100644
---- a/drivers/video/sm501fb.c
-+++ b/drivers/video/sm501fb.c
-@@ -1624,6 +1624,8 @@ static int __devinit sm501fb_start_one(struct sm501fb_info *info,
- 	if (!fbi)
- 		return 0;
- 
-+	mutex_init(&info->fb[head]->mm_lock);
-+
- 	ret = sm501fb_init_fb(info->fb[head], head, drvname);
- 	if (ret) {
- 		dev_err(info->dev, "cannot initialise fb %s\n", drvname);
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
