@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbZGCBKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZGCBLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757036AbZGCBKP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 21:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZGCBKD
+	id S1756550AbZGCBLv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZGCBLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 21:10:03 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33152 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878AbZGCBKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 21:10:01 -0400
-Date: Fri, 3 Jul 2009 03:10:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: tridge@samba.org
-cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Thu, 2 Jul 2009 21:11:42 -0400
+Received: from mail.samba.org ([66.70.73.150]:50014 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753806AbZGCBLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Jul 2009 21:11:41 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19021.23231.213863.726785@samba.org>
+Date: Fri, 3 Jul 2009 11:11:27 +1000
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, john.lanza@linux.com,
+       john.lanza@linux.com,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-fsdevel@vger.kernel.org,
        Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
        jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regression
-In-Reply-To: <19021.20449.732095.210252@samba.org>
-Message-ID: <alpine.LSU.2.00.0907030254180.22039@fbirervta.pbzchgretzou.qr>
-References: <19013.8005.541836.436991@samba.org> <20090630063102.GB1351@ucw.cz> <200907012019.53932.rusty@rustcorp.com.au> <20090701122558.3a7c80d3@lxorguk.ukuu.org.uk> <20090701140503.GA21185@mit.edu> <alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
- <19021.17576.808138.476600@samba.org> <alpine.LSU.2.00.0907030149020.17183@fbirervta.pbzchgretzou.qr> <19021.20449.732095.210252@samba.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
+In-Reply-To: <87hbxu60qm.fsf@devron.myhome.or.jp>
+References: <19013.8005.541836.436991@samba.org>
+	<20090630063102.GB1351@ucw.cz>
+	<200907012019.53932.rusty@rustcorp.com.au>
+	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
+	<20090701140503.GA21185@mit.edu>
+	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
+	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
+	<19021.19842.663727.146474@samba.org>
+	<87hbxu60qm.fsf@devron.myhome.or.jp>
+X-Mailer: VM 8.0.12 under 22.2.1 (x86_64-pc-linux-gnu)
+Reply-To: tridge@samba.org
+From: tridge@samba.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > I have no objection to improve. And in this case, for this option, to
+ > force the shortname= sounds reasonable.
 
-On Friday 2009-07-03 02:25, tridge@samba.org wrote:
->
-> >  (All with DUALNAMES=n)
-> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=lower
-> >  # cp /mnt/dcim/100_fuji/dscf{4160,3004}.jpg
-> >  # umount /mnt
-> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=win95
-> >  # cp /mnt/dcim/100_fuji/dscf{4160,3005}.jpg
-> >  # umount /mnt
-> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=winnt
-> >  # cp /mnt/dcim/100_fuji/dscf{4160,3006}.jpg
-> >  # umount /mnt
-> >  # mount /dev/sdc1 /mnt -o iocharset=utf8,shortnames=mixed
-> >  # cp /mnt/dcim/100_fuji/dscf{4160,3007}.jpg
-> >  # umount /mnt
-> > 
-> > Result? The camera only displays 3006.
-> > 
-> > The dualnames patch's filling filenames with random illegal
-> > chars does seems to have a really foul side-effect after 
->
->actually, you've just proved the patch works as intended on your
->device!
->
->Only the shortname=winnt would create a 8.3 name when you use the
->filename dscfNNNN.jpg.
+Great! 
 
-The mount(8) manpage becomes pretty ambiguous with the dualnames
-patch. By default, "store a long name when the short name is not all
-upper case" would apply - and is invoked because I am a lazy typist
-who wrote "cp $this dscf3000" instead of "cp $this DSCF3000". Now
-since dualnames=n is in effect, no long name would need to be written
-because it still fits into 8.3 — subsequently, one would assume an
-8.3 is generated for all shortname= cases.
+Which varient of this would you prefer I implement? I think the two
+obvious choices are:
 
->That is why my first patch in May forced 
->
->   shortname_flags = VFAT_SFN_CREATE_WINNT;
+ 1) do what I did in the May patch, which is to force
+    VFAT_SFN_CREATE_WINNT when the patch code triggers.
 
-Making WINNT the default would cause many a `ls` output to just
-scream at me in uppercaps because there are programs that
-create long names with all-uppers.
+ 2) force VFAT_SFN_CREATE_WINNT, but also if the name is mixed case
+ within either prefix or extension (such as "Mixed.TXT") then force
+ that part of the name to all lowercase. So "Mixed.TXT" would become
+ "mixed.TXT" on disk.
 
-shortname really needs to be split into "shortname that is applied
-during creation" and "shortname that is applied upon readdir".
+The 2nd choice maximises compatibility with devices that don't
+understand long filenames (such as Jan's camera). The first option
+keeps case preservation for devices that do understand long filenames.
 
+What do you think?
+
+Cheers, Tridge
