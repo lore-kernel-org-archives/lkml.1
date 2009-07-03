@@ -1,77 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbZGCA67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZGCBHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756896AbZGCA67 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Jul 2009 20:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZGCA6u
+	id S1755033AbZGCBHF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Jul 2009 21:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbZGCBGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Jul 2009 20:58:50 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:39287 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbZGCA6t (ORCPT
+	Thu, 2 Jul 2009 21:06:53 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:60497 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751027AbZGCBGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Jul 2009 20:58:49 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: tridge@samba.org
-Cc: Jan Engelhardt <jengelh@medozas.de>, Theodore Tso <tytso@mit.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>, Pavel Machek <pavel@ucw.cz>,
-       john.lanza@linux.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, corbet@lwn.net,
-       jcm@jonmasters.org
-Subject: Re: CONFIG_VFAT_FS_DUALNAMES regressions
-References: <19013.8005.541836.436991@samba.org>
-	<20090630063102.GB1351@ucw.cz>
-	<200907012019.53932.rusty@rustcorp.com.au>
-	<20090701122558.3a7c80d3@lxorguk.ukuu.org.uk>
-	<20090701140503.GA21185@mit.edu>
-	<alpine.LSU.2.00.0907030056210.17183@fbirervta.pbzchgretzou.qr>
-	<alpine.LSU.2.00.0907030134291.17183@fbirervta.pbzchgretzou.qr>
-	<19021.19842.663727.146474@samba.org>
-Date: Fri, 03 Jul 2009 09:58:41 +0900
-In-Reply-To: <19021.19842.663727.146474@samba.org> (tridge@samba.org's message
-	of "Fri, 3 Jul 2009 10:14:58 +1000")
-Message-ID: <87hbxu60qm.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 2 Jul 2009 21:06:52 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoFALP0TEpMQWU3/2dsb2JhbACBUc1uhBAF
+Date: Thu, 2 Jul 2009 21:06:50 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: venkatesh.pallipadi@intel.com
+Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org,
+       cpufreq@vger.kernel.org, kernel-testers@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Thomas Renninger <trenn@suse.de>
+Subject: Re: [patch 1/4] cpufreq: Eliminate the recent lockdep warnings in
+	cpufreq
+Message-ID: <20090703010650.GA25030@Krystal>
+References: <20090703000829.735976000@intel.com> <20090703000923.800507000@intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090703000923.800507000@intel.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 21:03:24 up 124 days, 21:29,  3 users,  load average: 0.73, 0.39,
+	0.34
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tridge@samba.org writes:
+* venkatesh.pallipadi@intel.com (venkatesh.pallipadi@intel.com) wrote:
+> Commit b14893a62c73af0eca414cfed505b8c09efc613c although it was very
+> much needed to properly cleanup ondemand timer, opened-up a can of worms
+> related to locking dependencies in cpufreq.
+> 
+> Patch here defines the need for dbs_mutex and cleans up its usage in
+> ondemand governor. This also resolves the lockdep warnings reported here
+> 
+> http://lkml.indiana.edu/hypermail/linux/kernel/0906.1/01925.html
+> http://lkml.indiana.edu/hypermail/linux/kernel/0907.0/00820.html
+> 
+> and few others..
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c              |    4 ++--
+>  drivers/cpufreq/cpufreq_conservative.c |   27 +++++++++++----------------
+>  drivers/cpufreq/cpufreq_ondemand.c     |   27 +++++++++++----------------
+>  3 files changed, 24 insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6e2ec0b..c7fe16e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1070,8 +1070,6 @@ static int __cpufreq_remove_dev(struct sys_device *sys_dev)
+>  	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>  #endif
+>  
+> -	unlock_policy_rwsem_write(cpu);
+> -
+>  	if (cpufreq_driver->target)
+>  		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>  
+> @@ -1088,6 +1086,8 @@ static int __cpufreq_remove_dev(struct sys_device *sys_dev)
+>  	if (cpufreq_driver->exit)
+>  		cpufreq_driver->exit(data);
+>  
+> +	unlock_policy_rwsem_write(cpu);
+> +
+>  	free_cpumask_var(data->related_cpus);
+>  	free_cpumask_var(data->cpus);
+>  	kfree(data);
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 7fc58af..58889f2 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -70,15 +70,10 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
+>  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+>  
+>  /*
+> - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
+> - * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
+> - * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
+> - * is recursive for the same process. -Venki
+> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
+> - * would deadlock with cancel_delayed_work_sync(), which is needed for proper
+> - * raceless workqueue teardown.
+> + * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
+> + * different CPUs. It protects dbs_enable in governor start/stop. It also
+> + * serializes governor limit_change with do_dbs_timer. We do not want
+> + * do_dbs_timer to run when user is changing the governor or limits.
+>   */
+>  static DEFINE_MUTEX(dbs_mutex);
+>  
+> @@ -488,18 +483,17 @@ static void do_dbs_timer(struct work_struct *work)
+>  
+>  	delay -= jiffies % delay;
+>  
+> -	if (lock_policy_rwsem_write(cpu) < 0)
+> -		return;
+> +	mutex_lock(&dbs_mutex);
 
-> I should also mention that in the first patch I sent back in May, I
-> added some code that made the 8.3 name problem easier on the user. It
-> basically forced the shortname= option, overriding the mount option,
-> when the patch was triggered. The end result was that a name like
-> dcis3000.jpg would always be stored as a 8.3 name, and thus be visible
-> to digital cameras, even if the mount options were set to say that
-> lowercase names should be considered as "long" names.
->
-> Hirofumi objected, on the basis that I was overriding the VFAT
-> mount option. I think that overriding in this case would in fact be
-> worthwhile, as I don't think many users ever think carefully about
-> what shortname= option they are using, and unless you get it right
-> then you can get some real surprises.
->
-> Hirofumi-san, do you think that same objection you expressed
-> previously also applies to this new patch? For example, would you
-> think it reasonable to modify the patch to store the filename as 8.3
-> if it can fit in 8.3 in a case mapped manner? Or store as 8.3 if it is
-> all uppercase or all lowercase?
+OK, I now have absolutely no idea what the rwsem mutex is protecting
+anymore.
 
-I have no objection to improve. And in this case, for this option, to
-force the shortname= sounds reasonable.
+You should probably describe the new world order not just in terms of
+what the dbs_mutex is protecting, but also about what the rwsem is
+doing. I'm worried that this rwsem is there to protect against more than
+what is protected by the dbs_mutex local to the ondemand/conservative
+governors.
 
-Thanks.
+See below,
 
-> I think we will hit cases like the one Jan has pointed out where the
-> exising shortname= options will become even more confusing than they
-> were already when this new patch is applied, especially as I think
-> most distros these days magically supply a shortname= option when you
-> insert some VFAT formatted media.
+>  
+>  	if (!dbs_info->enable) {
+> -		unlock_policy_rwsem_write(cpu);
+> +		mutex_unlock(&dbs_mutex);
+>  		return;
+>  	}
+>  
+>  	dbs_check_cpu(dbs_info);
+>  
+>  	queue_delayed_work_on(cpu, kconservative_wq, &dbs_info->work, delay);
+> -	unlock_policy_rwsem_write(cpu);
+> +	mutex_unlock(&dbs_mutex);
+>  }
+>  
+>  static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
+> @@ -590,15 +584,16 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  					&dbs_cpufreq_notifier_block,
+>  					CPUFREQ_TRANSITION_NOTIFIER);
+>  		}
+> -		dbs_timer_init(this_dbs_info);
+> -
+>  		mutex_unlock(&dbs_mutex);
+>  
+> +		dbs_timer_init(this_dbs_info);
+> +
+>  		break;
+>  
+>  	case CPUFREQ_GOV_STOP:
+> -		mutex_lock(&dbs_mutex);
+>  		dbs_timer_exit(this_dbs_info);
+
+So now the only thing that seems to prevent the init and exit to race
+with each other is the rwsem. But this does not seem to be described
+anywhere.
+
+Mathieu
+
+> +
+> +		mutex_lock(&dbs_mutex);
+>  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+>  		dbs_enable--;
+>  
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 1911d17..246ae14 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -78,15 +78,10 @@ static DEFINE_PER_CPU(struct cpu_dbs_info_s, cpu_dbs_info);
+>  static unsigned int dbs_enable;	/* number of CPUs using this policy */
+>  
+>  /*
+> - * DEADLOCK ALERT! There is a ordering requirement between cpu_hotplug
+> - * lock and dbs_mutex. cpu_hotplug lock should always be held before
+> - * dbs_mutex. If any function that can potentially take cpu_hotplug lock
+> - * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
+> - * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
+> - * is recursive for the same process. -Venki
+> - * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
+> - * would deadlock with cancel_delayed_work_sync(), which is needed for proper
+> - * raceless workqueue teardown.
+> + * dbs_mutex protects data in dbs_tuners_ins from concurrent changes on
+> + * different CPUs. It protects dbs_enable in governor start/stop. It also
+> + * serializes governor limit_change with do_dbs_timer. We do not want
+> + * do_dbs_timer to run when user is changing the governor or limits.
+>   */
+>  static DEFINE_MUTEX(dbs_mutex);
+>  
+> @@ -494,11 +489,10 @@ static void do_dbs_timer(struct work_struct *work)
+>  
+>  	delay -= jiffies % delay;
+>  
+> -	if (lock_policy_rwsem_write(cpu) < 0)
+> -		return;
+> +	mutex_lock(&dbs_mutex);
+>  
+>  	if (!dbs_info->enable) {
+> -		unlock_policy_rwsem_write(cpu);
+> +		mutex_unlock(&dbs_mutex);
+>  		return;
+>  	}
+>  
+> @@ -517,7 +511,7 @@ static void do_dbs_timer(struct work_struct *work)
+>  			dbs_info->freq_lo, CPUFREQ_RELATION_H);
+>  	}
+>  	queue_delayed_work_on(cpu, kondemand_wq, &dbs_info->work, delay);
+> -	unlock_policy_rwsem_write(cpu);
+> +	mutex_unlock(&dbs_mutex);
+>  }
+>  
+>  static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
+> @@ -598,14 +592,15 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  				max(min_sampling_rate,
+>  				    latency * LATENCY_MULTIPLIER);
+>  		}
+> -		dbs_timer_init(this_dbs_info);
+> -
+>  		mutex_unlock(&dbs_mutex);
+> +
+> +		dbs_timer_init(this_dbs_info);
+>  		break;
+>  
+>  	case CPUFREQ_GOV_STOP:
+> -		mutex_lock(&dbs_mutex);
+>  		dbs_timer_exit(this_dbs_info);
+> +
+> +		mutex_lock(&dbs_mutex);
+>  		sysfs_remove_group(&policy->kobj, &dbs_attr_group);
+>  		dbs_enable--;
+>  		mutex_unlock(&dbs_mutex);
+> -- 
+> 1.6.0.6
+> 
+> -- 
+> 
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
