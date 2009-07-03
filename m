@@ -1,265 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZGCI5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753284AbZGCI5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbZGCI5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 04:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753247AbZGCI5E
+	id S1753284AbZGCI5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 04:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZGCI52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 04:57:04 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53861 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbZGCI5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 04:57:02 -0400
-Message-ID: <4A4DC81B.3050608@cn.fujitsu.com>
-Date: Fri, 03 Jul 2009 16:58:03 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 3 Jul 2009 04:57:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48735 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbZGCI51 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 04:57:27 -0400
+Date: Fri, 3 Jul 2009 10:57:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [git pull] AMD IOMMU fixes for 2.6.31-rc1
+Message-ID: <20090703085718.GJ21833@elte.hu>
+References: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [PATCH 8/9] [RFC] Example multi-bindable subsystem: a per-cgroup
- notes field
-References: <20090702020624.14469.47066.stgit@menage.mtv.corp.google.com> <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
-In-Reply-To: <20090702021133.14469.35140.stgit@menage.mtv.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1246609753-30929-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> [RFC] Example multi-bindable subsystem: a per-cgroup notes field
+
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> Hi Ingo,
 > 
-> As an example of a multiply-bindable subsystem, this patch introduces
-> the "info" subsystem, which provides a single file, "info.notes", in
-> which user-space middleware can store an arbitrary (by default up to
-> one page) binary string representing configuration data about that
-> cgroup.  This reduces the need to keep additional state outside the
-> cgroup filesystem.  The maximum notes size for a hierarchy can be set
-> by updating the "info.size" file in the root cgroup.
+> The following changes since commit 7c5371c403abb29f01bc6cff6c5096abdf2dc524:
+>   Yinghai Lu (1):
+>         x86: add boundary check for 32bit res before expand e820 resource to alignment
 > 
-> Signed-off-by: Paul Menage <menage@google.com>
+> are available in the git repository at:
 > 
-> ---
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
 > 
->  include/linux/cgroup_subsys.h |    6 ++
->  init/Kconfig                  |    9 +++
->  kernel/Makefile               |    1 
->  kernel/info_cgroup.c          |  133 +++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 149 insertions(+), 0 deletions(-)
->  create mode 100644 kernel/info_cgroup.c
+> Joerg Roedel (2):
+>       amd-iommu: handle alias entries correctly in init code
+>       amd-iommu: set evt_buf_size correctly
 > 
-> diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-> index f78605e..5dfea38 100644
-> --- a/include/linux/cgroup_subsys.h
-> +++ b/include/linux/cgroup_subsys.h
-> @@ -60,3 +60,9 @@ SUBSYS(net_cls)
->  #endif
->  
->  /* */
-> +
-> +#ifdef CONFIG_CGROUP_INFO
-> +MULTI_SUBSYS(info)
-> +#endif
-> +
-> +/* */
-> diff --git a/init/Kconfig b/init/Kconfig
-> index d904d6c..3bd4685 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -604,6 +604,15 @@ config CGROUP_MEM_RES_CTLR_SWAP
->  	  Now, memory usage of swap_cgroup is 2 bytes per entry. If swap page
->  	  size is 4096bytes, 512k per 1Gbytes of swap.
->  
-> +config CGROUP_INFO
-> +	bool "Simple application-specific info cgroup subsystem"
-> +	depends on CGROUPS
-> +	help
-> +	  Provides a simple cgroups subsystem with an "info.notes"
-> +	  field, which can be used by middleware to store
-> +	  application-specific configuration data about a cgroup. Can
-> +	  be mounted on multiple hierarchies at once.
-> +
->  endif # CGROUPS
->  
->  config MM_OWNER
-> diff --git a/kernel/Makefile b/kernel/Makefile
-> index 7ffdc16..e713a67 100644
-> --- a/kernel/Makefile
-> +++ b/kernel/Makefile
-> @@ -61,6 +61,7 @@ obj-$(CONFIG_CGROUPS) += cgroup.o
->  obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
->  obj-$(CONFIG_CPUSETS) += cpuset.o
->  obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
-> +obj-$(CONFIG_CGROUP_INFO) += info_cgroup.o
->  obj-$(CONFIG_UTS_NS) += utsname.o
->  obj-$(CONFIG_USER_NS) += user_namespace.o
->  obj-$(CONFIG_PID_NS) += pid_namespace.o
-> diff --git a/kernel/info_cgroup.c b/kernel/info_cgroup.c
-> new file mode 100644
-> index 0000000..34cfdb8
-> --- /dev/null
-> +++ b/kernel/info_cgroup.c
-> @@ -0,0 +1,133 @@
-> +/*
-> + * info_cgroup.c - simple cgroup providing a "notes" field
-> + */
-> +
-> +#include "linux/cgroup.h"
-> +#include "linux/err.h"
-> +#include "linux/seq_file.h"
-> +
-
-#include <linux/xxx>
-
-And I got compile error, because of missing
-#include <linux/uaccess.h>
-
-> +struct info_cgroup {
-> +	struct cgroup_subsys_state css;
-> +	/* notes string for this cgroup */
-> +	const char *notes;
-> +	size_t len;
-> +	/*
-> +	 * size limit for notes in this hierarchy. Only relevant for
-> +	 * the root cgroup. Not synchronized since it's a single word
-> +	 * value and writes to it never depend on previously read
-> +	 * values.
-> +	 */
-> +	size_t max_len;
-
-If it's not per cgroup, it can be a global value.
-But why not make it per cgroup?
-
-> +	spinlock_t lock;
-> +};
-> +
-> +static inline struct info_cgroup *cg_info(struct cgroup *cg)
-> +{
-> +	return container_of(cgroup_subsys_state(cg, info_subsys_id),
-> +			    struct info_cgroup, css);
-> +}
-> +
-> +static struct cgroup_subsys_state *info_create(struct cgroup_subsys *ss,
-> +					       struct cgroup *cg)
-> +{
-> +	struct info_cgroup *info = kzalloc(sizeof(*info), GFP_KERNEL);
-
-newline needed
-
-> +	if (!info)
-> +		return ERR_PTR(-ENOMEM);
-> +	spin_lock_init(&info->lock);
-> +	if (!cg->parent)
-> +		info->max_len = PAGE_SIZE;
-> +	return &info->css;
-> +}
-> +
-> +static void info_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
-> +{
-> +	struct info_cgroup *css = cg_info(cont);
-
-newline needed
-
-> +	kfree(css->notes);
-> +	kfree(css);
-> +}
-> +
-> +
-> +static int info_read(struct cgroup *cont,
-> +		     struct cftype *cft,
-> +		     struct seq_file *seq)
-> +{
-> +	struct info_cgroup *css = cg_info(cont);
-
-newline needed
-
-> +	spin_lock(&css->lock);
-> +	if (css->notes)
-> +		seq_write(seq, css->notes, css->len);
-> +	spin_unlock(&css->lock);
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Use a custom write function so that we can handle binary data
-> + */
-> +
-> +static ssize_t info_write(struct cgroup *cgrp, struct cftype *cft,
-> +			  struct file *file,
-> +			  const char __user *userbuf,
-> +			  size_t nbytes, loff_t *unused_ppos) {
-> +	struct info_cgroup *css = cg_info(cgrp);
-> +	char *notes = NULL;
-
-newline needed
-
-> +	if (nbytes > cg_info(cgrp->top_cgroup)->max_len)
-> +		return -E2BIG;
-> +	if (nbytes) {
-> +		notes = kmalloc(nbytes, GFP_USER);
-> +		if (!notes)
-> +			return -ENOMEM;
-> +		if (copy_from_user(notes, userbuf, nbytes))
-
-missing kfree(notes)
-
-> +			return -EFAULT;
-> +	}
-> +
-> +	spin_lock(&css->lock);
-> +	kfree(css->notes);
-> +	css->notes = notes;
-> +	css->len = nbytes;
-> +	spin_unlock(&css->lock);
-> +	return nbytes;
-> +}
-> +
-> +static u64 notes_size_read(struct cgroup *cont, struct cftype *cft)
-> +{
-> +	struct info_cgroup *css = cg_info(cont);
-> +	return css->max_len;
-> +}
-> +
-> +static int notes_size_write(struct cgroup *cont, struct cftype *cft, u64 val)
-> +{
-> +	struct info_cgroup *css = cg_info(cont);
-> +	css->max_len = val;
-> +	return 0;
-> +}
-> +
-> +static struct cftype info_files[] =  {
-> +	{
-> +		.name = "notes",
-> +		.read_seq_string = info_read,
-> +		.write = info_write,
-> +	},
-> +};
-> +
-> +static struct cftype info_root_files[] = {
-> +	{
-> +		.name = "size",
-> +		.read_u64 = notes_size_read,
-> +		.write_u64 = notes_size_write,
-> +	},
-> +};
-> +
-> +static int info_populate(struct cgroup_subsys *ss, struct cgroup *cont)
-> +{
-> +	if (!cont->parent)
-> +		cgroup_add_files(cont, ss, info_root_files,
-> +				 ARRAY_SIZE(info_root_files));
-> +	return cgroup_add_files(cont, ss, info_files, ARRAY_SIZE(info_files));
-> +}
-> +
-> +struct cgroup_subsys info_subsys = {
-> +	.name = "info",
-> +	.create = info_create,
-> +	.destroy = info_destroy,
-> +	.populate = info_populate,
-> +	.subsys_id = info_subsys_id,
-> +};
+>  arch/x86/kernel/amd_iommu_init.c |   13 +++++++++----
+>  1 files changed, 9 insertions(+), 4 deletions(-)
 > 
-> 
-> 
+> These two patches fix an uncorrect device table initialization 
+> issue and a divide-by-zero error on an event log interrupt. Please 
+> pull.
+
+Pulled, thanks a lot Joerg!
+
+	Ingo
