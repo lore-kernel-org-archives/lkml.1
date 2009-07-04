@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZGDJfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZGDJuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZGDJfn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 05:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGDJfd
+	id S1754199AbZGDJuH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 05:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZGDJty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 05:35:33 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:57665 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbZGDJfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 05:35:32 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Gleb Natapov <gleb@redhat.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Sheng Yang <sheng@linux.intel.com>,
-       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
-       "avi\@redhat.com" <avi@redhat.com>
-References: <20090701133007.GC27539@redhat.com>
-	<1246482017.27006.10670.camel@localhost.localdomain>
-	<20090703082905.GF21833@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 04 Jul 2009 02:35:30 -0700
-In-Reply-To: <20090703082905.GF21833@elte.hu> (Ingo Molnar's message of "Fri\, 3 Jul 2009 10\:29\:05 +0200")
-Message-ID: <m1r5wwbxjx.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sat, 4 Jul 2009 05:49:54 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48089 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751843AbZGDJtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 05:49:53 -0400
+Date: Sat, 4 Jul 2009 11:49:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
+	vectored co-processor support for AMD and Intel Corei7/Nehalem
+Message-ID: <20090704094921.GA2139@elte.hu>
+References: <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam> <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam> <20090703102953.GF32128@elte.hu> <1246622122.2322.25.camel@jaswinder.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: mingo@elte.hu, avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, linux-kernel@vger.kernel.org, gleb@redhat.com, suresh.b.siddha@intel.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH v5] enable x2APIC without interrupt remapping under KVM
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <1246622122.2322.25.camel@jaswinder.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
 
-> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
->
->> On Wed, 2009-07-01 at 06:30 -0700, Gleb Natapov wrote:
->> > KVM would like to provide x2APIC interface to a guest without emulating
->> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
->> > is that x2APIC interface is better virtualizable and provides better
->> > performance than mmio xAPIC interface:
->> >     
->> > - msr exits are faster than mmio (no page table walk, emulation)
->> > - no need to read back ICR to look at the busy bit
->> > - one 64 bit ICR write instead of two 32 bit writes
->> > - shared code with the Hyper-V paravirt interface
->> >     
->> > Included patch changes x2APIC enabling logic to enable it even if IR
->> > initialization failed, but kernel runs under KVM and no apic id is
->> > greater than 255 (if there is one spec requires BIOS to move to x2apic
->> > mode before starting an OS).
->> > 
->> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
->> 
->> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
->
-> Now, since this affects core x86 APIC code non-trivially so should 
-> submitted to and go via the x86 tree. (Can prepare a special branch 
-> with just this change if KVM tree wants/needs to pull it before 
-> v2.6.32.)
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-Please don't separate the x2apic code from the dmar code for this
-reason.
+> On Fri, 2009-07-03 at 12:29 +0200, Ingo Molnar wrote:
+> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> > 
+> > >  Performance counter stats for '/usr/bin/rhythmbox /home/jaswinder/Music/singhiskinng.mp3':
+> > > 
+> > >        17552264  vec-adds                  (scaled from 66.28%)
+> > >        19715258  vec-muls                  (scaled from 66.63%)
+> > >        15862733  vec-divs                  (scaled from 66.82%)
+> > >     23735187095  vec-idle-cycles           (scaled from 66.89%)
+> > >        11353159  vec-stall-cycles          (scaled from 66.90%)
+> > >        36628571  vec-ops                   (scaled from 66.48%)
+> > 
+> > Is stall-cycles equivalent to busy-cycles? 
+> 
+> 
+> hmm, normally we can use these terms interchangeably. But they can 
+> be different some times.
+> 
+> busy means it is already executing some instructions so it will 
+> not take another instruction.
+> 
+> stall can be busy(executing) or non-executing may be it is waiting 
+> for some operands due to cache miss.
+> 
+> 
+> > I.e. do we have this 
+> > general relationship to the cycle event:
+> > 
+> > 	cycles = vec-stall-cycles + vec-idle-cycles
+> > 
+> > ?
+> 
+> This patch is already big enough, having 206 lines. Do you want 
+> everything in this patch ;-)
 
-Supporting hotplug cpus with ioapics is torture.
+The question i asked is whether the above relationship is true. You 
+can test this by displaying the 'cycles' metric too in your test, 
+alongside vec-stall-cycles and vec-idle-cycles. Do the numbers add 
+up?
 
-Eric
+	Ingo
