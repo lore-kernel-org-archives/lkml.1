@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbZGDVb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZGDVch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbZGDVb7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 17:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZGDVbs
+	id S1753018AbZGDVch (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 17:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZGDVc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 17:31:48 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:56156 "EHLO mgw1.diku.dk"
+	Sat, 4 Jul 2009 17:32:29 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:49306 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752340AbZGDVbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 17:31:47 -0400
-Date: Sat, 4 Jul 2009 23:31:47 +0200 (CEST)
+	id S1753914AbZGDVc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 17:32:28 -0400
+Date: Sat, 4 Jul 2009 23:32:29 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: steve.glendinning@smsc.com, netdev@vger.kernel.org,
+To: kernel@pengutronix.de, linux-fbdev-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/3] drivers/net/smsc911x.c: Fix resource size off by 1 error
-Message-ID: <Pine.LNX.4.64.0907042331070.9841@ask.diku.dk>
+Subject: [PATCH 2/3] drivers/video/imxfb.c: Fix resource size off by 1 error
+Message-ID: <Pine.LNX.4.64.0907042331490.9841@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,14 +23,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The call resource_size(res) returns res->end - res->start + 1 and thus the
-second change is semantics-preserving.  res_size is then used as the second
-argument of a call to request_mem_region, and the memory allocated by this
-call appears to be the same as what is released in the two calls to
-release_mem_region.  So the size argument for those calls should be
-resource_size(size) as well.  Alternatively, in the second call to
-release_mem_region, the second argument could be res_size, as that variable
-has already been initialized at the point of this call.
+In the first case, the change is not semantics-preserving, but
+resource_size is used at the corresponding call to request_mem_region in
+the same function.
+
+In the second case, the change is semantics-preserving.
 
 The problem was found using the following semantic patch:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -54,36 +51,27 @@ struct resource *res;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/smsc911x.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/imxfb.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff -u -p a/drivers/net/smsc911x.c b/drivers/net/smsc911x.c
---- a/drivers/net/smsc911x.c 2009-06-24 21:18:49.000000000 +0200
-+++ b/drivers/net/smsc911x.c 2009-07-04 21:38:00.000000000 +0200
-@@ -1938,7 +1938,7 @@ static int __devexit smsc911x_drv_remove
- 	if (!res)
- 		res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 
+diff -u -p a/drivers/video/imxfb.c b/drivers/video/imxfb.c
+--- a/drivers/video/imxfb.c 2009-04-13 16:04:25.000000000 +0200
++++ b/drivers/video/imxfb.c 2009-07-04 21:37:48.000000000 +0200
+@@ -754,7 +754,7 @@ failed_map:
+ failed_getclock:
+ 	iounmap(fbi->regs);
+ failed_ioremap:
 -	release_mem_region(res->start, res->end - res->start);
 +	release_mem_region(res->start, resource_size(res));
+ failed_req:
+ 	kfree(info->pseudo_palette);
+ failed_init:
+@@ -785,7 +785,7 @@ static int __devexit imxfb_remove(struct
+ 	framebuffer_release(info);
  
- 	iounmap(pdata->ioaddr);
- 
-@@ -1976,7 +1976,7 @@ static int __devinit smsc911x_drv_probe(
- 		retval = -ENODEV;
- 		goto out_0;
- 	}
--	res_size = res->end - res->start + 1;
-+	res_size = resource_size(res);
- 
- 	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
- 	if (!irq_res) {
-@@ -2104,7 +2104,7 @@ out_unmap_io_3:
- out_free_netdev_2:
- 	free_netdev(dev);
- out_release_io_1:
--	release_mem_region(res->start, res->end - res->start);
+ 	iounmap(fbi->regs);
+-	release_mem_region(res->start, res->end - res->start + 1);
 +	release_mem_region(res->start, resource_size(res));
- out_0:
- 	return retval;
- }
+ 	clk_disable(fbi->clk);
+ 	clk_put(fbi->clk);
+ 
