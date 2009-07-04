@@ -1,84 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZGDJuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZGDJud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbZGDJuH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 05:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZGDJty
+	id S1754981AbZGDJud (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 05:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZGDJuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 05:49:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48089 "EHLO mx2.mail.elte.hu"
+	Sat, 4 Jul 2009 05:50:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51643 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751843AbZGDJtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 05:49:53 -0400
-Date: Sat, 4 Jul 2009 11:49:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 1/2 -tip] perf_counter: Add generalized hardware
-	vectored co-processor support for AMD and Intel Corei7/Nehalem
-Message-ID: <20090704094921.GA2139@elte.hu>
-References: <1246440909.3403.5.camel@hpdv5.satnam> <1246440977.3403.7.camel@hpdv5.satnam> <1246441043.3403.9.camel@hpdv5.satnam> <20090701112007.GD15958@elte.hu> <20090701112704.GF15958@elte.hu> <1246448441.6940.3.camel@hpdv5.satnam> <20090701114928.GI15958@elte.hu> <1246527872.13659.2.camel@hpdv5.satnam> <20090703102953.GF32128@elte.hu> <1246622122.2322.25.camel@jaswinder.satnam>
+	id S1754939AbZGDJuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 05:50:00 -0400
+Date: Sat, 4 Jul 2009 09:49:03 GMT
+From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
+       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A4E1AA2.30002@gmail.com>
+References: <4A4E1AA2.30002@gmail.com>
+Subject: [tip:perfcounters/urgent] x86: atomic64: Inline atomic64_read() again
+Message-ID: <tip-a79f0da80a508448434476b77f9d3d1a469eab67@git.kernel.org>
+Git-Commit-ID: a79f0da80a508448434476b77f9d3d1a469eab67
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1246622122.2322.25.camel@jaswinder.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Jul 2009 09:49:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  a79f0da80a508448434476b77f9d3d1a469eab67
+Gitweb:     http://git.kernel.org/tip/a79f0da80a508448434476b77f9d3d1a469eab67
+Author:     Eric Dumazet <eric.dumazet@gmail.com>
+AuthorDate: Fri, 3 Jul 2009 16:50:10 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 4 Jul 2009 11:45:00 +0200
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+x86: atomic64: Inline atomic64_read() again
 
-> On Fri, 2009-07-03 at 12:29 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > >  Performance counter stats for '/usr/bin/rhythmbox /home/jaswinder/Music/singhiskinng.mp3':
-> > > 
-> > >        17552264  vec-adds                  (scaled from 66.28%)
-> > >        19715258  vec-muls                  (scaled from 66.63%)
-> > >        15862733  vec-divs                  (scaled from 66.82%)
-> > >     23735187095  vec-idle-cycles           (scaled from 66.89%)
-> > >        11353159  vec-stall-cycles          (scaled from 66.90%)
-> > >        36628571  vec-ops                   (scaled from 66.48%)
-> > 
-> > Is stall-cycles equivalent to busy-cycles? 
-> 
-> 
-> hmm, normally we can use these terms interchangeably. But they can 
-> be different some times.
-> 
-> busy means it is already executing some instructions so it will 
-> not take another instruction.
-> 
-> stall can be busy(executing) or non-executing may be it is waiting 
-> for some operands due to cache miss.
-> 
-> 
-> > I.e. do we have this 
-> > general relationship to the cycle event:
-> > 
-> > 	cycles = vec-stall-cycles + vec-idle-cycles
-> > 
-> > ?
-> 
-> This patch is already big enough, having 206 lines. Do you want 
-> everything in this patch ;-)
+Now atomic64_read() is light weight (no register pressure and
+small icache), we can inline it again.
 
-The question i asked is whether the above relationship is true. You 
-can test this by displaying the 'cycles' metric too in your test, 
-alongside vec-stall-cycles and vec-idle-cycles. Do the numbers add 
-up?
+Also use "=&A" constraint instead of "+A" to avoid warning
+about unitialized 'res' variable. (gcc had to force 0 in eax/edx)
 
-	Ingo
+  $ size vmlinux.prev vmlinux.after
+     text    data     bss     dec     hex filename
+  4908667  451676 1684868 7045211  6b805b vmlinux.prev
+  4908651  451676 1684868 7045195  6b804b vmlinux.after
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>
+LKML-Reference: <4A4E1AA2.30002@gmail.com>
+[ Also fix typo in atomic64_set() export ]
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/atomic_32.h |   22 ++++++++++++++++++++++
+ arch/x86/lib/atomic64_32.c       |   23 +----------------------
+ 2 files changed, 23 insertions(+), 22 deletions(-)
+
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index d7c8849..dc5a667 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -295,6 +295,28 @@ extern void atomic64_set(atomic64_t *ptr, u64 new_val);
+  *
+  * Atomically reads the value of @ptr and returns it.
+  */
++static inline u64 atomic64_read(atomic64_t *ptr)
++{
++	u64 res;
++
++	/*
++	 * Note, we inline this atomic64_t primitive because
++	 * it only clobbers EAX/EDX and leaves the others
++	 * untouched. We also (somewhat subtly) rely on the
++	 * fact that cmpxchg8b returns the current 64-bit value
++	 * of the memory location we are touching:
++	 */
++	asm volatile(
++		"mov %%ebx, %%eax\n\t"
++		"mov %%ecx, %%edx\n\t"
++		LOCK_PREFIX "cmpxchg8b %1\n"
++			: "=&A" (res)
++			: "m" (*ptr)
++		);
++
++	return res;
++}
++
+ extern u64 atomic64_read(atomic64_t *ptr);
+ 
+ /**
+diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
+index 1d98c9e..824fa0b 100644
+--- a/arch/x86/lib/atomic64_32.c
++++ b/arch/x86/lib/atomic64_32.c
+@@ -66,31 +66,10 @@ void atomic64_set(atomic64_t *ptr, u64 new_val)
+ {
+ 	atomic64_xchg(ptr, new_val);
+ }
+-EXPORT_SYMBOL(atomic64_read);
++EXPORT_SYMBOL(atomic64_set);
+ 
+ /**
+- * atomic64_read - read atomic64 variable
+- * @ptr:      pointer to type atomic64_t
+- *
+- * Atomically reads the value of @ptr and returns it.
+- */
+-u64 atomic64_read(atomic64_t *ptr)
+-{
+-	u64 res;
+-
+-	asm volatile(
+-		"mov %%ebx, %%eax\n\t"
+-		"mov %%ecx, %%edx\n\t"
+-		LOCK_PREFIX "cmpxchg8b %1\n"
+-			: "+A" (res)
+-			: "m" (*ptr)
+-		);
+-
+-	return res;
+-}
+ EXPORT_SYMBOL(atomic64_read);
+-
+-/**
+  * atomic64_add_return - add and return
+  * @delta: integer value to add
+  * @ptr:   pointer to type atomic64_t
