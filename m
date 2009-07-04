@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964AbZGDQgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbZGDQkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752964AbZGDQgI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 12:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZGDQf5
+	id S1754170AbZGDQkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 12:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZGDQke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 12:35:57 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:38414 "EHLO
+	Sat, 4 Jul 2009 12:40:34 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:38720 "EHLO
 	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZGDQf4 (ORCPT
+	with ESMTP id S1751044AbZGDQkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 12:35:56 -0400
-Date: Sat, 4 Jul 2009 12:33:48 -0400 (EDT)
+	Sat, 4 Jul 2009 12:40:33 -0400
+Date: Sat, 4 Jul 2009 12:38:26 -0400 (EDT)
 From: "Robert P. J. Day" <rpjday@crashcourse.ca>
 X-X-Sender: rpjday@localhost
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: weekly column and a question about module_init() error codes
-Message-ID: <alpine.LFD.2.00.0907041221330.2912@localhost>
+Subject: value of returning positive error code from module_init()?
+Message-ID: <alpine.LFD.2.00.0907041236440.3907@localhost>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,50 +32,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  in a spate of self-promotion that probably has little interest for
-members of *this* list, i'm now writing a weekly column for linux.com
-for kernel newbies, first two pieces here:
+  whoops, i forgot to ask this as well.  accidentally, i returned a
+positive value from a module_init() routine, which loaded the module
+and generated in /var/log/messages:
 
-  http://cli.gs/8WMgM9
-  http://cli.gs/Zd2MuG
+...
+Jul  4 12:34:43 localhost kernel: hi module being loaded.
+Jul  4 12:34:43 localhost kernel: sys_init_module: 'hi'->init
+suspiciously returned 42, it should follow 0/-E convention
+Jul  4 12:34:43 localhost kernel: sys_init_module: loading module
+anyway...
+Jul  4 12:34:43 localhost kernel: Pid: 3881, comm: insmod Tainted: G
+M       2.6.29.5-191.fc11.x86_64 #1
+Jul  4 12:34:43 localhost kernel: Call Trace:
+Jul  4 12:34:43 localhost kernel: [<ffffffff8106f33b>]
+sys_init_module+0x13e/0x1cd
+Jul  4 12:34:43 localhost kernel: [<ffffffff8101133a>]
+system_call_fastpath+0x16
+...
 
-yes, i know it's trivial stuff but look at it this way -- if i can
-explain it properly, then they won't be bugging *you* with those
-questions. :-)
-
-  and regarding return codes from module_init() routines, i realize
-that you need to return zero to represent success so that the module
-is loaded but, if anything goes wrong, you should return a negative
-value corresponding to some value out of
-include/asm-generic/errno-base.h:
-
-#define EPERM            1      /* Operation not permitted */
-#define ENOENT           2      /* No such file or directory */
-#define ESRCH            3      /* No such process */
-#define EINTR            4      /* Interrupted system call */
-#define EIO              5      /* I/O error */
-... snip ...
-
-  however, based on some tests i ran, regardless of what error code i
-return, a manual "insmod" always returns a shell error code ($?) of 1.
-the message *printed* will correspond to the actual error value
-returned, such as returning -EIO printing:
-
-# insmod hi.ko
-insmod: error inserting 'hi.ko': -1 Input/output error
-#
-
-  i'm assuming that, if i'm running insmod as part of a script and can
-check only the return code, all i'm going to get is 0 or 1 (success or
-fail), and there's no way to extract the actual value.  (i could
-capture the error string printed, but that's a bit of a pain --
-getting the numeric value would be so much easier.)
-
-  or am i missing something painfully obvious?  thanks.
+  i'd never seen that before, i guess because i never returned a
+positive error code.  is there a tradition for returning positive
+values?  for what purpose?  thanks.
 
 rday
 --
-
 
 ========================================================================
 Robert P. J. Day                               Waterloo, Ontario, CANADA
