@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbZGDJal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZGDJfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755462AbZGDJal (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 05:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGDJab
+	id S1754483AbZGDJfn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 05:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGDJfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 05:30:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36000 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbZGDJa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 05:30:29 -0400
-Date: Sat, 4 Jul 2009 11:29:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Daniel Ritz <daniel.ritz@gmx.ch>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Axel Birndt <towerlexa@gmx.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 1/3] pci: determine CLS more intelligently
-Message-ID: <20090704092956.GA26456@elte.hu>
-References: <4A4EE3E9.7090205@kernel.org>
+	Sat, 4 Jul 2009 05:35:33 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:57665 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751534AbZGDJfc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 05:35:32 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Gleb Natapov <gleb@redhat.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi\@redhat.com" <avi@redhat.com>
+References: <20090701133007.GC27539@redhat.com>
+	<1246482017.27006.10670.camel@localhost.localdomain>
+	<20090703082905.GF21833@elte.hu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 04 Jul 2009 02:35:30 -0700
+In-Reply-To: <20090703082905.GF21833@elte.hu> (Ingo Molnar's message of "Fri\, 3 Jul 2009 10\:29\:05 +0200")
+Message-ID: <m1r5wwbxjx.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A4EE3E9.7090205@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: mingo@elte.hu, avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, linux-kernel@vger.kernel.org, gleb@redhat.com, suresh.b.siddha@intel.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH v5] enable x2APIC without interrupt remapping under KVM
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
 
-* Tejun Heo <tj@kernel.org> wrote:
+> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+>
+>> On Wed, 2009-07-01 at 06:30 -0700, Gleb Natapov wrote:
+>> > KVM would like to provide x2APIC interface to a guest without emulating
+>> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
+>> > is that x2APIC interface is better virtualizable and provides better
+>> > performance than mmio xAPIC interface:
+>> >     
+>> > - msr exits are faster than mmio (no page table walk, emulation)
+>> > - no need to read back ICR to look at the busy bit
+>> > - one 64 bit ICR write instead of two 32 bit writes
+>> > - shared code with the Hyper-V paravirt interface
+>> >     
+>> > Included patch changes x2APIC enabling logic to enable it even if IR
+>> > initialization failed, but kernel runs under KVM and no apic id is
+>> > greater than 255 (if there is one spec requires BIOS to move to x2apic
+>> > mode before starting an OS).
+>> > 
+>> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+>> 
+>> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>
+> Now, since this affects core x86 APIC code non-trivially so should 
+> submitted to and go via the x86 tree. (Can prepare a special branch 
+> with just this change if KVM tree wants/needs to pull it before 
+> v2.6.32.)
 
-> Till now, CLS has been determined either by arch code or as 
-> L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 
-> doesn't always get it right.  On most configurations, the chance 
-> is that firmware configures the correct value during boot.
-> 
-> This patch makes pci_init() determine CLS by looking at what 
-> firmware has configured.  It scans all devices and if all non-zero 
-> values agree, the value is used.  If none is configured or there 
-> is a disagreement, pci_dfl_cache_line_size is used.  arch can set 
-> the dfl value (via PCI_CACHE_LINE_BYTES or 
-> pci_dfl_cache_line_size) or override the actual one.
-> 
-> ia64, x86 and sparc64 updated to set the default cls instead of 
-> the actual one.
-> 
-> While at it, declare pci_cache_line_size and 
-> pci_dfl_cache_line_size in pci.h and drop private declarations 
-> from arch code.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Acked-by: David Miller <davem@davemloft.net>
-> Acked-by: Greg KH <gregkh@suse.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Tony Luck <tony.luck@intel.com>
+Please don't separate the x2apic code from the dmar code for this
+reason.
 
-The principle looks good to me. Regressions could be expected though 
-- these details are fragile and affect the way how we talk to 
-hardware.
+Supporting hotplug cpus with ioapics is torture.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Eric
