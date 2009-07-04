@@ -1,276 +1,472 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZGDPTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbZGDPTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbZGDPTU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 11:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZGDPTC
+	id S1754276AbZGDPTb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 11:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZGDPTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 11:19:02 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:46428 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702AbZGDPTA convert rfc822-to-8bit (ORCPT
+	Sat, 4 Jul 2009 11:19:09 -0400
+Received: from mail-bw0-f207.google.com ([209.85.218.207]:61876 "EHLO
+	mail-bw0-f207.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752977AbZGDPTF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 11:19:00 -0400
+	Sat, 4 Jul 2009 11:19:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=a2xyIRst+Ke1KKQmaeqA6US7cMWv1J19MzNPRsQlwFHPK5y+s5aX1zqf0JYcyluJyi
-         9k02jCghDYOMYtvk/JaQts2dw/VTAW34RxczcxxiAXnvxyCmAHJxw4ml9An6KBN6Ysbo
-         EmkiBU6J89rnkjlWFFKWZIWGUxK3la72N+KpU=
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=Wt+8ypuhcgauwZpvzA7glb7lpcmAQrxuuPNsQjwgNK6QNv4EmVBnb1trBCMWQHlLO3
+         /QPjrTZIF0a1r4FAN9j9TdYa5joPby8NQMnL/wAA9XTuyqv/qRm3Z52MDOEynuKk85Fz
+         AXoAEao6qbYE5ilSklLlBsN6Qba3T6EGCmyLQ=
+Date: Sat, 4 Jul 2009 17:18:55 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Andres Freund <andres@anarazel.de>
+Cc: Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Joao Correia <joaomiguelcorreia@gmail.com>
+Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
+	possibly?caused by netem)
+Message-ID: <20090704151855.GA21896@ami.dom.local>
 MIME-Version: 1.0
-In-Reply-To: <4A4DE3C1.5080307@vlnb.net>
-References: <4A3CD62B.1020407@vlnb.net> <4A48BBF9.6050408@vlnb.net>
-	 <a0272b440906290700v7367d1c1r7237fd6593be00d2@mail.gmail.com>
-	 <20090629142124.GA28945@localhost> <20090629150109.GA3534@localhost>
-	 <4A48DFC5.3090205@vlnb.net> <20090630010414.GB31418@localhost>
-	 <4A49EEF9.6010205@vlnb.net>
-	 <a0272b440907030214l4016422bxbc98fd003bfe1b3d@mail.gmail.com>
-	 <4A4DE3C1.5080307@vlnb.net>
-Date: Sat, 4 Jul 2009 17:19:01 +0200
-Message-ID: <a0272b440907040819l5289483cp44b37d967440ef73@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Ronald Moesbergen <intercommit@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907031326.21822.andres@anarazel.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/3 Vladislav Bolkhovitin <vst@vlnb.net>:
->
-> Ronald Moesbergen, on 07/03/2009 01:14 PM wrote:
->>>>
->>>> OK, now I tend to agree on decreasing max_sectors_kb and increasing
->>>> read_ahead_kb. But before actually trying to push that idea I'd like
->>>> to
->>>> - do more benchmarks
->>>> - figure out why context readahead didn't help SCST performance
->>>>  (previous traces show that context readahead is submitting perfect
->>>>  large io requests, so I wonder if it's some io scheduler bug)
->>>
->>> Because, as we found out, without your http://lkml.org/lkml/2009/5/21/319
->>> patch read-ahead was nearly disabled, hence there were no difference
->>> which
->>> algorithm was used?
->>>
->>> Ronald, can you run the following tests, please? This time with 2 hosts,
->>> initiator (client) and target (server) connected using 1 Gbps iSCSI. It
->>> would be the best if on the client vanilla 2.6.29 will be ran, but any
->>> other
->>> kernel will be fine as well, only specify which. Blockdev-perftest should
->>> be
->>> ran as before in buffered mode, i.e. with "-a" switch.
->>>
->>> 1. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with all default settings.
->>>
->>> 2. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with default RA size and 64KB
->>> max_sectors_kb.
->>>
->>> 3. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and default
->>> max_sectors_kb.
->>>
->>> 4. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch with 2MB RA size and 64KB
->>> max_sectors_kb.
->>>
->>> 5. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 patch and with context RA patch. RA
->>> size
->>> and max_sectors_kb are default. For your convenience I committed the
->>> backported context RA patches into the SCST SVN repository.
->>>
->>> 6. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with default RA
->>> size and 64KB max_sectors_kb.
->>>
->>> 7. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
->>> size
->>> and default max_sectors_kb.
->>>
->>> 8. All defaults on the client, on the server vanilla 2.6.29 with
->>> Fengguang's
->>> http://lkml.org/lkml/2009/5/21/319 and context RA patches with 2MB RA
->>> size
->>> and 64KB max_sectors_kb.
->>>
->>> 9. On the client default RA size and 64KB max_sectors_kb. On the server
->>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
->>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
->>>
->>> 10. On the client 2MB RA size and default max_sectors_kb. On the server
->>> vanilla 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and
->>> context RA patches with 2MB RA size and 64KB max_sectors_kb.
->>>
->>> 11. On the client 2MB RA size and 64KB max_sectors_kb. On the server
->>> vanilla
->>> 2.6.29 with Fengguang's http://lkml.org/lkml/2009/5/21/319 and context RA
->>> patches with 2MB RA size and 64KB max_sectors_kb.
+Andres Freund wrote, On 07/03/2009 01:26 PM:
+
+> On Friday 03 July 2009 08:12:13 Jarek Poplawski wrote:
+>> On Fri, Jul 03, 2009 at 03:31:31AM +0200, Andres Freund wrote:
+>> ...
 >>
->> Ok, done. Performance is pretty bad overall :(
->>
->> The kernels I used:
->> client kernel: 2.6.26-15lenny3 (debian)
->> server kernel: 2.6.29.5 with blk_dev_run patch
->>
->> And I adjusted the blockdev-perftest script to drop caches on both the
->> server (via ssh) and the client.
->>
->> The results:
->>
+>>> Ok. I finally see the light. I bisected the issue down to
+>>> eea08f32adb3f97553d49a4f79a119833036000a :  timers: Logic to move non
+>>> pinned timers
+>>>
+>>> Disabling timer migration like provided in the earlier commit stops the
+>>> issue from occuring.
+>>>
+>>> That it is related to timers is sensible in the light of my findings,
+>>> that I could trigger the issue only when using delay in netem - that is
+>>> the codepath using qdisc_watchdog...
+>> Andres, thanks for your work and time. It saved me a lot of searching,
+>> because I wasn't able to trigger this on my old box.
+> Thanks. It allowed me to go through some of my remaining paperwork ;-)
+> 
+> Does anybody of you have an idea where the problem actually resides? 
+> qdisc_watchdog_schedule looks innocent enough for my uneducated eyes - and the 
+> patch/infrastructure from Arun goes over my head...
+> I will happily test some ideas/patches.
 
-... previous results ...
+Since there are still no 100% proofs nor suspects, here are some
+suggestions of additional checking. This bisected commit could
+probably be additionally verified by applying to 2.6.30 with a
+preceding one; I attach both of them below.
 
-> Those are on the server without io_context-2.6.29 and readahead-2.6.29
-> patches applied and with CFQ scheduler, correct?
->
-> Then we see how reorder of requests caused by many I/O threads submitting
-> I/O in separate I/O contexts badly affect performance and no RA, especially
-> with default 128KB RA size, can solve it. Less max_sectors_kb on the client
-> => more requests it sends at once => more reorder on the server => worse
-> throughput. Although, Fengguang, in theory, context RA with 2MB RA size
-> should considerably help it, no?
->
-> Ronald, can you perform those tests again with both io_context-2.6.29 and
-> readahead-2.6.29 patches applied on the server, please?
+Another suggestion is to try this without lockdep e.g. by setting
+/sys/module/lockdep/parameters/lock_stat and prove_locking to 0.
 
-Hi Vlad,
+Thanks,
+Jarek P.
 
-I have retested with the patches you requested (and got access to the
-systems today :) ) The results are better, but still not great.
+--------------->
+commit 597d0275736dad9c3bda6f0a00a1c477dc0f37b1
+Author: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Date:   Thu Apr 16 12:13:26 2009 +0530
 
-client kernel: 2.6.26-15lenny3 (debian)
-server kernel: 2.6.29.5 with io_context and readahead patch
+    timers: Framework for identifying pinned timers
+    
+    * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-16 12:11:36]:
+    
+    This patch creates a new framework for identifying cpu-pinned timers
+    and hrtimers.
+    
+    This framework is needed because pinned timers are expected to fire on
+    the same CPU on which they are queued. So it is essential to identify
+    these and not migrate them, in case there are any.
+    
+    For regular timers, the currently existing add_timer_on() can be used
+    queue pinned timers and subsequently mod_timer_pinned() can be used
+    to modify the 'expires' field.
+    
+    For hrtimers, new modes HRTIMER_ABS_PINNED and HRTIMER_REL_PINNED are
+    added to queue cpu-pinned hrtimer.
+    
+    [ tglx: use .._PINNED mode argument instead of creating tons of new
+    functions ]
+    
+    Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-5) client: default, server: default
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  18.303   19.867   18.481   54.299    1.961    0.848
- 33554432  18.321   17.681   18.708   56.181    1.314    1.756
- 16777216  17.816   17.406   19.257   56.494    2.410    3.531
-  8388608  18.077   17.727   19.338   55.789    2.056    6.974
-  4194304  17.918   16.601   18.287   58.276    2.454   14.569
-  2097152  17.426   17.334   17.610   58.661    0.384   29.331
-  1048576  19.358   18.764   17.253   55.607    2.734   55.607
-   524288  17.951   18.163   17.440   57.379    0.983  114.757
-   262144  18.196   17.724   17.520   57.499    0.907  229.995
-   131072  18.342   18.259   17.551   56.751    1.131  454.010
-    65536  17.733   18.572   17.134   57.548    1.893  920.766
-    32768  19.081   19.321   17.364   55.213    2.673 1766.818
-    16384  17.181   18.729   17.731   57.343    2.033 3669.932
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index 0d2f7c8..7400900 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -30,8 +30,11 @@ struct hrtimer_cpu_base;
+  * Mode arguments of xxx_hrtimer functions:
+  */
+ enum hrtimer_mode {
+-	HRTIMER_MODE_ABS,	/* Time value is absolute */
+-	HRTIMER_MODE_REL,	/* Time value is relative to now */
++	HRTIMER_MODE_ABS = 0x0,		/* Time value is absolute */
++	HRTIMER_MODE_REL = 0x1,		/* Time value is relative to now */
++	HRTIMER_MODE_PINNED = 0x02,	/* Timer is bound to CPU */
++	HRTIMER_MODE_ABS_PINNED = 0x02,
++	HRTIMER_MODE_REL_PINNED = 0x03,
+ };
+ 
+ /*
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index 6cdb6f3..ccf882e 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -163,7 +163,10 @@ extern void add_timer_on(struct timer_list *timer, int cpu);
+ extern int del_timer(struct timer_list * timer);
+ extern int mod_timer(struct timer_list *timer, unsigned long expires);
+ extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
++extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+ 
++#define TIMER_NOT_PINNED	0
++#define TIMER_PINNED		1
+ /*
+  * The jiffies value which is added to now, when there is no timer
+  * in the timer wheel:
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index cb8a15c..c71bcd5 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -193,7 +193,8 @@ struct hrtimer_clock_base *lock_hrtimer_base(const struct hrtimer *timer,
+  * Switch the timer base to the current CPU when possible.
+  */
+ static inline struct hrtimer_clock_base *
+-switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base)
++switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
++		    int pinned)
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
+@@ -907,9 +908,9 @@ int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
+ 	ret = remove_hrtimer(timer, base);
+ 
+ 	/* Switch the timer base, if necessary: */
+-	new_base = switch_hrtimer_base(timer, base);
++	new_base = switch_hrtimer_base(timer, base, mode & HRTIMER_MODE_PINNED);
+ 
+-	if (mode == HRTIMER_MODE_REL) {
++	if (mode & HRTIMER_MODE_REL) {
+ 		tim = ktime_add_safe(tim, new_base->get_time());
+ 		/*
+ 		 * CONFIG_TIME_LOW_RES is a temporary way for architectures
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 5c1e84b..3424dfd 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -604,7 +604,8 @@ static struct tvec_base *lock_timer_base(struct timer_list *timer,
+ }
+ 
+ static inline int
+-__mod_timer(struct timer_list *timer, unsigned long expires, bool pending_only)
++__mod_timer(struct timer_list *timer, unsigned long expires,
++						bool pending_only, int pinned)
+ {
+ 	struct tvec_base *base, *new_base;
+ 	unsigned long flags;
+@@ -668,7 +669,7 @@ out_unlock:
+  */
+ int mod_timer_pending(struct timer_list *timer, unsigned long expires)
+ {
+-	return __mod_timer(timer, expires, true);
++	return __mod_timer(timer, expires, true, TIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL(mod_timer_pending);
+ 
+@@ -702,11 +703,33 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
+ 	if (timer->expires == expires && timer_pending(timer))
+ 		return 1;
+ 
+-	return __mod_timer(timer, expires, false);
++	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL(mod_timer);
+ 
+ /**
++ * mod_timer_pinned - modify a timer's timeout
++ * @timer: the timer to be modified
++ * @expires: new timeout in jiffies
++ *
++ * mod_timer_pinned() is a way to update the expire field of an
++ * active timer (if the timer is inactive it will be activated)
++ * and not allow the timer to be migrated to a different CPU.
++ *
++ * mod_timer_pinned(timer, expires) is equivalent to:
++ *
++ *     del_timer(timer); timer->expires = expires; add_timer(timer);
++ */
++int mod_timer_pinned(struct timer_list *timer, unsigned long expires)
++{
++	if (timer->expires == expires && timer_pending(timer))
++		return 1;
++
++	return __mod_timer(timer, expires, false, TIMER_PINNED);
++}
++EXPORT_SYMBOL(mod_timer_pinned);
++
++/**
+  * add_timer - start a timer
+  * @timer: the timer to be added
+  *
+@@ -1356,7 +1379,7 @@ signed long __sched schedule_timeout(signed long timeout)
+ 	expire = timeout + jiffies;
+ 
+ 	setup_timer_on_stack(&timer, process_timeout, (unsigned long)current);
+-	__mod_timer(&timer, expire, false);
++	__mod_timer(&timer, expire, false, TIMER_NOT_PINNED);
+ 	schedule();
+ 	del_singleshot_timer_sync(&timer);
+ 
 
-6) client: default, server: 64 max_sectors_kb, RA default
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  21.790   20.062   19.534   50.153    2.304    0.784
- 33554432  20.212   19.744   19.564   51.623    0.706    1.613
- 16777216  20.404   19.329   19.738   51.680    1.148    3.230
-  8388608  20.170   20.772   19.509   50.852    1.304    6.356
-  4194304  19.334   18.742   18.522   54.296    0.978   13.574
-  2097152  19.413   18.858   18.884   53.758    0.715   26.879
-  1048576  20.472   18.755   18.476   53.347    2.377   53.347
-   524288  19.120   20.104   18.404   53.378    1.925  106.756
-   262144  20.337   19.213   18.636   52.866    1.901  211.464
-   131072  19.199   18.312   19.970   53.510    1.900  428.083
-    65536  19.855   20.114   19.592   51.584    0.555  825.342
-    32768  20.586   18.724   20.340   51.592    2.204 1650.941
-    16384  21.119   19.834   19.594   50.792    1.651 3250.669
+commit eea08f32adb3f97553d49a4f79a119833036000a
+Author: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Date:   Thu Apr 16 12:16:41 2009 +0530
 
-7) client: default, server: default max_sectors_kb, RA 2MB
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.767   16.489   16.949   60.050    1.842    0.938
- 33554432  16.777   17.034   17.102   60.341    0.500    1.886
- 16777216  18.509   16.784   16.971   58.891    2.537    3.681
-  8388608  18.058   17.949   17.599   57.313    0.632    7.164
-  4194304  18.286   17.648   17.026   58.055    1.692   14.514
-  2097152  17.387   18.451   17.875   57.226    1.388   28.613
-  1048576  18.270   17.698   17.570   57.397    0.969   57.397
-   524288  16.708   17.900   17.233   59.306    1.668  118.611
-   262144  18.041   17.381   18.035   57.484    1.011  229.934
-   131072  17.994   17.777   18.146   56.981    0.481  455.844
-    65536  17.097   18.597   17.737   57.563    1.975  921.011
-    32768  17.167   17.035   19.693   57.254    3.721 1832.127
-    16384  17.144   16.664   17.623   59.762    1.367 3824.774
+    timers: Logic to move non pinned timers
+    
+    * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-04-16 12:11:36]:
+    
+    This patch migrates all non pinned timers and hrtimers to the current
+    idle load balancer, from all the idle CPUs. Timers firing on busy CPUs
+    are not migrated.
+    
+    While migrating hrtimers, care should be taken to check if migrating
+    a hrtimer would result in a latency or not. So we compare the expiry of the
+    hrtimer with the next timer interrupt on the target cpu and migrate the
+    hrtimer only if it expires *after* the next interrupt on the target cpu.
+    So, added a clockevents_get_next_event() helper function to return the
+    next_event on the target cpu's clock_event_device.
+    
+    [ tglx: cleanups and simplifications ]
+    
+    Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-8) client: default, server: 64 max_sectors_kb, RA 2MB
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  20.003   21.133   19.308   50.894    1.881    0.795
- 33554432  19.448   20.015   18.908   52.657    1.222    1.646
- 16777216  19.964   19.350   19.106   52.603    0.967    3.288
-  8388608  18.961   19.213   19.318   53.437    0.419    6.680
-  4194304  18.135   19.508   19.361   53.948    1.788   13.487
-  2097152  18.753   19.471   18.367   54.315    1.306   27.158
-  1048576  19.189   18.586   18.867   54.244    0.707   54.244
-   524288  18.985   19.199   18.840   53.874    0.417  107.749
-   262144  19.064   21.143   19.674   51.398    2.204  205.592
-   131072  18.691   18.664   19.116   54.406    0.594  435.245
-    65536  18.468   20.673   18.554   53.389    2.729  854.229
-    32768  20.401   21.156   19.552   50.323    1.623 1610.331
-    16384  19.532   20.028   20.466   51.196    0.977 3276.567
-
-9) client: 64 max_sectors_kb, default RA. server: 64 max_sectors_kb, RA 2MB
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.458   16.649   17.346   60.919    1.364    0.952
- 33554432  16.479   16.744   17.069   61.096    0.878    1.909
- 16777216  17.128   16.585   17.112   60.456    0.910    3.778
-  8388608  17.322   16.780   16.885   60.262    0.824    7.533
-  4194304  17.530   16.725   16.756   60.250    1.299   15.063
-  2097152  16.580   17.875   16.619   60.221    2.076   30.110
-  1048576  17.550   17.406   17.075   59.049    0.681   59.049
-   524288  16.492   18.211   16.832   59.718    2.519  119.436
-   262144  17.241   17.115   17.365   59.397    0.352  237.588
-   131072  17.430   16.902   17.511   59.271    0.936  474.167
-    65536  16.726   16.894   17.246   60.404    0.768  966.461
-    32768  16.662   17.517   17.052   59.989    1.224 1919.658
-    16384  17.429   16.793   16.753   60.285    1.085 3858.268
-
-10) client: default max_sectors_kb, 2MB RA. server: 64 max_sectors_kb, RA 2MB
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.601   18.334   17.379   57.650    1.307    0.901
- 33554432  18.281   18.128   17.169   57.381    1.610    1.793
- 16777216  17.660   17.875   17.356   58.091    0.703    3.631
-  8388608  17.724   17.810   18.383   56.992    0.918    7.124
-  4194304  17.475   17.770   19.003   56.704    2.031   14.176
-  2097152  17.287   17.674   18.492   57.516    1.604   28.758
-  1048576  17.972   17.460   18.777   56.721    1.689   56.721
-   524288  18.680   18.952   19.445   53.837    0.890  107.673
-   262144  18.070   18.337   18.639   55.817    0.707  223.270
-   131072  16.990   16.651   16.862   60.832    0.507  486.657
-    65536  17.707   16.972   17.520   58.870    1.066  941.924
-    32768  17.767   17.208   17.205   58.887    0.885 1884.399
-    16384  18.258   17.252   18.035   57.407    1.407 3674.059
-
-11) client: 64 max_sectors_kb, 2MB. RA server: 64 max_sectors_kb, RA 2MB
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.993   18.307   18.718   55.850    0.902    0.873
- 33554432  19.554   18.485   17.902   54.988    1.993    1.718
- 16777216  18.829   18.236   18.748   55.052    0.785    3.441
-  8388608  21.152   19.065   18.738   52.257    2.745    6.532
-  4194304  19.131   19.703   17.850   54.288    2.268   13.572
-  2097152  19.093   19.152   19.509   53.196    0.504   26.598
-  1048576  19.371   18.775   18.804   53.953    0.772   53.953
-   524288  20.003   17.911   18.602   54.470    2.476  108.940
-   262144  19.182   19.460   18.476   53.809    1.183  215.236
-   131072  19.403   19.192   18.907   53.429    0.567  427.435
-    65536  19.502   19.656   18.599   53.219    1.309  851.509
-    32768  18.746   18.747   18.250   55.119    0.701 1763.817
-    16384  20.977   19.437   18.840   51.951    2.319 3324.862
-
-Ronald.
+diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+index 3a1dbba..20a100f 100644
+--- a/include/linux/clockchips.h
++++ b/include/linux/clockchips.h
+@@ -143,3 +143,12 @@ extern void clockevents_notify(unsigned long reason, void *arg);
+ #endif
+ 
+ #endif
++
++#ifdef CONFIG_GENERIC_CLOCKEVENTS
++extern ktime_t clockevents_get_next_event(int cpu);
++#else
++static inline ktime_t clockevents_get_next_event(int cpu)
++{
++	return (ktime_t) { .tv64 = KTIME_MAX };
++}
++#endif
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 6185040..311dec1 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -257,6 +257,7 @@ extern void task_rq_unlock_wait(struct task_struct *p);
+ extern cpumask_var_t nohz_cpu_mask;
+ #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ)
+ extern int select_nohz_load_balancer(int cpu);
++extern int get_nohz_load_balancer(void);
+ #else
+ static inline int select_nohz_load_balancer(int cpu)
+ {
+@@ -1772,6 +1773,17 @@ int sched_nr_latency_handler(struct ctl_table *table, int write,
+ 		struct file *file, void __user *buffer, size_t *length,
+ 		loff_t *ppos);
+ #endif
++#ifdef CONFIG_SCHED_DEBUG
++static inline unsigned int get_sysctl_timer_migration(void)
++{
++	return sysctl_timer_migration;
++}
++#else
++static inline unsigned int get_sysctl_timer_migration(void)
++{
++	return 1;
++}
++#endif
+ extern unsigned int sysctl_sched_rt_period;
+ extern int sysctl_sched_rt_runtime;
+ 
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index c71bcd5..b675a67 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -43,6 +43,8 @@
+ #include <linux/seq_file.h>
+ #include <linux/err.h>
+ #include <linux/debugobjects.h>
++#include <linux/sched.h>
++#include <linux/timer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -198,8 +200,19 @@ switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
+ {
+ 	struct hrtimer_clock_base *new_base;
+ 	struct hrtimer_cpu_base *new_cpu_base;
++	int cpu, preferred_cpu = -1;
++
++	cpu = smp_processor_id();
++#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
++	if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
++		preferred_cpu = get_nohz_load_balancer();
++		if (preferred_cpu >= 0)
++			cpu = preferred_cpu;
++	}
++#endif
+ 
+-	new_cpu_base = &__get_cpu_var(hrtimer_bases);
++again:
++	new_cpu_base = &per_cpu(hrtimer_bases, cpu);
+ 	new_base = &new_cpu_base->clock_base[base->index];
+ 
+ 	if (base != new_base) {
+@@ -219,6 +232,40 @@ switch_hrtimer_base(struct hrtimer *timer, struct hrtimer_clock_base *base,
+ 		timer->base = NULL;
+ 		spin_unlock(&base->cpu_base->lock);
+ 		spin_lock(&new_base->cpu_base->lock);
++
++		/* Optimized away for NOHZ=n SMP=n */
++		if (cpu == preferred_cpu) {
++			/* Calculate clock monotonic expiry time */
++#ifdef CONFIG_HIGH_RES_TIMERS
++			ktime_t expires = ktime_sub(hrtimer_get_expires(timer),
++							new_base->offset);
++#else
++			ktime_t expires = hrtimer_get_expires(timer);
++#endif
++
++			/*
++			 * Get the next event on target cpu from the
++			 * clock events layer.
++			 * This covers the highres=off nohz=on case as well.
++			 */
++			ktime_t next = clockevents_get_next_event(cpu);
++
++			ktime_t delta = ktime_sub(expires, next);
++
++			/*
++			 * We do not migrate the timer when it is expiring
++			 * before the next event on the target cpu because
++			 * we cannot reprogram the target cpu hardware and
++			 * we would cause it to fire late.
++			 */
++			if (delta.tv64 < 0) {
++				cpu = smp_processor_id();
++				spin_unlock(&new_base->cpu_base->lock);
++				spin_lock(&base->cpu_base->lock);
++				timer->base = base;
++				goto again;
++			}
++		}
+ 		timer->base = new_base;
+ 	}
+ 	return new_base;
+@@ -236,7 +283,7 @@ lock_hrtimer_base(const struct hrtimer *timer, unsigned long *flags)
+ 	return base;
+ }
+ 
+-# define switch_hrtimer_base(t, b)	(b)
++# define switch_hrtimer_base(t, b, p)	(b)
+ 
+ #endif	/* !CONFIG_SMP */
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 7f1dd56..9fe3774 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4244,6 +4244,11 @@ static struct {
+ 	.load_balancer = ATOMIC_INIT(-1),
+ };
+ 
++int get_nohz_load_balancer(void)
++{
++	return atomic_read(&nohz.load_balancer);
++}
++
+ /*
+  * This routine will try to nominate the ilb (idle load balancing)
+  * owner among the cpus whose ticks are stopped. ilb owner will do the idle
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index d13be21..ab20ded 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -18,6 +18,7 @@
+ #include <linux/notifier.h>
+ #include <linux/smp.h>
+ #include <linux/sysdev.h>
++#include <linux/tick.h>
+ 
+ /* The registered clock event devices */
+ static LIST_HEAD(clockevent_devices);
+@@ -251,4 +252,15 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 	spin_unlock(&clockevents_lock);
+ }
+ EXPORT_SYMBOL_GPL(clockevents_notify);
++
++ktime_t clockevents_get_next_event(int cpu)
++{
++	struct tick_device *td;
++	struct clock_event_device *dev;
++
++	td = &per_cpu(tick_cpu_device, cpu);
++	dev = td->evtdev;
++
++	return dev->next_event;
++}
+ #endif
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 3424dfd..3f841db 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -37,6 +37,7 @@
+ #include <linux/delay.h>
+ #include <linux/tick.h>
+ #include <linux/kallsyms.h>
++#include <linux/sched.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -609,9 +610,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ {
+ 	struct tvec_base *base, *new_base;
+ 	unsigned long flags;
+-	int ret;
+-
+-	ret = 0;
++	int ret = 0 , cpu;
+ 
+ 	timer_stats_timer_set_start_info(timer);
+ 	BUG_ON(!timer->function);
+@@ -630,6 +629,18 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 
+ 	new_base = __get_cpu_var(tvec_bases);
+ 
++	cpu = smp_processor_id();
++
++#if defined(CONFIG_NO_HZ) && defined(CONFIG_SMP)
++	if (!pinned && get_sysctl_timer_migration() && idle_cpu(cpu)) {
++		int preferred_cpu = get_nohz_load_balancer();
++
++		if (preferred_cpu >= 0)
++			cpu = preferred_cpu;
++	}
++#endif
++	new_base = per_cpu(tvec_bases, cpu);
++
+ 	if (base != new_base) {
+ 		/*
+ 		 * We are trying to schedule the timer on the local CPU.
