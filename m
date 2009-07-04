@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbZGHKrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZGHKsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbZGHKrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Jul 2009 06:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZGHKrd
+	id S1754653AbZGHKsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Jul 2009 06:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZGHKsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Jul 2009 06:47:33 -0400
-Received: from mail-bw0-f225.google.com ([209.85.218.225]:44116 "EHLO
-	mail-bw0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753307AbZGHKrc (ORCPT
+	Wed, 8 Jul 2009 06:48:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51789 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbZGHKsH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Jul 2009 06:47:32 -0400
-From: amit.kucheria@canonical.com
-To: sameo@linux.intel.com
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: [PATCHv2 0/3] MFD: TWL4030: Support for dynamic power switching
-Date: Wed,  8 Jul 2009 13:47:26 +0300
-Message-Id: <4a547941.11355e0a.6fc4.ffff8ff2@mx.google.com>
-X-Mailer: git-send-email 1.6.3.3
+	Wed, 8 Jul 2009 06:48:07 -0400
+Date: Sat, 4 Jul 2009 04:57:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jeremy Maitin-Shepard <jeremy@jeremyms.com>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Rafael Wysocki <rjw@sisk.pl>
+Subject: Re: [TuxOnIce-devel] RFC: Suspend-to-ram cold boot protection by
+	encrypting page cache
+Message-ID: <20090704025755.GA1500@ucw.cz>
+References: <87hbxx0wcp.fsf@jeremyms.com> <4A4B0125.2090502@crca.org.au> <87d48k2992.fsf@jeremyms.com> <4A4B27D0.8020906@crca.org.au> <20090704024432.GB1345@ucw.cz> <87hbxn78o6.fsf@jeremyms.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87hbxn78o6.fsf@jeremyms.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Amit Kucheria <amit.kucheria@verdurent.com>
+On Wed 2009-07-08 03:47:53, Jeremy Maitin-Shepard wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
+> 
+> [snip]
+> 
+> > I believe uswsusp could be used rather easily. Just modify s2disk to
+> > encrypt image in ram without writing it out, then decrypt it from ram
+> > and resume... it should be interesting hack.
+> 
+> As far as I understand, that would be completely useless since the image
+> that would be encrypted would just be a copy of what would still remain
+> in memory.
 
-The TWL4030/5030 family of multifunction devices allow dynamic power
-switching based on board-specific applications through power 'scripts'.
+Yes... so next step would be kernel call that would erase all the
+pagecache and anonymous pages. You would still leave some data in
+kernel structures, but that would be quite hard to fix. 
 
-Add board-independent core support for this feature and add support for
-the RX51 board based on OMAP3.
-
-Amit Kucheria (3):
-  MFD: TWL4030: Add support for TWL4030/5030 dynamic power switching
-  MFD: TWL4030: print warning for out-of-order script loading
-  MFD: TWL4030: OMAP: Board-specifc DPS scripts for RX51 board
-
- arch/arm/mach-omap2/board-rx51-peripherals.c |  122 ++++++++-
- drivers/mfd/Kconfig                          |   13 +
- drivers/mfd/Makefile                         |    1 +
- drivers/mfd/twl4030-core.c                   |   12 +
- drivers/mfd/twl4030-power.c                  |  391 ++++++++++++++++++++++++++
- include/linux/i2c/twl4030.h                  |   91 ++++++-
- 6 files changed, 618 insertions(+), 12 deletions(-)
- create mode 100644 drivers/mfd/twl4030-power.c
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
