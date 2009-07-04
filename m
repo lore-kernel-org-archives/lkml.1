@@ -1,98 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbZGDB50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756953AbZGDCHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757191AbZGDB50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 21:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZGDB5T
+	id S1756953AbZGDCHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 22:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZGDCHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 21:57:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:40116 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754910AbZGDB5T convert rfc822-to-8bit (ORCPT
+	Fri, 3 Jul 2009 22:07:22 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44365 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbZGDCHV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 21:57:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,345,1243839600"; 
-   d="scan'208";a="161404243"
-From: "Du, Alek" <alek.du@intel.com>
-To: David Brownell <david-b@pacbell.net>,
-       "peterz@infradead.org" <peterz@infradead.org>
-CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Date: Sat, 4 Jul 2009 09:57:17 +0800
-Subject: RE: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
-Thread-Topic: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
-Thread-Index: Acn7/tvfSWQQfL0cTy6gLclo/CYH9AASZOeg
-Message-ID: <EADF0A36011179459010BDF5142A457501C9F468C7@pdsmsx502.ccr.corp.intel.com>
-References: <20090703211034.47fc0880@dxy.sh.intel.com>
- <200907030953.54006.david-b@pacbell.net>
-In-Reply-To: <200907030953.54006.david-b@pacbell.net>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-CN, en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 3 Jul 2009 22:07:21 -0400
+Message-ID: <3f9558558c68d9e2fe00f7c7681c3764.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <6599ad830907030852p2cd667e3m353d68448e0cdc6a@mail.gmail.com>
+References: <20090702231814.3969.44308.stgit@menage.mtv.corp.google.com>
+    <20090702232620.3969.16680.stgit@menage.mtv.corp.google.com>
+    <20090702164649.303c4952.akpm@linux-foundation.org>
+    <2f86c2480907021731h13e0bb95q94f06829eded9aa6@mail.gmail.com>
+    <20090702175341.fd2e26d5.akpm@linux-foundation.org>
+    <6599ad830907021808o6f3bb51eh324e4bf13544d83e@mail.gmail.com>
+    <20090702183004.1e3f4315.akpm@linux-foundation.org>
+    <20090703145441.f526793f.kamezawa.hiroyu@jp.fujitsu.com>
+    <6599ad830907030852p2cd667e3m353d68448e0cdc6a@mail.gmail.com>
+Date: Sat, 4 Jul 2009 11:07:20 +0900 (JST)
+Subject: Re: [PATCH 1/2] Adds a read-only "procs" file similar to "tasks"
+ that  shows only unique tgids
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Benjamin Blum" <bblum@google.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitzu.com
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
-
-Thanks for the review.
-Basically my idea is *not* actually demuxing the I2C gpio interrupts. Since the demuxing need send I2C command to the GPIO chip, which has big latency.
-My idea is, when this GPIO chip hooked to an edge sensitive interrupt line, we could use this interrupt handler to call all second level IRQs. The hooked edge detect interrupt line "automatically" masks the interrupt when the GPIO pin state is not restored to original state.
-
->> +static void pca953x_irq_handler(unsigned irq, struct irq_desc *desc)
->> +{
->> +	struct pca953x_chip *chip = (struct pca953x_chip *)get_irq_data(irq);
->> +	int i;
->> +
->> +	if (desc->chip->ack)
->> +		desc->chip->ack(irq);
+Paul Menage さんは書きました：
+> On Thu, Jul 2, 2009 at 10:54 PM, KAMEZAWA
+> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>
+>> Why we can't do what readdir(/proc) does ? I'm sorry I misunderstand.
+>> Following is an easy example.
+>>
+>>
+>> 0. at open, inilialize f_pos to 0. f_pos is used as "pid"
+>> &#160; remember "css_set with hole" as template in f_private?(or
+somewhere) at open
+>> &#160; ...like this.
+>> --
+>> &#160; struct cgroupfs_root *root = cgrp->root;
+>> &#160; struct cgroup *template = kzalloc(sizeof(void*) *
+CGROUP_SUBSYS_COUNT);
+>>
+>> &#160; for (i = 0; i < CGROUP_SUBSYS_COUNT; i++)
+>> &#160; &#160; &#160; &#160;if (root->subsys_bits & (1UL << i))
+>> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;template[i] =
+&#160;cgrp->subsys[i];
+>> --
+>>
+>>
+>> 1. at read(), find task_struct of "pid" in f_pos.
+>> 2. look up task_struct of "pid" and compare with f_private
+>> --
+>> &#160; struct cgroup *template = f_private;
+>>
+>> &#160; for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+>> &#160; &#160; &#160; &#160;if (!template[i])
+>> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;contiue;
+>> &#160; &#160; &#160; &#160;if (template[i] != task_subsys_state(task, i))
+>> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;break;
+>> &#160; }
+>> &#160; if (i == CGROUP_SUBSYS_COUNT)
+>> &#160; &#160; &#160; &#160;print task;
 >
->This top-level IRQ chaining handler is clelarly incorrect.
->Reading from a pca9539 spec I have handy:
+> The problem with this is that the time taken to scan a single cgroup
+> is linear in the total number of threads in the system, so if you have
+> a lot of threads and a lot of cgroups (even if most of the threads are
+> concentrated in a single cgroup) the time taken to scan all the tasks
+> files in O(N^2) in the number of threads in the system. The current
+> scheme is linear in the number of threads in a cgroup, so looking at
+> all cgroups is linear in the number of threads in the system. (This
+> O(N^2) problem is something that we've actually observed as an
+> overhead on some busy systems at Google).
 >
->	Resetting the interrupt circuit is achieved when
->	data on the port is changed to the original setting,
->	data is read from the port that generated the
->	interrupt, or in a Stop event.
->
->You're not guaranteeing *any* of those happens.  Since
->the chip's nINT output is level-active, it's possible
->that the hardware is still raising this interrupt when
->this hander returns ...
-
-That's why we connected the nINT output to an edge sensitive interrupt line.
-The IRQ would be triggered only once if the nINT keeps level-low. The driver that requires the gpio pin IRQ needs to clear the interrupt source.
-
->> +	/* we must call all sub-irqs, since there is no way to read
->> +	 * I2C gpio expander's status in irq context. The driver itself
->> +	 * would be reponsible to check if the irq is for him.
->> +	 */
->> +	for (i = 0; i < chip->gpio_chip.ngpio; i++)
->> +		generic_handle_irq(chip->irq_base + i);
->
->You should only do that for pins configured as inputs.
->The nIRQ signal is not triggered for changes on output pins.
-Ok, but those output pins, actually nobody will install IRQ handlers for them.
-
->> +	if (chip->irq_base) {
->> +		int i;
->> +
->> +		set_irq_type(client->irq,
->> +				IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_EDGE_RISING);
->
->Won't work on all hardware.  And surely you'd want just
->EDGE_FALLING, so you get only half as many IRQs, if you
->happen to be hooking this up to an interrupt line which
->supports edge-sensitive IRQ triggers (and not through
->some kind of signal inverter)?
-
-I set the IRQ type to EDGE_FALLING and EDGE_RISING because the nINT signal of the GPIO is low-active. So when one of the input pins transit from high/low, it will trigger two interrupts on the hooked up interrupt line.
-
+yes. that's a problem. but not far from 'ps' 's performance.
+kmalloc() scheme can walk faster than this under heavy memory pressure ?
+Anyway, above algorithm shows that it's enough to have per-cgroup bitmap
+(size can be dinamically changed) rather than big table and ugly sort().
+How about adding per-cgroup taskid bitmap ?
+clear/set is very easy.
 
 Thanks,
-Alek
+-Kame
+
