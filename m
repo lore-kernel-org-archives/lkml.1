@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZGDK1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZGDK3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbZGDK1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 06:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZGDK1J
+	id S1755776AbZGDK3W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 06:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZGDK3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 06:27:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57931 "EHLO mx2.mail.elte.hu"
+	Sat, 4 Jul 2009 06:29:15 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37777 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753015AbZGDK1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 06:27:08 -0400
-Date: Sat, 4 Jul 2009 12:26:37 +0200
+	id S1753267AbZGDK3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 06:29:14 -0400
+Date: Sat, 4 Jul 2009 12:29:04 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org,
-       yinghai@kernel.org, linux-kernel@vger.kernel.org,
-       Bernhard Walle <bernhard.walle@gmx.de>
-Subject: Re: [PATCH 1/2] IRQ: fix performance regression on large IA64
-	systems
-Message-ID: <20090704102637.GA32257@elte.hu>
-References: <1246611709-9919-1-git-send-email-jirislaby@gmail.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Boot Consoles question...
+Message-ID: <20090704102904.GB32257@elte.hu>
+References: <200907040017.26921.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1246611709-9919-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <200907040017.26921.rgetz@blackfin.uclinux.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,44 +33,36 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jiri Slaby <jirislaby@gmail.com> wrote:
+* Robin Getz <rgetz@blackfin.uclinux.org> wrote:
 
-> Commit b60c1f6ffd88850079ae419aa933ab0eddbd5535
-> (drop note_interrupt() for per-CPU for proper scaling) removed call to
-> note_interrupt() in __do_IRQ(). Commit
-> d85a60d85ea5b7c597508c1510c88e657773d378
-> (Add IRQF_IRQPOLL flag (common code)) added it again, because it's needed
-> for irqpoll.
+> Quick question...
 > 
-> This patch now introduces a new parameter 'only_fixup' for 
-> note_interrupt(). This parameter determines two cases:
+> In register_console()
 > 
->   TRUE  => The function should be only executed when irqfixup is set.
->            Either 'irqpoll' or 'irqfixup' directly set that.
+>         if (bcon && ((newcon->flags & (CON_CONSDEV | CON_BOOT)) == 
+> CON_CONSDEV)) {
+> 		[[snip]]
+>                 newcon->flags &= ~CON_PRINTBUFFER;
+>         }
 > 
->   FALSE => Just the behaviour as note_interrupt() always had.
+> So - when we are switching over from a boot console to a "real" 
+> console - we don't back up the console, and print everything out.
 > 
-> Now the patch converts all calls of note_interrupt() to 
-> only_fixup=FALSE, except the call that has been removed by 
-> b60c1f6ffd. So that call is always done, but the body is only 
-> executed when either 'irqpoll' or 'irqfixup' are specified.
+> This means that the boot console is on a different device than 
+> that "real" console - you don't actually see the full boot message 
+> (from log_start) on the "real" console.
 > 
-> This is needed because __do_IRQ() calls note_interrupt() to record 
-> IRQ statistics. It ends up creating serious cache line contention, 
-> enough that a 1024p system live locks under the crushing weight of 
-> the timer tick.
+> Is this what is intended (that the boot message gets split into 2 
+> - 1/3 going into the bootconsole - and the remaining to to the 
+> real console?)
 > 
-> The note_interrupt() call modifies fields in the irq_desc_t 
-> structure. For PER_CPU timer interrupts (on ia64 machines) this 
-> causes cacheline contention.
-> 
-> Systems with 1024 processors take an extremely long time to boot 
-> up, as most of the time is spent attempting to service timer 
-> interrupts.  With noirqdebug added to the boot line, the system 
-> boots in close to the normal amount of time.
+> I can understand this when both (boot and real) are the same 
+> device (serial) or vga, but where they are not - it is a little 
+> confusing to the user - isn't it?
 
-What would be the effect/cost of enabling this by default? Seems 
-desirable and eventually we'll hit those problems with regular 
-systems too ...
+Could be changed i guess ... but is it really an issue? All messages 
+should be in the syslog buffer (if it's large enough). One artifact 
+could be manual scroll-back - it would perhaps be nice indeed to 
+allow the scrollback to the top of the bootlog.
 
 	Ingo
