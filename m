@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZGDFHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZGDFIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZGDFHw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 01:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZGDFHm
+	id S1752922AbZGDFIV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 01:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbZGDFIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 01:07:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39411 "EHLO hera.kernel.org"
+	Sat, 4 Jul 2009 01:08:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39426 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZGDFHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 01:07:41 -0400
-Message-ID: <4A4EE3E9.7090205@kernel.org>
-Date: Sat, 04 Jul 2009 14:08:57 +0900
+	id S1751386AbZGDFIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 01:08:04 -0400
+Message-ID: <4A4EE410.4080001@kernel.org>
+Date: Sat, 04 Jul 2009 14:09:36 +0900
 From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -25,205 +25,77 @@ To: Greg KH <greg@kroah.com>, Robert Hancock <hancockr@shaw.ca>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 1/3] pci: determine CLS more intelligently
+Subject: [PATCH 2/3] pci,sparc64: drop PCI_CACHE_LINE_BYTES
+References: <4A4EE3E9.7090205@kernel.org>
+In-Reply-To: <4A4EE3E9.7090205@kernel.org>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Jul 2009 05:06:59 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Jul 2009 05:07:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Till now, CLS has been determined either by arch code or as
-L1_CACHE_BYTES.  Only x86 and ia64 set CLS explicitly and x86 doesn't
-always get it right.  On most configurations, the chance is that
-firmware configures the correct value during boot.
+sparc64 is now the only user of PCI_CACHE_LINE_BYTES.  Drop it and set
+pci_dfl_cache_line_size from pcibios_init() instead and drop
+PCI_CACHE_LINE_BYTES handling from generic pci code.
 
-This patch makes pci_init() determine CLS by looking at what firmware
-has configured.  It scans all devices and if all non-zero values
-agree, the value is used.  If none is configured or there is a
-disagreement, pci_dfl_cache_line_size is used.  arch can set the dfl
-value (via PCI_CACHE_LINE_BYTES or pci_dfl_cache_line_size) or
-override the actual one.
-
-ia64, x86 and sparc64 updated to set the default cls instead of the
-actual one.
-
-While at it, declare pci_cache_line_size and pci_dfl_cache_line_size
-in pci.h and drop private declarations from arch code.
-
+Orignally-From: David Miller <davem@davemloft.net>
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: David Miller <davem@davemloft.net>
-Acked-by: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Tony Luck <tony.luck@intel.com>
 ---
-Private declarations dropped.  Greg, please schedule for the next
-merge window.  Thanks.
+ arch/sparc/include/asm/pci_64.h |    2 --
+ arch/sparc/kernel/pci.c         |    7 +++++++
+ drivers/pci/pci.c               |    6 +-----
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
- arch/ia64/pci/pci.c   |    9 +++------
- arch/x86/pci/common.c |    8 +++-----
- drivers/pci/pci.c     |   49 +++++++++++++++++++++++++++++++++++++++++--------
- include/linux/pci.h   |    2 ++
- 4 files changed, 49 insertions(+), 19 deletions(-)
-
-Index: work/arch/ia64/pci/pci.c
+Index: work/arch/sparc/kernel/pci.c
 ===================================================================
---- work.orig/arch/ia64/pci/pci.c
-+++ work/arch/ia64/pci/pci.c
-@@ -715,9 +715,6 @@ int ia64_pci_legacy_write(struct pci_bus
- 	return ret;
+--- work.orig/arch/sparc/kernel/pci.c
++++ work/arch/sparc/kernel/pci.c
+@@ -1081,3 +1081,10 @@ void pci_resource_to_user(const struct p
+ 	*start = rp->start - offset;
+ 	*end = rp->end - offset;
  }
- 
--/* It's defined in drivers/pci/pci.c */
--extern u8 pci_cache_line_size;
--
- /**
-  * set_pci_cacheline_size - determine cacheline size for PCI devices
-  *
-@@ -726,7 +723,7 @@ extern u8 pci_cache_line_size;
-  *
-  * Code mostly taken from arch/ia64/kernel/palinfo.c:cache_info().
-  */
--static void __init set_pci_cacheline_size(void)
-+static void __init set_pci_dfl_cacheline_size(void)
- {
- 	unsigned long levels, unique_caches;
- 	long status;
-@@ -746,7 +743,7 @@ static void __init set_pci_cacheline_siz
- 			"(status=%ld)\n", __func__, status);
- 		return;
- 	}
--	pci_cache_line_size = (1 << cci.pcci_line_size) / 4;
-+	pci_dfl_cache_line_size = (1 << cci.pcci_line_size) / 4;
- }
- 
- u64 ia64_dma_get_required_mask(struct device *dev)
-@@ -777,7 +774,7 @@ EXPORT_SYMBOL_GPL(dma_get_required_mask)
- 
- static int __init pcibios_init(void)
- {
--	set_pci_cacheline_size();
-+	set_pci_dfl_cacheline_size();
- 	return 0;
- }
- 
-Index: work/arch/x86/pci/common.c
++
++static int __init pcibios_init(void)
++{
++	pci_dfl_cache_line_size = 64 >> 2;
++	return 0;
++}
++subsys_initcall(pcibios_init);
+Index: work/arch/sparc/include/asm/pci_64.h
 ===================================================================
---- work.orig/arch/x86/pci/common.c
-+++ work/arch/x86/pci/common.c
-@@ -410,8 +410,6 @@ struct pci_bus * __devinit pcibios_scan_
- 	return bus;
- }
+--- work.orig/arch/sparc/include/asm/pci_64.h
++++ work/arch/sparc/include/asm/pci_64.h
+@@ -17,8 +17,6 @@
  
--extern u8 pci_cache_line_size;
+ #define PCI_IRQ_NONE		0xffffffff
+ 
+-#define PCI_CACHE_LINE_BYTES	64
 -
- int __init pcibios_init(void)
+ static inline void pcibios_set_master(struct pci_dev *dev)
  {
- 	struct cpuinfo_x86 *c = &boot_cpu_data;
-@@ -426,11 +424,11 @@ int __init pcibios_init(void)
- 	 * and P4. It's also good for 386/486s (which actually have 16)
- 	 * as quite a few PCI devices do not support smaller values.
- 	 */
--	pci_cache_line_size = 32 >> 2;
-+	pci_dfl_cache_line_size = 32 >> 2;
- 	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
--		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
-+		pci_dfl_cache_line_size = 64 >> 2;	/* K7 & K8 */
- 	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
--		pci_cache_line_size = 128 >> 2;	/* P4 */
-+		pci_dfl_cache_line_size = 128 >> 2;	/* P4 */
- 
- 	pcibios_resource_survey();
- 
+ 	/* No special bus mastering setup handling */
 Index: work/drivers/pci/pci.c
 ===================================================================
 --- work.orig/drivers/pci/pci.c
 +++ work/drivers/pci/pci.c
-@@ -41,6 +41,19 @@ int pci_domains_supported = 1;
+@@ -41,17 +41,13 @@ int pci_domains_supported = 1;
  unsigned long pci_cardbus_io_size = DEFAULT_CARDBUS_IO_SIZE;
  unsigned long pci_cardbus_mem_size = DEFAULT_CARDBUS_MEM_SIZE;
- 
-+#ifndef PCI_CACHE_LINE_BYTES
-+#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
-+#endif
-+
-+/*
-+ * The default CLS is used if arch didn't set CLS explicitly and not
-+ * all pci devices agree on the same value.  Arch can override either
-+ * the dfl or actual value as it sees fit.  Don't forget this is
-+ * measured in 32-bit words, not bytes.
-+ */
-+u8 pci_dfl_cache_line_size __initdata = PCI_CACHE_LINE_BYTES >> 2;
-+u8 pci_cache_line_size;
-+
- /**
-  * pci_bus_max_busnr - returns maximum PCI bus number of given bus' children
-  * @bus: pointer to PCI bus structure to search
-@@ -1848,14 +1861,6 @@ void pci_clear_mwi(struct pci_dev *dev)
- 
- #else
  
 -#ifndef PCI_CACHE_LINE_BYTES
 -#define PCI_CACHE_LINE_BYTES L1_CACHE_BYTES
 -#endif
 -
--/* This can be overridden by arch code. */
--/* Don't forget this is measured in 32-bit words, not bytes */
--u8 pci_cache_line_size = PCI_CACHE_LINE_BYTES / 4;
--
+ /*
+  * The default CLS is used if arch didn't set CLS explicitly and not
+  * all pci devices agree on the same value.  Arch can override either
+  * the dfl or actual value as it sees fit.  Don't forget this is
+  * measured in 32-bit words, not bytes.
+  */
+-u8 pci_dfl_cache_line_size __initdata = PCI_CACHE_LINE_BYTES >> 2;
++u8 pci_dfl_cache_line_size __initdata = L1_CACHE_BYTES >> 2;
+ u8 pci_cache_line_size;
+ 
  /**
-  * pci_set_cacheline_size - ensure the CACHE_LINE_SIZE register is programmed
-  * @dev: the PCI device for which MWI is to be enabled
-@@ -2631,9 +2636,37 @@ int __attribute__ ((weak)) pci_ext_cfg_a
- static int __devinit pci_init(void)
- {
- 	struct pci_dev *dev = NULL;
-+	u8 cls = 0;
-+	u8 tmp;
-+
-+	if (pci_cache_line_size)
-+		printk(KERN_DEBUG "PCI: CLS %u bytes\n",
-+		       pci_cache_line_size << 2);
- 
- 	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
- 		pci_fixup_device(pci_fixup_final, dev);
-+		/*
-+		 * If arch hasn't set it explicitly yet, use the CLS
-+		 * value shared by all PCI devices.  If there's a
-+		 * mismatch, fall back to the default value.
-+		 */
-+		if (!pci_cache_line_size) {
-+			pci_read_config_byte(dev, PCI_CACHE_LINE_SIZE, &tmp);
-+			if (!cls)
-+				cls = tmp;
-+			if (!tmp || cls == tmp)
-+				continue;
-+
-+			printk(KERN_DEBUG "PCI: CLS mismatch (%u != %u), "
-+			       "using %u bytes\n", cls << 2, tmp << 2,
-+			       pci_dfl_cache_line_size << 2);
-+			pci_cache_line_size = pci_dfl_cache_line_size;
-+		}
-+	}
-+	if (!pci_cache_line_size) {
-+		printk(KERN_DEBUG "PCI: CLS %u bytes, default %u\n",
-+		       cls << 2, pci_dfl_cache_line_size << 2);
-+		pci_cache_line_size = cls;
- 	}
- 
- 	return 0;
-Index: work/include/linux/pci.h
-===================================================================
---- work.orig/include/linux/pci.h
-+++ work/include/linux/pci.h
-@@ -1235,6 +1235,8 @@ extern int pci_pci_problems;
- 
- extern unsigned long pci_cardbus_io_size;
- extern unsigned long pci_cardbus_mem_size;
-+extern u8 pci_dfl_cache_line_size;
-+extern u8 pci_cache_line_size;
- 
- int pcibios_add_platform_entries(struct pci_dev *dev);
- void pcibios_disable_device(struct pci_dev *dev);
