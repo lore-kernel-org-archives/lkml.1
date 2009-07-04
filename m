@@ -1,78 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbZGDAGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbZGDAIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757700AbZGDAGE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 20:06:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZGDAFz
+	id S1758820AbZGDAIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 20:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZGDAIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 20:05:55 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:57378 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828AbZGDAFy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 20:05:54 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Bug Fix]: Do 32-bit table calculations in pre-processor
-Date: Fri, 3 Jul 2009 19:05:53 -0500
-User-Agent: KMail/1.9.9
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-References: <200907031314.36243.lkml@morethan.org> <200907031602.20948.lkml@morethan.org> <4A4E8741.7030806@zytor.com>
-In-Reply-To: <4A4E8741.7030806@zytor.com>
+	Fri, 3 Jul 2009 20:08:10 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:40063 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752828AbZGDAII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 20:08:08 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Jonathan McDowell <noodles@earth.li>
+Subject: [PATCH] [RFC] OMAP1: AMS_DELTA: add modem support
+Date: Sat, 4 Jul 2009 02:06:42 +0200
+User-Agent: KMail/1.9.10
+Cc: Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       linux-serial@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200907040206.42940.jkrzyszt@tis.icnet.pl>
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907031905.55258.lkml@morethan.org>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri July 3 2009, H. Peter Anvin wrote:
-> Michael S. Zick wrote:
-> >>>
-> >> The CPUID flags, in particular the pse flag.
-> >>
-> > 
-> > I haven't touch anything that would have changed that -
-> > so this should be representative (the *&^*% datasheet says yes to pse also)
-> > 
-> 
-> Actually, come to think of it, we don't generate PSE page tables
-> initially -- we only later go in and reclaim the page tables if we
-> switch to PSE (and $DEITY knows if we're doing it correctly...)
->
+This patch adds support for modem device found on Amstrad E3 (Delta) board.
 
-I am of that age range where senility has to be considered, but not this time:
+Patch created against linux-2.6.31-rc1.
 
-"Via C7-M Datasheet", May 2008 (supposed to be most recent) -
+Based on earlier patch by Jonathan McDowell, available at 
+http://the.earth.li/pub/e3/2.6.19/ams-delta-modem.patch.
+Modified after Ladislav Michl's arch/arm/mach-omap1/board-voiceblue.c.
 
-page 22 - section 2.3.7 - Table 2-14 "CR4 Bits"
-"<5> PAE: Enables address extensions; C7-M:<r>" 
-<quote>An "r" means that this bit is reserved.  It appears as a 0 when read,
-and a GP exception is signaled if an attemp is made to write a 1 to this bit.</quote>
+Signed-off-by: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+---
+Registering the modem platform device from a separate arch_initcall (and not from machine_init() callback) preserves serial console port 
+at ttyS0.
 
-Same document -
-page 16 - section 2.3.2 - Table 2-3 "CPUID Feature Flag Values (EAX=1)"
-<EDX:6> PAE: Physical address extensions; C7:<1>
-
-So take your pick - it might be there or it might not - - -
-If you like that one, read the MCE bit "Documentation"  ;)
-
-Note: When this bit is (attempted) to be set in head.S I think that the
-GP fault is still "no-opted" by that dummy routine.
-So we would never hear about it.
-Also, according to H.W. the NX bit is a lie told to keep some OS's happy.
-
-And then, of course, the silicon can have micro-code updates - -
-All bets are off if mine works the same as yours does.  ;)
-
-Mike
-> 	-hpa
-> 
-
-
+--- linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c.orig	2009-06-27 20:19:50.000000000 +0200
++++ linux-2.6.31-rc1/arch/arm/mach-omap1/board-ams-delta.c	2009-07-04 00:50:46.000000000 +0200
+@@ -15,8 +15,11 @@
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/input.h>
++#include <linux/irq.h>
+ #include <linux/platform_device.h>
++#include <linux/serial_8250.h>
+ 
++#include <asm/serial.h>
+ #include <mach/hardware.h>
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+@@ -233,7 +236,39 @@ static void __init ams_delta_init(void)
+ 
+ 	omap_usb_init(&ams_delta_usb_config);
+ 	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
++
++}
++
++static struct plat_serial8250_port ams_delta_modem_ports[] = {
++	{
++		.membase	= (void *) AMS_DELTA_MODEM_VIRT,
++		.mapbase	= AMS_DELTA_MODEM_PHYS,
++		.irq		= OMAP_GPIO_IRQ(2),
++		.flags		= UPF_BOOT_AUTOCONF,
++		.iotype		= UPIO_MEM,
++		.regshift	= 1,
++		.uartclk	= BASE_BAUD * 16,
++	},
++	{ },
++};
++
++static struct platform_device ams_delta_modem_device = {
++	.name	= "serial8250",
++	.id	= PLAT8250_DEV_PLATFORM1,
++	.dev		= {
++		.platform_data = ams_delta_modem_ports,
++	},
++};
++
++static int __init ams_delta_modem_init(void)
++{
++	set_irq_type(OMAP_GPIO_IRQ(2), IRQ_TYPE_EDGE_RISING);
++	ams_delta_latch2_write(
++		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC,
++		AMS_DELTA_LATCH2_MODEM_NRESET | AMS_DELTA_LATCH2_MODEM_CODEC);
++	return platform_device_register(&ams_delta_modem_device);
+ }
++arch_initcall(ams_delta_modem_init);
+ 
+ static void __init ams_delta_map_io(void)
+ {
