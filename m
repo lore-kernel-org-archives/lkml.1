@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZGDQqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZGDQ7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbZGDQqk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 12:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZGDQqc
+	id S1754156AbZGDQ7s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 12:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZGDQ7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 12:46:32 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:38145 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbZGDQqb (ORCPT
+	Sat, 4 Jul 2009 12:59:40 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:50867 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbZGDQ7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 12:46:31 -0400
-From: Christian Lamparter <chunkeey@web.de>
-To: Bjarke Istrup Pedersen <gurligebis@gmail.com>
-Subject: Re: [2.6.31-rc1] oops in __ieee80211_stop_queue
-Date: Sat, 4 Jul 2009 18:46:16 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30-gitx-wl; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <9c30dffe0906281249md437f08he4d4b065d345803e@mail.gmail.com> <9c30dffe0906281338n19c6f472sdaf8ece9c1d5d9a5@mail.gmail.com>
-In-Reply-To: <9c30dffe0906281338n19c6f472sdaf8ece9c1d5d9a5@mail.gmail.com>
+	Sat, 4 Jul 2009 12:59:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=k3B7/SGX4uOTqTrHZfkEvv8xIKPfe8WNVbutJ7vZYx41lxyODO15D6DZAR2FXYnSIJ
+         kdFGaLS+rshFOjOIablsFU8+F+LVUBKPlO6SzTHMcYou/O4BJwC4n43R77DX8aL09ano
+         Hf4wBU4ubXeeFS8uEIKGSq+y58YzXcztdKJC8=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Date: Sat, 4 Jul 2009 09:59:41 -0700
+Message-ID: <46b8a8850907040959q502968bcx8bc4e20c907f9c57@mail.gmail.com>
+Subject: discard/UNMAP support: prepare_discard_fn does not pass enough info 
+	even in 2.6.31rc1
+From: Richard Sharpe <realrichardsharpe@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907041846.17152.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX1/p1hxKU10LszmuhHcRFzS+hTYf+uioyn0gA+Sx
-	KFJ9ErTe/y3Of12boZTi7pP6ae/AGzoZreqaGZFa5TifGR8SFt
-	8bx6eHbtY=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 28 June 2009 22:38:33 Bjarke Istrup Pedersen wrote:
-> 2009/6/28 Bjarke Istrup Pedersen <gurligebis@gmail.com>:
-> > Oops happens when pcmcia p54 card is inserted.
-> > Works with 2.6.30, broken in 2.6.31-rc1.
-> >
-> > Output of relevant dmesg part:
-> >
-> > pcmcia_socket pcmcia_socket1: pccard: CardBus card inserted into slot 1
-> > pci 0000:04:00.0: reg 10 32bit mmio: [0x000000-0x001fff]
-> > pci 0000:04:00.0: supports D1 D2
-> > pci 0000:04:00.0: PME# supported from D0 D1 D2 D3hot D3cold
-> > pci 0000:04:00.0: PME# disabled
-> > yenta_cardbus 0000:02:04.1: EnE: chaning testregister 0xC9, 04 -> 04
-> > p54pci 0000:04:00.0: enabling device (0000 -> 0002)
-> > p54pci 0000:04:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > p54pci 0000:04:00.0: setting latency timer to 64
-> > p54pci 0000:04:00.0: firmware: using built-in firmware isl3886pci
-> > phy2: p54 detected a LM86 firmware
-> > p54: rx_mtu reduced from 3240 to 2376
-> > phy2: FW rev 2.13.12.0 - Softmac protocol 5.9
-> > phy2: cryptographic accelerator WEP:YES, TKIP:YES, CCMP:YES
-> > BUG: unable to handle kernel NULL pointer dereference at 00000280
-> > IP: [<c1288e61>] __ieee80211_stop_queue+0x2b/0x43
-> > *pde = 00000000
-> > Oops: 0000 [#1] SMP
-> > last sysfs file:
-> > /sys/devices/pci0000:00/0000:00:14.4/0000:02:04.1/0000:04:00.0/class
-> >
-> > Pid: 535, comm: pccardd Not tainted (2.6.31-rc1 #2) TravelMate 540
-> > EIP: 0060:[<c1288e61>] EFLAGS: 00010046 CPU: 0
-> > EIP is at __ieee80211_stop_queue+0x2b/0x43
-> > EAX: dedd41a0 EBX: 00000000 ECX: 00000000 EDX: 00000000
-> > ESI: 00000000 EDI: dedd4204 EBP: 00000000 ESP: df8abdcc
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > Process pccardd (pid: 535, ti=df8aa000 task=df9c7000 task.ti=df8aa000)
-> > Stack:
-> >  dedd41a0 00000000 c1288ea0 00000286 dedd4920 ded2a300 00003ff0 00000470
-> > <0> c11a83b1 00020200 00020200 dedd41a0 dedd4940 00000286 00004460 dedd4934
-> > <0> dedd4934 c11f6f64 dfa5a020 ded2a300 dedd4920 00000408 000003fc c11a84ae
-> > Call Trace:
-> >  [<c1288ea0>] ? ieee80211_stop_queues_by_reason+0x27/0x3f
-> >  [<c11a83b1>] ? p54_assign_address+0x16b/0x1cd
-> >  [<c11f6f64>] ? __alloc_skb+0x48/0x105
-> >  [<c11a84ae>] ? p54_alloc_skb+0x9b/0xb3
-> >  [<c11aaefd>] ? p54_read_eeprom+0x3b/0x1b6
-> >  [<c11ab652>] ? p54p_open+0x2e1/0x3c0
-> >  [<c12941b6>] ? p54p_probe+0x2eb/0x362
-> >  [<c113430b>] ? local_pci_probe+0xb/0xc
-> >  [<c1134485>] ? pci_device_probe+0x41/0x63
-> >  [<c117cde1>] ? driver_probe_device+0x76/0xe6
-> >  [<c117c4db>] ? bus_for_each_drv+0x37/0x5f
-> >  [<c117cf33>] ? device_attach+0x44/0x54
-> >  [<c117ceac>] ? __device_attach+0x0/0x28
-> >  [<c117c397>] ? bus_attach_device+0x1b/0x46
-> >  [<c117b5ac>] ? device_add+0x2ee/0x428
-> >  [<c11f04b0>] ? pci_write+0x1c/0x21
-> >  [<c11308ae>] ? pci_bus_add_device+0xc/0x2c
-> >  [<c11308ec>] ? pci_bus_add_devices+0x1e/0xd2
-> >  [<c1290599>] ? cb_alloc+0x97/0xa9
-> >  [<c11ac12c>] ? socket_insert+0x8a/0xb0
-> >  [<c11ac877>] ? pccardd+0x158/0x1d6
-> >  [<c11ac71f>] ? pccardd+0x0/0x1d6
-> >  [<c103130a>] ? kthread+0x66/0x6b
-> >  [<c10312a4>] ? kthread+0x0/0x6b
-> >  [<c10031ff>] ? kernel_thread_helper+0x7/0x10
-> > Code: 56 53 0f b7 58 48 39 da 7c 11 ba 38 01 00 00 b8 69 72 37 c1 5b
-> > 5e e9 97 9d d9 ff 83 7c 90 54 00 75 17 8b 70 68 0f b7 da c1 e3 08 <03>
-> > 9e 80 02 00 00 8d 73 08 3e 80 4b 08 01 8d 44 90 54 0f ab 08
-> > EIP: [<c1288e61>] __ieee80211_stop_queue+0x2b/0x43 SS:ESP 0068:df8abdcc
-> > CR2: 0000000000000280
-> > ---[ end trace 1227e32b55188f72 ]---
-> >
-> 
-> GDB points to this code:
-> 
-> 0xc128b619 is in __ieee80211_stop_queue
-> (/usr/src/linux-2.6.31-rc1/arch/x86/include/asm/bitops.h:64).
-> 59      static __always_inline void
-> 60      set_bit(unsigned int nr, volatile unsigned long *addr)
-> 61      {
-> 62              if (IS_IMMEDIATE(nr)) {
-> 63                      asm volatile(LOCK_PREFIX "orb %1,%0"
-> 64                              : CONST_MASK_ADDR(nr, addr)
-> 65                              : "iq" ((u8)CONST_MASK(nr))
-> 66                              : "memory");
-> 67              } else {
-> 68                      asm volatile(LOCK_PREFIX "bts %1,%0"
-> 
-> Don't know if that is of any help.
+Hi,
 
-"[PATCH 2.6.31] p54: band-aid to restore driver functionality"
-http://www.spinics.net/lists/netdev/msg100347.html
+I am trying to get BLKDICARD/unmap support working in SCST, and while
+I have some code that works if I directly submit requests to
+scst_local, things _seem_ broken above me.
 
-dunno when, how or who merges it (Dave where are you?)...
-as the development in wireless-testing will go a different route.
+There has been some support for BLKDISCARD requests for a number of
+kernel releases already (starting about 2.6.28), but for UNMAP, and
+probably any real support for DISCARD, we need to know the starting
+sector and the range of sectors being discarded. However, at the point
+at prepare_unmap_fn is called, that info has not been placed in the
+request. Probably the simplest change would be to pass the bio to
+prepare_discard_fn as well.
 
+Matthew Wilcox published a patch that looks like it does close to the
+right things here: http://lkml.org/lkml/2008/11/23/81
+
+This passes the bio to prepare_discard_fn and has implemented a
+discard function in sd.c so I do not have to do that work in my LLD,
+but it seems to target an earlier version of the spec. I am working
+with 08-149r9-3.pdf off of the T10 site.
+
+Who should I contact about getting these changes merged or proposing a
+different set of changes?
+
+-- 
 Regards,
-	Chr
+Richard Sharpe
