@@ -1,360 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZGDUt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZGDVPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZGDUt7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 16:49:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZGDUtv
+	id S1753249AbZGDVPB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 17:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbZGDVOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 16:49:51 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:51087 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbZGDUtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 16:49:50 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 4 Jul 2009 22:49:10 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [git pull] FireWire updates
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.42298fab7b1d9f91@s5r6.in-berlin.de>
+	Sat, 4 Jul 2009 17:14:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53163 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752465AbZGDVOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 17:14:52 -0400
+Message-ID: <4A4FC5D0.6090000@kernel.org>
+Date: Sat, 04 Jul 2009 14:12:48 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, jaswinder@kernel.org, alan@lxorguk.ukuu.org.uk,
+       jaswinderrajput@gmail.com, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/cleanups] x86: Clean up mtrr/cleanup.c
+References: <20090703164225.GA21447@elte.hu> <tip-63f9600fadb10ea739108ae93e3e842d9843c58b@git.kernel.org>
+In-Reply-To: <tip-63f9600fadb10ea739108ae93e3e842d9843c58b@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+tip-bot for Jaswinder Singh Rajput wrote:
+> Commit-ID:  63f9600fadb10ea739108ae93e3e842d9843c58b
+> Gitweb:     http://git.kernel.org/tip/63f9600fadb10ea739108ae93e3e842d9843c58b
+> Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
+> AuthorDate: Sat, 4 Jul 2009 07:51:32 +0530
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sat, 4 Jul 2009 11:10:46 +0200
+> 
+> x86: Clean up mtrr/cleanup.c
+> 
+> Fix trivial style problems:
+> 
+>   WARNING: Use #include <linux/uaccess.h> instead of <asm/uaccess.h>
+>   WARNING: Use #include <linux/kvm_para.h> instead of <asm/kvm_para.h>
+> 
+> Also, nr_mtrr_spare_reg should be unsigned long.
+> 
+> arch/x86/kernel/cpu/mtrr/cleanup.o:
+> 
+>    text	   data	    bss	    dec	    hex	filename
+>    6241	   8992	   2056	  17289	   4389	cleanup.o.before
+>    6241	   8992	   2056	  17289	   4389	cleanup.o.after
+> 
+> The md5 has changed:
+>    1a7a27513aef1825236daf29110fe657  cleanup.o.before.asm
+>    bcea358efa2532b6020e338e158447af  cleanup.o.after.asm
+> 
+> Because a WARN_ON()'s __LINE__ value changed by 3 lines.
+> 
+> Suggested-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Yinghai Lu <yinghai@kernel.org>
+> LKML-Reference: <20090703164225.GA21447@elte.hu>
+> [ Did lots of other cleanups to make the code look more consistent. ]
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  arch/x86/kernel/cpu/mtrr/cleanup.c |  350 ++++++++++++++++++------------------
+>  1 files changed, 176 insertions(+), 174 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
+> index 1d584a1..b8aba81 100644
+> --- a/arch/x86/kernel/cpu/mtrr/cleanup.c
+> +++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
+> @@ -1,51 +1,52 @@
+> -/*  MTRR (Memory Type Range Register) cleanup
+> -
+> -    Copyright (C) 2009 Yinghai Lu
+> -
+> -    This library is free software; you can redistribute it and/or
+> -    modify it under the terms of the GNU Library General Public
+> -    License as published by the Free Software Foundation; either
+> -    version 2 of the License, or (at your option) any later version.
+> -
+> -    This library is distributed in the hope that it will be useful,
+> -    but WITHOUT ANY WARRANTY; without even the implied warranty of
+> -    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> -    Library General Public License for more details.
+> -
+> -    You should have received a copy of the GNU Library General Public
+> -    License along with this library; if not, write to the Free
+> -    Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> -*/
+> -
+> +/*
+> + * MTRR (Memory Type Range Register) cleanup
+> + *
+> + *  Copyright (C) 2009 Yinghai Lu
+> + *
+> + * This library is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU Library General Public
+> + * License as published by the Free Software Foundation; either
+> + * version 2 of the License, or (at your option) any later version.
+> + *
+> + * This library is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * Library General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU Library General Public
+> + * License along with this library; if not, write to the Free
+> + * Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/pci.h>
+>  #include <linux/smp.h>
+>  #include <linux/cpu.h>
+> -#include <linux/mutex.h>
+>  #include <linux/sort.h>
+> +#include <linux/mutex.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/kvm_para.h>
+>  
+> +#include <asm/processor.h>
+>  #include <asm/e820.h>
+>  #include <asm/mtrr.h>
+> -#include <asm/uaccess.h>
+> -#include <asm/processor.h>
+>  #include <asm/msr.h>
+> -#include <asm/kvm_para.h>
+> +
+>  #include "mtrr.h"
+>  
+> -/* should be related to MTRR_VAR_RANGES nums */
+> +/* Should be related to MTRR_VAR_RANGES nums */
+>  #define RANGE_NUM 256
+>  
+>  struct res_range {
+> -	unsigned long start;
+> -	unsigned long end;
+> +	unsigned long	start;
+> +	unsigned long	end;
+>  };
+>  
+>  static int __init
+> -add_range(struct res_range *range, int nr_range, unsigned long start,
+> -			      unsigned long end)
+> +add_range(struct res_range *range, int nr_range,
+> +	  unsigned long start, unsigned long end)
+>  {
+> -	/* out of slots */
+> +	/* Out of slots: */
+>  	if (nr_range >= RANGE_NUM)
+>  		return nr_range;
+>  
+> @@ -58,12 +59,12 @@ add_range(struct res_range *range, int nr_range, unsigned long start,
+>  }
+>  
+>  static int __init
+> -add_range_with_merge(struct res_range *range, int nr_range, unsigned long start,
+> -			      unsigned long end)
+> +add_range_with_merge(struct res_range *range, int nr_range,
+> +		     unsigned long start, unsigned long end)
+>  {
+>  	int i;
+>  
+> -	/* try to merge it with old one */
+> +	/* Try to merge it with old one: */
+>  	for (i = 0; i < nr_range; i++) {
+>  		unsigned long final_start, final_end;
+>  		unsigned long common_start, common_end;
+> @@ -84,7 +85,7 @@ add_range_with_merge(struct res_range *range, int nr_range, unsigned long start,
+>  		return nr_range;
+>  	}
+>  
+> -	/* need to add that */
+> +	/* Need to add it: */
+>  	return add_range(range, nr_range, start, end);
+>  }
+>  
+> @@ -117,7 +118,7 @@ subtract_range(struct res_range *range, unsigned long start, unsigned long end)
+>  		}
+>  
+>  		if (start > range[j].start && end < range[j].end) {
+> -			/* find the new spare */
+> +			/* Find the new spare: */
+>  			for (i = 0; i < RANGE_NUM; i++) {
+>  				if (range[i].end == 0)
+>  					break;
+> @@ -147,13 +148,19 @@ static int __init cmp_range(const void *x1, const void *x2)
+>  }
+>  
+>  struct var_mtrr_range_state {
+> -	unsigned long base_pfn;
+> -	unsigned long size_pfn;
+> -	mtrr_type type;
+> +	unsigned long	base_pfn;
+> +	unsigned long	size_pfn;
+> +	mtrr_type	type;
+>  };
+>  
+>  static struct var_mtrr_range_state __initdata range_state[RANGE_NUM];
+> +
+>  static int __initdata debug_print;
+> +#define Dprintk(x...) do { if (debug_print) printk(KERN_DEBUG x); } while (0)
+> +
+> +
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-
-to receive the following IEEE 1394/ FireWire subsystem updates.
-These are recent but straight-forward fixes.
-
-Stefan Richter (3):
-      firewire: core: do not DMA-map stack addresses
-      firewire: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-      ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-
- drivers/firewire/core-card.c |   14 +++++++-------
- drivers/firewire/core-cdev.c |    4 +++-
- drivers/firewire/core-iso.c  |   24 +++++++++++++-----------
- drivers/firewire/core.h      |    3 ++-
- drivers/firewire/sbp2.c      |   10 +++++++++-
- drivers/ieee1394/sbp2.c      |    1 +
- drivers/ieee1394/sbp2.h      |    8 +++++++-
- include/linux/firewire.h     |    1 +
- 8 files changed, 43 insertions(+), 22 deletions(-)
+two blank lines?
 
 
-commit ebbb16bffa646f853899ef3fdc0ac7abab888703
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Tue Jun 30 20:28:31 2009 +0200
+> +#define BIOS_BUG_MSG KERN_WARNING \
+> +	"WARNING: BIOS bug: VAR MTRR %d contains strange UC entry under 1M, check with your system vendor!\n"
 
-    ieee1394: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-    
-    Increase the command ORB data structure to transport up to 16 bytes long
-    CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
-    is notably necessary for READ CAPACITY(16) and friends, i.e. support of
-    large disks.
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+No user for this
 
-diff --git a/drivers/ieee1394/sbp2.c b/drivers/ieee1394/sbp2.c
-index a51ab23..f599f49 100644
---- a/drivers/ieee1394/sbp2.c
-+++ b/drivers/ieee1394/sbp2.c
-@@ -880,6 +880,7 @@ static struct sbp2_lu *sbp2_alloc_device(struct unit_directory *ud)
- 	}
- 
- 	shost->hostdata[0] = (unsigned long)lu;
-+	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
- 
- 	if (!scsi_add_host(shost, &ud->device)) {
- 		lu->shost = shost;
-diff --git a/drivers/ieee1394/sbp2.h b/drivers/ieee1394/sbp2.h
-index c5036f1..64a3a66 100644
---- a/drivers/ieee1394/sbp2.h
-+++ b/drivers/ieee1394/sbp2.h
-@@ -25,6 +25,12 @@
- #define SBP2_DEVICE_NAME		"sbp2"
- 
- /*
-+ * There is no transport protocol limit to the CDB length,  but we implement
-+ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
-+ */
-+#define SBP2_MAX_CDB_SIZE		16
-+
-+/*
-  * SBP-2 specific definitions
-  */
- 
-@@ -51,7 +57,7 @@ struct sbp2_command_orb {
- 	u32 data_descriptor_hi;
- 	u32 data_descriptor_lo;
- 	u32 misc;
--	u8 cdb[12];
-+	u8 cdb[SBP2_MAX_CDB_SIZE];
- } __attribute__((packed));
- 
- #define SBP2_LOGIN_REQUEST		0x0
-
-commit af2719415a5ceae06f2a6d33e78b555e64697fc8
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Tue Jun 30 20:27:59 2009 +0200
-
-    firewire: sbp2: add support for disks >2 TB (and 16 bytes long CDBs)
-    
-    Increase the command ORB data structure to transport up to 16 bytes long
-    CDBs (instead of 12 bytes), and tell the SCSI mid layer about it.  This
-    is notably necessary for READ CAPACITY(16) and friends, i.e. support of
-    large disks.
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/firewire/sbp2.c b/drivers/firewire/sbp2.c
-index 2353643..d27cb05 100644
---- a/drivers/firewire/sbp2.c
-+++ b/drivers/firewire/sbp2.c
-@@ -201,6 +201,12 @@ static struct fw_device *target_device(struct sbp2_target *tgt)
- #define SBP2_CYCLE_LIMIT		(0xc8 << 12)	/* 200 125us cycles */
- 
- /*
-+ * There is no transport protocol limit to the CDB length,  but we implement
-+ * a fixed length only.  16 bytes is enough for disks larger than 2 TB.
-+ */
-+#define SBP2_MAX_CDB_SIZE		16
-+
-+/*
-  * The default maximum s/g segment size of a FireWire controller is
-  * usually 0x10000, but SBP-2 only allows 0xffff. Since buffers have to
-  * be quadlet-aligned, we set the length limit to 0xffff & ~3.
-@@ -312,7 +318,7 @@ struct sbp2_command_orb {
- 		struct sbp2_pointer next;
- 		struct sbp2_pointer data_descriptor;
- 		__be32 misc;
--		u8 command_block[12];
-+		u8 command_block[SBP2_MAX_CDB_SIZE];
- 	} request;
- 	struct scsi_cmnd *cmd;
- 	scsi_done_fn_t done;
-@@ -1146,6 +1152,8 @@ static int sbp2_probe(struct device *dev)
- 	if (fw_device_enable_phys_dma(device) < 0)
- 		goto fail_shost_put;
- 
-+	shost->max_cmd_len = SBP2_MAX_CDB_SIZE;
-+
- 	if (scsi_add_host(shost, &unit->device) < 0)
- 		goto fail_shost_put;
- 
-
-commit 6fdc03709433ccc2005f0f593ae9d9dd04f7b485
-Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Date:   Sat Jun 20 13:23:59 2009 +0200
-
-    firewire: core: do not DMA-map stack addresses
-    
-    The DMA mapping API cannot map on-stack addresses, as explained in
-    Documentation/DMA-mapping.txt.  Convert the two cases of on-stack packet
-    payload buffers in firewire-core (payload of lock requests in the bus
-    manager work and in iso resource management) to slab-allocated memory.
-    
-    There are a number on-stack buffers for quadlet write or quadlet read
-    requests in firewire-core and firewire-sbp2.  These are harmless; they
-    are copied to/ from card driver internal DMA buffers since quadlet
-    payloads are inlined with packet headers.
-    
-    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-
-diff --git a/drivers/firewire/core-card.c b/drivers/firewire/core-card.c
-index 543fcca..f74edae 100644
---- a/drivers/firewire/core-card.c
-+++ b/drivers/firewire/core-card.c
-@@ -196,8 +196,8 @@ static void allocate_broadcast_channel(struct fw_card *card, int generation)
- {
- 	int channel, bandwidth = 0;
- 
--	fw_iso_resource_manage(card, generation, 1ULL << 31,
--			       &channel, &bandwidth, true);
-+	fw_iso_resource_manage(card, generation, 1ULL << 31, &channel,
-+			       &bandwidth, true, card->bm_transaction_data);
- 	if (channel == 31) {
- 		card->broadcast_channel_allocated = true;
- 		device_for_each_child(card->device, (void *)(long)generation,
-@@ -230,7 +230,6 @@ static void fw_card_bm_work(struct work_struct *work)
- 	bool do_reset = false;
- 	bool root_device_is_running;
- 	bool root_device_is_cmc;
--	__be32 lock_data[2];
- 
- 	spin_lock_irqsave(&card->lock, flags);
- 
-@@ -273,22 +272,23 @@ static void fw_card_bm_work(struct work_struct *work)
- 			goto pick_me;
- 		}
- 
--		lock_data[0] = cpu_to_be32(0x3f);
--		lock_data[1] = cpu_to_be32(local_id);
-+		card->bm_transaction_data[0] = cpu_to_be32(0x3f);
-+		card->bm_transaction_data[1] = cpu_to_be32(local_id);
- 
- 		spin_unlock_irqrestore(&card->lock, flags);
- 
- 		rcode = fw_run_transaction(card, TCODE_LOCK_COMPARE_SWAP,
- 				irm_id, generation, SCODE_100,
- 				CSR_REGISTER_BASE + CSR_BUS_MANAGER_ID,
--				lock_data, sizeof(lock_data));
-+				card->bm_transaction_data,
-+				sizeof(card->bm_transaction_data));
- 
- 		if (rcode == RCODE_GENERATION)
- 			/* Another bus reset, BM work has been rescheduled. */
- 			goto out;
- 
- 		if (rcode == RCODE_COMPLETE &&
--		    lock_data[0] != cpu_to_be32(0x3f)) {
-+		    card->bm_transaction_data[0] != cpu_to_be32(0x3f)) {
- 
- 			/* Somebody else is BM.  Only act as IRM. */
- 			if (local_id == irm_id)
-diff --git a/drivers/firewire/core-cdev.c b/drivers/firewire/core-cdev.c
-index d1d30c6..ced186d 100644
---- a/drivers/firewire/core-cdev.c
-+++ b/drivers/firewire/core-cdev.c
-@@ -125,6 +125,7 @@ struct iso_resource {
- 	int generation;
- 	u64 channels;
- 	s32 bandwidth;
-+	__be32 transaction_data[2];
- 	struct iso_resource_event *e_alloc, *e_dealloc;
- };
- 
-@@ -1049,7 +1050,8 @@ static void iso_resource_work(struct work_struct *work)
- 			r->channels, &channel, &bandwidth,
- 			todo == ISO_RES_ALLOC ||
- 			todo == ISO_RES_REALLOC ||
--			todo == ISO_RES_ALLOC_ONCE);
-+			todo == ISO_RES_ALLOC_ONCE,
-+			r->transaction_data);
- 	/*
- 	 * Is this generation outdated already?  As long as this resource sticks
- 	 * in the idr, it will be scheduled again for a newer generation or at
-diff --git a/drivers/firewire/core-iso.c b/drivers/firewire/core-iso.c
-index 166f19c..110e731 100644
---- a/drivers/firewire/core-iso.c
-+++ b/drivers/firewire/core-iso.c
-@@ -177,9 +177,8 @@ EXPORT_SYMBOL(fw_iso_context_stop);
-  */
- 
- static int manage_bandwidth(struct fw_card *card, int irm_id, int generation,
--			    int bandwidth, bool allocate)
-+			    int bandwidth, bool allocate, __be32 data[2])
- {
--	__be32 data[2];
- 	int try, new, old = allocate ? BANDWIDTH_AVAILABLE_INITIAL : 0;
- 
- 	/*
-@@ -215,9 +214,9 @@ static int manage_bandwidth(struct fw_card *card, int irm_id, int generation,
- }
- 
- static int manage_channel(struct fw_card *card, int irm_id, int generation,
--			  u32 channels_mask, u64 offset, bool allocate)
-+		u32 channels_mask, u64 offset, bool allocate, __be32 data[2])
- {
--	__be32 data[2], c, all, old;
-+	__be32 c, all, old;
- 	int i, retry = 5;
- 
- 	old = all = allocate ? cpu_to_be32(~0) : 0;
-@@ -260,7 +259,7 @@ static int manage_channel(struct fw_card *card, int irm_id, int generation,
- }
- 
- static void deallocate_channel(struct fw_card *card, int irm_id,
--			       int generation, int channel)
-+			       int generation, int channel, __be32 buffer[2])
- {
- 	u32 mask;
- 	u64 offset;
-@@ -269,7 +268,7 @@ static void deallocate_channel(struct fw_card *card, int irm_id,
- 	offset = channel < 32 ? CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_HI :
- 				CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_LO;
- 
--	manage_channel(card, irm_id, generation, mask, offset, false);
-+	manage_channel(card, irm_id, generation, mask, offset, false, buffer);
- }
- 
- /**
-@@ -298,7 +297,7 @@ static void deallocate_channel(struct fw_card *card, int irm_id,
-  */
- void fw_iso_resource_manage(struct fw_card *card, int generation,
- 			    u64 channels_mask, int *channel, int *bandwidth,
--			    bool allocate)
-+			    bool allocate, __be32 buffer[2])
- {
- 	u32 channels_hi = channels_mask;	/* channels 31...0 */
- 	u32 channels_lo = channels_mask >> 32;	/* channels 63...32 */
-@@ -310,10 +309,12 @@ void fw_iso_resource_manage(struct fw_card *card, int generation,
- 
- 	if (channels_hi)
- 		c = manage_channel(card, irm_id, generation, channels_hi,
--		    CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_HI, allocate);
-+				CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_HI,
-+				allocate, buffer);
- 	if (channels_lo && c < 0) {
- 		c = manage_channel(card, irm_id, generation, channels_lo,
--		    CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_LO, allocate);
-+				CSR_REGISTER_BASE + CSR_CHANNELS_AVAILABLE_LO,
-+				allocate, buffer);
- 		if (c >= 0)
- 			c += 32;
- 	}
-@@ -325,12 +326,13 @@ void fw_iso_resource_manage(struct fw_card *card, int generation,
- 	if (*bandwidth == 0)
- 		return;
- 
--	ret = manage_bandwidth(card, irm_id, generation, *bandwidth, allocate);
-+	ret = manage_bandwidth(card, irm_id, generation, *bandwidth,
-+			       allocate, buffer);
- 	if (ret < 0)
- 		*bandwidth = 0;
- 
- 	if (allocate && ret < 0 && c >= 0) {
--		deallocate_channel(card, irm_id, generation, c);
-+		deallocate_channel(card, irm_id, generation, c, buffer);
- 		*channel = ret;
- 	}
- }
-diff --git a/drivers/firewire/core.h b/drivers/firewire/core.h
-index c3cfc64..6052816 100644
---- a/drivers/firewire/core.h
-+++ b/drivers/firewire/core.h
-@@ -120,7 +120,8 @@ void fw_node_event(struct fw_card *card, struct fw_node *node, int event);
- 
- int fw_iso_buffer_map(struct fw_iso_buffer *buffer, struct vm_area_struct *vma);
- void fw_iso_resource_manage(struct fw_card *card, int generation,
--		u64 channels_mask, int *channel, int *bandwidth, bool allocate);
-+			    u64 channels_mask, int *channel, int *bandwidth,
-+			    bool allocate, __be32 buffer[2]);
- 
- 
- /* -topology */
-diff --git a/include/linux/firewire.h b/include/linux/firewire.h
-index 9823946..192d1e4 100644
---- a/include/linux/firewire.h
-+++ b/include/linux/firewire.h
-@@ -127,6 +127,7 @@ struct fw_card {
- 	struct delayed_work work;
- 	int bm_retries;
- 	int bm_generation;
-+	__be32 bm_transaction_data[2];
- 
- 	bool broadcast_channel_allocated;
- 	u32 broadcast_channel;
-
-Thanks,
--- 
-Stefan Richter
--=====-==--= -=== --=--
-http://arcgraph.de/sr/
-
+YH
