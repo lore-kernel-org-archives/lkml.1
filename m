@@ -1,78 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZGDTbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbZGDTq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZGDTbT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 15:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZGDTbI
+	id S1753540AbZGDTq6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 15:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZGDTqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 15:31:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54231 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752047AbZGDTbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 15:31:07 -0400
-Message-ID: <4A4FADDC.30606@kernel.org>
-Date: Sat, 04 Jul 2009 12:30:36 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 4 Jul 2009 15:46:49 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:58333 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752285AbZGDTqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 15:46:48 -0400
+Date: Sat, 4 Jul 2009 16:23:52 +0200
+From: Nico Schottelius <nico-linux-20090703@schottelius.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Nico Schottelius <nico-linux-20090703@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: How to reliable rebuild different kernel versions with the
+	same config?
+Message-ID: <20090704142352.GA31118@ikn.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090703@schottelius.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <20090703144640.GA24922@ikn.schottelius.org> <20090703090729.8c95a1e7.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: dann frazier <dannf@hp.com>
-CC: linux-scsi@vger.kernel.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: mptsas, msi and the dl585 g2
-References: <20090630180300.GA9971@ldl.fc.hp.com> <4A4A5B01.9040200@kernel.org> <20090703225708.GA30664@ldl.fc.hp.com>
-In-Reply-To: <20090703225708.GA30664@ldl.fc.hp.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Content-Disposition: inline
+In-Reply-To: <20090703090729.8c95a1e7.randy.dunlap@oracle.com>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://www.nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-rc7 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dann frazier wrote:
-> On Tue, Jun 30, 2009 at 11:35:45AM -0700, Yinghai Lu wrote:
->> dann frazier wrote:
->>> hey,
->>>  I'm finding problems when booting a dl585g2 w/ an LSISAS1068
->>> controller. In brief, this system system stopped booting once MSI
->>> became disabled by default in mptbase. Passing the parameter
->>> 'mpt_msi_enable_sas=1' to mptbase allows it to work again (tested w/
->>> 2.6.30).
->>>
->>>  The symptom is that the system starts up, and we see the following:
->>>
->>> ======== SNIP =========
->>> [    6.941489] hub 3-2:1.0: USB hub found
->>> [    6.943705] hub 3-2:1.0: 7 ports detected
->>> [    6.992639] Copyright (c) 1999-2008 LSI Corporation
->>> [    7.014262] Fusion MPT SAS Host driver 3.04.07
->>> [    7.021685] mptsas 0000:42:01.0: PCI INT A -> GSI 24 (level, low) -> IRQ 24
->>> [    7.026597] usb 1-6.3: new full speed USB device using ehci_hcd and address 3
->>> [    7.071143] mptbase: ioc0: Initiating bringup
->>> [    7.102198] usb 1-6.3: New USB device found, idVendor=0e34, idProduct=0204
->>> [    7.119107] usb 1-6.3: New USB device strings: Mfr=1, Product=2, SerialNumber=3
->>> [    7.128171] usb 1-6.3: Product: iPort/USB I2C Host Adapter
->>> [    7.160994] usb 1-6.3: Manufacturer: Silicon Labs
->>> [    7.171468] usb 1-6.3: SerialNumber: 0001248
->>> [    7.174931] usb 1-6.3: configuration #1 chosen from 1 choice
->>> [    7.360010] ioc0: LSISAS1068 B0: Capabilities={Initiator}
->>> [   40.581020] mptbase: ioc0: Initiating recovery
->>> [   71.190560] Clocksource tsc unstable (delta = 4398041105588 ns)
->>> [   81.190160] mptbase: ioc0: Initiating recovery
->>> ======== SNIP =========
->>>
->>> These "Initiating recovery" messages are printed periodically, and the
->>> system never recovers.
->> Dann, that could be : ioapic routing in ACPI DSDT is not right somehow.
->>
->> please try to move the card to other slot to get some luck.
->> or pci=routeirq could help too sometimes.
-> 
-> For the record, I tried moving the card to the other PCI-X slot and
-> the pci=routeirq boot param, but neither helped.
-> 
 
-so 2.6.22.1 works on that system with pci=nomsi?
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-maybe your BIOS is too new, you may try the old BIOS.
+Hey Randy,
 
-updating BIOS is not always a option to deployed systems. maybe sustaining team could break sth.
+Randy Dunlap [Fri, Jul 03, 2009 at 09:07:29AM -0700]:
+> > [...]
+> > The problem is, that after changing the version, make all or make oldco=
+nfig
+> > prompt us to fillout some values, which is problematic, because we
+> > want to run it automatically.
+>=20
+> Use:
+> $ yes "" | make oldconfig
+> to supply replies to the prompts.
 
-YH
+Ahh, nice idea! Will try that on monday!
+
+Thanks for all the hints, enjoy the sunny weekend ;-)
+
+Nico
+
+--=20
+Currently moving *.schottelius.org to http://www.nico.schottelius.org/ ...
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--vkogqOf2sHV7VnPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpPZfgACgkQuL75KpiFGIynCACgu5fnhOcF7ybPQZJtJd3Mzg+O
+fLoAoMXcn2jXJSHHllvNN3y2Uein2D8v
+=ndw5
+-----END PGP SIGNATURE-----
+
+--vkogqOf2sHV7VnPd--
