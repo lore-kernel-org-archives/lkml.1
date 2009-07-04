@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbZGDBz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbZGDB50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758605AbZGDBz7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 21:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZGDBzs
+	id S1757191AbZGDB50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 21:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZGDB5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 21:55:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37870
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754553AbZGDBzr (ORCPT
+	Fri, 3 Jul 2009 21:57:19 -0400
+Received: from mga03.intel.com ([143.182.124.21]:40116 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbZGDB5T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 21:55:47 -0400
-Date: Fri, 03 Jul 2009 18:55:53 -0700 (PDT)
-Message-Id: <20090703.185553.218218176.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: andres@anarazel.de, arun@linux.vnet.ibm.com, tglx@linutronix.de,
-       shemminger@vyatta.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Soft-Lockup/Race in networking in 2.6.31-rc1+195 (
- possibly?caused by netem)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090703225640.GA3639@ami.dom.local>
-References: <20090703120301.GD4847@ff.dom.local>
-	<20090703.132220.57384838.davem@davemloft.net>
-	<20090703225640.GA3639@ami.dom.local>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Jul 2009 21:57:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,345,1243839600"; 
+   d="scan'208";a="161404243"
+From: "Du, Alek" <alek.du@intel.com>
+To: David Brownell <david-b@pacbell.net>,
+       "peterz@infradead.org" <peterz@infradead.org>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Date: Sat, 4 Jul 2009 09:57:17 +0800
+Subject: RE: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
+Thread-Topic: [PATCH] gpio: pca953x: add irq_chip for irq demuxing
+Thread-Index: Acn7/tvfSWQQfL0cTy6gLclo/CYH9AASZOeg
+Message-ID: <EADF0A36011179459010BDF5142A457501C9F468C7@pdsmsx502.ccr.corp.intel.com>
+References: <20090703211034.47fc0880@dxy.sh.intel.com>
+ <200907030953.54006.david-b@pacbell.net>
+In-Reply-To: <200907030953.54006.david-b@pacbell.net>
+Accept-Language: zh-CN, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: zh-CN, en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Sat, 4 Jul 2009 00:56:40 +0200
+David,
 
-> On Fri, Jul 03, 2009 at 01:22:20PM -0700, David Miller wrote:
->> Well, if you look at that commit the bisect pointed to Jarek, it is a
->> change which starts causing a situation which never happened before.
->> Namely, timers added on one cpu can be migrated and fire on another.
->> 
->> So this could be exposing races in the networking that technically
->> always existed.
-> 
-> I'm not sure I get your point; could you give some example?
-> Actually, I've suspected races in timers code.
+Thanks for the review.
+Basically my idea is *not* actually demuxing the I2C gpio interrupts. Since the demuxing need send I2C command to the GPIO chip, which has big latency.
+My idea is, when this GPIO chip hooked to an edge sensitive interrupt line, we could use this interrupt handler to call all second level IRQs. The hooked edge detect interrupt line "automatically" masks the interrupt when the GPIO pin state is not restored to original state.
 
-Let's say that a particular networking timer always gets
-re-added on the cpu where the timer fires.
+>> +static void pca953x_irq_handler(unsigned irq, struct irq_desc *desc)
+>> +{
+>> +	struct pca953x_chip *chip = (struct pca953x_chip *)get_irq_data(irq);
+>> +	int i;
+>> +
+>> +	if (desc->chip->ack)
+>> +		desc->chip->ack(irq);
+>
+>This top-level IRQ chaining handler is clelarly incorrect.
+>Reading from a pca9539 spec I have handy:
+>
+>	Resetting the interrupt circuit is achieved when
+>	data on the port is changed to the original setting,
+>	data is read from the port that generated the
+>	interrupt, or in a Stop event.
+>
+>You're not guaranteeing *any* of those happens.  Since
+>the chip's nINT output is level-active, it's possible
+>that the hardware is still raising this interrupt when
+>this hander returns ...
 
-In that case, beforehand, no inter-cpu races could possibly
-be tested.  But with the new timer code, such races could
-now be potentially triggered.
+That's why we connected the nINT output to an edge sensitive interrupt line.
+The IRQ would be triggered only once if the nINT keeps level-low. The driver that requires the gpio pin IRQ needs to clear the interrupt source.
+
+>> +	/* we must call all sub-irqs, since there is no way to read
+>> +	 * I2C gpio expander's status in irq context. The driver itself
+>> +	 * would be reponsible to check if the irq is for him.
+>> +	 */
+>> +	for (i = 0; i < chip->gpio_chip.ngpio; i++)
+>> +		generic_handle_irq(chip->irq_base + i);
+>
+>You should only do that for pins configured as inputs.
+>The nIRQ signal is not triggered for changes on output pins.
+Ok, but those output pins, actually nobody will install IRQ handlers for them.
+
+>> +	if (chip->irq_base) {
+>> +		int i;
+>> +
+>> +		set_irq_type(client->irq,
+>> +				IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_EDGE_RISING);
+>
+>Won't work on all hardware.  And surely you'd want just
+>EDGE_FALLING, so you get only half as many IRQs, if you
+>happen to be hooking this up to an interrupt line which
+>supports edge-sensitive IRQ triggers (and not through
+>some kind of signal inverter)?
+
+I set the IRQ type to EDGE_FALLING and EDGE_RISING because the nINT signal of the GPIO is low-active. So when one of the input pins transit from high/low, it will trigger two interrupts on the hooked up interrupt line.
+
+
+Thanks,
+Alek
