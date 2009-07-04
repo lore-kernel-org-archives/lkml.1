@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757453AbZGDCai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZGDCax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757453AbZGDCai (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 22:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZGDCa3
+	id S1758256AbZGDCax (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 22:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZGDCao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 22:30:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50432 "EHLO hera.kernel.org"
+	Fri, 3 Jul 2009 22:30:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50437 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753842AbZGDCa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 22:30:28 -0400
-Subject: [GIT PULL -tip][PATCH 0/9] MTRR fix trivial style patches
+	id S1754541AbZGDCao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Jul 2009 22:30:44 -0400
+Subject: [PATCH 1/9 -tip] x86: mtrr/amd.c fix trivial style problems
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Yinghai Lu <yinghai@kernel.org>
-In-Reply-To: <20090703164225.GA21447@elte.hu>
+In-Reply-To: <1246673939.2642.5.camel@ht.satnam>
 References: <20090703095432.GC21141@elte.hu>
 	 <20090703110620.64fd1283@lxorguk.ukuu.org.uk>
 	 <20090703102234.GA32128@elte.hu>
@@ -26,10 +26,10 @@ References: <20090703095432.GC21141@elte.hu>
 	 <20090703160230.093e422c@lxorguk.ukuu.org.uk>
 	 <20090703155809.GA20121@elte.hu>
 	 <20090703172651.619162fd@lxorguk.ukuu.org.uk>
-	 <20090703164225.GA21447@elte.hu>
+	 <20090703164225.GA21447@elte.hu>  <1246673939.2642.5.camel@ht.satnam>
 Content-Type: text/plain
-Date: Sat, 04 Jul 2009 07:48:59 +0530
-Message-Id: <1246673939.2642.5.camel@ht.satnam>
+Date: Sat, 04 Jul 2009 07:50:00 +0530
+Message-Id: <1246674000.2642.6.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -37,73 +37,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-03 at 18:42 +0200, Ingo Molnar wrote:
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > A good example of what happens if you don't is
-> > 
-> > scripts/checkpatch.pl --file arch/x86/kernel/cpu/mtrr/*c
-> > 
-> > where the core part of the code isn't changed very much even 
-> > though the interfaces completely get reworked. Thus it never gets 
-> > cleaned up and reviewed as a whole. The code works, will probably 
-> > work for years but never gets looked at as a whole and tidied.
-> 
-> I think even the MTRR code (which is indeed one of the few x86 
-> places still not fully cleaned up) supports my arguments.
-> 
-> Look at the averages:
-> 
->                                       errors   lines of code   errors/KLOC
-> arch/x86/kernel/cpu/mtrr/amd.c             2             120          16.6
-> arch/x86/kernel/cpu/mtrr/centaur.c         8             225          35.5
-> arch/x86/kernel/cpu/mtrr/cleanup.c         0            1102             0
-> arch/x86/kernel/cpu/mtrr/cyrix.c          10             275          36.3
-> arch/x86/kernel/cpu/mtrr/generic.c        16             730          21.9
-> arch/x86/kernel/cpu/mtrr/if.c             11             428          25.7
-> arch/x86/kernel/cpu/mtrr/main.c           50             751          66.5
-> arch/x86/kernel/cpu/mtrr/state.c           0              83             0
-> 
 
-By these trivial mtrr cleanup patches:
-                                      errors
-arch/x86/kernel/cpu/mtrr/amd.c             0
-arch/x86/kernel/cpu/mtrr/centaur.c         0
-arch/x86/kernel/cpu/mtrr/cleanup.c         0
-arch/x86/kernel/cpu/mtrr/cyrix.c           0
-arch/x86/kernel/cpu/mtrr/generic.c         0
-arch/x86/kernel/cpu/mtrr/if.c              0
-arch/x86/kernel/cpu/mtrr/main.c            0
-arch/x86/kernel/cpu/mtrr/state.c           0
+Fix trivial style problems :
 
-The following changes since commit 2137f10fd78ce8540ec4305f4dcd559039444544:
-  Ingo Molnar (1):
-        Merge branch 'perfcounters/urgent'
+  ERROR: trailing whitespace
+  WARNING: line over 80 characters
+  ERROR: do not use C99 // comments
 
-are available in the git repository at:
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/mtrr/amd.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
+diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
+index ee2331b..85105d3 100644
+--- a/arch/x86/kernel/cpu/mtrr/amd.c
++++ b/arch/x86/kernel/cpu/mtrr/amd.c
+@@ -71,7 +71,7 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
+ 		/* Set the register to the base, the type (off by one) and an
+ 		   inverted bitmask of the size The size is the only odd
+ 		   bit. We are fed say 512K We invert this and we get 111 1111
+-		   1111 1011 but if you subtract one and invert you get the   
++		   1111 1011 but if you subtract one and invert you get the
+ 		   desired 111 1111 1111 1100 mask
+ 
+ 		   But ~(x - 1) == ~x + 1 == -x. Two's complement rocks!  */
+@@ -86,7 +86,8 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
+ 	wrmsr(MSR_K6_UWCCR, regs[0], regs[1]);
+ }
+ 
+-static int amd_validate_add_page(unsigned long base, unsigned long size, unsigned int type)
++static int amd_validate_add_page(unsigned long base, unsigned long size,
++				 unsigned int type)
+ {
+ 	/* Apply the K6 block alignment and size rules
+ 	   In order
+@@ -115,5 +116,3 @@ int __init amd_init_mtrr(void)
+ 	set_mtrr_ops(&amd_mtrr_ops);
+ 	return 0;
+ }
+-
+-//arch_initcall(amd_mtrr_init);
+-- 
+1.6.0.6
 
-Jaswinder Singh Rajput (9):
-      x86: mtrr/amd.c fix trivial style problems
-      x86: mtrr/centaur.c fix style problems
-      x86: mtrr/cleanup.c fix trivial style problems
-      x86: mtrr/cyrix.c fix trivial style problems
-      x86: mtrr/generic.c fix style problems
-      x86: mtrr/if.c fix trivial style problems
-      x86: mtrr/mtrr.h fix trivial style problems
-      x86: mtrr/state.c fix trivial style problems
-      x86: mtrr/main.c fix style problems
-
- arch/x86/kernel/cpu/mtrr/amd.c     |    7 +-
- arch/x86/kernel/cpu/mtrr/centaur.c |  127 +++----------------------
- arch/x86/kernel/cpu/mtrr/cleanup.c |   18 ++--
- arch/x86/kernel/cpu/mtrr/cyrix.c   |   30 +++---
- arch/x86/kernel/cpu/mtrr/generic.c |  147 +++++++++++++++-------------
- arch/x86/kernel/cpu/mtrr/if.c      |   51 +++++++----
- arch/x86/kernel/cpu/mtrr/main.c    |  185 +++++++++++++++++++-----------------
- arch/x86/kernel/cpu/mtrr/mtrr.h    |    7 +-
- arch/x86/kernel/cpu/mtrr/state.c   |   20 +++--
- 9 files changed, 263 insertions(+), 329 deletions(-)
 
 
