@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbZGDBnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbZGDBoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbZGDBnm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 21:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbZGDBnY
+	id S1758667AbZGDBoQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 21:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758173AbZGDBnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 21:43:24 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:3816 "EHLO mms1.broadcom.com"
+	Fri, 3 Jul 2009 21:43:45 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:1777 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757927AbZGDBnV convert rfc822-to-8bit (ORCPT
+	id S1758255AbZGDBnn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 21:43:21 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+	Fri, 3 Jul 2009 21:43:43 -0400
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
 From: "Leo (Hao) Chen" <leochen@broadcom.com>
 To: "linux-arm-kernel@lists.arm.linux.org.uk" 
 	<linux-arm-kernel@lists.arm.linux.org.uk>,
@@ -20,18 +20,18 @@ cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
        "Jean-Christophe PLAGNIOL-VILLARD" <plagnioj@jcrosoft.com>,
        "Scott Branden" <sbranden@broadcom.com>,
        "Leo (Hao) Chen" <leochen@broadcom.com>
-Date: Fri, 3 Jul 2009 18:43:12 -0700
-Subject: [PATCH v2 4/18] new ARM SoC support: BCMRing
-Thread-Topic: [PATCH v2 4/18] new ARM SoC support: BCMRing
-Thread-Index: Acn8SMqyOWOgzIK9QramVIOPCz/2TA==
-Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25BA6C11@SJEXCHCCR02.corp.ad.broadcom.com>
+Date: Fri, 3 Jul 2009 18:43:33 -0700
+Subject: [PATCH v2 6/18] new ARM SoC support: BCMRing
+Thread-Topic: [PATCH v2 6/18] new ARM SoC support: BCMRing
+Thread-Index: Acn8SNdvx42cFDVXQWGYNuN9rUdIMw==
+Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25BA6C13@SJEXCHCCR02.corp.ad.broadcom.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 acceptlanguage: en-US
 MIME-Version: 1.0
-X-WSS-ID: 66506C3B0EG20716729-01-01
+X-WSS-ID: 66506C4D4CG20367270-01-01
 Content-Type: text/plain;
  charset=us-ascii
 Content-Transfer-Encoding: 8BIT
@@ -39,33 +39,361 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bb9f09c2155b1d699530c045af8cd4b44deb5983 Mon Sep 17 00:00:00 2001
-From: Leo Chen <leochen@broadcom.com>
-Date: Fri, 3 Jul 2009 16:20:47 -0700
-Subject: [PATCH 04/18] add mach-bcmring/core.c core.h
 
-add core.c/core.h, with bcmring timer init, clocksource init, amba init functions
+>From 22455371f1771769f747db9d735a9856e9d03431 Mon Sep 17 00:00:00 2001
+From: Leo Chen <leochen@broadcom.com>
+Date: Fri, 3 Jul 2009 16:23:10 -0700
+Subject: [PATCH 06/18] add mach-bcmring/irq.c
+
+init irq and handler for bcmring
+add irq controller register file
 
 Signed-off-by: Leo Chen <leochen@broadcom.com>
 ---
- arch/arm/mach-bcmring/core.c |  348 ++++++++++++++++++++++++++++++++++++++++++
- arch/arm/mach-bcmring/core.h |   49 ++++++
- 2 files changed, 397 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-bcmring/core.c
- create mode 100644 arch/arm/mach-bcmring/core.h
+ arch/arm/mach-bcmring/include/csp/intcHw.h         |   45 ++++
+ .../arm/mach-bcmring/include/mach/csp/intcHw_reg.h |  270 ++++++++++++++++++++
+ arch/arm/mach-bcmring/irq.c                        |  127 +++++++++
+ 3 files changed, 442 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-bcmring/include/csp/intcHw.h
+ create mode 100644 arch/arm/mach-bcmring/include/mach/csp/intcHw_reg.h
+ create mode 100644 arch/arm/mach-bcmring/irq.c
 
-diff --git a/arch/arm/mach-bcmring/core.c b/arch/arm/mach-bcmring/core.c
+diff --git a/arch/arm/mach-bcmring/include/csp/intcHw.h b/arch/arm/mach-bcmring/include/csp/intcHw.h
 new file mode 100644
-index 0000000..cb94569
+index 0000000..1781209
 --- /dev/null
-+++ b/arch/arm/mach-bcmring/core.c
-@@ -0,0 +1,348 @@
++++ b/arch/arm/mach-bcmring/include/csp/intcHw.h
+@@ -0,0 +1,45 @@
++/*****************************************************************************
++* Copyright 2003 - 2008 Broadcom Corporation.  All rights reserved.
++*
++* Unless you and Broadcom execute a separate written software license
++* agreement governing use of this software, this software is licensed to you
++* under the terms of the GNU General Public License version 2, available at
++* http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
++*
++* Notwithstanding the above, under no circumstances may you combine this
++* software in any way with any other Broadcom software provided under a
++* license other than the GPL, without Broadcom's express prior written
++* consent.
++*****************************************************************************/
++
++
++/****************************************************************************/
++/**
++*  @file    intcHw.h
++*
++*  @brief   generic interrupt controller API
++*
++*  @note
++*     None
++*/
++/****************************************************************************/
++
++#ifndef _INTCHW_H
++#define _INTCHW_H
++
++/* ---- Include Files ---------------------------------------------------- */
++#include <mach/csp/intcHw_reg.h>
++
++/* ---- Public Constants and Types --------------------------------------- */
++/* ---- Public Variable Externs ------------------------------------------ */
++/* ---- Public Function Prototypes --------------------------------------- */
++static inline void intcHw_irq_disable(void *basep, uint32_t mask);
++static inline void intcHw_irq_enable(void *basep, uint32_t mask);
++static inline void intcHw_irq_type(void *basep, uint32_t mask);
++static inline uint32_t intcHw_rawstatus(void *basep);
++static inline uint32_t intcHw_irq_status(void *basep);
++static inline uint32_t intcHw_fiq_status(void *basep);
++
++
++#endif /* _INTCHW_H */
++
+diff --git a/arch/arm/mach-bcmring/include/mach/csp/intcHw_reg.h b/arch/arm/mach-bcmring/include/mach/csp/intcHw_reg.h
+new file mode 100644
+index 0000000..e9c6279
+--- /dev/null
++++ b/arch/arm/mach-bcmring/include/mach/csp/intcHw_reg.h
+@@ -0,0 +1,270 @@
++/*****************************************************************************
++* Copyright 2003 - 2008 Broadcom Corporation.  All rights reserved.
++*
++* Unless you and Broadcom execute a separate written software license
++* agreement governing use of this software, this software is licensed to you
++* under the terms of the GNU General Public License version 2, available at
++* http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
++*
++* Notwithstanding the above, under no circumstances may you combine this
++* software in any way with any other Broadcom software provided under a
++* license other than the GPL, without Broadcom's express prior written
++* consent.
++*****************************************************************************/
++
++/****************************************************************************/
++/**
++*  @file    intcHw_reg.h
++*
++*  @brief   platform specific interrupt controller bit assignments
++*
++*  @note
++*     None
++*/
++/****************************************************************************/
++
++#ifndef _INTCHW_REG_H
++#define _INTCHW_REG_H
++
++/* ---- Include Files ---------------------------------------------------- */
++#include <csp/stdint.h>
++#include <csp/reg.h>
++#include <mach/csp/mm_io.h>
++
++/* ---- Public Constants and Types --------------------------------------- */
++
++#define INTCHW_NUM_IRQ_PER_INTC   32   /* Maximum number of interrupt controllers */
++#define INTCHW_NUM_INTC           3
++
++/* Defines for interrupt controllers. This simplifies and cleans up the function calls. */
++#define INTCHW_INTC0    ((void *)MM_IO_BASE_INTC0)
++#define INTCHW_INTC1    ((void *)MM_IO_BASE_INTC1)
++#define INTCHW_SINTC    ((void *)MM_IO_BASE_SINTC)
++
++/* INTC0 - interrupt controller 0 */
++#define INTCHW_INTC0_PIF_BITNUM           31   /* Peripheral interface interrupt */
++#define INTCHW_INTC0_CLCD_BITNUM          30   /* LCD Controller interrupt */
++#define INTCHW_INTC0_GE_BITNUM            29   /* Graphic engine interrupt */
++#define INTCHW_INTC0_APM_BITNUM           28   /* Audio process module interrupt */
++#define INTCHW_INTC0_ESW_BITNUM           27   /* Ethernet switch interrupt */
++#define INTCHW_INTC0_SPIH_BITNUM          26   /* SPI host interrupt */
++#define INTCHW_INTC0_TIMER3_BITNUM        25   /* Timer3 interrupt */
++#define INTCHW_INTC0_TIMER2_BITNUM        24   /* Timer2 interrupt */
++#define INTCHW_INTC0_TIMER1_BITNUM        23   /* Timer1 interrupt */
++#define INTCHW_INTC0_TIMER0_BITNUM        22   /* Timer0 interrupt */
++#define INTCHW_INTC0_SDIOH1_BITNUM        21   /* SDIO1 host interrupt */
++#define INTCHW_INTC0_SDIOH0_BITNUM        20   /* SDIO0 host interrupt */
++#define INTCHW_INTC0_USBD_BITNUM          19   /* USB device interrupt */
++#define INTCHW_INTC0_USBH1_BITNUM         18   /* USB1 host interrupt */
++#define INTCHW_INTC0_USBHD2_BITNUM        17   /* USB host2/device2 interrupt */
++#define INTCHW_INTC0_VPM_BITNUM           16   /* Voice process module interrupt */
++#define INTCHW_INTC0_DMA1C7_BITNUM        15   /* DMA1 channel 7 interrupt */
++#define INTCHW_INTC0_DMA1C6_BITNUM        14   /* DMA1 channel 6 interrupt */
++#define INTCHW_INTC0_DMA1C5_BITNUM        13   /* DMA1 channel 5 interrupt */
++#define INTCHW_INTC0_DMA1C4_BITNUM        12   /* DMA1 channel 4 interrupt */
++#define INTCHW_INTC0_DMA1C3_BITNUM        11   /* DMA1 channel 3 interrupt */
++#define INTCHW_INTC0_DMA1C2_BITNUM        10   /* DMA1 channel 2 interrupt */
++#define INTCHW_INTC0_DMA1C1_BITNUM         9   /* DMA1 channel 1 interrupt */
++#define INTCHW_INTC0_DMA1C0_BITNUM         8   /* DMA1 channel 0 interrupt */
++#define INTCHW_INTC0_DMA0C7_BITNUM         7   /* DMA0 channel 7 interrupt */
++#define INTCHW_INTC0_DMA0C6_BITNUM         6   /* DMA0 channel 6 interrupt */
++#define INTCHW_INTC0_DMA0C5_BITNUM         5   /* DMA0 channel 5 interrupt */
++#define INTCHW_INTC0_DMA0C4_BITNUM         4   /* DMA0 channel 4 interrupt */
++#define INTCHW_INTC0_DMA0C3_BITNUM         3   /* DMA0 channel 3 interrupt */
++#define INTCHW_INTC0_DMA0C2_BITNUM         2   /* DMA0 channel 2 interrupt */
++#define INTCHW_INTC0_DMA0C1_BITNUM         1   /* DMA0 channel 1 interrupt */
++#define INTCHW_INTC0_DMA0C0_BITNUM         0   /* DMA0 channel 0 interrupt */
++
++#define INTCHW_INTC0_PIF                  (1<<INTCHW_INTC0_PIF_BITNUM)
++#define INTCHW_INTC0_CLCD                 (1<<INTCHW_INTC0_CLCD_BITNUM)
++#define INTCHW_INTC0_GE                   (1<<INTCHW_INTC0_GE_BITNUM)
++#define INTCHW_INTC0_APM                  (1<<INTCHW_INTC0_APM_BITNUM)
++#define INTCHW_INTC0_ESW                  (1<<INTCHW_INTC0_ESW_BITNUM)
++#define INTCHW_INTC0_SPIH                 (1<<INTCHW_INTC0_SPIH_BITNUM)
++#define INTCHW_INTC0_TIMER3               (1<<INTCHW_INTC0_TIMER3_BITNUM)
++#define INTCHW_INTC0_TIMER2               (1<<INTCHW_INTC0_TIMER2_BITNUM)
++#define INTCHW_INTC0_TIMER1               (1<<INTCHW_INTC0_TIMER1_BITNUM)
++#define INTCHW_INTC0_TIMER0               (1<<INTCHW_INTC0_TIMER0_BITNUM)
++#define INTCHW_INTC0_SDIOH1               (1<<INTCHW_INTC0_SDIOH1_BITNUM)
++#define INTCHW_INTC0_SDIOH0               (1<<INTCHW_INTC0_SDIOH0_BITNUM)
++#define INTCHW_INTC0_USBD                 (1<<INTCHW_INTC0_USBD_BITNUM)
++#define INTCHW_INTC0_USBH1                (1<<INTCHW_INTC0_USBH1_BITNUM)
++#define INTCHW_INTC0_USBHD2               (1<<INTCHW_INTC0_USBHD2_BITNUM)
++#define INTCHW_INTC0_VPM                  (1<<INTCHW_INTC0_VPM_BITNUM)
++#define INTCHW_INTC0_DMA1C7               (1<<INTCHW_INTC0_DMA1C7_BITNUM)
++#define INTCHW_INTC0_DMA1C6               (1<<INTCHW_INTC0_DMA1C6_BITNUM)
++#define INTCHW_INTC0_DMA1C5               (1<<INTCHW_INTC0_DMA1C5_BITNUM)
++#define INTCHW_INTC0_DMA1C4               (1<<INTCHW_INTC0_DMA1C4_BITNUM)
++#define INTCHW_INTC0_DMA1C3               (1<<INTCHW_INTC0_DMA1C3_BITNUM)
++#define INTCHW_INTC0_DMA1C2               (1<<INTCHW_INTC0_DMA1C2_BITNUM)
++#define INTCHW_INTC0_DMA1C1               (1<<INTCHW_INTC0_DMA1C1_BITNUM)
++#define INTCHW_INTC0_DMA1C0               (1<<INTCHW_INTC0_DMA1C0_BITNUM)
++#define INTCHW_INTC0_DMA0C7               (1<<INTCHW_INTC0_DMA0C7_BITNUM)
++#define INTCHW_INTC0_DMA0C6               (1<<INTCHW_INTC0_DMA0C6_BITNUM)
++#define INTCHW_INTC0_DMA0C5               (1<<INTCHW_INTC0_DMA0C5_BITNUM)
++#define INTCHW_INTC0_DMA0C4               (1<<INTCHW_INTC0_DMA0C4_BITNUM)
++#define INTCHW_INTC0_DMA0C3               (1<<INTCHW_INTC0_DMA0C3_BITNUM)
++#define INTCHW_INTC0_DMA0C2               (1<<INTCHW_INTC0_DMA0C2_BITNUM)
++#define INTCHW_INTC0_DMA0C1               (1<<INTCHW_INTC0_DMA0C1_BITNUM)
++#define INTCHW_INTC0_DMA0C0               (1<<INTCHW_INTC0_DMA0C0_BITNUM)
++
++/* INTC1 - interrupt controller 1 */
++#define INTCHW_INTC1_DDRVPMP_BITNUM       27   /* DDR and VPM PLL clock phase relationship interupt (Not for A0) */
++#define INTCHW_INTC1_DDRVPMT_BITNUM       26   /* DDR and VPM HW phase align timeout interrupt (Not for A0) */
++#define INTCHW_INTC1_DDRP_BITNUM          26   /* DDR and PLL clock phase relationship interupt (For A0 only)) */
++#define INTCHW_INTC1_RTC2_BITNUM          25   /* Real time clock tamper interrupt */
++#define INTCHW_INTC1_VDEC_BITNUM          24   /* Hantro Video Decoder interrupt */
++/* Bits 13-23 are non-secure versions of the corresponding secure bits in SINTC bits 0-10. */
++#define INTCHW_INTC1_SPUM_BITNUM          23   /* Secure process module interrupt */
++#define INTCHW_INTC1_RTC1_BITNUM          22   /* Real time clock one-shot interrupt */
++#define INTCHW_INTC1_RTC0_BITNUM          21   /* Real time clock periodic interrupt */
++#define INTCHW_INTC1_RNG_BITNUM           20   /* Random number generator interrupt */
++#define INTCHW_INTC1_FMPU_BITNUM          19   /* Flash memory parition unit interrupt */
++#define INTCHW_INTC1_VMPU_BITNUM          18   /* VRAM memory partition interrupt */
++#define INTCHW_INTC1_DMPU_BITNUM          17   /* DDR2 memory partition interrupt */
++#define INTCHW_INTC1_KEYC_BITNUM          16   /* Key pad controller interrupt */
++#define INTCHW_INTC1_TSC_BITNUM           15   /* Touch screen controller interrupt */
++#define INTCHW_INTC1_UART0_BITNUM         14   /* UART 0 */
++#define INTCHW_INTC1_WDOG_BITNUM          13   /* Watchdog timer interrupt */
++
++#define INTCHW_INTC1_UART1_BITNUM         12   /* UART 1 */
++#define INTCHW_INTC1_PMUIRQ_BITNUM        11   /* ARM performance monitor interrupt */
++#define INTCHW_INTC1_COMMRX_BITNUM        10   /* ARM DDC receive interrupt */
++#define INTCHW_INTC1_COMMTX_BITNUM         9   /* ARM DDC transmit interrupt */
++#define INTCHW_INTC1_FLASHC_BITNUM         8   /* Flash controller interrupt */
++#define INTCHW_INTC1_GPHY_BITNUM           7   /* Gigabit Phy interrupt */
++#define INTCHW_INTC1_SPIS_BITNUM           6   /* SPI slave interrupt */
++#define INTCHW_INTC1_I2CS_BITNUM           5   /* I2C slave interrupt */
++#define INTCHW_INTC1_I2CH_BITNUM           4   /* I2C host interrupt */
++#define INTCHW_INTC1_I2S1_BITNUM           3   /* I2S1 interrupt */
++#define INTCHW_INTC1_I2S0_BITNUM           2   /* I2S0 interrupt */
++#define INTCHW_INTC1_GPIO1_BITNUM          1   /* GPIO bit 64//32 combined interrupt */
++#define INTCHW_INTC1_GPIO0_BITNUM          0   /* GPIO bit 31//0 combined interrupt */
++
++#define INTCHW_INTC1_DDRVPMT              (1<<INTCHW_INTC1_DDRVPMT_BITNUM)
++#define INTCHW_INTC1_DDRVPMP              (1<<INTCHW_INTC1_DDRVPMP_BITNUM)
++#define INTCHW_INTC1_DDRP                 (1<<INTCHW_INTC1_DDRP_BITNUM)
++#define INTCHW_INTC1_VDEC                 (1<<INTCHW_INTC1_VDEC_BITNUM)
++#define INTCHW_INTC1_SPUM                 (1<<INTCHW_INTC1_SPUM_BITNUM)
++#define INTCHW_INTC1_RTC2                 (1<<INTCHW_INTC1_RTC2_BITNUM)
++#define INTCHW_INTC1_RTC1                 (1<<INTCHW_INTC1_RTC1_BITNUM)
++#define INTCHW_INTC1_RTC0                 (1<<INTCHW_INTC1_RTC0_BITNUM)
++#define INTCHW_INTC1_RNG                  (1<<INTCHW_INTC1_RNG_BITNUM)
++#define INTCHW_INTC1_FMPU                 (1<<INTCHW_INTC1_FMPU_BITNUM)
++#define INTCHW_INTC1_IMPU                 (1<<INTCHW_INTC1_IMPU_BITNUM)
++#define INTCHW_INTC1_DMPU                 (1<<INTCHW_INTC1_DMPU_BITNUM)
++#define INTCHW_INTC1_KEYC                 (1<<INTCHW_INTC1_KEYC_BITNUM)
++#define INTCHW_INTC1_TSC                  (1<<INTCHW_INTC1_TSC_BITNUM)
++#define INTCHW_INTC1_UART0                (1<<INTCHW_INTC1_UART0_BITNUM)
++#define INTCHW_INTC1_WDOG                 (1<<INTCHW_INTC1_WDOG_BITNUM)
++#define INTCHW_INTC1_UART1                (1<<INTCHW_INTC1_UART1_BITNUM)
++#define INTCHW_INTC1_PMUIRQ               (1<<INTCHW_INTC1_PMUIRQ_BITNUM)
++#define INTCHW_INTC1_COMMRX               (1<<INTCHW_INTC1_COMMRX_BITNUM)
++#define INTCHW_INTC1_COMMTX               (1<<INTCHW_INTC1_COMMTX_BITNUM)
++#define INTCHW_INTC1_FLASHC               (1<<INTCHW_INTC1_FLASHC_BITNUM)
++#define INTCHW_INTC1_GPHY                 (1<<INTCHW_INTC1_GPHY_BITNUM)
++#define INTCHW_INTC1_SPIS                 (1<<INTCHW_INTC1_SPIS_BITNUM)
++#define INTCHW_INTC1_I2CS                 (1<<INTCHW_INTC1_I2CS_BITNUM)
++#define INTCHW_INTC1_I2CH                 (1<<INTCHW_INTC1_I2CH_BITNUM)
++#define INTCHW_INTC1_I2S1                 (1<<INTCHW_INTC1_I2S1_BITNUM)
++#define INTCHW_INTC1_I2S0                 (1<<INTCHW_INTC1_I2S0_BITNUM)
++#define INTCHW_INTC1_GPIO1                (1<<INTCHW_INTC1_GPIO1_BITNUM)
++#define INTCHW_INTC1_GPIO0                (1<<INTCHW_INTC1_GPIO0_BITNUM)
++
++/* SINTC secure int controller */
++#define INTCHW_SINTC_RTC2_BITNUM          15   /* Real time clock tamper interrupt */
++#define INTCHW_SINTC_TIMER3_BITNUM        14   /* Secure timer3 interrupt */
++#define INTCHW_SINTC_TIMER2_BITNUM        13   /* Secure timer2 interrupt */
++#define INTCHW_SINTC_TIMER1_BITNUM        12   /* Secure timer1 interrupt */
++#define INTCHW_SINTC_TIMER0_BITNUM        11   /* Secure timer0 interrupt */
++#define INTCHW_SINTC_SPUM_BITNUM          10   /* Secure process module interrupt */
++#define INTCHW_SINTC_RTC1_BITNUM           9   /* Real time clock one-shot interrupt */
++#define INTCHW_SINTC_RTC0_BITNUM           8   /* Real time clock periodic interrupt */
++#define INTCHW_SINTC_RNG_BITNUM            7   /* Random number generator interrupt */
++#define INTCHW_SINTC_FMPU_BITNUM           6   /* Flash memory parition unit interrupt */
++#define INTCHW_SINTC_VMPU_BITNUM           5   /* VRAM memory partition interrupt */
++#define INTCHW_SINTC_DMPU_BITNUM           4   /* DDR2 memory partition interrupt */
++#define INTCHW_SINTC_KEYC_BITNUM           3   /* Key pad controller interrupt */
++#define INTCHW_SINTC_TSC_BITNUM            2   /* Touch screen controller interrupt */
++#define INTCHW_SINTC_UART0_BITNUM          1   /* UART0 interrupt */
++#define INTCHW_SINTC_WDOG_BITNUM           0   /* Watchdog timer interrupt */
++
++#define INTCHW_SINTC_TIMER3               (1<<INTCHW_SINTC_TIMER3_BITNUM)
++#define INTCHW_SINTC_TIMER2               (1<<INTCHW_SINTC_TIMER2_BITNUM)
++#define INTCHW_SINTC_TIMER1               (1<<INTCHW_SINTC_TIMER1_BITNUM)
++#define INTCHW_SINTC_TIMER0               (1<<INTCHW_SINTC_TIMER0_BITNUM)
++#define INTCHW_SINTC_SPUM                 (1<<INTCHW_SINTC_SPUM_BITNUM)
++#define INTCHW_SINTC_RTC2                 (1<<INTCHW_SINTC_RTC2_BITNUM)
++#define INTCHW_SINTC_RTC1                 (1<<INTCHW_SINTC_RTC1_BITNUM)
++#define INTCHW_SINTC_RTC0                 (1<<INTCHW_SINTC_RTC0_BITNUM)
++#define INTCHW_SINTC_RNG                  (1<<INTCHW_SINTC_RNG_BITNUM)
++#define INTCHW_SINTC_FMPU                 (1<<INTCHW_SINTC_FMPU_BITNUM)
++#define INTCHW_SINTC_IMPU                 (1<<INTCHW_SINTC_IMPU_BITNUM)
++#define INTCHW_SINTC_DMPU                 (1<<INTCHW_SINTC_DMPU_BITNUM)
++#define INTCHW_SINTC_KEYC                 (1<<INTCHW_SINTC_KEYC_BITNUM)
++#define INTCHW_SINTC_TSC                  (1<<INTCHW_SINTC_TSC_BITNUM)
++#define INTCHW_SINTC_UART0                (1<<INTCHW_SINTC_UART0_BITNUM)
++#define INTCHW_SINTC_WDOG                 (1<<INTCHW_SINTC_WDOG_BITNUM)
++
++/* PL192 Vectored Interrupt Controller (VIC) layout */
++#define INTCHW_IRQSTATUS      0x00     /* IRQ status register */
++#define INTCHW_FIQSTATUS      0x04     /* FIQ status register */
++#define INTCHW_RAWINTR        0x08     /* Raw Interrupt Status register */
++#define INTCHW_INTSELECT      0x0c     /* Interrupt Select Register */
++#define INTCHW_INTENABLE      0x10     /* Interrupt Enable Register */
++#define INTCHW_INTENCLEAR     0x14     /* Interrupt Enable Clear Register */
++#define INTCHW_SOFTINT        0x18     /* Soft Interrupt Register */
++#define INTCHW_SOFTINTCLEAR   0x1c     /* Soft Interrupt Clear Register */
++#define INTCHW_PROTECTION     0x20     /* Protection Enable Register */
++#define INTCHW_SWPRIOMASK     0x24     /* Software Priority Mask Register */
++#define INTCHW_PRIODAISY      0x28     /* Priority Daisy Chain Register */
++#define INTCHW_VECTADDR0      0x100    /* Vector Address Registers */
++#define INTCHW_VECTPRIO0      0x200    /* Vector Priority Registers 0-31 */
++#define INTCHW_ADDRESS        0xf00    /* Vector Address Register 0-31 */
++#define INTCHW_PID            0xfe0    /* Peripheral ID Register 0-3 */
++#define INTCHW_PCELLID        0xff0    /* PrimeCell ID Register 0-3 */
++
++/* Example Usage: intcHw_irq_enable(INTCHW_INTC0, INTCHW_INTC0_TIMER0); */
++/*                intcHw_irq_clear(INTCHW_INTC0, INTCHW_INTC0_TIMER0); */
++/*                uint32_t bits = intcHw_irq_status(INTCHW_INTC0); */
++/*                uint32_t bits = intcHw_irq_raw_status(INTCHW_INTC0); */
++
++/* ---- Public Variable Externs ------------------------------------------ */
++/* ---- Public Function Prototypes --------------------------------------- */
++/* Clear one or more IRQ interrupts. */
++static inline void intcHw_irq_disable(void *basep, uint32_t mask)
++{
++       __REG32(basep + INTCHW_INTENCLEAR) = mask;
++}
++
++/* Enables one or more IRQ interrupts. */
++static inline void intcHw_irq_enable(void *basep, uint32_t mask)
++{
++       __REG32(basep + INTCHW_INTENABLE) = mask;
++}
++
++/* Select interrupt (IRQ/FIQ) type */
++static inline void intcHw_irq_type(void *basep, uint32_t mask)
++{
++       __REG32(basep + INTCHW_INTSELECT) = mask;
++}
++
++/* Get raw status bits. */
++static inline uint32_t intcHw_rawstatus(void *basep)
++{
++       return __REG32(basep + INTCHW_RAWINTR);
++}
++
++/* Get irq masked status bits. */
++static inline uint32_t intcHw_irq_status(void *basep)
++{
++       return __REG32(basep + INTCHW_IRQSTATUS);
++}
++
++/* Get fiq masked status bits. */
++static inline uint32_t intcHw_fiq_status(void *basep)
++{
++       return __REG32(basep + INTCHW_FIQSTATUS);
++}
++
++#endif /* _INTCHW_REG_H */
+diff --git a/arch/arm/mach-bcmring/irq.c b/arch/arm/mach-bcmring/irq.c
+new file mode 100644
+index 0000000..826add0
+--- /dev/null
++++ b/arch/arm/mach-bcmring/irq.c
+@@ -0,0 +1,127 @@
 +/*
-+ *  derived from linux/arch/arm/mach-versatile/core.c
-+ *  linux/arch/arm/mach-bcmring/core.c
 + *
-+ *  Copyright (C) 1999 - 2003 ARM Limited
-+ *  Copyright (C) 2000 Deep Blue Solutions Ltd
++ *  Copyright (C) 1999 ARM Limited
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -81,388 +409,115 @@ index 0000000..cb94569
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
-+/* Portions copyright Broadcom 2008 */
-+
 +#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/platform_device.h>
-+#include <linux/sysdev.h>
-+#include <linux/interrupt.h>
-+#include <linux/amba/bus.h>
-+#include <linux/clocksource.h>
-+#include <linux/clockchips.h>
++#include <linux/stddef.h>
++#include <linux/list.h>
++#include <linux/timer.h>
++#include <linux/version.h>
 +
 +#include <mach/hardware.h>
-+#include <asm/clkdev.h>
 +#include <asm/io.h>
 +#include <asm/irq.h>
-+#include <asm/hardware/arm_timer.h>
-+#include <asm/mach-types.h>
 +
-+#include <asm/mach/arch.h>
-+#include <asm/mach/flash.h>
 +#include <asm/mach/irq.h>
-+#include <asm/mach/time.h>
-+#include <asm/mach/map.h>
-+#include <asm/mach/mmc.h>
++#include <mach/csp/intcHw_reg.h>
++#include <mach/csp/mm_io.h>
 +
-+#include <cfg_global.h>
-+
-+#include "core.h"
-+#include "clock.h"
-+
-+#include <csp/secHw.h>
-+#include <mach/csp/secHw_def.h>
-+#include <mach/csp/chipcHw_inline.h>
-+#include <mach/csp/tmrHw_reg.h>
-+
-+/* DevChip Primecells */
-+AMBA_DEVICE(uartA, "dev:f1", UARTA, NULL, SZ_4K);
-+AMBA_DEVICE(uartB, "dev:f2", UARTB, NULL, SZ_4K);
-+
-+static struct clk pll1_clk = {
-+       .name = "PLL1",
-+       .type = CLK_TYPE_PRIMARY | CLK_TYPE_PLL1,
-+       .rate_hz = 2000000000,
-+       .use_cnt = 7,
-+};
-+
-+static struct clk uart_clk = {
-+       .name = "UART",
-+       .type = CLK_TYPE_PROGRAMMABLE,
-+       .csp_id = chipcHw_CLOCK_UART,
-+       .rate_hz = HW_CFG_UART_CLK_HZ,
-+       .parent = &pll1_clk,
-+};
-+
-+static struct clk_lookup lookups[] = {
-+       {                       /* UART0 */
-+        .dev_id = "dev:f1",
-+        .clk = &uart_clk,
-+        }, {                   /* UART1 */
-+            .dev_id = "dev:f2",
-+            .clk = &uart_clk,
-+            }
-+};
-+
-+static struct amba_device *amba_devs[] __initdata = {
-+       &uartA_device,
-+       &uartB_device,
-+};
-+
-+void __init bcmring_amba_init(void)
++static void bcmring_mask_irq0(unsigned int irq)
 +{
-+       int i;
-+       u32 bus_clock;
++       writel(1 << (irq - IRQ_INTC0_START),
++              MM_IO_BASE_INTC0 + INTCHW_INTENCLEAR);
++}
 +
-+/* Linux is run initially in non-secure mode. Secure peripherals */
-+/* generate FIQ, and must be handled in secure mode. Until we have */
-+/* a linux security monitor implementation, keep everything in */
-+/* non-secure mode. */
-+       chipcHw_busInterfaceClockEnable(chipcHw_REG_BUS_CLOCK_SPU);
-+       secHw_setUnsecure(secHw_BLK_MASK_CHIP_CONTROL |
-+                         secHw_BLK_MASK_KEY_SCAN |
-+                         secHw_BLK_MASK_TOUCH_SCREEN |
-+                         secHw_BLK_MASK_UART0 |
-+                         secHw_BLK_MASK_UART1 |
-+                         secHw_BLK_MASK_WATCHDOG |
-+                         secHw_BLK_MASK_SPUM |
-+                         secHw_BLK_MASK_DDR2 |
-+                         secHw_BLK_MASK_SPU |
-+                         secHw_BLK_MASK_PKA |
-+                         secHw_BLK_MASK_RNG |
-+                         secHw_BLK_MASK_RTC |
-+                         secHw_BLK_MASK_OTP |
-+                         secHw_BLK_MASK_BOOT |
-+                         secHw_BLK_MASK_MPU |
-+                         secHw_BLK_MASK_TZCTRL | secHw_BLK_MASK_INTR);
++static void bcmring_unmask_irq0(unsigned int irq)
++{
++       writel(1 << (irq - IRQ_INTC0_START),
++              MM_IO_BASE_INTC0 + INTCHW_INTENABLE);
++}
 +
-+       /* Only the devices attached to the AMBA bus are enabled just before the bus is */
-+       /* scanned and the drivers are loaded. The clocks need to be on for the AMBA bus */
-+       /* driver to access these blocks. The bus is probed, and the drivers are loaded. */
-+       /* FIXME Need to remove enable of PIF once CLCD clock enable used properly in FPGA. */
-+       bus_clock = chipcHw_REG_BUS_CLOCK_GE
-+           | chipcHw_REG_BUS_CLOCK_SDIO0 | chipcHw_REG_BUS_CLOCK_SDIO1;
++static void bcmring_mask_irq1(unsigned int irq)
++{
++       writel(1 << (irq - IRQ_INTC1_START),
++              MM_IO_BASE_INTC1 + INTCHW_INTENCLEAR);
++}
 +
-+       chipcHw_busInterfaceClockEnable(bus_clock);
++static void bcmring_unmask_irq1(unsigned int irq)
++{
++       writel(1 << (irq - IRQ_INTC1_START),
++              MM_IO_BASE_INTC1 + INTCHW_INTENABLE);
++}
 +
-+       for (i = 0; i < ARRAY_SIZE(amba_devs); i++) {
-+               struct amba_device *d = amba_devs[i];
-+               amba_device_register(d, &iomem_resource);
++static void bcmring_mask_irq2(unsigned int irq)
++{
++       writel(1 << (irq - IRQ_SINTC_START),
++              MM_IO_BASE_SINTC + INTCHW_INTENCLEAR);
++}
++
++static void bcmring_unmask_irq2(unsigned int irq)
++{
++       writel(1 << (irq - IRQ_SINTC_START),
++              MM_IO_BASE_SINTC + INTCHW_INTENABLE);
++}
++
++static struct irq_chip bcmring_irq0_chip = {
++       .typename = "ARM-INTC0",
++       .ack = bcmring_mask_irq0,
++       .mask = bcmring_mask_irq0,      /* mask a specific interrupt, blocking its delivery. */
++       .unmask = bcmring_unmask_irq0,  /* unmaks an interrupt */
++};
++
++static struct irq_chip bcmring_irq1_chip = {
++       .typename = "ARM-INTC1",
++       .ack = bcmring_mask_irq1,
++       .mask = bcmring_mask_irq1,
++       .unmask = bcmring_unmask_irq1,
++};
++
++static struct irq_chip bcmring_irq2_chip = {
++       .typename = "ARM-SINTC",
++       .ack = bcmring_mask_irq2,
++       .mask = bcmring_mask_irq2,
++       .unmask = bcmring_unmask_irq2,
++};
++
++static void vic_init(void __iomem *base, struct irq_chip *chip,
++                    unsigned int irq_start, unsigned int vic_sources)
++{
++       unsigned int i;
++       for (i = 0; i < 32; i++) {
++               unsigned int irq = irq_start + i;
++               set_irq_chip(irq, chip);
++               set_irq_chip_data(irq, base);
++
++               if (vic_sources & (1 << i)) {
++                       set_irq_handler(irq, handle_level_irq);
++                       set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
++               }
 +       }
-+
-+       for (i = 0; i < ARRAY_SIZE(lookups); i++)
-+               clkdev_add(&lookups[i]);
++       writel(0, base + INTCHW_INTSELECT);
++       writel(0, base + INTCHW_INTENABLE);
++       writel(~0, base + INTCHW_INTENCLEAR);
++       writel(0, base + INTCHW_IRQSTATUS);
++       writel(~0, base + INTCHW_SOFTINTCLEAR);
 +}
 +
-+/*
-+ * Where is the timer (VA)?
-+ */
-+#define TIMER0_VA_BASE          MM_IO_BASE_TMR
-+#define TIMER1_VA_BASE         (MM_IO_BASE_TMR + 0x20)
-+#define TIMER2_VA_BASE         (MM_IO_BASE_TMR + 0x40)
-+#define TIMER3_VA_BASE          (MM_IO_BASE_TMR + 0x60)
-+
-+/* Timer 0 - 25 MHz, Timer3 at bus clock rate, typically  150-166 MHz */
-+#if defined(CONFIG_ARCH_FPGA11107)
-+/* fpga cpu/bus are currently 30 times slower so scale frequency as well to */
-+/* slow down Linux's sense of time */
-+#define TIMER0_FREQUENCY_MHZ  (tmrHw_LOW_FREQUENCY_MHZ * 30)
-+#define TIMER1_FREQUENCY_MHZ  (tmrHw_LOW_FREQUENCY_MHZ * 30)
-+#define TIMER3_FREQUENCY_MHZ  (tmrHw_HIGH_FREQUENCY_MHZ * 30)
-+#define TIMER3_FREQUENCY_KHZ   (tmrHw_HIGH_FREQUENCY_HZ / 1000 * 30)
-+#else
-+#define TIMER0_FREQUENCY_MHZ  tmrHw_LOW_FREQUENCY_MHZ
-+#define TIMER1_FREQUENCY_MHZ  tmrHw_LOW_FREQUENCY_MHZ
-+#define TIMER3_FREQUENCY_MHZ  tmrHw_HIGH_FREQUENCY_MHZ
-+#define TIMER3_FREQUENCY_KHZ  (tmrHw_HIGH_FREQUENCY_HZ / 1000)
-+#endif
-+
-+#define TICKS_PER_uSEC     TIMER0_FREQUENCY_MHZ
-+
-+/*
-+ *  These are useconds NOT ticks.
-+ *
-+ */
-+#define mSEC_1                          1000
-+#define mSEC_5                          (mSEC_1 * 5)
-+#define mSEC_10                         (mSEC_1 * 10)
-+#define mSEC_25                         (mSEC_1 * 25)
-+#define SEC_1                           (mSEC_1 * 1000)
-+
-+/*
-+ * How long is the timer interval?
-+ */
-+#define TIMER_INTERVAL (TICKS_PER_uSEC * mSEC_10)
-+#if TIMER_INTERVAL >= 0x100000
-+#define TIMER_RELOAD   (TIMER_INTERVAL >> 8)
-+#define TIMER_DIVISOR  (TIMER_CTRL_DIV256)
-+#define TICKS2USECS(x) (256 * (x) / TICKS_PER_uSEC)
-+#elif TIMER_INTERVAL >= 0x10000
-+#define TIMER_RELOAD   (TIMER_INTERVAL >> 4)   /* Divide by 16 */
-+#define TIMER_DIVISOR  (TIMER_CTRL_DIV16)
-+#define TICKS2USECS(x) (16 * (x) / TICKS_PER_uSEC)
-+#else
-+#define TIMER_RELOAD   (TIMER_INTERVAL)
-+#define TIMER_DIVISOR  (TIMER_CTRL_DIV1)
-+#define TICKS2USECS(x) ((x) / TICKS_PER_uSEC)
-+#endif
-+
-+static void timer_set_mode(enum clock_event_mode mode,
-+                          struct clock_event_device *clk)
++void __init bcmring_init_irq(void)
 +{
-+       unsigned long ctrl;
++       vic_init((void __iomem *)MM_IO_BASE_INTC0, &bcmring_irq0_chip,
++                IRQ_INTC0_START, IRQ_INTC0_VALID_MASK);
++       vic_init((void __iomem *)MM_IO_BASE_INTC1, &bcmring_irq1_chip,
++                IRQ_INTC1_START, IRQ_INTC1_VALID_MASK);
++       vic_init((void __iomem *)MM_IO_BASE_SINTC, &bcmring_irq2_chip,
++                IRQ_SINTC_START, IRQ_SINTC_VALID_MASK);
 +
-+       switch (mode) {
-+       case CLOCK_EVT_MODE_PERIODIC:
-+               writel(TIMER_RELOAD, TIMER0_VA_BASE + TIMER_LOAD);
-+
-+               ctrl = TIMER_CTRL_PERIODIC;
-+               ctrl |=
-+                   TIMER_DIVISOR | TIMER_CTRL_32BIT | TIMER_CTRL_IE |
-+                   TIMER_CTRL_ENABLE;
-+               break;
-+       case CLOCK_EVT_MODE_ONESHOT:
-+               /* period set, and timer enabled in 'next_event' hook */
-+               ctrl = TIMER_CTRL_ONESHOT;
-+               ctrl |= TIMER_DIVISOR | TIMER_CTRL_32BIT | TIMER_CTRL_IE;
-+               break;
-+       case CLOCK_EVT_MODE_UNUSED:
-+       case CLOCK_EVT_MODE_SHUTDOWN:
-+       default:
-+               ctrl = 0;
++       /* special cases */
++       if (INTCHW_INTC1_GPIO0 & IRQ_INTC1_VALID_MASK) {
++               set_irq_handler(IRQ_GPIO0, handle_simple_irq);
 +       }
-+
-+       writel(ctrl, TIMER0_VA_BASE + TIMER_CTRL);
++       if (INTCHW_INTC1_GPIO1 & IRQ_INTC1_VALID_MASK) {
++               set_irq_handler(IRQ_GPIO1, handle_simple_irq);
++       }
 +}
-+
-+static int timer_set_next_event(unsigned long evt,
-+                               struct clock_event_device *unused)
-+{
-+       unsigned long ctrl = readl(TIMER0_VA_BASE + TIMER_CTRL);
-+
-+       writel(evt, TIMER0_VA_BASE + TIMER_LOAD);
-+       writel(ctrl | TIMER_CTRL_ENABLE, TIMER0_VA_BASE + TIMER_CTRL);
-+
-+       return 0;
-+}
-+
-+static struct clock_event_device timer0_clockevent = {
-+       .name = "timer0",
-+       .shift = 32,
-+       .features = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
-+       .set_mode = timer_set_mode,
-+       .set_next_event = timer_set_next_event,
-+};
-+
-+/*
-+ * IRQ handler for the timer
-+ */
-+static irqreturn_t bcmring_timer_interrupt(int irq, void *dev_id)
-+{
-+       struct clock_event_device *evt = &timer0_clockevent;
-+
-+       writel(1, TIMER0_VA_BASE + TIMER_INTCLR);
-+
-+       evt->event_handler(evt);
-+
-+       return IRQ_HANDLED;
-+}
-+
-+static struct irqaction bcmring_timer_irq = {
-+       .name = "bcmring Timer Tick",
-+       .flags = IRQF_DISABLED | IRQF_TIMER | IRQF_IRQPOLL,
-+       .handler = bcmring_timer_interrupt,
-+};
-+
-+static cycle_t bcmring_get_cycles_timer1(void)
-+{
-+       return ~readl(TIMER1_VA_BASE + TIMER_VALUE);
-+}
-+
-+static cycle_t bcmring_get_cycles_timer3(void)
-+{
-+       return ~readl(TIMER3_VA_BASE + TIMER_VALUE);
-+}
-+
-+static struct clocksource clocksource_bcmring_timer1 = {
-+       .name = "timer1",
-+       .rating = 200,
-+       .read = bcmring_get_cycles_timer1,
-+       .mask = CLOCKSOURCE_MASK(32),
-+       .shift = 20,
-+       .flags = CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+static struct clocksource clocksource_bcmring_timer3 = {
-+       .name = "timer3",
-+       .rating = 100,
-+       .read = bcmring_get_cycles_timer3,
-+       .mask = CLOCKSOURCE_MASK(32),
-+       .shift = 20,
-+       .flags = CLOCK_SOURCE_IS_CONTINUOUS,
-+};
-+
-+static int __init bcmring_clocksource_init(void)
-+{
-+       /* setup timer1 as free-running clocksource */
-+       writel(0, TIMER1_VA_BASE + TIMER_CTRL);
-+       writel(0xffffffff, TIMER1_VA_BASE + TIMER_LOAD);
-+       writel(0xffffffff, TIMER1_VA_BASE + TIMER_VALUE);
-+       writel(TIMER_CTRL_32BIT | TIMER_CTRL_ENABLE | TIMER_CTRL_PERIODIC,
-+              TIMER1_VA_BASE + TIMER_CTRL);
-+
-+       clocksource_bcmring_timer1.mult =
-+           clocksource_khz2mult(TIMER1_FREQUENCY_MHZ * 1000,
-+                                clocksource_bcmring_timer1.shift);
-+       clocksource_register(&clocksource_bcmring_timer1);
-+
-+       /* setup timer3 as free-running clocksource */
-+       writel(0, TIMER3_VA_BASE + TIMER_CTRL);
-+       writel(0xffffffff, TIMER3_VA_BASE + TIMER_LOAD);
-+       writel(0xffffffff, TIMER3_VA_BASE + TIMER_VALUE);
-+       writel(TIMER_CTRL_32BIT | TIMER_CTRL_ENABLE | TIMER_CTRL_PERIODIC,
-+              TIMER3_VA_BASE + TIMER_CTRL);
-+
-+       clocksource_bcmring_timer3.mult =
-+           clocksource_khz2mult(TIMER3_FREQUENCY_KHZ,
-+                                clocksource_bcmring_timer3.shift);
-+       clocksource_register(&clocksource_bcmring_timer3);
-+
-+       return 0;
-+}
-+
-+/*
-+ * Set up timer interrupt, and return the current time in seconds.
-+ */
-+void __init bcmring_init_timer(void)
-+{
-+       printk(KERN_INFO "bcmring_init_timer\n");
-+       /*
-+        * Initialise to a known state (all timers off)
-+        */
-+       writel(0, TIMER0_VA_BASE + TIMER_CTRL);
-+       writel(0, TIMER1_VA_BASE + TIMER_CTRL);
-+       writel(0, TIMER2_VA_BASE + TIMER_CTRL);
-+       writel(0, TIMER3_VA_BASE + TIMER_CTRL);
-+
-+       /*
-+        * Make irqs happen for the system timer
-+        */
-+       setup_irq(IRQ_TIMER0, &bcmring_timer_irq);
-+
-+       bcmring_clocksource_init();
-+
-+       timer0_clockevent.mult =
-+           div_sc(1000000, NSEC_PER_SEC, timer0_clockevent.shift);
-+       timer0_clockevent.max_delta_ns =
-+           clockevent_delta2ns(0xffffffff, &timer0_clockevent);
-+       timer0_clockevent.min_delta_ns =
-+           clockevent_delta2ns(0xf, &timer0_clockevent);
-+
-+       timer0_clockevent.cpumask = cpumask_of(0);
-+       clockevents_register_device(&timer0_clockevent);
-+}
-+
-+struct sys_timer bcmring_timer = {
-+       .init = bcmring_init_timer,
-+};
-diff --git a/arch/arm/mach-bcmring/core.h b/arch/arm/mach-bcmring/core.h
-new file mode 100644
-index 0000000..9d58e51
---- /dev/null
-+++ b/arch/arm/mach-bcmring/core.h
-@@ -0,0 +1,49 @@
-+/*
-+ *  linux/arch/arm/mach-versatile/core.h
-+ *
-+ *  Copyright (C) 2004 ARM Limited
-+ *  Copyright (C) 2000 Deep Blue Solutions Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+/* Portions copyright Broadcom 2008 */
-+#ifndef __ASM_ARCH_BCMRING_H
-+#define __ASM_ARCH_BCMRING_H
-+
-+#include <linux/version.h>
-+#include <linux/amba/bus.h>
-+#include <mach/csp/mm_addr.h>
-+
-+void __init bcmring_amba_init(void);
-+
-+#define AMBA_DEVICE(name, initname, base, plat, size)       \
-+static struct amba_device name##_device = {     \
-+   .dev = {                                     \
-+      .coherent_dma_mask = ~0,                  \
-+      .init_name = initname,                    \
-+      .platform_data = plat                     \
-+   },                                           \
-+   .res = {                                     \
-+      .start = MM_ADDR_IO_##base,               \
-+               .end = MM_ADDR_IO_##base + (size) - 1,    \
-+      .flags = IORESOURCE_MEM                   \
-+   },                                           \
-+   .dma_mask = ~0,                              \
-+   .irq = {                                     \
-+      IRQ_##base                                \
-+   }                                            \
-+}
-+
-+#endif
 --
 1.6.0.6
 
