@@ -1,37 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbZGDBr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbZGDBri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759580AbZGDBr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Jul 2009 21:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759214AbZGDBpR
+	id S1759655AbZGDBri (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Jul 2009 21:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbZGDBpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Jul 2009 21:45:17 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:1215 "EHLO mms1.broadcom.com"
+	Fri, 3 Jul 2009 21:45:22 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:1777 "EHLO mms2.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759255AbZGDBpB convert rfc822-to-8bit (ORCPT
+	id S1756883AbZGDBpI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Jul 2009 21:45:01 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+	Fri, 3 Jul 2009 21:45:08 -0400
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
 From: "Leo (Hao) Chen" <leochen@broadcom.com>
 To: "linux-arm-kernel@lists.arm.linux.org.uk" 
 	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
 cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
        "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
        "Jean-Christophe PLAGNIOL-VILLARD" <plagnioj@jcrosoft.com>,
        "Scott Branden" <sbranden@broadcom.com>,
        "Leo (Hao) Chen" <leochen@broadcom.com>
-Date: Fri, 3 Jul 2009 18:44:55 -0700
-Subject: [PATCH v2 16/18] new ARM SoC support: BCMRing
-Thread-Topic: [PATCH v2 16/18] new ARM SoC support: BCMRing
-Thread-Index: Acn8SQgBGnLU+LZyQdi+s7MmT+gdOg==
-Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25BA6C1E@SJEXCHCCR02.corp.ad.broadcom.com>
+Date: Fri, 3 Jul 2009 18:45:00 -0700
+Subject: [PATCH v2 17/18] new ARM SoC support: BCMRing
+Thread-Topic: [PATCH v2 17/18] new ARM SoC support: BCMRing
+Thread-Index: Acn8SQs/YbVPI7ypSdymOWkRXL9W3A==
+Message-ID: <8628FE4E7912BF47A96AE7DD7BAC0AADCB25BA6C1F@SJEXCHCCR02.corp.ad.broadcom.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
 acceptlanguage: en-US
 MIME-Version: 1.0
-X-WSS-ID: 66506B920EG20718150-01-01
+X-WSS-ID: 66506B944CG20368923-01-01
 Content-Type: text/plain;
  charset=us-ascii
 Content-Transfer-Encoding: 8BIT
@@ -39,986 +40,966 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
->From 1be0a56b00cff4e5c8115e635751c803e440f80d Mon Sep 17 00:00:00 2001
+This is the nand driver for the new bcmring architecture.
+
+>From d3f98479bf28324a3472f3f637014a28ffef29ab Mon Sep 17 00:00:00 2001
 From: Leo Chen <leochen@broadcom.com>
-Date: Fri, 3 Jul 2009 17:25:12 -0700
-Subject: [PATCH 16/18] csp dmac package
+Date: Fri, 3 Jul 2009 17:27:16 -0700
+Subject: [PATCH 17/18] bcmring nand driver
 
-bcmring dma controller block low level functions
+add bcmring umi nand driver
+with hardware ecc support
 
 Signed-off-by: Leo Chen <leochen@broadcom.com>
 ---
- arch/arm/mach-bcmring/csp/dmac/Makefile       |    1 +
- arch/arm/mach-bcmring/csp/dmac/dmacHw.c       |  940 +++++++++++++++++++++++
- arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c | 1017 +++++++++++++++++++++++++
- 3 files changed, 1958 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-bcmring/csp/dmac/Makefile
- create mode 100644 arch/arm/mach-bcmring/csp/dmac/dmacHw.c
- create mode 100644 arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
+ drivers/mtd/nand/Kconfig                 |   16 +
+ drivers/mtd/nand/Makefile                |    2 +
+ drivers/mtd/nand/nand_bcm_umi.c          |  879 ++++++++++++++++++++++++++++++
+ drivers/mtd/nand/nand_calculate_ecc512.c |  254 +++++++++
+ drivers/mtd/nand/nand_correct_data512.c  |  153 ++++++
+ include/linux/mtd/nand_bcm_umi.h         |  235 ++++++++
+ include/linux/mtd/nand_ecc512.h          |   26 +
+ 7 files changed, 1565 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mtd/nand/nand_bcm_umi.c
+ create mode 100644 drivers/mtd/nand/nand_calculate_ecc512.c
+ create mode 100644 drivers/mtd/nand/nand_correct_data512.c
+ create mode 100644 include/linux/mtd/nand_bcm_umi.h
+ create mode 100644 include/linux/mtd/nand_ecc512.h
 
-diff --git a/arch/arm/mach-bcmring/csp/dmac/Makefile b/arch/arm/mach-bcmring/csp/dmac/Makefile
+diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+index ce96c09..35a3f91 100644
+--- a/drivers/mtd/nand/Kconfig
++++ b/drivers/mtd/nand/Kconfig
+@@ -186,6 +186,22 @@ config MTD_NAND_S3C2410_CLKSTOP
+          when the is NAND chip selected or released, but will save
+          approximately 5mA of power when there is nothing happening.
+
++config MTD_NAND_BCM_UMI
++       tristate "NAND Flash support for BCM Reference Boards"
++       depends on ARCH_BCMRING && MTD_NAND
++       help
++         This enables the NAND flash controller on the BCM UMI block.
++
++         No board specfic support is done by this driver, each board
++         must advertise a platform_device for the driver to attach.
++
++config MTD_NAND_BCM_UMI_HWECC
++       bool "BCM UMI NAND Hardware ECC"
++       depends on MTD_NAND_BCM_UMI
++       help
++         Enable the use of the BCM UMI block's internal ECC generator when
++         using NAND.
++
+ config MTD_NAND_DISKONCHIP
+        tristate "DiskOnChip 2000, Millennium and Millennium Plus (NAND reimplementation) (EXPERIMENTAL)"
+        depends on EXPERIMENTAL
+diff --git a/drivers/mtd/nand/Makefile b/drivers/mtd/nand/Makefile
+index f3a786b..cfaaf38 100644
+--- a/drivers/mtd/nand/Makefile
++++ b/drivers/mtd/nand/Makefile
+@@ -40,5 +40,7 @@ obj-$(CONFIG_MTD_NAND_SH_FLCTL)               += sh_flctl.o
+ obj-$(CONFIG_MTD_NAND_MXC)             += mxc_nand.o
+ obj-$(CONFIG_MTD_NAND_SOCRATES)                += socrates_nand.o
+ obj-$(CONFIG_MTD_NAND_TXX9NDFMC)       += txx9ndfmc.o
++obj-$(CONFIG_MTD_NAND_BCM_UMI) += nand_bcm_umi.o
++obj-$(CONFIG_MTD_NAND_BCM_UMI_HWECC)   += nand_correct_data512.o nand_calculate_ecc512.o
+
+ nand-objs := nand_base.o nand_bbt.o
+diff --git a/drivers/mtd/nand/nand_bcm_umi.c b/drivers/mtd/nand/nand_bcm_umi.c
 new file mode 100644
-index 0000000..fb1104f
+index 0000000..0c75d19
 --- /dev/null
-+++ b/arch/arm/mach-bcmring/csp/dmac/Makefile
-@@ -0,0 +1 @@
-+obj-y += dmacHw.o dmacHw_extra.o
-\ No newline at end of file
-diff --git a/arch/arm/mach-bcmring/csp/dmac/dmacHw.c b/arch/arm/mach-bcmring/csp/dmac/dmacHw.c
-new file mode 100644
-index 0000000..1628a1f
---- /dev/null
-+++ b/arch/arm/mach-bcmring/csp/dmac/dmacHw.c
-@@ -0,0 +1,940 @@
-+/*****************************************************************************
-+* Copyright 2003 - 2008 Broadcom Corporation.  All rights reserved.
-+*
-+* Unless you and Broadcom execute a separate written software license
-+* agreement governing use of this software, this software is licensed to you
-+* under the terms of the GNU General Public License version 2, available at
-+* http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
-+*
-+* Notwithstanding the above, under no circumstances may you combine this
-+* software in any way with any other Broadcom software provided under a
-+* license other than the GPL, without Broadcom's express prior written
-+* consent.
-+*****************************************************************************/
++++ b/drivers/mtd/nand/nand_bcm_umi.c
+@@ -0,0 +1,879 @@
++/*
++ * Copyright (c) 2005 Broadcom Corporation
++ *
++ *    This driver was based on the sharpl NAND driver written by
++ *    Richard Purdie.  Their copyright is below.
++ *    As such, this driver falls under the GPL license also below.
++ *
++ *  Copyright (C) 2004 Richard Purdie
++ *
++ *  Based on Sharp's NAND driver sharp_sl.c
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
 +
-+/****************************************************************************/
-+/**
-+*  @file    dmacHw.c
++#include <linux/version.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/ioport.h>
++#include <linux/device.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/platform_device.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/nand_ecc.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/nand_ecc512.h>
++#include <linux/mtd/nand_bcm_umi.h>
++
++#include <asm/io.h>
++#include <asm/mach-types.h>
++
++#include <mach/reg_nand.h>
++#include <mach/reg_umi.h>
++#include <mach/memory_settings.h>
++
++#if NAND_ECC_BCH
++#define NAND_ECC_NUM_BYTES 13
++#else
++#define NAND_ECC_NUM_BYTES 3
++#endif
++
++#include <mach/dma.h>
++#include <linux/dma-mapping.h>
++#include <linux/completion.h>
++
++static char gBanner[] __initdata = KERN_INFO "BCM UMI MTD NAND Driver: 1.00\n";
++
++/*  Register offsets */
++#define REG_NAND_CMD_OFFSET     (0)
++#define REG_NAND_ADDR_OFFSET    (4)
++#ifndef __ARMEB__
++#define REG_NAND_DATA8_OFFSET   (8)
++#else
++#define REG_NAND_DATA8_OFFSET   (8 + 1)
++#endif
++
++/****************************************************************************
 +*
-+*  @brief   Low level DMA controller driver routines
++*  nand_hw_eccoob
 +*
-+*  @note
++*   New oob placement block for use with hardware ecc generation.
 +*
-+*   These routines provide basic DMA functionality only.
-+*/
-+/****************************************************************************/
++***************************************************************************/
++#if NAND_ECC_BCH
++static struct nand_ecclayout nand_hw_eccoob_512 = {
++       .eccbytes = 13,
++       .eccpos = {2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
++       /* Reserve 5 for BI indicator */
++       .oobfree = {
++                   {.offset = 0, .length = 2}
++                        }
++};
 +
-+/* ---- Include Files ---------------------------------------------------- */
-+#include <csp/stdint.h>
-+#include <stddef.h>
++/* We treat the OOB for a 2K page as if it were 4 512 byte oobs, except the BI is at byte 0. */
 +
-+#include <csp/dmacHw.h>
-+#include <mach/csp/dmacHw_reg.h>
-+#include <mach/csp/dmacHw_priv.h>
-+#include <mach/csp/chipcHw_inline.h>
++static struct nand_ecclayout nand_hw_eccoob_2048 = {
++       .eccbytes = 52,
++       .eccpos = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
++                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
++                  35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
++                  51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 62},
++       /* Reserve 0 as BI indicator */
++       .oobfree = {
++                   {.offset = 1, .length = 2},
++                   {.offset = 16, .length = 3},
++                   {.offset = 32, .length = 3},
++                   {.offset = 48, .length = 3}
++                        }
++};
 +
-+/* ---- External Function Prototypes ------------------------------------- */
++/* We treat the OOB for a 4K page as if it were 8 512 byte oobs, except the BI is at byte 0. */
 +
-+/* Allocate DMA control blocks */
-+dmacHw_CBLK_t dmacHw_gCblk[dmacHw_MAX_CHANNEL_COUNT];
++static struct nand_ecclayout nand_hw_eccoob_4096 = {
++       .eccbytes = 104,
++       .eccpos = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
++#if 0
++                  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
++                  35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
++                  51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 62,
++                  67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,
++                  83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95,
++                  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110,
++                  111,
++#endif
++                  115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126,
++                  127},
++       /* Reserve 0 as BI indicator */
++       .oobfree = {
++                   {.offset = 1, .length = 2},
++                   {.offset = 16, .length = 3},
++                   {.offset = 32, .length = 3},
++                   {.offset = 48, .length = 3},
++                   {.offset = 64, .length = 3},
++                   {.offset = 80, .length = 3},
++                   {.offset = 96, .length = 3},
++                   {.offset = 112, .length = 3}
++                        }
++};
++#else
++/* Hamming ECC */
 +
-+uint32_t dmaChannelCount_0 = dmacHw_MAX_CHANNEL_COUNT / 2;
-+uint32_t dmaChannelCount_1 = dmacHw_MAX_CHANNEL_COUNT / 2;
++static struct nand_ecclayout nand_hw_eccoob_512 = {
++       .eccbytes = 3,
++       .eccpos = {6, 7, 8},
++       /* Reserve 0/1 and 10/11 as BI indicators for 16-bit flash */
++       /* Reserve 5 for 8-bit BI */
++       /* 6/7/8 are for ecc so this is all that's left */
++       .oobfree = {
++                   {.offset = 2, .length = 3},
++                   {.offset = 9, .length = 1},
++                   {.offset = 12, .length = 4}
++                        }
++};
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Get maximum FIFO for a DMA channel
++/* We treat the OOB for a 2K page as if it were 4 512 byte oobs, except that the ECC offset if 8 rather than 6. */
++
++static struct nand_ecclayout nand_hw_eccoob_2048 = {
++       .eccbytes = 12,
++       .eccpos = {8, 9, 10, 24, 25, 26, 40, 41, 42, 56, 57, 58},
++       /* Reserve 0/1 as BI indicators for 8/16-bit flash */
++       /* 8/9/10 are for ecc so this is all that's left */
++       .oobfree = {
++                   {.offset = 2, .length = 6},
++                   {.offset = 11, .length = 13},
++                   {.offset = 27, .length = 13},
++                   {.offset = 43, .length = 13},
++                   {.offset = 59, .length = 5}
++                        }
++};
++
++/* We treat the OOB for a 4K page as if it were 8 512 byte oobs, except that the ECC offset if 8 rather than 6. */
++
++static struct nand_ecclayout nand_hw_eccoob_4096 = {
++       .eccbytes = 24,
++       .eccpos =
++           {8, 9, 10, 24, 25, 26, 40, 41, 42, 56, 57, 58, 72, 73, 74, 88, 89,
++            90, 104, 105, 106, 120, 121, 122},
++       /* Reserve 0/1 as BI indicators for 8/16-bit flash */
++       /* 8/9/10 are for ecc so this is all that's left */
++       .oobfree = {
++                   {.offset = 2, .length = 6},
++                   {.offset = 11, .length = 13},
++                   {.offset = 27, .length = 13},
++                   {.offset = 43, .length = 13},
++                   {.offset = 59, .length = 13},
++                   {.offset = 75, .length = 13},
++                   {.offset = 91, .length = 13},
++                   {.offset = 107, .length = 13}
++                        }
++       /* .offset = 123,    .length = 5 }}    It turns out nand_ecclayout only has space for 8 entries */
++};
++#endif
++
++/*
++ * MTD structure for BCM UMI
++ */
++static struct mtd_info *board_mtd;
++static void __iomem *bcm_umi_io_base;
++
++/* Preallocate a buffer to avoid having to do this every dma operation. */
++/* This is the size of the preallocated coherent DMA buffer. */
++#define DMA_MIN_BUFLEN          512
++#define DMA_MAX_BUFLEN          PAGE_SIZE
++#define USE_DIRECT_IO(len)      (((len) < DMA_MIN_BUFLEN) || ((len) > DMA_MAX_BUFLEN))
++#if defined(CONFIG_ARCH_BCMRING)
++/*
++ * TODO: The current NAND data space goes from 0x80001900 to 0x80001FFF,
++ * which is only 0x700 = 1792 bytes long. This is too small for 2K, 4K page
++ * size NAND flash. Need to break the DMA down to multiple 1Ks.
++ *
++ * Need to make sure REG_NAND_DATA_PADDR + DMA_MAX_LEN < 0x80002000
++ */
++#define DMA_MAX_LEN             1024
++#endif
++static void *virtPtr;
++static dma_addr_t physPtr;
++static struct completion nand_comp;
++
++/****************************************************************************
 +*
-+*  @return  Maximum allowable FIFO size
++*   Handler called when the DMA finishes.
 +*
-+*
-+*/
-+/****************************************************************************/
-+static uint32_t GetFifoSize(dmacHw_HANDLE_t handle     /*   [ IN ] DMA Channel handle */
-+    ) {
-+       uint32_t val = 0;
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       dmacHw_MISC_t *pMiscReg =
-+           (dmacHw_MISC_t *) dmacHw_REG_MISC_BASE(pCblk->module);
++***************************************************************************/
 +
-+       switch (pCblk->channel) {
-+       case 0:
-+               val = (pMiscReg->CompParm2.lo & 0x70000000) >> 28;
-+               break;
-+       case 1:
-+               val = (pMiscReg->CompParm3.hi & 0x70000000) >> 28;
-+               break;
-+       case 2:
-+               val = (pMiscReg->CompParm3.lo & 0x70000000) >> 28;
-+               break;
-+       case 3:
-+               val = (pMiscReg->CompParm4.hi & 0x70000000) >> 28;
-+               break;
-+       case 4:
-+               val = (pMiscReg->CompParm4.lo & 0x70000000) >> 28;
-+               break;
-+       case 5:
-+               val = (pMiscReg->CompParm5.hi & 0x70000000) >> 28;
-+               break;
-+       case 6:
-+               val = (pMiscReg->CompParm5.lo & 0x70000000) >> 28;
-+               break;
-+       case 7:
-+               val = (pMiscReg->CompParm6.hi & 0x70000000) >> 28;
-+               break;
++static void nand_dma_handler(DMA_Device_t dev, int reason, void *userData)
++{
++       complete(&nand_comp);
++}
++
++/****************************************************************************
++*
++*   Function to perform DMA initialization
++*
++***************************************************************************/
++
++static int nand_dma_init(void)
++{
++       int rc;
++
++       rc = dma_set_device_handler(DMA_DEVICE_NAND_MEM_TO_MEM, nand_dma_handler, NULL);
++       if (rc != 0) {
++               printk(KERN_ERR "dma_set_device_handler failed: %d\n", rc);
++               return rc;
 +       }
 +
-+       if (val <= 0x4) {
-+               return 8 << val;
++       virtPtr =
++           dma_alloc_coherent(NULL, DMA_MAX_BUFLEN, &physPtr, GFP_KERNEL);
++       if (virtPtr == NULL) {
++               printk("NAND - Failed to allocate memory for DMA buffer\n");
++               return -ENOMEM;
++       }
++
++       return 0;
++}
++
++/****************************************************************************
++*
++*   Function to perform DMA termination
++*
++***************************************************************************/
++
++static void nand_dma_term(void)
++{
++       if (virtPtr != NULL) {
++               dma_free_coherent(NULL, DMA_MAX_BUFLEN, virtPtr, physPtr);
++       }
++
++}
++
++/****************************************************************************
++*
++*   Performs a read via DMA
++*
++***************************************************************************/
++
++static void nand_dma_read(void *buf, int len)
++{
++       int offset = 0;
++       int tmp_len = 0;
++       int len_left = len;
++       DMA_Handle_t hndl;
++
++       if (virtPtr == NULL) {
++               panic("nand_dma_read: virtPtr == NULL\n");
++       }
++       if ((void *)physPtr == NULL) {
++               panic("nand_dma_read: physPtr == NULL\n");
++       }
++       hndl = dma_request_channel(DMA_DEVICE_NAND_MEM_TO_MEM);
++       if (hndl < 0) {
++               printk(KERN_ERR
++                      "nand_dma_read: unable to allocate dma channel: %d\n",
++                      (int)hndl);
++               panic("\n");
++       }
++
++       while (len_left > 0) {
++               if (len_left > DMA_MAX_LEN) {
++                       tmp_len = DMA_MAX_LEN;
++                       len_left -= DMA_MAX_LEN;
++               } else {
++                       tmp_len = len_left;
++                       len_left = 0;
++               }
++
++               init_completion(&nand_comp);
++               dma_transfer_mem_to_mem(hndl, REG_NAND_DATA_PADDR,
++                                       physPtr + offset, tmp_len);
++               wait_for_completion(&nand_comp);
++
++               offset += tmp_len;
++       }
++
++       dma_free_channel(hndl);
++
++       if (buf != NULL) {
++               memcpy(buf, virtPtr, len);
++       }
++}
++
++/****************************************************************************
++*
++*   Performs a write via DMA
++*
++***************************************************************************/
++
++static void nand_dma_write(const void *buf, int len)
++{
++       int offset = 0;
++       int tmp_len = 0;
++       int len_left = len;
++       DMA_Handle_t hndl;
++
++       if (buf == NULL) {
++               panic("nand_dma_write: buf == NULL\n");
++       }
++       if (virtPtr == NULL) {
++               panic("nand_dma_write: virtPtr == NULL\n");
++       }
++       if ((void *)physPtr == NULL) {
++               panic("nand_dma_write: physPtr == NULL\n");
++       }
++       memcpy(virtPtr, buf, len);
++
++       hndl = dma_request_channel(DMA_DEVICE_NAND_MEM_TO_MEM);
++       if (hndl < 0) {
++               printk(KERN_ERR
++                      "nand_dma_write: unable to allocate dma channel: %d\n",
++                      (int)hndl);
++               panic("\n");
++       }
++
++       while (len_left > 0) {
++               if (len_left > DMA_MAX_LEN) {
++                       tmp_len = DMA_MAX_LEN;
++                       len_left -= DMA_MAX_LEN;
++               } else {
++                       tmp_len = len_left;
++                       len_left = 0;
++               }
++
++               init_completion(&nand_comp);
++               dma_transfer_mem_to_mem(hndl, physPtr + offset,
++                                       REG_NAND_DATA_PADDR, tmp_len);
++               wait_for_completion(&nand_comp);
++
++               offset += tmp_len;
++       }
++
++       dma_free_channel(hndl);
++}
++
++/****************************************************************************
++*
++*  nand_dev_raedy
++*
++*   Routine to check if nand is ready.
++*
++***************************************************************************/
++static int nand_dev_ready(struct mtd_info *mtd)
++{
++       return nand_bcm_umi_dev_ready();
++}
++
++/****************************************************************************
++*
++*  bcm_umi_nand_inithw
++*
++*   This routine does the necessary hardware (board-specific)
++*   initializations.  This includes setting up the timings, etc.
++*
++***************************************************************************/
++
++int bcm_umi_nand_inithw(void)
++{
++       /* Configure nand timing parameters */
++       /* Configure nand timing parameters */
++       REG_UMI_NAND_TCR &= ~0x7ffff;
++       REG_UMI_NAND_TCR |= HW_CFG_NAND_TCR;
++
++       REG_UMI_NAND_TCR |= REG_UMI_NAND_TCR_CS_SWCTRL; /* enable software control of CS */
++       REG_UMI_NAND_RCSR |= REG_UMI_NAND_RCSR_CS_ASSERTED;     /* keep NAND chip select asserted */
++
++       REG_UMI_NAND_TCR &= ~REG_UMI_NAND_TCR_WORD16;
++       REG_UMI_MMD_ICR |= REG_UMI_MMD_ICR_FLASH_WP;    /* enable writes to flash */
++
++       writel(NAND_CMD_RESET, bcm_umi_io_base + REG_NAND_CMD_OFFSET);
++       nand_bcm_umi_wait_till_ready();
++
++#if NAND_ECC_BCH
++       nand_bcm_umi_bch_config_ecc(NAND_ECC_NUM_BYTES);
++#endif
++
++       return 0;
++}
++
++/****************************************************************************
++*
++*  bcm_umi_nand_hwcontrol
++*
++*   Used to turn latch the proper register for access.
++*
++***************************************************************************/
++
++static void bcm_umi_nand_hwcontrol(struct mtd_info *mtd, int cmd,
++                                  unsigned int ctrl)
++{
++       /* TODO: send command to hardware */
++       struct nand_chip *chip = mtd->priv;
++       if (ctrl & NAND_CTRL_CHANGE) {
++               if (ctrl & NAND_CLE) {
++                       chip->IO_ADDR_W = bcm_umi_io_base + REG_NAND_CMD_OFFSET;
++                       goto CMD;
++               }
++               if (ctrl & NAND_ALE) {
++                       chip->IO_ADDR_W =
++                           bcm_umi_io_base + REG_NAND_ADDR_OFFSET;
++                       goto CMD;
++               }
++               chip->IO_ADDR_W = bcm_umi_io_base + REG_NAND_DATA8_OFFSET;
++       }
++
++CMD:
++       /* Send command to chip directly */
++       if (cmd != NAND_CMD_NONE)
++               writeb(cmd, chip->IO_ADDR_W);
++
++}
++
++/****************************************************************************
++*
++*  bcm_umi_nand_get_hw_ecc
++*
++*   Used to get the hardware ECC.
++*
++***************************************************************************/
++
++static int bcm_umi_nand_get_hw_ecc(struct mtd_info *mtd, const u_char *dat,
++                                  u_char *ecc_code)
++{
++#if NAND_ECC_BCH
++       uint32_t eccVal;
++
++       if (REG_UMI_BCH_CTRL_STATUS & REG_UMI_BCH_CTRL_STATUS_PAUSE_ECC_DEC) {
++               /* Don't calculate the ecc - it's a waste of time on reads */
 +       } else {
-+               dmacHw_ASSERT(0);
++               /* wait for ECC to be valid */
++               nand_bcm_umi_bch_poll_write_ecc_calc();
++               /*
++                ** Get the hardware ecc from the 32-bit result registers.
++                ** Read after 512 byte accesses. Format B3B2B1B0
++                ** where B3 = ecc3, etc.
++                */
++               eccVal = REG_UMI_BCH_WR_ECC_3;
++               ecc_code[0] = eccVal & 0xff;    /* ECC12 */
++               eccVal = REG_UMI_BCH_WR_ECC_2;
++               ecc_code[1] = (eccVal >> 24) & 0xff;    /* ECC11 */
++               ecc_code[2] = (eccVal >> 16) & 0xff;    /* ECC10 */
++               ecc_code[3] = (eccVal >> 8) & 0xff;     /* ECC9 */
++               ecc_code[4] = eccVal & 0xff;    /* ECC8 */
++               eccVal = REG_UMI_BCH_WR_ECC_1;
++               ecc_code[5] = (eccVal >> 24) & 0xff;    /* ECC7 */
++               ecc_code[6] = (eccVal >> 16) & 0xff;    /* ECC6 */
++               ecc_code[7] = (eccVal >> 8) & 0xff;     /* ECC5 */
++               ecc_code[8] = eccVal & 0xff;    /* ECC4 */
++               eccVal = REG_UMI_BCH_WR_ECC_0;
++               ecc_code[9] = (eccVal >> 24) & 0xff;    /* ECC3 */
++               ecc_code[10] = (eccVal >> 16) & 0xff;   /* ECC2 */
++               ecc_code[11] = (eccVal >> 8) & 0xff;    /* ECC1 */
++               ecc_code[12] = eccVal & 0xff;   /* ECC0 */
++       }
++#else
++       unsigned long ecc = REG_UMI_NAND_ECC_DATA;
++       ecc_code[2] = (ecc >> 16) & 0xff;
++       ecc_code[1] = (ecc >> 8) & 0xff;
++       ecc_code[0] = (ecc >> 0) & 0xff;
++#endif
++       (void)mtd;
++       (void)dat;
++
++       return 0;
++}
++
++/****************************************************************************
++*
++*  bcm_umi_nand_enable_hwecc
++*
++*   Used to turn on hardware ECC.
++*
++***************************************************************************/
++
++static void bcm_umi_nand_enable_hwecc(struct mtd_info *mtd, int mode)
++{
++       (void)mtd;
++       (void)mode;
++#if NAND_ECC_BCH
++       if (mode == NAND_ECC_READ)
++               nand_bcm_umi_bch_enable_read_hwecc();
++       else if (mode == NAND_ECC_WRITE)
++               nand_bcm_umi_bch_enable_write_hwecc();
++#else
++       nand_bcm_umi_hamming_enable_hwecc();
++#endif
++}
++
++/**
++ * bcm_umi_nand_write_buf - write buffer to chip
++ * @mtd:       MTD device structure
++ * @buf:       data buffer
++ * @len:       number of bytes to write
++ *
++ * Default write function for 8bit buswith
++ */
++static void bcm_umi_nand_write_buf(struct mtd_info *mtd, const u_char * buf,
++                                  int len)
++{
++       if (USE_DIRECT_IO(len)) {
++               /* Do it the old way if the buffer is small or too large. Probably quicker than starting and checking dma. */
++               int i;
++               struct nand_chip *this = mtd->priv;
++
++               for (i = 0; i < len; i++) {
++                       writeb(buf[i], this->IO_ADDR_W);
++               }
++       } else {
++               nand_dma_write(buf, len);
++       }
++}
++
++/**
++ * nand_read_buf - read chip data into buffer
++ * @mtd:       MTD device structure
++ * @buf:       buffer to store date
++ * @len:       number of bytes to read
++ *
++ * Default read function for 8bit buswith
++ */
++
++static void bcm_umi_nand_read_buf(struct mtd_info *mtd, u_char * buf, int len)
++{
++#if NAND_ECC_BCH
++       if (len == 16) {
++               /* We are reading the OOB */
++               int i = 0;
++               if (mtd->writesize == 512) {    /* writesize is the pagesize */
++                       /* skip CM */
++                       buf[i++] = REG_NAND_DATA8;
++                       buf[i++] = REG_NAND_DATA8;
++
++                       /* read from 2 to 4 */
++                       nand_bcm_umi_bch_resume_read_ecc_calc();
++
++                       buf[i++] = REG_NAND_DATA8;
++                       buf[i++] = REG_NAND_DATA8;
++                       buf[i++] = REG_NAND_DATA8;
++                       nand_bcm_umi_bch_pause_read_ecc_calc();
++
++                       /* read BI */
++                       buf[i++] = REG_NAND_DATA8;
++
++                       /* read from 6 to nand_ecc_bch_total */
++                       nand_bcm_umi_bch_resume_read_ecc_calc();
++
++                       /* Deduct 3 from total since 3 ECC bytes have been read already */
++                       for (; i < 16; i++) {
++                               buf[i] = REG_NAND_DATA8;
++                       }
++               } else {
++                       /* skip BI */
++                       buf[i++] = REG_NAND_DATA8;
++
++                       /* skip CM */
++                       buf[i++] = REG_NAND_DATA8;
++                       buf[i++] = REG_NAND_DATA8;
++
++                       /* read ECC bytes */
++                       nand_bcm_umi_bch_resume_read_ecc_calc();
++
++                       for (; i < 16; i++) {
++                               buf[i] = REG_NAND_DATA8;
++                       }
++               }
++       } else
++#endif
++       {
++#if NAND_ECC_BCH
++               nand_bcm_umi_bch_enable_read_hwecc();
++#endif
++               if (USE_DIRECT_IO(len)) {
++                       int i;
++                       struct nand_chip *this = mtd->priv;
++
++                       for (i = 0; i < len; i++) {
++                               buf[i] = readb(this->IO_ADDR_R);
++                       }
++               } else {
++                       nand_dma_read(buf, len);
++               }
++#if NAND_ECC_BCH
++               nand_bcm_umi_bch_pause_read_ecc_calc();
++#endif
++       }
++}
++
++/**
++ * bcm_umi_nand_verify_buf - Verify chip data against buffer
++ * @mtd:       MTD device structure
++ * @buf:       buffer containing the data to compare
++ * @len:       number of bytes to compare
++ *
++ * Default verify function for 8bit buswith
++ */
++static int bcm_umi_nand_verify_buf(struct mtd_info *mtd, const u_char * buf,
++                                  int len)
++{
++       if (USE_DIRECT_IO(len)) {
++               int i;
++               struct nand_chip *this = mtd->priv;
++               for (i = 0; i < len; i++) {
++                       if (buf[i] != readb(this->IO_ADDR_R)) {
++                               return -EFAULT;
++                       }
++               }
++       } else {
++               nand_dma_read(NULL, len);
++               if (memcmp(buf, virtPtr, len) != 0) {
++                       return -EFAULT;
++               }
 +       }
 +       return 0;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Function to initialize memory
-+*
-+*  @return
-+*
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+static void Memset(void *mem,  /*   [ IN ] Memory address */
-+                  char val,    /*   [ IN ] Initialization value */
-+                  uint32_t len /*   [ IN ] Length of the memory */
-+    ) {
-+       uint32_t i = 0;
-+       char *ptr = (char *)mem;
-+
-+       for (i = 0; i < len; i++) {
-+               *ptr = val;
-+               ptr++;
-+       }
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Program channel register to initiate transfer
-+*
-+*  @return  void
-+*
-+*
-+*  @note
-+*     - Descriptor buffer MUST ALWAYS be flushed before calling this function
-+*     - This function should also be called from ISR to program the channel with
-+*       pending descriptors
-+*/
-+/****************************************************************************/
-+void dmacHw_initiateTransfer(dmacHw_HANDLE_t handle,   /*   [ IN ] DMA Channel handle */
-+                            dmacHw_CONFIG_t *pConfig,  /*   [ IN ] Configuration settings */
-+                            void *pDescriptor  /*   [ IN ] Descriptor buffer */
-+    ) {
-+       dmacHw_DESC_RING_t *pRing;
-+       dmacHw_DESC_t *pProg;
-+       dmacHw_CBLK_t *pCblk;
-+
-+       pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+
-+       if (CHANNEL_BUSY(pCblk->module, pCblk->channel)) {
-+               /* Not safe yet to program the channel */
-+               return;
-+       }
-+
-+       if (pCblk->varDataStarted) {
-+               if (pCblk->descUpdated) {
-+                       pCblk->descUpdated = 0;
-+                       pProg =
-+                           (dmacHw_DESC_t *) ((uint32_t)
-+                                              dmacHw_REG_LLP(pCblk->module,
-+                                                             pCblk->channel) +
-+                                              pRing->virt2PhyOffset);
-+
-+                       /* Load descriptor if not loaded */
-+                       if (!(pProg->ctl.hi & dmacHw_REG_CTL_DONE)) {
-+                               dmacHw_SET_SAR(pCblk->module, pCblk->channel,
-+                                              pProg->sar);
-+                               dmacHw_SET_DAR(pCblk->module, pCblk->channel,
-+                                              pProg->dar);
-+                               dmacHw_REG_CTL_LO(pCblk->module,
-+                                                 pCblk->channel) =
-+                                   pProg->ctl.lo;
-+                               dmacHw_REG_CTL_HI(pCblk->module,
-+                                                 pCblk->channel) =
-+                                   pProg->ctl.hi;
-+                       } else if (pProg == (dmacHw_DESC_t *) pRing->pEnd->llp) {
-+                               /* Return as end descriptor is processed */
-+                               return;
-+                       } else {
-+                               dmacHw_ASSERT(0);
-+                       }
-+               } else {
-+                       return;
-+               }
-+       } else {
-+               if (pConfig->transferMode == dmacHw_TRANSFER_MODE_PERIODIC) {
-+                       /* Do not make a single chain, rather process one descriptor at a time */
-+                       pProg = pRing->pHead;
-+                       /* Point to the next descriptor for next iteration */
-+                       dmacHw_NEXT_DESC(pRing, pHead);
-+               } else {
-+                       /* Return if no more pending descriptor */
-+                       if (pRing->pEnd == NULL) {
-+                               return;
-+                       }
-+
-+                       pProg = pRing->pProg;
-+                       if (pConfig->transferMode ==
-+                           dmacHw_TRANSFER_MODE_CONTINUOUS) {
-+                               /* Make sure a complete ring can be formed */
-+                               dmacHw_ASSERT((dmacHw_DESC_t *) pRing->pEnd->
-+                                             llp == pRing->pProg);
-+                               /* Make sure pProg pointing to the pHead */
-+                               dmacHw_ASSERT((dmacHw_DESC_t *) pRing->pProg ==
-+                                             pRing->pHead);
-+                               /* Make a complete ring */
-+                               do {
-+                                       pRing->pProg->ctl.lo |=
-+                                           (dmacHw_REG_CTL_LLP_DST_EN |
-+                                            dmacHw_REG_CTL_LLP_SRC_EN);
-+                                       pRing->pProg =
-+                                           (dmacHw_DESC_t *) pRing->pProg->llp;
-+                               } while (pRing->pProg != pRing->pHead);
-+                       } else {
-+                               /* Make a single long chain */
-+                               while (pRing->pProg != pRing->pEnd) {
-+                                       pRing->pProg->ctl.lo |=
-+                                           (dmacHw_REG_CTL_LLP_DST_EN |
-+                                            dmacHw_REG_CTL_LLP_SRC_EN);
-+                                       pRing->pProg =
-+                                           (dmacHw_DESC_t *) pRing->pProg->llp;
-+                               }
-+                       }
-+               }
-+
-+               /* Program the channel registers */
-+               dmacHw_SET_SAR(pCblk->module, pCblk->channel, pProg->sar);
-+               dmacHw_SET_DAR(pCblk->module, pCblk->channel, pProg->dar);
-+               dmacHw_SET_LLP(pCblk->module, pCblk->channel,
-+                              (uint32_t) pProg - pRing->virt2PhyOffset);
-+               dmacHw_REG_CTL_LO(pCblk->module, pCblk->channel) =
-+                   pProg->ctl.lo;
-+               dmacHw_REG_CTL_HI(pCblk->module, pCblk->channel) =
-+                   pProg->ctl.hi;
-+               if (pRing->pEnd) {
-+                       /* Remember the descriptor to use next */
-+                       pRing->pProg = (dmacHw_DESC_t *) pRing->pEnd->llp;
-+               }
-+               /* Indicate no more pending descriptor  */
-+               pRing->pEnd = (dmacHw_DESC_t *) NULL;
-+       }
-+       /* Start DMA operation */
-+       dmacHw_DMA_START(pCblk->module, pCblk->channel);
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Initializes DMA
-+*
-+*  This function initializes DMA CSP driver
-+*
-+*  @note
-+*     Must be called before using any DMA channel
-+*/
-+/****************************************************************************/
-+void dmacHw_initDma(void)
++#if NAND_ECC_BCH
++static int nand_correct_bch(struct mtd_info *mtd, u_char *dat,
++                           u_char *read_ecc, u_char *calc_ecc)
 +{
++       int result;
 +
-+       uint32_t i = 0;
++       result = nand_bcm_umi_bch_correct_page(dat);
 +
-+       dmaChannelCount_0 = dmacHw_GET_NUM_CHANNEL(0);
-+       dmaChannelCount_1 = dmacHw_GET_NUM_CHANNEL(1);
++       /* If the ECC is unprogrammed then we can't correct */
++       if (result != 0) {
++               int i;
 +
-+       /* Enable access to the DMA block */
-+       chipcHw_busInterfaceClockEnable(chipcHw_REG_BUS_CLOCK_DMAC0);
-+       chipcHw_busInterfaceClockEnable(chipcHw_REG_BUS_CLOCK_DMAC1);
-+
-+       if ((dmaChannelCount_0 + dmaChannelCount_1) > dmacHw_MAX_CHANNEL_COUNT) {
-+               dmacHw_ASSERT(0);
++               for (i = 0; i < NAND_ECC_NUM_BYTES; i++) {
++                       if (read_ecc[i] != 0xff) {
++                               return result;
++                       }
++               }
++               result = 0;
 +       }
-+
-+       Memset((void *)dmacHw_gCblk, 0,
-+              sizeof(dmacHw_CBLK_t) * (dmaChannelCount_0 + dmaChannelCount_1));
-+       for (i = 0; i < dmaChannelCount_0; i++) {
-+               dmacHw_gCblk[i].module = 0;
-+               dmacHw_gCblk[i].channel = i;
-+       }
-+       for (i = 0; i < dmaChannelCount_1; i++) {
-+               dmacHw_gCblk[i + dmaChannelCount_0].module = 1;
-+               dmacHw_gCblk[i + dmaChannelCount_0].channel = i;
-+       }
++       return result;
 +}
++#endif
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Exit function for  DMA
-+*
-+*  This function isolates DMA from the system
-+*
-+*/
-+/****************************************************************************/
-+void dmacHw_exitDma(void)
++#ifdef CONFIG_MTD_PARTITIONS
++const char *part_probes[] = { "cmdlinepart", NULL };
++#endif
++
++static int bcm_umi_nand_probe(struct platform_device *pdev)
 +{
-+       /* Disable access to the DMA block */
-+       chipcHw_busInterfaceClockDisable(chipcHw_REG_BUS_CLOCK_DMAC0);
-+       chipcHw_busInterfaceClockDisable(chipcHw_REG_BUS_CLOCK_DMAC1);
-+}
++       struct nand_chip *this;
++       int err = 0;
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Gets a handle to a DMA channel
-+*
-+*  This function returns a handle, representing a control block of a particular DMA channel
-+*
-+*  @return  -1       - On Failure
-+*            handle  - On Success, representing a channel control block
-+*
-+*  @note
-+*     None  Channel ID must be created using "dmacHw_MAKE_CHANNEL_ID" macro
-+*/
-+/****************************************************************************/
-+dmacHw_HANDLE_t dmacHw_getChannelHandle(dmacHw_ID_t channelId  /* [ IN ] DMA Channel Id */
-+    ) {
-+       int idx;
++       printk(gBanner);
 +
-+       switch ((channelId >> 8)) {
-+       case 0:
-+               dmacHw_ASSERT((channelId & 0xff) < dmaChannelCount_0);
-+               idx = (channelId & 0xff);
++       /* Allocate memory for MTD device structure and private data */
++       board_mtd =
++           kmalloc(sizeof(struct mtd_info) + sizeof(struct nand_chip),
++                   GFP_KERNEL);
++       if (!board_mtd) {
++               printk(KERN_WARNING
++                      "Unable to allocate NAND MTD device structure.\n");
++               return -ENOMEM;
++       }
++
++       /* map physical adress */
++#ifdef CONFIG_ARCH_BCMRING
++       bcm_umi_io_base = ioremap(MM_ADDR_IO_NAND, 0x1000);
++#else
++       bcm_umi_io_base = ioremap(0x08000000, 0x1000);
++#endif
++
++       if (!bcm_umi_io_base) {
++               printk("ioremap to access BCM UMI NAND chip failed\n");
++               kfree(board_mtd);
++               return -EIO;
++       }
++
++       /* Get pointer to private data */
++       this = (struct nand_chip *)(&board_mtd[1]);
++
++       /* Initialize structures */
++       memset((char *)board_mtd, 0, sizeof(struct mtd_info));
++       memset((char *)this, 0, sizeof(struct nand_chip));
++
++       /* Link the private data with the MTD structure */
++       board_mtd->priv = this;
++
++       /* Initialize the NAND hardware.  */
++       if (bcm_umi_nand_inithw() < 0) {
++               printk("BCM UMI NAND chip could not be initialized\n");
++               iounmap(bcm_umi_io_base);
++               kfree(board_mtd);
++               return -EIO;
++       }
++
++       /* Set address of NAND IO lines */
++       this->IO_ADDR_W = bcm_umi_io_base + REG_NAND_DATA8_OFFSET;
++       this->IO_ADDR_R = bcm_umi_io_base + REG_NAND_DATA8_OFFSET;
++
++       /* Set command delay time, see datasheet for correct value */
++       this->chip_delay = 0;
++       /* Assign the device ready function, if available */
++       this->dev_ready = nand_dev_ready;
++       this->options = 0;
++
++       this->write_buf = bcm_umi_nand_write_buf;
++       this->read_buf = bcm_umi_nand_read_buf;
++       this->verify_buf = bcm_umi_nand_verify_buf;
++
++       this->cmd_ctrl = bcm_umi_nand_hwcontrol;
++#ifdef CONFIG_MTD_NAND_BCM_UMI_HWECC
++       this->ecc.mode = NAND_ECC_HW;
++       this->ecc.size = 512;
++       this->ecc.bytes = NAND_ECC_NUM_BYTES;
++
++#if NAND_ECC_BCH
++       this->ecc.correct = nand_correct_bch;
++#else
++       this->ecc.correct = nand_correct_data512;
++#endif
++
++       this->ecc.calculate = bcm_umi_nand_get_hw_ecc;
++       this->ecc.hwctl = bcm_umi_nand_enable_hwecc;
++#else
++       this->ecc.mode = NAND_ECC_SOFT;
++#endif
++
++       err = nand_dma_init();
++       if (err != 0) {
++               return err;
++       }
++
++       /* Figure out the size of the device that we have. We need to do this to figure out which ECC
++        * layout we'll be using.                                                                       */
++
++       err = nand_scan_ident(board_mtd, 1);
++       if (err) {
++               printk(KERN_ERR "nand_scan failed: %d\n", err);
++               iounmap(bcm_umi_io_base);
++               kfree(board_mtd);
++               return err;
++       }
++
++       /* Now that we know the nand size, we can setup the ECC layout */
++
++#ifdef CONFIG_MTD_NAND_BCM_UMI_HWECC
++       switch (board_mtd->writesize) { /* writesize is the pagesize */
++       case 4096:
++               this->ecc.layout = &nand_hw_eccoob_4096;
 +               break;
-+       case 1:
-+               dmacHw_ASSERT((channelId & 0xff) < dmaChannelCount_1);
-+               idx = dmaChannelCount_0 + (channelId & 0xff);
++       case 2048:
++               this->ecc.layout = &nand_hw_eccoob_2048;
++               break;
++       case 512:
++               this->ecc.layout = &nand_hw_eccoob_512;
 +               break;
 +       default:
-+               dmacHw_ASSERT(0);
-+               return (dmacHw_HANDLE_t) -1;
++               {
++                       printk(KERN_ERR "NAND - Unrecognized pagesize: %d\n",
++                              board_mtd->writesize);
++                       return -EINVAL;
++               }
++       }
++#endif
++
++       /* Now finish off the scan, now that ecc.layout has been initialized. */
++
++       err = nand_scan_tail(board_mtd);
++       if (err) {
++               printk(KERN_ERR "nand_scan failed: %d\n", err);
++               iounmap(bcm_umi_io_base);
++               kfree(board_mtd);
++               return err;
 +       }
 +
-+       return dmacHw_CBLK_TO_HANDLE(&dmacHw_gCblk[idx]);
++       /* Register the partitions */
++       {
++               int nr_partitions;
++               struct mtd_partition *partition_info;
++
++               board_mtd->name = "bcm_umi-nand";
++               nr_partitions =
++                   parse_mtd_partitions(board_mtd, part_probes,
++                                        &partition_info, 0);
++
++               if (nr_partitions <= 0) {
++                       printk("BCM UMI NAND: Too few partitions - %d\n",
++                              nr_partitions);
++                       iounmap(bcm_umi_io_base);
++                       kfree(board_mtd);
++                       return -EIO;
++               }
++               add_mtd_partitions(board_mtd, partition_info, nr_partitions);
++       }
++
++       /* Return happy */
++       return 0;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Initializes a DMA channel for use
-+*
-+*  This function initializes and resets a DMA channel for use
-+*
-+*  @return  -1     - On Failure
-+*            0     - On Success
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+int dmacHw_initChannel(dmacHw_HANDLE_t handle  /*   [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       int module = pCblk->module;
-+       int channel = pCblk->channel;
++static int bcm_umi_nand_remove(struct platform_device *pdev)
++{
++       nand_dma_term();
 +
-+       /* Reinitialize the control block */
-+       Memset((void *)pCblk, 0, sizeof(dmacHw_CBLK_t));
-+       pCblk->module = module;
-+       pCblk->channel = channel;
++       /* Release resources, unregister device */
++       nand_release(board_mtd);
 +
-+       /* Enable DMA controller */
-+       dmacHw_DMA_ENABLE(pCblk->module);
-+       /* Reset DMA channel */
-+       dmacHw_RESET_CONTROL_LO(pCblk->module, pCblk->channel);
-+       dmacHw_RESET_CONTROL_HI(pCblk->module, pCblk->channel);
-+       dmacHw_RESET_CONFIG_LO(pCblk->module, pCblk->channel);
-+       dmacHw_RESET_CONFIG_HI(pCblk->module, pCblk->channel);
++       /* unmap physical adress */
++       iounmap(bcm_umi_io_base);
 +
-+       /* Clear all raw interrupt status */
-+       dmacHw_TRAN_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_BLOCK_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_ERROR_INT_CLEAR(pCblk->module, pCblk->channel);
-+
-+       /* Mask event specific interrupts */
-+       dmacHw_TRAN_INT_DISABLE(pCblk->module, pCblk->channel);
-+       dmacHw_BLOCK_INT_DISABLE(pCblk->module, pCblk->channel);
-+       dmacHw_STRAN_INT_DISABLE(pCblk->module, pCblk->channel);
-+       dmacHw_DTRAN_INT_DISABLE(pCblk->module, pCblk->channel);
-+       dmacHw_ERROR_INT_DISABLE(pCblk->module, pCblk->channel);
++       /* Free the MTD device structure */
++       kfree(board_mtd);
 +
 +       return 0;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief  Finds amount of memory required to form a descriptor ring
-+*
-+*
-+*  @return   Number of bytes required to form a descriptor ring
-+*
-+*
-+*/
-+/****************************************************************************/
-+uint32_t dmacHw_descriptorLen(uint32_t descCnt /* [ IN ] Number of descriptor in the ring */
-+    ) {
-+       /* Need extra 4 byte to ensure 32 bit alignment  */
-+       return (descCnt * sizeof(dmacHw_DESC_t)) + sizeof(dmacHw_DESC_RING_t) +
-+               sizeof(uint32_t);
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Initializes descriptor ring
-+*
-+*  This function will initializes the descriptor ring of a DMA channel
-+*
-+*
-+*  @return   -1 - On failure
-+*             0 - On success
-+*  @note
-+*     - "len" parameter should be obtained from "dmacHw_descriptorLen"
-+*     - Descriptor buffer MUST be 32 bit aligned and uncached as it is
-+*       accessed by ARM and DMA
-+*/
-+/****************************************************************************/
-+int dmacHw_initDescriptor(void *pDescriptorVirt,       /*  [ IN ] Virtual address of uncahced buffer allocated to form descriptor ring */
-+                         uint32_t descriptorPhyAddr,   /*  [ IN ] Physical address of pDescriptorVirt (descriptor buffer) */
-+                         uint32_t len, /*  [ IN ] Size of the pBuf */
-+                         uint32_t num  /*  [ IN ] Number of descriptor in the ring */
-+    ) {
-+       uint32_t i;
-+       dmacHw_DESC_RING_t *pRing;
-+       dmacHw_DESC_t *pDesc;
-+
-+       /* Check the alignment of the descriptor */
-+       if ((uint32_t) pDescriptorVirt & 0x00000003) {
-+               dmacHw_ASSERT(0);
-+               return -1;
-+       }
-+
-+       /* Check if enough space has been allocated for descriptor ring */
-+       if (len < dmacHw_descriptorLen(num)) {
-+               return -1;
-+       }
-+
-+       pRing = dmacHw_GET_DESC_RING(pDescriptorVirt);
-+       pRing->pHead =
-+           (dmacHw_DESC_t *) ((uint32_t) pRing + sizeof(dmacHw_DESC_RING_t));
-+       pRing->pFree = pRing->pTail = pRing->pEnd = pRing->pHead;
-+       pRing->pProg = dmacHw_DESC_INIT;
-+       /* Initialize link item chain, starting from the head */
-+       pDesc = pRing->pHead;
-+       /* Find the offset between virtual to physical address */
-+       pRing->virt2PhyOffset = (uint32_t) pDescriptorVirt - descriptorPhyAddr;
-+
-+       /* Form the descriptor ring */
-+       for (i = 0; i < num - 1; i++) {
-+               /* Clear link list item */
-+               Memset((void *)pDesc, 0, sizeof(dmacHw_DESC_t));
-+               /* Point to the next item in the physical address */
-+               pDesc->llpPhy = (uint32_t) (pDesc + 1) - pRing->virt2PhyOffset;
-+               /* Point to the next item in the virtual address */
-+               pDesc->llp = (uint32_t) (pDesc + 1);
-+               /* Mark descriptor is ready to use */
-+               pDesc->ctl.hi = dmacHw_DESC_FREE;
-+               /* Look into next link list item */
-+               pDesc++;
-+       }
-+
-+       /* Clear last link list item */
-+       Memset((void *)pDesc, 0, sizeof(dmacHw_DESC_t));
-+       /* Last item pointing to the first item in the
-+          physical address to complete the ring */
-+       pDesc->llpPhy = (uint32_t) pRing->pHead - pRing->virt2PhyOffset;
-+       /* Last item pointing to the first item in the
-+          virtual address to complete the ring
-+        */
-+       pDesc->llp = (uint32_t) pRing->pHead;
-+       /* Mark descriptor is ready to use */
-+       pDesc->ctl.hi = dmacHw_DESC_FREE;
-+       /* Set the number of descriptors in the ring */
-+       pRing->num = num;
++#ifdef CONFIG_PM
++static int bcm_umi_nand_suspend(struct platform_device *pdev,
++                               pm_message_t state)
++{
++       printk(KERN_ERR "MTD NAND suspend is being called\n");
 +       return 0;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Configure DMA channel
-+*
-+*  @return  0  : On success
-+*           -1 : On failure
-+*/
-+/****************************************************************************/
-+int dmacHw_configChannel(dmacHw_HANDLE_t handle,       /*   [ IN ] DMA Channel handle */
-+                        dmacHw_CONFIG_t *pConfig       /*   [ IN ] Configuration settings */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       uint32_t cfgHigh = 0;
-+       int srcTrSize;
-+       int dstTrSize;
-+
-+       pCblk->varDataStarted = 0;
-+       pCblk->userData = NULL;
-+
-+       /* Configure
-+          - Burst transaction when enough data in available in FIFO
-+          - AHB Access protection 1
-+          - Source and destination peripheral ports
-+        */
-+       cfgHigh =
-+           dmacHw_REG_CFG_HI_FIFO_ENOUGH | dmacHw_REG_CFG_HI_AHB_HPROT_1 |
-+           dmacHw_SRC_PERI_INTF(pConfig->
-+                                srcPeripheralPort) |
-+           dmacHw_DST_PERI_INTF(pConfig->dstPeripheralPort);
-+       /* Set priority */
-+       dmacHw_SET_CHANNEL_PRIORITY(pCblk->module, pCblk->channel,
-+                                   pConfig->channelPriority);
-+
-+       if (pConfig->dstStatusRegisterAddress != 0) {
-+               /* Destination status update enable */
-+               cfgHigh |= dmacHw_REG_CFG_HI_UPDATE_DST_STAT;
-+               /* Configure status registers */
-+               dmacHw_SET_DSTATAR(pCblk->module, pCblk->channel,
-+                                  pConfig->dstStatusRegisterAddress);
-+       }
-+
-+       if (pConfig->srcStatusRegisterAddress != 0) {
-+               /* Source status update enable */
-+               cfgHigh |= dmacHw_REG_CFG_HI_UPDATE_SRC_STAT;
-+               /* Source status update enable */
-+               dmacHw_SET_SSTATAR(pCblk->module, pCblk->channel,
-+                                  pConfig->srcStatusRegisterAddress);
-+       }
-+       /* Configure the config high register */
-+       dmacHw_GET_CONFIG_HI(pCblk->module, pCblk->channel) = cfgHigh;
-+
-+       /* Clear all raw interrupt status */
-+       dmacHw_TRAN_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_BLOCK_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_ERROR_INT_CLEAR(pCblk->module, pCblk->channel);
-+
-+       /* Configure block interrupt */
-+       if (pConfig->blockTransferInterrupt == dmacHw_INTERRUPT_ENABLE) {
-+               dmacHw_BLOCK_INT_ENABLE(pCblk->module, pCblk->channel);
-+       } else {
-+               dmacHw_BLOCK_INT_DISABLE(pCblk->module, pCblk->channel);
-+       }
-+       /* Configure complete transfer interrupt */
-+       if (pConfig->completeTransferInterrupt == dmacHw_INTERRUPT_ENABLE) {
-+               dmacHw_TRAN_INT_ENABLE(pCblk->module, pCblk->channel);
-+       } else {
-+               dmacHw_TRAN_INT_DISABLE(pCblk->module, pCblk->channel);
-+       }
-+       /* Configure error interrupt */
-+       if (pConfig->errorInterrupt == dmacHw_INTERRUPT_ENABLE) {
-+               dmacHw_ERROR_INT_ENABLE(pCblk->module, pCblk->channel);
-+       } else {
-+               dmacHw_ERROR_INT_DISABLE(pCblk->module, pCblk->channel);
-+       }
-+       /* Configure gather register */
-+       if (pConfig->srcGatherWidth) {
-+               srcTrSize =
-+                   dmacHw_GetTrWidthInBytes(pConfig->srcMaxTransactionWidth);
-+               if (!
-+                   ((pConfig->srcGatherWidth % srcTrSize)
-+                    && (pConfig->srcGatherJump % srcTrSize))) {
-+                       dmacHw_REG_SGR_LO(pCblk->module, pCblk->channel) =
-+                           ((pConfig->srcGatherWidth /
-+                             srcTrSize) << 20) | (pConfig->srcGatherJump /
-+                                                  srcTrSize);
-+               } else {
-+                       return -1;
-+               }
-+       }
-+       /* Configure scatter register */
-+       if (pConfig->dstScatterWidth) {
-+               dstTrSize =
-+                   dmacHw_GetTrWidthInBytes(pConfig->dstMaxTransactionWidth);
-+               if (!
-+                   ((pConfig->dstScatterWidth % dstTrSize)
-+                    && (pConfig->dstScatterJump % dstTrSize))) {
-+                       dmacHw_REG_DSR_LO(pCblk->module, pCblk->channel) =
-+                           ((pConfig->dstScatterWidth /
-+                             dstTrSize) << 20) | (pConfig->dstScatterJump /
-+                                                  dstTrSize);
-+               } else {
-+                       return -1;
-+               }
-+       }
++static int bcm_umi_nand_resume(struct platform_device *pdev)
++{
++       printk(KERN_ERR "MTD NAND resume is being called\n");
 +       return 0;
 +}
++#else
++#define bcm_umi_nand_suspend   NULL
++#define bcm_umi_nand_resume    NULL
++#endif
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Indicates whether DMA transfer is in progress or completed
-+*
-+*  @return   DMA transfer status
-+*          dmacHw_TRANSFER_STATUS_BUSY:         DMA Transfer ongoing
-+*          dmacHw_TRANSFER_STATUS_DONE:         DMA Transfer completed
-+*          dmacHw_TRANSFER_STATUS_ERROR:        DMA Transfer error
-+*
-+*/
-+/****************************************************************************/
-+dmacHw_TRANSFER_STATUS_e dmacHw_transferCompleted(dmacHw_HANDLE_t handle       /*   [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
++static struct platform_driver nand_driver = {
++       .driver = {
++                  .name = "bcm-nand",
++                  .owner = THIS_MODULE,
++                  },
++       .probe = bcm_umi_nand_probe,
++       .remove = bcm_umi_nand_remove,
++       .suspend = bcm_umi_nand_suspend,
++       .resume = bcm_umi_nand_resume,
++};
 +
-+       if (CHANNEL_BUSY(pCblk->module, pCblk->channel)) {
-+               return dmacHw_TRANSFER_STATUS_BUSY;
-+       } else if (dmacHw_REG_INT_RAW_ERROR(pCblk->module) &
-+                  (0x00000001 << pCblk->channel)) {
-+               return dmacHw_TRANSFER_STATUS_ERROR;
-+       }
-+
-+       return dmacHw_TRANSFER_STATUS_DONE;
++static int __init nand_init(void)
++{
++       return platform_driver_register(&nand_driver);
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Set descriptors for known data length
-+*
-+*  When DMA has to work as a flow controller, this function prepares the
-+*  descriptor chain to transfer data
-+*
-+*  from:
-+*          - Memory to memory
-+*          - Peripheral to memory
-+*          - Memory to Peripheral
-+*          - Peripheral to Peripheral
-+*
-+*  @return   -1 - On failure
-+*             0 - On success
-+*
-+*/
-+/****************************************************************************/
-+int dmacHw_setDataDescriptor(dmacHw_CONFIG_t *pConfig, /*   [ IN ] Configuration settings */
-+                            void *pDescriptor, /*   [ IN ] Descriptor buffer */
-+                            void *pSrcAddr,    /*   [ IN ] Source (Peripheral/Memory) address */
-+                            void *pDstAddr,    /*   [ IN ] Destination (Peripheral/Memory) address */
-+                            size_t dataLen     /*   [ IN ] Data length in bytes */
-+    ) {
-+       dmacHw_TRANSACTION_WIDTH_e dstTrWidth;
-+       dmacHw_TRANSACTION_WIDTH_e srcTrWidth;
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+       dmacHw_DESC_t *pStart;
-+       dmacHw_DESC_t *pProg;
-+       int srcTs = 0;
-+       int blkTs = 0;
-+       int oddSize = 0;
-+       int descCount = 0;
-+       int count = 0;
-+       int dstTrSize = 0;
-+       int srcTrSize = 0;
-+       uint32_t maxBlockSize = dmacHw_MAX_BLOCKSIZE;
-+
-+       dstTrSize = dmacHw_GetTrWidthInBytes(pConfig->dstMaxTransactionWidth);
-+       srcTrSize = dmacHw_GetTrWidthInBytes(pConfig->srcMaxTransactionWidth);
-+
-+       /* Skip Tx if buffer is NULL  or length is unknown */
-+       if ((pSrcAddr == NULL) || (pDstAddr == NULL) || (dataLen == 0)) {
-+               /* Do not initiate transfer */
-+               return -1;
-+       }
-+
-+       /* Ensure scatter and gather are transaction aligned */
-+       if ((pConfig->srcGatherWidth % srcTrSize)
-+           || (pConfig->dstScatterWidth % dstTrSize)) {
-+               return -2;
-+       }
-+
-+       /*
-+          Background 1: DMAC can not perform DMA if source and destination addresses are
-+          not properly aligned with the channel's transaction width. So, for successful
-+          DMA transfer, transaction width must be set according to the alignment of the
-+          source and destination address.
-+        */
-+
-+       /* Adjust destination transaction width if destination address is not aligned properly */
-+       dstTrWidth = pConfig->dstMaxTransactionWidth;
-+       while (dmacHw_ADDRESS_MASK(dstTrSize) & (uint32_t) pDstAddr) {
-+               dstTrWidth = dmacHw_GetNextTrWidth(dstTrWidth);
-+               dstTrSize = dmacHw_GetTrWidthInBytes(dstTrWidth);
-+       }
-+
-+       /* Adjust source transaction width if source address is not aligned properly */
-+       srcTrWidth = pConfig->srcMaxTransactionWidth;
-+       while (dmacHw_ADDRESS_MASK(srcTrSize) & (uint32_t) pSrcAddr) {
-+               srcTrWidth = dmacHw_GetNextTrWidth(srcTrWidth);
-+               srcTrSize = dmacHw_GetTrWidthInBytes(srcTrWidth);
-+       }
-+
-+       /* Find the maximum transaction per descriptor */
-+       if (pConfig->maxDataPerBlock
-+           && ((pConfig->maxDataPerBlock / srcTrSize) <
-+               dmacHw_MAX_BLOCKSIZE)) {
-+               maxBlockSize = pConfig->maxDataPerBlock / srcTrSize;
-+       }
-+
-+       /* Find number of source transactions needed to complete the DMA transfer */
-+       srcTs = dataLen / srcTrSize;
-+       /* Find the odd number of bytes that need to be transferred as single byte transaction width */
-+       if (srcTs && (dstTrSize > srcTrSize)) {
-+               oddSize = dataLen % dstTrSize;
-+               /* Adjust source transaction count due to "oddSize" */
-+               srcTs = srcTs - (oddSize / srcTrSize);
-+       } else {
-+               oddSize = dataLen % srcTrSize;
-+       }
-+       /* Adjust "descCount" due to "oddSize" */
-+       if (oddSize) {
-+               descCount++;
-+       }
-+       /* Find the number of descriptor needed for total "srcTs" */
-+       if (srcTs) {
-+               descCount += ((srcTs - 1) / maxBlockSize) + 1;
-+       }
-+
-+       /* Check the availability of "descCount" discriptors in the ring */
-+       pProg = pRing->pHead;
-+       for (count = 0; (descCount <= pRing->num) && (count < descCount);
-+            count++) {
-+               if ((pProg->ctl.hi & dmacHw_DESC_FREE) == 0) {
-+                       /* Sufficient descriptors are not available */
-+                       return -3;
-+               }
-+               pProg = (dmacHw_DESC_t *) pProg->llp;
-+       }
-+
-+       /* Remember the link list item to program the channel registers */
-+       pStart = pProg = pRing->pHead;
-+       /* Make a link list with "descCount(=count)" number of descriptors */
-+       while (count) {
-+               /* Reset channel control information */
-+               pProg->ctl.lo = 0;
-+               /* Enable source gather if configured */
-+               if (pConfig->srcGatherWidth) {
-+                       pProg->ctl.lo |= dmacHw_REG_CTL_SG_ENABLE;
-+               }
-+               /* Enable destination scatter if configured */
-+               if (pConfig->dstScatterWidth) {
-+                       pProg->ctl.lo |= dmacHw_REG_CTL_DS_ENABLE;
-+               }
-+               /* Set source and destination address */
-+               pProg->sar = (uint32_t) pSrcAddr;
-+               pProg->dar = (uint32_t) pDstAddr;
-+               /* Use "devCtl" to mark that user memory need to be freed later if needed */
-+               if (pProg == pRing->pHead) {
-+                       pProg->devCtl = dmacHw_FREE_USER_MEMORY;
-+               } else {
-+                       pProg->devCtl = 0;
-+               }
-+
-+               blkTs = srcTs;
-+
-+               /* Special treatmeant for last descriptor */
-+               if (count == 1) {
-+                       /* Mark the last descriptor */
-+                       pProg->ctl.lo &=
-+                           ~(dmacHw_REG_CTL_LLP_DST_EN |
-+                             dmacHw_REG_CTL_LLP_SRC_EN);
-+                       /* Treatment for odd data bytes */
-+                       if (oddSize) {
-+                               /* Adjust for single byte transaction width */
-+                               switch (pConfig->transferType) {
-+                               case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_MEM:
-+                                       dstTrWidth =
-+                                           dmacHw_DST_TRANSACTION_WIDTH_8;
-+                                       blkTs =
-+                                           (oddSize / srcTrSize) +
-+                                           ((oddSize % srcTrSize) ? 1 : 0);
-+                                       break;
-+                               case dmacHw_TRANSFER_TYPE_MEM_TO_PERIPHERAL:
-+                                       srcTrWidth =
-+                                           dmacHw_SRC_TRANSACTION_WIDTH_8;
-+                                       blkTs = oddSize;
-+                                       break;
-+                               case dmacHw_TRANSFER_TYPE_MEM_TO_MEM:
-+                                       srcTrWidth =
-+                                           dmacHw_SRC_TRANSACTION_WIDTH_8;
-+                                       dstTrWidth =
-+                                           dmacHw_DST_TRANSACTION_WIDTH_8;
-+                                       blkTs = oddSize;
-+                                       break;
-+                               case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_PERIPHERAL:
-+                                       /* Do not adjust the transaction width  */
-+                                       break;
-+                               }
-+                       } else {
-+                               srcTs -= blkTs;
-+                       }
-+               } else {
-+                       if (srcTs / maxBlockSize) {
-+                               blkTs = maxBlockSize;
-+                       }
-+                       /* Remaining source transactions for next iteration */
-+                       srcTs -= blkTs;
-+               }
-+               /* Must have a valid source transactions */
-+               dmacHw_ASSERT(blkTs > 0);
-+               /* Set control information */
-+               if (pConfig->flowControler == dmacHw_FLOW_CONTROL_DMA) {
-+                       pProg->ctl.lo |= pConfig->transferType |
-+                           pConfig->srcUpdate |
-+                           pConfig->dstUpdate |
-+                           srcTrWidth |
-+                           dstTrWidth |
-+                           pConfig->srcMaxBurstWidth |
-+                           pConfig->dstMaxBurstWidth |
-+                           pConfig->srcMasterInterface |
-+                           pConfig->dstMasterInterface | dmacHw_REG_CTL_INT_EN;
-+               } else {
-+                       uint32_t transferType = 0;
-+                       switch (pConfig->transferType) {
-+                       case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_MEM:
-+                               transferType = dmacHw_REG_CTL_TTFC_PM_PERI;
-+                               break;
-+                       case dmacHw_TRANSFER_TYPE_MEM_TO_PERIPHERAL:
-+                               transferType = dmacHw_REG_CTL_TTFC_MP_PERI;
-+                               break;
-+                       default:
-+                               dmacHw_ASSERT(0);
-+                       }
-+                       pProg->ctl.lo |= transferType |
-+                           pConfig->srcUpdate |
-+                           pConfig->dstUpdate |
-+                           srcTrWidth |
-+                           dstTrWidth |
-+                           pConfig->srcMaxBurstWidth |
-+                           pConfig->dstMaxBurstWidth |
-+                           pConfig->srcMasterInterface |
-+                           pConfig->dstMasterInterface | dmacHw_REG_CTL_INT_EN;
-+               }
-+
-+               /* Set block transaction size */
-+               pProg->ctl.hi = blkTs & dmacHw_REG_CTL_BLOCK_TS_MASK;
-+               /* Look for next descriptor */
-+               if (count > 1) {
-+                       /* Point to the next descriptor */
-+                       pProg = (dmacHw_DESC_t *) pProg->llp;
-+
-+                       /* Update source and destination address for next iteration */
-+                       switch (pConfig->transferType) {
-+                       case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_MEM:
-+                               if (pConfig->dstScatterWidth) {
-+                                       pDstAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize +
-+                                           (((blkTs * srcTrSize) /
-+                                             pConfig->dstScatterWidth) *
-+                                            pConfig->dstScatterJump);
-+                               } else {
-+                                       pDstAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize;
-+                               }
-+                               break;
-+                       case dmacHw_TRANSFER_TYPE_MEM_TO_PERIPHERAL:
-+                               if (pConfig->srcGatherWidth) {
-+                                       pSrcAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize +
-+                                           (((blkTs * srcTrSize) /
-+                                             pConfig->srcGatherWidth) *
-+                                            pConfig->srcGatherJump);
-+                               } else {
-+                                       pSrcAddr =
-+                                           (char *)pSrcAddr +
-+                                           blkTs * srcTrSize;
-+                               }
-+                               break;
-+                       case dmacHw_TRANSFER_TYPE_MEM_TO_MEM:
-+                               if (pConfig->dstScatterWidth) {
-+                                       pDstAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize +
-+                                           (((blkTs * srcTrSize) /
-+                                             pConfig->dstScatterWidth) *
-+                                            pConfig->dstScatterJump);
-+                               } else {
-+                                       pDstAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize;
-+                               }
-+
-+                               if (pConfig->srcGatherWidth) {
-+                                       pSrcAddr =
-+                                           (char *)pDstAddr +
-+                                           blkTs * srcTrSize +
-+                                           (((blkTs * srcTrSize) /
-+                                             pConfig->srcGatherWidth) *
-+                                            pConfig->srcGatherJump);
-+                               } else {
-+                                       pSrcAddr =
-+                                           (char *)pSrcAddr +
-+                                           blkTs * srcTrSize;
-+                               }
-+                               break;
-+                       case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_PERIPHERAL:
-+                               /* Do not adjust the address */
-+                               break;
-+                       default:
-+                               dmacHw_ASSERT(0);
-+                       }
-+               } else {
-+                       /* At the end of transfer "srcTs" must be zero */
-+                       dmacHw_ASSERT(srcTs == 0);
-+               }
-+               count--;
-+       }
-+
-+       /* Remember the descriptor to initialize the registers */
-+       if (pRing->pProg == dmacHw_DESC_INIT) {
-+               pRing->pProg = pStart;
-+       }
-+       /* Indicate that the descriptor is updated */
-+       pRing->pEnd = pProg;
-+       /* Head pointing to the next descriptor */
-+       pRing->pHead = (dmacHw_DESC_t *) pProg->llp;
-+       /* Update Tail pointer if destination is a peripheral,
-+          because no one is going to read from the pTail
-+        */
-+       if (!dmacHw_DST_IS_MEMORY(pConfig->transferType)) {
-+               pRing->pTail = pRing->pHead;
-+       }
-+       return 0;
++static void __exit nand_exit(void)
++{
++       platform_driver_unregister(&nand_driver);
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Provides DMA controller attributes
-+*
-+*
-+*  @return  DMA controller attributes
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+uint32_t dmacHw_getDmaControllerAttribute(dmacHw_HANDLE_t handle,      /*  [ IN ]  DMA Channel handle */
-+                                         dmacHw_CONTROLLER_ATTRIB_e attr       /*  [ IN ]  DMA Controler attribute of type  dmacHw_CONTROLLER_ATTRIB_e */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
++module_init(nand_init);
++module_exit(nand_exit);
 +
-+       switch (attr) {
-+       case dmacHw_CONTROLLER_ATTRIB_CHANNEL_NUM:
-+               return dmacHw_GET_NUM_CHANNEL(pCblk->module);
-+       case dmacHw_CONTROLLER_ATTRIB_CHANNEL_MAX_BLOCK_SIZE:
-+               return (1 <<
-+                        (dmacHw_GET_MAX_BLOCK_SIZE
-+                         (pCblk->module, pCblk->module) + 2)) - 8;
-+       case dmacHw_CONTROLLER_ATTRIB_MASTER_INTF_NUM:
-+               return dmacHw_GET_NUM_INTERFACE(pCblk->module);
-+       case dmacHw_CONTROLLER_ATTRIB_CHANNEL_BUS_WIDTH:
-+               return 32 << dmacHw_GET_CHANNEL_DATA_WIDTH(pCblk->module,
-+                                                          pCblk->channel);
-+       case dmacHw_CONTROLLER_ATTRIB_CHANNEL_FIFO_SIZE:
-+               return GetFifoSize(handle);
-+       }
-+       dmacHw_ASSERT(0);
-+       return 0;
-+}
-diff --git a/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c b/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Broadcom");
++MODULE_DESCRIPTION("BCM UMI MTD NAND driver");
+diff --git a/drivers/mtd/nand/nand_calculate_ecc512.c b/drivers/mtd/nand/nand_calculate_ecc512.c
 new file mode 100644
-index 0000000..ff7b436
+index 0000000..7ead689
 --- /dev/null
-+++ b/arch/arm/mach-bcmring/csp/dmac/dmacHw_extra.c
-@@ -0,0 +1,1017 @@
++++ b/drivers/mtd/nand/nand_calculate_ecc512.c
+@@ -0,0 +1,254 @@
 +/*****************************************************************************
-+* Copyright 2003 - 2008 Broadcom Corporation.  All rights reserved.
++* Copyright 2004 - 2008 Broadcom Corporation.  All rights reserved.
 +*
 +* Unless you and Broadcom execute a separate written software license
 +* agreement governing use of this software, this software is licensed to you
@@ -1031,1011 +1012,681 @@ index 0000000..ff7b436
 +* consent.
 +*****************************************************************************/
 +
-+/****************************************************************************/
-+/**
-+*  @file    dmacHw_extra.c
-+*
-+*  @brief   Extra Low level DMA controller driver routines
-+*
-+*  @note
-+*
-+*   These routines provide basic DMA functionality only.
-+*/
-+/****************************************************************************/
++/*---------------------------------------------------------------------------*/
++/* nand ecc calculation - only useful for mips cpu's that have no ECC  */
++/* generation hardware. */
++/*---------------------------------------------------------------------------*/
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
 +
-+/* ---- Include Files ---------------------------------------------------- */
++/*****************************************************************************/
++/*                                                                           */
++/* NAME                                                                      */
++/*      nand_calculate_ecc512                                                         */
++/* DESCRIPTION                                                               */
++/*             This function generates 3 byte ECC for 512 byte data.                */
++/*      (Software ECC)                                                       */
++/* PARAMETERS                                                                */
++/*      pEcc            the location where ECC should be stored              */
++/*      datapage        given data                                           */
++/* RETURN VALUES                                                             */
++/*             none                                                                 */
++/*                                                                           */
++/*****************************************************************************/
++#define NAND_PG_SIZE 512
 +
-+#include <csp/stdint.h>
-+#include <stddef.h>
++/* For efficiency reasons, process the data as 32-bit words, 4 bytes packed. */
++/* The words are grouped into blocks which helps us calculate parity regions. */
++/* The block size is set to 8 words so that we can calculate the larger */
++/* parity regions, which starts at P256, which needs 8 words. So for a  */
++/* 512 byte page, we have to loop 16 times, 8 words per block to get 128 words, */
++/* or 512 bytes. */
++#define NAND_PAGE_WORDS (NAND_PG_SIZE / 4)
++#define BYTES_PER_BLOCK        32
++#define WORDS_PER_BLOCK        (BYTES_PER_BLOCK / 4)
++#define BLOCKS (NAND_PAGE_WORDS / WORDS_PER_BLOCK)
 +
-+#include <csp/dmacHw.h>
-+#include <mach/csp/dmacHw_reg.h>
-+#include <mach/csp/dmacHw_priv.h>
++/* Patterns which capture blocks of bytes */
++/* of different sizes, when layed out as */
++/* 32 bit words. This is more efficient  */
++/* than calculating parity on a byte by */
++/* byte basis. */
++#define P16_PATTERN            0xffff0000
++#define P16P_PATTERN           (~P16_PATTERN)
++#define P8_PATTERN             0xff00ff00
++#define P8P_PATTERN            (~P8_PATTERN)
++#define P4_PATTERN             0xf0f0f0f0
++#define P4P_PATTERN            (~P4_PATTERN)
++#define P2_PATTERN             0xcccccccc
++#define P2P_PATTERN            (~P2_PATTERN)
++#define P1_PATTERN             0xaaaaaaaa
++#define P1P_PATTERN            (~P1_PATTERN)
 +
-+extern dmacHw_CBLK_t dmacHw_gCblk[dmacHw_MAX_CHANNEL_COUNT];   /* Declared in dmacHw.c */
++/* These are bit positions within the largeBlockParity bitmap */
++/* for each corresponding pattern. D0 corresponds to the parity */
++/* of the first 32 byte block. D15 corresponds to the parity of */
++/* the last 32 byte block. Combinations of these bits can be */
++/* used to get the parity of each region. */
++/* 0  P256' */
++/* 1  P256   P512' */
++/* 2  P256' */
++/* 3  P256   P512   P1024' */
++/* 4  P256' */
++/* 5  P256   P512' */
++/* 6  P256' */
++/* 7  P256   P512'  P1024 */
++/* ... */
++#define P256_PATTERN           0xaaaa
++#define P512_PATTERN           0xcccc
++#define P1024_PATTERN  0xf0f0
++#define P2048_PATTERN  0xff00
++#define P256P_PATTERN  0x5555
++#define P512P_PATTERN  0x3333
++#define P1024P_PATTERN 0x0f0f
++#define P2048P_PATTERN 0x00ff
 +
-+/* ---- External Function Prototypes ------------------------------------- */
++/* Positions in the final ECC word */
++#define P4             0x00800000
++#define P4P            0x00400000
++#define P2             0x00200000
++#define P2P            0x00100000
++#define P1             0x00080000
++#define P1P            0x00040000
++#define P2048  0x00020000
++#define P2048P 0x00010000
++#define P1024  0x00008000
++#define P1024P 0x00004000
++#define P512   0x00002000
++#define P512P  0x00001000
++#define P256   0x00000800
++#define P256P  0x00000400
++#define P128   0x00000200
++#define P128P  0x00000100
++#define P64            0x00000080
++#define P64P   0x00000040
++#define P32            0x00000020
++#define P32P   0x00000010
++#define P16            0x00000008
++#define P16P   0x00000004
++#define P8             0x00000002
++#define P8P            0x00000001
 +
-+/* ---- Internal Use Function Prototypes --------------------------------- */
-+/****************************************************************************/
-+/**
-+*  @brief   Overwrites data length in the descriptor
-+*
-+*  This function overwrites data length in the descriptor
-+*
-+*
-+*  @return   void
-+*
-+*  @note
-+*          This is only used for PCM channel
-+*/
-+/****************************************************************************/
-+void dmacHw_setDataLength(dmacHw_CONFIG_t *pConfig,    /*   [ IN ] Configuration settings */
-+                         void *pDescriptor,    /*   [ IN ] Descriptor buffer */
-+                         size_t dataLen        /*   [ IN ] Data length in bytes */
-+    );
++struct mtd_info;
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Helper function to display DMA registers
-+*
-+*  @return  void
-+*
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+static void DisplayRegisterContents(int module,        /*   [ IN ] DMA Controller unit  (0-1) */
-+                                   int channel,        /*   [ IN ] DMA Channel          (0-7) / -1(all) */
-+                                   int (*fpPrint) (const char *, ...)  /*   [ IN ] Callback to the print function */
-+    ) {
-+       int chan;
++const u_char parity_nibble[16] = {
++       0,                      /* 0 */
++       1,                      /* 1 */
++       1,                      /* 2 */
++       0,                      /* 3 */
++       1,                      /* 4 */
++       0,                      /* 5 */
++       0,                      /* 6 */
++       1,                      /* 7 */
++       1,                      /* 8 */
++       0,                      /* 9 */
++       0,                      /* 0xa */
++       1,                      /* 0xb */
++       0,                      /* 0xc */
++       1,                      /* 0xd */
++       1,                      /* 0xe */
++       0                       /* 0xf */
++};
 +
-+       (*fpPrint) ("Displaying register content \n\n");
-+       (*fpPrint) ("Module %d: Interrupt raw transfer              0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_RAW_TRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt raw block                 0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_RAW_BLOCK(module)));
-+       (*fpPrint) ("Module %d: Interrupt raw src transfer          0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_RAW_STRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt raw dst transfer          0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_RAW_DTRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt raw error                 0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_RAW_ERROR(module)));
-+       (*fpPrint) ("--------------------------------------------------\n");
-+       (*fpPrint) ("Module %d: Interrupt stat transfer             0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_STAT_TRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt stat block                0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_STAT_BLOCK(module)));
-+       (*fpPrint) ("Module %d: Interrupt stat src transfer         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_STAT_STRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt stat dst transfer         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_STAT_DTRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt stat error                0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_STAT_ERROR(module)));
-+       (*fpPrint) ("--------------------------------------------------\n");
-+       (*fpPrint) ("Module %d: Interrupt mask transfer             0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_MASK_TRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt mask block                0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_MASK_BLOCK(module)));
-+       (*fpPrint) ("Module %d: Interrupt mask src transfer         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_MASK_STRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt mask dst transfer         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_MASK_DTRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt mask error                0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_MASK_ERROR(module)));
-+       (*fpPrint) ("--------------------------------------------------\n");
-+       (*fpPrint) ("Module %d: Interrupt clear transfer            0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_CLEAR_TRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt clear block               0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_CLEAR_BLOCK(module)));
-+       (*fpPrint) ("Module %d: Interrupt clear src transfer        0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_CLEAR_STRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt clear dst transfer        0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_CLEAR_DTRAN(module)));
-+       (*fpPrint) ("Module %d: Interrupt clear error               0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_INT_CLEAR_ERROR(module)));
-+       (*fpPrint) ("--------------------------------------------------\n");
-+       (*fpPrint) ("Module %d: SW source req                       0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_SRC_REQ(module)));
-+       (*fpPrint) ("Module %d: SW dest req                         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_DST_REQ(module)));
-+       (*fpPrint) ("Module %d: SW source signal                    0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_SRC_SGL_REQ(module)));
-+       (*fpPrint) ("Module %d: SW dest signal                      0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_DST_SGL_REQ(module)));
-+       (*fpPrint) ("Module %d: SW source last                      0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_SRC_LST_REQ(module)));
-+       (*fpPrint) ("Module %d: SW dest last                        0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_SW_HS_DST_LST_REQ(module)));
-+       (*fpPrint) ("--------------------------------------------------\n");
-+       (*fpPrint) ("Module %d: misc config                         0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_MISC_CFG(module)));
-+       (*fpPrint) ("Module %d: misc channel enable                 0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_MISC_CH_ENABLE(module)));
-+       (*fpPrint) ("Module %d: misc ID                             0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_MISC_ID(module)));
-+       (*fpPrint) ("Module %d: misc test                           0x%X\n",
-+                   module, (uint32_t) (dmacHw_REG_MISC_TEST(module)));
++typedef struct {
++       uint32_t largeBlockParities;    /* bitmap of parities for blocks 0-15 */
++       uint32_t pBlock;        /* parity of current block */
++       uint32_t result;        /* runnning ecc result */
++       uint32_t p16ByteBlockOdd;       /* 16 byte odd block parity  */
++       uint32_t p8ByteBlockOdd;        /* 8 byte odd block parity */
++       uint32_t p4ByteBlockOdd;        /* 4 byte odd block parity */
++       uint32_t p16ByteBlockEven;      /* 16 byte even block parity  */
++       uint32_t p8ByteBlockEven;       /* 8 byte even block parity   */
++       uint32_t p4ByteBlockEven;       /* 4 byte even block parity   */
++       uint32_t pFinal;        /* parity of 512 byte packet */
++       uint32_t *wordp;        /* ptr to aligned start of packet */
++} ECCINFO;
 +
-+       if (channel == -1) {
-+               for (chan = 0; chan < 8; chan++) {
-+                       (*fpPrint)
-+                           ("--------------------------------------------------\n");
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Source                   0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_SAR(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Destination              0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_DAR(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d LLP                      0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_LLP(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Control (LO)             0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_CTL_LO(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Control (HI)             0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_CTL_HI(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Source Stats             0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_SSTAT(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Dest Stats               0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_DSTAT(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Source Stats Addr        0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_SSTATAR(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Dest Stats Addr          0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_DSTATAR(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Config (LO)              0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_CFG_LO(module, chan)));
-+                       (*fpPrint)
-+                           ("Module %d: Channel %d Config (HI)              0x%X\n",
-+                            module, chan,
-+                            (uint32_t) (dmacHw_REG_CFG_HI(module, chan)));
-+               }
-+       } else {
-+               chan = channel;
-+               (*fpPrint)
-+                   ("--------------------------------------------------\n");
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Source                   0x%X\n",
-+                    module, chan, (uint32_t) (dmacHw_REG_SAR(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Destination              0x%X\n",
-+                    module, chan, (uint32_t) (dmacHw_REG_DAR(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d LLP                      0x%X\n",
-+                    module, chan, (uint32_t) (dmacHw_REG_LLP(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Control (LO)             0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_CTL_LO(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Control (HI)             0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_CTL_HI(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Source Stats             0x%X\n",
-+                    module, chan, (uint32_t) (dmacHw_REG_SSTAT(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Dest Stats               0x%X\n",
-+                    module, chan, (uint32_t) (dmacHw_REG_DSTAT(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Source Stats Addr        0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_SSTATAR(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Dest Stats Addr          0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_DSTATAR(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Config (LO)              0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_CFG_LO(module, chan)));
-+               (*fpPrint)
-+                   ("Module %d: Channel %d Config (HI)              0x%X\n",
-+                    module, chan,
-+                    (uint32_t) (dmacHw_REG_CFG_HI(module, chan)));
-+       }
++/* Calculate the parity of a word (xor all bits in the word) */
++/* Returns parity 0 or 1. */
++static inline int wordParity(uint32_t word)
++{
++       uint32_t val;
++       val = (word >> 16) ^ word;
++       val = (val >> 8) ^ val;
++       val = (val >> 4) ^ val;
++       return parity_nibble[val & 0xf];
++
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Helper function to display descriptor ring
-+*
-+*  @return  void
-+*
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+static void DisplayDescRing(void *pDescriptor, /*   [ IN ] Descriptor buffer */
-+                           int (*fpPrint) (const char *, ...)  /*   [ IN ] Callback to the print function */
-+    ) {
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+       dmacHw_DESC_t *pStart;
-+
-+       if (pRing->pHead == NULL) {
-+               return;
-+       }
-+
-+       pStart = pRing->pHead;
-+
-+       while ((dmacHw_DESC_t *) pStart->llp != pRing->pHead) {
-+               if (pStart == pRing->pHead) {
-+                       (*fpPrint) ("Head\n");
-+               }
-+               if (pStart == pRing->pTail) {
-+                       (*fpPrint) ("Tail\n");
-+               }
-+               if (pStart == pRing->pProg) {
-+                       (*fpPrint) ("Prog\n");
-+               }
-+               if (pStart == pRing->pEnd) {
-+                       (*fpPrint) ("End\n");
-+               }
-+               if (pStart == pRing->pFree) {
-+                       (*fpPrint) ("Free\n");
-+               }
-+               (*fpPrint) ("0x%X:\n", (uint32_t) pStart);
-+               (*fpPrint) ("sar    0x%0X\n", pStart->sar);
-+               (*fpPrint) ("dar    0x%0X\n", pStart->dar);
-+               (*fpPrint) ("llp    0x%0X\n", pStart->llp);
-+               (*fpPrint) ("ctl.lo 0x%0X\n", pStart->ctl.lo);
-+               (*fpPrint) ("ctl.hi 0x%0X\n", pStart->ctl.hi);
-+               (*fpPrint) ("sstat  0x%0X\n", pStart->sstat);
-+               (*fpPrint) ("dstat  0x%0X\n", pStart->dstat);
-+               (*fpPrint) ("devCtl 0x%0X\n", pStart->devCtl);
-+
-+               pStart = (dmacHw_DESC_t *) pStart->llp;
-+       }
-+       if (pStart == pRing->pHead) {
-+               (*fpPrint) ("Head\n");
-+       }
-+       if (pStart == pRing->pTail) {
-+               (*fpPrint) ("Tail\n");
-+       }
-+       if (pStart == pRing->pProg) {
-+               (*fpPrint) ("Prog\n");
-+       }
-+       if (pStart == pRing->pEnd) {
-+               (*fpPrint) ("End\n");
-+       }
-+       if (pStart == pRing->pFree) {
-+               (*fpPrint) ("Free\n");
-+       }
-+       (*fpPrint) ("0x%X:\n", (uint32_t) pStart);
-+       (*fpPrint) ("sar    0x%0X\n", pStart->sar);
-+       (*fpPrint) ("dar    0x%0X\n", pStart->dar);
-+       (*fpPrint) ("llp    0x%0X\n", pStart->llp);
-+       (*fpPrint) ("ctl.lo 0x%0X\n", pStart->ctl.lo);
-+       (*fpPrint) ("ctl.hi 0x%0X\n", pStart->ctl.hi);
-+       (*fpPrint) ("sstat  0x%0X\n", pStart->sstat);
-+       (*fpPrint) ("dstat  0x%0X\n", pStart->dstat);
-+       (*fpPrint) ("devCtl 0x%0X\n", pStart->devCtl);
++/* Calculate the parity of a word and return the bitmask */
++/* if nonzero parity or zero if zero parity. */
++static inline uint32_t calcEccBit(uint32_t word, uint32_t bitmask)
++{
++       return wordParity(word) ? bitmask : 0;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Check if DMA channel is the flow controller
-+*
-+*  @return  1 : If DMA is a flow controler
-+*           0 : Peripheral is the flow controller
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+static inline int DmaIsFlowController(void *pDescriptor        /*   [ IN ] Descriptor buffer */
-+    ) {
-+       uint32_t ttfc =
-+           (dmacHw_GET_DESC_RING(pDescriptor))->pTail->ctl.
-+           lo & dmacHw_REG_CTL_TTFC_MASK;
++/* Main ecc calculation routine */
++int nand_calculate_ecc512(struct mtd_info *mtd, const u_char *dat,
++                         u_char *ecc_code)
++{
++       int blockidx;           /* 16 blocks of 8 longwords = 512 bytes */
++       int wordidx;            /* index within each block 0-7 */
++       uint32_t alignedBuf[NAND_PG_SIZE / sizeof(uint32_t)];
++       ECCINFO ecc;
 +
-+       switch (ttfc) {
-+       case dmacHw_REG_CTL_TTFC_MM_DMAC:
-+       case dmacHw_REG_CTL_TTFC_MP_DMAC:
-+       case dmacHw_REG_CTL_TTFC_PM_DMAC:
-+       case dmacHw_REG_CTL_TTFC_PP_DMAC:
-+               return 1;
++       memset(&ecc, 0, sizeof(ecc));
++
++       /* Make sure the data is aligned.  */
++       ecc.wordp = (uint32_t *) dat;
++       if (((uint32_t) dat % 4) != 0) {
++               memcpy((char *)alignedBuf, dat, NAND_PG_SIZE);
++               ecc.wordp = alignedBuf; /* 32-bit operations more efficient */
 +       }
++
++       /* The data needs to be in little-endian order for the ECC calculations */
++       /* so we have to swap it for big-endian architectures. */
++       for (blockidx = 0; blockidx < BLOCKS; blockidx++) {
++               ecc.pBlock = 0; /* Reset the parity each block */
++               for (wordidx = 0; wordidx < WORDS_PER_BLOCK; wordidx++) {
++                       uint32_t word = cpu_to_le32(*ecc.wordp++);
++                       ecc.pBlock ^= word;     /* update the running word parity per block */
++                       ecc.p16ByteBlockEven ^= !(wordidx & 4) ? word : 0;      /* Every even block of 16 bytes */
++                       ecc.p8ByteBlockEven ^= !(wordidx & 2) ? word : 0;       /* Every even block of 8 bytes */
++                       ecc.p4ByteBlockEven ^= !(wordidx & 1) ? word : 0;       /* Every even block of 4 bytes */
++                       ecc.p16ByteBlockOdd ^= (wordidx & 4) ? word : 0;        /* Every odd block of 16 bytes */
++                       ecc.p8ByteBlockOdd ^= (wordidx & 2) ? word : 0; /* Every odd block of 8 bytes */
++                       ecc.p4ByteBlockOdd ^= (wordidx & 1) ? word : 0; /* Every odd block of 4 bytes */
++               }
++               /* pFinal is the total parity over all blocks and all data */
++               ecc.pFinal ^= ecc.pBlock;
++
++               /* If the word parity is set for this block, then update */
++               /* a bitmap that shows the parity over all 16 blocks. */
++               if (wordParity(ecc.pBlock)) {
++                       ecc.largeBlockParities |= (1 << blockidx);
++               }
++       }
++       /* Calculate the 256/512/1024/2048 bit region parities */
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P2048_PATTERN, P2048);
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P1024_PATTERN, P1024);
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P512_PATTERN, P512);
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P256_PATTERN, P256);
++
++       ecc.result |=
++           calcEccBit(ecc.largeBlockParities & P2048P_PATTERN, P2048P);
++       ecc.result |=
++           calcEccBit(ecc.largeBlockParities & P1024P_PATTERN, P1024P);
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P512P_PATTERN, P512P);
++       ecc.result |= calcEccBit(ecc.largeBlockParities & P256P_PATTERN, P256P);
++
++       /* Using the 32/64/128 bit region parities */
++       ecc.result |= calcEccBit(ecc.p16ByteBlockOdd, P128);
++       ecc.result |= calcEccBit(ecc.p8ByteBlockOdd, P64);
++       ecc.result |= calcEccBit(ecc.p4ByteBlockOdd, P32);
++
++       ecc.result |= calcEccBit(ecc.p16ByteBlockEven, P128P);
++       ecc.result |= calcEccBit(ecc.p8ByteBlockEven, P64P);
++       ecc.result |= calcEccBit(ecc.p4ByteBlockEven, P32P);
++
++       /* Calculate the column parities */
++       ecc.result |= calcEccBit(ecc.pFinal & P16_PATTERN, P16);
++       ecc.result |= calcEccBit(ecc.pFinal & P8_PATTERN, P8);
++       ecc.result |= calcEccBit(ecc.pFinal & P4_PATTERN, P4);
++       ecc.result |= calcEccBit(ecc.pFinal & P2_PATTERN, P2);
++       ecc.result |= calcEccBit(ecc.pFinal & P1_PATTERN, P1);
++
++       ecc.result |= calcEccBit(ecc.pFinal & P16P_PATTERN, P16P);
++       ecc.result |= calcEccBit(ecc.pFinal & P8P_PATTERN, P8P);
++       ecc.result |= calcEccBit(ecc.pFinal & P4P_PATTERN, P4P);
++       ecc.result |= calcEccBit(ecc.pFinal & P2P_PATTERN, P2P);
++       ecc.result |= calcEccBit(ecc.pFinal & P1P_PATTERN, P1P);
++
++       /* Invert the result */
++       ecc.result = ~ecc.result;
++
++       /* Fill in the return codes                                      */
++       ecc_code[0] = ecc.result & 0xff;
++       ecc_code[1] = (ecc.result >> 8) & 0xff;
++       ecc_code[2] = (ecc.result >> 16) & 0xff;
 +
 +       return 0;
 +}
+diff --git a/drivers/mtd/nand/nand_correct_data512.c b/drivers/mtd/nand/nand_correct_data512.c
+new file mode 100644
+index 0000000..084a83e
+--- /dev/null
++++ b/drivers/mtd/nand/nand_correct_data512.c
+@@ -0,0 +1,153 @@
++/*****************************************************************************
++* Copyright 2004 - 2008 Broadcom Corporation.  All rights reserved.
++*
++* Unless you and Broadcom execute a separate written software license
++* agreement governing use of this software, this software is licensed to you
++* under the terms of the GNU General Public License version 2, available at
++* http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
++*
++* Notwithstanding the above, under no circumstances may you combine this
++* software in any way with any other Broadcom software provided under a
++* license other than the GPL, without Broadcom's express prior written
++* consent.
++*****************************************************************************/
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Overwrites data length in the descriptor
-+*
-+*  This function overwrites data length in the descriptor
-+*
-+*
-+*  @return   void
-+*
-+*  @note
-+*          This is only used for PCM channel
-+*/
-+/****************************************************************************/
-+void dmacHw_setDataLength(dmacHw_CONFIG_t *pConfig,    /*   [ IN ] Configuration settings */
-+                         void *pDescriptor,    /*   [ IN ] Descriptor buffer */
-+                         size_t dataLen        /*   [ IN ] Data length in bytes */
-+    ) {
-+       dmacHw_DESC_t *pProg;
-+       dmacHw_DESC_t *pHead;
-+       int srcTs = 0;
-+       int srcTrSize = 0;
++/*---------------------------------------------------------------------------
++ *
++ * nand error control correction routines
++ *---------------------------------------------------------------------------*/
++#include <linux/types.h>
++#include <linux/mtd/nand_ecc512.h>
 +
-+       pHead = (dmacHw_GET_DESC_RING(pDescriptor))->pHead;
-+       pProg = pHead;
++typedef union {
++       unsigned long mylword;
++       unsigned short myword[2];
++       unsigned char mybyte[4];        /* MSB: byte[0] */
++       struct {
++               unsigned int bit31:1;
++               unsigned int bit30:1;
++               unsigned int bit29:1;
++               unsigned int bit28:1;
++               unsigned int bit27:1;
++               unsigned int bit26:1;
++               unsigned int bit25:1;
++               unsigned int bit24:1;
++               unsigned int bit23:1;
++               unsigned int bit22:1;
++               unsigned int bit21:1;
++               unsigned int bit20:1;
++               unsigned int bit19:1;
++               unsigned int bit18:1;
++               unsigned int bit17:1;
++               unsigned int bit16:1;
++               unsigned int bit15:1;
++               unsigned int bit14:1;
++               unsigned int bit13:1;
++               unsigned int bit12:1;
++               unsigned int bit11:1;
++               unsigned int bit10:1;
++               unsigned int bit9:1;
++               unsigned int bit8:1;
++               unsigned int bit7:1;
++               unsigned int bit6:1;
++               unsigned int bit5:1;
++               unsigned int bit4:1;
++               unsigned int bit3:1;
++               unsigned int bit2:1;
++               unsigned int bit1:1;
++               unsigned int bit0:1;
++       } mybits;
++} UnionLW;
 +
-+       srcTrSize = dmacHw_GetTrWidthInBytes(pConfig->srcMaxTransactionWidth);
-+       srcTs = dataLen / srcTrSize;
-+       do {
-+               pProg->ctl.hi = srcTs & dmacHw_REG_CTL_BLOCK_TS_MASK;
-+               pProg = (dmacHw_DESC_t *) pProg->llp;
-+       } while (pProg != pHead);
-+}
++typedef union {
++       unsigned char mybyte;
++       struct {
++               unsigned int bit7:1;
++               unsigned int bit6:1;
++               unsigned int bit5:1;
++               unsigned int bit4:1;
++               unsigned int bit3:1;
++               unsigned int bit2:1;
++               unsigned int bit1:1;
++               unsigned int bit0:1;
++       } mybits;
++} UnionB;
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Clears the interrupt
-+*
-+*  This function clears the DMA channel specific interrupt
-+*
-+*
-+*  @return   void
-+*
-+*  @note
-+*     Must be called under the context of ISR
-+*/
-+/****************************************************************************/
-+void dmacHw_clearInterrupt(dmacHw_HANDLE_t handle      /* [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+
-+       dmacHw_TRAN_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_BLOCK_INT_CLEAR(pCblk->module, pCblk->channel);
-+       dmacHw_ERROR_INT_CLEAR(pCblk->module, pCblk->channel);
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Returns the cause of channel specific DMA interrupt
-+*
-+*  This function returns the cause of interrupt
-+*
-+*  @return  Interrupt status, each bit representing a specific type of interrupt
-+*
-+*  @note
-+*     Should be called under the context of ISR
-+*/
-+/****************************************************************************/
-+dmacHw_INTERRUPT_STATUS_e dmacHw_getInterruptStatus(dmacHw_HANDLE_t handle     /* [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       dmacHw_INTERRUPT_STATUS_e status = dmacHw_INTERRUPT_STATUS_NONE;
-+
-+       if (dmacHw_REG_INT_STAT_TRAN(pCblk->module) &
-+           ((0x00000001 << pCblk->channel))) {
-+               status |= dmacHw_INTERRUPT_STATUS_TRANS;
-+       }
-+       if (dmacHw_REG_INT_STAT_BLOCK(pCblk->module) &
-+           ((0x00000001 << pCblk->channel))) {
-+               status |= dmacHw_INTERRUPT_STATUS_BLOCK;
-+       }
-+       if (dmacHw_REG_INT_STAT_ERROR(pCblk->module) &
-+           ((0x00000001 << pCblk->channel))) {
-+               status |= dmacHw_INTERRUPT_STATUS_ERROR;
-+       }
-+
-+       return status;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Indentifies a DMA channel causing interrupt
-+*
-+*  This functions returns a channel causing interrupt of type dmacHw_INTERRUPT_STATUS_e
-+*
-+*  @return  NULL   : No channel causing DMA interrupt
-+*           ! NULL : Handle to a channel causing DMA interrupt
-+*  @note
-+*     dmacHw_clearInterrupt() must be called with a valid handle after calling this function
-+*/
-+/****************************************************************************/
-+dmacHw_HANDLE_t dmacHw_getInterruptSource(void)
++/*****************************************************************************/
++/*                                                                           */
++/* NAME                                                                      */
++/*      nand_correct_data512                                                */
++/* DESCRIPTION                                                               */
++/*      This function compares two ECCs and indicates if there is an error.  */
++/* PARAMETERS                                                                */
++/*      read_ecc           one ECC to be compared                            */
++/*      calc_ecc           the other ECC to be compared                      */
++/*      dat                content of data page                              */
++/* RETURN VALUES                                                             */
++/*      Upon successful completion, compare_ecc returns 0.                   */
++/*      Otherwise, corresponding error code is returned.                     */
++/*                                                                           */
++/*****************************************************************************/
++int nand_correct_data512(struct mtd_info *mtd, u_char *dat, u_char *read_ecc,
++                        u_char *calc_ecc)
 +{
-+       uint32_t i;
++       unsigned short i, j, row, col;
++       UnionLW mylw;
++       unsigned short bitlen = 24;     /* e.g. 512 byte pages */
 +
-+       for (i = 0; i < dmaChannelCount_0 + dmaChannelCount_1; i++) {
-+               if ((dmacHw_REG_INT_STAT_TRAN(dmacHw_gCblk[i].module) &
-+                    ((0x00000001 << dmacHw_gCblk[i].channel)))
-+                   || (dmacHw_REG_INT_STAT_BLOCK(dmacHw_gCblk[i].module) &
-+                       ((0x00000001 << dmacHw_gCblk[i].channel)))
-+                   || (dmacHw_REG_INT_STAT_ERROR(dmacHw_gCblk[i].module) &
-+                       ((0x00000001 << dmacHw_gCblk[i].channel)))
-+                   ) {
-+                       return dmacHw_CBLK_TO_HANDLE(&dmacHw_gCblk[i]);
++       u_char newval;
++
++       UnionLW orgecc;
++       UnionLW newecc;
++
++       orgecc.mylword = 0;
++       newecc.mylword = 0;
++
++       /* Hardware register 00 ecc[2] ecc[1] ecc[0],   MSB..LSB */
++       /* OOB form  ecc[0] ecc[1] ecc[2] */
++       /* u_char form ecc[0] ecc[1] ecc[2] */
++       orgecc.mybyte[1] = read_ecc[2]; /* MSB */
++       orgecc.mybyte[2] = read_ecc[1];
++       orgecc.mybyte[3] = read_ecc[0]; /* LSB */
++
++       newecc.mybyte[1] = calc_ecc[2];
++       newecc.mybyte[2] = calc_ecc[1];
++       newecc.mybyte[3] = calc_ecc[0];
++
++       mylw.mylword = orgecc.mylword ^ newecc.mylword;
++
++       /* Quick check to avoid for loop below for normal no error case. */
++       if (mylw.mylword == 0) {
++               return 0;       /* No error */
++       }
++
++       j = 0;
++       for (i = 0; i < bitlen; i++) {
++               if ((mylw.mylword >> i) & 1) {
++                       j++;
 +               }
 +       }
-+       return dmacHw_CBLK_TO_HANDLE(NULL);
++       if (j == 1) {
++               return 2;       /* ECC itself in error */
++       }
++       if (j == (bitlen >> 1)) {
++               row = mylw.mybits.bit1 +
++                   (mylw.mybits.bit3 << 1) +
++                   (mylw.mybits.bit5 << 2) +
++                   (mylw.mybits.bit7 << 3) +
++                   (mylw.mybits.bit9 << 4) +
++                   (mylw.mybits.bit11 << 5) +
++                   (mylw.mybits.bit13 << 6) +
++                   (mylw.mybits.bit15 << 7) + (mylw.mybits.bit17 << 8);
++
++               col = mylw.mybits.bit19 +
++                   (mylw.mybits.bit21 << 1) + (mylw.mybits.bit23 << 2);
++
++               newval = dat[row] ^ (1 << col);
++               /* printk("ECC: Replaced at offset 0x%x  old=0x%x new=0x%x\n", row, dat[row], newval); */
++               dat[row] = newval;
++
++               return 1;       /* Corrected 1 error */
++       }
++       return -1;              /* 2 or more errors - uncorrectible */
++}
+diff --git a/include/linux/mtd/nand_bcm_umi.h b/include/linux/mtd/nand_bcm_umi.h
+new file mode 100644
+index 0000000..ddbbbbf
+--- /dev/null
++++ b/include/linux/mtd/nand_bcm_umi.h
+@@ -0,0 +1,235 @@
++/*****************************************************************************
++* Copyright 2003 - 2009 Broadcom Corporation.  All rights reserved.
++*
++* Unless you and Broadcom execute a separate written software license
++* agreement governing use of this software, this software is licensed to you
++* under the terms of the GNU General Public License version 2, available at
++* http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
++*
++* Notwithstanding the above, under no circumstances may you combine this
++* software in any way with any other Broadcom software provided under a
++* license other than the GPL, without Broadcom's express prior written
++* consent.
++*****************************************************************************/
++#ifndef NAND_BCM_UMI_H
++#define NAND_BCM_UMI_H
++
++/* ---- Include Files ---------------------------------------------------- */
++#include <mach/reg_umi.h>
++#include <cfg_global.h>
++#ifdef BOOT0_BUILD
++#include <uart.h>
++#endif
++
++/* ---- Constants and Types ---------------------------------------------- */
++#if (CFG_GLOBAL_CHIP_FAMILY == CFG_GLOBAL_CHIP_FAMILY_BCMRING)
++#define NAND_ECC_BCH (CFG_GLOBAL_CHIP_REV > 0xA0)
++#else
++#define NAND_ECC_BCH 0
++#endif
++
++/* ---- Variable Externs ------------------------------------------ */
++/* ---- Function Prototypes --------------------------------------- */
++
++static inline int nand_bcm_umi_dev_ready(void)
++{
++       return REG_UMI_NAND_RCSR & REG_UMI_NAND_RCSR_RDY;
 +}
 +
-+/****************************************************************************/
-+/**
-+*  @brief  Estimates number of descriptor needed to perform certain DMA transfer
-+*
-+*
-+*  @return  On failure : -1
-+*           On success : Number of descriptor count
-+*
-+*
-+*/
-+/****************************************************************************/
-+int dmacHw_calculateDescriptorCount(dmacHw_CONFIG_t *pConfig,  /*   [ IN ] Configuration settings */
-+                                   void *pSrcAddr,     /*   [ IN ] Source (Peripheral/Memory) address */
-+                                   void *pDstAddr,     /*   [ IN ] Destination (Peripheral/Memory) address */
-+                                   size_t dataLen      /*   [ IN ] Data length in bytes */
-+    ) {
-+       int srcTs = 0;
-+       int oddSize = 0;
-+       int descCount = 0;
-+       int dstTrSize = 0;
-+       int srcTrSize = 0;
-+       uint32_t maxBlockSize = dmacHw_MAX_BLOCKSIZE;
-+       dmacHw_TRANSACTION_WIDTH_e dstTrWidth;
-+       dmacHw_TRANSACTION_WIDTH_e srcTrWidth;
++static inline void nand_bcm_umi_wait_till_ready(void)
++{
++       while (nand_bcm_umi_dev_ready() == 0) {
++               ;
++       }
++}
 +
-+       dstTrSize = dmacHw_GetTrWidthInBytes(pConfig->dstMaxTransactionWidth);
-+       srcTrSize = dmacHw_GetTrWidthInBytes(pConfig->srcMaxTransactionWidth);
++static inline void nand_bcm_umi_hamming_enable_hwecc(void)
++{
++       REG_UMI_NAND_ECC_CSR &= ~(REG_UMI_NAND_ECC_CSR_ECC_ENABLE | REG_UMI_NAND_ECC_CSR_256BYTE);      /* disable and reset ECC, 512 byte page */
++       REG_UMI_NAND_ECC_CSR |= REG_UMI_NAND_ECC_CSR_ECC_ENABLE;        /* enable ECC */
++}
 +
-+       /* Skip Tx if buffer is NULL  or length is unknown */
-+       if ((pSrcAddr == NULL) || (pDstAddr == NULL) || (dataLen == 0)) {
-+               /* Do not initiate transfer */
++#if NAND_ECC_BCH
++static inline void nand_bcm_umi_bch_enable_read_hwecc(void)
++{
++       /* disable and reset ECC */
++       REG_UMI_BCH_CTRL_STATUS = REG_UMI_BCH_CTRL_STATUS_RD_ECC_VALID;
++       /* Turn on ECC */
++       REG_UMI_BCH_CTRL_STATUS = REG_UMI_BCH_CTRL_STATUS_ECC_RD_EN;
++}
++
++static inline void nand_bcm_umi_bch_enable_write_hwecc(void)
++{
++       /* disable and reset ECC */
++       REG_UMI_BCH_CTRL_STATUS = REG_UMI_BCH_CTRL_STATUS_WR_ECC_VALID;
++       /* Turn on ECC */
++       REG_UMI_BCH_CTRL_STATUS = REG_UMI_BCH_CTRL_STATUS_ECC_WR_EN;
++}
++
++static inline void nand_bcm_umi_bch_config_ecc(uint8_t numEccBytes)
++{
++       int nValue;
++       int tValue;
++       int kValue;
++       int numBits = numEccBytes * 8;
++#define ECC_BITS_PER_CORRECTABLE_BIT 13
++#define NAND_DATA_ACCESS_SIZE 512
++
++       /* Every correctible bit requires 13 ECC bits */
++       tValue = (int)(numBits / ECC_BITS_PER_CORRECTABLE_BIT);
++
++       /* Total data in number of bits for generating and computing BCH ECC */
++       nValue = (NAND_DATA_ACCESS_SIZE + numEccBytes) * 8;
++
++       /* K parameter is used internally.  K = N - (T * 13) */
++       kValue = nValue - (tValue * 13);
++
++       /* Write the settings */
++       REG_UMI_BCH_N = nValue;
++       REG_UMI_BCH_T = tValue;
++       REG_UMI_BCH_K = kValue;
++
++       /* disable and reset ECC */
++       REG_UMI_BCH_CTRL_STATUS =
++           REG_UMI_BCH_CTRL_STATUS_WR_ECC_VALID |
++           REG_UMI_BCH_CTRL_STATUS_RD_ECC_VALID;
++}
++
++static inline void nand_bcm_umi_bch_pause_read_ecc_calc(void)
++{
++       REG_UMI_BCH_CTRL_STATUS =
++           REG_UMI_BCH_CTRL_STATUS_ECC_RD_EN |
++           REG_UMI_BCH_CTRL_STATUS_PAUSE_ECC_DEC;
++}
++
++static inline void nand_bcm_umi_bch_resume_read_ecc_calc(void)
++{
++       REG_UMI_BCH_CTRL_STATUS = REG_UMI_BCH_CTRL_STATUS_ECC_RD_EN;
++}
++
++static inline uint32_t nand_bcm_umi_bch_poll_read_ecc_calc(void)
++{
++       uint32_t regVal;
++
++       do {
++               /* wait for ECC to be valid */
++               regVal = REG_UMI_BCH_CTRL_STATUS;
++       } while ((regVal & REG_UMI_BCH_CTRL_STATUS_RD_ECC_VALID) == 0);
++
++       return regVal;
++}
++
++static inline void nand_bcm_umi_bch_poll_write_ecc_calc(void)
++{
++       /* wait for ECC to be valid */
++       while ((REG_UMI_BCH_CTRL_STATUS & REG_UMI_BCH_CTRL_STATUS_WR_ECC_VALID) == 0)
++               ;
++}
++
++/****************************************************************************
++*  nand_bch_ecc_flip_bit - Routine to flip an errored bit
++*
++*  PURPOSE:
++*     This is a helper routine that flips the bit (0 -> 1 or 1 -> 0) of the
++*     errored bit specified
++*
++*  PARAMETERS:
++*     datap - Container that holds the 512 byte data
++*     errorLocation - Location of the bit that needs to be flipped
++*
++*  RETURNS:
++*     None
++****************************************************************************/
++static inline void nand_bcm_umi_bch_ecc_flip_bit(uint8_t *datap,
++                                                int errorLocation)
++{
++       int locWithinAByte = (errorLocation & REG_UMI_BCH_ERR_LOC_BYTE) >> 0;
++       int locWithinAWord = (errorLocation & REG_UMI_BCH_ERR_LOC_WORD) >> 3;
++       int locWithinAPage = (errorLocation & REG_UMI_BCH_ERR_LOC_PAGE) >> 5;
++
++       /* BCH uses big endian, need to change the location bits to little endian  */
++       locWithinAWord = 3 - locWithinAWord;
++
++       uint8_t errorByte = 0;
++       uint8_t byteMask = 1 << locWithinAByte;
++
++       errorByte = datap[locWithinAPage * sizeof(uint32_t) + locWithinAWord];
++
++#ifdef BOOT0_BUILD
++       puthexs("\nECC Correct Offset: ",
++               locWithinAPage * sizeof(uint32_t) + locWithinAWord);
++       puthexs(" errorByte:", errorByte);
++       puthex8(" Bit: ", locWithinAByte);
++#endif
++
++       if (errorByte & byteMask) {
++               /* bit needs to be cleared */
++               errorByte &= ~byteMask;
++       } else {
++               /* bit needs to be set */
++               errorByte |= byteMask;
++       }
++
++       /* write back the value with the fixed bit */
++       datap[locWithinAPage * sizeof(uint32_t) + locWithinAWord] = errorByte;
++}
++
++/****************************************************************************
++*  nand_correct_page_bch - Routine to correct bit errors when reading NAND
++*
++*  PURPOSE:
++*     This routine reads the BCH registers to determine if there are any bit
++*     errors during the read of the last 512 bytes of data + ECC bytes.  If
++*     errors exists, the routine fixes it.
++*
++*  PARAMETERS:
++*     datap - Container that holds the 512 byte data
++*
++*  RETURNS:
++*     0 or greater = Number of errors corrected (No errors are found or errors have been fixed)
++*    -1 = Error(s) cannot be fixed
++****************************************************************************/
++static inline int nand_bcm_umi_bch_correct_page(uint8_t *datap)
++{
++       int numErrors;
++       int errorLocation;
++       int idx;
++       uint32_t regValue;
++
++       /* wait for read ECC to be valid */
++       regValue = nand_bcm_umi_bch_poll_read_ecc_calc();
++
++       /* read the control status register to determine if there are error'ed bits */
++       /* see if errors are correctible */
++       if ((regValue & REG_UMI_BCH_CTRL_STATUS_UNCORR_ERR) > 0) {
++               /* errors cannot be fixed, return -1 */
 +               return -1;
 +       }
 +
-+       /* Ensure scatter and gather are transaction aligned */
-+       if (pConfig->srcGatherWidth % srcTrSize
-+           || pConfig->dstScatterWidth % dstTrSize) {
-+               return -1;
++       if ((regValue & REG_UMI_BCH_CTRL_STATUS_CORR_ERR) == 0) {
++               /* no errors */
++               return 0;
 +       }
 +
 +       /*
-+          Background 1: DMAC can not perform DMA if source and destination addresses are
-+          not properly aligned with the channel's transaction width. So, for successful
-+          DMA transfer, transaction width must be set according to the alignment of the
-+          source and destination address.
++        * Fix errored bits by doing the following:
++        * 1. Read the number of errors in the control and status register
++        * 2. Read the error location registers that corresponds to the number
++        *    of errors reported
++        * 3. Invert the bit in the data
 +        */
++       numErrors = (regValue & REG_UMI_BCH_CTRL_STATUS_NB_CORR_ERROR) >> 20;
 +
-+       /* Adjust destination transaction width if destination address is not aligned properly */
-+       dstTrWidth = pConfig->dstMaxTransactionWidth;
-+       while (dmacHw_ADDRESS_MASK(dstTrSize) & (uint32_t) pDstAddr) {
-+               dstTrWidth = dmacHw_GetNextTrWidth(dstTrWidth);
-+               dstTrSize = dmacHw_GetTrWidthInBytes(dstTrWidth);
-+       }
++       for (idx = 0; idx < numErrors; idx++) {
++               errorLocation =
++                   REG_UMI_BCH_ERR_LOC_ADDR(idx) & REG_UMI_BCH_ERR_LOC_MASK;
 +
-+       /* Adjust source transaction width if source address is not aligned properly */
-+       srcTrWidth = pConfig->srcMaxTransactionWidth;
-+       while (dmacHw_ADDRESS_MASK(srcTrSize) & (uint32_t) pSrcAddr) {
-+               srcTrWidth = dmacHw_GetNextTrWidth(srcTrWidth);
-+               srcTrSize = dmacHw_GetTrWidthInBytes(srcTrWidth);
++               /* Flip bit */
++               nand_bcm_umi_bch_ecc_flip_bit(datap, errorLocation);
 +       }
-+
-+       /* Find the maximum transaction per descriptor */
-+       if (pConfig->maxDataPerBlock
-+           && ((pConfig->maxDataPerBlock / srcTrSize) <
-+               dmacHw_MAX_BLOCKSIZE)) {
-+               maxBlockSize = pConfig->maxDataPerBlock / srcTrSize;
-+       }
-+
-+       /* Find number of source transactions needed to complete the DMA transfer */
-+       srcTs = dataLen / srcTrSize;
-+       /* Find the odd number of bytes that need to be transferred as single byte transaction width */
-+       if (srcTs && (dstTrSize > srcTrSize)) {
-+               oddSize = dataLen % dstTrSize;
-+               /* Adjust source transaction count due to "oddSize" */
-+               srcTs = srcTs - (oddSize / srcTrSize);
-+       } else {
-+               oddSize = dataLen % srcTrSize;
-+       }
-+       /* Adjust "descCount" due to "oddSize" */
-+       if (oddSize) {
-+               descCount++;
-+       }
-+
-+       /* Find the number of descriptor needed for total "srcTs" */
-+       if (srcTs) {
-+               descCount += ((srcTs - 1) / maxBlockSize) + 1;
-+       }
-+
-+       return descCount;
++       /* Errors corrected */
++       return numErrors;
 +}
++#endif
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Check the existance of pending descriptor
-+*
-+*  This function confirmes if there is any pending descriptor in the chain
-+*  to program the channel
-+*
-+*  @return  1 : Channel need to be programmed with pending descriptor
-+*           0 : No more pending descriptor to programe the channel
-+*
-+*  @note
-+*     - This function should be called from ISR in case there are pending
-+*       descriptor to program the channel.
-+*
-+*     Example:
-+*
-+*     dmac_isr ()
-+*     {
-+*         ...
-+*         if (dmacHw_descriptorPending (handle))
-+*         {
-+*            dmacHw_initiateTransfer (handle);
-+*         }
-+*     }
-+*
-+*/
-+/****************************************************************************/
-+uint32_t dmacHw_descriptorPending(dmacHw_HANDLE_t handle,      /*   [ IN ] DMA Channel handle */
-+                                 void *pDescriptor     /*   [ IN ] Descriptor buffer */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
++#endif /* NAND_BCM_UMI_H */
+diff --git a/include/linux/mtd/nand_ecc512.h b/include/linux/mtd/nand_ecc512.h
+new file mode 100644
+index 0000000..1b6f86c
+--- /dev/null
++++ b/include/linux/mtd/nand_ecc512.h
+@@ -0,0 +1,26 @@
++/*
++ *  drivers/mtd/nand_ecc512.h
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This file is the header for the ECC algorithm.
++ */
 +
-+       /* Make sure channel is not busy */
-+       if (!CHANNEL_BUSY(pCblk->module, pCblk->channel)) {
-+               /* Check if pEnd is not processed */
-+               if (pRing->pEnd) {
-+                       /* Something left for processing */
-+                       return 1;
-+               }
-+       }
-+       return 0;
-+}
++#ifndef __MTD_NAND_ECC512_H__
++#define __MTD_NAND_ECC512_H__
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Program channel register to stop transfer
-+*
-+*  Ensures the channel is not doing any transfer after calling this function
-+*
-+*  @return  void
-+*
-+*/
-+/****************************************************************************/
-+void dmacHw_stopTransfer(dmacHw_HANDLE_t handle        /*   [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk;
++struct mtd_info;
 +
-+       pCblk = dmacHw_HANDLE_TO_CBLK(handle);
++/*
++ * Calculate 3 byte ECC code for 512 byte block
++ */
++int nand_calculate_ecc512(struct mtd_info *mtd, const u_char *dat, u_char *ecc_code);
 +
-+       /* Stop the channel */
-+       dmacHw_DMA_STOP(pCblk->module, pCblk->channel);
-+}
++/*
++ * Detect and correct a 2 bit error for 512 byte block
++ */
++int nand_correct_data512(struct mtd_info *mtd, u_char *dat, u_char *read_ecc, u_char *calc_ecc);
 +
-+/****************************************************************************/
-+/**
-+*  @brief   Deallocates source or destination memory, allocated
-+*
-+*  This function can be called to deallocate data memory that was DMAed successfully
-+*
-+*  @return  On failure : -1
-+*           On success : Number of buffer freed
-+*
-+*  @note
-+*     This function will be called ONLY, when source OR destination address is pointing
-+*     to dynamic memory
-+*/
-+/****************************************************************************/
-+int dmacHw_freeMem(dmacHw_CONFIG_t *pConfig,   /*   [ IN ] Configuration settings */
-+                  void *pDescriptor,   /*   [ IN ] Descriptor buffer */
-+                  void (*fpFree) (void *)      /*   [ IN ] Function pointer to free data memory */
-+    ) {
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+       uint32_t count = 0;
-+
-+       if (fpFree == NULL) {
-+               return -1;
-+       }
-+
-+       while ((pRing->pFree != pRing->pTail)
-+              && (pRing->pFree->ctl.lo & dmacHw_DESC_FREE)) {
-+               if (pRing->pFree->devCtl == dmacHw_FREE_USER_MEMORY) {
-+                       /* Identify, which memory to free */
-+                       if (dmacHw_DST_IS_MEMORY(pConfig->transferType)) {
-+                               (*fpFree) ((void *)pRing->pFree->dar);
-+                       } else {
-+                               /* Destination was a peripheral */
-+                               (*fpFree) ((void *)pRing->pFree->sar);
-+                       }
-+                       /* Unmark user memory to indicate it is freed */
-+                       pRing->pFree->devCtl = ~dmacHw_FREE_USER_MEMORY;
-+               }
-+               dmacHw_NEXT_DESC(pRing, pFree);
-+
-+               count++;
-+       }
-+
-+       return count;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Prepares descriptor ring, when source peripheral working as a flow controller
-+*
-+*  This function will update the discriptor ring by allocating buffers, when source peripheral
-+*  has to work as a flow controller to transfer data from:
-+*           - Peripheral to memory.
-+*
-+*  @return  On failure : -1
-+*           On success : Number of descriptor updated
-+*
-+*
-+*  @note
-+*     Channel must be configured for peripheral to memory transfer
-+*
-+*/
-+/****************************************************************************/
-+int dmacHw_setVariableDataDescriptor(dmacHw_HANDLE_t handle,   /*   [ IN ] DMA Channel handle */
-+                                    dmacHw_CONFIG_t *pConfig,  /*   [ IN ] Configuration settings */
-+                                    void *pDescriptor, /*   [ IN ] Descriptor buffer */
-+                                    uint32_t srcAddr,  /*   [ IN ] Source peripheral address */
-+                                    void *(*fpAlloc) (int len),        /*   [ IN ] Function pointer  that provides destination memory */
-+                                    int len,   /*   [ IN ] Number of bytes "fpAlloc" will allocate for destination */
-+                                    int num    /*   [ IN ] Number of descriptor to set */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+       dmacHw_DESC_t *pProg = NULL;
-+       dmacHw_DESC_t *pLast = NULL;
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+       uint32_t dstAddr;
-+       uint32_t controlParam;
-+       int i;
-+
-+       dmacHw_ASSERT(pConfig->transferType ==
-+                     dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_MEM);
-+
-+       if (num > pRing->num) {
-+               return -1;
-+       }
-+
-+       pLast = pRing->pEnd;    /* Last descriptor updated */
-+       pProg = pRing->pHead;   /* First descriptor in the new list */
-+
-+       controlParam = pConfig->srcUpdate |
-+           pConfig->dstUpdate |
-+           pConfig->srcMaxTransactionWidth |
-+           pConfig->dstMaxTransactionWidth |
-+           pConfig->srcMasterInterface |
-+           pConfig->dstMasterInterface |
-+           pConfig->srcMaxBurstWidth |
-+           pConfig->dstMaxBurstWidth |
-+           dmacHw_REG_CTL_TTFC_PM_PERI |
-+           dmacHw_REG_CTL_LLP_DST_EN |
-+           dmacHw_REG_CTL_LLP_SRC_EN | dmacHw_REG_CTL_INT_EN;
-+
-+       for (i = 0; i < num; i++) {
-+               /* Allocate Rx buffer only for idle descriptor */
-+               if (((pRing->pHead->ctl.hi & dmacHw_DESC_FREE) == 0) ||
-+                   ((dmacHw_DESC_t *) pRing->pHead->llp == pRing->pTail)
-+                   ) {
-+                       /* Rx descriptor is not idle */
-+                       break;
-+               }
-+               /* Set source address */
-+               pRing->pHead->sar = srcAddr;
-+               if (fpAlloc) {
-+                       /* Allocate memory for buffer in descriptor */
-+                       dstAddr = (uint32_t) (*fpAlloc) (len);
-+                       /* Check the destination address */
-+                       if (dstAddr == 0) {
-+                               if (i == 0) {
-+                                       /* Not a single descriptor is available */
-+                                       return -1;
-+                               }
-+                               break;
-+                       }
-+                       /* Set destination address */
-+                       pRing->pHead->dar = dstAddr;
-+               }
-+               /* Set control information */
-+               pRing->pHead->ctl.lo = controlParam;
-+               /* Use "devCtl" to mark the memory that need to be freed later */
-+               pRing->pHead->devCtl = dmacHw_FREE_USER_MEMORY;
-+               /* Descriptor is now owned by the channel */
-+               pRing->pHead->ctl.hi = 0;
-+               /* Remember the descriptor last updated */
-+               pRing->pEnd = pRing->pHead;
-+               /* Update next descriptor */
-+               dmacHw_NEXT_DESC(pRing, pHead);
-+       }
-+
-+       /* Mark the end of the list */
-+       pRing->pEnd->ctl.lo &=
-+           ~(dmacHw_REG_CTL_LLP_DST_EN | dmacHw_REG_CTL_LLP_SRC_EN);
-+       /* Connect the list */
-+       if (pLast != pProg) {
-+               pLast->ctl.lo |=
-+                   dmacHw_REG_CTL_LLP_DST_EN | dmacHw_REG_CTL_LLP_SRC_EN;
-+       }
-+       /* Mark the descriptors are updated */
-+       pCblk->descUpdated = 1;
-+       if (!pCblk->varDataStarted) {
-+               /* LLP must be pointing to the first descriptor */
-+               dmacHw_SET_LLP(pCblk->module, pCblk->channel,
-+                              (uint32_t) pProg - pRing->virt2PhyOffset);
-+               /* Channel, handling variable data started */
-+               pCblk->varDataStarted = 1;
-+       }
-+
-+       return i;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Read data DMAed to memory
-+*
-+*  This function will read data that has been DMAed to memory while transfering from:
-+*          - Memory to memory
-+*          - Peripheral to memory
-+*
-+*  @param    handle     -
-+*  @param    ppBbuf     -
-+*  @param    pLen       -
-+*
-+*  @return  0 - No more data is available to read
-+*           1 - More data might be available to read
-+*
-+*/
-+/****************************************************************************/
-+int dmacHw_readTransferredData(dmacHw_HANDLE_t handle, /*  [ IN ] DMA Channel handle */
-+                              dmacHw_CONFIG_t *pConfig,        /*   [ IN ]  Configuration settings */
-+                              void *pDescriptor,       /*   [ IN ] Descriptor buffer */
-+                              void **ppBbuf,   /*   [ OUT ] Data received */
-+                              size_t *pLlen    /*   [ OUT ] Length of the data received */
-+    ) {
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+
-+       (void)handle;
-+
-+       if (pConfig->transferMode != dmacHw_TRANSFER_MODE_CONTINUOUS) {
-+               if (((pRing->pTail->ctl.hi & dmacHw_DESC_FREE) == 0) ||
-+                   (pRing->pTail == pRing->pHead)
-+                   ) {
-+                       /* No receive data available */
-+                       *ppBbuf = (char *)NULL;
-+                       *pLlen = 0;
-+
-+                       return 0;
-+               }
-+       }
-+
-+       /* Return read buffer and length */
-+       *ppBbuf = (char *)pRing->pTail->dar;
-+
-+       /* Extract length of the received data */
-+       if (DmaIsFlowController(pDescriptor)) {
-+               uint32_t srcTrSize = 0;
-+
-+               switch (pRing->pTail->ctl.lo & dmacHw_REG_CTL_SRC_TR_WIDTH_MASK) {
-+               case dmacHw_REG_CTL_SRC_TR_WIDTH_8:
-+                       srcTrSize = 1;
-+                       break;
-+               case dmacHw_REG_CTL_SRC_TR_WIDTH_16:
-+                       srcTrSize = 2;
-+                       break;
-+               case dmacHw_REG_CTL_SRC_TR_WIDTH_32:
-+                       srcTrSize = 4;
-+                       break;
-+               case dmacHw_REG_CTL_SRC_TR_WIDTH_64:
-+                       srcTrSize = 8;
-+                       break;
-+               default:
-+                       dmacHw_ASSERT(0);
-+               }
-+               /* Calculate length from the block size */
-+               *pLlen =
-+                   (pRing->pTail->ctl.hi & dmacHw_REG_CTL_BLOCK_TS_MASK) *
-+                   srcTrSize;
-+       } else {
-+               /* Extract length from the source peripheral */
-+               *pLlen = pRing->pTail->sstat;
-+       }
-+
-+       /* Advance tail to next descriptor */
-+       dmacHw_NEXT_DESC(pRing, pTail);
-+
-+       return 1;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Set descriptor carrying control information
-+*
-+*  This function will be used to send specific control information to the device
-+*  using the DMA channel
-+*
-+*
-+*  @return  -1 - On failure
-+*            0 - On success
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+int dmacHw_setControlDescriptor(dmacHw_CONFIG_t *pConfig,      /*   [ IN ] Configuration settings */
-+                               void *pDescriptor,      /*   [ IN ] Descriptor buffer */
-+                               uint32_t ctlAddress,    /*   [ IN ] Address of the device control register */
-+                               uint32_t control        /*   [ IN ] Device control information */
-+    ) {
-+       dmacHw_DESC_RING_t *pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+
-+       if (ctlAddress == 0) {
-+               return -1;
-+       }
-+
-+       /* Check the availability of descriptors in the ring */
-+       if ((pRing->pHead->ctl.hi & dmacHw_DESC_FREE) == 0) {
-+               return -1;
-+       }
-+       /* Set control information */
-+       pRing->pHead->devCtl = control;
-+       /* Set source and destination address */
-+       pRing->pHead->sar = (uint32_t) &pRing->pHead->devCtl;
-+       pRing->pHead->dar = ctlAddress;
-+       /* Set control parameters */
-+       if (pConfig->flowControler == dmacHw_FLOW_CONTROL_DMA) {
-+               pRing->pHead->ctl.lo = pConfig->transferType |
-+                   dmacHw_SRC_ADDRESS_UPDATE_MODE_INC |
-+                   dmacHw_DST_ADDRESS_UPDATE_MODE_INC |
-+                   dmacHw_SRC_TRANSACTION_WIDTH_32 |
-+                   pConfig->dstMaxTransactionWidth |
-+                   dmacHw_SRC_BURST_WIDTH_0 |
-+                   dmacHw_DST_BURST_WIDTH_0 |
-+                   pConfig->srcMasterInterface |
-+                   pConfig->dstMasterInterface | dmacHw_REG_CTL_INT_EN;
-+       } else {
-+               uint32_t transferType = 0;
-+               switch (pConfig->transferType) {
-+               case dmacHw_TRANSFER_TYPE_PERIPHERAL_TO_MEM:
-+                       transferType = dmacHw_REG_CTL_TTFC_PM_PERI;
-+                       break;
-+               case dmacHw_TRANSFER_TYPE_MEM_TO_PERIPHERAL:
-+                       transferType = dmacHw_REG_CTL_TTFC_MP_PERI;
-+                       break;
-+               default:
-+                       dmacHw_ASSERT(0);
-+               }
-+               pRing->pHead->ctl.lo = transferType |
-+                   dmacHw_SRC_ADDRESS_UPDATE_MODE_INC |
-+                   dmacHw_DST_ADDRESS_UPDATE_MODE_INC |
-+                   dmacHw_SRC_TRANSACTION_WIDTH_32 |
-+                   pConfig->dstMaxTransactionWidth |
-+                   dmacHw_SRC_BURST_WIDTH_0 |
-+                   dmacHw_DST_BURST_WIDTH_0 |
-+                   pConfig->srcMasterInterface |
-+                   pConfig->dstMasterInterface |
-+                   pConfig->flowControler | dmacHw_REG_CTL_INT_EN;
-+       }
-+
-+       /* Set block transaction size to one 32 bit transaction */
-+       pRing->pHead->ctl.hi = dmacHw_REG_CTL_BLOCK_TS_MASK & 1;
-+
-+       /* Remember the descriptor to initialize the registers */
-+       if (pRing->pProg == dmacHw_DESC_INIT) {
-+               pRing->pProg = pRing->pHead;
-+       }
-+       pRing->pEnd = pRing->pHead;
-+
-+       /* Advance the descriptor */
-+       dmacHw_NEXT_DESC(pRing, pHead);
-+
-+       /* Update Tail pointer if destination is a peripheral */
-+       if (!dmacHw_DST_IS_MEMORY(pConfig->transferType)) {
-+               pRing->pTail = pRing->pHead;
-+       }
-+       return 0;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Sets channel specific user data
-+*
-+*  This function associates user data to a specif DMA channel
-+*
-+*/
-+/****************************************************************************/
-+void dmacHw_setChannelUserData(dmacHw_HANDLE_t handle, /*  [ IN ] DMA Channel handle */
-+                              void *userData   /*  [ IN ] User data */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+
-+       pCblk->userData = userData;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Gets channel specific user data
-+*
-+*  This function returns user data specific to a DMA channel
-+*
-+*  @return   user data
-+*/
-+/****************************************************************************/
-+void *dmacHw_getChannelUserData(dmacHw_HANDLE_t handle /*  [ IN ] DMA Channel handle */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+
-+       return pCblk->userData;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Resets descriptor control information
-+*
-+*  @return  void
-+*/
-+/****************************************************************************/
-+void dmacHw_resetDescriptorControl(void *pDescriptor   /*   [ IN ] Descriptor buffer  */
-+    ) {
-+       int i;
-+       dmacHw_DESC_RING_t *pRing;
-+       dmacHw_DESC_t *pDesc;
-+
-+       pRing = dmacHw_GET_DESC_RING(pDescriptor);
-+       pDesc = pRing->pHead;
-+
-+       for (i = 0; i < pRing->num; i++) {
-+               /* Mark descriptor is ready to use */
-+               pDesc->ctl.hi = dmacHw_DESC_FREE;
-+               /* Look into next link list item */
-+               pDesc++;
-+       }
-+       pRing->pFree = pRing->pTail = pRing->pEnd = pRing->pHead;
-+       pRing->pProg = dmacHw_DESC_INIT;
-+}
-+
-+/****************************************************************************/
-+/**
-+*  @brief   Displays channel specific registers and other control parameters
-+*
-+*  @return  void
-+*
-+*
-+*  @note
-+*     None
-+*/
-+/****************************************************************************/
-+void dmacHw_printDebugInfo(dmacHw_HANDLE_t handle,     /*  [ IN ] DMA Channel handle */
-+                          void *pDescriptor,   /*   [ IN ] Descriptor buffer */
-+                          int (*fpPrint) (const char *, ...)   /*  [ IN ] Print callback function */
-+    ) {
-+       dmacHw_CBLK_t *pCblk = dmacHw_HANDLE_TO_CBLK(handle);
-+
-+       DisplayRegisterContents(pCblk->module, pCblk->channel, fpPrint);
-+       DisplayDescRing(pDescriptor, fpPrint);
-+}
++#endif /* __MTD_NAND_ECC512_H__ */
 --
 1.6.0.6
+
 
 
 Leo Hao Chen
