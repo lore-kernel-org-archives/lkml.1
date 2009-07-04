@@ -1,148 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZGDJud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZGDJ4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbZGDJud (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 05:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZGDJuG
+	id S1755547AbZGDJ4V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 05:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753015AbZGDJ4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 05:50:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51643 "EHLO hera.kernel.org"
+	Sat, 4 Jul 2009 05:56:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44483 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754939AbZGDJuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 05:50:00 -0400
-Date: Sat, 4 Jul 2009 09:49:03 GMT
-From: tip-bot for Eric Dumazet <eric.dumazet@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, eric.dumazet@gmail.com,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org, efault@gmx.de,
-       arnd@arndb.de, dhowells@redhat.com, fweisbec@gmail.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       arnd@arndb.de, fweisbec@gmail.com, dhowells@redhat.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A4E1AA2.30002@gmail.com>
-References: <4A4E1AA2.30002@gmail.com>
-Subject: [tip:perfcounters/urgent] x86: atomic64: Inline atomic64_read() again
-Message-ID: <tip-a79f0da80a508448434476b77f9d3d1a469eab67@git.kernel.org>
-Git-Commit-ID: a79f0da80a508448434476b77f9d3d1a469eab67
-X-Mailer: tip-git-log-daemon
+	id S1751843AbZGDJ4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 05:56:11 -0400
+Date: Sat, 4 Jul 2009 12:55:56 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi@redhat.com" <avi@redhat.com>
+Subject: Re: [PATCH v5] enable x2APIC without interrupt remapping under KVM
+Message-ID: <20090704095556.GB24641@redhat.com>
+References: <20090701133007.GC27539@redhat.com> <1246482017.27006.10670.camel@localhost.localdomain> <20090703082905.GF21833@elte.hu> <m1r5wwbxjx.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 04 Jul 2009 09:49:05 +0000 (UTC)
+In-Reply-To: <m1r5wwbxjx.fsf@fess.ebiederm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a79f0da80a508448434476b77f9d3d1a469eab67
-Gitweb:     http://git.kernel.org/tip/a79f0da80a508448434476b77f9d3d1a469eab67
-Author:     Eric Dumazet <eric.dumazet@gmail.com>
-AuthorDate: Fri, 3 Jul 2009 16:50:10 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 4 Jul 2009 11:45:00 +0200
+On Sat, Jul 04, 2009 at 02:35:30AM -0700, Eric W. Biederman wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+> >
+> >> On Wed, 2009-07-01 at 06:30 -0700, Gleb Natapov wrote:
+> >> > KVM would like to provide x2APIC interface to a guest without emulating
+> >> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
+> >> > is that x2APIC interface is better virtualizable and provides better
+> >> > performance than mmio xAPIC interface:
+> >> >     
+> >> > - msr exits are faster than mmio (no page table walk, emulation)
+> >> > - no need to read back ICR to look at the busy bit
+> >> > - one 64 bit ICR write instead of two 32 bit writes
+> >> > - shared code with the Hyper-V paravirt interface
+> >> >     
+> >> > Included patch changes x2APIC enabling logic to enable it even if IR
+> >> > initialization failed, but kernel runs under KVM and no apic id is
+> >> > greater than 255 (if there is one spec requires BIOS to move to x2apic
+> >> > mode before starting an OS).
+> >> > 
+> >> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+> >> 
+> >> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> >
+> > Now, since this affects core x86 APIC code non-trivially so should 
+> > submitted to and go via the x86 tree. (Can prepare a special branch 
+> > with just this change if KVM tree wants/needs to pull it before 
+> > v2.6.32.)
+> 
+> Please don't separate the x2apic code from the dmar code for this
+> reason.
+> 
+> Supporting hotplug cpus with ioapics is torture.
+> 
+What is the connection between this patch and cpu hotplug?
 
-x86: atomic64: Inline atomic64_read() again
-
-Now atomic64_read() is light weight (no register pressure and
-small icache), we can inline it again.
-
-Also use "=&A" constraint instead of "+A" to avoid warning
-about unitialized 'res' variable. (gcc had to force 0 in eax/edx)
-
-  $ size vmlinux.prev vmlinux.after
-     text    data     bss     dec     hex filename
-  4908667  451676 1684868 7045211  6b805b vmlinux.prev
-  4908651  451676 1684868 7045195  6b804b vmlinux.after
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-LKML-Reference: <4A4E1AA2.30002@gmail.com>
-[ Also fix typo in atomic64_set() export ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/include/asm/atomic_32.h |   22 ++++++++++++++++++++++
- arch/x86/lib/atomic64_32.c       |   23 +----------------------
- 2 files changed, 23 insertions(+), 22 deletions(-)
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index d7c8849..dc5a667 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -295,6 +295,28 @@ extern void atomic64_set(atomic64_t *ptr, u64 new_val);
-  *
-  * Atomically reads the value of @ptr and returns it.
-  */
-+static inline u64 atomic64_read(atomic64_t *ptr)
-+{
-+	u64 res;
-+
-+	/*
-+	 * Note, we inline this atomic64_t primitive because
-+	 * it only clobbers EAX/EDX and leaves the others
-+	 * untouched. We also (somewhat subtly) rely on the
-+	 * fact that cmpxchg8b returns the current 64-bit value
-+	 * of the memory location we are touching:
-+	 */
-+	asm volatile(
-+		"mov %%ebx, %%eax\n\t"
-+		"mov %%ecx, %%edx\n\t"
-+		LOCK_PREFIX "cmpxchg8b %1\n"
-+			: "=&A" (res)
-+			: "m" (*ptr)
-+		);
-+
-+	return res;
-+}
-+
- extern u64 atomic64_read(atomic64_t *ptr);
- 
- /**
-diff --git a/arch/x86/lib/atomic64_32.c b/arch/x86/lib/atomic64_32.c
-index 1d98c9e..824fa0b 100644
---- a/arch/x86/lib/atomic64_32.c
-+++ b/arch/x86/lib/atomic64_32.c
-@@ -66,31 +66,10 @@ void atomic64_set(atomic64_t *ptr, u64 new_val)
- {
- 	atomic64_xchg(ptr, new_val);
- }
--EXPORT_SYMBOL(atomic64_read);
-+EXPORT_SYMBOL(atomic64_set);
- 
- /**
-- * atomic64_read - read atomic64 variable
-- * @ptr:      pointer to type atomic64_t
-- *
-- * Atomically reads the value of @ptr and returns it.
-- */
--u64 atomic64_read(atomic64_t *ptr)
--{
--	u64 res;
--
--	asm volatile(
--		"mov %%ebx, %%eax\n\t"
--		"mov %%ecx, %%edx\n\t"
--		LOCK_PREFIX "cmpxchg8b %1\n"
--			: "+A" (res)
--			: "m" (*ptr)
--		);
--
--	return res;
--}
- EXPORT_SYMBOL(atomic64_read);
--
--/**
-  * atomic64_add_return - add and return
-  * @delta: integer value to add
-  * @ptr:   pointer to type atomic64_t
+--
+			Gleb.
