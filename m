@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZGDFvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbZGDGEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZGDFvb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 01:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZGDFvW
+	id S1753144AbZGDGEg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 02:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZGDGE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 01:51:22 -0400
-Received: from mail-vw0-f202.google.com ([209.85.212.202]:57584 "EHLO
-	mail-vw0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZGDFvV (ORCPT
+	Sat, 4 Jul 2009 02:04:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:60852 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750909AbZGDGE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 01:51:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IM3nhKoH+wcWiZMGfWet5iB8iDRzFv4QHnuxKydMwMugHEl1R2MU12BaumKzFrXEbv
-         wnEuXvYsZF9JswbRY5f3FQfhROSAZ/+DSrI4+qnZG2xncImobdJkGEcpS8p8BDpgvDE4
-         XwELiwDTPgmsA8hc/Lpa4anwkEsViDiz8KNvo=
-MIME-Version: 1.0
-In-Reply-To: <4A4E9638.20304@kernel.org>
-References: <4A4E9638.20304@kernel.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 4 Jul 2009 01:51:04 -0400
-Message-ID: <8bd0f97a0907032251p753527e1oac25ea1740a1bfdb@mail.gmail.com>
-Subject: Re: [RFC PATCH] linker script: unify usage of discard definition
-To: Tejun Heo <tj@kernel.org>
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
-       Sam Ravnborg <sam@ravnborg.org>, Paul Mundt <lethal@linux-sh.org>,
-       Tony Luck <tony.luck@intel.com>
-Content-Type: text/plain; charset=UTF-8
+	Sat, 4 Jul 2009 02:04:26 -0400
+Date: Fri, 3 Jul 2009 23:04:08 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Styner, Douglas W" <douglas.w.styner@intel.com>,
+       Chinang Ma <chinang.ma@intel.com>,
+       "Prickett, Terry O" <terry.o.prickett@intel.com>,
+       Matthew Wilcox <matthew.r.wilcox@intel.com>, Eric.Moore@lsi.com,
+       DL-MPTFusionLinux@lsi.com
+Subject: Re: >10% performance degradation since 2.6.18
+Message-ID: <20090703230408.4433ee39@infradead.org>
+In-Reply-To: <20090703233505.GL2041@one.firstfloor.org>
+References: <20090703025607.GK5480@parisc-linux.org>
+	<87skhdaaub.fsf@basil.nowhere.org>
+	<20090703185414.GP23611@kernel.dk>
+	<20090703191321.GO5480@parisc-linux.org>
+	<20090703192235.GV23611@kernel.dk>
+	<20090703194557.GQ5480@parisc-linux.org>
+	<20090703195458.GK2041@one.firstfloor.org>
+	<20090703130421.646fe5cb@infradead.org>
+	<20090703233505.GL2041@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n645ploU008184
 
-On Fri, Jul 3, 2009 at 19:37, Tejun Heo wrote:> +/*> + * DISCARDS must be the last and archs which want some of the default> + * discarded sections in the kernel image can do so by putting them in> + * earlier section definition.> + */>  #define DISCARDS                                                       \>        /DISCARD/ : {                                                   \>        EXIT_TEXT                                                       \>        EXIT_DATA                                                       \> -       *(.exitcall.exit)                                               \> +       EXIT_CALL                                                       \>        *(.discard)                                                     \>        }
-i would add to the comment that some people want to discard exittext/data at runtime rather than link time due to cross-sectionreferences such as alt instructions, bug table, eh_frame, etc...
-otherwise, looks good to me.  thanks !
-Acked-by: Mike Frysinger <vapier@gentoo.org>-mike���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Sat, 4 Jul 2009 01:35:05 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > ... so that you can't do power management on a per socket basis?
+> > hardly a good idea.
+> 
+> Interrupts should only happen when the socket did spent time
+> submitting the work for them. Typically on drivers I'm familiar with
+> the return MSI is tied to the CPU that did submit the work item
+
+for networking, especially for incoming data such as new connections,
+that isn't the case.. that's more or less randomly (well hash based)
+distributed.
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
