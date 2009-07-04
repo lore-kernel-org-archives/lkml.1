@@ -1,93 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbZGDOS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZGDOdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbZGDOS1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 10:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZGDOSS
+	id S1755978AbZGDOdw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 10:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZGDOdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 10:18:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47058 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751312AbZGDOSS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 10:18:18 -0400
-Subject: Re: [PATCH 4/6 -tip] perf_counter: Add Generalized Hardware
- interrupt support for AMD
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090704102230.GE2139@elte.hu>
-References: <1246440815.3403.3.camel@hpdv5.satnam>
-	 <1246440909.3403.5.camel@hpdv5.satnam>
-	 <1246440977.3403.7.camel@hpdv5.satnam>
-	 <1246441043.3403.9.camel@hpdv5.satnam>
-	 <1246441094.3403.10.camel@hpdv5.satnam> <20090701112406.GE15958@elte.hu>
-	 <1246622515.2322.30.camel@jaswinder.satnam> <20090704102230.GE2139@elte.hu>
-Content-Type: text/plain
-Date: Sat, 04 Jul 2009 19:47:19 +0530
-Message-Id: <1246717039.2329.26.camel@jaswinder.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Jul 2009 10:33:42 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:44921 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753108AbZGDOdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 10:33:41 -0400
+To: Gleb Natapov <gleb@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Sheng Yang <sheng@linux.intel.com>,
+       "kvm\@vger.kernel.org" <kvm@vger.kernel.org>,
+       "avi\@redhat.com" <avi@redhat.com>
+References: <20090701133007.GC27539@redhat.com>
+	<1246482017.27006.10670.camel@localhost.localdomain>
+	<20090703082905.GF21833@elte.hu> <m1r5wwbxjx.fsf@fess.ebiederm.org>
+	<20090704095556.GB24641@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 04 Jul 2009 07:33:39 -0700
+In-Reply-To: <20090704095556.GB24641@redhat.com> (Gleb Natapov's message of "Sat\, 4 Jul 2009 12\:55\:56 +0300")
+Message-ID: <m1r5wwa56k.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: gleb@redhat.com, avi@redhat.com, kvm@vger.kernel.org, sheng@linux.intel.com, linux-kernel@vger.kernel.org, suresh.b.siddha@intel.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Gleb Natapov <gleb@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH v5] enable x2APIC without interrupt remapping under KVM
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-04 at 12:22 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Wed, 2009-07-01 at 13:24 +0200, Ingo Molnar wrote:
-> > > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > > 
-> > > > 
-> > > > $ ./perf stat -e interrupts -e masked -e int-pending-mask-cycles -- ls -lR /usr/include/ > /dev/null
-> > > > 
-> > > >  Performance counter stats for 'ls -lR /usr/include/':
-> > > > 
-> > > >             377  interrupts
-> > > >        53429936  int-mask-cycles
-> > > >            1119  int-pending-mask-cycles
-> > > > 
-> > > >     0.371457539  seconds time elapsed
-> > > 
-> > > Agreed, this is another useful generalization - and the 'cycles 
-> > > pending' metrics are not retrievable via any software means.
-> > > 
-> > > We could and should probably add a software counter for hardirqs 
-> > > as wel. That would allow the vector/irqnr information to be 
-> > > passed in, and it would allow architectures without irq metrics 
-> > > in the PMU to have this counter too.
-> > > 
-> > 
-> > Please let me know that addition of software counter will be in 
-> > this patch or we can do it incrementally after this patch.
-> 
-> It should be in this series. That way we can cross-check whether the 
-> soft counts and the hard counts match up and find potential bugs 
-> that way, etc.
-> 
+Gleb Natapov <gleb@redhat.com> writes:
 
-You want to cross check performance counter events ?
+> On Sat, Jul 04, 2009 at 02:35:30AM -0700, Eric W. Biederman wrote:
+>> Ingo Molnar <mingo@elte.hu> writes:
+>> 
+>> > * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
+>> >
+>> >> On Wed, 2009-07-01 at 06:30 -0700, Gleb Natapov wrote:
+>> >> > KVM would like to provide x2APIC interface to a guest without emulating
+>> >> > interrupt remapping device. The reason KVM prefers guest to use x2APIC
+>> >> > is that x2APIC interface is better virtualizable and provides better
+>> >> > performance than mmio xAPIC interface:
+>> >> >     
+>> >> > - msr exits are faster than mmio (no page table walk, emulation)
+>> >> > - no need to read back ICR to look at the busy bit
+>> >> > - one 64 bit ICR write instead of two 32 bit writes
+>> >> > - shared code with the Hyper-V paravirt interface
+>> >> >     
+>> >> > Included patch changes x2APIC enabling logic to enable it even if IR
+>> >> > initialization failed, but kernel runs under KVM and no apic id is
+>> >> > greater than 255 (if there is one spec requires BIOS to move to x2apic
+>> >> > mode before starting an OS).
+>> >> > 
+>> >> > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+>> >> 
+>> >> Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+>> >
+>> > Now, since this affects core x86 APIC code non-trivially so should 
+>> > submitted to and go via the x86 tree. (Can prepare a special branch 
+>> > with just this change if KVM tree wants/needs to pull it before 
+>> > v2.6.32.)
+>> 
+>> Please don't separate the x2apic code from the dmar code for this
+>> reason.
+>> 
+>> Supporting hotplug cpus with ioapics is torture.
+>> 
+> What is the connection between this patch and cpu hotplug?
 
-Why you choose interrupt events, why do not you raise this point when
-cache events was added ?
+When I asked if cpu hotplug was a supported and more or
+less common feature of kvm I was told it was.
 
-I do not understand why you keep going on tangents.
+Good cpu hotplug today means supporting interrupt remapping.
+(The code you are disabling for kvm).
 
-If you want to cross-check then it should be in different patch and
-there should be no requirement to have this on this series and no point
-of blocking this patch on irrelevant argument.
+Therefore I don't see the point of supporting one without the other.
+Especially if we don't have a case where on real hardware we need to
+split the support.
 
-Only thing I can do is to fix the patch, if you point any problem in
-this.
-
-Thanks,
---
-JSR
-
+Eric
