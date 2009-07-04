@@ -1,165 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZGDOve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZGDPP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbZGDOve (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 10:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZGDOv1
+	id S1753977AbZGDPP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 11:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZGDPPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 10:51:27 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:38922 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZGDOv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 10:51:27 -0400
-Subject: mem_class: use minor as index instead of searching the array
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>
-Content-Type: text/plain
-Date: Sat, 04 Jul 2009 16:51:29 +0200
-Message-Id: <1246719089.6299.13.camel@yio.site>
+	Sat, 4 Jul 2009 11:15:50 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49771 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbZGDPPt (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 11:15:49 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Paolo Bonzini <pbonzini@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] xen: wait up to 5 minutes for device connection
+In-Reply-To: Your message of "Fri, 03 Jul 2009 23:21:35 +0200."
+             <4A4E765F.4000501@redhat.com>
+From: Valdis.Kletnieks@vt.edu
+References: <1246626771-11345-1-git-send-email-pbonzini@redhat.com> <20090703160046.GA4262@infradead.org>
+            <4A4E765F.4000501@redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.2 
+Content-Type: multipart/signed; boundary="==_Exmh_1246720530_3612P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sat, 04 Jul 2009 11:15:30 -0400
+Message-ID: <15093.1246720530@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: mem_class: use minor as index instead of searching the array
+--==_Exmh_1246720530_3612P
+Content-Type: text/plain; charset=us-ascii
 
-Declare the device list with the minor numbers as the index, which saves us from
-searching for a matching list entry. Remove old devfs permissions declaration.
+On Fri, 03 Jul 2009 23:21:35 +0200, Gerd Hoffmann said:
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- drivers/char/mem.c |   84 +++++++++++++++++++++++++----------------------------
- 1 file changed, 41 insertions(+), 43 deletions(-)
+> Usually it is *much* faster, but when the host is quite loaded it can 
+> take a unusual long time.  With 10 seconds it happends in practice now 
+> and then that a virtual machine fails to boot just because the virtual 
+> root disk didn't show up fast enough.
 
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -863,71 +863,67 @@ static const struct file_operations kmsg
- 	.write =	kmsg_write,
- };
- 
--static const struct {
--	unsigned int		minor;
--	char			*name;
--	umode_t			mode;
--	const struct file_operations	*fops;
--	struct backing_dev_info	*dev_info;
--} devlist[] = { /* list of minor devices */
--	{1, "mem",     S_IRUSR | S_IWUSR | S_IRGRP, &mem_fops,
--		&directly_mappable_cdev_bdi},
-+static const struct memdev {
-+	const char *name;
-+	const struct file_operations *fops;
-+	struct backing_dev_info *dev_info;
-+} devlist[] = {
-+	[ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
- #ifdef CONFIG_DEVKMEM
--	{2, "kmem",    S_IRUSR | S_IWUSR | S_IRGRP, &kmem_fops,
--		&directly_mappable_cdev_bdi},
-+	[ 2] = { "kmem", &kmem_fops, &directly_mappable_cdev_bdi },
- #endif
--	{3, "null",    S_IRUGO | S_IWUGO,           &null_fops, NULL},
-+	[ 3] = {"null", &null_fops, NULL },
- #ifdef CONFIG_DEVPORT
--	{4, "port",    S_IRUSR | S_IWUSR | S_IRGRP, &port_fops, NULL},
-+	[ 4] = { "port", &port_fops, NULL },
- #endif
--	{5, "zero",    S_IRUGO | S_IWUGO,           &zero_fops, &zero_bdi},
--	{7, "full",    S_IRUGO | S_IWUGO,           &full_fops, NULL},
--	{8, "random",  S_IRUGO | S_IWUSR,           &random_fops, NULL},
--	{9, "urandom", S_IRUGO | S_IWUSR,           &urandom_fops, NULL},
--	{11,"kmsg",    S_IRUGO | S_IWUSR,           &kmsg_fops, NULL},
-+	[ 5] = { "zero", &zero_fops, &zero_bdi },
-+	[ 6] = { "full", &full_fops, NULL },
-+	[ 7] = { "random", &random_fops, NULL },
-+	[ 9] = { "urandom", &urandom_fops, NULL },
-+	[11] = { "kmsg", &kmsg_fops, NULL },
- #ifdef CONFIG_CRASH_DUMP
--	{12,"oldmem",    S_IRUSR | S_IWUSR | S_IRGRP, &oldmem_fops, NULL},
-+	[12] = { "oldmem", &oldmem_fops, NULL },
- #endif
- };
- 
- static int memory_open(struct inode *inode, struct file *filp)
- {
--	int ret = 0;
--	int i;
-+	int minor;
-+	const struct memdev *dev;
-+	int ret = -ENXIO;
- 
- 	lock_kernel();
- 
--	for (i = 0; i < ARRAY_SIZE(devlist); i++) {
--		if (devlist[i].minor == iminor(inode)) {
--			filp->f_op = devlist[i].fops;
--			if (devlist[i].dev_info) {
--				filp->f_mapping->backing_dev_info =
--					devlist[i].dev_info;
--			}
-+	minor = iminor(inode);
-+	if (minor >= ARRAY_SIZE(devlist))
-+		goto out;
-+
-+	dev = &devlist[minor];
-+	if (!dev->fops)
-+		goto out;
-+
-+	filp->f_op = dev->fops;
-+	if (dev->dev_info)
-+		filp->f_mapping->backing_dev_info = dev->dev_info;
- 
--			break;
--		}
--	}
--
--	if (i == ARRAY_SIZE(devlist))
--		ret = -ENXIO;
-+	if (dev->fops->open)
-+		ret = dev->fops->open(inode, filp);
- 	else
--		if (filp->f_op && filp->f_op->open)
--			ret = filp->f_op->open(inode, filp);
--
-+		ret = 0;
-+out:
- 	unlock_kernel();
- 	return ret;
- }
- 
- static const struct file_operations memory_fops = {
--	.open		= memory_open,	/* just a selector for the real open */
-+	.open		= memory_open,
- };
- 
- static struct class *mem_class;
- 
- static int __init chr_dev_init(void)
- {
--	int i;
-+	int minor;
- 	int err;
- 
- 	err = bdi_init(&zero_bdi);
-@@ -938,10 +934,12 @@ static int __init chr_dev_init(void)
- 		printk("unable to get major %d for memory devs\n", MEM_MAJOR);
- 
- 	mem_class = class_create(THIS_MODULE, "mem");
--	for (i = 0; i < ARRAY_SIZE(devlist); i++)
--		device_create(mem_class, NULL,
--			      MKDEV(MEM_MAJOR, devlist[i].minor), NULL,
--			      devlist[i].name);
-+	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
-+		if (!devlist[minor].name)
-+			continue;
-+		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
-+			      NULL, devlist[minor].name);
-+	}
- 
- 	return 0;
- }
+Are people actually trying to boot a guest on a host machine so loaded that
+disks take that long to show up - and expect things to work in any sane
+matter?
 
+I'm tempted to suggest that booting under conditions like that is almost
+deserving of its own kernel Tainted flag.  If devices aren't showing up in
+a timely manner, we probably need to be leery of any other kernel timeout
+values as well...
 
+--==_Exmh_1246720530_3612P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKT3IScC3lWbTT17ARAkR9AJ9k/hN0tcMyztbJgfDxjd5bGI8ypQCg/ORb
+/TgucmDftVlTcXsxIAiBsNU=
+=oHhk
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1246720530_3612P--
