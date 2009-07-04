@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZGDVch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZGDVd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbZGDVch (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Jul 2009 17:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZGDVc3
+	id S1754552AbZGDVd3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Jul 2009 17:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbZGDVdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Jul 2009 17:32:29 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:49306 "EHLO mgw2.diku.dk"
+	Sat, 4 Jul 2009 17:33:21 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:56177 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914AbZGDVc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Jul 2009 17:32:28 -0400
-Date: Sat, 4 Jul 2009 23:32:29 +0200 (CEST)
+	id S1752936AbZGDVdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Jul 2009 17:33:20 -0400
+Date: Sat, 4 Jul 2009 23:33:21 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: kernel@pengutronix.de, linux-fbdev-devel@lists.sourceforge.net,
+To: florian@openwrt.org, openwrt-devel@lists.openwrt.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/3] drivers/video/imxfb.c: Fix resource size off by 1 error
-Message-ID: <Pine.LNX.4.64.0907042331490.9841@ask.diku.dk>
+Subject: [PATCH 3/3] drivers/vlynq/vlynq.c: Fix resource size off by 1 error
+Message-ID: <Pine.LNX.4.64.0907042332300.9841@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,11 +23,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In the first case, the change is not semantics-preserving, but
-resource_size is used at the corresponding call to request_mem_region in
-the same function.
-
-In the second case, the change is semantics-preserving.
+In this case, the calls to request_mem_region, ioremap, and
+release_mem_region all have a consistent length argument, len, but since in
+other files (res->end - res->start) + 1, equivalent to resource_size(res),
+is used for a resource-typed structure res, one could consider whether the
+same should be done here.
 
 The problem was found using the following semantic patch:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -51,27 +51,20 @@ struct resource *res;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/video/imxfb.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/vlynq/vlynq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/video/imxfb.c b/drivers/video/imxfb.c
---- a/drivers/video/imxfb.c 2009-04-13 16:04:25.000000000 +0200
-+++ b/drivers/video/imxfb.c 2009-07-04 21:37:48.000000000 +0200
-@@ -754,7 +754,7 @@ failed_map:
- failed_getclock:
- 	iounmap(fbi->regs);
- failed_ioremap:
--	release_mem_region(res->start, res->end - res->start);
-+	release_mem_region(res->start, resource_size(res));
- failed_req:
- 	kfree(info->pseudo_palette);
- failed_init:
-@@ -785,7 +785,7 @@ static int __devexit imxfb_remove(struct
- 	framebuffer_release(info);
+diff -u -p 
+a/drivers/vlynq/vlynq.c 
+b/drivers/vlynq/vlynq.c
+--- a/drivers/vlynq/vlynq.c 2009-06-24 21:18:50.000000000 +0200
++++ b/drivers/vlynq/vlynq.c 2009-07-04 21:37:28.000000000 +0200
+@@ -703,7 +703,7 @@ static int vlynq_probe(struct platform_d
+ 	dev->mem_start = mem_res->start;
+ 	dev->mem_end = mem_res->end;
  
- 	iounmap(fbi->regs);
--	release_mem_region(res->start, res->end - res->start + 1);
-+	release_mem_region(res->start, resource_size(res));
- 	clk_disable(fbi->clk);
- 	clk_put(fbi->clk);
- 
+-	len = regs_res->end - regs_res->start;
++	len = resource_size(regs_res);
+ 	if (!request_mem_region(regs_res->start, len, dev_name(&dev->dev))) {
+ 		printk(KERN_ERR "%s: Can't request vlynq registers\n",
+ 		       dev_name(&dev->dev));
